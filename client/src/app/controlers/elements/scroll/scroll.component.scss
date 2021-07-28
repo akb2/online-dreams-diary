@@ -1,0 +1,90 @@
+@use "sass:map";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+
+$size: 15px;
+$spacing: 1px;
+$borderRadius: $size / 2;
+
+$sliderSize: $size * 0.6;
+$sliderMinHeight: $sliderSize * 3;
+$sliderBorderRadius: $sliderSize / 2;
+
+// Оющие стили
+:host {
+  &,
+  * {
+    user-select: none;
+
+    &,
+    &:before,
+    &:after {
+      box-sizing: border-box;
+    }
+  }
+}
+
+// Оболочка
+.layout {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: $spacing;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: $spacing;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Кнопки
+.button {
+  width: $size;
+  height: $size;
+  border-radius: $borderRadius;
+  cursor: pointer;
+  background-color: map.get(colors.$mat-primary, 500);
+  transition: background-color screens.$animation-time;
+
+  &:hover {
+    background-color: map.get(colors.$mat-primary, 500);
+  }
+}
+
+// Путь слайдера
+.track {
+  width: $sliderSize;
+  flex-grow: 1;
+  position: relative;
+
+  &:before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: calc(100% + #{$spacing * 2});
+    z-index: 0;
+    position: absolute;
+    top: -$spacing;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: map.get(colors.$mat-primary, 300);
+  }
+}
+
+// Слайдер
+.slider {
+  width: $sliderSize;
+  position: relative;
+  min-height: $sliderMinHeight;
+  max-height: 100%;
+  border-radius: $sliderBorderRadius;
+  background-color: map.get(colors.$mat-primary, 500);
+  transition: background-color screens.$animation-time;
+  z-index: 1;
+  cursor: pointer;
+
+  &:hover,
+  &.hover {
+    background-color: map.get(colors.$mat-primary, 500);
+  }
+}

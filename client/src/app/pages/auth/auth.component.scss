@@ -1,0 +1,35 @@
+@use "sass:map";
+
+@use "../../../assets/styles/screens";
+@use "../../../assets/styles/material";
+
+@include material.mat-button;
+
+
+
+
+
+// Контейнер
+.container {
+  $counts: (xsmall: 1, small: 1.5, middle: 2, large: 3, xlarge: 4);
+
+  display: flex;
+  gap: 15px;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: flex-start;
+
+  @each $screen,
+  $resolution in screens.$breakpoints {
+    @media (min-width: #{screens.min_resolution( $screen )}px) and (max-width: #{screens.max_resolution( $screen )}px) {
+      >* {
+        width: 100% / map.get($counts, $screen);
+      }
+    }
+  }
+}
+
+// Восстановление пароля
+.restore {
+  text-align: right;
+}

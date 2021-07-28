@@ -1,0 +1,109 @@
+@use 'sass:math';
+@use 'sass:map';
+
+$color_1: #615cfd;
+$color_2: #d465ef;
+$color_3: #a52125;
+$color_4: #666;
+
+//**************************************************************************************
+//* Настройка цветов для Material
+//**************************************************************************************
+
+// Создание material палитры
+@function createPalette($color) {
+  $values: (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, A100, A200, A400, A700);
+  $white: #fff;
+  $black: #000;
+  $baseDark: multiply($color, $color);
+
+  $palette: (
+    50: mix($color, $white, 12%),
+    100: mix($color, $white, 30%),
+    200: mix($color, $white, 50%),
+    300: mix($color, $white, 70%),
+    400: mix($color, $white, 85%),
+    500: mix($color, $white, 100%),
+    600: mix($color, $baseDark, 87%),
+    700: mix($color, $baseDark, 70%),
+    800: mix($color, $baseDark, 54%),
+    900: mix($color, $baseDark, 25%),
+    A100: lighten(saturate(mix($black, $baseDark, 15%), 80%), 65%),
+    A200: lighten(saturate(mix($black, $baseDark, 15%), 80%), 55%),
+    A400: lighten(saturate(mix($black, $baseDark, 15%), 100%), 45%),
+    A700: lighten(saturate(mix($black, $baseDark, 15%), 100%), 40%),
+  );
+
+  $contrast: ();
+  @each $v in $values {
+    $contrast: map.merge(
+      $contrast,
+      (
+        $v: getContrast(map_get($palette, $v)),
+      )
+    );
+  }
+
+  $palette: map.merge(
+    $palette,
+    (
+      contrast: $contrast,
+    )
+  );
+
+  @return $palette;
+}
+
+// Функция умножения цвета
+@function multiply($rgb1, $rgb2) {
+  $r: math.floor(red($rgb1) * red($rgb2) / 255);
+  $g: math.floor(green($rgb1) * green($rgb2) / 255);
+  $b: math.floor(blue($rgb1) * blue($rgb2) / 255);
+  @return rgb($r, $g, $b);
+}
+
+// Получить яркость цвета
+@function getBrightness($color) {
+  @return (red($color) * 299 + green($color) * 587 + blue($color) * 114) / 1000;
+}
+
+// Светлый ли цвет
+@function isLight($color) {
+  @return getBrightness($color) >= 128;
+}
+
+// Получить контраст цвета
+@function getContrast($color) {
+  @if (isLight($color)) {
+    @return #000;
+  } @else {
+    @return #fff;
+  }
+}
+
+$mat-primary: createPalette($color_1);
+$mat-secondary: createPalette($color_2);
+$mat-status-warn: createPalette($color_3);
+$mat-disabled: createPalette($color_4);
+
+//**************************************************************************************
+//* Настройка цветов для Material
+//**************************************************************************************
+
+$title: #001d38;
+$subtitle: #001d38;
+$text: #727272;
+$border: #f1f1f1;
+$background: #f3f3f3;
+$card: #fff;
+
+$overlay-color: rgba(0, 0, 0, 0.5);
+$shadow: rgba(0, 0, 0, 0.15);
+
+$title-dark: #fff;
+$subtitle-dark: #ececec;
+$border-light: #ddd;
+
+$main-menu-item-line: transparent;
+$main-menu-item-active-line: $color_2;
+$main-menu-item-hover-line: rgba(0, 0, 0, 0.1);

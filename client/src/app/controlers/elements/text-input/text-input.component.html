@@ -1,0 +1,14 @@
+
+<mat-form-field [appearance]="appearance">
+  <mat-label>{{label}}</mat-label>
+  <ng-container *ngIf="type == 'text' || type == 'password' || type == 'email'">
+    <input matInput="" [type]="type=='password'?(showPassword?'text':'password'):type" [formControl]="control" [maxlength]="maxLength"/>
+    <mat-icon class="showPassword" matSuffix="" (click)="togglePasswordVisibility()" *ngIf="type=='password'">{{showPassword?'visibility_off':'visibility'}}</mat-icon>
+  </ng-container>
+  <ng-container *ngIf="type == 'date'">
+    <input matInput="" readonly="" [formControl]="control" [min]="minDate" [max]="maxDate" [matDatepicker]="picker" (click)="picker.open()"/>
+    <mat-icon class="showPassword" matSuffix="matSuffix" (click)="picker.open()">today</mat-icon>
+    <mat-datepicker #picker=""></mat-datepicker>
+  </ng-container>
+  <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+</mat-form-field>

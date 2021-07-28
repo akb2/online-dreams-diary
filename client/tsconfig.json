@@ -1,0 +1,58 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "es2020",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "paths": {
+      "@_services/*": [
+        "src/app/services/*"
+      ],
+      "@_models/*": [
+        "src/app/models/*"
+      ],
+      "@_modules/*": [
+        "src/app/modules/*"
+      ],
+      "@_directives/*": [
+        "src/app/directives/*"
+      ],
+      "@_pages/*": [
+        "src/app/pages/*"
+      ],
+      "@_helpers/*": [
+        "src/app/helpers/*"
+      ],
+      "@_controlers/*": [
+        "src/app/controlers/base/*",
+        "src/app/controlers/editors/*",
+        "src/app/controlers/elements/*",
+        "src/app/controlers/lists/*",
+        "src/app/controlers/menus/*",
+        "src/app/controlers/viewers/*",
+        "src/app/controlers/pop-ups/*"
+      ],
+      "@_environments/*": [
+        "src/environments/*"
+      ],
+      "@angular/*": [
+        "node_modules/@angular/*"
+      ],
+      "@app/*": [
+        "src/app/*"
+      ]
+    }
+  }
+}

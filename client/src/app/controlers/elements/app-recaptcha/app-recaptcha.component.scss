@@ -1,0 +1,9 @@
+// Общий блок
+.captcha {
+  margin-top: 15px;
+
+  // Обертка капчи
+  &-overlay {
+    transform-origin: 0 0;
+  }
+}

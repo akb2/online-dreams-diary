@@ -1,0 +1,92 @@
+@use '~@angular/material' as mat;
+@use "./assets/styles/colors";
+@use "./assets/styles/containers";
+
+@include mat.core();
+$mat-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: mat.define-palette(colors.$mat-primary),
+      accent: mat.define-palette(colors.$mat-secondary, A200, A100, A400),
+      warn: mat.define-palette(colors.$mat-status-warn),
+    ),
+  )
+);
+@include mat.all-component-themes($mat-theme);
+
+// Базовый стиль
+html {
+  $scroll-size: 0;
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: colors.$background;
+
+  &.no-scroll {
+    overflow-y: hidden;
+  }
+
+  &,
+  * {
+    &,
+    &:before,
+    &:after {
+      box-sizing: border-box;
+      font-family: "Fira Sans", sans-serif;
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+    }
+  }
+
+  &,
+  body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+  }
+
+  &::-webkit-scrollbar {
+    width: $scroll-size;
+  }
+
+  body {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+  }
+}
+
+// Выделение элементов
+*[unselectable="on"] {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+// Иконки
+.material-icons,
+mat-icon {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga";
+}
+
+// Секции
+.root-section {
+  min-height: calc(100vh - 60px);
+}

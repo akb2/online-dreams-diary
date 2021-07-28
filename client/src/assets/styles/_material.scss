@@ -1,0 +1,55 @@
+@use "./colors";
+@use "./screens";
+
+// Кнопки
+@mixin mat-button {
+  *.mat-button-base {
+    &.mat-stroked-button,
+    &.mat-flat-button {
+      $height: 44px;
+
+      height: $height;
+      line-height: $height;
+      padding: 0 24px;
+
+      &,
+      * {
+        font-family: "Roboto", open-sans;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Обертка поля
+@mixin mat-form-field {
+  .mat-form-field {
+    $elm: &;
+
+    width: 100%;
+
+    :host ::ng-deep &-appearance-fill & {
+      &-subscript-wrapper {
+        margin-top: 4px;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      &-flex {
+        border-radius: 0;
+        padding: 8px 18px 0 18px;
+      }
+    }
+
+    :host ::ng-deep &-infix {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+
+    app-text-input + :host > & {
+      margin-top: 15px;
+    }
+
+    @content;
+  }
+}

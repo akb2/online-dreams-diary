@@ -1,0 +1,14 @@
+// Повторить строку
+@function str-repeat($string, $count: 1, $implementer: "") {
+  $return: "";
+
+  @for $i from 1 through $count {
+    @if ($i > 1) {
+      $return: #{$return}#{$implementer};
+    }
+
+    $return: #{$return}#{$string};
+  }
+
+  @return $return;
+}

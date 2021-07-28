@@ -1,0 +1,59 @@
+@use "../../../../assets/styles/colors";
+
+
+
+
+
+$base_elm: ".mat-card";
+$padding-x: 25px;
+$padding-y: 25px;
+
+
+
+
+
+#{$base_elm} {
+  padding: #{$padding-y} #{$padding-x};
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: #{$padding-y} #{$padding-x};
+  box-shadow: 1px 1px 10px 1px #{colors.$shadow};
+  background-color: colors.$card;
+
+  &-actions {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+
+    #{$base_elm}>&:last-child {
+      padding-top: 0;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 330px) {
+      justify-content: space-between;
+
+      :host ::ng-deep &>*:first-child:last-child {
+        margin-left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+  }
+
+  &-header {
+    :host ::ng-deep &-text {
+      margin: 0;
+    }
+
+    #{$base_elm}-title {
+      margin-bottom: 0;
+    }
+  }
+
+  &-content {
+    margin-bottom: 0;
+  }
+}

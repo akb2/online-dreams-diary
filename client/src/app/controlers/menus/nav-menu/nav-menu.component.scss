@@ -1,0 +1,533 @@
+@use "sass:map";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+
+// Главное меню
+.main-menu {
+  $header-size: 180px;
+
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  width: 100%;
+  user-select: none;
+
+  // Полноразмерное меню
+  &.type-full {
+    height: 100vh;
+  }
+
+  // Вспомогательный блок
+  &.helper {
+    position: static;
+  }
+
+  // Слой
+  &__layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    // Задний слой
+    &.back {
+      overflow: hidden;
+    }
+
+    // Контент
+    &.content {
+    }
+
+    // Передний фон
+    &.front {
+      pointer-events: none;
+    }
+
+    // Контейнер
+    &-container {
+      display: grid;
+      grid-template-columns: #{$header-size} auto 60px;
+      grid-gap: 15px;
+      height: 100%;
+      padding-top: 0;
+      padding-bottom: 0;
+
+      @include screens.adaptive(auto, small) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      // Слева
+      &_left {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+      }
+
+      // По середине
+      &_center {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+
+      // Справа
+      &_right {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: flex-end;
+        justify-content: flex-end;
+      }
+    }
+
+    // Картинка
+    &-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+
+      // Полноразмерное меню
+      &.type-full {
+        border-radius: 50%;
+        overflow: hidden;
+        position: absolute;
+
+        @media (min-width: #{screens.min_resolution(middle)}px) {
+          width: 47vw;
+          height: 47vw;
+          left: -10vw;
+          bottom: -6vw;
+        }
+
+        @media (max-width: #{screens.max_resolution(small)}px) {
+          width: 470px;
+          height: 470px;
+          left: -100px;
+          bottom: -60px;
+        }
+      }
+
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      // Перекрытие
+      &:after {
+        content: "";
+        position: absolute;
+        display: block;
+        inset: 0;
+        background-color: map.get(colors.$mat-primary, 500);
+        opacity: 0.6;
+      }
+    }
+
+    // Градиент
+    &-gradient {
+      position: absolute;
+      inset: 0;
+
+      // Полноразмерное меню
+      &.type-full {
+      }
+    }
+
+    // Заливка
+    &-fill {
+      position: absolute;
+      inset: 0;
+      background-color: colors.$color_1;
+    }
+  }
+
+  // Заголовок
+  &__title {
+    line-height: 1.2;
+    color: colors.$title-dark;
+    font-weight: 400;
+  }
+
+  // Подзаголовок
+  &__subtitle {
+    line-height: 1.14;
+    color: colors.$subtitle-dark;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+
+  // Заголовок, gодзаголовок
+  &__title,
+  &__subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Мобильное меню
+.mobile-menu {
+  $layout-width: 280px;
+  $info-height: 180px;
+
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  user-select: none;
+
+  &.show {
+    pointer-events: auto;
+  }
+
+  // Затенение
+  &__overlay {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: colors.$overlay-color;
+    opacity: 0;
+    transition: opacity screens.$animation-time;
+
+    &.show {
+      opacity: 1;
+    }
+  }
+
+  // Слой с данными
+  &__layout {
+    width: $layout-width;
+    margin-left: -$layout-width;
+    height: 100%;
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+    transition: margin-left screens.$animation-time;
+    display: grid;
+    grid-template-rows: $info-height 1fr;
+
+    &.show {
+      margin-left: 0;
+    }
+  }
+
+  // Информация о странице
+  &__info {
+    width: 100%;
+    height: $info-height;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    justify-content: flex-end;
+    position: relative;
+    padding: 15px;
+
+    // Картинка
+    &-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: colors.$color_2;
+
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      &:after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: colors.$overlay-color;
+      }
+    }
+
+    // Заголовок
+    &-title {
+      color: colors.$title-dark;
+      font-size: 16px;
+    }
+
+    // Подзаголовок
+    &-subtitle {
+      color: colors.$subtitle-dark;
+      font-size: 13px;
+    }
+
+    // Заголовок, gодзаголовок
+    &-title,
+    &-subtitle {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+      z-index: 1;
+      line-height: 1.2;
+      font-weight: 300;
+    }
+
+    // Закрытие окна
+    &-close {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: colors.$title-dark;
+      text-align: center;
+
+      &,
+      > mat-icon {
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        font-size: 24px;
+      }
+    }
+  }
+
+  // Пункты меню
+  &__list {
+    $__list: &;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 0;
+    overflow-y: scroll;
+
+    // Элемент списка
+    &-item {
+      $__item: &;
+      width: 100%;
+      transition: border-top-color screens.$animation-time;
+      border-top: 0 solid colors.$border-light;
+
+      & + & {
+        border-top-width: 1px;
+      }
+
+      &:hover {
+        &,
+        & + #{$__item} {
+          border-top-color: colors.$color_1;
+        }
+
+        #{$__list}-link {
+          background-color: colors.$color_1;
+
+          > mat-icon {
+            color: colors.$title-dark;
+          }
+
+          > span {
+            color: colors.$subtitle-dark;
+          }
+        }
+      }
+    }
+
+    // Ссылка
+    &-link {
+      $icon-size: 48px;
+      display: grid;
+      grid-template-columns: $icon-size 1fr;
+      grid-gap: 10px;
+      text-decoration: none;
+      transition: background-color screens.$animation-time;
+
+      > mat-icon {
+        width: $icon-size;
+        height: $icon-size;
+        line-height: $icon-size;
+        font-size: 24px;
+        color: colors.$title;
+        text-align: center;
+        transition: color screens.$animation-time;
+      }
+
+      > span {
+        line-height: $icon-size;
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        color: colors.$subtitle;
+        font-weight: 400;
+        letter-spacing: 0;
+        font-family: "Roboto", sans-serif;
+        transition: color screens.$animation-time;
+      }
+
+      &.active {
+        > mat-icon {
+          color: colors.$color_1;
+        }
+
+        > span {
+          color: colors.$color_1;
+        }
+      }
+    }
+
+    > ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+    }
+  }
+}
+
+// Пункты меню
+.menu-list {
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  user-select: none;
+
+  // Пункт меню
+  &__item {
+    $__elm: &;
+    list-style-type: none;
+    display: block;
+
+    // Ссылка
+    &-link {
+      position: relative;
+      font-weight: 300;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: colors.$subtitle-dark;
+      display: block;
+      transition: background-color screens.$animation-time;
+
+      // Текст
+      > span {
+        z-index: 1;
+        position: relative;
+        font-size: inherit;
+      }
+
+      // Активный элемент
+      &.active #{$__elm}-line {
+        background-color: colors.$main-menu-item-active-line;
+      }
+
+      // Наведенный элемент
+      &:hover {
+        background-color: colors.$main-menu-item-hover-line;
+
+        #{$__elm}-line {
+          background-color: transparent;
+        }
+      }
+    }
+
+    // Линия
+    &-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: colors.$main-menu-item-line;
+      z-index: 0;
+      transition: background-color screens.$animation-time;
+    }
+  }
+}
+
+// Плавающая кнопка
+.floating-button,
+.back-button,
+.menu-button,
+.to-content-button {
+  $__elm: &;
+  overflow: hidden;
+  display: block;
+  border-radius: 50%;
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+
+  > mat-icon {
+    font-size: inherit;
+    line-height: inherit;
+    width: inherit;
+    height: inherit;
+    position: relative;
+    z-index: 1;
+    color: colors.$title-dark;
+  }
+
+  &__overlay {
+    display: block;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    background-color: colors.$color_1;
+    z-index: 0;
+  }
+
+  &,
+  &__overlay {
+    transition: background-color screens.$animation-time;
+  }
+
+  &:hover #{$__elm}__overlay {
+    background-color: colors.$color_2;
+  }
+}
+
+// Кнопки назад и меню
+.back-button,
+.menu-button {
+  $size: 60px;
+
+  font-size: 44px;
+  line-height: $size;
+  width: $size;
+  height: $size;
+  border-radius: 0;
+  position: absolute;
+  left: 0;
+}
+
+// Кнопка назад
+.back-button {
+  > mat-icon {
+    transform: scale(1.5);
+  }
+}
+
+// Кнопка до контента
+.to-content-button {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}

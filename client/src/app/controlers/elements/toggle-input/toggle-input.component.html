@@ -1,0 +1,10 @@
+
+<mat-form-field [appearance]="appearance">
+  <mat-label>{{label}}</mat-label>
+  <div class="values"><span class="values__label {{control.value?'':'select'}}" (click)="control.setValue(false)">{{values[0]}}</span>
+    <div class="values__toggle">
+      <mat-slide-toggle #toggle="" color="primary" [formControl]="control"></mat-slide-toggle>
+    </div><span class="values__label {{control.value?'select':''}}" (click)="control.setValue(true)">{{values[1]}}</span>
+  </div>
+  <input matInput="" hidden="" [formControl]="control" type="text"/>
+</mat-form-field>

@@ -1,0 +1,12 @@
+<div class="captcha" #container style.height="{{layoutHeight}}px">
+  <div
+    class="captcha-overlay"
+    style.transform="scale({{scale}})"
+    style.width="{{baseWidth}}px"
+  >
+    <re-captcha
+      [siteKey]="siteKey"
+      (resolved)="onResolved($event)"
+    ></re-captcha>
+  </div>
+</div>

@@ -1,0 +1,175 @@
+<div id="mainMenuCollapsedHelperBefore"></div>
+
+<div class="main-menu {{ class }} type-{{ type }}"
+     [style]="css.menu">
+  <!-- Задний фон -->
+  <div class="main-menu__layer back">
+    <!-- Градиент -->
+    <div class="main-menu__layer-gradient type-{{ type }}"
+         *ngIf="type == 'full'">
+      <app-main-background></app-main-background>
+    </div>
+    <!-- Картинка -->
+    <div class="main-menu__layer-image type-{{ type }}"
+         *ngIf="image">
+      <img [src]="image" />
+    </div>
+    <!-- Заливка цветом -->
+    <div class="main-menu__layer-fill"
+         [style]="css.header"></div>
+  </div>
+  <!-- Средний фон -->
+  <div class="main-menu__layer content">
+    <!-- Все содержимое -->
+    <div class="main-menu__layer-container container">
+      <!-- Слой слева -->
+      <div class="main-menu__layer-container_left {{backButtonLink? 'has-back-button': ''}}">
+        <!-- Кнопка назад -->
+        <div class="back-button"
+             [style]="css.backButton"
+             [routerLink]="backButtonLink"
+             [queryParams]="backButtonLinkParams"
+             *ngIf="backButtonLink"
+             unselectable="on">
+          <mat-icon>chevron_left</mat-icon>
+        </div>
+        <!-- Вызов главного меню -->
+        <div class="menu-button"
+             [style]="css.backButton"
+             *ngIf="isMobile() && !backButtonLink"
+             (click)="toggleMobileMenu(1)"
+             unselectable="on">
+          <mat-icon>menu</mat-icon>
+        </div>
+        <!-- Заголовок -->
+        <div class="main-menu__title"
+             [style]="css.title"
+             *ngIf="title">{{title}}</div>
+        <!-- Подзаголовок -->
+        <div class="main-menu__subtitle"
+             [style]="css.subtitle"
+             *ngIf="subTitle">{{subTitle}}</div>
+      </div>
+      <!-- Слой посередине -->
+      <div class="main-menu__layer-container_center">
+        <!-- Пункты главного меню -->
+        <nav *ngIf="!isMobile()">
+          <ul class="menu-list"
+              [style]="css.menuList">
+            <li class="menu-list__item"
+                *ngFor="let item of menuItems">
+              <a class="menu-list__item-link"
+                 [style]="css.menuItem"
+                 [routerLink]="item.link"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{ exact: true }"
+                 *ngIf="item.link">
+                <span>{{item.text}}</span>
+                <div class="menu-list__item-line"
+                     [style]="css.menuItemLine"></div>
+              </a>
+
+              <div class="menu-list__item-link"
+                   [style]="css.menuItem"
+                   *ngIf="!item.link">
+                <span>{{item.text}}</span>
+                <div class="menu-list__item-line"
+                     [style]="css.menuItemLine"></div>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Слой справа -->
+      <div class="main-menu__layer-container_right"
+           *ngIf="floatButtonCallback || floatButtonLink">
+        <div class="floating-button"
+             [style]="css.floatingButton"
+             *ngIf="floatButtonCallback"
+             (click)="floatButtonCallback ()">
+          <div class="floating-button__overlay"
+               [style]="css.floatingButtonOverlay"></div>
+          <mat-icon>{{floatButtonIcon}}</mat-icon>
+        </div>
+        <a class="floating-button"
+           [style]="css.floatingButton"
+           *ngIf="floatButtonLink"
+           [routerLink]="floatButtonLink"
+           [queryParams]="floatButtonLinkParams">
+          <div class="floating-button__overlay"
+               [style]="css.floatingButtonOverlay"></div>
+          <mat-icon>{{floatButtonIcon}}</mat-icon>
+        </a>
+      </div>
+    </div>
+    <!-- Кнопка вниз -->
+    <a class="to-content-button"
+       [style]="css.toContentButton"
+       (click)="collapseMenu()"
+       *ngIf="type=='full' && !hideToContentButton">
+      <mat-icon>expand_more</mat-icon>
+    </a>
+  </div>
+  <!-- Передний фон -->
+  <div class="main-menu__layer front">
+    <div class="mobile-menu {{showMobileMenu?'show':''}}"
+         *ngIf="isMobile()">
+      <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
+           (click)="toggleMobileMenu(-1)"></div>
+      <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">
+        <!-- Информация о странице -->
+        <div class="mobile-menu__info">
+          <!-- Картинка -->
+          <div class="mobile-menu__info-image type-{{ type }}"
+               *ngIf="image">
+            <img [src]="image" />
+          </div>
+          <!-- Заголовок -->
+          <div class="mobile-menu__info-title"
+               *ngIf="title">{{title}}</div>
+          <!-- Подзаголовок -->
+          <div class="mobile-menu__info-subtitle"
+               *ngIf="subTitle">{{subTitle}}</div>
+          <!-- Закрытие меню -->
+          <div class="mobile-menu__info-close"
+               (click)="toggleMobileMenu(-1)"
+               unselectable="on">
+            <mat-icon>close</mat-icon>
+          </div>
+        </div>
+        <!-- Пункты главного меню -->
+        <nav class="mobile-menu__list">
+          <ul>
+            <li class="mobile-menu__list-item"
+                *ngFor="let item of menuItems">
+              <a class="mobile-menu__list-link"
+                 [routerLink]="item.link"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{ exact: true }"
+                 *ngIf="item.link">
+                <mat-icon>{{item.icon}}</mat-icon>
+                <span>{{item.text}}</span>
+              </a>
+
+              <div class="mobile-menu__list-link"
+                   *ngIf="!item.link">
+                <mat-icon>{{item.icon}}</mat-icon>
+                <span>{{item.text}}</span>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Вспомогательный блок для коррекции контента -->
+<div class="main-menu {{ class }} type-{{ type }} helper"
+     [style]="css.helper"></div>
+<div id="mainMenuCollapsedHelperAfter"></div>
+
+<!-- Скролл страницы -->
+<app-scroll [styles]="css.scroll"
+            [breakpointMobile]="breakpointMobile"
+            [headerHeight]="headerHeight"></app-scroll>

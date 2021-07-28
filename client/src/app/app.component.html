@@ -1,0 +1,11 @@
+<router-outlet></router-outlet>
+<div class="preloader" *ngIf="showPreloader">
+  <div class="preloader__background">
+    <app-main-background></app-main-background>
+  </div>
+  <div class="preloader__content">
+    <div class="preloader__content-image"></div>
+    <div class="preloader__content-title">Загрузка страницы</div>
+    <div class="preloader__content-desc">Пожалуйста подождите</div>
+  </div>
+</div>

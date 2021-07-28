@@ -1,0 +1,50 @@
+@use "../../../../assets/styles/screens";
+
+$back_1: #3d35ce;
+$back_2: #934ae8;
+
+$shape_1: #615cfd;
+$shape_2: #6c4fef;
+$shape_3: #b657ec;
+$shape_4: rgba(255, 255, 255, 0.05);
+
+$shape_size: 1vw;
+$shape_blur: 12vw;
+$shape_4_size: 18vw;
+
+$shape_size_mobile: 8px;
+$shape_blur_mobile: 170px;
+$shape_4_size_mobile: 190px;
+
+:host {
+  position: absolute;
+  inset: 0;
+
+  @include screens.adaptive(small) {
+    background: radial-gradient(circle at 20% 40%, $shape_1 $shape_size, transparent ($shape_size + $shape_blur)),
+      radial-gradient(circle at 50% 70%, $shape_2 $shape_size, transparent ($shape_size + $shape_blur)),
+      radial-gradient(circle at 80% 80%, $shape_3 $shape_size, transparent ($shape_size + $shape_blur)),
+      radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size, transparent $shape_4_size),
+      linear-gradient(to right, $back_1 0, $back_2 100%);
+  }
+
+  @include screens.adaptive(auto, small) {
+    background: radial-gradient(
+        circle at 20% 40%,
+        $shape_1 $shape_size_mobile,
+        transparent ($shape_size_mobile + $shape_blur_mobile)
+      ),
+      radial-gradient(
+        circle at 50% 70%,
+        $shape_2 $shape_size_mobile,
+        transparent ($shape_size_mobile + $shape_blur_mobile)
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        $shape_3 $shape_size_mobile,
+        transparent ($shape_size_mobile + $shape_blur_mobile)
+      ),
+      radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size_mobile, transparent $shape_4_size_mobile),
+      linear-gradient(to right, $back_1 0, $back_2 100%);
+  }
+}

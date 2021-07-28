@@ -1,0 +1,11 @@
+.layout(#layout="", [style] = "styles", *ngIf != "scrollActive && !isMobile")
+  .button.top((mousedown) = "onButtonMouseDown(-1, true)")
+  .track(#track="")
+    .slider(
+      #slider="",
+      class="{{sliderMousePress? 'hover': ''}}",
+      [style.margin-top]="sliderPosition+'px'",
+      [style.height]="sliderHeight+'px'",
+      (mousedown)="onSliderMouseDown($event)"
+    )
+  .button.bottom((mousedown) = "onButtonMouseDown(1, true)")

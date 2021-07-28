@@ -1,0 +1,44 @@
+@use "../../../../assets/styles/material";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+
+// Обертка поля
+@include material.mat-form-field() {
+  cursor: pointer;
+  user-select: none;
+}
+
+// Поле
+.values {
+  $size: 60px;
+
+  display: grid;
+  grid-template-columns: 1fr #{$size} 1fr;
+  align-items: center;
+  grid-gap: 0 15px;
+  width: 100%;
+
+  // Подпись
+  &__label {
+    text-align: center;
+    font-weight: 400;
+    font-size: 15px;
+    color: colors.$title;
+    transition: color #{screens.$animation-time};
+
+    &:first-child {
+      text-align: center;
+    }
+
+    &.select {
+      color: colors.$color_1;
+    }
+  }
+
+  // Переключатель
+  &__toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

@@ -1,0 +1,38 @@
+<app-main-menu
+  [autoCollapse]="true"
+  type="collapse"
+  title="Вход на сайт"
+  subTitle="Online Dreams Map"
+  backButtonLink="/"
+  floatButtonIcon="person_add"
+  floatButtonLink="/register"
+></app-main-menu>
+
+
+
+
+
+<div class="root-section">
+  <div class="container">
+    <app-card title="Авторизация на сайте">
+      <!-- Контент -->
+      <ng-container content>
+        <form [formGroup]="form">
+          <!-- Логин -->
+          <app-text-input label="Логин" formControlName="login" [errors]="errors.login" [maxLength]="loginMaxLength"></app-text-input>
+          <!-- Пароль -->
+          <app-text-input label="Пароль" formControlName="password" [errors]="errors.password" [maxLength]="passwordMaxLength" type="password"></app-text-input>
+          <!-- Восстановление пароля -->
+          <div class="restore">
+            <a routerLink="/restore">Забыли пароль?</a>
+          </div>
+        </form>
+      </ng-container>
+      <!-- Действия -->
+      <ng-container actions>
+        <a mat-flat-button color="primary" (click)="tryLogin()">Вход</a>
+        <a mat-stroked-button color="basic" routerLink="/register">Регистрация</a>
+      </ng-container>
+    </app-card>
+  </div>
+</div>

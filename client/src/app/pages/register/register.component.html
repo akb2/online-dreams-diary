@@ -1,0 +1,138 @@
+<app-main-menu [autoCollapse]="true"
+               type="collapse"
+               title="Регистрация на сайте"
+               subTitle="Online Dreams Map"
+               backButtonLink="/"
+               floatButtonIcon="lock"
+               floatButtonLink="/auth"></app-main-menu>
+
+
+
+
+
+<div class="root-section">
+  <form class="container">
+    <mat-tab-group dynamicHeight
+                   [(selectedIndex)]="step">
+
+      <!-- Данные входа -->
+      <mat-tab>
+        <div class="card__layout">
+          <app-card title="Данные для входа">
+            <!-- Контент -->
+            <form content
+                  [formGroup]="form[0]">
+              <!-- Логин -->
+              <app-text-input required
+                              label="Логин"
+                              formControlName="login"
+                              [errors]="errors.login"
+                              [maxLength]="loginMaxLength"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+              <!-- Пароль -->
+              <app-text-input required
+                              label="Пароль"
+                              formControlName="password"
+                              [errors]="errors.password"
+                              [maxLength]="passwordMaxLength"
+                              type="password"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+              <!-- Подтверждение пароля -->
+              <app-text-input required
+                              label="Подтвердите пароль"
+                              formControlName="confirmPassword"
+                              [errors]="errors.confirmPassword"
+                              [maxLength]="passwordMaxLength"
+                              type="password"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+            </form>
+            <!-- Действия -->
+            <ng-container actions>
+              <a mat-flat-button
+                 color="primary"
+                 (click)="nextStep()">Далее</a>
+            </ng-container>
+          </app-card>
+        </div>
+      </mat-tab>
+
+      <!-- Сведения -->
+      <mat-tab>
+        <div class="card__layout">
+          <app-card title="Немного о вас">
+            <!-- Контент -->
+            <form content
+                  [formGroup]="form[1]">
+              <!-- Имя -->
+              <app-text-input required
+                              label="Ваше имя"
+                              formControlName="name"
+                              [errors]="errors.name"
+                              [maxLength]="nameMaxLength"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+              <!-- Фамилия -->
+              <app-text-input required
+                              label="Ваша фамилия"
+                              formControlName="lastName"
+                              [errors]="errors.lastName"
+                              [maxLength]="nameMaxLength"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+              <!-- Дата рождения -->
+              <app-text-input required
+                              type="date"
+                              label="Ваш день рождения"
+                              formControlName="birthDate"
+                              [errors]="errors.birthDate"
+                              [minDate]="ageToDate(birthDateMaxAge)"
+                              [maxDate]="ageToDate(birthDateMinAge)"></app-text-input>
+              <!-- Пол -->
+              <app-toggle-input label="Ваш пол"
+                                [values]="['Мужской','Женский']"
+                                formControlName="sex"></app-toggle-input>
+            </form>
+            <!-- Действия -->
+            <ng-container actions>
+              <a mat-stroked-button
+                 color="basic"
+                 (click)="prevStep()">Назад</a>
+              <a mat-flat-button
+                 color="primary"
+                 (click)="nextStep()">Далее</a>
+            </ng-container>
+          </app-card>
+        </div>
+      </mat-tab>
+
+      <!-- Контакты -->
+      <mat-tab>
+        <div class="card__layout">
+          <app-card title="Ваши контакты">
+            <!-- Контент -->
+            <form content
+                  [formGroup]="form[2]">
+              <!-- Почта -->
+              <app-text-input required
+                              label="Электронная почта"
+                              type="email"
+                              formControlName="email"
+                              [errors]="errors.email"
+                              [maxLength]="emailMaxLength"
+                              (keyup)="onKeySubmit($event)"></app-text-input>
+              <!-- Капча -->
+              <app-recaptcha (resolvedCallback)="captchaResolved($event)"></app-recaptcha>
+            </form>
+            <!-- Действия -->
+            <ng-container actions>
+              <a mat-stroked-button
+                 color="basic"
+                 (click)="prevStep()">Назад</a>
+              <a mat-flat-button
+                 color="primary"
+                 (click)="nextStep()">Регистрация</a>
+            </ng-container>
+          </app-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </form>
+</div>

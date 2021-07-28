@@ -1,0 +1,37 @@
+@use "sass:map";
+@use "./screens";
+
+$width: (
+  xsmall: 600px,
+  small: 600px,
+  middle: 900px,
+  large: 1200px,
+  xlarge: 1600px,
+);
+$paddings-y: (
+  xsmall: 15px,
+  small: 15px,
+  middle: 30px,
+  large: 45px,
+  xlarge: 60px,
+);
+
+.container {
+  $styles: (
+    width: $width,
+    padding-top: $paddings-y,
+    padding-bottom: $paddings-y,
+  );
+
+  margin: 0 auto;
+  max-width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  // Цикл по размерам
+  @each $property, $style in $styles {
+    @include screens.adaptiveFor($style) using ($value) {
+      #{$property}: $value;
+    }
+  }
+}
