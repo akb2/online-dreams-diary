@@ -13,7 +13,7 @@ class DataBase
   private string $host = "localhost";
   private string $db_name = "dream_db";
   private string $username = "api_user";
-  private string $password = "Jdi302_kfjn3ndkKkds";
+  private string $password = "super-secret-password";
   public PDO $pdo;
 
 
