@@ -10,10 +10,10 @@ use PDOException;
 class DataBase
 {
 
-  private string $host = "localhost";
-  private string $db_name = "dream_db";
-  private string $username = "api_user";
-  private string $password = "Lslqk9328k-92Ksk2_sdsl2";
+  private string $host = "**Сервер**";
+  private string $db_name = "**Таблица**";
+  private string $username = "**Пользователь**";
+  private string $password = "**Пароль**";
   public PDO $pdo;
 
 
