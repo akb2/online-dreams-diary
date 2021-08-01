@@ -36,23 +36,23 @@ export class ScreenService {
 
 
   // Определить брейкпоинт
-  public getBreakpoint ( resolution: number ): string {
+  public getBreakpoint(resolution: number): string {
     let breakpoint: string = "default";
 
-    for ( let key in this.breakpoints ) {
-      breakpoint = this.getMin( key ) < resolution && this.getMax( key ) >= resolution ? key : breakpoint;
+    for (let key in this.breakpoints) {
+      breakpoint = this.getMin(key) < resolution && this.getMax(key) >= resolution ? key : breakpoint;
     }
 
     return breakpoint;
   }
 
   // Минимальное разрешение
-  public getMin ( screen: string ): number {
+  public getMin(screen: string): number {
     let result = this.breakpoints.default;
-    let test = this.getMax( screen );
+    let test = this.getMax(screen);
 
-    for ( let key in this.breakpoints ) {
-      let resolution: number = this.breakpoints[ key ];
+    for (let key in this.breakpoints) {
+      let resolution: number = this.breakpoints[key];
       result = result < resolution && test > resolution ? resolution : result;
     }
 
@@ -60,14 +60,17 @@ export class ScreenService {
   }
 
   // Максимальное разрешение
-  public getMax ( screen: string ): number {
-    return this.breakpoints[ screen ] ? this.breakpoints[ screen ] : this.breakpoints.default;
+  public getMax(screen: string): number {
+    return this.breakpoints[screen] ? this.breakpoints[screen] : this.breakpoints.default;
   }
 }
 
 
 
 
+
+// Ключи названий экранов
+export type ScreenKeys = "default" | "xsmall" | "small" | "middle" | "large" | "xlarge";
 
 // Тип данных для размеров экрана
 export interface ScreenBreakpoints {
