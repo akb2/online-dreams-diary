@@ -1,5 +1,6 @@
 <router-outlet></router-outlet>
-<div class="preloader" *ngIf="showPreloader">
+<div class="preloader"
+     *ngIf="showPreloader && validToken">
   <div class="preloader__background">
     <app-main-background></app-main-background>
   </div>
