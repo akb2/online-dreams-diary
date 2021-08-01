@@ -30,7 +30,7 @@ export class SnackbarService {
     const actionMsg: string = action || "Закрыть";
 
     this.snackBar.open(message, actionMsg, {
-      duration: message.length * 100,
+      duration: message.length * 300,
       horizontalPosition: "right",
       verticalPosition: "bottom",
       ...(mode && { panelClass: `snackbar-${mode}` })
