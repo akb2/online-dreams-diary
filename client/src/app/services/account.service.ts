@@ -26,10 +26,9 @@ export class AccountService {
 
   private baseUrl: string = environment.baseUrl;
   private httpHeader: { [key: string]: string } = environment.httpHeader;
-  private authTryCount: number = 0;
 
   private cookieKey: string = "account_service_";
-  private cookieLifeTime: number = 60 * 60 * 24 * 30;
+  private cookieLifeTime: number = 36000;
   public token: string = "";
 
   // Конструктор
