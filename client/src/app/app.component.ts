@@ -38,6 +38,24 @@ export class AppComponent {
     private snackBar: SnackbarService,
     private apiService: ApiService
   ) {
+    // События старта и окочания лоадера
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.beforeLoadPage();
+      }
+
+      else if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
+        this.afterLoadPage();
+      }
+    });
+  }
+
+
+
+
+
+  // Действия перед загрузкой страницы
+  private beforeLoadPage(): void {
     // Пользователь авторизован, проверить токен
     if (this.accountService.checkAuth) {
       this.accountService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
@@ -61,24 +79,7 @@ export class AppComponent {
     else {
       this.validToken = true;
     }
-    // События старта и окочания лоадера
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationStart) {
-        this.beforeLoadPage();
-      }
-
-      else if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
-        this.afterLoadPage();
-      }
-    });
-  }
-
-
-
-
-
-  // Действия перед загрузкой страницы
-  private beforeLoadPage(): void {
+    // Прелоадер
     const showPreloader: boolean = !(this.router.getCurrentNavigation()?.extras.state?.showPreLoader == false);
     if (showPreloader) {
       this.showPreloader = true;
