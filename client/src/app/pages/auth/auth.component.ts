@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
+import { AccountService } from "@_services/account.service";
 
 
 
@@ -26,12 +27,16 @@ export class AuthComponent implements OnInit {
   public passwordMinLength: number = 6;
   public passwordMaxLength: number = 50;
 
+  public loading: boolean = false;
+
 
 
 
 
   // Конструктор
-  constructor() {
+  constructor(
+    private accountService: AccountService
+  ) {
     this.form = new FormGroup({
       login: new FormControl(null, [
         Validators.required,
@@ -79,6 +84,17 @@ export class AuthComponent implements OnInit {
     if (this.form.valid) {
       const login: string = this.form.get("login").value;
       const password: string = this.form.get("password").value;
+      this.loading = true;
+      // Авторизация
+      this.accountService.auth(login, password).subscribe(
+        code => {
+          this.loading = false;
+          // Успешная авторизация
+          if (code == "0001") {
+          }
+        },
+        () => this.loading = false
+      );
     }
 
     // Есть ошибки

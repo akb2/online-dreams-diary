@@ -7,6 +7,7 @@ import { MainBackgroundModule } from '@_controlers/main-background/main-backgrou
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from "./app-routing.module";
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 
 
@@ -21,7 +22,8 @@ import { AppRoutingModule } from "./app-routing.module";
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    MainBackgroundModule
+    MainBackgroundModule,
+    MatSnackBarModule
   ],
   bootstrap: [
     AppComponent

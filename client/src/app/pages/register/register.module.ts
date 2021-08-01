@@ -10,6 +10,7 @@ import { TextInputModule } from "@_controlers/text-input/text-input.module";
 import { ToggleInputModule } from "@_controlers/toggle-input/toggle-input.module";
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { AppRecaptchaModule } from "@_controlers/app-recaptcha/app-recaptcha.module";
+import { InformModule } from "@_controlers/inform/inform.module";
 
 import { RegisterRoutingModule } from "./register-routing.module";
 import { RegisterComponent } from "./register.component";
@@ -23,6 +24,7 @@ import { RegisterComponent } from "./register.component";
     RegisterComponent
   ],
   imports: [
+    CommonModule,
     CoreModule,
     RegisterRoutingModule,
     MatButtonModule,
@@ -32,9 +34,9 @@ import { RegisterComponent } from "./register.component";
     ToggleInputModule,
     FormsModule,
     ReactiveFormsModule,
-    CommonModule,
     NavMenuModule,
-    AppRecaptchaModule
+    AppRecaptchaModule,
+    InformModule
   ]
 })
 

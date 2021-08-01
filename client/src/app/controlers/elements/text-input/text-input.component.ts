@@ -26,9 +26,22 @@ export class TextInputComponent extends BaseInputDirective {
   @Input() public minDate: Date;
   @Input() public maxDate: Date;
 
+  @Output() public submitCallback: EventEmitter<void> = new EventEmitter<void>();
+
   @ViewChild("input") input: ElementRef;
 
   public showPassword: boolean = false;
+
+
+
+
+
+  // Нажатие на кнопки клавиатуры
+  public onKeyup(event: KeyboardEvent): void {
+    if (event.key === "Enter" || event.key === "NumpadEnter") {
+      this.submitCallback.emit();
+    }
+  }
 
 
 

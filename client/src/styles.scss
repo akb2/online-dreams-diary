@@ -1,6 +1,7 @@
 @use '~@angular/material' as mat;
 @use "./assets/styles/colors";
 @use "./assets/styles/containers";
+@use "./assets/styles/material";
 
 @include mat.core();
 $mat-theme: mat.define-light-theme(
@@ -55,6 +56,9 @@ html {
     font-family: Roboto, "Helvetica Neue", sans-serif;
   }
 }
+
+// Всплывающие элементы
+@include material.mat-snack-bar;
 
 // Выделение элементов
 *[unselectable="on"] {

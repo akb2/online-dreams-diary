@@ -8,6 +8,8 @@ import { LocalStorage } from "@app/services/local-storage.service";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
+import { ApiService } from "@_services/api.service";
+import { SnackbarService } from "@_services/snackbar.service";
 
 
 
@@ -33,7 +35,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   public step: number = 0;
   private cookieKey: string = "register_form_data_";
-  private cookieLifeTime: number = 60 * 60 * 24 * 356;
+  private cookieLifeTime: number = 60 * 30 * 10000000000;
+  public loading: boolean = false;
+  public registed: boolean = false;
+  public registerEmail: string;
 
   public loginMinLength: number = 4;
   public loginMaxLength: number = 24;
@@ -56,7 +61,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private localStorage: LocalStorage,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private apiService: ApiService,
+    private snackbarService: SnackbarService
   ) {
     // Кукис
     this.localStorage.cookieKey = this.cookieKey;
@@ -66,6 +73,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.form = [
       // Данные входа
       this.formBuilder.group({
+        testLogin: [[], null],
         login: [this.localStorage.getCookie("login"), [
           Validators.required,
           Validators.minLength(this.loginMinLength),
@@ -84,7 +92,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
         ]]
       }, {
         validators: [
-          CustomValidators.passwordMatchValidator
+          CustomValidators.passwordMatchValidator,
+          CustomValidators.uniqueLoginData
         ]
       }),
       // Сведения
@@ -110,6 +119,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       }),
       // Контакты
       this.formBuilder.group({
+        testEmail: [[], null],
         email: [this.localStorage.getCookie("email"), [
           Validators.required,
           Validators.email,
@@ -117,6 +127,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
           Validators.maxLength(this.emailMaxLength)
         ]],
         captcha: ["", Validators.required]
+      }, {
+        validators: [
+          CustomValidators.uniqueEmailData
+        ]
       })
     ];
 
@@ -126,7 +140,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
         required: "Введите логин",
         minlength: `Минимум ${this.loginMinLength} символа`,
         maxlength: `Максимум ${this.loginMaxLength} символа`,
-        pattern: "Допустимы только цифры, латиница, тире и подчеркивание"
+        pattern: "Допустимы только цифры, латиница, тире и подчеркивание",
+        noUniqueLogin: "Такой логин уже используется"
       },
       password: {
         required: "Введите пароль",
@@ -143,7 +158,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
         required: "Введите актуальную почту",
         email: "Введите корректный адрес почты",
         minlength: `Минимум ${this.emailMinLength} символа`,
-        maxlength: `Максимум ${this.emailMaxLength} символа`
+        maxlength: `Максимум ${this.emailMaxLength} символа`,
+        noUniqueEmail: "Эта почта уже используется"
       },
       name: {
         required: "Введите ваше имя",
@@ -159,6 +175,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       },
       birthDate: {
         required: `Укажите возраст в пределе ${this.birthDateMinAge} - ${this.birthDateMaxAge} лет`
+      },
+      captcha: {
+        required: `Пройдите капчу`
       }
     };
   }
@@ -232,6 +251,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Форма без ошибок
     if (this.form.every(group => group.valid)) {
       const birthDate: Date = new Date(this.form[1].get("birthDate").value);
+      this.loading = true;
       // Данные для регистрации пользователя
       const userRegister: UserRegister = {
         login: this.form[0].get("login").value,
@@ -244,9 +264,54 @@ export class RegisterComponent implements OnInit, OnDestroy {
         captcha: this.form[2].get("captcha").value
       };
       // Регистрация
-      this.accountService.register(userRegister).subscribe(code => {
-        console.log(code);
-      });
+      this.accountService.register(userRegister).subscribe(
+        code => {
+          this.loading = false;
+          this.form[2].get("captcha").setValue(null);
+          // Успешная регистрация
+          if (code == "0001") {
+            this.registed = true;
+            this.registerEmail = userRegister.email;
+            // Удалить данные из кэша
+            this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorage.deleteCookie(key)));
+          }
+          // Ошибки регистрации
+          else {
+            // Ошибка логина
+            if (code == "9011") {
+              const testLogin: string[] = this.form[0].get("testLogin").value;
+              if (testLogin.every(login => login !== userRegister.login)) {
+                testLogin.push(userRegister.login);
+                this.setStep(0);
+              }
+            }
+            // Ошибка почты
+            else if (code == "9012") {
+              const testEmail: string[] = this.form[2].get("testEmail").value;
+              if (testEmail.every(email => email !== userRegister.email)) {
+                testEmail.push(userRegister.email);
+                this.setStep(2);
+              }
+            }
+            // Ошибка капчи
+            else if (code == "9010") {
+              this.form[2].get("captcha").setValue(null);
+              this.setStep(2);
+            }
+            // Вызвать уведомление с ошибкой
+            else {
+              this.snackbarService.open({
+                message: this.apiService.getMessageByCode(code),
+                mode: "error"
+              });
+            }
+          }
+        },
+        () => {
+          this.loading = false;
+          this.form[2].get("captcha").setValue(null);
+        }
+      );
     }
 
     // Есть ошибки
@@ -265,7 +330,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Следующая форма
     if (this.step < this.form.length - 1 && this.form[this.step].valid) {
       this.step++;
-      setTimeout(() => this.appRecaptchaComponent.calculateWidth());
+      // Если есть капча
+      if (this.step == 2) {
+        setTimeout(() => this.appRecaptchaComponent.calculateWidth());
+      }
     }
     // Отправка формы
     else if (this.step === this.form.length - 1 && this.form[this.step].valid) {
@@ -282,6 +350,25 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Предыдущая форма
     if (this.step > 0) {
       this.step--;
+    }
+  }
+
+  // Установить конкретный шаг
+  private setStep(step: number): void {
+    const maxStep: number = Math.min(step, this.form.length - 1);
+    for (let iStep = 0; iStep <= maxStep; iStep++) {
+      // Проверяем валидны ли предыдущие шаги
+      if (this.form[iStep].valid) {
+        if (iStep == maxStep) {
+          this.step = maxStep;
+          this.form[this.step].markAllAsTouched();
+        }
+      }
+      // Находим первую ошибку
+      else {
+        this.step = iStep;
+        this.form[this.step].markAllAsTouched();
+      }
     }
   }
 
@@ -305,6 +392,7 @@ interface FormErrors {
   name?: FormErrorsKeys;
   lastName?: FormErrorsKeys;
   birthDate?: FormErrorsKeys;
+  captcha?: FormErrorsKeys;
 }
 
 // Ключи ошибок
@@ -315,7 +403,10 @@ interface FormErrorsKeys {
   minlength?: string;
   maxlength?: string;
   noPassswordMatch?: string;
+  noUniqueLogin?: string;
+  noUniqueEmail?: string;
   agevalidator?: string;
+  captcha?: string;
 }
 
 // Данные формы

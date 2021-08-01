@@ -1,4 +1,6 @@
-import { Component, Output, EventEmitter, HostListener, ViewChild, ElementRef, OnInit } from "@angular/core";
+import { Component, ViewChild, ElementRef, OnInit, OnDestroy, Input } from "@angular/core";
+import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { BaseInputDirective } from "@_directives/base-input.directive";
 
 
 
@@ -14,10 +16,8 @@ import { Component, Output, EventEmitter, HostListener, ViewChild, ElementRef, O
 
 
 
-export class AppRecaptchaComponent implements OnInit {
+export class AppRecaptchaComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
-
-  @Output() public resolvedCallback: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('container') layout: ElementRef;
 
@@ -26,7 +26,7 @@ export class AppRecaptchaComponent implements OnInit {
   public scale: number = 0;
   public baseWidth: number = 304;
   public baseHeight: number = 78;
-  private layoutWidth: number = 0;
+  public layoutWidth: number = 0;
   public layoutHeight: number = 0;
 
 
@@ -35,16 +35,26 @@ export class AppRecaptchaComponent implements OnInit {
 
   // Конструктор
   public ngOnInit(): void {
+    window.addEventListener("resize", this.onResize.bind(this), true);
     setTimeout(() => this.calculateWidth());
+  }
+
+  // Конец класса
+  public ngOnDestroy(): void {
+    window.removeEventListener("resize", this.onResize.bind(this), true);
   }
 
   // Капча пройдена
   public onResolved(code: string): void {
-    this.resolvedCallback.emit(code);
+    this.control.setValue(code);
+  }
+
+  // Капча непройдена
+  public onError(): void {
+    this.control.setValue(null);
   }
 
   // Изменение размеров экрана
-  @HostListener("window:resize", ["$event"])
   public onResize(event?: Event): void {
     this.calculateWidth();
   }

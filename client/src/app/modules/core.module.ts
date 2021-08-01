@@ -1,8 +1,9 @@
-import { NgModule } from "@angular/core";
+import { NgModule, LOCALE_ID } from "@angular/core";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
+import "@angular/common/locales/global/ru";
 
 
 
@@ -38,7 +39,8 @@ const modules = [
   ],
   providers: [
     DatePipe,
-    I18nPluralPipe
+    I18nPluralPipe,
+    { provide: LOCALE_ID, useValue: "ru" }
   ],
   exports: [
     ...modules,

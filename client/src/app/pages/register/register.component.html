@@ -12,8 +12,10 @@
 
 <div class="root-section">
   <form class="container">
+    <!-- Форма регистрации -->
     <mat-tab-group dynamicHeight
-                   [(selectedIndex)]="step">
+                   [(selectedIndex)]="step"
+                   *ngIf="!loading && !registed">
 
       <!-- Данные входа -->
       <mat-tab>
@@ -119,7 +121,8 @@
                               [maxLength]="emailMaxLength"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Капча -->
-              <app-recaptcha (resolvedCallback)="captchaResolved($event)"></app-recaptcha>
+              <app-recaptcha formControlName="captcha"
+                             [errors]="errors.captcha"></app-recaptcha>
             </form>
             <!-- Действия -->
             <ng-container actions>
@@ -134,5 +137,17 @@
         </div>
       </mat-tab>
     </mat-tab-group>
+    <!-- Загрузка регистрации -->
+    <app-inform *ngIf="loading"
+                title="Регистрация"
+                subTitle="Пожалуйста подождите"></app-inform>
+    <!-- Окончание регистрации -->
+    <app-inform *ngIf="registed"
+                icon="done"
+                title="Вы зарегистрированны"
+                [description]="
+                  'Мы отправили письмо для подтверждения вашей регистрации на - '+ registerEmail + '.' +
+                  'Обязательно перейдите по ссылке в письме для окончания регистрации'
+                "></app-inform>
   </form>
 </div>

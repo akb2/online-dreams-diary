@@ -44,6 +44,9 @@
         "src/app/controlers/viewers/*",
         "src/app/controlers/pop-ups/*"
       ],
+      "@_pipes/*": [
+        "src/app/pipes/*"
+      ],
       "@_environments/*": [
         "src/environments/*"
       ],

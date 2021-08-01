@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { CookieInterface } from "@_models/app";
 
 
 
@@ -15,7 +16,8 @@ import { Injectable } from "@angular/core";
 export class LocalStorage {
 
 
-  public cookieKey: string = "register_form_data_";
+  private systemCookieKey: string = "Online_Dreams_Diary_Cookie_key_";
+  public cookieKey: string = "";
   public cookieLifeTime: number = 30 * 60;
 
 
@@ -32,12 +34,12 @@ export class LocalStorage {
       expiry: now + (ttl * 1000),
     };
 
-    localStorage.setItem(this.cookieKey + key, JSON.stringify(item))
+    localStorage.setItem(this.systemCookieKey + this.cookieKey + key, JSON.stringify(item))
   }
 
   // Получить данные из куки
   public getCookie(key: string): string {
-    const itemStr: string = localStorage.getItem(this.cookieKey + key) as string;
+    const itemStr: string = localStorage.getItem(this.systemCookieKey + this.cookieKey + key) as string;
     const now: number = (new Date()).getTime();
 
     // Если есть запись
@@ -50,24 +52,19 @@ export class LocalStorage {
         }
         // Очистить куки
         else {
-          localStorage.removeItem(this.cookieKey + key);
+          this.deleteCookie(key);
         }
       }
       catch (e) {
-        localStorage.removeItem(this.cookieKey + key);
+        this.deleteCookie(key);
       }
     }
 
     return "";
   }
-}
 
-
-
-
-
-// Данные для Cookie
-interface CookieInterface {
-  value: string;
-  expiry: number;
+  // Удалить куки
+  public deleteCookie(key: string): void {
+    localStorage.removeItem(this.systemCookieKey + this.cookieKey + key);
+  }
 }

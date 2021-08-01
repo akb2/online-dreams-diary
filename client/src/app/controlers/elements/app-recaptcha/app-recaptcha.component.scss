@@ -1,3 +1,8 @@
+@use "../../../../assets/styles/material";
+
+// Обертка поля
+@include material.mat-form-field;
+
 // Общий блок
 .captcha {
   margin-top: 15px;
@@ -6,4 +11,14 @@
   &-overlay {
     transform-origin: 0 0;
   }
+
+  // Поле ввода
+  &__input {
+    display: none;
+  }
+}
+
+// Сообщение об ошибке
+.mat-error {
+  margin-top: 5px;
 }

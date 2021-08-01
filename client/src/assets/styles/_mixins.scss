@@ -12,3 +12,51 @@
 
   @return $return;
 }
+
+// Замена для INSET
+@mixin inset($top: none, $left: none, $bottom: none, $right: none) {
+  @if ($top == none and $left == none and $bottom == none and $right == none) {
+    $top: 0;
+    $left: 0;
+    $bottom: 0;
+    $right: 0;
+  } @else if ($left == none and $bottom == none and $right == none) {
+    $left: $top;
+    $bottom: $top;
+    $right: $top;
+  } @else if ($bottom == none and $right == none) {
+    $bottom: $top;
+    $right: $left;
+  } @else if ($right == none) {
+    $right: $bottom;
+  }
+
+  top: $top;
+  left: $left;
+  bottom: $bottom;
+  right: $right;
+}
+
+// Замена для множественного Margin
+@mixin margin($top: none, $left: none, $bottom: none, $right: none) {
+  @if ($top == none and $left == none and $bottom == none and $right == none) {
+    $top: 0;
+    $left: 0;
+    $bottom: 0;
+    $right: 0;
+  } @else if ($left == none and $bottom == none and $right == none) {
+    $left: $top;
+    $bottom: $top;
+    $right: $top;
+  } @else if ($bottom == none and $right == none) {
+    $bottom: $top;
+    $right: $left;
+  } @else if ($right == none) {
+    $right: $bottom;
+  }
+
+  margin-top: $top;
+  margin-left: $left;
+  margin-bottom: $bottom;
+  margin-right: $right;
+}

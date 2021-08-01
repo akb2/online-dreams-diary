@@ -1,23 +1,11 @@
 @use "../../../../assets/styles/material";
 
-
-
-
-
 // Обертка поля
 @include material.mat-form-field;
 
 // Поле ввода
 .mat-input-element {
   font-weight: 400;
-}
-
-// Сообщение об ошибке
-.mat-error {
-  font-size: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 // Иконка отображения пароля
@@ -33,7 +21,7 @@
   font-size: $size;
   margin-top: $height - $size;
 
-  >mat-icon {
+  > mat-icon {
     width: inherit;
     height: inherit;
     line-height: inherit;

@@ -39,19 +39,78 @@ class Account
   {
     $result = array(
       "deleteTable" => false,
+      "deleteTokensTable" => false,
       "createTable" => false,
-      "createAdmin" => hash("sha512", "test")
+      "createTokensTable" => false,
+      "createAdmin" => false,
     );
     // Проверить секретный пароль
     if ($data["password"] == $this->config["appPassword"]) {
       $dataBase = new DataBaseService($this->pdo);
       // Настройка таблиц
       $result["deleteTable"] = $dataBase->executeFromFile("account/deleteTable.sql");
+      $result["deleteTokensTable"] = $dataBase->executeFromFile("account/deleteTokensTable.sql");
       $result["createTable"] = $dataBase->executeFromFile("account/createTable.sql");
+      $result["createTokensTable"] = $dataBase->executeFromFile("account/createTokensTable.sql");
       $result["createAdmin"] = $dataBase->executeFromFile("account/createAdmin.sql");
     }
     // Результат работы функции
     return $result;
+  }
+
+  // Авторизация пользователя
+  public function auth($data)
+  {
+    $code = "9010";
+    $message = "";
+    $id = "";
+    $token = "";
+    $sqlData = array();
+    // Если получены данные
+    if (strlen($data["login"]) > 0 && strlen($data["password"]) > 0) {
+      $dataBase = new DataBaseService($this->pdo);
+      $code = "9013";
+      // Данные
+      $sqlData = array(
+        $data["login"],
+        hash("sha512", $this->config["hashSecret"] . $data["password"])
+      );
+      // Запрос авторизации
+      $auth = $dataBase->getDatasFromFile("account/auth.sql", $sqlData);
+      // Проверить авторизацию
+      if (count($auth) > 0) {
+        if (strlen($auth[0]["id"]) > 0) {
+          $id = $auth[0]["id"];
+          $token = hash("sha512", $this->config["hashSecret"] . $id . "_" . gmdate("U"));
+          // Сохранить токен
+          if ($dataBase->executeFromFile("account/createToken.sql", array($token, $id))) {
+            $code = "0001";
+          }
+          // Ошибка сохранения токена
+          else {
+            $code = "9014";
+          }
+        }
+      }
+      // Убрать метку пароля
+      //unset($sqlData[1]);
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array(
+        "id" => $id,
+        "token" => $token,
+        "input" => $sqlData,
+        "result" => $code == "0001"
+      )
+    );
   }
 
   // Регистрация пользователя
@@ -65,7 +124,7 @@ class Account
     // Если получены данные
     if (strlen($data["login"]) > 0 && strlen($data["email"]) > 0) {
       $dataBase = new DataBaseService($this->pdo);
-      $reCaptcha = new ReCaptchaService($data["captcha"]);
+      $reCaptcha = new ReCaptchaService($data["captcha"], $this->config);
       // Данные
       $sqlData = array(
         $data["login"],
@@ -85,6 +144,7 @@ class Account
         if (count($checkLogin) == 0) {
           // Регистрация пользователя
           if ($dataBase->executeFromFile("account/registerUser.sql", $sqlData)) {
+            // TODO: Добавить отправку письма на почту
             $code = "0001";
           }
           // Регистрация неудалась
@@ -107,15 +167,16 @@ class Account
           }
         }
       }
-      // Ошибка подключения
+      // Ошибка капчи
       else {
-        $code = "9020";
+        $code = "9010";
       }
     }
     // Получены пустые данные
     else {
       $code = "9030";
     }
+
     // Вернуть массив
     return array(
       "code" => $code,
