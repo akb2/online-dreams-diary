@@ -93,7 +93,7 @@ export class AppComponent {
   // Действия после загрузки страницы
   private afterLoadPage(): void {
     // Установка заголовка
-    const title: string = this.activatedRoute.firstChild.snapshot.data.title || "";
+    const title: string = this.activatedRoute?.firstChild?.snapshot?.data?.title || "";
     this.titleService.setTitle((title ? title + " | " : "") + this.mainTitle);
     // Отключение прелоадера
     setTimeout(timer => {
