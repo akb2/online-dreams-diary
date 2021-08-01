@@ -4,7 +4,8 @@ import { UserRegister } from "@_models/account";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { environment } from '@_environments/environment';
-import { ApiResponse, ApiResponseMessages } from "@_models/api";
+import { ApiResponse } from "@_models/api";
+import { LocalStorageService } from "@_services/local-storage.service";
 
 
 
@@ -25,9 +26,12 @@ export class AccountService {
   private httpHeader: { [key: string]: string } = environment.httpHeader;
   private authTryCount: number = 0;
 
+  public token: string = "";
+
   // Конструктор
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private localStorageService: LocalStorageService
   ) { }
 
 

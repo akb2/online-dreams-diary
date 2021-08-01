@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { CustomValidators } from "@app/helpers/custom-validators";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { LocalStorage } from "@app/services/local-storage.service";
+import { LocalStorageService } from "@app/services/local-storage.service";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
@@ -60,7 +60,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   // Конструктор
   constructor(
     private formBuilder: FormBuilder,
-    private localStorage: LocalStorage,
+    private localStorage: LocalStorageService,
     private accountService: AccountService,
     private apiService: ApiService,
     private snackbarService: SnackbarService

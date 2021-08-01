@@ -13,7 +13,7 @@ import { CookieInterface } from "@_models/app";
 
 
 
-export class LocalStorage {
+export class LocalStorageService {
 
 
   private systemCookieKey: string = "Online_Dreams_Diary_Cookie_key_";
