@@ -1,13 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { UserRegister } from "@_models/account";
-import { Observable, of, throwError } from "rxjs";
-import { map, switchMap } from "rxjs/operators";
+import { Observable } from "rxjs";
+import { switchMap } from "rxjs/operators";
 import { environment } from '@_environments/environment';
 import { ApiResponse } from "@_models/api";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { ApiService } from "@_services/api.service";
-import { SnackbarService } from "@_services/snackbar.service";
 import { Router } from "@angular/router";
 
 

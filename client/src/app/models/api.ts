@@ -1,5 +1,9 @@
 import { SimpleObject } from "@_models/app";
 
+
+
+
+
 // Интерфейс ответа сервера
 export interface ApiResponse {
   errors: boolean;

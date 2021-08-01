@@ -1,5 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit, OnDestroy, Input } from "@angular/core";
-import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 
 

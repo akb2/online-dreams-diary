@@ -1,15 +1,13 @@
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { formatDate } from "@angular/common";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { CustomValidators } from "@app/helpers/custom-validators";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
-import { LocalStorageService } from "@app/services/local-storage.service";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
+import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
-import { ApiService } from "@_services/api.service";
-import { SnackbarService } from "@_services/snackbar.service";
+import { LocalStorageService } from "@app/services/local-storage.service";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 
 
@@ -61,9 +59,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private localStorage: LocalStorageService,
-    private accountService: AccountService,
-    private apiService: ApiService,
-    private snackbarService: SnackbarService
+    private accountService: AccountService
   ) {
     // Кукис
     this.localStorage.cookieKey = this.cookieKey;
