@@ -118,7 +118,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
   // Фокус внутри кнопки
   public onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
-    if (window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height) {
+    if (window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height || (window.scrollY == 0 && direction > 0)) {
       // Установить индикатор нажатия
       if (setIndicator) {
         this.buttonMousePress = true;
