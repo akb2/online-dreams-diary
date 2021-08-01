@@ -34,7 +34,7 @@ class Account
 
 
   // Создание таблиц
-  // * GET
+  // * POST
   public function createTable($data)
   {
     $result = array(
@@ -58,7 +58,106 @@ class Account
     return $result;
   }
 
+  // Проверка токена
+  // * POST
+  public function checkToken($data)
+  {
+    $code = "0000";
+    $message = "";
+    $sqlData = array();
+    $tokenData = array();
+    $tokenLifeTime = $this->config["auth"]["tokenLifeTime"] ? $this->config["auth"]["tokenLifeTime"] : 25200;
+
+    // Если получены данные
+    if (strlen($data["token"]) > 0) {
+      $dataBase = new DataBaseService($this->pdo);
+      $code = "9015";
+      // Данные
+      $sqlData = array($data["token"]);
+      // Запрос проверки токена
+      $auth = $dataBase->getDatasFromFile("account/checkToken.sql", $sqlData);
+      // Проверить авторизацию
+      if (count($auth) > 0) {
+        if (strlen($auth[0]["id"]) > 0) {
+          // Проверка времени жизни токена
+          if (gmdate("U") - $tokenLifeTime < strtotime($auth[0]["last_action_date"])) {
+            // Обновить токен
+            if ($dataBase->executeFromFile("account/updateTokenLastAction.sql", array($auth[0]["id"]))) {
+              $tokenData = $auth[0];
+              $code = "0001";
+            }
+            // Ошибка сохранения токена
+            else {
+              $code = "9014";
+            }
+          }
+          // Токен просрочен
+          else {
+            $code = "9016";
+          }
+        }
+      }
+
+      // Удалить токен
+      if ($code != "0001") {
+        $dataBase->executeFromFile("account/deleteToken.sql", array($data["token"]));
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array(
+        "input" => $sqlData,
+        "tokenData" => $tokenData,
+        "result" => $code == "0001"
+      )
+    );
+  }
+
+  // Удалить токен
+  // * DELETE
+  public function deleteToken($data)
+  {
+    $code = "0000";
+    $message = "";
+    $sqlData = array();
+
+    // Если получены данные
+    if (strlen($data["token"]) > 0) {
+      $dataBase = new DataBaseService($this->pdo);
+      // Удаление токена
+      if ($dataBase->executeFromFile("account/deleteToken.sql", array($data["token"]))) {
+        $code = "0001";
+      }
+      // Неудалось удалить токен
+      else {
+        $code = "9017";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array(
+        "input" => $sqlData,
+        "result" => $code == "0001"
+      )
+    );
+  }
+
   // Авторизация пользователя
+  // * POST
   public function auth($data)
   {
     $code = "9010";
@@ -66,6 +165,7 @@ class Account
     $id = "";
     $token = "";
     $sqlData = array();
+
     // Если получены данные
     if (strlen($data["login"]) > 0 && strlen($data["password"]) > 0) {
       $dataBase = new DataBaseService($this->pdo);
