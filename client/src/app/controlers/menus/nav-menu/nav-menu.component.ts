@@ -117,11 +117,42 @@ export class NavMenuComponent implements OnInit, OnDestroy {
         {
           auth: 1,
           icon: "home",
-          text: "Личный кабинет",
+          text: "Кабинет",
           link: "/cabinet"
         },
+        // Мой дневник сновидений
+        {
+          auth: 1,
+          icon: "book",
+          text: "Мой дневник",
+          link: "/my-diary"
+        },
       ],
-      // Выход
+      // Группа общих разделов
+      [
+        // Общий дневник
+        {
+          auth: 1,
+          icon: "collections_bookmark",
+          text: "Все дневники",
+          link: "/diaries"
+        },
+        // Блог
+        {
+          auth: 1,
+          icon: "edit",
+          text: "Блог",
+          link: "/blog"
+        },
+        // Форум
+        {
+          auth: 1,
+          icon: "forum",
+          text: "Форум",
+          link: "/forum"
+        }
+      ],
+      // Аккаунт
       [
         // Выход
         {
@@ -585,6 +616,7 @@ class DrawDatas {
       property: "margin-left",
       data: {
         default: { min: 0, max: 0, unit: "px" },
+        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
       }
@@ -593,6 +625,7 @@ class DrawDatas {
       property: "margin-left",
       data: {
         default: { min: DrawDatas.minHeight, max: 0, unit: "px" },
+        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
       }
@@ -623,6 +656,7 @@ class DrawDatas {
       property: "margin-left",
       data: {
         default: { min: 0, max: 0, unit: "px" },
+        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
       }
@@ -631,6 +665,7 @@ class DrawDatas {
       property: "margin-left",
       data: {
         default: { min: DrawDatas.minHeight, max: 0, unit: "px" },
+        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
         xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
       }
