@@ -264,7 +264,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         captcha: this.form[2].get("captcha").value
       };
       // Регистрация
-      this.accountService.register(userRegister).subscribe(
+      this.accountService.register(userRegister, ["9010", "9011", "9012"]).subscribe(
         code => {
           this.loading = false;
           this.form[2].get("captcha").setValue(null);
@@ -275,35 +275,25 @@ export class RegisterComponent implements OnInit, OnDestroy {
             // Удалить данные из кэша
             this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorage.deleteCookie(key)));
           }
-          // Ошибки регистрации
-          else {
-            // Ошибка логина
-            if (code == "9011") {
-              const testLogin: string[] = this.form[0].get("testLogin").value;
-              if (testLogin.every(login => login !== userRegister.login)) {
-                testLogin.push(userRegister.login);
-                this.setStep(0);
-              }
+          // Ошибка капчи
+          else if (code == "9010") {
+            this.form[2].get("captcha").setValue(null);
+            this.setStep(2);
+          }
+          // Ошибка логина
+          else if (code == "9011") {
+            const testLogin: string[] = this.form[0].get("testLogin").value;
+            if (testLogin.every(login => login !== userRegister.login)) {
+              testLogin.push(userRegister.login);
+              this.setStep(0);
             }
-            // Ошибка почты
-            else if (code == "9012") {
-              const testEmail: string[] = this.form[2].get("testEmail").value;
-              if (testEmail.every(email => email !== userRegister.email)) {
-                testEmail.push(userRegister.email);
-                this.setStep(2);
-              }
-            }
-            // Ошибка капчи
-            else if (code == "9010") {
-              this.form[2].get("captcha").setValue(null);
+          }
+          // Ошибка почты
+          else if (code == "9012") {
+            const testEmail: string[] = this.form[2].get("testEmail").value;
+            if (testEmail.every(email => email !== userRegister.email)) {
+              testEmail.push(userRegister.email);
               this.setStep(2);
-            }
-            // Вызвать уведомление с ошибкой
-            else {
-              this.snackbarService.open({
-                message: this.apiService.getMessageByCode(code),
-                mode: "error"
-              });
             }
           }
         },
