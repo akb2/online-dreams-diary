@@ -312,16 +312,19 @@
     padding: 0;
     overflow-y: scroll;
 
+    // Группы пунктов
+    &-group {
+      border-top: 0 solid colors.$border-light;
+      & + & {
+        border-top-width: 1px;
+      }
+    }
+
     // Элемент списка
     &-item {
       $__item: &;
       width: 100%;
       transition: border-top-color screens.$animation-time;
-      border-top: 0 solid colors.$border-light;
-
-      & + & {
-        border-top-width: 1px;
-      }
 
       &:hover {
         &,
@@ -421,6 +424,7 @@
       text-decoration: none;
       color: colors.$subtitle-dark;
       display: block;
+      cursor: pointer;
       transition: background-color screens.$animation-time;
 
       // Текст

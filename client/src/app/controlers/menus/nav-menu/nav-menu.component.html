@@ -1,7 +1,8 @@
 <div id="mainMenuCollapsedHelperBefore"></div>
 
 <div class="main-menu {{ class }} type-{{ type }}"
-     [style]="css.menu">
+     [style]="css.menu"
+     (mousedown)="onScrollMouseDown($event)">
   <!-- Задний фон -->
   <div class="main-menu__layer back">
     <!-- Градиент -->
@@ -56,27 +57,33 @@
         <nav *ngIf="!isMobile()">
           <ul class="menu-list"
               [style]="css.menuList">
-            <li class="menu-list__item"
-                *ngFor="let item of menuItems">
-              <a class="menu-list__item-link"
-                 [style]="css.menuItem"
-                 [routerLink]="item.link"
-                 routerLinkActive="active"
-                 [routerLinkActiveOptions]="{ exact: true }"
-                 *ngIf="item.link">
-                <span>{{item.text}}</span>
-                <div class="menu-list__item-line"
-                     [style]="css.menuItemLine"></div>
-              </a>
+            <ng-container *ngFor="let group of menuItems">
+              <ng-container *ngFor="let item of group">
+                <!-- Показывать доступные пункты -->
+                <li class="menu-list__item"
+                    *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
+                  <a class="menu-list__item-link"
+                     [style]="css.menuItem"
+                     [routerLink]="item.link"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{ exact: true }"
+                     *ngIf="item.link && !item.callback">
+                    <span>{{item.text}}</span>
+                    <div class="menu-list__item-line"
+                         [style]="css.menuItemLine"></div>
+                  </a>
 
-              <div class="menu-list__item-link"
-                   [style]="css.menuItem"
-                   *ngIf="!item.link">
-                <span>{{item.text}}</span>
-                <div class="menu-list__item-line"
-                     [style]="css.menuItemLine"></div>
-              </div>
-            </li>
+                  <div class="menu-list__item-link"
+                       [style]="css.menuItem"
+                       (click)="item.callback()"
+                       *ngIf="!item.link && item.callback">
+                    <span>{{item.text}}</span>
+                    <div class="menu-list__item-line"
+                         [style]="css.menuItemLine"></div>
+                  </div>
+                </li>
+              </ng-container>
+            </ng-container>
           </ul>
         </nav>
       </div>
@@ -140,23 +147,31 @@
         <!-- Пункты главного меню -->
         <nav class="mobile-menu__list">
           <ul>
-            <li class="mobile-menu__list-item"
-                *ngFor="let item of menuItems">
-              <a class="mobile-menu__list-link"
-                 [routerLink]="item.link"
-                 routerLinkActive="active"
-                 [routerLinkActiveOptions]="{ exact: true }"
-                 *ngIf="item.link">
-                <mat-icon>{{item.icon}}</mat-icon>
-                <span>{{item.text}}</span>
-              </a>
+            <ng-container *ngFor="let group of menuItems">
+              <div class="mobile-menu__list-group"
+                   *ngIf="hasAvailMenuItem(group)">
+                <ng-container *ngFor="let item of group">
+                  <li class="mobile-menu__list-item"
+                      *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
+                    <a class="mobile-menu__list-link"
+                       [routerLink]="item.link"
+                       routerLinkActive="active"
+                       [routerLinkActiveOptions]="{ exact: true }"
+                       *ngIf="item.link && !item.callback">
+                      <mat-icon>{{item.icon}}</mat-icon>
+                      <span>{{item.text}}</span>
+                    </a>
 
-              <div class="mobile-menu__list-link"
-                   *ngIf="!item.link">
-                <mat-icon>{{item.icon}}</mat-icon>
-                <span>{{item.text}}</span>
+                    <div class="mobile-menu__list-link"
+                         (click)="item.callback()"
+                         *ngIf="!item.link && item.callback">
+                      <mat-icon>{{item.icon}}</mat-icon>
+                      <span>{{item.text}}</span>
+                    </div>
+                  </li>
+                </ng-container>
               </div>
-            </li>
+            </ng-container>
           </ul>
         </nav>
       </div>

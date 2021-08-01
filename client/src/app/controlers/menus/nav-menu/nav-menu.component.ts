@@ -1,6 +1,7 @@
-import { Component, Input, OnDestroy, OnInit, HostListener } from "@angular/core";
-import { HammerGestureConfig, HammerLoader } from "@angular/platform-browser";
-import { ScreenService } from "@_services/screen.service";
+import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { MenuItem } from "@_models/menu";
+import { AccountService } from "@_services/account.service";
+import { ScreenKeys, ScreenService } from "@_services/screen.service";
 
 
 
@@ -26,8 +27,12 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   @Input() public title: string = "";
   @Input() public subTitle: string = "";
   @Input() public autoCollapse: boolean = false;
+  @Input() public imagePositionX: string = "center";
+  @Input() public imagePositionY: string = "center";
+  @Input() public imageOverlay: boolean = false;
 
   @Input() public floatButtonIcon: string = "";
+  @Input() public floatButtonText: string = "";
   @Input() public floatButtonCallback: Function;
   @Input() public floatButtonLink: string;
   @Input() public floatButtonLinkParams: { [key: string]: string };
@@ -44,24 +49,17 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   public headerHeight: number = DrawDatas.minHeight;
 
   public showMobileMenu: boolean = false;
-  public menuItems: MenuItems[] = [{
-    auth: 1,
-    icon: "home",
-    text: "Главная",
-    link: "/"
-  }, {
-    auth: 1,
-    icon: "person_add",
-    text: "Регистрация",
-    link: "/register"
-  }, {
-    auth: 1,
-    icon: "lock",
-    text: "Вход",
-    link: "/auth"
-  }];
+  public menuItems: MenuItem[][] = [];
+  public minHeight: number = 0;
+  public maxHeight: number = 0;
+
+  private scrollMousePosY: number = 0;
+  private scrollMouseStartY: number = 0;
+  private swipeScrollDistance: number = 0;
+  private swipeScrollPress: boolean = false;
 
   public css: { [key: string]: string } = {};
+
   private cssNamesVar: { [key: string]: string } = {
     menu: "menu",
     menuList: "",
@@ -69,14 +67,23 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     menuItemLine: "menuItemLine",
     helper: "",
     header: "header",
+    image: "image",
     scroll: "scroll",
     title: "",
     subtitle: "",
     floatingButton: "floatingButton",
+    floatingButtonText: "floatingButtonText",
     floatingButtonOverlay: "floatingButtonOverlay",
     backButton: "backButton",
     toContentButton: "toContentButton"
   };
+
+  // Шаг для смещения шапки
+  private get mouseSwipeStep(): number {
+    return Math.max(this.maxHeight / 10, 50);
+  };
+
+  // Получить ключи для CSS правил
   get cssNames(): { [key: string]: string } {
     this.cssNamesVar.title = this.backButtonLink?.length > 0 ? "titleWithBackButton" : "title";
     this.cssNamesVar.subtitle = this.backButtonLink?.length > 0 ? "subtitleWithBackButton" : "subtitle";
@@ -86,15 +93,73 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     return this.cssNamesVar;
   }
 
-
-
-
+  // Высота документа для скролла
+  get scrollHeight(): number {
+    return Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+    ) - this.headerHeight;
+  }
 
   // Конструктор
   constructor(
-    private screenService: ScreenService
+    private screenService: ScreenService,
+    public accountService: AccountService
   ) {
     DrawDatas.dataRender();
+    // Пункты меню
+    this.menuItems = [
+      // * Авторизованное меню
+      // Группа аккаунта
+      [
+        // Личный кабинет
+        {
+          auth: 1,
+          icon: "home",
+          text: "Личный кабинет",
+          link: "/cabinet"
+        },
+      ],
+      // Выход
+      [
+        // Выход
+        {
+          auth: 1,
+          icon: "exit_to_app",
+          text: "Выход",
+          callback: this.onLogOut.bind(this)
+        },
+      ],
+      // * Неавторизованное меню
+      // Главная группа
+      [
+        // Главная страница
+        {
+          auth: -1,
+          icon: "home",
+          text: "Главная",
+          link: "/home"
+        },
+      ],
+      // Группа авторизации
+      [
+        // Вход
+        {
+          auth: -1,
+          icon: "lock",
+          text: "Вход",
+          link: "/auth"
+        },
+        // Регистрация
+        {
+          auth: -1,
+          icon: "person_add",
+          text: "Регистрация",
+          link: "/register"
+        },
+      ],
+    ];
   }
 
 
@@ -109,7 +174,12 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     window.addEventListener("swipeleft", this.onSwipe.bind(this), true);
     window.addEventListener("swiperight", this.onSwipe.bind(this), true);
     window.addEventListener("resize", this.onResize.bind(this), true);
+    window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
+    window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
     window.scroll({ top: 0 });
+
+    this.minHeight = DrawDatas.minHeight;
+    this.maxHeight = DrawDatas.maxHeight;
   }
 
   // Конец класса
@@ -118,54 +188,49 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     window.removeEventListener("swipeleft", this.onSwipe.bind(this), true);
     window.removeEventListener("swiperight", this.onSwipe.bind(this), true);
     window.removeEventListener("resize", this.onResize.bind(this), true);
+    window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
+    window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
   }
 
   // Скролл страницы
   private onWindowScroll(event: Event): boolean {
+    let scroll: number = document?.scrollingElement?.scrollTop || 0;
     // Автоколапс
     if (this.autoCollapse) {
-      let scroll: number = document.scrollingElement.scrollTop;
-
       // Отменить блокировку скролла
       if (this.autoCollapsed) {
         //Отметиь, что коллапс сейчас не происходит
         if (scroll == 0 || scroll >= DrawDatas.maxHeight - DrawDatas.minHeight) {
           this.autoCollapsed = false;
-        }
-        // Убрать блокировку скролла
-        if (scroll == 0 || scroll >= DrawDatas.maxHeight - DrawDatas.minHeight) {
           document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
         }
       }
-
       // Схлопнуть меню
       else if (scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
-
         // Схлопнуть меню
         if (this.scroll < scroll) {
           this.collapseMenu();
         }
-
+        // Развернуть меню
         else {
           this.expandMenu();
         }
-
+        // Установить флажок что коллапс в процессе
         if (scroll > 0) {
           this.autoCollapsed = true;
         }
       }
-
+      // Оменить действие по умолчанию
       event.stopPropagation();
     }
-
+    // Разрешить скролл
     else {
       document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
     }
-
-
-
-    this.scroll = document.scrollingElement.scrollTop;
+    // Расчитать данные
+    this.scroll = scroll;
     this.dataCalculate();
+    // Вернуть TRUE или FALSE
     return !this.autoCollapsed;
   }
 
@@ -190,8 +255,65 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   }
 
   // Свайп экрана
-  private onSwipe(event?): void {
+  private onSwipe(event?: any): void {
     console.log(event);
+  }
+
+  // Фокус для скролла смахиванием
+  public onScrollMouseDown(event: MouseEvent): void {
+    this.scrollMousePosY = event.y;
+    this.scrollMouseStartY = window.scrollY;
+    // Включить обнаружение движения мышкой
+    this.swipeScrollPress = true;
+  }
+
+  // Движение мышкой
+  public onMouseMove(event: MouseEvent): void {
+    if (this.swipeScrollPress) {
+      this.swipeScrollDistance = event.y - this.scrollMousePosY;
+      // Установить скролл
+      window.scroll(0, this.scrollMouseStartY - this.swipeScrollDistance);
+    }
+  }
+
+  // Потеря фокуса любым элементом
+  public onMouseUp(event: MouseEvent): void {
+    this.swipeScrollPress = false;
+    this.onSwipeDetect();
+  }
+
+  // Открыть или закрыть меню свайпом
+  private onSwipeDetect(): void {
+    // Установить скролл
+    if (this.autoCollapse && Math.abs(this.swipeScrollDistance) >= this.mouseSwipeStep) {
+      // Схлопнуть
+      if (this.swipeScrollDistance > 0) {
+        this.expandMenu();
+      }
+      // Развернуть
+      else {
+        this.collapseMenu();
+      }
+    }
+    // Вернуть обратно
+    else if (this.autoCollapse && this.swipeScrollDistance > 0) {
+      // Развернуть
+      if (this.swipeScrollDistance > 0) {
+        this.collapseMenu();
+      }
+      // Схлопнуть
+      else {
+        this.expandMenu();
+      }
+    }
+    // Остановить слушателя
+    this.swipeScrollDistance = 0;
+    this.swipeScrollPress = false;
+  }
+
+  // Выход из системы
+  public onLogOut(): void {
+    this.accountService.deleteAuth();
   }
 
 
@@ -207,17 +329,33 @@ export class NavMenuComponent implements OnInit, OnDestroy {
       let titleValue: string = this.cssNames[titleKey];
       this.css[titleKey] = "";
 
-      if (DrawDatas[titleValue]) {
-        for (let datas of DrawDatas[titleValue]) {
-          let sizes: DrawDataPeriod = datas.data[this.breakpoint] ? datas.data[this.breakpoint] : datas.data.default;
-          let calc: number = this.dataCalculateFormula(sizes.max, sizes.min);
+      if (DrawDatas[titleValue as DrawDatasKeys]) {
+        for (let datas of DrawDatas[titleValue as DrawDatasKeys]) {
+          let sizes: DrawDataPeriod = datas.data[this.breakpoint as ScreenKeys] ?
+            datas.data[this.breakpoint as ScreenKeys] as DrawDataPeriod :
+            datas.data.default;
           let css: string;
 
-          if (typeof datas.property === "string") { css = datas.property + ": " + calc + (sizes.unit ? sizes.unit : "") + ";"; }
+          // Значение
+          let value: string
+          // Определить значение для заранее заданных значений
+          if (sizes.value) {
+            value = this.dataChoiceValue(sizes.value);
+          }
+          // Расчитать зависимое значение
+          else {
+            value = this.dataCalculateFormula(sizes.max || 0, sizes.min || 0) + (sizes.unit ? sizes.unit : "");
+          }
+
+          // Установить для одного свойства
+          if (typeof datas.property === "string") {
+            css = datas.property + ": " + value + ";";
+          }
+          // Для массива свойств
           else {
             css = "";
             for (let property of datas.property) {
-              css = css + property + ": " + calc + (sizes.unit ? sizes.unit : "") + ";";
+              css = css + property + ": " + value + ";";
             }
           }
 
@@ -237,9 +375,34 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     return min;
   }
 
+  // Выбрать значение из списка
+  private dataChoiceValue(value: DrawDataValue): string {
+    if (this.scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
+      // Для промежуточного состояния
+      if (this.scroll > 0) {
+        return value.process;
+      }
+      // Для развернутого меню
+      else {
+        return value.expand;
+      }
+    }
+    // Для схлопнутого меню
+    return value.collapse;
+  }
+
   // Проверить мобильный ли экран
   public isMobile(): boolean {
     return this.screenService.getMax(this.breakpointMobile) >= DrawDatas.screenWidth;
+  }
+
+  // Проверить есть ли доступные пункты
+  public hasAvailMenuItem(menuItems: MenuItem[]): boolean {
+    return menuItems.some(menuItem =>
+      (menuItem.auth == 1 && this.accountService.checkAuth) ||
+      (menuItem.auth == -1 && !this.accountService.checkAuth) ||
+      menuItem.auth == 0
+    );
   }
 
 
@@ -604,17 +767,44 @@ interface DrawData {
 
 // Данные размеров
 interface DrawDataPeriod {
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
+  value?: DrawDataValue;
   unit?: string;
 }
 
-// Элемент главного меню
-interface MenuItems {
-  auth: -1 | 0 | 1;
-  icon: string;
-  text: string;
-  callback?: Function;
-  link?: string;
-  linkParams?: { [key: string]: string };
+// Данные размеров
+interface DrawDataPeriod {
+  min?: number;
+  max?: number;
+  value?: DrawDataValue;
+  unit?: string;
 }
+
+// Интерфейс выбора заранее заданных значений
+interface DrawDataValue {
+  expand: string;
+  process: string;
+  collapse: string;
+}
+
+// Типы стилей для DrawDatas
+type DrawDatasKeys =
+  "menu" |
+  "menuList" |
+  "menuListWithFloatingButton" |
+  "menuItem" |
+  "menuItemLine" |
+  "helper" |
+  "helperWithFloatingButton" |
+  "header" |
+  "scroll" |
+  "title" |
+  "titleWithBackButton" |
+  "subtitle" |
+  "subtitleWithBackButton" |
+  "floatingButton" |
+  "floatingButtonOverlay" |
+  "backButton" |
+  "toContentButton"
+  ;
