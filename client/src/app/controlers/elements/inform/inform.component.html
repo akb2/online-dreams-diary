@@ -1,0 +1,20 @@
+<div class="loader__layout">
+  <!-- Заголовок -->
+  <div class="loader__title"
+       *ngIf="title">{{title}}</div>
+  <!-- Подзаголовок -->
+  <div class="loader__subtitle"
+       *ngIf="subTitle">{{subTitle}}</div>
+  <!-- Загрузчик -->
+  <div class="loader"
+       *ngIf="icon == 'loader'">
+    <div class="loader__figure loader__figure-1"></div>
+    <div class="loader__figure loader__figure-2"></div>
+  </div>
+  <!-- Иконка -->
+  <mat-icon class="loader__icon"
+            *ngIf="icon != 'loader'">{{icon}}</mat-icon>
+  <!-- Текст -->
+  <div class="loader__description"
+       *ngIf="description">{{description}}</div>
+</div>

@@ -1,0 +1,139 @@
+@use "sass:map";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/mixins";
+
+// Переменные
+$size: 400px;
+$elm: &;
+// Размеры фигуры
+$figure-size: 140px;
+$figure-color-1: map.get(colors.$mat-primary, 500);
+$figure-line-1: 8px;
+$figure-size-1: 100%;
+$figure-time-1: 0.5s;
+$figure-color-2: map.get(colors.$mat-primary, 400);
+$figure-size-2: $figure-size - ($figure-line-1 * 4);
+$figure-line-2: $figure-line-1 / 2;
+$figure-time-2: $figure-time-1 * 2;
+
+// Загрузчик
+.loader {
+  width: $figure-size;
+  height: $figure-size;
+  position: relative;
+
+  // Фигура
+  &__figure {
+    position: absolute;
+    border-radius: 50%;
+    // Граница 1
+    &-1 {
+      @include mixins.inset(calc(50% - #{$figure-size-1 / 2}));
+      width: $figure-size-1;
+      height: $figure-size-1;
+      border: $figure-line-1 solid transparent;
+      border-top-color: $figure-color-1;
+      animation: loader-animation #{$figure-time-1} linear infinite;
+    }
+    // Граница 2
+    &-2 {
+      @include mixins.inset(calc(50% - #{$figure-size-2 / 2}));
+      width: $figure-size-2;
+      height: $figure-size-2;
+      border: $figure-line-2 solid transparent;
+      border-bottom-color: $figure-color-2;
+      animation: loader-animation #{$figure-time-2} linear infinite;
+    }
+  }
+
+  // Иконка
+  &__icon {
+    width: $figure-size;
+    height: $figure-size;
+    line-height: $figure-size;
+    font-size: $figure-size;
+    color: $figure-color-1;
+    text-align: center;
+    position: static;
+  }
+
+  // Слой
+  &__layout {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    line-height: 1.12;
+  }
+
+  // Размеры
+  &__title,
+  &__subtitle,
+  &__description {
+    width: $size;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  // Заголовок
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  // Подзаголовок
+  &__subtitle {
+    font-size: 17px;
+    font-weight: 300;
+    margin-top: 3px;
+    text-transform: uppercase;
+    // Отступ
+    #{$elm} + & {
+      margin-top: 5px;
+    }
+  }
+
+  // Заголовок
+  &__description {
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  // Описание
+  &__subtitle {
+    font-size: 14px;
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor(containers.$paddings-y) using($padding) {
+    // Отступы
+    &__title + &,
+    &__subtitle + &,
+    &__title + &__icon,
+    &__subtitle + &__icon,
+    &__description {
+      margin-top: $padding;
+    }
+  }
+}
+
+// Правила анимации
+@keyframes loader-animation {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 1;
+  }
+}
