@@ -66,7 +66,7 @@ class Account
     $message = "";
     $sqlData = array();
     $tokenData = array();
-    $tokenLifeTime = $this->config["auth"]["tokenLifeTime"] ? $this->config["auth"]["tokenLifeTime"] : 25200;
+    $tokenLifeTime = $this->config["auth"]["tokenLifeTime"] ? $this->config["auth"]["tokenLifeTime"] : 36000;
 
     // Если получены данные
     if (strlen($data["token"]) > 0) {
