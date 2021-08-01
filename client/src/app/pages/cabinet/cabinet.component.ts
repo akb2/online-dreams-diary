@@ -21,6 +21,5 @@ export class CabinetComponent {
 
   // Тест
   public test(text: string): void {
-    console.log(text);
   }
 }

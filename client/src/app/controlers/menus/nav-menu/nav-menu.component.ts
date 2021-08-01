@@ -171,8 +171,6 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     this.onResize();
 
     window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.addEventListener("swipeleft", this.onSwipe.bind(this), true);
-    window.addEventListener("swiperight", this.onSwipe.bind(this), true);
     window.addEventListener("resize", this.onResize.bind(this), true);
     window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
     window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
@@ -185,8 +183,6 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   // Конец класса
   public ngOnDestroy(): void {
     window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.removeEventListener("swipeleft", this.onSwipe.bind(this), true);
-    window.removeEventListener("swiperight", this.onSwipe.bind(this), true);
     window.removeEventListener("resize", this.onResize.bind(this), true);
     window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
     window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
@@ -252,11 +248,6 @@ export class NavMenuComponent implements OnInit, OnDestroy {
         elm.classList.remove("no-scroll");
       }
     });
-  }
-
-  // Свайп экрана
-  private onSwipe(event?: any): void {
-    console.log(event);
   }
 
   // Фокус для скролла смахиванием

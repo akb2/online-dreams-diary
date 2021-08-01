@@ -59,10 +59,7 @@ export class AccountService {
     formData.append("token", this.token);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "account/checkToken", formData, this.httpHeader).pipe(switchMap(
-      result => {
-        console.log(result);
-        return this.apiService.checkResponse(result.result.code, codes);
-      }
+      result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
 

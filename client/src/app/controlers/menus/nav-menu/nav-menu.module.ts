@@ -1,7 +1,6 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
-import { HammerModule } from "@angular/platform-browser";
 
 import { CoreModule } from "@_modules/core.module";
 
@@ -25,7 +24,6 @@ import { NavMenuComponent } from "./nav-menu.component";
     CommonModule,
     CoreModule,
     RouterModule,
-    HammerModule,
     MainBackgroundModule,
     ScrollModule
   ]
