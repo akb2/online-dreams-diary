@@ -11,7 +11,7 @@ CREATE TABLE `users`
     `sex` TINYINT(1) NOT NULL DEFAULT 0,
     `email` VARCHAR(120) NOT NULL DEFAULT "",
     `roles` JSON NOT NULL,
-    PRIMARY KEY (ID)
+    PRIMARY KEY (`id`)
   )
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
