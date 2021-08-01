@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
-import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
-import { AccountService } from '@_services/account.service';
-import { ApiService } from '@_services/api.service';
-import { SnackbarService } from '@_services/snackbar.service';
+import { Component } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
+import { AccountService } from "@_services/account.service";
+import { ApiService } from "@_services/api.service";
+import { SnackbarService } from "@_services/snackbar.service";
 
 
 
 
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
+  selector: "app-root",
+  templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
 
@@ -21,11 +22,11 @@ import { SnackbarService } from '@_services/snackbar.service';
 export class AppComponent {
 
 
-  public title: string = 'app';
+  public mainTitle: string = "Online Dreams Diary";
 
   public showPreloader: boolean = true;
   public validToken: boolean = false;
-  private loaderDelay: number = 150;
+  private loaderDelay: number = 300;
 
 
 
@@ -36,7 +37,9 @@ export class AppComponent {
     private router: Router,
     private accountService: AccountService,
     private snackBar: SnackbarService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private titleService: Title,
+    private activatedRoute: ActivatedRoute
   ) {
     // События старта и окочания лоадера
     this.router.events.subscribe(event => {
@@ -79,7 +82,7 @@ export class AppComponent {
     else {
       this.validToken = true;
     }
-    // Прелоадер
+    // Запуск прелоадера
     const showPreloader: boolean = !(this.router.getCurrentNavigation()?.extras.state?.showPreLoader == false);
     if (showPreloader) {
       this.showPreloader = true;
@@ -89,6 +92,10 @@ export class AppComponent {
 
   // Действия после загрузки страницы
   private afterLoadPage(): void {
+    // Установка заголовка
+    const title: string = this.activatedRoute.firstChild.snapshot.data.title || "";
+    this.titleService.setTitle((title ? title + " | " : "") + this.mainTitle);
+    // Отключение прелоадера
     setTimeout(timer => {
       this.showPreloader = false;
       document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));

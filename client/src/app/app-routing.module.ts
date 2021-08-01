@@ -20,14 +20,14 @@ const routes: Routes = [
   {
     path: "auth",
     loadChildren: () => import("@_pages/auth/auth.module").then(m => m.AuthModule),
-    data: { authRule: -1 },
+    data: { title: "Авторизация", authRule: -1 },
     canActivate: [AuthGuard]
   },
   // Регистрация
   {
     path: "register",
     loadChildren: () => import("@_pages/register/register.module").then(m => m.RegisterModule),
-    data: { authRule: -1 },
+    data: { title: "Регистрация", authRule: -1 },
     canActivate: [AuthGuard]
   },
   // * Для авторизованных пользователей
@@ -35,7 +35,7 @@ const routes: Routes = [
   {
     path: "cabinet",
     loadChildren: () => import("@_pages/cabinet/cabinet.module").then(m => m.CabinetModule),
-    data: { authRule: 1 },
+    data: { title: "Кабинет сновидца", authRule: 1 },
     canActivate: [AuthGuard]
   },
   // * Страницы, не имеющие значения авторизации
@@ -54,7 +54,7 @@ const routes: Routes = [
   {
     path: "**",
     loadChildren: () => import("@_pages/404/404.module").then(m => m.Page404Module),
-    data: { authRule: 0 },
+    data: { title: "Ошибка 404", authRule: 0 },
     canActivate: [AuthGuard]
   },
 ];
