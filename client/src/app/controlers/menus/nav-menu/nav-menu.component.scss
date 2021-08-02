@@ -1,6 +1,7 @@
 @use "sass:map";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/mixins";
 
 $breakpointMobile: small;
 
@@ -111,19 +112,32 @@ $breakpointMobile: small;
         border-radius: 50%;
         overflow: hidden;
         position: absolute;
-
+        // Адаптив
         @include screens.adaptive(middle) {
           width: 47vw;
           height: 47vw;
           left: -10vw;
           bottom: -6vw;
         }
-
+        // Адаптив
         @include screens.adaptive(auto, $breakpointMobile) {
           width: 470px;
           height: 470px;
           left: -100px;
           bottom: -60px;
+        }
+        // Перекрытие
+        &.overlay:after {
+          background-color: map.get(colors.$mat-primary, 500);
+          opacity: 0.6;
+        }
+      }
+      // Короткое меню
+      &.type-short {
+        // Перекрытие
+        &.overlay:after {
+          background-color: #000;
+          opacity: 0.4;
         }
       }
 
@@ -133,15 +147,12 @@ $breakpointMobile: small;
         height: 100%;
         object-fit: cover;
       }
-
       // Перекрытие
-      &:after {
+      &.overlay:after {
+        @include mixins.inset;
         content: "";
         position: absolute;
         display: block;
-        inset: 0;
-        background-color: map.get(colors.$mat-primary, 500);
-        opacity: 0.6;
       }
     }
 

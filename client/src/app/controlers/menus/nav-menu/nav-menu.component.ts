@@ -27,7 +27,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() public autoCollapse: boolean = false;
   @Input() public imagePositionX: string = "center";
   @Input() public imagePositionY: string = "center";
-  @Input() public imageOverlay: boolean = false;
+  @Input() public imageOverlay: boolean = true;
 
   @Input() public title: string = "";
   @Input() public subTitle: string = "";
@@ -373,7 +373,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     // Вернуть обратно
-    else if (this.autoCollapse && this.swipeScrollDistance > 0) {
+    else if (this.autoCollapse && (this.swipeScrollDistance > 0 || this.swipeScrollDistance < 0)) {
       // Развернуть
       if (this.swipeScrollDistance > 0) {
         this.collapseMenu();
@@ -658,20 +658,20 @@ class DrawDatas {
     DrawDatas.title = [{
       property: "font-size",
       data: {
-        default: { min: 15, max: 80, unit: "px" },
-        xsmall: { min: 15, max: 24, unit: "px" },
-        small: { min: 15, max: 32, unit: "px" },
+        default: { min: 15, max: 70, unit: "px" },
+        large: { min: 15, max: 60, unit: "px" },
         middle: { min: 15, max: 48, unit: "px" },
-        large: { min: 15, max: 60, unit: "px" }
+        small: { min: 15, max: 32, unit: "px" },
+        xsmall: { min: 15, max: 24, unit: "px" },
       }
     }, {
       property: "line-height",
       data: {
-        default: { min: 20, max: 100, unit: "px" },
-        xsmall: { min: 20, max: 32, unit: "px" },
-        small: { min: 20, max: 40, unit: "px" },
+        default: { min: 20, max: 90, unit: "px" },
+        large: { min: 20, max: 76, unit: "px" },
         middle: { min: 20, max: 60, unit: "px" },
-        large: { min: 20, max: 76, unit: "px" }
+        small: { min: 20, max: 40, unit: "px" },
+        xsmall: { min: 20, max: 32, unit: "px" },
       }
     }];
     // Заголовок с кнопкой меню или назад

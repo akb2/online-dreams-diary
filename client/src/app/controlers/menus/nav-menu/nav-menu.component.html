@@ -12,9 +12,10 @@
       <app-main-background></app-main-background>
     </div>
     <!-- Картинка -->
-    <div class="main-menu__layer-image type-{{ type }}"
+    <div class="main-menu__layer-image type-{{ type }} {{imageOverlay? 'overlay': ''}}"
          *ngIf="image">
-      <img [src]="image" />
+      <img [src]="image"
+           [style.object-position]="imagePositionY + ' ' + imagePositionX" />
     </div>
     <!-- Заливка цветом -->
     <div class="main-menu__layer-fill"
