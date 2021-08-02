@@ -6,7 +6,13 @@ $breakpointMobile: small;
 
 // Главное меню
 .main-menu {
-  $header-size: 180px;
+  $header-size: (
+    xsmall: 180px,
+    small: 180px,
+    middle: 180px,
+    large: 360px,
+    xlarge: 420px,
+  );
 
   position: fixed;
   z-index: 10;
@@ -47,15 +53,20 @@ $breakpointMobile: small;
     // Контейнер
     &-container {
       display: grid;
-      grid-template-columns: #{$header-size} auto 60px;
-      grid-gap: 15px;
+      grid-template-rows: 1fr 0;
+      grid-template-areas: "left center right" "full full full";
+      grid-gap: 0 15px;
       height: 100%;
       padding-top: 0;
       padding-bottom: 0;
-
+      // Адаптив горизонтальных отступов
       @include screens.adaptive(auto, $breakpointMobile) {
         padding-left: 0;
         padding-right: 0;
+      }
+      // Адаптив шаблона
+      @include screens.adaptiveFor($header-size) using($size) {
+        grid-template-columns: #{$size} auto 60px;
       }
 
       // Слева
@@ -65,22 +76,27 @@ $breakpointMobile: small;
         justify-content: center;
         align-items: flex-start;
         position: relative;
+        grid-area: left;
       }
-
       // По середине
       &_center {
         display: flex;
         flex-flow: row nowrap;
         align-items: flex-start;
         justify-content: flex-end;
+        grid-area: center;
       }
-
       // Справа
       &_right {
         display: flex;
         flex-flow: row nowrap;
         align-items: flex-end;
         justify-content: flex-end;
+        grid-area: right;
+      }
+      // Ширина
+      &_full {
+        grid-area: full;
       }
     }
 
@@ -169,6 +185,31 @@ $breakpointMobile: small;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  // Аватарка
+  &__avatar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    overflow: hidden;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    // Иконка
+    > mat-icon {
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      font-size: inherit;
+      line-height: inherit;
+      background-color: map.get(colors.$mat-primary, contrast, 500);
+      color: map.get(colors.$mat-primary, 500);
+    }
+  }
 }
 
 // Мобильное меню
@@ -226,14 +267,16 @@ $breakpointMobile: small;
 
   // Информация о странице
   &__info {
+    $padding: 15px;
+    // Свойства
     width: 100%;
     height: $info-height;
+    position: relative;
+    padding: $padding;
     display: flex;
     flex-flow: column nowrap;
-    align-items: flex-start;
     justify-content: flex-end;
-    position: relative;
-    padding: 15px;
+    align-items: flex-start;
 
     // Картинка
     &-image {
@@ -277,6 +320,7 @@ $breakpointMobile: small;
     // Заголовок, gодзаголовок
     &-title,
     &-subtitle {
+      width: $layout-width - ($padding * 2);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

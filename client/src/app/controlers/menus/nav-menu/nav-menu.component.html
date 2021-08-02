@@ -3,6 +3,7 @@
 <div class="main-menu {{ class }} type-{{ type }}"
      [style]="css.menu"
      (mousedown)="onScrollMouseDown($event)">
+
   <!-- Задний фон -->
   <div class="main-menu__layer back">
     <!-- Градиент -->
@@ -19,12 +20,14 @@
     <div class="main-menu__layer-fill"
          [style]="css.header"></div>
   </div>
+
   <!-- Средний фон -->
   <div class="main-menu__layer content">
     <!-- Все содержимое -->
     <div class="main-menu__layer-container container">
       <!-- Слой слева -->
-      <div class="main-menu__layer-container_left {{backButtonLink? 'has-back-button': ''}}">
+      <div #contentLayerContainerLeft
+           class="main-menu__layer-container_left {{backButtonLink? 'has-back-button': ''}}">
         <!-- Кнопка назад -->
         <div class="back-button"
              [style]="css.backButton"
@@ -41,6 +44,14 @@
              (click)="toggleMobileMenu(1)"
              unselectable="on">
           <mat-icon>menu</mat-icon>
+        </div>
+        <!-- Аватарка -->
+        <div class="main-menu__avatar"
+             [style]="css.avatar"
+             *ngIf="avatarImage || avatarIcon">
+          <img [src]="avatarImage"
+               *ngIf="avatarImage" />
+          <mat-icon *ngIf="!avatarImage && avatarIcon">{{avatarIcon}}</mat-icon>
         </div>
         <!-- Заголовок -->
         <div class="main-menu__title"
@@ -108,6 +119,9 @@
           <mat-icon>{{floatButtonIcon}}</mat-icon>
         </a>
       </div>
+      <!-- Ширина слоя -->
+      <div #contentLayerContainer
+           class="main-menu__layer-container_full"></div>
     </div>
     <!-- Кнопка вниз -->
     <a class="to-content-button"
@@ -117,6 +131,7 @@
       <mat-icon>expand_more</mat-icon>
     </a>
   </div>
+
   <!-- Передний фон -->
   <div class="main-menu__layer front">
     <div class="mobile-menu {{showMobileMenu?'show':''}}"

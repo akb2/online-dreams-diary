@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MenuItem } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenKeys, ScreenService } from "@_services/screen.service";
@@ -18,18 +18,21 @@ import { ScreenKeys, ScreenService } from "@_services/screen.service";
 
 
 // Основной класс
-export class NavMenuComponent implements OnInit, OnDestroy {
+export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   @Input() public type: "full" | "short" | "collapse" = "collapse";
   @Input() public image: string = "";
   @Input() public class: string = "";
-  @Input() public title: string = "";
-  @Input() public subTitle: string = "";
   @Input() public autoCollapse: boolean = false;
   @Input() public imagePositionX: string = "center";
   @Input() public imagePositionY: string = "center";
   @Input() public imageOverlay: boolean = false;
+
+  @Input() public title: string = "";
+  @Input() public subTitle: string = "";
+  @Input() public avatarImage: string = "";
+  @Input() public avatarIcon: string = "";
 
   @Input() public floatButtonIcon: string = "";
   @Input() public floatButtonText: string = "";
@@ -41,6 +44,9 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   @Input() public backButtonLinkParams: { [key: string]: string };
 
   @Input() public hideToContentButton: boolean = false;
+
+  @ViewChild("contentLayerContainer") private contentLayerContainer: ElementRef;
+  @ViewChild("contentLayerContainerLeft") private contentLayerContainerLeft: ElementRef;
 
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
@@ -71,6 +77,7 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     scroll: "scroll",
     title: "",
     subtitle: "",
+    avatar: "",
     floatingButton: "floatingButton",
     floatingButtonText: "floatingButtonText",
     floatingButtonOverlay: "floatingButtonOverlay",
@@ -85,11 +92,50 @@ export class NavMenuComponent implements OnInit, OnDestroy {
 
   // Получить ключи для CSS правил
   get cssNames(): { [key: string]: string } {
-    this.cssNamesVar.title = this.backButtonLink?.length > 0 ? "titleWithBackButton" : "title";
-    this.cssNamesVar.subtitle = this.backButtonLink?.length > 0 ? "subtitleWithBackButton" : "subtitle";
-    this.cssNamesVar.menuList = this.floatButtonLink?.length > 0 || this.floatButtonCallback ? "menuListWithFloatingButton" : "menuList";
-    this.cssNamesVar.helper = this.type == "short" && (this.floatButtonLink?.length > 0 || this.floatButtonCallback) ? "helperWithFloatingButton" : "helper";
-
+    this.cssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
+    this.cssNamesVar.menuList = this.floatButtonLink?.length || this.floatButtonCallback ? "menuListWithFloatingButton" : "menuList";
+    this.cssNamesVar.helper = this.type == "short" && (this.floatButtonLink?.length || this.floatButtonCallback) ? "helperWithFloatingButton" : "helper";
+    // Расчет заголовка
+    {
+      this.cssNamesVar.title = "title";
+      // С кнопкой и аватаркой
+      if ((this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.title = "titleWithBackButtonAndAvatar";
+      }
+      // Только с кнопкой
+      else if ((this.backButtonLink || this.isMobile()) && !(this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.title = "titleWithBackButton";
+      }
+      // Только с аватркой
+      if (!(this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.title = "titleWithAvatar";
+      }
+    }
+    // Расчет подзаголовка
+    {
+      this.cssNamesVar.subtitle = "subtitle";
+      // С кнопкой и аватаркой
+      if ((this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
+      }
+      // Только с кнопкой
+      else if ((this.backButtonLink || this.isMobile()) && !(this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.subtitle = "subtitleWithBackButton";
+      }
+      // Только с аватркой
+      if (!(this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+        this.cssNamesVar.subtitle = "subtitleWithAvatar";
+      }
+    }
+    // Расчет аватарки
+    {
+      this.cssNamesVar.avatar = "avatar";
+      // С кнопкой и аватаркой
+      if (this.backButtonLink || this.isMobile()) {
+        this.cssNamesVar.avatar = "avatarWithBackButton";
+      }
+    }
+    // Вернуть CSS правила
     return this.cssNamesVar;
   }
 
@@ -211,6 +257,13 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     this.maxHeight = DrawDatas.maxHeight;
   }
 
+  // Запуск класса
+  public ngAfterViewInit(): void {
+    this.onResize();
+    this.minHeight = DrawDatas.minHeight;
+    this.maxHeight = DrawDatas.maxHeight;
+  }
+
   // Конец класса
   public ngOnDestroy(): void {
     window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
@@ -266,6 +319,8 @@ export class NavMenuComponent implements OnInit, OnDestroy {
     DrawDatas.type = this.type;
     DrawDatas.screenWidth = window.innerWidth;
     DrawDatas.screenHeight = window.innerHeight;
+    DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth || 0;
+    DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth || 0;
 
     DrawDatas.dataRender();
     this.dataCalculate();
@@ -346,7 +401,7 @@ export class NavMenuComponent implements OnInit, OnDestroy {
   // Расчет параметров шапки
   private dataCalculate(): void {
     this.breakpoint = this.screenService.getBreakpoint(DrawDatas.screenWidth);
-
+    // Цикл по свойствам
     for (let titleKey in this.cssNames) {
       let titleValue: string = this.cssNames[titleKey];
       this.css[titleKey] = "";
@@ -366,7 +421,7 @@ export class NavMenuComponent implements OnInit, OnDestroy {
           }
           // Расчитать зависимое значение
           else {
-            value = this.dataCalculateFormula(sizes.max || 0, sizes.min || 0) + (sizes.unit ? sizes.unit : "");
+            value = (sizes.prefixUnit ? sizes.prefixUnit : "") + this.dataCalculateFormula(sizes.max || 0, sizes.min || 0) + (sizes.unit ? sizes.unit : "");
           }
 
           // Установить для одного свойства
@@ -380,7 +435,7 @@ export class NavMenuComponent implements OnInit, OnDestroy {
               css = css + property + ": " + value + ";";
             }
           }
-
+          // Строка CSS
           this.css[titleKey] = this.css[titleKey] + css;
         }
       }
@@ -475,6 +530,8 @@ class DrawDatas {
   public static minHeight: number = 60;
   public static screenWidth: number = 0;
   public static screenHeight: number = 0;
+  public static containerWidth: number = 0;
+  public static containerLeftWidth: number = 0;
   private static shortHeight: number = 420;
 
 
@@ -489,8 +546,14 @@ class DrawDatas {
   public static scroll: DrawInterface[];
   public static title: DrawInterface[];
   public static titleWithBackButton: DrawInterface[];
+  public static titleWithBackButtonAndAvatar: DrawInterface[];
+  public static titleWithAvatar: DrawInterface[];
   public static subtitle: DrawInterface[];
   public static subtitleWithBackButton: DrawInterface[];
+  public static subtitleWithBackButtonAndAvatar: DrawInterface[];
+  public static subtitleWithAvatar: DrawInterface[];
+  public static avatar: DrawInterface[];
+  public static avatarWithBackButton: DrawInterface[];
   public static floatingButton: DrawInterface[];
   public static floatingButtonOverlay: DrawInterface[];
   public static backButton: DrawInterface[];
@@ -591,6 +654,7 @@ class DrawDatas {
       }
     }];
 
+    // Заголовок
     DrawDatas.title = [{
       property: "font-size",
       data: {
@@ -610,27 +674,81 @@ class DrawDatas {
         large: { min: 20, max: 76, unit: "px" }
       }
     }];
+    // Заголовок с кнопкой меню или назад
     DrawDatas.titleWithBackButton = [];
     Object.assign(DrawDatas.titleWithBackButton, DrawDatas.title);
-    DrawDatas.title.push({
-      property: "margin-left",
-      data: {
-        default: { min: 0, max: 0, unit: "px" },
-        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
-      }
-    });
     DrawDatas.titleWithBackButton.push({
       property: "margin-left",
       data: {
         default: { min: DrawDatas.minHeight, max: 0, unit: "px" },
         middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
+        small: { min: DrawDatas.minHeight, max: 15, unit: "px" },
+        xsmall: { min: DrawDatas.minHeight, max: 15, unit: "px" }
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - DrawDatas.minHeight, max: DrawDatas.containerWidth, unit: "px" },
+        small: { min: DrawDatas.containerWidth - (DrawDatas.minHeight * 2), max: DrawDatas.containerWidth - 30, unit: "px" },
+        xsmall: { min: DrawDatas.containerWidth - (DrawDatas.minHeight * 2), max: DrawDatas.containerWidth - 30, unit: "px" },
+      }
+    });
+    // Заголовок с аватаркой
+    DrawDatas.titleWithAvatar = [];
+    Object.assign(DrawDatas.titleWithAvatar, DrawDatas.title);
+    DrawDatas.titleWithAvatar.push({
+      property: "margin-left",
+      data: {
+        default: { min: 48, max: 192, unit: "px" },
+        large: { min: 48, max: 150, unit: "px" },
+        middle: { min: 48, max: 112, unit: "px" },
+        small: { min: 48, max: 85, unit: "px" },
+        xsmall: { min: 48, max: 73, unit: "px" },
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 192, unit: "px" },
+        large: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 150, unit: "px" },
+        middle: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 112, unit: "px" },
+      }
+    });
+    // Заголовок с аватаркой и кнопкой
+    DrawDatas.titleWithBackButtonAndAvatar = [];
+    Object.assign(DrawDatas.titleWithBackButtonAndAvatar, DrawDatas.title);
+    DrawDatas.titleWithBackButtonAndAvatar.push({
+      property: "margin-left",
+      data: {
+        default: { min: DrawDatas.minHeight + 48, max: 192, unit: "px" },
+        large: { min: 113, max: 153, unit: "px" },
+        middle: { min: 113, max: 105, unit: "px" },
+        small: { min: 113, max: 90, unit: "px" },
+        xsmall: { min: 113, max: 78, unit: "px" },
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - (DrawDatas.minHeight + 48), max: DrawDatas.containerWidth - 192, unit: "px" },
+        large: { min: DrawDatas.containerLeftWidth - 113, max: DrawDatas.containerWidth - 153, unit: "px" },
+        middle: { min: DrawDatas.containerLeftWidth - 113, max: DrawDatas.containerWidth - 105, unit: "px" },
+        small: { min: DrawDatas.containerWidth - 113 - 60, max: DrawDatas.containerWidth - 90 - 15, unit: "px" },
+        xsmall: { min: DrawDatas.containerWidth - 113 - 60, max: DrawDatas.containerWidth - 78 - 15, unit: "px" },
+      }
+    });
+    // Отступ и ширина заголовка
+    DrawDatas.title.push({
+      property: "margin-left",
+      data: {
+        default: { min: 0, max: 0, unit: "px" }
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth, max: DrawDatas.containerWidth, unit: "px" },
       }
     });
 
+    // Подзаголовок
     DrawDatas.subtitle = [{
       property: "font-size",
       data: {
@@ -650,24 +768,114 @@ class DrawDatas {
         large: { min: 18, max: 40, unit: "px" }
       }
     }];
+    // Подзаголовок с кнопкой меню или назад
     DrawDatas.subtitleWithBackButton = [];
     Object.assign(DrawDatas.subtitleWithBackButton, DrawDatas.subtitle);
-    DrawDatas.subtitle.push({
-      property: "margin-left",
-      data: {
-        default: { min: 0, max: 0, unit: "px" },
-        middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
-      }
-    });
     DrawDatas.subtitleWithBackButton.push({
       property: "margin-left",
       data: {
         default: { min: DrawDatas.minHeight, max: 0, unit: "px" },
         middle: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        small: { min: DrawDatas.minHeight, max: 30, unit: "px" },
-        xsmall: { min: DrawDatas.minHeight, max: 30, unit: "px" }
+        small: { min: DrawDatas.minHeight, max: 15, unit: "px" },
+        xsmall: { min: DrawDatas.minHeight, max: 15, unit: "px" }
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - DrawDatas.minHeight, max: DrawDatas.containerWidth, unit: "px" },
+        small: { min: DrawDatas.containerWidth - (DrawDatas.minHeight * 2), max: DrawDatas.containerWidth - 30, unit: "px" },
+        xsmall: { min: DrawDatas.containerWidth - (DrawDatas.minHeight * 2), max: DrawDatas.containerWidth - 30, unit: "px" },
+      }
+    });
+    // Подзаголовок с аватаркой
+    DrawDatas.subtitleWithAvatar = [];
+    Object.assign(DrawDatas.subtitleWithAvatar, DrawDatas.subtitle);
+    DrawDatas.subtitleWithAvatar.push({
+      property: "margin-left",
+      data: {
+        default: { min: 48, max: 192, unit: "px" },
+        xsmall: { min: 48, max: 73, unit: "px" },
+        small: { min: 48, max: 85, unit: "px" },
+        middle: { min: 48, max: 112, unit: "px" },
+        large: { min: 48, max: 150, unit: "px" }
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 192, unit: "px" },
+        large: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 150, unit: "px" },
+        middle: { min: DrawDatas.containerLeftWidth - 48, max: DrawDatas.containerWidth - 112, unit: "px" },
+      }
+    });
+    // Подзаголовок с аватаркой и кнопкой
+    DrawDatas.subtitleWithBackButtonAndAvatar = [];
+    Object.assign(DrawDatas.subtitleWithBackButtonAndAvatar, DrawDatas.subtitle);
+    DrawDatas.subtitleWithBackButtonAndAvatar.push({
+      property: "margin-left",
+      data: {
+        default: { min: DrawDatas.minHeight + 48, max: 192, unit: "px" },
+        xsmall: { min: 113, max: 78, unit: "px" },
+        small: { min: 113, max: 90, unit: "px" },
+        middle: { min: 113, max: 105, unit: "px" },
+        large: { min: 113, max: 153, unit: "px" },
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth - (DrawDatas.minHeight + 48), max: DrawDatas.containerWidth - 192, unit: "px" },
+        large: { min: DrawDatas.containerLeftWidth - 113, max: DrawDatas.containerWidth - 153, unit: "px" },
+        middle: { min: DrawDatas.containerLeftWidth - 113, max: DrawDatas.containerWidth - 105, unit: "px" },
+        small: { min: DrawDatas.containerWidth - 113 - 60, max: DrawDatas.containerWidth - 90 - 15, unit: "px" },
+        xsmall: { min: DrawDatas.containerWidth - 113 - 60, max: DrawDatas.containerWidth - 78 - 15, unit: "px" },
+      }
+    });
+    // Отступ подзаголовка
+    DrawDatas.subtitle.push({
+      property: "margin-left",
+      data: {
+        default: { min: 0, max: 0, unit: "px" }
+      }
+    }, {
+      property: "width",
+      data: {
+        default: { min: DrawDatas.containerLeftWidth, max: DrawDatas.containerWidth, unit: "px" },
+      }
+    });
+
+    // Аватарка
+    DrawDatas.avatar = [{
+      property: ["width", "height", "line-height"],
+      data: {
+        default: { min: 38, max: 152, unit: "px" },
+        xsmall: { min: 38, max: 48, unit: "px" },
+        small: { min: 38, max: 60, unit: "px" },
+        middle: { min: 38, max: 84, unit: "px" },
+        large: { min: 38, max: 118, unit: "px" }
+      }
+    }, {
+      property: "font-size",
+      data: {
+        default: { min: 28, max: 114, unit: "px" },
+        xsmall: { min: 28, max: 36, unit: "px" },
+        small: { min: 28, max: 45, unit: "px" },
+        middle: { min: 28, max: 63, unit: "px" },
+        large: { min: 28, max: 88, unit: "px" }
+      }
+    }, {
+      property: "left",
+      data: {
+        default: { min: 0, max: 0, unit: "px" }
+      }
+    }];
+    // Аватарка с кнопкой назад или меню
+    DrawDatas.avatarWithBackButton = [];
+    Object.assign(DrawDatas.avatarWithBackButton, DrawDatas.avatar);
+    DrawDatas.avatarWithBackButton.push({
+      property: "left",
+      data: {
+        default: { min: DrawDatas.minHeight, max: 0, unit: "px" },
+        small: { min: DrawDatas.minHeight, max: 15, unit: "px" },
+        xsmall: { min: DrawDatas.minHeight, max: 15, unit: "px" },
       }
     });
 
@@ -797,6 +1005,7 @@ interface DrawDataPeriod {
   max?: number;
   value?: DrawDataValue;
   unit?: string;
+  prefixUnit?: string;
 }
 
 // Данные размеров
@@ -827,6 +1036,7 @@ type DrawDatasKeys =
   "scroll" |
   "title" |
   "titleWithBackButton" |
+  "avatar" |
   "subtitle" |
   "subtitleWithBackButton" |
   "floatingButton" |
