@@ -17,9 +17,4 @@ import { Component } from '@angular/core';
 export class CabinetComponent {
   public cycle: number[] = Array(70).fill(0);
   public testText: string = "123";
-
-
-  // Тест
-  public test(text: string): void {
-  }
 }
