@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterContentInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MenuItem } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenKeys, ScreenService } from "@_services/screen.service";
@@ -18,7 +18,7 @@ import { ScreenKeys, ScreenService } from "@_services/screen.service";
 
 
 // Основной класс
-export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
+export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
 
 
   @Input() public type: "full" | "short" | "collapse" = "collapse";
@@ -260,7 +260,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Запуск класса
-  public ngAfterViewInit(): void {
+  public ngAfterContentInit(): void {
     this.onResize();
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
