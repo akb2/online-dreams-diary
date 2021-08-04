@@ -64,7 +64,9 @@ export class AppComponent {
       this.accountService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
         if (code == "0001") {
-          this.validToken = true;
+          this.accountService.syncCurrentUser().subscribe(code => {
+            this.validToken = true;
+          });
         }
         // Токен не валидный
         else {
