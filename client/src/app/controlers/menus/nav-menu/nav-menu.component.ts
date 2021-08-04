@@ -63,6 +63,8 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollMouseStartY: number = 0;
   private swipeScrollDistance: number = 0;
   private swipeScrollPress: boolean = false;
+  private lastScrollTime: number = new Date().getTime();
+  private scrollTimeWait: number = 150;
 
   public css: { [key: string]: string } = {};
 
@@ -275,6 +277,9 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   // Скролл страницы
   private onWindowScroll(event: Event): boolean {
     let scroll: number = document?.scrollingElement?.scrollTop || 0;
+    // Окончание прокрутки
+    this.lastScrollTime = new Date().getTime();
+    setTimeout(() => this.onWindowScrollEnd(), this.scrollTimeWait);
     // Автоколапс
     if (this.autoCollapse) {
       // Отменить блокировку скролла
@@ -312,6 +317,13 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataCalculate();
     // Вернуть TRUE или FALSE
     return !this.autoCollapsed;
+  }
+
+  // Скролл закончился
+  private onWindowScrollEnd(): void {
+    if (this.lastScrollTime + this.scrollTimeWait <= new Date().getTime()) {
+      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+    }
   }
 
   // Изменение размеров экрана
@@ -373,7 +385,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     // Вернуть обратно
-    else if (this.autoCollapse && (this.swipeScrollDistance > 0 || this.swipeScrollDistance < 0)) {
+    else if (this.autoCollapse && Math.abs(this.swipeScrollDistance) > 0) {
       // Развернуть
       if (this.swipeScrollDistance > 0) {
         this.collapseMenu();
@@ -382,6 +394,10 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
       else {
         this.expandMenu();
       }
+    }
+    // Разблокировать скролл
+    else {
+      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
     }
     // Остановить слушателя
     this.swipeScrollDistance = 0;
@@ -512,11 +528,13 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Скролл
   private scrollTo(scroll: number): void {
-    document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
-    window.scroll({
-      behavior: "smooth",
-      top: scroll
-    });
+    if (window.scrollY > scroll || window.scrollY < scroll) {
+      document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
+      window.scrollTo({
+        behavior: "smooth",
+        top: scroll
+      });
+    }
   }
 }
 
