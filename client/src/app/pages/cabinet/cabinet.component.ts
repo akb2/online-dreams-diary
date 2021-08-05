@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { AppComponent } from '@app/app.component';
+import { User } from '@_models/account';
 
 
 
@@ -9,12 +11,10 @@ import { Component } from '@angular/core';
   templateUrl: './cabinet.component.html',
   styleUrls: ['./cabinet.component.scss']
 })
-
-
-
-
-
 export class CabinetComponent {
-  public cycle: number[] = Array(70).fill(0);
-  public testText: string = "123";
+
+
+  public get user(): User {
+    return AppComponent.user;
+  };
 }

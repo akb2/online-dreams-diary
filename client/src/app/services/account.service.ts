@@ -1,14 +1,13 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { UserRegister } from "@_models/account";
-import { Observable } from "rxjs";
-import { switchMap } from "rxjs/operators";
-import { environment } from '@_environments/environment';
-import { ApiResponse } from "@_models/api";
-import { LocalStorageService } from "@_services/local-storage.service";
-import { ApiService } from "@_services/api.service";
 import { Router } from "@angular/router";
-import { User } from "oidc-client";
+import { environment } from '@_environments/environment';
+import { User, UserRegister } from "@_models/account";
+import { ApiResponse } from "@_models/api";
+import { ApiService } from "@_services/api.service";
+import { LocalStorageService } from "@_services/local-storage.service";
+import { BehaviorSubject, Observable } from "rxjs";
+import { switchMap } from "rxjs/operators";
 
 
 
@@ -27,6 +26,9 @@ export class AccountService {
   private cookieLifeTime: number = 604800;
   public token: string = "";
   public id: string = "";
+
+  private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+  public readonly user$: Observable<User> = this.user.asObservable();
 
   // Конструктор
   constructor(
@@ -112,8 +114,10 @@ export class AccountService {
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(switchMap(
       result => {
-        if (result.result.code === "0001") {
-          this.saveCurrentUser(result.result.data.user as User);
+        // Сохранить данные текущего пользователя
+        if (result.result.code === "0001" && result.result.data?.id === this.id) {
+          this.saveCurrentUser(result.result.data as User);
+          this.user.next(result.result.data as User);
         }
         // Вернуть обработку кодов
         return this.apiService.checkResponse(result.result.code, codes);
@@ -151,7 +155,9 @@ export class AccountService {
   public getCurrentUser(): User {
     if (this.checkAuth) {
       const userString: string = this.localStorageService.getCookie("current_user");
-      return JSON.parse(userString) as User;
+      if (userString) {
+        return JSON.parse(userString) as User;
+      }
     }
     // Пользователь не найден
     return null;

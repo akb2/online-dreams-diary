@@ -1,23 +1,21 @@
-<app-main-menu [autoCollapse]="true"
-               type="short"
-               image="../../../../assets/images/backgrounds/5.jpg"
-               imagePositionX="center"
-               imagePositionY="bottom"
-               [imageOverlay]="true"
-               title="Андрей Кобелев"
-               subTitle="Личный кабинет"
-               avatarIcon="person"
-               floatButtonIcon="settings"
-               floatButtonLink="/settings"></app-main-menu>
+<ng-container *ngIf="user">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 type="short"
+                 image="../../../../assets/images/backgrounds/5.jpg"
+                 imagePositionX="center"
+                 imagePositionY="bottom"
+                 [imageOverlay]="true"
+                 [title]="user.name + ' ' + user.lastName"
+                 subTitle="Личный кабинет"
+                 [avatarImage]="user.avatars.middle"
+                 avatarIcon="person"
+                 floatButtonIcon="settings"
+                 floatButtonLink="/settings"></app-main-menu>
 
-
-
-
-
-<div class="root-section">
-  <div class="container">
-    <div *ngFor="let n of cycle">
-      12312312312313123123
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <div class="container">
     </div>
   </div>
-</div>
+</ng-container>

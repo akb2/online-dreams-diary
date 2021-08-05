@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
+import { User } from "@_models/account";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { SnackbarService } from "@_services/snackbar.service";
@@ -14,13 +15,10 @@ import { SnackbarService } from "@_services/snackbar.service";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
-
-
-
-
-
 export class AppComponent {
 
+
+  public static user: User;
 
   public mainTitle: string = "Online Dreams Diary";
 
@@ -41,6 +39,7 @@ export class AppComponent {
     private titleService: Title,
     private activatedRoute: ActivatedRoute
   ) {
+    this.accountService.user$.subscribe(user => AppComponent.user = user);
     // События старта и окочания лоадера
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {

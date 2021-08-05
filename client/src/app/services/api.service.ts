@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { ApiResponseMessages } from "@_models/api";
-import { SimpleObject } from "@_models/app";
 import { SnackbarService } from "@_services/snackbar.service";
 import { Observable, of, throwError } from "rxjs";
 
