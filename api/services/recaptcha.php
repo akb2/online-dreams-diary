@@ -18,6 +18,12 @@ class ReCaptchaService
 
 
 
+  // Установить новый код капчи
+  public function setCaptchaCode(string $captcha): void
+  {
+    $this->captcha = $captcha;
+  }
+
   // Получить URL для проверки
   public function checkCaptcha(): bool
   {
