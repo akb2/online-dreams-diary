@@ -60,7 +60,8 @@ export class AppComponent {
   // Действия перед загрузкой страницы
   private beforeLoadPage(): void {
     // Пользователь авторизован, проверить токен
-    if (this.accountService.checkAuth) {
+    const checkToken: boolean = !(this.router.getCurrentNavigation()?.extras.state?.checkToken == false);
+    if (this.accountService.checkAuth && checkToken) {
       this.accountService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
         if (code == "0001") {

@@ -35,11 +35,11 @@ export class AuthGuard implements CanActivate {
     if ((route.data?.redirectAuth?.length > 0 && userAuth) || (route.data?.redirectNotAuth?.length > 0 && !userAuth)) {
       // Редирект авторизованного пользователя
       if (route.data?.redirectAuth?.length > 0 && userAuth) {
-        this.router.navigate([route.data?.redirectAuth]);
+        this.router.navigate([route.data?.redirectAuth], { state: { checkToken: false } });
       }
       // Редирект неавторизованного пользователя
       else {
-        this.router.navigate([route.data?.redirectNotAuth]);
+        this.router.navigate([route.data?.redirectNotAuth], { state: { checkToken: false } });
       }
     }
     // Проверка авторизации

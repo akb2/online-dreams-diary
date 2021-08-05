@@ -56,7 +56,21 @@ export class AccountService {
     formData.append("token", this.token);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "account/checkToken", formData, this.httpHeader).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
+      result => {
+        const code: string = result.result.code;
+        // Сохранить токен
+        if (code === "0001") {
+          if (this.id === result.result.data.tokenData.user_id) {
+            this.saveAuth(result.result.data.tokenData.token, result.result.data.tokenData.user_id);
+          }
+          // Неверный токен
+          else {
+            this.deleteCurrentUser();
+            this.router.navigate([""]);
+          }
+        }
+        return this.apiService.checkResponse(result.result.code, codes);
+      }
     ));
   }
 
@@ -95,11 +109,8 @@ export class AccountService {
 
   // Информация о пользователе
   public getUser(id: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("id", id);
-    formData.append("token", this.token);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/getUser", formData, this.httpHeader).pipe(switchMap(
+    return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(switchMap(
       result => {
         if (result.result.code === "0001") {
           this.saveCurrentUser(result.result.data.user as User);
