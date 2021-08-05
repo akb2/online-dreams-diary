@@ -59,6 +59,11 @@ class App
       if (method_exists($controller, "setDbContext")) {
         $controller->setDbContext($this->pdo);
       }
+      // Запуск сервисов
+      if (method_exists($controller, "setServices")) {
+        $controller->setServices();
+      }
+
       // Выполнить нужный метод
       if (method_exists($controller, $methodName)) {
         return $controller->$methodName($_REQUEST);
