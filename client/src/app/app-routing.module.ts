@@ -33,8 +33,8 @@ const routes: Routes = [
   // * Для авторизованных пользователей
   // Личный кабинет
   {
-    path: "cabinet",
-    loadChildren: () => import("@_pages/cabinet/cabinet.module").then(m => m.CabinetModule),
+    path: "profile",
+    loadChildren: () => import("@_pages/profile/profile.module").then(m => m.ProfileModule),
     data: { title: "Кабинет сновидца", authRule: 1 },
     canActivate: [AuthGuard]
   },
@@ -45,7 +45,7 @@ const routes: Routes = [
     children: [],
     data: {
       authRule: 0,
-      redirectAuth: "/cabinet",
+      redirectAuth: "/profile",
       redirectNotAuth: "/home",
     },
     canActivate: [AuthGuard]
