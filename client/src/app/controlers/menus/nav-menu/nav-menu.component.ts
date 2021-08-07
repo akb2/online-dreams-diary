@@ -28,6 +28,7 @@ export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
   @Input() public imagePositionX: string = "center";
   @Input() public imagePositionY: string = "center";
   @Input() public imageOverlay: boolean = true;
+  @Input() public imageFullShow: boolean = false;
 
   @Input() public title: string = "";
   @Input() public subTitle: string = "";
@@ -166,7 +167,7 @@ export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
           auth: 1,
           icon: "home",
           text: "Кабинет",
-          link: "/cabinet"
+          link: "/profile"
         },
         // Мой дневник сновидений
         {

@@ -8,11 +8,11 @@
   <div class="main-menu__layer back">
     <!-- Градиент -->
     <div class="main-menu__layer-gradient type-{{ type }}"
-         *ngIf="type == 'full'">
+         *ngIf="!imageFullShow && type == 'full'">
       <app-main-background></app-main-background>
     </div>
     <!-- Картинка -->
-    <div class="main-menu__layer-image type-{{ type }} {{imageOverlay? 'overlay': ''}}"
+    <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
          *ngIf="image">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
