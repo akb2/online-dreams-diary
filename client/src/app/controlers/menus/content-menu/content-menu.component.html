@@ -1,0 +1,36 @@
+<!-- Список меню -->
+<div class="menu"
+     *ngIf="menuItems">
+  <!-- Пункт меню -->
+  <ng-container *ngFor="let item of menuItems">
+    <!-- Ссылка -->
+    <a class="menu__item"
+       *ngIf="item.link && !item.callback"
+       [routerLink]="item.link"
+       [queryParams]="item.linkParams">
+      <ng-container [ngTemplateOutlet]="menuItemContent"
+                    [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+    </a>
+    <!-- Действие -->
+    <div class="menu__item"
+         *ngIf="!item.link && item.callback"
+         (click)="item.callback"></div>
+  </ng-container>
+</div>
+
+<!-- Контент пункта меню -->
+<ng-template #menuItemContent
+             let-item>
+  <div class="menu__item-image">
+    <mat-icon>{{item.icon}}</mat-icon>
+  </div>
+  <div class="menu__item-content">
+    <div class="menu__item-text">{{item.text}}</div>
+    <div class="menu__item-desc"
+         *ngIf="item.desc">{{item.desc}}</div>
+  </div>
+  <div class="menu__item-more">
+    <span>Далее</span>
+    <mat-icon>chevron_right</mat-icon>
+  </div>
+</ng-template>

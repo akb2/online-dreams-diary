@@ -1,0 +1,165 @@
+@use "sass:map";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/colors";
+
+// Список меню
+.menu {
+  $gap: 15px;
+  // Свойства
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: $gap;
+  // Элемент меню
+  &__item {
+    $elm: &;
+    $counts: (
+      xsmall: 1,
+      small: 1,
+      middle: 2,
+      large: 2,
+      xlarge: 3,
+    );
+    $padding-x: 15px;
+    $padding-y: 15px;
+    $image-size: 60px;
+    $color: map.get(colors.$mat-primary, 500);
+    $color-contrast: map.get(colors.$mat-primary, contrast, 500);
+    // Свойства
+    width: 100%;
+    background-color: colors.$card;
+    padding: $padding-y $padding-x;
+    gap: $padding-y $padding-x;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    transition: background-color #{screens.$animation-time};
+    border-radius: screens.$card-border-radius;
+    box-shadow: screens.$card-shadow;
+    // Картинка
+    &-image,
+    &-more {
+      width: $image-size;
+      height: $image-size;
+      line-height: $image-size;
+      font-size: $image-size;
+      color: $color;
+      transition: color #{screens.$animation-time};
+      // Иконка
+      > mat-icon {
+        width: inherit;
+        height: inherit;
+        line-height: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+    }
+    // Текст
+    &-content {
+      flex-grow: 1;
+      line-height: 1.1;
+    }
+    // Заголовок
+    &-text,
+    &-more > span {
+      font-size: 18px;
+      font-weight: 400;
+      color: colors.$title;
+      transition: color #{screens.$animation-time};
+    }
+    // Описание
+    &-desc {
+      font-size: 14px;
+      font-weight: 300;
+      margin-top: 5px;
+      color: colors.$subtitle;
+      transition: color #{screens.$animation-time};
+    }
+    // Кнопка далее
+    &-more {
+      width: auto;
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      // Текст
+      > span {
+        display: block;
+        color: $color;
+        text-align: right;
+      }
+      // Иконка
+      > mat-icon {
+        width: $image-size;
+      }
+    }
+
+    // Адаптивные размеры плиток
+    @include screens.adaptiveFor($counts) using($count) {
+      @for $i from 1 to $count + 1 {
+        &:nth-child(#{$i}) {
+          $image-size: 160px;
+          // Свойства
+          width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
+          flex-direction: column;
+          // Вложенные элементы
+          #{$elm} {
+            // Картинка
+            &-image {
+              width: $image-size;
+              height: $image-size;
+              line-height: $image-size;
+              font-size: $image-size;
+            }
+            // Текст
+            &-content {
+              text-align: center;
+            }
+            // Заголовок
+            &-text {
+              font-size: 22px;
+            }
+            // Описание
+            &-desc {
+              font-size: 16px;
+              margin-top: 8px;
+            }
+            // Кнопка далее
+            &-more {
+              width: 100%;
+              justify-content: flex-end;
+              // Текст
+              > span {
+                flex-grow: 1;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Выделение
+    &:hover {
+      background-color: $color;
+      // Вложенные элементы
+      #{$elm} {
+        // Картинка
+        &-image,
+        &-more {
+          color: $color-contrast;
+        }
+        // Заголовок
+        &-text,
+        &-more > span {
+          color: $color-contrast;
+        }
+        // Описание
+        &-desc {
+          color: $color-contrast;
+        }
+      }
+    }
+  }
+}
