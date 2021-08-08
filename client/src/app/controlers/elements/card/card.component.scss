@@ -1,21 +1,168 @@
+@use "sass:map";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/mixins";
 
 $base_elm: ".mat-card";
-$padding-x: 25px;
-$padding-y: 25px;
+$paddings: (
+  xsmall: (
+    x: 15px,
+    y: 15px,
+  ),
+  small: (
+    x: 20px,
+    y: 20px,
+  ),
+  middle: (
+    x: 25px,
+    y: 25px,
+  ),
+  large: (
+    x: 30px,
+    y: 30px,
+  ),
+  xlarge: (
+    x: 30px,
+    y: 30px,
+  ),
+);
+$image-color: 500;
+// Цвета
+$colors: (
+  primary: colors.$mat-primary,
+  accent: colors.$mat-secondary,
+  warn: colors.$mat-status-warn,
+  disabled: colors.$mat-disabled,
+);
 
-// Карточки
+// Стиль карточки
 #{$base_elm} {
-  padding: #{$padding-y} #{$padding-x};
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: #{$padding-y} #{$padding-x};
-  box-shadow: 1px 1px 10px 1px #{colors.$shadow};
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  box-shadow: colors.$shadow;
   background-color: colors.$card;
   border-radius: screens.$card-border-radius;
   box-shadow: screens.$card-shadow;
 
+  // Полная высота
+  &.full-height {
+    height: 100%;
+  }
+
+  // Шапка
+  &-header {
+    $image-size: 48px;
+    $menu-size: 40px;
+
+    align-items: center;
+    display: grid;
+    grid-gap: 0 10px;
+
+    // Макеты
+    & {
+      // Общий макет
+      grid-template-areas: "title" "subtitle";
+      grid-template-columns: 1fr;
+      // Макет с аватаркой
+      &.use-avatar {
+        grid-template-areas: "avatar title" "avatar subtitle";
+        grid-template-columns: #{$image-size} 1fr;
+      }
+      // Макет с меню
+      &.use-menu {
+        grid-template-areas: "title menu" "subtitle menu";
+        grid-template-columns: 1fr #{$menu-size};
+      }
+      // Макет с меню и аватаркой
+      &.use-menu {
+        grid-template-areas: "avatar title menu" "avatar subtitle menu";
+        grid-template-columns: #{$image-size} 1fr #{$menu-size};
+      }
+    }
+
+    // Текст шапки
+    :host ::ng-deep &-text {
+      margin: 0;
+    }
+
+    // Заголовок
+    #{$base_elm}-title {
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 24px;
+      color: colors.$title;
+      @include mixins.margin;
+    }
+
+    // Подзаголовок
+    #{$base_elm}-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 18px;
+      color: colors.$subtitle;
+      @include mixins.margin;
+    }
+
+    // Аватарка
+    #{$base_elm}-avatar {
+      width: $image-size;
+      height: $image-size;
+      border-radius: screens.$card-border-radius;
+      overflow: hidden;
+
+      // С картинкой
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      // Без картинки
+      > mat-icon {
+        width: $image-size;
+        height: $image-size;
+        line-height: $image-size;
+        font-size: $image-size * 0.6;
+        text-align: center;
+        background-color: map.get(colors.$mat-primary, $image-color);
+        color: map.get(colors.$mat-primary, contrast, $image-color);
+      }
+
+      // Для закрашенных аватарок
+      &[background="fill"] {
+        @each $key, $color in $colors {
+          &[color="#{$key}"] > mat-icon {
+            background-color: map.get($color, $image-color);
+            color: map.get($color, contrast, $image-color);
+          }
+        }
+      }
+      // Для прозрачных аватарок
+      &[background="transparent"] {
+        > mat-icon {
+          background-color: transparent;
+        }
+        @each $key, $color in $colors {
+          &[color="#{$key}"] > mat-icon {
+            color: map.get($color, $image-color);
+          }
+        }
+      }
+    }
+  }
+
+  // Содержимое
+  &-content {
+    margin-bottom: 0;
+    flex-grow: 1;
+    // Скрытый блок
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  // Поле кнопок
   &-actions {
     display: flex;
     flex-flow: row nowrap;
@@ -23,12 +170,12 @@ $padding-y: 25px;
     align-items: flex-start;
     gap: 10px;
     margin: 0;
-
+    // Если элемент в конце списка
     #{$base_elm} > &:last-child {
       padding-top: 0;
       margin-bottom: 0;
     }
-
+    // Адаптив
     @media (max-width: 330px) {
       justify-content: space-between;
 
@@ -37,19 +184,95 @@ $padding-y: 25px;
         transform: translateX(-50%);
       }
     }
-  }
-
-  &-header {
-    :host ::ng-deep &-text {
-      margin: 0;
-    }
-
-    #{$base_elm}-title {
-      margin-bottom: 0;
+    // Скрытый блок
+    &[hidden] {
+      display: none;
     }
   }
 
-  &-content {
-    margin-bottom: 0;
+  // Адаптив
+  @include screens.adaptiveFor($paddings) using($padding) {
+    padding: #{map.get($padding, y)} #{map.get($padding, x)};
+    gap: #{map.get($padding, y)} #{map.get($padding, x)};
+  }
+}
+
+// Прикрепленные свойства
+:host ::ng-deep .attachment {
+  $image-size: 28px;
+
+  display: grid;
+  gap: 0 8px;
+  grid-template: "image title" "image subtitle";
+  grid-template-columns: $image-size 1fr;
+  align-items: center;
+
+  // Список элементов
+  &__list {
+    display: grid;
+    gap: 20px 15px;
+    align-items: start;
+    grid-template-columns: 1fr 1fr;
+    // Адаптив
+    @media (max-width: 400px) {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+  }
+
+  // Картинка
+  &__image {
+    $sizes: (
+      small: 0.5,
+      middle: 0.75,
+      large: 1,
+    );
+
+    display: block;
+    width: $image-size;
+    height: $image-size;
+    grid-area: image;
+
+    // Иконка
+    > mat-icon {
+      width: $image-size;
+      height: $image-size;
+      line-height: $image-size;
+      font-size: $image-size;
+      color: map.get(colors.$mat-primary, $image-color);
+      text-align: center;
+    }
+
+    // Разные цвета
+    @each $key, $color in $colors {
+      &[color="#{$key}"] > mat-icon {
+        color: map.get($color, $image-color);
+      }
+    }
+
+    // Разные размеры
+    @each $key, $size in $sizes {
+      &[size="#{$key}"] > mat-icon {
+        font-size: $image-size * $size;
+      }
+    }
+  }
+
+  // Заголовок
+  &__title {
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 500;
+    color: colors.$title;
+    grid-area: title;
+  }
+
+  // Подзаголовок
+  &__subtitle {
+    font-size: 13px;
+    line-height: 14px;
+    font-weight: 300;
+    color: colors.$subtitle;
+    grid-area: subtitle;
   }
 }

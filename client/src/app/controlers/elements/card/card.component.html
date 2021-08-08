@@ -1,12 +1,53 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title *ngIf="title">{{title}}</mat-card-title>
-    <mat-card-subtitle *ngIf="subTitle">{{subTitle}}</mat-card-subtitle>
+<!-- Карточки -->
+<mat-card [class]="fullHeight? 'full-height': ''">
+  <!-- Шапка -->
+  <mat-card-header class="{{avatar || avatarIcon? 'use-avatar': ''}} {{showMenuPanel? 'use-menu': ''}}">
+    <!-- Аватарка -->
+    <a mat-card-avatar
+       [attr.color]="avatarColor"
+       [attr.background]="avatarBackground"
+       *ngIf="avatar || avatarIcon"
+       [routerLink]="routerLink"
+       [queryParams]="queryParams">
+      <img [src]="avatar"
+           *ngIf="avatar" />
+      <mat-icon *ngIf="avatarIcon">{{avatarIcon}}</mat-icon>
+    </a>
+    <!-- Заголовок -->
+    <mat-card-title *ngIf="title">
+      <a *ngIf="routerLink || queryParams">{{title}}</a>
+      <ng-container *ngIf="!routerLink && !queryParams">{{title}}</ng-container>
+    </mat-card-title>
+    <!-- Подзаголовок -->
+    <mat-card-subtitle *ngIf="subTitle">
+      <a *ngIf="routerLink || queryParams">{{subTitle}}</a>
+      <ng-container *ngIf="!routerLink && !queryParams">{{subTitle}}</ng-container>
+    </mat-card-subtitle>
+    <!-- Раскрывающееся меню -->
+    <a mat-icon-button
+       [matMenuTriggerFor]="menuPanel"
+       *ngIf="showMenuPanel">
+      <mat-icon>more_vert</mat-icon>
+    </a>
   </mat-card-header>
-  <mat-card-content>
+  <!-- Содержимое -->
+  <mat-card-content #contentPanel
+                    [hidden]="!showContentPanel">
     <ng-content select="[content]"></ng-content>
   </mat-card-content>
-  <mat-card-actions>
-    <ng-content select="[actions]"></ng-content>
-  </mat-card-actions>
+  <!-- Кнопки -->
+  <ng-container>
+    <mat-card-actions #actionsPanel
+                      [hidden]="!showActionsPanel">
+      <ng-content select="[actions]"></ng-content>
+    </mat-card-actions>
+  </ng-container>
 </mat-card>
+
+<!-- Меню карточки -->
+<mat-menu #menuPanel="matMenu"
+          [hidden]="!showMenuPanel">
+  <div #menuPanelHelper>
+    <ng-content select="[menus]"></ng-content>
+  </div>
+</mat-menu>

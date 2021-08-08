@@ -1,14 +1,19 @@
-import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { NgModule } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
-
+import { MatMenuModule } from "@angular/material/menu";
+import { RouterModule } from "@angular/router";
+import { CoreModule } from "@_modules/core.module";
 import { CardComponent } from "./card.component";
 
 
 
 
 
-@NgModule( {
+
+// Декоратор
+@NgModule({
   declarations: [
     CardComponent
   ],
@@ -17,12 +22,13 @@ import { CardComponent } from "./card.component";
   ],
   imports: [
     CommonModule,
-    MatCardModule
+    CoreModule,
+    MatCardModule,
+    MatMenuModule,
+    MatButtonModule,
+    RouterModule
   ]
 })
 
-
-
-
-
+// Класс модуля
 export class CardModule { }
