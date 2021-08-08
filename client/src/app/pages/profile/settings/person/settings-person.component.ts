@@ -34,7 +34,8 @@ export class SettingsPersonProfileComponent {
       lastName: ["", ValidatorData.name],
       patronymic: ["", ValidatorData.name],
       birthDate: ["", ValidatorData.birthDate],
-      sex: [false]
+      sex: [false],
+      email: ["", ValidatorData.email],
     });
     // Подписка на данные пользвателя
     this.accountService.user$.subscribe(user => {
@@ -46,6 +47,7 @@ export class SettingsPersonProfileComponent {
         this.form.get("patronymic").setValue(this.user.patronymic);
         this.form.get("birthDate").setValue(new Date(this.user.birthDate));
         this.form.get("sex").setValue(this.user.sex == 1 ? true : false);
+        this.form.get("email").setValue(this.user.email);
       }
     });
   }

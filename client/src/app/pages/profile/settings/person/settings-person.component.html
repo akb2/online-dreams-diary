@@ -2,9 +2,9 @@
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  type="short"
-                 image="../../../../assets/images/backgrounds/6.jpg"
+                 image="../../../../assets/images/backgrounds/5.jpg"
                  imagePositionX="center"
-                 imagePositionY="center"
+                 imagePositionY="bottom"
                  [imageOverlay]="true"
                  [title]="user.name + ' ' + user.lastName"
                  subTitle="Персональные данные"
@@ -40,8 +40,8 @@
                           (submitCallback)="onSaveData()"></app-text-input>
         </ng-container>
       </app-card>
-      <!-- Персональные данные -->
-      <app-card title="Персональные данные"
+      <!-- Контактные данные -->
+      <app-card title="Контактные данные"
                 [fullHeight]="true">
         <ng-container content>
           <!-- Дата рождения -->
@@ -56,6 +56,12 @@
           <app-toggle-input label="Ваш пол"
                             [values]="['Мужской','Женский']"
                             formControlName="sex"></app-toggle-input>
+          <!-- Адрес почты -->
+          <app-text-input label="E-mail"
+                          formControlName="email"
+                          [errors]="errors.email"
+                          [maxLength]="formData.emailMaxLength"
+                          (submitCallback)="onSaveData()"></app-text-input>
         </ng-container>
       </app-card>
     </div>
