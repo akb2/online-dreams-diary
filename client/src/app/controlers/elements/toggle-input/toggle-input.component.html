@@ -1,14 +1,17 @@
 <mat-form-field [appearance]="appearance">
   <mat-label>{{label}}</mat-label>
   <div class="values"><span class="values__label"
-          [ngClass]="{ select: !control.value }">{{values[0]}}</span>
+          [ngClass]="{ select: !isChecked }"
+          (click)="control.setValue(false)">{{values[0]}}</span>
     <div class="values__toggle">
       <mat-slide-toggle #toggle=""
                         color="primary"
-                        [checked]="!!control.value"></mat-slide-toggle>
+                        [checked]="isChecked"
+                        (toggleChange)="control.setValue(!control.value)"></mat-slide-toggle>
     </div>
     <span class="values__label"
-          [ngClass]="{ select: !!control.value }">{{values[1]}}</span>
+          [ngClass]="{ select: isChecked }"
+          (click)="control.setValue(true)">{{values[1]}}</span>
   </div>
   <input matInput=""
          hidden=""

@@ -15,7 +15,13 @@ import { BaseInputDirective } from "@app/directives/base-input.directive";
 
 // Класс
 export class ToggleInputComponent extends BaseInputDirective {
+
+
   @Input() public label: string = "Заголовок";
   @Input() public values: [string, string] = ["Параметр 1", "Параметр 2"];
   @Input() public appearance: MatFormFieldAppearance = "fill";
+
+  public get isChecked(): boolean {
+    return !!this.control.value;
+  }
 }
