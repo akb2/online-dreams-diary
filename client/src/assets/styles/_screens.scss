@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "./colors";
 
 $breakpoints: (
   xsmall: 600,
@@ -9,6 +10,9 @@ $breakpoints: (
 );
 
 $animation-time: 0.3s;
+
+$card-border-radius: 5px;
+$card-shadow: 1px 1px 10px 1px #{colors.$shadow};
 
 // Максимальное разрешение брейкпоинта
 @function max_resolution($screen) {
