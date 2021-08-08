@@ -407,12 +407,17 @@ $breakpointMobile: small;
     // Ссылка
     &-link {
       $icon-size: 48px;
+      // Свойства
       display: grid;
       grid-template-columns: $icon-size 1fr;
       grid-gap: 10px;
       text-decoration: none;
       transition: background-color screens.$animation-time;
-
+      background-color: transparent;
+      border: none;
+      width: 100%;
+      padding: 0;
+      // Иконка
       > mat-icon {
         width: $icon-size;
         height: $icon-size;
@@ -422,7 +427,7 @@ $breakpointMobile: small;
         text-align: center;
         transition: color screens.$animation-time;
       }
-
+      // Текст
       > span {
         line-height: $icon-size;
         font-size: 15px;
@@ -435,13 +440,15 @@ $breakpointMobile: small;
         letter-spacing: 0;
         font-family: "Roboto", sans-serif;
         transition: color screens.$animation-time;
+        text-align: left;
       }
-
+      // Активный пункт
       &.active {
+        // Иконка
         > mat-icon {
           color: colors.$color_1;
         }
-
+        // Текст
         > span {
           color: colors.$color_1;
         }
