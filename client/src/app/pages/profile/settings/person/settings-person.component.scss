@@ -1,0 +1,42 @@
+@use "sass:map";
+@use "../../../../../assets/styles/screens";
+@use "../../../../../assets/styles/material";
+@use "../../../../../assets/styles/containers";
+
+// Контейнер
+.container {
+  $counts: (
+    xsmall: (
+      count: 1,
+      gap: map.get(containers.$paddings-y, xsmall),
+    ),
+    small: (
+      count: 1,
+      gap: map.get(containers.$paddings-y, small),
+    ),
+    middle: (
+      count: 2,
+      gap: map.get(containers.$paddings-y, middle),
+    ),
+    large: (
+      count: 3,
+      gap: 30px,
+    ),
+    xlarge: (
+      count: 4,
+      gap: 30px,
+    ),
+  );
+  // Свойства
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: stretch;
+  // Адаптив ширины
+  @include screens.adaptiveFor($counts) using($data) {
+    gap: map.get($data, gap);
+    > * {
+      width: calc((100% - #{map.get($data, gap) * (map.get($data, count) - 1)}) / #{map.get($data, count)});
+    }
+  }
+}

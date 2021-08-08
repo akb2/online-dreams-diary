@@ -14,7 +14,50 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <div class="container">
+    <div class="container"
+         [formGroup]="form">
+      <!-- Персональные данные -->
+      <app-card title="Персональные данные"
+                [fullHeight]="true">
+        <ng-container content>
+          <!-- Имя -->
+          <app-text-input label="Имя"
+                          formControlName="name"
+                          [errors]="errors.name"
+                          [maxLength]="formData.nameMaxLength"
+                          (submitCallback)="onSaveData()"></app-text-input>
+          <!-- Фамилия -->
+          <app-text-input label="Фамилия"
+                          formControlName="lastName"
+                          [errors]="errors.lastName"
+                          [maxLength]="formData.nameMaxLength"
+                          (submitCallback)="onSaveData()"></app-text-input>
+          <!-- Отчество -->
+          <app-text-input label="Отчество"
+                          formControlName="patronymic"
+                          [errors]="errors.patronymic"
+                          [maxLength]="formData.nameMaxLength"
+                          (submitCallback)="onSaveData()"></app-text-input>
+        </ng-container>
+      </app-card>
+      <!-- Персональные данные -->
+      <app-card title="Персональные данные"
+                [fullHeight]="true">
+        <ng-container content>
+          <!-- Дата рождения -->
+          <app-text-input required
+                          type="date"
+                          label="Дата рождения"
+                          formControlName="birthDate"
+                          [errors]="errors.birthDate"
+                          [minDate]="ageToDate(formData.birthDateMaxAge)"
+                          [maxDate]="ageToDate(formData.birthDateMinAge)"></app-text-input>
+          <!-- Пол -->
+          <app-toggle-input label="Ваш пол"
+                            [values]="['Мужской','Женский']"
+                            formControlName="sex"></app-toggle-input>
+        </ng-container>
+      </app-card>
     </div>
   </div>
 </ng-container>
