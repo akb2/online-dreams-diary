@@ -8,6 +8,7 @@ import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { ErrorMessages, FormData, FormErrorsKeys, ValidatorData } from "@_models/form";
 
 
 
@@ -29,7 +30,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   @ViewChild(AppRecaptchaComponent) public appRecaptchaComponent!: AppRecaptchaComponent;
 
   public form: FormGroup[];
-  public errors: FormErrors;
+  public errors: FormErrors = ErrorMessages;
 
   public step: number = 0;
   private cookieKey: string = "register_form_data_";
@@ -37,17 +38,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
   public loading: boolean = false;
   public registed: boolean = false;
   public registerEmail: string;
-
-  public loginMinLength: number = 4;
-  public loginMaxLength: number = 24;
-  public passwordMinLength: number = 6;
-  public passwordMaxLength: number = 50;
-  public emailMinLength: number = 6;
-  public emailMaxLength: number = 120;
-  public nameMinLength: number = 2;
-  public nameMaxLength: number = 30;
-  public birthDateMinAge: number = 10;
-  public birthDateMaxAge: number = 120;
 
   private destroyed$: Subject<any> = new Subject();
 
@@ -70,22 +60,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       // Данные входа
       this.formBuilder.group({
         testLogin: [[], null],
-        login: [this.localStorage.getCookie("login"), [
-          Validators.required,
-          Validators.minLength(this.loginMinLength),
-          Validators.maxLength(this.loginMaxLength),
-          Validators.pattern(/^([a-z0-9\-_]+)$/i)
-        ]],
-        password: [this.localStorage.getCookie("password"), [
-          Validators.required,
-          Validators.minLength(this.passwordMinLength),
-          Validators.maxLength(this.passwordMaxLength)
-        ]],
-        confirmPassword: [this.localStorage.getCookie("confirmPassword"), [
-          Validators.required,
-          Validators.minLength(this.passwordMinLength),
-          Validators.maxLength(this.passwordMaxLength)
-        ]]
+        login: [this.localStorage.getCookie("login"), ValidatorData.login],
+        password: [this.localStorage.getCookie("password"), ValidatorData.password],
+        confirmPassword: [this.localStorage.getCookie("confirmPassword"), ValidatorData.password]
       }, {
         validators: [
           CustomValidators.passwordMatchValidator,
@@ -94,34 +71,15 @@ export class RegisterComponent implements OnInit, OnDestroy {
       }),
       // Сведения
       this.formBuilder.group({
-        name: [this.localStorage.getCookie("name"), [
-          Validators.required,
-          Validators.minLength(this.nameMinLength),
-          Validators.maxLength(this.nameMaxLength),
-          Validators.pattern(/^([а-я\-]+)$/i)
-        ]],
-        lastName: [this.localStorage.getCookie("lastName"), [
-          Validators.required,
-          Validators.minLength(this.nameMinLength),
-          Validators.maxLength(this.nameMaxLength),
-          Validators.pattern(/^([а-я\-]+)$/i)
-        ]],
-        birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, [
-          Validators.required
-        ]],
-        sex: [
-          this.localStorage.getCookie("sex") ? this.localStorage.getCookie("sex") === "true" : false
-        ]
+        name: [this.localStorage.getCookie("name"), ValidatorData.name],
+        lastName: [this.localStorage.getCookie("lastName"), ValidatorData.name],
+        birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, ValidatorData.birthDate],
+        sex: [this.localStorage.getCookie("sex") ? this.localStorage.getCookie("sex") === "true" : false]
       }),
       // Контакты
       this.formBuilder.group({
         testEmail: [[], null],
-        email: [this.localStorage.getCookie("email"), [
-          Validators.required,
-          Validators.email,
-          Validators.minLength(this.emailMinLength),
-          Validators.maxLength(this.emailMaxLength)
-        ]],
+        email: [this.localStorage.getCookie("email"), ValidatorData.email],
         captcha: ["", Validators.required]
       }, {
         validators: [
@@ -129,53 +87,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
         ]
       })
     ];
-
-    // Ошибки
-    this.errors = {
-      login: {
-        required: "Введите логин",
-        minlength: `Минимум ${this.loginMinLength} символа`,
-        maxlength: `Максимум ${this.loginMaxLength} символа`,
-        pattern: "Допустимы только цифры, латиница, тире и подчеркивание",
-        noUniqueLogin: "Такой логин уже используется"
-      },
-      password: {
-        required: "Введите пароль",
-        minlength: `Минимум ${this.passwordMinLength} символа`,
-        maxlength: `Максимум ${this.passwordMaxLength} символа`
-      },
-      confirmPassword: {
-        required: "Подтвердите пароль",
-        noPassswordMatch: "Пароли должны совпадать",
-        minlength: `Минимум ${this.passwordMinLength} символа`,
-        maxlength: `Максимум ${this.passwordMaxLength} символа`
-      },
-      email: {
-        required: "Введите актуальную почту",
-        email: "Введите корректный адрес почты",
-        minlength: `Минимум ${this.emailMinLength} символа`,
-        maxlength: `Максимум ${this.emailMaxLength} символа`,
-        noUniqueEmail: "Эта почта уже используется"
-      },
-      name: {
-        required: "Введите ваше имя",
-        minlength: `Минимум ${this.nameMinLength} символа`,
-        maxlength: `Максимум ${this.nameMaxLength} символа`,
-        pattern: "Допустимы только кириллица и тире"
-      },
-      lastName: {
-        required: "Введите вашу фамилию",
-        minlength: `Минимум ${this.nameMinLength} символа`,
-        maxlength: `Максимум ${this.nameMaxLength} символа`,
-        pattern: "Допустимы только кириллица и тире"
-      },
-      birthDate: {
-        required: `Укажите возраст в пределе ${this.birthDateMinAge} - ${this.birthDateMaxAge} лет`
-      },
-      captcha: {
-        required: `Пройдите капчу`
-      }
-    };
   }
 
 
@@ -379,20 +290,6 @@ interface FormErrors {
   lastName?: FormErrorsKeys;
   birthDate?: FormErrorsKeys;
   captcha?: FormErrorsKeys;
-}
-
-// Ключи ошибок
-interface FormErrorsKeys {
-  required?: string;
-  pattern?: string;
-  email?: string;
-  minlength?: string;
-  maxlength?: string;
-  noPassswordMatch?: string;
-  noUniqueLogin?: string;
-  noUniqueEmail?: string;
-  agevalidator?: string;
-  captcha?: string;
 }
 
 // Данные формы
