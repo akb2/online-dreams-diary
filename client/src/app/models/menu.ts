@@ -3,6 +3,7 @@ export interface MenuItem {
   auth: AuthRules;
   icon: string;
   text: string;
+  desc?: string;
   callback?: () => void;
   link?: string;
   linkParams?: { [key: string]: string };
