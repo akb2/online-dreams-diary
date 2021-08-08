@@ -1,10 +1,13 @@
 import { Component } from "@angular/core";
 import { Title } from "@angular/platform-browser";
-import { ActivatedRoute, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
+import { ActivatedRoute, ActivatedRouteSnapshot, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { User } from "@_models/account";
+import { RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { SnackbarService } from "@_services/snackbar.service";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 
 
@@ -25,12 +28,10 @@ export class AppComponent {
   public showPreloader: boolean = true;
   public validToken: boolean = false;
   private loaderDelay: number = 300;
+  private pageData: RouteData;
 
+  private destroyed$: Subject<void> = new Subject();
 
-
-
-
-  // Конструктор
   constructor(
     private router: Router,
     private accountService: AccountService,
@@ -41,15 +42,31 @@ export class AppComponent {
   ) {
     this.accountService.user$.subscribe(user => AppComponent.user = user);
     // События старта и окочания лоадера
-    this.router.events.subscribe(event => {
+    this.router.events.pipe(takeUntil(this.destroyed$)).subscribe(event => {
       if (event instanceof NavigationStart) {
         this.beforeLoadPage();
       }
 
       else if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
+        let snapshots: ActivatedRouteSnapshot = this.activatedRoute.snapshot;
+        while (snapshots.firstChild) {
+          snapshots = snapshots.firstChild;
+        }
+        this.pageData = snapshots.data;
+        // Функция обработчик
         this.afterLoadPage();
       }
     });
+  }
+
+
+
+
+
+  // Завершение класса
+  public ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -94,8 +111,8 @@ export class AppComponent {
 
   // Действия после загрузки страницы
   private afterLoadPage(): void {
-    // Установка заголовка
-    const title: string = this.activatedRoute?.firstChild?.snapshot?.data?.title || "";
+    // Название страницы
+    const title: string = this.pageData?.title || "";
     this.titleService.setTitle((title ? title + " | " : "") + this.mainTitle);
     // Отключение прелоадера
     setTimeout(timer => {
