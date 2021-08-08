@@ -14,56 +14,83 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <div class="container"
-         [formGroup]="form">
-      <!-- Персональные данные -->
-      <app-card title="Персональные данные"
-                [fullHeight]="true">
-        <ng-container content>
-          <!-- Имя -->
-          <app-text-input label="Имя"
-                          formControlName="name"
-                          [errors]="errors.name"
-                          [maxLength]="formData.nameMaxLength"
-                          (submitCallback)="onSaveData()"></app-text-input>
-          <!-- Фамилия -->
-          <app-text-input label="Фамилия"
-                          formControlName="lastName"
-                          [errors]="errors.lastName"
-                          [maxLength]="formData.nameMaxLength"
-                          (submitCallback)="onSaveData()"></app-text-input>
-          <!-- Отчество -->
-          <app-text-input label="Отчество"
-                          formControlName="patronymic"
-                          [errors]="errors.patronymic"
-                          [maxLength]="formData.nameMaxLength"
-                          (submitCallback)="onSaveData()"></app-text-input>
-        </ng-container>
-      </app-card>
-      <!-- Контактные данные -->
-      <app-card title="Контактные данные"
-                [fullHeight]="true">
-        <ng-container content>
-          <!-- Дата рождения -->
-          <app-text-input required
-                          type="date"
-                          label="Дата рождения"
-                          formControlName="birthDate"
-                          [errors]="errors.birthDate"
-                          [minDate]="ageToDate(formData.birthDateMaxAge)"
-                          [maxDate]="ageToDate(formData.birthDateMinAge)"></app-text-input>
-          <!-- Пол -->
-          <app-toggle-input label="Ваш пол"
-                            [values]="['Мужской','Женский']"
-                            formControlName="sex"></app-toggle-input>
-          <!-- Адрес почты -->
-          <app-text-input label="E-mail"
-                          formControlName="email"
-                          [errors]="errors.email"
-                          [maxLength]="formData.emailMaxLength"
-                          (submitCallback)="onSaveData()"></app-text-input>
-        </ng-container>
-      </app-card>
-    </div>
+    <form class="container"
+          [formGroup]="form">
+      <!-- Форма -->
+      <div class="list">
+        <!-- Персональные данные -->
+        <app-card title="Персональные данные"
+                  [fullHeight]="true">
+          <ng-container content>
+            <!-- Имя -->
+            <app-text-input label="Имя"
+                            formControlName="name"
+                            [errors]="errors.name"
+                            [maxLength]="formData.nameMaxLength"
+                            (submitCallback)="onSaveData()"></app-text-input>
+            <!-- Фамилия -->
+            <app-text-input label="Фамилия"
+                            formControlName="lastName"
+                            [errors]="errors.lastName"
+                            [maxLength]="formData.nameMaxLength"
+                            (submitCallback)="onSaveData()"></app-text-input>
+            <!-- Отчество -->
+            <app-text-input label="Отчество"
+                            formControlName="patronymic"
+                            [errors]="errors.patronymic"
+                            [maxLength]="formData.nameMaxLength"
+                            (submitCallback)="onSaveData()"></app-text-input>
+          </ng-container>
+        </app-card>
+        <!-- Контактные данные -->
+        <app-card title="Контактные данные"
+                  [fullHeight]="true">
+          <ng-container content>
+            <!-- Дата рождения -->
+            <app-text-input required
+                            type="date"
+                            label="Дата рождения"
+                            formControlName="birthDate"
+                            [errors]="errors.birthDate"
+                            [minDate]="ageToDate(formData.birthDateMaxAge)"
+                            [maxDate]="ageToDate(formData.birthDateMinAge)"
+                            (submitCallback)="onSaveData()"></app-text-input>
+            <!-- Пол -->
+            <app-toggle-input label="Ваш пол"
+                              [values]="['Мужской','Женский']"
+                              formControlName="sex"></app-toggle-input>
+            <!-- Адрес почты -->
+            <app-text-input label="E-mail"
+                            formControlName="email"
+                            [errors]="errors.email"
+                            [maxLength]="formData.emailMaxLength"
+                            (submitCallback)="onSaveData()"></app-text-input>
+          </ng-container>
+        </app-card>
+        <!-- Аватарка -->
+        <app-card title="Аватарка"
+                  [fullHeight]="true">
+          <ng-container content>
+            <app-image-upload formControlName="avatar"></app-image-upload>
+          </ng-container>
+        </app-card>
+      </div>
+      <!-- Кнопки -->
+      <div class="buttons">
+        <app-card>
+          <div content
+               class="buttons__list">
+            <!-- Отменить изменения -->
+            <a mat-stroked-button
+               color="basic"
+               routerLink="/profile/settings">Отменить</a>
+            <!-- Отменить изменения -->
+            <a mat-flat-button
+               color="primary"
+               (click)="onSaveData()">Сохранить</a>
+          </div>
+        </app-card>
+      </div>
+    </form>
   </div>
 </ng-container>

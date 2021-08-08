@@ -36,6 +36,7 @@ export class SettingsPersonProfileComponent {
       birthDate: ["", ValidatorData.birthDate],
       sex: [false],
       email: ["", ValidatorData.email],
+      avatar: null
     });
     // Подписка на данные пользвателя
     this.accountService.user$.subscribe(user => {
@@ -48,6 +49,7 @@ export class SettingsPersonProfileComponent {
         this.form.get("birthDate").setValue(new Date(this.user.birthDate));
         this.form.get("sex").setValue(this.user.sex == 1 ? true : false);
         this.form.get("email").setValue(this.user.email);
+        this.form.get("avatar").setValue(this.user.avatars.full);
       }
     });
   }
