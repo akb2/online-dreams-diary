@@ -1,4 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
+import { DatePipe } from "@angular/common";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, ViewChild } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 
@@ -15,7 +16,7 @@ export class TextInputComponent extends BaseInputDirective {
 
 
   @Input() public label: string;
-  @Input() public type: "text" | "password" | "email" | "date" = "text";
+  @Input() public type: TextInputType = "text";
   @Input() public maxLength: number = 100;
   @Input() public appearance: MatFormFieldAppearance = "fill";
   @Input() public minDate: Date;
@@ -26,6 +27,7 @@ export class TextInputComponent extends BaseInputDirective {
   @ViewChild("input") input: ElementRef;
 
   public showPassword: boolean = false;
+  public datePipe: DatePipe = new DatePipe('ru-RU');
 
 
 
@@ -47,3 +49,10 @@ export class TextInputComponent extends BaseInputDirective {
     this.showPassword = !this.showPassword;
   }
 }
+
+
+
+
+
+// Интерфейс типов полей
+type TextInputType = "text" | "password" | "email" | "date";
