@@ -14,12 +14,12 @@
     <!-- Картинка -->
     <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
          [style]="css.image"
-         *ngIf="image && type != 'full'">
+         *ngIf="image && (type != 'full' || imageFullShow)">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
     </div>
     <div class="main-menu__layer-image type-full {{imageOverlay? 'overlay': ''}}"
-         *ngIf="image && type == 'full'">
+         *ngIf="image && type == 'full' && !imageFullShow">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
     </div>
