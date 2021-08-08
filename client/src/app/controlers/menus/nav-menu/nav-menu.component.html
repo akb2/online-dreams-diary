@@ -13,6 +13,7 @@
     </div>
     <!-- Картинка -->
     <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
+         [style]="css.image"
          *ngIf="image">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />

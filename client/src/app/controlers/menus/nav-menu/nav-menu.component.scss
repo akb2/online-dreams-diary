@@ -134,6 +134,7 @@ $breakpointMobile: small;
       }
       // Короткое меню
       &.type-short {
+        position: relative;
         // Перекрытие
         &.overlay:after {
           background-color: #000;

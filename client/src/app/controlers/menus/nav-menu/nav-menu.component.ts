@@ -571,6 +571,7 @@ class DrawDatas {
   public static subtitleWithBackButton: DrawInterface[];
   public static subtitleWithBackButtonAndAvatar: DrawInterface[];
   public static subtitleWithAvatar: DrawInterface[];
+  public static image: DrawInterface[];
   public static avatar: DrawInterface[];
   public static avatarWithBackButton: DrawInterface[];
   public static floatingButton: DrawInterface[];
@@ -897,6 +898,19 @@ class DrawDatas {
         xsmall: { min: DrawDatas.minHeight, max: 15, unit: "px" },
       }
     });
+
+    // Картинка
+    DrawDatas.image = [{
+      property: "height",
+      data: {
+        default: { min: DrawDatas.maxHeight, max: DrawDatas.maxHeight, unit: "px" },
+      }
+    }, {
+      property: "top",
+      data: {
+        default: { min: -(DrawDatas.maxHeight - DrawDatas.minHeight) / 2, max: 0, unit: "px" },
+      }
+    }];
 
     DrawDatas.floatingButton = [{
       property: ["width", "min-width", "height", "line-height"],
