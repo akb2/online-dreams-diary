@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MenuItem } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenKeys, ScreenService } from "@_services/screen.service";
@@ -18,7 +18,7 @@ import { ScreenKeys, ScreenService } from "@_services/screen.service";
 
 
 // Основной класс
-export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
+export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   @Input() public type: "full" | "short" | "collapse" = "collapse";
@@ -153,6 +153,7 @@ export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
 
   // Конструктор
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
     public accountService: AccountService
   ) {
@@ -248,23 +249,27 @@ export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
 
   // Запуск класса
   public ngOnInit(): void {
+    this.minHeight = DrawDatas.minHeight;
+    this.maxHeight = DrawDatas.maxHeight;
+    // Отрисовка
     this.onResize();
-
+    // Объявление событий
     window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.addEventListener("resize", this.onResize.bind(this), true);
     window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
     window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
+    // Скролл
     window.scroll({ top: 0 });
-
-    this.minHeight = DrawDatas.minHeight;
-    this.maxHeight = DrawDatas.maxHeight;
   }
 
   // Запуск класса
-  public ngAfterContentInit(): void {
-    this.onResize();
+  public ngAfterViewInit(): void {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
+    // Отрисовка
+    this.onResize();
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Конец класса
@@ -334,11 +339,10 @@ export class NavMenuComponent implements OnInit, AfterContentInit, OnDestroy {
     DrawDatas.screenHeight = window.innerHeight;
     DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth || 0;
     DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth || 0;
-
+    // Расчет и отрисовка
     DrawDatas.dataRender();
     this.dataCalculate();
-
-
+    // Разрешить / запретить скролл
     document.querySelectorAll("body, html").forEach(elm => {
       if (this.showMobileMenu && this.isMobile()) {
         elm.classList.add("no-scroll");

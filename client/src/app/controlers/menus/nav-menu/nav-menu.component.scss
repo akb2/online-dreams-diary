@@ -484,6 +484,8 @@ $breakpointMobile: small;
       display: block;
       cursor: pointer;
       transition: background-color screens.$animation-time;
+      background-color: transparent;
+      border: none;
 
       // Текст
       > span {
