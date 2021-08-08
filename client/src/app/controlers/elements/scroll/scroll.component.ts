@@ -47,7 +47,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   // Конструктор
   constructor(
     private screenService: ScreenService,
-    private cd: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef
   ) {
   }
 
@@ -67,7 +67,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   // После загрузки элементов страницы
   public ngAfterViewChecked(): void {
     this.onWindowScroll();
-    this.cd.detectChanges();
+    this.changeDetectorRef.detectChanges();
   }
 
   // При получении изменений
