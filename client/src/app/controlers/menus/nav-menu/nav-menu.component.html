@@ -14,7 +14,12 @@
     <!-- Картинка -->
     <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
          [style]="css.image"
-         *ngIf="image">
+         *ngIf="image && type != 'full'">
+      <img [src]="image"
+           [style.object-position]="imagePositionY + ' ' + imagePositionX" />
+    </div>
+    <div class="main-menu__layer-image type-full {{imageOverlay? 'overlay': ''}}"
+         *ngIf="image && type == 'full'">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
     </div>
@@ -75,6 +80,7 @@
                 <!-- Показывать доступные пункты -->
                 <li class="menu-list__item"
                     *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
+                  <!-- Кнопка с ссылкой -->
                   <a class="menu-list__item-link"
                      [style]="css.menuItem"
                      [routerLink]="item.link"
@@ -85,15 +91,15 @@
                     <div class="menu-list__item-line"
                          [style]="css.menuItemLine"></div>
                   </a>
-
-                  <div class="menu-list__item-link"
-                       [style]="css.menuItem"
-                       (click)="item.callback()"
-                       *ngIf="!item.link && item.callback">
+                  <!-- Кнопка без ссылки -->
+                  <button class="menu-list__item-link"
+                          [style]="css.menuItem"
+                          (click)="item.callback()"
+                          *ngIf="!item.link && item.callback">
                     <span>{{item.text}}</span>
                     <div class="menu-list__item-line"
                          [style]="css.menuItemLine"></div>
-                  </div>
+                  </button>
                 </li>
               </ng-container>
             </ng-container>
@@ -103,14 +109,7 @@
       <!-- Слой справа -->
       <div class="main-menu__layer-container_right"
            *ngIf="floatButtonCallback || floatButtonLink">
-        <div class="floating-button"
-             [style]="css.floatingButton"
-             *ngIf="floatButtonCallback"
-             (click)="floatButtonCallback ()">
-          <div class="floating-button__overlay"
-               [style]="css.floatingButtonOverlay"></div>
-          <mat-icon>{{floatButtonIcon}}</mat-icon>
-        </div>
+        <!-- Кнопка с ссылкой -->
         <a class="floating-button"
            [style]="css.floatingButton"
            *ngIf="floatButtonLink"
@@ -120,6 +119,15 @@
                [style]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
         </a>
+        <!-- Кнопка без ссылки -->
+        <button class="floating-button"
+                [style]="css.floatingButton"
+                *ngIf="floatButtonCallback"
+                (click)="floatButtonCallback ()">
+          <div class="floating-button__overlay"
+               [style]="css.floatingButtonOverlay"></div>
+          <mat-icon>{{floatButtonIcon}}</mat-icon>
+        </button>
       </div>
       <!-- Ширина слоя -->
       <div #contentLayerContainer
@@ -170,6 +178,7 @@
                 <ng-container *ngFor="let item of group">
                   <li class="mobile-menu__list-item"
                       *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
+                    <!-- Кнопка с ссылкой -->
                     <a class="mobile-menu__list-link"
                        [routerLink]="item.link"
                        routerLinkActive="active"
@@ -178,13 +187,13 @@
                       <mat-icon>{{item.icon}}</mat-icon>
                       <span>{{item.text}}</span>
                     </a>
-
-                    <div class="mobile-menu__list-link"
-                         (click)="item.callback()"
-                         *ngIf="!item.link && item.callback">
+                    <!-- Кнопка без ссылки -->
+                    <button class="mobile-menu__list-link"
+                            (click)="item.callback()"
+                            *ngIf="!item.link && item.callback">
                       <mat-icon>{{item.icon}}</mat-icon>
                       <span>{{item.text}}</span>
-                    </div>
+                    </button>
                   </li>
                 </ng-container>
               </div>
