@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { FormControl, FormGroup, Validators } from "@angular/forms";
+import { FormControl, FormGroup } from "@angular/forms";
+import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
 import { AccountService } from "@_services/account.service";
 
 
@@ -20,7 +21,8 @@ export class AuthComponent implements OnInit {
 
 
   public form: FormGroup;
-  public errors: FormErrors;
+  public errors: ErrorMessagesType = ErrorMessages;
+  public formData: FormDataType = FormData;
 
   public loginMinLength: number = 4;
   public loginMaxLength: number = 24;
@@ -38,32 +40,9 @@ export class AuthComponent implements OnInit {
     private accountService: AccountService
   ) {
     this.form = new FormGroup({
-      login: new FormControl(null, [
-        Validators.required,
-        Validators.minLength(this.loginMinLength),
-        Validators.maxLength(this.loginMaxLength),
-        Validators.pattern(/^([a-z0-9\-_]+)$/i)
-      ]),
-      password: new FormControl(null, [
-        Validators.required,
-        Validators.minLength(this.passwordMinLength),
-        Validators.maxLength(this.passwordMaxLength)
-      ])
+      login: new FormControl(null, ValidatorData.login),
+      password: new FormControl(null, ValidatorData.password)
     });
-
-    this.errors = {
-      login: {
-        required: "Введите логин",
-        minlength: `Минимум ${this.loginMinLength} символа`,
-        maxlength: `Максимум ${this.loginMaxLength} символа`,
-        pattern: "Допустимы только цифры, латиница, тире и подчеркивание"
-      },
-      password: {
-        required: "Введите пароль",
-        minlength: `Минимум ${this.passwordMinLength} символа`,
-        maxlength: `Максимум ${this.passwordMaxLength} символа`
-      }
-    };
   }
 
 
@@ -102,14 +81,4 @@ export class AuthComponent implements OnInit {
       this.form.markAllAsTouched();
     }
   }
-}
-
-
-
-
-
-// Интерфейс ошибок
-interface FormErrors {
-  login?: { [key: string]: string };
-  password?: { [key: string]: string };
 }

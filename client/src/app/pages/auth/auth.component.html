@@ -22,13 +22,13 @@
           <app-text-input label="Логин"
                           formControlName="login"
                           [errors]="errors.login"
-                          [maxLength]="loginMaxLength"
+                          [maxLength]="formData.loginMaxLength"
                           (submitCallback)="tryLogin()"></app-text-input>
           <!-- Пароль -->
           <app-text-input label="Пароль"
                           formControlName="password"
                           [errors]="errors.password"
-                          [maxLength]="passwordMaxLength"
+                          [maxLength]="formData.passwordMaxLength"
                           type="password"
                           (submitCallback)="tryLogin()"></app-text-input>
           <!-- Восстановление пароля -->

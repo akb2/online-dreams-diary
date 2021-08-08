@@ -6,9 +6,9 @@ import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
+import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { ErrorMessages, FormData, FormErrorsKeys, ValidatorData } from "@_models/form";
 
 
 
@@ -30,7 +30,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
   @ViewChild(AppRecaptchaComponent) public appRecaptchaComponent!: AppRecaptchaComponent;
 
   public form: FormGroup[];
-  public errors: FormErrors = ErrorMessages;
+  public errors: ErrorMessagesType = ErrorMessages;
+  public formData: FormDataType = FormData;
 
   public step: number = 0;
   private cookieKey: string = "register_form_data_";
@@ -278,19 +279,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
 
 
-
-// Интерфейс ошибок
-interface FormErrors {
-  login?: FormErrorsKeys;
-  password?: FormErrorsKeys;
-  confirmPassword?: FormErrorsKeys;
-  email?: FormErrorsKeys;
-  phone?: FormErrorsKeys;
-  name?: FormErrorsKeys;
-  lastName?: FormErrorsKeys;
-  birthDate?: FormErrorsKeys;
-  captcha?: FormErrorsKeys;
-}
 
 // Данные формы
 interface CookieFormDatas {
