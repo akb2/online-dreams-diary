@@ -1,3 +1,5 @@
+import { AuthRules } from "@_models/menu";
+
 // Тип базового одномерного объекта
 export type SimpleObject = { [key: string]: string };
 
@@ -12,6 +14,14 @@ export interface SnackbarProps {
   message: string;
   action?: string;
   mode?: SnackbarPropMode;
+}
+
+// Данные роутов
+export interface RouteData {
+  title?: string;
+  authRule?: AuthRules;
+  redirectAuth?: string;
+  redirectNotAuth?: string;
 }
 
 // Цветовые схемы всплывающих сообщений
