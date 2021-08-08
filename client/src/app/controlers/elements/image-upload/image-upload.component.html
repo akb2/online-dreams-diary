@@ -1,0 +1,22 @@
+<!-- Выбор файла-->
+<input #fileInput
+       class="file-input"
+       type="file">
+
+<!-- Картинка -->
+<div class="image"
+     [ngClass]="{ 'no-image': !control.value }"
+     (click)="fileInput.click()">
+  <!-- Картинка -->
+  <img [src]="control.value"
+       *ngIf="control.value" />
+  <!-- Иконка -->
+  <mat-icon *ngIf="!control.value">close</mat-icon>
+</div>
+
+<!-- Кнопка -->
+<div class="buttons">
+  <button mat-flat-button
+          color="primary"
+          (click)="fileInput.click()">Выбрать файл</button>
+</div>

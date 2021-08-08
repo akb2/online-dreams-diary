@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 import { CoreModule } from "@_modules/core.module";
 import { ImageUploadComponent } from "./image-upload.component";
 
@@ -20,7 +21,8 @@ import { ImageUploadComponent } from "./image-upload.component";
     CommonModule,
     CoreModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatButtonModule
   ]
 })
 

@@ -1,0 +1,48 @@
+@use "sass:map";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+@use "../card/card.component.scss" as card;
+
+$padding: 10px;
+$height: 280px;
+
+// Поле файла
+.file-input {
+  display: none;
+}
+
+// Картинка
+.image {
+  overflow: hidden;
+  border-radius: screens.$card-border-radius;
+  background-color: colors.$background;
+  height: $height;
+  padding: $padding;
+  cursor: pointer;
+  // Картинка
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  // Нет картинки
+  &.no-image > mat-icon {
+    display: block;
+    width: 100%;
+    height: $height;
+    line-height: $height;
+    font-size: $height * 0.5;
+    text-align: center;
+    color: colors.$text;
+  }
+}
+
+// Кнопка
+.buttons {
+  text-align: center;
+  // Адаптив отступов
+  @include screens.adaptiveFor(card.$paddings) using($padding) {
+    margin-top: map.get($padding, y);
+  }
+}
