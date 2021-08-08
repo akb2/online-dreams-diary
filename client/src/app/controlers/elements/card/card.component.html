@@ -1,7 +1,11 @@
 <!-- Карточки -->
 <mat-card [class]="fullHeight? 'full-height': ''">
   <!-- Шапка -->
-  <mat-card-header class="{{avatar || avatarIcon? 'use-avatar': ''}} {{showMenuPanel? 'use-menu': ''}}">
+  <mat-card-header *ngIf="title || subTitle || avatar || avatarIcon"
+                   [ngClass]="{
+                     'use-avatar': avatar || avatarIcon,
+                     'use-menu': showMenuPanel
+                   }">
     <!-- Аватарка -->
     <a mat-card-avatar
        [attr.color]="avatarColor"
