@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
+import { ValidatorData } from '@_models/form';
 
 
 
@@ -15,7 +17,22 @@ import { User } from '@_models/account';
 
 // Основной класс
 export class SettingsPersonProfileComponent {
+
+
+  public form: FormGroup;
+
   public get user(): User {
     return AppComponent.user;
   };
+
+  constructor(
+    private formBuilder: FormBuilder
+  ) {
+    // Настройка формы
+    this.form = formBuilder.group([
+      new FormControl(["name", ValidatorData.name]),
+      new FormControl(["lastName", ValidatorData.name]),
+      new FormControl(["patronymic", ValidatorData.name])
+    ]);
+  }
 }
