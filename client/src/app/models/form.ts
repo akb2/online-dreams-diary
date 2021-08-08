@@ -1,5 +1,21 @@
-import { Validators } from "@angular/forms";
-import { CustomValidators } from "@_helpers/custom-validators";
+import { AbstractControlOptions, ValidatorFn, Validators } from "@angular/forms";
+
+
+
+
+
+// Интерфейс ошибок работы с пользователями
+export interface FormErrors {
+  login?: FormErrorsKeys;
+  password?: FormErrorsKeys;
+  confirmPassword?: FormErrorsKeys;
+  email?: FormErrorsKeys;
+  phone?: FormErrorsKeys;
+  name?: FormErrorsKeys;
+  lastName?: FormErrorsKeys;
+  birthDate?: FormErrorsKeys;
+  captcha?: FormErrorsKeys;
+}
 
 // Ключи ошибок
 export interface FormErrorsKeys {
@@ -16,7 +32,8 @@ export interface FormErrorsKeys {
 }
 
 // Значения для данных
-export const FormData: { [key: string]: number } = {
+export type FormDataType = { [key: string]: number };
+export const FormData: FormDataType = {
   loginMinLength: 4,
   loginMaxLength: 24,
   passwordMinLength: 6,
@@ -30,7 +47,8 @@ export const FormData: { [key: string]: number } = {
 };
 
 // Валидаторы
-export const ValidatorData: { [key: string]: (Validators | CustomValidators)[] } = {
+export type ValidatorDataType = { [key: string]: ValidatorFn | ValidatorFn[] | AbstractControlOptions };
+export const ValidatorData: ValidatorDataType = {
   // Логин
   login: [
     Validators.required,
@@ -65,7 +83,8 @@ export const ValidatorData: { [key: string]: (Validators | CustomValidators)[] }
 }
 
 // Тексты ошибок
-export const ErrorMessages: { [key: string]: FormErrorsKeys } = {
+export type ErrorMessagesType = { [key: string]: FormErrorsKeys };
+export const ErrorMessages: ErrorMessagesType = {
   login: {
     required: "Введите логин",
     minlength: `Минимум ${FormData.loginMinLength} символа`,
