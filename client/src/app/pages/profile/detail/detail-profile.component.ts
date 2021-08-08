@@ -7,7 +7,7 @@ import { User } from '@_models/account';
 
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-detail-profile',
   templateUrl: './detail-profile.component.html',
   styleUrls: ['./detail-profile.component.scss']
 })

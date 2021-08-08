@@ -9,9 +9,9 @@ import { MenuItem } from '@_models/menu';
 
 // Декоратор компонента
 @Component({
-  selector: 'app-home',
-  templateUrl: './settings-profile.component.html',
-  styleUrls: ['./settings-profile.component.scss']
+  selector: 'app-settings-profile',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss']
 })
 
 // Основной класс

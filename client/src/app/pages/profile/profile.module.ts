@@ -5,7 +5,8 @@ import { CoreModule } from '@_modules/core.module';
 import { DetailProfileComponent } from '@_pages/profile/detail/detail-profile.component';
 import { ProfileRoutingModule } from '@_pages/profile/profile-routing.module';
 import { ProfileComponent } from '@_pages/profile/profile.component';
-import { SettingsProfileComponent } from '@_pages/profile/settings/settings-profile.component';
+import { SettingsPersonProfileComponent } from '@_pages/profile/settings/person/settings-person.component';
+import { SettingsProfileComponent } from '@_pages/profile/settings/settings.component';
 
 
 
@@ -17,7 +18,8 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings-prof
   declarations: [
     ProfileComponent,
     DetailProfileComponent,
-    SettingsProfileComponent
+    SettingsProfileComponent,
+    SettingsPersonProfileComponent
   ],
   imports: [
     CoreModule,

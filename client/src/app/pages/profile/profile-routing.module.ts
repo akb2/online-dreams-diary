@@ -2,7 +2,8 @@ import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
 import { DetailProfileComponent } from "@_pages/profile/detail/detail-profile.component";
 import { ProfileComponent } from "@_pages/profile/profile.component";
-import { SettingsProfileComponent } from "@_pages/profile/settings/settings-profile.component";
+import { SettingsPersonProfileComponent } from "@_pages/profile/settings/person/settings-person.component";
+import { SettingsProfileComponent } from "@_pages/profile/settings/settings.component";
 
 
 
@@ -18,11 +19,23 @@ const routes: Routes = [{
       data: { title: "Моя страница" },
       component: DetailProfileComponent
     },
-    // Редактирование профиля
+    // Настройки профиля
     {
       path: "settings",
-      data: { title: "Настройки" },
-      component: SettingsProfileComponent
+      children: [
+        // Навигация по настройкам
+        {
+          path: "",
+          data: { title: "Настройки" },
+          component: SettingsProfileComponent,
+        },
+        // Персональные данные
+        {
+          path: "person",
+          data: { title: "Настройки персональных данных" },
+          component: SettingsPersonProfileComponent
+        }
+      ]
     }
   ]
 }];
