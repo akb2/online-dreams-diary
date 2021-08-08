@@ -11,11 +11,6 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
   templateUrl: "./text-input.component.html",
   styleUrls: ["./text-input.component.scss"]
 })
-
-
-
-
-
 export class TextInputComponent extends BaseInputDirective {
 
 

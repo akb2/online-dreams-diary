@@ -9,11 +9,6 @@ import { Component, Input } from "@angular/core";
   templateUrl: "./inform.component.html",
   styleUrls: ["./inform.component.scss"]
 })
-
-
-
-
-
 export class InformComponent {
   @Input() public icon: string = "loader";
   @Input() public title: string;

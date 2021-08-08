@@ -10,11 +10,6 @@ import { ScreenService } from "@_services/screen.service";
   templateUrl: "./scroll.component.html",
   styleUrls: ["./scroll.component.scss"]
 })
-
-
-
-
-
 export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnDestroy {
 
 

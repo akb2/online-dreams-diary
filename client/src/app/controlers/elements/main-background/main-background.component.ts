@@ -9,15 +9,4 @@ import { Component } from "@angular/core";
   templateUrl: "./main-background.component.html",
   styleUrls: ["./main-background.component.scss"]
 })
-
-
-
-
-
-export class MainBackgroundComponent {
-
-
-  // Конструктор
-  constructor() {
-  }
-}
+export class MainBackgroundComponent { }
