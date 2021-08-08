@@ -13,6 +13,7 @@ export interface FormErrors {
   phone?: FormErrorsKeys;
   name?: FormErrorsKeys;
   lastName?: FormErrorsKeys;
+  patronymic?: FormErrorsKeys;
   birthDate?: FormErrorsKeys;
   captcha?: FormErrorsKeys;
 }
@@ -118,6 +119,12 @@ export const ErrorMessages: ErrorMessagesType = {
   },
   lastName: {
     required: "Введите вашу фамилию",
+    minlength: `Минимум ${FormData.nameMinLength} символа`,
+    maxlength: `Максимум ${FormData.nameMaxLength} символа`,
+    pattern: "Допустимы только кириллица и тире"
+  },
+  patronymic: {
+    required: "Введите ваше отчество",
     minlength: `Минимум ${FormData.nameMinLength} символа`,
     maxlength: `Максимум ${FormData.nameMaxLength} символа`,
     pattern: "Допустимы только кириллица и тире"
