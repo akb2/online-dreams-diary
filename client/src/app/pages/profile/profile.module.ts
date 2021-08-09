@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CardModule } from '@_controlers/card/card.module';
 import { ContentMenuModule } from '@_controlers/content-menu/content-menu.module';
 import { ImageUploadModule } from '@_controlers/image-upload/image-upload.module';
+import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { TextInputModule } from '@_controlers/text-input/text-input.module';
 import { ToggleInputModule } from '@_controlers/toggle-input/toggle-input.module';
@@ -39,7 +40,8 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
     CommonModule,
     ProfileRoutingModule,
     ImageUploadModule,
-    MatButtonModule
+    MatButtonModule,
+    InformModule
   ]
 })
 
