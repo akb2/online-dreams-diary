@@ -27,11 +27,25 @@ $properties: (
 );
 
 // Контейнер
+.container {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  align-items: center;
+  // Адаптив отступов
+  @include screens.adaptiveFor($properties) using($property) {
+    gap: map.get($property, gap) 0;
+  }
+}
+
+// Список
 .list {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
   align-items: stretch;
+  width: 100%;
   // Адаптив ширины
   @include screens.adaptiveFor($properties) using($property) {
     gap: map.get($property, gap);
@@ -43,10 +57,7 @@ $properties: (
 
 // Кнопка
 .buttons {
-  // Адаптив отступов
-  @include screens.adaptiveFor($properties) using($property) {
-    margin-top: map.get($property, gap);
-  }
+  width: 100%;
   // Список кнопок
   &__list {
     display: flex;
