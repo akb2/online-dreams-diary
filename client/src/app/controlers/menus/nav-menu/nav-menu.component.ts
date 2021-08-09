@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestr
 import { MenuItem } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenKeys, ScreenService } from "@_services/screen.service";
+import smoothscroll from "smoothscroll-polyfill";
 
 
 
@@ -157,6 +158,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     private screenService: ScreenService,
     public accountService: AccountService
   ) {
+    smoothscroll.polyfill();
     DrawDatas.dataRender();
     // Пункты меню
     this.menuItems = [
