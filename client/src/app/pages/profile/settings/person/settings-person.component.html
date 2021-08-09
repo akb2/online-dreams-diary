@@ -14,8 +14,10 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
+    <!-- Форма редактирования -->
     <form class="container"
-          [formGroup]="form">
+          [formGroup]="form"
+          *ngIf="!loading">
       <!-- Форма -->
       <div class="list">
         <!-- Персональные данные -->
@@ -83,7 +85,7 @@
         <app-card title="Аватарка"
                   [fullHeight]="true">
           <ng-container content>
-            <app-image-upload formControlName="avatar"
+            <app-image-upload [formControl]="avatar"
                               (upload)="onUploadAvatar($event)"></app-image-upload>
           </ng-container>
         </app-card>
@@ -105,5 +107,11 @@
         </app-card>
       </div>
     </form>
+    <!-- Загрузка регистрации -->
+    <div class="container"
+         *ngIf="loading">
+      <app-inform title="Сохранение"
+                  subTitle="Пожалуйста подождите"></app-inform>
+    </div>
   </div>
 </ng-container>
