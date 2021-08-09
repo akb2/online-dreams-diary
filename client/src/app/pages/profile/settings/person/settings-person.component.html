@@ -41,6 +41,12 @@
                             [maxLength]="formData.nameMaxLength"
                             (submitCallback)="onSaveData()"></app-text-input>
           </ng-container>
+          <ng-container actions>
+            <!-- Сохранить изменения -->
+            <a mat-flat-button
+               color="primary"
+               (click)="onSaveData()">Сохранить</a>
+          </ng-container>
         </app-card>
         <!-- Контактные данные -->
         <app-card title="Контактные данные"
@@ -66,6 +72,12 @@
                             [maxLength]="formData.emailMaxLength"
                             (submitCallback)="onSaveData()"></app-text-input>
           </ng-container>
+          <ng-container actions>
+            <!-- Сохранить изменения -->
+            <a mat-flat-button
+               color="primary"
+               (click)="onSaveData()">Сохранить</a>
+          </ng-container>
         </app-card>
         <!-- Аватарка -->
         <app-card title="Аватарка"
@@ -85,7 +97,7 @@
             <a mat-stroked-button
                color="basic"
                routerLink="/profile/settings">Отменить</a>
-            <!-- Отменить изменения -->
+            <!-- Сохранить изменения -->
             <a mat-flat-button
                color="primary"
                (click)="onSaveData()">Сохранить</a>
