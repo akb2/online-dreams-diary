@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
-import { User, UserRegister } from "@_models/account";
+import { User, UserRegister, UserSave } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
@@ -122,6 +122,16 @@ export class AccountService {
         // Вернуть обработку кодов
         return this.apiService.checkResponse(result.result.code, codes);
       }
+    ));
+  }
+
+  // Сохранить данные аккаунта
+  public saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    Object.entries(userSave).map(value => formData.append(value[0], value[1]));
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/saveUserData", formData, this.httpHeader).pipe(switchMap(
+      result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
 
