@@ -31,3 +31,13 @@ export interface UserRegister {
   email: string;
   captcha: string;
 }
+
+// Интерфейс данных для обновления аккаунта
+export interface UserSave {
+  name: string;
+  lastName: string;
+  patronymic: string;
+  birthDate: string;
+  sex: number;
+  email: string;
+}
