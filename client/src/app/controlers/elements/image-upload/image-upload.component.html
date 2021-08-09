@@ -1,22 +1,37 @@
 <!-- Выбор файла-->
 <input #fileInput
        class="file-input"
-       type="file">
+       type="file"
+       (change)="onSelectFiles($event.target.files)">
 
 <!-- Картинка -->
 <div class="image"
-     [ngClass]="{ 'no-image': !control.value }"
+     [ngClass]="{ 'no-image': !imageUrl }"
      (click)="fileInput.click()">
   <!-- Картинка -->
-  <img [src]="control.value"
-       *ngIf="control.value" />
+  <img [src]="imageUrl"
+       *ngIf="imageUrl" />
   <!-- Иконка -->
-  <mat-icon *ngIf="!control.value">close</mat-icon>
+  <mat-icon *ngIf="!imageUrl">close</mat-icon>
 </div>
 
 <!-- Кнопка -->
-<div class="buttons">
+<div class="buttons"
+     [ngClass]="{ 'save': availSave }">
+  <!-- Выбрать файл -->
   <button mat-flat-button
           color="primary"
-          (click)="fileInput.click()">Выбрать файл</button>
+          (click)="fileInput.click()"
+          *ngIf="!availSave">Выбрать файл</button>
+  <!-- Доступно сохранение -->
+  <ng-container *ngIf="availSave">
+    <!-- Выбрать файл -->
+    <button mat-stroked-button
+            color="basic"
+            (click)="fileInput.click()">Выбрать файл</button>
+    <!-- Выбрать файл -->
+    <button mat-flat-button
+            color="primary"
+            (click)="onUpload()">Загрузить</button>
+  </ng-container>
 </div>

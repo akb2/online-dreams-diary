@@ -40,7 +40,15 @@ $height: 280px;
 
 // Кнопка
 .buttons {
-  text-align: center;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  // Несколько кнопок
+  &.save {
+    justify-content: space-between;
+  }
   // Адаптив отступов
   @include screens.adaptiveFor(card.$paddings) using($padding) {
     margin-top: map.get($padding, y);
