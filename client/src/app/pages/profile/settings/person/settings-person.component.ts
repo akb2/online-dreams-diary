@@ -1,6 +1,7 @@
+import { formatDate } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { User } from '@_models/account';
+import { User, UserSave } from '@_models/account';
 import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from '@_models/form';
 import { AccountService } from '@_services/account.service';
 
@@ -60,6 +61,20 @@ export class SettingsPersonProfileComponent {
 
   // Сохранение данных
   public onSaveData(): void {
+    const userSave: UserSave = {
+      name: this.form.get("name").value,
+      lastName: this.form.get("lastName").value,
+      patronymic: this.form.get("patronymic").value,
+      birthDate: formatDate(this.form.get("birthDate").value, "yyyy-MM-dd", "en-US"),
+      sex: !!this.form.get("sex").value ? 1 : 0,
+      email: this.form.get("email").value,
+    };
+    console.log(userSave);
+  }
+
+  // Загрузка аватарки
+  public onUploadAvatar(file: File): void {
+    console.log(file);
   }
 
 

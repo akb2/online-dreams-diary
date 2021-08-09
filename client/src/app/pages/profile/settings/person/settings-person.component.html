@@ -71,7 +71,8 @@
         <app-card title="Аватарка"
                   [fullHeight]="true">
           <ng-container content>
-            <app-image-upload formControlName="avatar"></app-image-upload>
+            <app-image-upload formControlName="avatar"
+                              (upload)="onUploadAvatar($event)"></app-image-upload>
           </ng-container>
         </app-card>
       </div>
