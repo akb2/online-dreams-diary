@@ -2,6 +2,7 @@
 <input #fileInput
        class="file-input"
        type="file"
+       [accept]="fileTypes.join(',')"
        (change)="onSelectFiles($event.target.files)">
 
 <!-- Картинка -->
