@@ -13,6 +13,8 @@ class UserService
 
   private DataBaseService $dataBaseService;
 
+  private int $tokenLifeTime = 36000;
+
   private string $avatarDir = "../media/images/user_avatars";
   private string $avatarUrl = "/media/images/user_avatars";
   private array $avatarExts = array("png", "jpg", "jpeg");
@@ -25,6 +27,8 @@ class UserService
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->reCaptchaService = new ReCaptchaService("", $this->config);
+    // Определить переменные
+    $this->tokenLifeTime = $this->config["auth"]["tokenLifeTime"] ? $this->config["auth"]["tokenLifeTime"] : $this->tokenLifeTime;
   }
 
 
@@ -93,7 +97,6 @@ class UserService
     $message = "";
     $sqlData = array();
     $tokenData = array();
-    $tokenLifeTime = $this->config["auth"]["tokenLifeTime"] ? $this->config["auth"]["tokenLifeTime"] : 36000;
 
     // Если получены данные
     if (strlen($data["token"]) > 0) {
@@ -106,7 +109,7 @@ class UserService
       if (count($auth) > 0) {
         if (strlen($auth[0]["id"]) > 0) {
           // Проверка времени жизни токена
-          if (gmdate("U") - $tokenLifeTime < strtotime($auth[0]["last_action_date"])) {
+          if (gmdate("U") - $this->tokenLifeTime < strtotime($auth[0]["last_action_date"])) {
             // Обновить токен
             if ($this->dataBaseService->executeFromFile("account/updateTokenLastAction.sql", array($auth[0]["id"]))) {
               $tokenData = $auth[0];
@@ -144,6 +147,50 @@ class UserService
         "result" => $code == "0001"
       )
     );
+  }
+
+  // Проверить токен
+  public function checkToken(string $id, string $token): bool
+  {
+    if (strlen($id) > 0 && strlen($token) > 0) {
+      // Данные
+      $sqlData = array($token);
+      // Запрос проверки токена
+      $auth = $this->dataBaseService->getDatasFromFile("account/checkToken.sql", $sqlData);
+      // Проверить авторизацию
+      if (count($auth) > 0) {
+        if (strlen($auth[0]["id"]) > 0) {
+          // Проверка времени жизни токена
+          if (gmdate("U") - $this->tokenLifeTime < strtotime($auth[0]["last_action_date"])) {
+            // Проверка привязки пользователя
+            if ($id === $auth[0]["user_id"]) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    // Токен не валидный
+    return false;
+  }
+
+  // ID по токену
+  public function getUserIdFromToken(string $token): int
+  {
+    if (strlen($token) > 0) {
+      // Данные
+      $sqlData = array($token);
+      // Запрос проверки токена
+      $auth = $this->dataBaseService->getDatasFromFile("account/checkToken.sql", $sqlData);
+      // Проверить авторизацию
+      if (count($auth) > 0) {
+        if (strlen($auth[0]["user_id"]) > 0) {
+          return $auth[0]["user_id"];
+        }
+      }
+    }
+    // Токен не валидный
+    return 0;
   }
 
   // Создать токен
@@ -349,6 +396,53 @@ class UserService
       "email" => $user["email"],
       "roles" => json_decode($user["roles"]),
       "avatars" => $avatars
+    );
+  }
+
+  // Сохранить данные
+  public function saveUserDataApi(string $id, array $data): array
+  {
+    $code = "0000";
+
+    // Проверка ID
+    if (strlen($id) > 0) {
+      $checkLogin = $this->dataBaseService->getDatasFromFile("account/checkEmail.sql", array($id, $data["email"]));
+      // Проверить почту
+      if (count($checkLogin) == 0) {
+        // Данные
+        $sqlData = array(
+          $data["name"],
+          $data["lastName"],
+          $data["patronymic"],
+          date("Y-m-d", strtotime($data["birthDate"])),
+          $data["sex"],
+          $data["email"],
+          $id
+        );
+        // Сохранение данных
+        if ($this->dataBaseService->executeFromFile("account/saveUserData.sql", $sqlData)) {
+          $code = "0001";
+        }
+        // Регистрация неудалась
+        else {
+          $code = "9021";
+        }
+      }
+      // Почта повторяется
+      else {
+        $code = "9012";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
     );
   }
 }
