@@ -85,6 +85,39 @@ class Account
   {
     return $this->userService->getUserApi($data["id"]);
   }
+
+  // Сохранить данные пользователя
+  public function saveUserData($data): array
+  {
+    $code = "0000";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+    $checkId = "";
+
+    // Проверить токен
+    if ($this->userService->checkToken($id, $token)) {
+      $checkId = $this->userService->getUserIdFromToken($token);
+      // Проверка доступа
+      if ($id == $checkId) {
+        return $this->userService->saveUserDataApi($id, $data);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => $checkId
+    );
+  }
 }
 
 
