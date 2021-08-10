@@ -135,6 +135,16 @@ export class AccountService {
     ));
   }
 
+  // Загрузить аватарку
+  public uploadAvatar(file: File, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("file", file);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/uploadAvatar?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
+      result => this.apiService.checkResponse(result.result.code, codes)
+    ));
+  }
+
 
 
 
