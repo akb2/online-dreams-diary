@@ -2,7 +2,10 @@
 
 namespace OnlineDreamsDiary\Services;
 
+include_once "./libs/thumbs.php";
+
 use PDO;
+use OnlineDreamsDiary\Libs\Thumbs;
 
 
 
@@ -366,39 +369,6 @@ class UserService
     );
   }
 
-  // Преобразовать данные
-  private function getUserData(array $user): array
-  {
-    $avatars = array();
-    foreach ($this->avatarKeys as $key) {
-      $avatars[$key] = "";
-    }
-
-    //  Проверить аватарки
-    foreach ($this->avatarExts as $ext) {
-      if (file_exists($this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $user["id"] . "." . $ext)) {
-        foreach ($this->avatarKeys as $key) {
-          $avatars[$key] = $this->config["mediaDomain"] . $this->avatarUrl . "/" . $this->avatarKeys[0] . "/" . $user["id"] . "." . $ext;
-        }
-        break;
-      }
-    }
-
-    // Вернуть данные
-    return array(
-      "id" => $user["id"],
-      "name" => $user["name"],
-      "lastName" => $user["last_name"],
-      "patronymic" => $user["patronymic"],
-      "birthDate" => $user["birth_date"],
-      "registerDate" => $user["register_date"],
-      "sex" => $user["sex"],
-      "email" => $user["email"],
-      "roles" => json_decode($user["roles"]),
-      "avatars" => $avatars
-    );
-  }
-
   // Сохранить данные
   public function saveUserDataApi(string $id, array $data): array
   {
@@ -444,5 +414,162 @@ class UserService
       "message" => "",
       "data" => array()
     );
+  }
+
+  // Загрузить аватарку
+  public function uploadAvatarApi(string $id, array $data): array
+  {
+    $code = "0000";
+
+    // Проверка ID
+    if (strlen($id) > 0 && is_array($data["file"])) {
+      // Успешное удаление аватарок
+      if ($this->deleteUserAvatars($id)) {
+        // Проверка размера файла
+        if ($data["file"]["size"] <= $this->config["user"]["avaMaxSize"]) {
+          $nameParse = explode(".", $data["file"]["name"]);
+          $fileExt = end($nameParse);
+          $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $id . "." . $fileExt;
+          // Файл успешно загружен
+          if (move_uploaded_file($data["file"]["tmp_name"], $file)) {
+            $data["test"] = $this->createDefaultAvatars($id);
+            // Созданы дополнительные аватарки
+            if ($this->createDefaultAvatars($id)) {
+              $code = "0001";
+            }
+            // Дополнительные аватарки не созданы
+            else {
+              $code = "8013";
+            }
+          }
+          // Ошибка загрузки файла
+          else {
+            $code = "8011";
+          }
+        }
+        // Слишком большой файл
+        else {
+          $code = "8012";
+        }
+      }
+      // Неудалось удалить аватарки
+      else {
+        $code = "8010";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => $data
+    );
+  }
+
+
+
+  // Преобразовать данные
+  private function getUserData(array $user): array
+  {
+    $avatars = array();
+    foreach ($this->avatarKeys as $key) {
+      $avatars[$key] = "";
+    }
+
+    // Проверить аватарки
+    foreach ($this->avatarExts as $ext) {
+      $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $user["id"] . "." . $ext;
+      if (file_exists($file)) {
+        foreach ($this->avatarKeys as $key) {
+          $avatars[$key] = $this->config["mediaDomain"] . $this->avatarUrl . "/" . $key . "/" . $user["id"] . "." . $ext . "?time=" . filemtime($file);
+        }
+        break;
+      }
+    }
+
+    // Вернуть данные
+    return array(
+      "id" => $user["id"],
+      "name" => $user["name"],
+      "lastName" => $user["last_name"],
+      "patronymic" => $user["patronymic"],
+      "birthDate" => $user["birth_date"],
+      "registerDate" => $user["register_date"],
+      "sex" => $user["sex"],
+      "email" => $user["email"],
+      "roles" => json_decode($user["roles"]),
+      "avatars" => $avatars
+    );
+  }
+
+  // Удалить все аватарки
+  private function deleteUserAvatars(string $id): bool
+  {
+    $delete = 0;
+    // Удалить аватарки
+    foreach ($this->avatarExts as $ext) {
+      foreach ($this->avatarKeys as $key) {
+        $file = $this->avatarDir . "/" . $key . "/" . $id . "." . $ext;
+        if (file_exists($file)) {
+          $delete++;
+          if (@unlink($file)) {
+            $delete--;
+          }
+        }
+      }
+    }
+    // Неудалось удалить
+    return $delete == 0;
+  }
+
+  // Установить аватарки по умолчанию
+  private function createDefaultAvatars(string $id)
+  {
+    // Поиск оригинальной аватарки
+    $originalFile = "";
+    $fileExt = "";
+    foreach ($this->avatarExts as $ext) {
+      $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $id . "." . $ext;
+      if (file_exists($file)) {
+        $fileExt = $ext;
+        $originalFile = $file;
+        break;
+      }
+    }
+    // Аватарка найдена
+    if (strlen($originalFile) > 0) {
+      $avas = count($this->avatarKeys);
+      // Цикл по типам аватарок
+      foreach ($this->avatarKeys as $key) {
+        $file = $this->avatarDir . "/" . $key . "/" . $id . "." . $fileExt;
+        // Копировать файл
+        $copy = $key == $this->avatarKeys[0] ? true : copy($originalFile, $file);
+        // Обработка
+        if ($copy) {
+          // Параметры
+          $config = $this->config["user"]["avaSettings"][$key];
+          $image = new Thumbs($file);
+          // Для квадратных картинок
+          if ($config["square"]) {
+            $image->thumb($config["maxX"], $config["maxY"]);
+          }
+          // Для неквадратных картинок
+          else {
+            $image->reduce($config["maxX"], $config["maxY"]);
+          }
+          // Сохранить изменения
+          $image->save();
+          $avas--;
+        }
+      }
+      // Вернуть результат
+      return $avas === 0;
+    }
+    // Неудалось создать набор аватарок
+    return false;
   }
 }
