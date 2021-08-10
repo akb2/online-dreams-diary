@@ -5,6 +5,11 @@ php_value display_errors 1
 php_value display_startup_errors 1
 php_value error_reporting -1
 
+php_value upload_max_filesize 15M
+php_value post_max_size 15M
+php_value max_execution_time 300
+php_value max_input_time 300
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /api
