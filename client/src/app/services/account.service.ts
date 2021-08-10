@@ -130,7 +130,7 @@ export class AccountService {
     const formData: FormData = new FormData();
     Object.entries(userSave).map(value => formData.append(value[0], value[1]));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/saveUserData", formData, this.httpHeader).pipe(switchMap(
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/saveUserData?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
       result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
