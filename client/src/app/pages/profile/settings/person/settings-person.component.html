@@ -15,15 +15,23 @@
   <!-- Контейнер с данными -->
   <div class="root-section">
     <!-- Форма редактирования -->
-    <form class="container"
-          [formGroup]="form"
-          *ngIf="!loading">
+    <div class="container"
+         *ngIf="!loading">
       <!-- Форма -->
       <div class="list">
+        <!-- Аватарка -->
+        <app-card title="Аватарка"
+                  [fullHeight]="true">
+          <ng-container content>
+            <app-image-upload [formControl]="avatar"
+                              (upload)="onUploadAvatar($event)"></app-image-upload>
+          </ng-container>
+        </app-card>
         <!-- Персональные данные -->
         <app-card title="Персональные данные"
                   [fullHeight]="true">
-          <ng-container content>
+          <form content
+                [formGroup]="form">
             <!-- Имя -->
             <app-text-input label="Имя"
                             formControlName="name"
@@ -42,7 +50,7 @@
                             [errors]="errors.patronymic"
                             [maxLength]="formData.nameMaxLength"
                             (submitCallback)="onSaveData()"></app-text-input>
-          </ng-container>
+          </form>
           <ng-container actions>
             <!-- Сохранить изменения -->
             <a mat-flat-button
@@ -53,7 +61,8 @@
         <!-- Контактные данные -->
         <app-card title="Контактные данные"
                   [fullHeight]="true">
-          <ng-container content>
+          <form content
+                [formGroup]="form">
             <!-- Дата рождения -->
             <app-text-input required
                             type="date"
@@ -73,20 +82,12 @@
                             [errors]="errors.email"
                             [maxLength]="formData.emailMaxLength"
                             (submitCallback)="onSaveData()"></app-text-input>
-          </ng-container>
+          </form>
           <ng-container actions>
             <!-- Сохранить изменения -->
             <a mat-flat-button
                color="primary"
                (click)="onSaveData()">Сохранить</a>
-          </ng-container>
-        </app-card>
-        <!-- Аватарка -->
-        <app-card title="Аватарка"
-                  [fullHeight]="true">
-          <ng-container content>
-            <app-image-upload [formControl]="avatar"
-                              (upload)="onUploadAvatar($event)"></app-image-upload>
           </ng-container>
         </app-card>
       </div>
@@ -106,7 +107,7 @@
           </div>
         </app-card>
       </div>
-    </form>
+    </div>
     <!-- Загрузка регистрации -->
     <div class="container"
          *ngIf="loading">
