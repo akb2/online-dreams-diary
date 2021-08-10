@@ -1,6 +1,7 @@
 import { formatDate } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { ImageUploadComponent } from '@_controlers/image-upload/image-upload.component';
 import { CustomValidators } from '@_helpers/custom-validators';
 import { User, UserSave } from '@_models/account';
 import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from '@_models/form';
@@ -22,6 +23,7 @@ import { SnackbarService } from '@_services/snackbar.service';
 export class SettingsPersonProfileComponent {
 
 
+  @ViewChild(ImageUploadComponent) appImageUpload: ImageUploadComponent;
   public form: FormGroup;
   public avatar: FormControl;
   public errors: ErrorMessagesType = ErrorMessages;
@@ -119,7 +121,23 @@ export class SettingsPersonProfileComponent {
     // Файл без ошибок
     if (file) {
       this.fileLoading = true;
-      console.log(file);
+      // Загрузка аватарки
+      this.accountService.uploadAvatar(file).subscribe(
+        code => {
+          this.fileLoading = false;
+          // Успешная загрузка аватарки
+          if (code == "0001") {
+            this.accountService.syncCurrentUser().subscribe(() => this.snackbarService.open({
+              message: "Аватарка успешно загружена",
+              mode: "success"
+            }));
+          }
+        },
+        () => {
+          this.fileLoading = false;
+          this.appImageUpload.clearInput();
+        }
+      );
     }
     // Ошибка файла
     else {

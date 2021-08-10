@@ -26,7 +26,7 @@
             <!-- Форма загрузки аватарки -->
             <app-image-upload [formControl]="avatar"
                               (upload)="onUploadAvatar($event)"
-                              *ngIf="!fileLoading"></app-image-upload>
+                              [hidden]="fileLoading"></app-image-upload>
             <!-- Загрузка сохранения -->
             <div class="loader"
                  *ngIf="fileLoading">

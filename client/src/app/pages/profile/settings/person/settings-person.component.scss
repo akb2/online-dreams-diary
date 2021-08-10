@@ -84,3 +84,8 @@ $properties: (
   justify-content: center;
   align-items: center;
 }
+
+// Скрытие элементов
+*[hidden] {
+  display: none !important;
+}
