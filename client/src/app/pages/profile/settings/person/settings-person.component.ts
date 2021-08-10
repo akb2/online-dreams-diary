@@ -1,9 +1,11 @@
 import { formatDate } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { CustomValidators } from '@_helpers/custom-validators';
 import { User, UserSave } from '@_models/account';
 import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from '@_models/form';
 import { AccountService } from '@_services/account.service';
+import { SnackbarService } from '@_services/snackbar.service';
 
 
 
@@ -29,7 +31,8 @@ export class SettingsPersonProfileComponent {
 
   constructor(
     private accountService: AccountService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private snackbarService: SnackbarService
   ) {
     // Настройка формы
     this.form = this.formBuilder.group({
@@ -39,7 +42,12 @@ export class SettingsPersonProfileComponent {
       birthDate: ["", ValidatorData.birthDate],
       sex: [false],
       email: ["", ValidatorData.email],
+      testEmail: [[], null],
       avatar: null
+    }, {
+      validators: [
+        CustomValidators.uniqueEmailData
+      ]
     });
     this.avatar = this.formBuilder.control(null);
     // Подписка на данные пользвателя
@@ -77,12 +85,22 @@ export class SettingsPersonProfileComponent {
         email: this.form.get("email").value,
       };
       // Сохранение данных
-      this.accountService.saveUserData(userSave).subscribe(
+      this.accountService.saveUserData(userSave, ["9012"]).subscribe(
         code => {
           this.loading = false;
           // Успешная регистрация
           if (code == "0001") {
-            alert("Данные сохранены");
+            this.accountService.syncCurrentUser().subscribe(() => this.snackbarService.open({
+              message: "Данные успешно сохранены",
+              mode: "success"
+            }));
+          }
+          // Ошибка почты
+          else if (code == "9012") {
+            const testEmail: string[] = this.form.get("testEmail").value;
+            if (testEmail.every(email => email !== userSave.email)) {
+              testEmail.push(userSave.email);
+            }
           }
         },
         () => this.loading = false
