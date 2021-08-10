@@ -87,18 +87,17 @@ class Account
   }
 
   // Сохранить данные пользователя
+  // * POST
   public function saveUserData($data): array
   {
     $code = "0000";
     $id = $_GET["id"];
     $token = $_GET["token"];
-    $checkId = "";
 
     // Проверить токен
     if ($this->userService->checkToken($id, $token)) {
-      $checkId = $this->userService->getUserIdFromToken($token);
       // Проверка доступа
-      if ($id == $checkId) {
+      if ($id == $this->userService->getUserIdFromToken($token)) {
         return $this->userService->saveUserDataApi($id, $data);
       }
       // Ошибка доступа
@@ -115,7 +114,41 @@ class Account
     return array(
       "code" => $code,
       "message" => "",
-      "data" => $checkId
+      "data" => array()
+    );
+  }
+
+  // Загрузить аватарку
+  // * POST
+  public function uploadAvatar($data): array
+  {
+    $code = "0000";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверить токен
+    if ($this->userService->checkToken($id, $token)) {
+      // Проверка доступа
+      if ($id == $this->userService->getUserIdFromToken($token)) {
+        $data["file"] = $_FILES["file"];
+        // Загрузка
+        return $this->userService->uploadAvatarApi($id, $data);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
     );
   }
 }
