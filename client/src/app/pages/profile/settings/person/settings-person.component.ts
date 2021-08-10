@@ -27,7 +27,9 @@ export class SettingsPersonProfileComponent {
   public errors: ErrorMessagesType = ErrorMessages;
   public formData: FormDataType = FormData;
   public user: User;
-  public loading: boolean;
+
+  public dataLoading: boolean;
+  public fileLoading: boolean;
 
   constructor(
     private accountService: AccountService,
@@ -74,7 +76,7 @@ export class SettingsPersonProfileComponent {
   public onSaveData(): void {
     // Форма без ошибок
     if (this.form.valid) {
-      this.loading = true;
+      this.dataLoading = true;
       // Данные для регистрации пользователя
       const userSave: UserSave = {
         name: this.form.get("name").value,
@@ -87,7 +89,7 @@ export class SettingsPersonProfileComponent {
       // Сохранение данных
       this.accountService.saveUserData(userSave, ["9012"]).subscribe(
         code => {
-          this.loading = false;
+          this.dataLoading = false;
           // Успешная регистрация
           if (code == "0001") {
             this.accountService.syncCurrentUser().subscribe(() => this.snackbarService.open({
@@ -103,7 +105,7 @@ export class SettingsPersonProfileComponent {
             }
           }
         },
-        () => this.loading = false
+        () => this.dataLoading = false
       );
     }
     // Есть ошибки
@@ -114,7 +116,18 @@ export class SettingsPersonProfileComponent {
 
   // Загрузка аватарки
   public onUploadAvatar(file: File): void {
-    console.log(file);
+    // Файл без ошибок
+    if (file) {
+      this.fileLoading = true;
+      console.log(file);
+    }
+    // Ошибка файла
+    else {
+      this.snackbarService.open({
+        message: "Ошибка файла, выберите подходящий файл",
+        mode: "error"
+      });
+    }
   }
 
 

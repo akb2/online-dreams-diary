@@ -15,81 +15,112 @@
   <!-- Контейнер с данными -->
   <div class="root-section">
     <!-- Форма редактирования -->
-    <div class="container"
-         *ngIf="!loading">
+    <div class="container">
       <!-- Форма -->
       <div class="list">
+
         <!-- Аватарка -->
-        <app-card title="Аватарка"
+        <app-card [title]="fileLoading? '': 'Аватарка'"
                   [fullHeight]="true">
           <ng-container content>
+            <!-- Форма загрузки аватарки -->
             <app-image-upload [formControl]="avatar"
-                              (upload)="onUploadAvatar($event)"></app-image-upload>
+                              (upload)="onUploadAvatar($event)"
+                              *ngIf="!fileLoading"></app-image-upload>
+            <!-- Загрузка сохранения -->
+            <div class="loader"
+                 *ngIf="fileLoading">
+              <app-inform title="Загрузка файла"
+                          subTitle="Пожалуйста подождите"></app-inform>
+            </div>
           </ng-container>
         </app-card>
+
         <!-- Персональные данные -->
-        <app-card title="Персональные данные"
+        <app-card [title]="dataLoading? '': 'Персональные данные'"
                   [fullHeight]="true">
-          <form content
-                [formGroup]="form">
-            <!-- Имя -->
-            <app-text-input label="Имя"
-                            formControlName="name"
-                            [errors]="errors.name"
-                            [maxLength]="formData.nameMaxLength"
-                            (submitCallback)="onSaveData()"></app-text-input>
-            <!-- Фамилия -->
-            <app-text-input label="Фамилия"
-                            formControlName="lastName"
-                            [errors]="errors.lastName"
-                            [maxLength]="formData.nameMaxLength"
-                            (submitCallback)="onSaveData()"></app-text-input>
-            <!-- Отчество -->
-            <app-text-input label="Отчество"
-                            formControlName="patronymic"
-                            [errors]="errors.patronymic"
-                            [maxLength]="formData.nameMaxLength"
-                            (submitCallback)="onSaveData()"></app-text-input>
-          </form>
-          <ng-container actions>
+          <ng-container content>
+            <!-- Форма -->
+            <form [formGroup]="form"
+                  *ngIf="!dataLoading">
+              <!-- Имя -->
+              <app-text-input label="Имя"
+                              formControlName="name"
+                              [errors]="errors.name"
+                              [maxLength]="formData.nameMaxLength"
+                              (submitCallback)="onSaveData()"></app-text-input>
+              <!-- Фамилия -->
+              <app-text-input label="Фамилия"
+                              formControlName="lastName"
+                              [errors]="errors.lastName"
+                              [maxLength]="formData.nameMaxLength"
+                              (submitCallback)="onSaveData()"></app-text-input>
+              <!-- Отчество -->
+              <app-text-input label="Отчество"
+                              formControlName="patronymic"
+                              [errors]="errors.patronymic"
+                              [maxLength]="formData.nameMaxLength"
+                              (submitCallback)="onSaveData()"></app-text-input>
+            </form>
+            <!-- Загрузка сохранения -->
+            <div class="loader"
+                 *ngIf="dataLoading">
+              <app-inform title="Сохранение данных"
+                          subTitle="Пожалуйста подождите"></app-inform>
+            </div>
+          </ng-container>
+          <ng-container actions
+                        *ngIf="!dataLoading">
             <!-- Сохранить изменения -->
             <a mat-flat-button
                color="primary"
                (click)="onSaveData()">Сохранить</a>
           </ng-container>
         </app-card>
+
         <!-- Контактные данные -->
-        <app-card title="Контактные данные"
+        <app-card [title]="dataLoading? '': 'Контактные данные'"
                   [fullHeight]="true">
-          <form content
-                [formGroup]="form">
-            <!-- Дата рождения -->
-            <app-text-input required
-                            type="date"
-                            label="Дата рождения"
-                            formControlName="birthDate"
-                            [errors]="errors.birthDate"
-                            [minDate]="ageToDate(formData.birthDateMaxAge)"
-                            [maxDate]="ageToDate(formData.birthDateMinAge)"
-                            (submitCallback)="onSaveData()"></app-text-input>
-            <!-- Пол -->
-            <app-toggle-input label="Ваш пол"
-                              [values]="['Мужской','Женский']"
-                              formControlName="sex"></app-toggle-input>
-            <!-- Адрес почты -->
-            <app-text-input label="E-mail"
-                            formControlName="email"
-                            [errors]="errors.email"
-                            [maxLength]="formData.emailMaxLength"
-                            (submitCallback)="onSaveData()"></app-text-input>
-          </form>
-          <ng-container actions>
+          <ng-container content>
+            <!-- Форма -->
+            <form [formGroup]="form"
+                  *ngIf="!dataLoading">
+              <!-- Дата рождения -->
+              <app-text-input required
+                              type="date"
+                              label="Дата рождения"
+                              formControlName="birthDate"
+                              [errors]="errors.birthDate"
+                              [minDate]="ageToDate(formData.birthDateMaxAge)"
+                              [maxDate]="ageToDate(formData.birthDateMinAge)"
+                              (submitCallback)="onSaveData()"></app-text-input>
+              <!-- Пол -->
+              <app-toggle-input label="Ваш пол"
+                                [values]="['Мужской','Женский']"
+                                formControlName="sex"></app-toggle-input>
+              <!-- Адрес почты -->
+              <app-text-input label="E-mail"
+                              formControlName="email"
+                              [errors]="errors.email"
+                              [maxLength]="formData.emailMaxLength"
+                              (submitCallback)="onSaveData()"></app-text-input>
+            </form>
+            <!-- Загрузка сохранения -->
+            <div class="loader"
+                 *ngIf="dataLoading">
+              <app-inform title="Сохранение данных"
+                          subTitle="Пожалуйста подождите"></app-inform>
+            </div>
+          </ng-container>
+          <ng-container actions
+                        *ngIf="!dataLoading">
             <!-- Сохранить изменения -->
             <a mat-flat-button
                color="primary"
                (click)="onSaveData()">Сохранить</a>
           </ng-container>
         </app-card>
+
       </div>
       <!-- Кнопки -->
       <div class="buttons">
@@ -107,12 +138,6 @@
           </div>
         </app-card>
       </div>
-    </div>
-    <!-- Загрузка регистрации -->
-    <div class="container"
-         *ngIf="loading">
-      <app-inform title="Сохранение"
-                  subTitle="Пожалуйста подождите"></app-inform>
     </div>
   </div>
 </ng-container>
