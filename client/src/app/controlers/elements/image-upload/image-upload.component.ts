@@ -24,6 +24,8 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
   @Input() public fileTypes: FileTypes[] = FileTypesDefault;
   @Input() public fileSize: number = 10485760;
 
+  @Output() public beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
+  @Output() public afterGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public upload: EventEmitter<File> = new EventEmitter<File>();
 
   public newValue: string;
@@ -68,11 +70,14 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
       const fileReader: FileReader = new FileReader();
       // Установить новую временную картинку
       if (file.size <= this.fileSize) {
+        this.beforeGetFile.emit(file);
+        // Работа с файлом
         fileReader.readAsDataURL(file);
         fileReader.onload = () => {
+          this.afterGetFile.emit(file);
           this.control.setValue(file);
           this.newValue = fileReader.result as string;
-        }
+        };
       }
       // Сбросить форму
       else {
@@ -83,15 +88,6 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
           mode: "error"
         });
       }
-    }
-    // Сбросить форму
-    else {
-      this.clearInput();
-      // Сообщение
-      this.snackbarService.open({
-        message: "Ошибка выбора файла",
-        mode: "error"
-      });
     }
   }
 
