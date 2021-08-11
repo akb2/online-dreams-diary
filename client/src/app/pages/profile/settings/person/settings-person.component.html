@@ -26,12 +26,14 @@
             <!-- Форма загрузки аватарки -->
             <app-image-upload [formControl]="avatar"
                               (upload)="onUploadAvatar($event)"
+                              (beforeGetFile)="onBeforeGetFile($event)"
+                              (afterGetFile)="onAfterGetFile($event)"
                               [hidden]="fileLoading"></app-image-upload>
             <!-- Загрузка сохранения -->
             <div class="loader"
                  *ngIf="fileLoading">
-              <app-inform title="Загрузка файла"
-                          subTitle="Пожалуйста подождите"></app-inform>
+              <app-inform [title]="fileLoaderTitles[fileLoaderKey][0]"
+                          [subTitle]="fileLoaderTitles[fileLoaderKey][1]"></app-inform>
             </div>
           </ng-container>
         </app-card>

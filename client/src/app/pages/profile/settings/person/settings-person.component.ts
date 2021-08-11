@@ -33,6 +33,12 @@ export class SettingsPersonProfileComponent {
   public dataLoading: boolean;
   public fileLoading: boolean;
 
+  public fileLoaderTitles: string[][] = [
+    ["Отправка на сервер", "Пожалуйста подождите"],
+    ["Подготовка файла", "Пожалуйста подождите"]
+  ];
+  public fileLoaderKey: number = 0;
+
   constructor(
     private accountService: AccountService,
     private formBuilder: FormBuilder,
@@ -116,10 +122,22 @@ export class SettingsPersonProfileComponent {
     }
   }
 
+  // Перед выбором файла
+  public onBeforeGetFile(file: File): void {
+    this.fileLoaderKey = 1;
+    this.fileLoading = true;
+  }
+
+  // После выбора файла
+  public onAfterGetFile(file: File): void {
+    this.fileLoading = false;
+  }
+
   // Загрузка аватарки
   public onUploadAvatar(file: File): void {
     // Файл без ошибок
     if (file) {
+      this.fileLoaderKey = 0;
       this.fileLoading = true;
       // Загрузка аватарки
       this.accountService.uploadAvatar(file).subscribe(
