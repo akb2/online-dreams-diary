@@ -12,6 +12,7 @@ CREATE TABLE `users`
     `sex` TINYINT(1) NOT NULL DEFAULT 0,
     `email` VARCHAR(120) NOT NULL DEFAULT "",
     `roles` JSON NOT NULL,
+    `avatar_crop_data` JSON NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE `login` (`login`),
     UNIQUE `email` (`email`)
