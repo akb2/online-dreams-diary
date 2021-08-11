@@ -7,9 +7,11 @@ INSERT INTO `users`
     `birth_date`,
     `sex`,
     `email`,
-    `roles`
+    `roles`,
+    `avatar_crop_data`
   )
   VALUES (
+    ?,
     ?,
     ?,
     ?,
