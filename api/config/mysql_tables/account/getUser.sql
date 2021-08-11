@@ -9,7 +9,8 @@ SELECT
   `birth_date`,
   `sex`,
   `email`,
-  `roles`
+  `roles`,
+  `avatar_crop_data`
 FROM `users`
 WHERE
   `id` = ?
