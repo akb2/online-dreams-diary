@@ -22,6 +22,8 @@ class UserService
   private string $avatarUrl = "/media/images/user_avatars";
   private array $avatarExts = array("png", "jpg", "jpeg");
   private array $avatarKeys = array("full", "crop", "middle", "small");
+  private array $avatarKeysCrop = array("crop" => "full", "middle" => "crop");
+  private array $avatarKeysCropPos = array("startX", "width", "startY", "height");
 
   function __construct(PDO $pdo, array $config)
   {
@@ -278,6 +280,7 @@ class UserService
         date("Y-m-d", strtotime($data["birthDate"])),
         $data["sex"],
         $data["email"],
+        json_encode(array()),
         json_encode(array())
       );
 
@@ -432,7 +435,6 @@ class UserService
           $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $id . "." . $fileExt;
           // Файл успешно загружен
           if (move_uploaded_file($data["file"]["tmp_name"], $file)) {
-            $data["test"] = $this->createDefaultAvatars($id);
             // Созданы дополнительные аватарки
             if ($this->createDefaultAvatars($id)) {
               $code = "0001";
@@ -491,6 +493,13 @@ class UserService
       }
     }
 
+    // Данные об обрезке аватарки
+    $user["avatar_crop_data"] = @json_decode($user["avatar_crop_data"]) ? json_decode($user["avatar_crop_data"], true) : array();
+    foreach ($this->avatarKeysCrop as $key => $value) {
+      $user["avatar_crop_data"][$key] = isset($user["avatar_crop_data"][$key]) ? $user["avatar_crop_data"][$key] : array();
+      $user["avatar_crop_data"][$key] = $this->checkUserAvatarCropDatas($user["avatar_crop_data"][$key]);
+    }
+
     // Вернуть данные
     return array(
       "id" => $user["id"],
@@ -502,8 +511,23 @@ class UserService
       "sex" => $user["sex"],
       "email" => $user["email"],
       "roles" => json_decode($user["roles"]),
+      "avatarCropData" => $user["avatar_crop_data"],
       "avatars" => $avatars
     );
+  }
+
+  // Преобразовать массив обрезки аватарки
+  private function checkUserAvatarCropDatas($data): array
+  {
+    $data = is_array($data) ? $data : array();
+    // Проверка вложенных данных
+    foreach ($this->avatarKeysCropPos as $key) {
+      $data[$key] = isset($data[$key]) ? $data[$key] : 0;
+      $data[$key] = is_int($data[$key]) ? $data[$key] : 0;
+      $data[$key] = $data[$key] < 0 ? 0 : $data[$key];
+    }
+    // Вернуть данные
+    return $data;
   }
 
   // Удалить все аватарки
@@ -543,6 +567,7 @@ class UserService
     // Аватарка найдена
     if (strlen($originalFile) > 0) {
       $avas = count($this->avatarKeys);
+      $avatars = array();
       // Цикл по типам аватарок
       foreach ($this->avatarKeys as $key) {
         $file = $this->avatarDir . "/" . $key . "/" . $id . "." . $fileExt;
@@ -562,12 +587,38 @@ class UserService
             $image->reduce($config["maxX"], $config["maxY"]);
           }
           // Сохранить изменения
+          $avatars[$key] = $file;
           $image->save();
           $avas--;
         }
       }
-      // Вернуть результат
-      return $avas === 0;
+      // Сохранить новые координаты
+      if ($avas === 0) {
+        $avatarsCrop = array();
+        foreach ($this->avatarKeysCrop as $cropKey => $cropValue) {
+          $config = $this->config["user"]["avaSettings"][$cropKey];
+          $avatarsCrop[$cropKey] = $this->checkUserAvatarCropDatas(array());
+          list($width, $height) = getimagesize($avatars[$cropValue]);
+          // Данные с приведением к квадрату
+          if ($config["square"]) {
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[0]] = ($width - min($width, $height)) / 2;
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[1]] = min($width, $height);
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[2]] = ($height - min($width, $height)) / 2;
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[3]] = min($width, $height);
+          }
+          // Данные без приведения к квадрату
+          else {
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[0]] = 0;
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[1]] = $width;
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[2]] = 0;
+            $avatarsCrop[$cropKey][$this->avatarKeysCropPos[3]] = $height;
+          }
+        }
+        // Сохранить массив в БД
+        if ($this->dataBaseService->executeFromFile("account/saveAvatarCrop.sql", array(json_encode($avatarsCrop), $id))) {
+          return true;
+        }
+      }
     }
     // Неудалось создать набор аватарок
     return false;
