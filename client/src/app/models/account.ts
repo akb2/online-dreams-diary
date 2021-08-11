@@ -10,6 +10,7 @@ export interface User {
   email: string;
   roles: string[];
   avatars: UserAvatars;
+  avatarCropData: UserAvatarCropData;
 }
 
 // Интерфейс массива аватарок
@@ -18,6 +19,20 @@ interface UserAvatars {
   crop: string;
   middle: string;
   small: string;
+}
+
+// Интерфейс массива аватарок
+interface UserAvatarCropData {
+  crop: UserAvatarCropDataElement;
+  middle: UserAvatarCropDataElement;
+}
+
+// Интерфейс позиций обрезки аватара
+interface UserAvatarCropDataElement {
+  startX: number;
+  width: number;
+  startY: number;
+  height: number;
 }
 
 // Интерфейс данных для регистрации
