@@ -12,7 +12,7 @@ php_value max_input_time 300
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /api
+  RewriteBase /
   RewriteRule ^([A-z0-9\-_]+)\/([A-z0-9\-_]+)$ build.php?controller=$1&method=$2 [QSA]
   RewriteCond %{REQUEST_URI} (.*/[^/.]+)($|\?)
 </IfModule>
