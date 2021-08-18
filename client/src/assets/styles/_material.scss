@@ -88,6 +88,74 @@
   }
 }
 
+// Диалоговое окно
+@mixin mat-dialog {
+  $win-padding: 24px;
+  $title-size: 46px;
+  // Заголовок
+  .title {
+    // Свойства
+    display: grid;
+    grid-template-columns: 1fr #{$title-size};
+    grid-template-rows: #{$title-size / 2} #{$title-size / 2};
+    grid-template-areas: "title button" "subtitle button";
+    grid-gap: 0 15px;
+    align-items: center;
+    line-height: $title-size / 2;
+    // Заголовок
+    &__title {
+      grid-area: title;
+      font: inherit;
+      color: #000;
+    }
+    // Подзаголовок
+    &__subTitle {
+      grid-area: subtitle;
+      font: inherit;
+      font-size: 0.7em;
+      font-weight: 400;
+      color: #000;
+    }
+    // Кнопка закрыть
+    &__button {
+      grid-area: button;
+      width: $title-size;
+      height: $title-size;
+      line-height: $title-size;
+      font-size: $title-size * 0.6;
+      cursor: pointer;
+      text-align: center;
+    }
+  }
+  // Окно
+  .mat-dialog {
+    // Окно
+    &-container {
+      padding: $win-padding;
+    }
+    // Содержимое
+    &-content {
+      font-size: 0;
+      line-height: 1;
+      max-height: calc(100vh - #{($win-padding * 2) + ($title-size + 20px) + (52px + (16px * 2) - $win-padding)});
+    }
+    // Содержимое
+    &-actions {
+      width: 100%;
+      padding: 16px 0;
+      // Кнопки
+      > .buttons {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+}
+
 // Выпадающие списки
 @mixin mat-option {
   .mat-option {
