@@ -1,4 +1,7 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
+import { LoadingImageData, ScreenBreakpoints } from "@_models/screen";
+import { Observable, Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 
 
@@ -12,7 +15,7 @@ import { Injectable } from "@angular/core";
 
 
 
-export class ScreenService {
+export class ScreenService implements OnDestroy {
 
 
   private breakpoints: ScreenBreakpoints = {
@@ -24,12 +27,17 @@ export class ScreenService {
     xlarge: 10000
   };
 
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
 
-  // Конструктор
-  constructor() { }
+
+  // Конец класса
+  public ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
 
 
@@ -63,21 +71,22 @@ export class ScreenService {
   public getMax(screen: string): number {
     return this.breakpoints[screen] ? this.breakpoints[screen] : this.breakpoints.default;
   }
-}
 
-
-
-
-
-// Ключи названий экранов
-export type ScreenKeys = "default" | "xsmall" | "small" | "middle" | "large" | "xlarge";
-
-// Тип данных для размеров экрана
-export interface ScreenBreakpoints {
-  default: number;
-  xsmall: number;
-  small: number;
-  middle: number;
-  large: number;
-  xlarge: number;
+  // Подписчик на загрузку картинки
+  public loadImage(url: string): Observable<LoadingImageData> {
+    const observable: Observable<LoadingImageData> = new Observable(observer => {
+      const image: HTMLImageElement = new Image();
+      // Путь к картинке
+      image.src = url;
+      // Загрузка
+      image.onload = () => {
+        observer.next(new LoadingImageData(url, image.width, image.height));
+        observer.complete();
+      };
+      // Ошибка
+      image.onerror = error => observer.error(error);
+    });
+    // Вернуть подписчик
+    return observable.pipe(takeUntil(this.destroy$));
+  }
 }
