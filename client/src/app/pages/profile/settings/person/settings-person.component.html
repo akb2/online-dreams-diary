@@ -10,6 +10,8 @@
                  subTitle="Персональные данные"
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
+                 floatButtonIcon="save"
+                 (floatButtonCallback)="onSaveData.bind(this)"
                  backButtonLink="/profile/settings"></app-main-menu>
 
   <!-- Контейнер с данными -->
