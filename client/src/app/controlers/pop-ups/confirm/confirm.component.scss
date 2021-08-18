@@ -1,0 +1,9 @@
+@use "../../../../assets/styles/material";
+
+// Базовый стиль окна
+@include material.mat-dialog;
+
+// Текст
+.text {
+  text-align: left;
+}

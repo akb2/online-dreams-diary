@@ -1,0 +1,29 @@
+<!-- Шапка окна -->
+<div mat-dialog-title
+     class="title">
+  <div class="title__title">{{data.title}}</div>
+  <div class="title__subTitle"
+       *ngIf="data.subTitle">{{data.subTitle}}</div>
+  <mat-icon class="title__button"
+            mat-dialog-close>close</mat-icon>
+</div>
+
+<!-- Содержимое -->
+<ng-container mat-dialog-content
+              class="text">
+  {{data.text}}
+</ng-container>
+
+<!-- Панель действия -->
+<div mat-dialog-actions>
+  <div class="buttons">
+    <!-- Да -->
+    <a mat-flat-button
+       color="primary"
+       (click)="onConfirm()">Да</a>
+    <!-- Нет -->
+    <a mat-stroked-button
+       color="basic"
+       mat-dialog-close>Нет</a>
+  </div>
+</div>
