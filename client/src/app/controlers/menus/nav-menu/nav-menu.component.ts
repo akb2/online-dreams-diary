@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { SimpleObject } from "@_models/app";
 import { MenuItem } from "@_models/menu";
 import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
@@ -39,12 +40,12 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() public floatButtonIcon: string = "";
   @Input() public floatButtonText: string = "";
-  @Input() public floatButtonCallback: Function;
+  @Output() public floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
   @Input() public floatButtonLink: string;
-  @Input() public floatButtonLinkParams: { [key: string]: string };
+  @Input() public floatButtonLinkParams: SimpleObject;
 
   @Input() public backButtonLink: string;
-  @Input() public backButtonLinkParams: { [key: string]: string };
+  @Input() public backButtonLinkParams: SimpleObject;
 
   @Input() public hideToContentButton: boolean = false;
 
@@ -69,9 +70,9 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private lastScrollTime: number = new Date().getTime();
   private scrollTimeWait: number = 150;
 
-  public css: { [key: string]: string } = {};
+  public css: SimpleObject = {};
 
-  private cssNamesVar: { [key: string]: string } = {
+  private cssNamesVar: SimpleObject = {
     menu: "menu",
     menuList: "",
     menuItem: "menuItem",
@@ -96,10 +97,10 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   // Получить ключи для CSS правил
-  get cssNames(): { [key: string]: string } {
+  get cssNames(): SimpleObject {
     this.cssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
-    this.cssNamesVar.menuList = this.floatButtonLink?.length || this.floatButtonCallback ? "menuListWithFloatingButton" : "menuList";
-    this.cssNamesVar.helper = this.type == "short" && (this.floatButtonLink?.length || this.floatButtonCallback) ? "helperWithFloatingButton" : "helper";
+    this.cssNamesVar.menuList = this.floatButtonIcon?.length > 0 ? "menuListWithFloatingButton" : "menuList";
+    this.cssNamesVar.helper = this.type == "short" && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
     // Расчет заголовка
     {
       this.cssNamesVar.title = "title";
@@ -660,8 +661,7 @@ class DrawDatas {
     DrawDatas.helperWithFloatingButton.push({
       property: "margin-bottom",
       data: {
-        default: { min: 0, max: 0, unit: "px" },
-        middle: { min: 0, max: 45, unit: "px" },
+        default: { min: 0, max: 45, unit: "px" },
         small: { min: 0, max: 38, unit: "px" },
         xsmall: { min: 0, max: 38, unit: "px" }
       }

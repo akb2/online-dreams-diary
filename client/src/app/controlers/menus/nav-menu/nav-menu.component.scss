@@ -535,6 +535,7 @@ $breakpointMobile: small;
 .menu-button,
 .to-content-button {
   $__elm: &;
+  // Свойства
   overflow: hidden;
   display: block;
   border-radius: 50%;
@@ -542,7 +543,10 @@ $breakpointMobile: small;
   text-align: center;
   cursor: pointer;
   user-select: none;
-
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  // Иконка
   > mat-icon {
     font-size: inherit;
     line-height: inherit;

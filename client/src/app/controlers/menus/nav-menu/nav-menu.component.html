@@ -108,13 +108,13 @@
       </div>
       <!-- Слой справа -->
       <div class="main-menu__layer-container_right"
-           *ngIf="floatButtonCallback || floatButtonLink">
+           *ngIf="floatButtonIcon && (floatButtonCallback || floatButtonLink)">
         <!-- Кнопка с ссылкой -->
         <a class="floating-button"
            [style]="css.floatingButton"
-           *ngIf="floatButtonLink"
            [routerLink]="floatButtonLink"
-           [queryParams]="floatButtonLinkParams">
+           [queryParams]="floatButtonLinkParams"
+           *ngIf="floatButtonLink">
           <div class="floating-button__overlay"
                [style]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
@@ -122,8 +122,8 @@
         <!-- Кнопка без ссылки -->
         <button class="floating-button"
                 [style]="css.floatingButton"
-                *ngIf="floatButtonCallback"
-                (click)="floatButtonCallback ()">
+                *ngIf="!floatButtonLink"
+                (click)="floatButtonCallback.emit()">
           <div class="floating-button__overlay"
                [style]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
