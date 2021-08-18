@@ -20,7 +20,8 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
-              "src/assets"
+              "src/assets",
+              "src/.htaccess"
             ],
             "styles": [
               "node_modules/material-design-icons/iconfont/material-icons.css",
