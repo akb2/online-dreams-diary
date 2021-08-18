@@ -20,6 +20,8 @@ $figure-time-2: $figure-time-1 * 2;
 
 // Загрузчик
 .loader {
+  $elm: &;
+  // Свойства
   width: $figure-size;
   height: $figure-size;
   position: relative;
@@ -83,6 +85,10 @@ $figure-time-2: $figure-time-1 * 2;
     font-size: 24px;
     font-weight: 500;
     text-transform: uppercase;
+    // Отступ после иконки
+    #{$elm}__icon + & {
+      margin-top: 15px;
+    }
   }
 
   // Подзаголовок
