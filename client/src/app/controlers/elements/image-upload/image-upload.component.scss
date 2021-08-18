@@ -6,6 +6,16 @@
 $padding: 10px;
 $height: 280px;
 
+// Свойства контейнера
+@mixin image-container {
+  overflow: hidden;
+  border-radius: screens.$card-border-radius;
+  background-color: colors.$background;
+  height: $height;
+  padding: $padding;
+  cursor: pointer;
+}
+
 // Поле файла
 .file-input {
   display: none;
@@ -13,12 +23,7 @@ $height: 280px;
 
 // Картинка
 .image {
-  overflow: hidden;
-  border-radius: screens.$card-border-radius;
-  background-color: colors.$background;
-  height: $height;
-  padding: $padding;
-  cursor: pointer;
+  @include image-container;
   // Картинка
   > img {
     width: 100%;

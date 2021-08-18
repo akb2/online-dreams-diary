@@ -18,21 +18,29 @@
 
 <!-- Кнопка -->
 <div class="buttons"
-     [ngClass]="{ 'save': availSave }">
-  <!-- Выбрать файл -->
-  <button mat-flat-button
-          color="primary"
-          (click)="fileInput.click()"
-          *ngIf="!availSave">Выбрать файл</button>
+     [ngClass]="{ save: availSave || control.value }">
   <!-- Доступно сохранение -->
-  <ng-container *ngIf="availSave">
-    <!-- Выбрать файл -->
+  <ng-container *ngIf="availSave; else selectFile">
+    <!-- Отменить -->
     <button mat-stroked-button
             color="basic"
-            (click)="fileInput.click()">Выбрать файл</button>
-    <!-- Выбрать файл -->
+            (click)="clearInput()">Отмена</button>
+    <!-- Загрузить на сервер -->
     <button mat-flat-button
             color="primary"
             (click)="onUpload()">Загрузить</button>
   </ng-container>
 </div>
+
+<!-- Выбрать файл -->
+<ng-template #selectFile>
+  <!-- Удалить аватарку -->
+  <button mat-stroked-button
+          color="basic"
+          (click)="onDelete()"
+          *ngIf="control.value">Удалить</button>
+  <!-- Выбрать файл -->
+  <button mat-flat-button
+          color="primary"
+          (click)="fileInput.click()">Выбрать файл</button>
+</ng-template>

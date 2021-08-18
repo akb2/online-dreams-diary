@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { NgControl } from "@angular/forms";
+import { MatDialog } from "@angular/material/dialog";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { SnackbarService } from "@_services/snackbar.service";
 
@@ -27,6 +29,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
   @Output() public beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public afterGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public upload: EventEmitter<File> = new EventEmitter<File>();
+  @Output() public deleteFile: EventEmitter<void> = new EventEmitter<void>();
 
   public newValue: string;
   private defaultValue: string = "";
@@ -49,7 +52,8 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
   constructor(
     public ngControl: NgControl,
-    private snackbarService: SnackbarService
+    private snackbarService: SnackbarService,
+    private matDialog: MatDialog
   ) {
     super(ngControl);
   }
@@ -98,13 +102,27 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
     }
   }
 
+  // Удалить файл
+  public onDelete(): void {
+    const dialog = PopupConfirmComponent.open(this.matDialog, {
+      title: "Удаление аватарки",
+      text: "Вы действительно хотите удалить свою аватарку с сайта?"
+    });
+    dialog.afterClosed().subscribe(result => {
+      if (result) {
+        this.deleteFile.emit();
+      }
+    });
+  }
+
 
 
 
 
   // Сбросить значение
-  public clearInput(): void {
-    this.control.setValue(this.defaultValue);
+  public clearInput(value: string | null = this.defaultValue): void {
+    this.defaultValue = value;
+    this.control.setValue(value);
     this.newValue = "";
   }
 
