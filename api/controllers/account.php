@@ -151,6 +151,72 @@ class Account
       "data" => array()
     );
   }
+
+  // Обрезать аватарку
+  // * POST
+  public function cropAvatar($data): array
+  {
+    $code = "0000";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверить токен
+    if ($this->userService->checkToken($id, $token)) {
+      // Проверка доступа
+      if ($id == $this->userService->getUserIdFromToken($token)) {
+        // Загрузка
+        return $this->userService->cropAvatarApi($id, $data);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
+
+  // Удалить аватарку
+  // * DELETE
+  public function deleteAvatar(): array
+  {
+    $code = "0000";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверить токен
+    if ($this->userService->checkToken($id, $token)) {
+      // Проверка доступа
+      if ($id == $this->userService->getUserIdFromToken($token)) {
+        // Загрузка
+        return $this->userService->deleteAvatarApi($id);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
 }
 
 

@@ -19,7 +19,7 @@ class UserService
   private int $tokenLifeTime = 36000;
 
   private string $avatarDir = "../media/images/user_avatars";
-  private string $avatarUrl = "/media/images/user_avatars";
+  private string $avatarUrl = "/images/user_avatars";
   private array $avatarExts = array("png", "jpg", "jpeg");
   private array $avatarKeys = array("full", "crop", "middle", "small");
   private array $avatarKeysCrop = array("crop" => "full", "middle" => "crop");
@@ -349,14 +349,10 @@ class UserService
     if (strlen($id) > 0) {
       $code = "9013";
       // Запрос данных о пользователе
-      $users = $this->dataBaseService->getDatasFromFile("account/getUser.sql", array($id));
+      $user = $this->getUser($id);
       // Проверить авторизацию
-      if (count($users) > 0) {
-        if (strlen($users[0]["id"]) > 0) {
-          // Данные пользователя
-          $user = $this->getUserData($users[0]);
-          $code = "0001";
-        }
+      if ($user) {
+        $code = "0001";
       }
     }
     // Получены пустые данные
@@ -472,6 +468,159 @@ class UserService
     );
   }
 
+  // Загрузить аватарку
+  public function cropAvatarApi(string $id, array $data): array
+  {
+    $code = "0000";
+
+    // Проверка ID и данных
+    if (strlen($id) > 0 && isset($data["startX"]) && isset($data["startY"]) && isset($data["width"]) && isset($data["height"])) {
+      // Проверка координат
+      if ($data["startX"] >= 0 && $data["startY"] >= 0 && $data["width"] >= 0 && $data["height"] >= 0) {
+        // Проверка типа
+        if ($originalKey = $this->avatarKeysCrop[$data["type"]]) {
+          // Определить расширение файла
+          $fileExt = "";
+          $originalFile = "";
+          foreach ($this->avatarExts as $ext) {
+            $file = $this->avatarDir . "/" . $originalKey . "/" . $id . "." . $ext;
+            if (file_exists($file)) {
+              $fileExt = $ext;
+              $originalFile = $file;
+              break;
+            }
+          }
+          // Проверка файла
+          if (file_exists($originalFile)) {
+            $code = "8015";
+            $file = $this->avatarDir . "/" . $data["type"] . "/" . $id . "." . $fileExt;
+            // Копирование
+            if (copy($originalFile, $file)) {
+              $config = $this->config["user"]["avaSettings"][$data["type"]];
+              $image = new Thumbs($file);
+              $image->crop($data["startX"], $data["startY"], $data["width"], $data["height"]);
+              // Для квадратных картинок
+              if ($config["square"]) {
+                $image->thumb($config["maxX"], $config["maxY"]);
+              }
+              // Для неквадратных картинок
+              else {
+                $image->reduce($config["maxX"], $config["maxY"]);
+              }
+              // Сохранить
+              if ($image->save()) {
+                // Сохранить координаты пользовательской обрезки аватарки
+                $user = $this->getUser($id);
+                $avatarCropData = $user["avatarCropData"];
+                $avatarCropData[$data["type"]] = array(
+                  "startX" => (int)$data["startX"],
+                  "startY" => (int)$data["startY"],
+                  "width" => (int)$data["width"],
+                  "height" => (int)$data["height"],
+                );
+                // Пересчитать позицию миниатюры
+                if ($data["type"] === $this->avatarKeys[1]) {
+                  $config = $this->config["user"]["avaSettings"][$this->avatarKeys[2]];
+                  $miniFile = $this->avatarDir . "/" . $this->avatarKeys[2] . "/" . $id . "." . $fileExt;
+                  copy($file, $miniFile);
+                  list($width, $height) = getimagesize($file);
+                  $size = min($width, $height);
+                  $image = new Thumbs($miniFile);
+                  $image->crop(($width - $size) / 2, ($height - $size) / 2, $size, $size);
+                  $image->resize($config["maxX"], $config["maxY"]);
+                  $image->save();
+                  // Данные для сохранения
+                  $avatarCropData[$this->avatarKeys[2]] = array(
+                    "startX" => ($width - $size) / 2,
+                    "startY" => ($height - $size) / 2,
+                    "width" => $size,
+                    "height" => $size,
+                  );
+                }
+                // Сделать миниатюру
+                $config = $this->config["user"]["avaSettings"][$this->avatarKeys[3]];
+                $miniFile = $this->avatarDir . "/" . $this->avatarKeys[3] . "/" . $id . "." . $fileExt;
+                copy($file, $miniFile);
+                $image = new Thumbs($miniFile);
+                $image->resize($config["maxX"], $config["maxY"]);
+                $image->save();
+                // Сохранить массив в БД
+                if ($this->dataBaseService->executeFromFile("account/saveAvatarCrop.sql", array(json_encode($avatarCropData), $id))) {
+                  $code = "0001";
+                }
+              }
+            }
+          }
+          // Файл не существует
+          else {
+            $code = "8014";
+          }
+        }
+        // Получены пустые данные
+        else {
+          $code = "9030";
+        }
+      }
+      // Получены пустые данные
+      else {
+        $code = "9030";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => $data
+    );
+  }
+
+  // Удалить аватарки
+  public function deleteAvatarApi(string $id): array
+  {
+    $code = "8010";
+
+    // Проверка ID и данных
+    if (strlen($id) > 0) {
+      if ($this->deleteUserAvatars($id)) {
+        $code = "0001";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
+
+
+
+  // Данные о пользователе
+  public function getUser($id)
+  {
+    // Запрос данных о пользователе
+    $users = $this->dataBaseService->getDatasFromFile("account/getUser.sql", array($id));
+    // Проверить авторизацию
+    if (count($users) > 0) {
+      if (strlen($users[0]["id"]) > 0) {
+        // Данные пользователя
+        return $this->getUserData($users[0]);
+      }
+    }
+    // Пользователь не найден
+    return null;
+  }
+
 
 
   // Преобразовать данные
@@ -487,7 +636,8 @@ class UserService
       $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $user["id"] . "." . $ext;
       if (file_exists($file)) {
         foreach ($this->avatarKeys as $key) {
-          $avatars[$key] = $this->config["mediaDomain"] . $this->avatarUrl . "/" . $key . "/" . $user["id"] . "." . $ext . "?time=" . filemtime($file);
+          $tempFile = $this->avatarDir . "/" . $key . "/" . $user["id"] . "." . $ext;
+          $avatars[$key] = $this->config["mediaDomain"] . $this->avatarUrl . "/" . $key . "/" . $user["id"] . "." . $ext . "?time=" . filemtime($tempFile);
         }
         break;
       }
@@ -495,9 +645,9 @@ class UserService
 
     // Данные об обрезке аватарки
     $user["avatar_crop_data"] = @json_decode($user["avatar_crop_data"]) ? json_decode($user["avatar_crop_data"], true) : array();
-    foreach ($this->avatarKeysCrop as $key => $value) {
-      $user["avatar_crop_data"][$key] = isset($user["avatar_crop_data"][$key]) ? $user["avatar_crop_data"][$key] : array();
-      $user["avatar_crop_data"][$key] = $this->checkUserAvatarCropDatas($user["avatar_crop_data"][$key]);
+    foreach ($this->avatarKeysCrop as $value) {
+      $user["avatar_crop_data"][$value] = isset($user["avatar_crop_data"][$value]) ? $user["avatar_crop_data"][$value] : array();
+      $user["avatar_crop_data"][$value] = $this->checkUserAvatarCropDatas($user["avatar_crop_data"][$value]);
     }
 
     // Вернуть данные
@@ -555,12 +705,14 @@ class UserService
   {
     // Поиск оригинальной аватарки
     $originalFile = "";
+    $previusFile = "";
     $fileExt = "";
     foreach ($this->avatarExts as $ext) {
       $file = $this->avatarDir . "/" . $this->avatarKeys[0] . "/" . $id . "." . $ext;
       if (file_exists($file)) {
         $fileExt = $ext;
         $originalFile = $file;
+        $previusFile = $file;
         break;
       }
     }
@@ -572,7 +724,7 @@ class UserService
       foreach ($this->avatarKeys as $key) {
         $file = $this->avatarDir . "/" . $key . "/" . $id . "." . $fileExt;
         // Копировать файл
-        $copy = $key == $this->avatarKeys[0] ? true : copy($originalFile, $file);
+        $copy = $key == $this->avatarKeys[0] ? true : copy($previusFile, $file);
         // Обработка
         if ($copy) {
           // Параметры
@@ -580,7 +732,10 @@ class UserService
           $image = new Thumbs($file);
           // Для квадратных картинок
           if ($config["square"]) {
-            $image->thumb($config["maxX"], $config["maxY"]);
+            list($width, $height) = getimagesize($previusFile);
+            $size = min($width, $height);
+            $image->crop(($width - $size) / 2, ($height - $size) / 2, $size, $size);
+            $image->resize($config["maxX"], $config["maxY"]);
           }
           // Для неквадратных картинок
           else {
@@ -591,6 +746,8 @@ class UserService
           $image->save();
           $avas--;
         }
+        // Установить предыдущий файл
+        $previusFile = $file;
       }
       // Сохранить новые координаты
       if ($avas === 0) {
