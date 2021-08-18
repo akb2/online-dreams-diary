@@ -2,8 +2,9 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
-import { User, UserRegister, UserSave } from "@_models/account";
+import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave } from "@_models/account";
 import { ApiResponse } from "@_models/api";
+import { CustomObject, SimpleObject } from "@_models/app";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { BehaviorSubject, Observable } from "rxjs";
@@ -20,7 +21,7 @@ export class AccountService {
 
 
   private baseUrl: string = environment.baseUrl;
-  private httpHeader: { [key: string]: string } = environment.httpHeader;
+  private httpHeader: SimpleObject = environment.httpHeader;
 
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
@@ -104,6 +105,8 @@ export class AccountService {
     ));
   }
 
+
+
   // Информация о текущем пользователе
   public syncCurrentUser(codes: string[] = []): Observable<string> {
     return this.getUser(this.id, codes);
@@ -135,12 +138,36 @@ export class AccountService {
     ));
   }
 
+
+
   // Загрузить аватарку
   public uploadAvatar(file: File, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     formData.append("file", file);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "account/uploadAvatar?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
+      result => this.apiService.checkResponse(result.result.code, codes)
+    ));
+  }
+
+  // Обрезать аватарку
+  public cropAvatar(type: UserAvatarCropDataKeys, coords: UserAvatarCropDataElement, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("type", type);
+    formData.append("startX", coords.startX.toString());
+    formData.append("startY", coords.startY.toString());
+    formData.append("width", coords.width.toString());
+    formData.append("height", coords.height.toString());
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/cropAvatar?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
+      result => this.apiService.checkResponse(result.result.code, codes)
+    ));
+  }
+
+  // Удалить аватарку
+  public deleteAvatar(codes: string[] = []): Observable<string> {
+    // Вернуть подписку
+    return this.httpClient.delete<ApiResponse>(this.baseUrl + "account/deleteAvatar?id=" + this.id + "&token=" + this.token, this.httpHeader).pipe(switchMap(
       result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
