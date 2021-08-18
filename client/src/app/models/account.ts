@@ -28,12 +28,15 @@ interface UserAvatarCropData {
 }
 
 // Интерфейс позиций обрезки аватара
-interface UserAvatarCropDataElement {
+export interface UserAvatarCropDataElement {
   startX: number;
   width: number;
   startY: number;
   height: number;
 }
+
+// Типы аватарок для обрезки
+export type UserAvatarCropDataKeys = "crop" | "middle";
 
 // Интерфейс данных для регистрации
 export interface UserRegister {
