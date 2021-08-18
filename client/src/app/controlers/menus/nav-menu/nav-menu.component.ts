@@ -1,7 +1,8 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MenuItem } from "@_models/menu";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
-import { ScreenKeys, ScreenService } from "@_services/screen.service";
+import { ScreenService } from "@_services/screen.service";
 import smoothscroll from "smoothscroll-polyfill";
 
 
