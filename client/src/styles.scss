@@ -22,6 +22,8 @@ html {
   overflow-x: hidden;
   overflow-y: scroll;
   background-color: colors.$background;
+  top: 0 !important;
+  position: static !important;
 
   &.no-scroll {
     overflow-y: hidden;
@@ -45,7 +47,7 @@ html {
   body {
     padding: 0;
     margin: 0;
-    height: 100%;
+    min-height: 100%;
   }
 
   &::-webkit-scrollbar {
