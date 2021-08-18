@@ -2,6 +2,7 @@
 @use "../../../../../assets/styles/screens";
 @use "../../../../../assets/styles/material";
 @use "../../../../../assets/styles/containers";
+@use "../../../../controlers/elements/image-upload/image-upload.component.scss" as imageUpload;
 
 $properties: (
   xsmall: (
@@ -58,6 +59,8 @@ $properties: (
 // Кнопка
 .buttons {
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
   // Список кнопок
   &__list {
     display: flex;
@@ -83,6 +86,20 @@ $properties: (
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
+}
+
+// Аватарки
+.avatar {
+  // Обрезанная аватарка
+  &-crop {
+    @include imageUpload.image-container;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
 }
 
 // Скрытие элементов
