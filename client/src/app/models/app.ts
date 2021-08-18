@@ -1,7 +1,9 @@
+import { MatDialogConfig } from "@angular/material/dialog";
 import { AuthRules } from "@_models/menu";
 
 // Тип базового одномерного объекта
 export type SimpleObject = { [key: string]: string };
+export type CustomObject<T> = { [key: string]: T };
 
 // Данные для Cookie
 export interface CookieInterface {
@@ -32,3 +34,17 @@ export type IconColor = "primary" | "accent" | "warn" | "disabled";
 
 // Интерфейс цветов фона
 export type IconBackground = "fill" | "transparent";
+
+// Настройки для диалоговых окон по умолчанию
+export const AppMatDialogConfig: MatDialogConfig = {
+  width: "auto",
+  maxWidth: "100vw",
+  maxHeight: "100vh",
+  closeOnNavigation: true,
+  role: "dialog",
+  autoFocus: false,
+  restoreFocus: false
+}
+
+// Пустая функция
+export const VoidFunctionVar: VoidFunction = () => { };
