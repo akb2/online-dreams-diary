@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { CardModule } from '@_controlers/card/card.module';
 import { ContentMenuModule } from '@_controlers/content-menu/content-menu.module';
+import { PopupCropImageModule } from '@_controlers/crop-image/crop-image.module';
 import { ImageUploadModule } from '@_controlers/image-upload/image-upload.module';
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -41,7 +42,8 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
     ProfileRoutingModule,
     ImageUploadModule,
     MatButtonModule,
-    InformModule
+    InformModule,
+    PopupCropImageModule
   ]
 })
 
