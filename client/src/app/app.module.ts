@@ -1,13 +1,14 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { MainBackgroundModule } from '@_controlers/main-background/main-background.module';
-
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from "./app-routing.module";
+import { NgModule } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MainBackgroundModule } from '@_controlers/main-background/main-background.module';
+import { CoreModule } from '@_modules/core.module';
+import { AppRoutingModule } from "./app-routing.module";
+import { AppComponent } from './app.component';
+
+
 
 
 
@@ -23,7 +24,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     HttpClientModule,
     BrowserAnimationsModule,
     MainBackgroundModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    CoreModule
   ],
   bootstrap: [
     AppComponent
