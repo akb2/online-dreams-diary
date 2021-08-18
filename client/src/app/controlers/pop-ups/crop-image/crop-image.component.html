@@ -1,0 +1,84 @@
+<!-- Шапка окна -->
+<div mat-dialog-title
+     class="title">
+  <div class="title__title">{{data.title}}</div>
+  <div class="title__subTitle"
+       *ngIf="data.subTitle">{{data.subTitle}}</div>
+  <mat-icon class="title__button"
+            mat-dialog-close>close</mat-icon>
+</div>
+
+<!-- Содержимое -->
+<ng-container mat-dialog-content>
+  <div class="images">
+    <!-- Оригинальная картинка -->
+    <div class="images__original">
+      <div class="image">
+        <img #scaledImage
+             [src]="data.image" />
+        <div class="cropper"
+             style.left="{{position.x1 * sizeKoof}}px"
+             style.top="{{position.y1 * sizeKoof}}px"
+             style.width="{{(position.x2 - position.x1) * sizeKoof}}px"
+             style.height="{{(position.y2 - position.y1) * sizeKoof}}px">
+          <div class="area"
+               (mousedown)="onMouseDown($event, ['move'])"></div>
+          <!-- Точки по сторонам -->
+          <div class="point top"
+               (mousedown)="onMouseDown($event, ['top'])"></div>
+          <div class="point right"
+               (mousedown)="onMouseDown($event, ['right'])"></div>
+          <div class="point bottom"
+               (mousedown)="onMouseDown($event, ['bottom'])"></div>
+          <div class="point left"
+               (mousedown)="onMouseDown($event, ['left'])"></div>
+          <!-- Точки по углам -->
+          <div class="point top left"
+               (mousedown)="onMouseDown($event, ['top', 'left'])"></div>
+          <div class="point top right"
+               (mousedown)="onMouseDown($event, ['top', 'right'])"></div>
+          <div class="point bottom right"
+               (mousedown)="onMouseDown($event, ['bottom', 'right'])"></div>
+          <div class="point bottom left"
+               (mousedown)="onMouseDown($event, ['bottom', 'left'])"></div>
+          <!-- Линии -->
+          <div class="line top"
+               (mousedown)="onMouseDown($event, ['top'])"></div>
+          <div class="line right"
+               (mousedown)="onMouseDown($event, ['right'])"></div>
+          <div class="line bottom"
+               (mousedown)="onMouseDown($event, ['bottom'])"></div>
+          <div class="line left"
+               (mousedown)="onMouseDown($event, ['left'])"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Превью -->
+    <div #previewElement
+         class="images__preview">
+      <div class="images__preview-overlay"
+           style.height="{{previewPosition.blockHeight}}px"
+           *ngIf="previewPosition">
+        <img [src]="data.image"
+             style.left="{{previewPosition.left}}px"
+             style.top="{{previewPosition.top}}px"
+             style.width="{{previewPosition.width}}px"
+             style.height="{{previewPosition.height}}px" />
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Панель действия -->
+<div mat-dialog-actions>
+  <div class="buttons">
+    <!-- Сохранить изменения -->
+    <a mat-flat-button
+       color="primary"
+       (click)="onSaveCrop()">Сохранить</a>
+    <!-- Закрыть окно -->
+    <a mat-stroked-button
+       color="basic"
+       mat-dialog-close>Отмена</a>
+  </div>
+</div>

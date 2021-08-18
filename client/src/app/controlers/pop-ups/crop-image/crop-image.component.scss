@@ -1,0 +1,172 @@
+@use "sass:math";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/material";
+@use "../../../../assets/styles/mixins";
+
+$win-width: 800px - (24px * 2);
+$preview-width: 200px;
+
+$height: 540px;
+
+// Базовый стиль окна
+@include material.mat-dialog;
+
+// Картинки
+.images {
+  $gap: 15px;
+  // Свойства
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 15px;
+  user-select: none;
+  // Оригинальная картинка
+  &__original {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    // Обертка картинки
+    > .image {
+      width: auto;
+      height: auto;
+      overflow: hidden;
+      position: relative;
+      // Картинка
+      > img {
+        display: block;
+        max-width: $win-width - $preview-width - $gap;
+        max-height: $height;
+      }
+      // Резчик
+      > .cropper {
+        $size: 18px;
+        // Свойства
+        position: absolute;
+        outline: 100vw solid colors.$overlay-color;
+        border: 1px dotted colors.$border-light;
+        // Вся область
+        > .area {
+          @include mixins.inset;
+          position: absolute;
+          cursor: move;
+          z-index: 0;
+        }
+        // Точки
+        > .point {
+          $v-size: math.min($size, 8px);
+          $v-line: 1px;
+          // Свойства
+          position: absolute;
+          transform: translateX(-50%) translateY(-50%);
+          width: $size;
+          height: $size;
+          top: 50%;
+          left: 50%;
+          z-index: 2;
+          // Видимая часть
+          &:before {
+            @include mixins.inset(50%);
+            content: "";
+            display: block;
+            position: inherit;
+            width: $v-size;
+            height: $v-size;
+            border: #{$v-line} solid colors.$border-light;
+            transform: translateX(-50%) translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.5);
+          }
+          // Левые точки
+          &.left {
+            left: 0;
+            cursor: w-resize;
+          }
+          // Правые точки
+          &.right {
+            left: 100%;
+            cursor: e-resize;
+          }
+          // Левые точки
+          &.top {
+            top: 0;
+            cursor: n-resize;
+          }
+          // Правые точки
+          &.bottom {
+            top: 100%;
+            cursor: s-resize;
+          }
+          // Курсоры
+          & {
+            // Верхний левый
+            &.top.left {
+              cursor: nw-resize;
+            }
+            // Верхний правый
+            &.top.right {
+              cursor: ne-resize;
+            }
+            // Нижний левый
+            &.bottom.left {
+              cursor: sw-resize;
+            }
+            // Нижний правый
+            &.bottom.right {
+              cursor: se-resize;
+            }
+          }
+        }
+        // Линии
+        > .line {
+          position: absolute;
+          transform: translateX(-50%) translateY(-50%);
+          width: $size;
+          height: $size;
+          top: 50%;
+          left: 50%;
+          z-index: 1;
+          // Левая
+          &.left {
+            height: 100%;
+            left: 0;
+            cursor: w-resize;
+          }
+          // Правая
+          &.right {
+            height: 100%;
+            left: 100%;
+            cursor: e-resize;
+          }
+          // Верхняя
+          &.top {
+            width: 100%;
+            top: 0;
+            cursor: n-resize;
+          }
+          // Нижняя
+          &.bottom {
+            width: 100%;
+            top: 100%;
+            cursor: s-resize;
+          }
+        }
+      }
+    }
+  }
+  // Превью
+  &__preview {
+    width: $preview-width;
+    // Обертка
+    &-overlay {
+      width: 100%;
+      overflow: hidden;
+      // Картинка
+      > img {
+        display: block;
+        position: relative;
+      }
+    }
+  }
+}
