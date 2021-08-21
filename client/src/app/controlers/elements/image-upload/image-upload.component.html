@@ -18,7 +18,7 @@
 
 <!-- Кнопка -->
 <div class="buttons"
-     [ngClass]="{ save: availSave || control.value }">
+     [ngClass]="{ save: availSave }">
   <!-- Доступно сохранение -->
   <ng-container *ngIf="availSave; else selectFile">
     <!-- Отменить -->
@@ -34,11 +34,6 @@
 
 <!-- Выбрать файл -->
 <ng-template #selectFile>
-  <!-- Удалить аватарку -->
-  <button mat-stroked-button
-          color="basic"
-          (click)="onDelete()"
-          *ngIf="control.value">Удалить</button>
   <!-- Выбрать файл -->
   <button mat-flat-button
           color="primary"

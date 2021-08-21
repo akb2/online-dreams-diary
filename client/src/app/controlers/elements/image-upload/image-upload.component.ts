@@ -1,8 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
-import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { SnackbarService } from "@_services/snackbar.service";
 
@@ -29,7 +27,8 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
   @Output() public beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public afterGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public upload: EventEmitter<File> = new EventEmitter<File>();
-  @Output() public deleteFile: EventEmitter<void> = new EventEmitter<void>();
+
+  @ViewChild("fileInput") public fileInput: ElementRef;
 
   public newValue: string;
   private defaultValue: string = "";
@@ -52,8 +51,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
   constructor(
     public ngControl: NgControl,
-    private snackbarService: SnackbarService,
-    private matDialog: MatDialog
+    private snackbarService: SnackbarService
   ) {
     super(ngControl);
   }
@@ -102,19 +100,6 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
     }
   }
 
-  // Удалить файл
-  public onDelete(): void {
-    const dialog = PopupConfirmComponent.open(this.matDialog, {
-      title: "Удаление аватарки",
-      text: "Вы действительно хотите удалить свою аватарку с сайта?"
-    });
-    dialog.afterClosed().subscribe(result => {
-      if (result) {
-        this.deleteFile.emit();
-      }
-    });
-  }
-
 
 
 
@@ -124,6 +109,10 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
     this.defaultValue = value;
     this.control.setValue(value);
     this.newValue = "";
+    // Очистить поле
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = "";
+    }
   }
 
   // Получить размер файла
