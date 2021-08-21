@@ -1,8 +1,8 @@
 @use 'sass:math';
 @use 'sass:map';
 
-$color_1: #615cfd;
-$color_2: #d465ef;
+$color_1: #3f52b5;
+$color_2: #8334b1;
 $color_3: #a52125;
 $color_4: #666;
 
@@ -56,15 +56,15 @@ $color_4: #666;
 
 // Функция умножения цвета
 @function multiply($rgb1, $rgb2) {
-  $r: math.floor(red($rgb1) * red($rgb2) / 255);
-  $g: math.floor(green($rgb1) * green($rgb2) / 255);
-  $b: math.floor(blue($rgb1) * blue($rgb2) / 255);
+  $r: math.floor(math.div(red($rgb1) * red($rgb2), 255));
+  $g: math.floor(math.div(green($rgb1) * green($rgb2), 255));
+  $b: math.floor(math.div(blue($rgb1) * blue($rgb2), 255));
   @return rgb($r, $g, $b);
 }
 
 // Получить яркость цвета
 @function getBrightness($color) {
-  @return (red($color) * 299 + green($color) * 587 + blue($color) * 114) / 1000;
+  @return math.div(red($color) * 299 + green($color) * 587 + blue($color) * 114, 1000);
 }
 
 // Светлый ли цвет
@@ -103,7 +103,3 @@ $shadow: rgba(0, 0, 0, 0.15);
 $title-dark: #fff;
 $subtitle-dark: #ececec;
 $border-light: #ddd;
-
-$main-menu-item-line: transparent;
-$main-menu-item-active-line: $color_2;
-$main-menu-item-hover-line: rgba(0, 0, 0, 0.1);
