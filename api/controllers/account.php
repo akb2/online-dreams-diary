@@ -5,11 +5,11 @@ namespace OnlineDreamsDiary\Controllers;
 include_once "services/recaptcha.php";
 include_once "services/database.php";
 include_once "services/user.php";
+include_once "services/token.php";
 include_once "config/database.php";
 
-use OnlineDreamsDiary\Services\ReCaptchaService;
-use OnlineDreamsDiary\Services\DataBaseService;
 use OnlineDreamsDiary\Services\UserService;
+use OnlineDreamsDiary\Services\TokenService;
 use PDO;
 
 
@@ -21,6 +21,7 @@ class Account
   private PDO $pdo;
 
   private UserService $userService;
+  private TokenService $tokenService;
 
 
 
@@ -40,6 +41,7 @@ class Account
   public function setServices(): void
   {
     $this->userService = new UserService($this->pdo, $this->config);
+    $this->tokenService = new TokenService($this->pdo, $this->config);
   }
 
 
@@ -49,20 +51,6 @@ class Account
   public function createTable($data): array
   {
     return $this->userService->createTableApi($data["password"]);
-  }
-
-  // Проверка токена
-  // * POST
-  public function checkToken($data): array
-  {
-    return $this->userService->checkTokenApi($data);
-  }
-
-  // Удалить токен
-  // * DELETE
-  public function deleteToken($data): array
-  {
-    return $this->userService->deleteTokenApi($data["token"]);
   }
 
   // Авторизация пользователя
@@ -95,9 +83,9 @@ class Account
     $token = $_GET["token"];
 
     // Проверить токен
-    if ($this->userService->checkToken($id, $token)) {
+    if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
-      if ($id == $this->userService->getUserIdFromToken($token)) {
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
         return $this->userService->saveUserDataApi($id, $data);
       }
       // Ошибка доступа
@@ -127,9 +115,9 @@ class Account
     $token = $_GET["token"];
 
     // Проверить токен
-    if ($this->userService->checkToken($id, $token)) {
+    if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
-      if ($id == $this->userService->getUserIdFromToken($token)) {
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
         $data["file"] = $_FILES["file"];
         // Загрузка
         return $this->userService->uploadAvatarApi($id, $data);
@@ -161,9 +149,9 @@ class Account
     $token = $_GET["token"];
 
     // Проверить токен
-    if ($this->userService->checkToken($id, $token)) {
+    if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
-      if ($id == $this->userService->getUserIdFromToken($token)) {
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
         // Загрузка
         return $this->userService->cropAvatarApi($id, $data);
       }
@@ -194,9 +182,9 @@ class Account
     $token = $_GET["token"];
 
     // Проверить токен
-    if ($this->userService->checkToken($id, $token)) {
+    if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
-      if ($id == $this->userService->getUserIdFromToken($token)) {
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
         // Загрузка
         return $this->userService->deleteAvatarApi($id);
       }

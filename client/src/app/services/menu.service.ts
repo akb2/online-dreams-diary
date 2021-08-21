@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { MenuItem } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
+import { TokenService } from "@_services/token.service";
 
 
 
@@ -22,6 +23,7 @@ export class MenuService {
 
   constructor(
     private accountService: AccountService,
+    private tokenService: TokenService,
     private router: Router
   ) {
     this.createMenuItemsOther();
@@ -61,7 +63,7 @@ export class MenuService {
 
   // Выход из системы
   private onLogOut(): void {
-    this.accountService.deleteAuth();
+    this.tokenService.deleteAuth();
   }
 
 

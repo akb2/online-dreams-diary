@@ -4,9 +4,10 @@ import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave } from "@_models/account";
 import { ApiResponse } from "@_models/api";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { SimpleObject } from "@_models/app";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
+import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
@@ -25,8 +26,6 @@ export class AccountService {
 
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
-  public token: string = "";
-  public id: string = "";
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   public readonly user$: Observable<User> = this.user.asObservable();
@@ -36,46 +35,21 @@ export class AccountService {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private router: Router,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
+    private tokenService: TokenService
   ) {
     this.localStorageService.cookieKey = this.cookieKey;
     this.localStorageService.cookieLifeTime = this.cookieLifeTime;
-    this.token = this.localStorageService.getCookie("token");
-    this.id = this.localStorageService.getCookie("id");
   }
 
   // Проверить авторизацию
   public get checkAuth(): boolean {
-    return !!this.token && !!this.id;
+    return !!this.tokenService.token && !!this.tokenService.id;
   }
 
 
 
 
-
-  // Проверить токен
-  public checkToken(codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("token", this.token);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/checkToken", formData, this.httpHeader).pipe(switchMap(
-      result => {
-        const code: string = result.result.code;
-        // Сохранить токен
-        if (code === "0001") {
-          if (this.id === result.result.data.tokenData.user_id) {
-            this.saveAuth(result.result.data.tokenData.token, result.result.data.tokenData.user_id);
-          }
-          // Неверный токен
-          else {
-            this.deleteCurrentUser();
-            this.router.navigate([""]);
-          }
-        }
-        return this.apiService.checkResponse(result.result.code, codes);
-      }
-    ));
-  }
 
   // Авторизация
   public auth(login: string, password: string, codes: string[] = []): Observable<string> {
@@ -87,7 +61,7 @@ export class AccountService {
       const code: string = result.result.code;
       // Сохранить токен
       if (code === "0001") {
-        this.saveAuth(result.result.data.token, result.result.data.id);
+        this.tokenService.saveAuth(result.result.data.token, result.result.data.id);
         this.router.navigate([""]);
       }
       // Обработка ошибки
@@ -109,7 +83,7 @@ export class AccountService {
 
   // Информация о текущем пользователе
   public syncCurrentUser(codes: string[] = []): Observable<string> {
-    return this.getUser(this.id, codes);
+    return this.getUser(this.tokenService.id, codes);
   }
 
   // Информация о пользователе
@@ -118,7 +92,7 @@ export class AccountService {
     return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(switchMap(
       result => {
         // Сохранить данные текущего пользователя
-        if (result.result.code === "0001" && result.result.data?.id === this.id) {
+        if (result.result.code === "0001" && result.result.data?.id === this.tokenService.id) {
           this.saveCurrentUser(result.result.data as User);
           this.user.next(result.result.data as User);
         }
@@ -133,9 +107,11 @@ export class AccountService {
     const formData: FormData = new FormData();
     Object.entries(userSave).map(value => formData.append(value[0], value[1]));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/saveUserData?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
-    ));
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/saveUserData?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
   }
 
 
@@ -145,9 +121,11 @@ export class AccountService {
     const formData: FormData = new FormData();
     formData.append("file", file);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/uploadAvatar?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
-    ));
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/uploadAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
   }
 
   // Обрезать аватарку
@@ -159,15 +137,20 @@ export class AccountService {
     formData.append("width", coords.width.toString());
     formData.append("height", coords.height.toString());
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/cropAvatar?id=" + this.id + "&token=" + this.token, formData, this.httpHeader).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
-    ));
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/cropAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
   }
 
   // Удалить аватарку
   public deleteAvatar(codes: string[] = []): Observable<string> {
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(this.baseUrl + "account/deleteAvatar?id=" + this.id + "&token=" + this.token, this.httpHeader).pipe(switchMap(
+    return this.httpClient.delete<ApiResponse>(
+      this.baseUrl + "account/deleteAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      this.httpHeader
+    ).pipe(switchMap(
       result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
@@ -175,28 +158,6 @@ export class AccountService {
 
 
 
-
-  // Запомнить авторизацию
-  private saveAuth(token: string, id: string): void {
-    this.id = id;
-    this.token = token;
-    this.localStorageService.setCookie("token", this.token);
-    this.localStorageService.setCookie("id", this.id);
-  }
-
-  // Сбросить авторизацию
-  public deleteAuth(): void {
-    this.httpClient.delete<ApiResponse>(this.baseUrl + "account/deleteToken?token=" + this.token).pipe(switchMap(
-      result => {
-        this.deleteCurrentUser();
-        return this.apiService.checkResponse(result.result.code);
-      }
-    )).subscribe(code => {
-      this.token = "";
-      this.localStorageService.deleteCookie("token");
-      this.router.navigate([""]);
-    });
-  }
 
   // Сведения о текущем пользователе
   public getCurrentUser(): User {
@@ -215,10 +176,5 @@ export class AccountService {
     if (this.checkAuth) {
       this.localStorageService.setCookie("current_user", JSON.stringify(user));
     }
-  }
-
-  // Удалить сведения о текущем пользователе
-  private deleteCurrentUser(): void {
-    this.localStorageService.deleteCookie("current_user");
   }
 }

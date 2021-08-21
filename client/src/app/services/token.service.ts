@@ -1,0 +1,112 @@
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { Router } from "@angular/router";
+import { environment } from '@_environments/environment';
+import { User } from "@_models/account";
+import { ApiResponse } from "@_models/api";
+import { SimpleObject } from "@_models/app";
+import { ApiService } from "@_services/api.service";
+import { LocalStorageService } from "@_services/local-storage.service";
+import { BehaviorSubject, Observable } from "rxjs";
+import { switchMap } from "rxjs/operators";
+
+
+
+
+
+@Injectable({
+  providedIn: "root"
+})
+export class TokenService {
+
+
+  private baseUrl: string = environment.baseUrl;
+  private httpHeader: SimpleObject = environment.httpHeader;
+
+  private cookieKey: string = "token_service_";
+  private cookieLifeTime: number = 604800;
+  public token: string = "";
+  public id: string = "";
+
+  private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+  public readonly user$: Observable<User> = this.user.asObservable();
+
+  // Конструктор
+  constructor(
+    private httpClient: HttpClient,
+    private apiService: ApiService,
+    private router: Router,
+    private localStorageService: LocalStorageService
+  ) {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.token = this.localStorageService.getCookie("token");
+    this.id = this.localStorageService.getCookie("id");
+  }
+
+  // Проверить авторизацию
+  public get checkAuth(): boolean {
+    return !!this.token && !!this.id;
+  }
+
+
+
+
+
+  // Проверить токен
+  public checkToken(codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("token", this.token);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "token/checkToken", formData, this.httpHeader).pipe(switchMap(
+      result => {
+        const code: string = result.result.code;
+        // Сохранить токен
+        if (code === "0001") {
+          if (this.id === result.result.data.tokenData.user_id) {
+            this.saveAuth(result.result.data.tokenData.token, result.result.data.tokenData.user_id);
+          }
+          // Неверный токен
+          else {
+            this.deleteCurrentUser();
+            this.router.navigate([""]);
+          }
+        }
+        return this.apiService.checkResponse(result.result.code, codes);
+      }
+    ));
+  }
+
+
+
+
+
+
+
+  // Запомнить авторизацию
+  public saveAuth(token: string, id: string): void {
+    this.id = id;
+    this.token = token;
+    this.localStorageService.setCookie("token", this.token);
+    this.localStorageService.setCookie("id", this.id);
+  }
+
+  // Сбросить авторизацию
+  public deleteAuth(): void {
+    this.httpClient.delete<ApiResponse>(this.baseUrl + "token/deleteToken?token=" + this.token).pipe(switchMap(
+      result => {
+        this.deleteCurrentUser();
+        return this.apiService.checkResponse(result.result.code);
+      }
+    )).subscribe(code => {
+      this.token = "";
+      this.localStorageService.deleteCookie("token");
+      this.router.navigate([""]);
+    });
+  }
+
+  // Удалить сведения о текущем пользователе
+  private deleteCurrentUser(): void {
+    this.localStorageService.deleteCookie("current_user");
+  }
+}

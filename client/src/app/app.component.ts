@@ -6,6 +6,7 @@ import { RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { SnackbarService } from "@_services/snackbar.service";
+import { TokenService } from "@_services/token.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -35,6 +36,7 @@ export class AppComponent {
   constructor(
     private router: Router,
     private accountService: AccountService,
+    private tokenService: TokenService,
     private snackBar: SnackbarService,
     private apiService: ApiService,
     private titleService: Title,
@@ -78,7 +80,7 @@ export class AppComponent {
     // Пользователь авторизован, проверить токен
     const checkToken: boolean = !(this.router.getCurrentNavigation()?.extras.state?.checkToken == false);
     if (this.accountService.checkAuth && checkToken) {
-      this.accountService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
+      this.tokenService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
         if (code == "0001") {
           this.accountService.syncCurrentUser().subscribe(code => {
@@ -88,7 +90,7 @@ export class AppComponent {
         // Токен не валидный
         else {
           this.router.navigate([""]);
-          this.accountService.deleteAuth();
+          this.tokenService.deleteAuth();
           // Сообщение с ошибкой
           this.snackBar.open({
             "mode": "error",
