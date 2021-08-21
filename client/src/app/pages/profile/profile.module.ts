@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 import { CardModule } from '@_controlers/card/card.module';
 import { ContentMenuModule } from '@_controlers/content-menu/content-menu.module';
 import { PopupCropImageModule } from '@_controlers/crop-image/crop-image.module';
@@ -43,7 +44,8 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
     ImageUploadModule,
     MatButtonModule,
     InformModule,
-    PopupCropImageModule
+    PopupCropImageModule,
+    MatMenuModule
   ]
 })
 
