@@ -72,39 +72,8 @@
       <!-- Слой посередине -->
       <div class="main-menu__layer-container_center">
         <!-- Пункты главного меню -->
-        <nav *ngIf="!isMobile()">
-          <ul class="menu-list"
-              [style]="css.menuList">
-            <ng-container *ngFor="let group of menuItems">
-              <ng-container *ngFor="let item of group">
-                <!-- Показывать доступные пункты -->
-                <li class="menu-list__item"
-                    *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
-                  <!-- Кнопка с ссылкой -->
-                  <a class="menu-list__item-link"
-                     [style]="css.menuItem"
-                     [routerLink]="item.link"
-                     routerLinkActive="active"
-                     [routerLinkActiveOptions]="{ exact: true }"
-                     *ngIf="item.link && !item.callback">
-                    <span>{{item.text}}</span>
-                    <div class="menu-list__item-line"
-                         [style]="css.menuItemLine"></div>
-                  </a>
-                  <!-- Кнопка без ссылки -->
-                  <button class="menu-list__item-link"
-                          [style]="css.menuItem"
-                          (click)="item.callback()"
-                          *ngIf="!item.link && item.callback">
-                    <span>{{item.text}}</span>
-                    <div class="menu-list__item-line"
-                         [style]="css.menuItemLine"></div>
-                  </button>
-                </li>
-              </ng-container>
-            </ng-container>
-          </ul>
-        </nav>
+        <ng-container [ngTemplateOutlet]="mainMenu"
+                      *ngIf="!isMobile()"></ng-container>
       </div>
       <!-- Слой справа -->
       <div class="main-menu__layer-container_right"
@@ -123,7 +92,7 @@
         <button class="floating-button"
                 [style]="css.floatingButton"
                 *ngIf="!floatButtonLink"
-                (click)="floatButtonCallback.emit()">
+                (click)="onFloatButtonClick()">
           <div class="floating-button__overlay"
                [style]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
@@ -172,13 +141,12 @@
         <!-- Пункты главного меню -->
         <nav class="mobile-menu__list">
           <ul>
+            <!--
             <ng-container *ngFor="let group of menuItems">
-              <div class="mobile-menu__list-group"
-                   *ngIf="hasAvailMenuItem(group)">
+              <div class="mobile-menu__list-group">
                 <ng-container *ngFor="let item of group">
                   <li class="mobile-menu__list-item"
                       *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
-                    <!-- Кнопка с ссылкой -->
                     <a class="mobile-menu__list-link"
                        [routerLink]="item.link"
                        routerLinkActive="active"
@@ -187,7 +155,6 @@
                       <mat-icon>{{item.icon}}</mat-icon>
                       <span>{{item.text}}</span>
                     </a>
-                    <!-- Кнопка без ссылки -->
                     <button class="mobile-menu__list-link"
                             (click)="item.callback()"
                             *ngIf="!item.link && item.callback">
@@ -198,6 +165,7 @@
                 </ng-container>
               </div>
             </ng-container>
+            -->
           </ul>
         </nav>
       </div>
@@ -214,3 +182,68 @@
 <app-scroll [styles]="css.scroll"
             [breakpointMobile]="breakpointMobile"
             [headerHeight]="headerHeight"></app-scroll>
+
+
+
+<!-- Главное меню -->
+<ng-template #mainMenu>
+  <nav>
+    <ul class="menu-list"
+        [style]="css.menuList">
+      <li class="menu-list__item"
+          *ngFor="let item of menuItems">
+        <!-- Содержимое пункта меню -->
+        <ng-container [ngTemplateOutlet]="mainMenuItem"
+                      [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+        <!-- Список -->
+        <div class="menu-list__item-list"
+             *ngIf="item.children?.length">
+          <ng-container [ngTemplateOutlet]="mainMenuItem"
+                        [ngTemplateOutletContext]="{ $implicit: subItem }"
+                        *ngFor="let subItem of item.children"></ng-container>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</ng-template>
+
+<!-- Пункты главного меню -->
+<ng-template #mainMenuItem
+             let-item
+             let-classes>
+  <!-- Кнопка с ссылкой -->
+  <a class="menu-list__item-link"
+     [ngClass]="{ active: item.active }"
+     [style]="css.menuItem"
+     [routerLink]="item.link"
+     *ngIf="!item.isSeparate && item.link && !item.callback">
+    <ng-container [ngTemplateOutlet]="mainMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+  </a>
+  <!-- Кнопка без ссылки -->
+  <button class="menu-list__item-link"
+          [style]="css.menuItem"
+          (click)="item.callback()"
+          *ngIf="!item.isSeparate && !item.link && item.callback">
+    <ng-container [ngTemplateOutlet]="mainMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+  </button>
+  <!-- Кнопка без действия -->
+  <div class="menu-list__item-link"
+       [style]="css.menuItem"
+       *ngIf="!item.isSeparate && !item.link && !item.callback">
+    <ng-container [ngTemplateOutlet]="mainMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+  </div>
+  <!-- Разделитель -->
+  <div class="menu-list__item-separate"
+       *ngIf="item.isSeparate">
+  </div>
+</ng-template>
+
+<ng-template #mainMenuItemContent
+             let-item>
+  <span>{{item.text}}</span>
+  <div class="menu-list__item-line"
+       [style]="css.menuItemLine"></div>
+</ng-template>

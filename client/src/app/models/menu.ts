@@ -1,12 +1,21 @@
+import { SimpleObject } from "@_models/app";
+
+
+
+
+
 // Элемент главного меню
 export interface MenuItem {
-  auth: AuthRules;
-  icon: string;
-  text: string;
+  isSeparate?: boolean;
+  active?: boolean;
+  sort?: number;
+  icon?: string;
+  text?: string;
   desc?: string;
-  callback?: () => void;
   link?: string;
-  linkParams?: { [key: string]: string };
+  linkParams?: SimpleObject;
+  callback?: () => void;
+  children?: MenuItem[];
 }
 
 // Тип способа авторизации

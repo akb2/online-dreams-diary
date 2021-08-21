@@ -161,17 +161,12 @@ $breakpointMobile: small;
     &-gradient {
       position: absolute;
       inset: 0;
-
-      // Полноразмерное меню
-      &.type-full {
-      }
     }
-
     // Заливка
     &-fill {
       position: absolute;
       inset: 0;
-      background-color: colors.$color_1;
+      background-color: map.get(colors.$mat-primary, 500);
     }
   }
 
@@ -474,13 +469,23 @@ $breakpointMobile: small;
   align-items: center;
   position: relative;
   user-select: none;
-
   // Пункт меню
   &__item {
     $__elm: &;
+    // Свойства
     list-style-type: none;
     display: block;
-
+    position: relative;
+    // Линия
+    &-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: transparent;
+      z-index: 0;
+      transition: background-color screens.$animation-time;
+    }
     // Ссылка
     &-link {
       position: relative;
@@ -490,41 +495,78 @@ $breakpointMobile: small;
       color: colors.$subtitle-dark;
       display: block;
       cursor: pointer;
-      transition: background-color screens.$animation-time;
+      transition: background-color screens.$animation-time, color screens.$animation-time;
       background-color: transparent;
       border: none;
-
       // Текст
       > span {
         z-index: 1;
         position: relative;
         font-size: inherit;
       }
-
       // Активный элемент
       &.active #{$__elm}-line {
-        background-color: colors.$main-menu-item-active-line;
+        background-color: map.get(colors.$mat-secondary, 500);
+        color: map.get(colors.$mat-secondary, contrast, 500);
       }
-
-      // Наведенный элемент
-      &:hover {
-        background-color: colors.$main-menu-item-hover-line;
-
-        #{$__elm}-line {
-          background-color: transparent;
+    }
+    // Список
+    &-list {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity #{screens.$animation-time}, visibility #{screens.$animation-time};
+      // отступ сверху
+      @include screens.adaptive(middle, large) {
+        padding-top: 10px;
+      }
+      // Пункты
+      > #{$__elm}-link {
+        background-color: map.get(colors.$mat-primary, 700);
+        color: map.get(colors.$mat-primary, contrast, 700);
+        color: #fff;
+        margin-top: 0 !important;
+        font-size: 15px !important;
+        line-height: 44px !important;
+        padding: 0 26px !important;
+        text-transform: none;
+        width: 100%;
+        text-align: left;
+        // Линия
+        > #{$__elm}-line {
+          width: 5px;
+          height: 100% !important;
         }
+        // Выделить
+        &:hover {
+          background-color: map.get(colors.$mat-primary, 900);
+          color: map.get(colors.$mat-primary, contrast, 900);
+        }
+      }
+      // Разделитель
+      > #{$__elm}-separate {
+        height: 1px;
+        background-color: map.get(colors.$mat-primary, 400);
       }
     }
 
-    // Линия
-    &-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      background-color: colors.$main-menu-item-line;
-      z-index: 0;
-      transition: background-color screens.$animation-time;
+    // Наведенный элемент
+    &:hover > #{$__elm} {
+      // Кнопка
+      &-link {
+        background-color: colors.$shadow;
+        // Линия
+        > #{$__elm}-line {
+          background-color: transparent;
+        }
+      }
+      // Список
+      &-list {
+        opacity: 1;
+        visibility: visible;
+      }
     }
   }
 }
