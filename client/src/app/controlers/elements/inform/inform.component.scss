@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/screens";
@@ -15,7 +16,7 @@ $figure-size-1: 100%;
 $figure-time-1: 0.5s;
 $figure-color-2: map.get(colors.$mat-primary, 400);
 $figure-size-2: $figure-size - ($figure-line-1 * 4);
-$figure-line-2: $figure-line-1 / 2;
+$figure-line-2: math.div($figure-line-1, 2);
 $figure-time-2: $figure-time-1 * 2;
 
 // Загрузчик
@@ -32,7 +33,7 @@ $figure-time-2: $figure-time-1 * 2;
     border-radius: 50%;
     // Граница 1
     &-1 {
-      @include mixins.inset(calc(50% - #{$figure-size-1 / 2}));
+      @include mixins.inset(calc(50% - #{math.div($figure-size-1, 2)}));
       width: $figure-size-1;
       height: $figure-size-1;
       border: $figure-line-1 solid transparent;
@@ -41,7 +42,7 @@ $figure-time-2: $figure-time-1 * 2;
     }
     // Граница 2
     &-2 {
-      @include mixins.inset(calc(50% - #{$figure-size-2 / 2}));
+      @include mixins.inset(calc(50% - #{math.div($figure-size-2, 2)}));
       width: $figure-size-2;
       height: $figure-size-2;
       border: $figure-line-2 solid transparent;
