@@ -23,6 +23,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
   @Input() public appearance: MatFormFieldAppearance = "fill";
   @Input() public fileTypes: FileTypes[] = FileTypesDefault;
   @Input() public fileSize: number = 10485760;
+  @Input() public autoUpload: boolean = false;
 
   @Output() public beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
   @Output() public afterGetFile: EventEmitter<File> = new EventEmitter<File>();
@@ -79,6 +80,10 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
           this.afterGetFile.emit(file);
           this.control.setValue(file);
           this.newValue = fileReader.result as string;
+          // Автозагрузка
+          if (this.autoUpload) {
+            this.onUpload();
+          }
         };
       }
       // Сбросить форму
