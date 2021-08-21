@@ -11,7 +11,7 @@
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
                  floatButtonIcon="save"
-                 (floatButtonCallback)="onSaveData.bind(this)"
+                 (floatButtonCallback)="onSaveData()"
                  backButtonLink="/profile/settings"></app-main-menu>
 
   <!-- Контейнер с данными -->
@@ -23,14 +23,15 @@
 
         <!-- Аватарка -->
         <app-card [title]="fileLoading? '': 'Оригинальная аватарка'"
-                  [fullHeight]="true">
+                  [fullHeight]="true"
+                  [avatarIcon]="fileLoading? '': 'add_a_photo'">
+          <!-- Содержимое -->
           <ng-container content>
             <!-- Форма загрузки аватарки -->
             <app-image-upload [formControl]="avatar"
                               (upload)="onUploadAvatar($event)"
                               (beforeGetFile)="onBeforeGetFile($event)"
                               (afterGetFile)="onAfterGetFile($event)"
-                              (deleteFile)="onDeleteAvatar()"
                               [hidden]="fileLoading"></app-image-upload>
             <!-- Загрузка сохранения -->
             <div class="loader"
@@ -39,57 +40,21 @@
                           [subTitle]="fileLoaderTitles[fileLoaderKey][1]"></app-inform>
             </div>
           </ng-container>
-        </app-card>
-
-        <!-- Обрезка основной аватарки -->
-        <app-card [title]="fileLoading? '': 'Основная аватарка'"
-                  [fullHeight]="true"
-                  *ngIf="user.avatars.full && user.avatars.full == avatar.value">
-          <ng-container content>
-            <!-- Аватарка -->
-            <div class="avatar-crop"
-                 [hidden]="fileLoading"
-                 (click)="onOpenCrop('crop')">
-              <img [src]="this.user.avatars.crop" />
-            </div>
-            <!-- Загрузка сохранения -->
-            <div class="loader"
-                 *ngIf="fileLoading">
-              <app-inform [title]="fileLoaderTitles[fileLoaderKey][0]"
-                          [subTitle]="fileLoaderTitles[fileLoaderKey][1]"></app-inform>
-            </div>
-          </ng-container>
-          <ng-container actions
+          <!-- Меню -->
+          <ng-container menus
                         *ngIf="!fileLoading">
-            <a mat-flat-button
-               color="primary"
-               (click)="onOpenCrop('crop')">Изменить</a>
-          </ng-container>
-        </app-card>
-
-        <!-- Обрезка миниатюры -->
-        <app-card [title]="fileLoading? '': 'Миниатюра'"
-                  [fullHeight]="true"
-                  *ngIf="user.avatars.full && user.avatars.full == avatar.value">
-          <ng-container content>
-            <!-- Аватарка -->
-            <div class="avatar-crop"
-                 [hidden]="fileLoading"
-                 (click)="onOpenCrop('middle')">
-              <img [src]="this.user.avatars.middle" />
-            </div>
-            <!-- Загрузка сохранения -->
-            <div class="loader"
-                 *ngIf="fileLoading">
-              <app-inform [title]="fileLoaderTitles[fileLoaderKey][0]"
-                          [subTitle]="fileLoaderTitles[fileLoaderKey][1]"></app-inform>
-            </div>
-          </ng-container>
-          <ng-container actions
-                        *ngIf="!fileLoading">
-            <a mat-flat-button
-               color="primary"
-               (click)="onOpenCrop('middle')">Изменить</a>
+            <!-- Изменить миниатюру -->
+            <button mat-menu-item
+                    (click)="onOpenCrop('crop')">
+              <mat-icon>crop</mat-icon>
+              Изменить миниатюру
+            </button>
+            <!-- Удалить аватарку -->
+            <button mat-menu-item
+                    (click)="onDeleteAvatar()">
+              <mat-icon>delete</mat-icon>
+              Удалить аватарку
+            </button>
           </ng-container>
         </app-card>
 

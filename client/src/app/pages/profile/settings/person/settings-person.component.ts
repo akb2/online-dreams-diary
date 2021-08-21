@@ -2,6 +2,7 @@ import { formatDate } from '@angular/common';
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { PopupConfirmComponent } from '@_controlers/confirm/confirm.component';
 import { PopupCropImageComponent, PopupCropImageData } from '@_controlers/crop-image/crop-image.component';
 import { ImageUploadComponent } from '@_controlers/image-upload/image-upload.component';
 import { CustomValidators } from '@_helpers/custom-validators';
@@ -151,7 +152,9 @@ export class SettingsPersonProfileComponent implements OnDestroy {
               this.snackbarService.open({
                 message: "Аватарка успешно загружена",
                 mode: "success"
-              })
+              });
+              // Обрезать аватарку
+              this.onOpenCrop("crop");
             });
           }
         },
@@ -206,6 +209,10 @@ export class SettingsPersonProfileComponent implements OnDestroy {
                 message: type === 'crop' ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
                 mode: "success"
               })
+              // Открыть изменение миниатюры
+              if (type === "crop") {
+                this.onOpenCrop("middle");
+              }
             });
           }
         },
@@ -216,24 +223,32 @@ export class SettingsPersonProfileComponent implements OnDestroy {
 
   // Удаление аватарки
   public onDeleteAvatar(): void {
-    this.fileLoading = true;
-    // Запрос на сервер
-    this.accountService.deleteAvatar().subscribe(
-      code => {
-        this.fileLoading = false;
-        // Успешная обрезка аватарки
-        if (code == "0001") {
-          this.accountService.syncCurrentUser().subscribe(() => {
-            this.appImageUpload.clearInput(null);
-            this.snackbarService.open({
-              message: "Ваша аватарка успешно удалена",
-              mode: "success"
-            });
-          });
-        }
-      },
-      () => this.fileLoading = false
-    );
+    const dialog = PopupConfirmComponent.open(this.matDialog, {
+      title: "Удаление аватарки",
+      text: "Вы действительно хотите удалить свою аватарку с сайта?"
+    });
+    dialog.afterClosed().subscribe(result => {
+      if (result) {
+        this.fileLoading = true;
+        // Запрос на сервер
+        this.accountService.deleteAvatar().subscribe(
+          code => {
+            this.fileLoading = false;
+            // Успешная обрезка аватарки
+            if (code == "0001") {
+              this.accountService.syncCurrentUser().subscribe(() => {
+                this.appImageUpload.clearInput(null);
+                this.snackbarService.open({
+                  message: "Ваша аватарка успешно удалена",
+                  mode: "success"
+                });
+              });
+            }
+          },
+          () => this.fileLoading = false
+        );
+      }
+    });
   }
 
 

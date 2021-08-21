@@ -27,13 +27,11 @@ export class SettingsProfileComponent {
   constructor() {
     // Настройки пунктов меню
     this.menuItems = [{
-      auth: 1,
       icon: "assignment_ind",
       text: "Персональные данные",
       desc: "Настройки всех личных персональных данных вашего аккаунта",
       link: "person"
     }, {
-      auth: 1,
       icon: "security",
       text: "Безопасность аккаунта",
       desc: "Просмотр всех активных сессий, изменение пароля",
