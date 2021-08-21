@@ -7,14 +7,12 @@ import { takeUntil } from "rxjs/operators";
 
 
 
+// Декоратор
 @Injectable({
   providedIn: "root"
 })
 
-
-
-
-
+// Основной класс
 export class ScreenService implements OnDestroy {
 
 
