@@ -32,6 +32,7 @@
                               (upload)="onUploadAvatar($event)"
                               (beforeGetFile)="onBeforeGetFile($event)"
                               (afterGetFile)="onAfterGetFile($event)"
+                              [autoUpload]="true"
                               [hidden]="fileLoading"></app-image-upload>
             <!-- Загрузка сохранения -->
             <div class="loader"
@@ -43,9 +44,15 @@
           <!-- Меню -->
           <ng-container menus
                         *ngIf="!fileLoading">
-            <!-- Изменить миниатюру -->
+            <!-- Обрезать фотографию -->
             <button mat-menu-item
                     (click)="onOpenCrop('crop')">
+              <mat-icon>crop</mat-icon>
+              Обрезать аватарку
+            </button>
+            <!-- Изменить миниатюру -->
+            <button mat-menu-item
+                    (click)="onOpenCrop('middle')">
               <mat-icon>crop</mat-icon>
               Изменить миниатюру
             </button>

@@ -177,12 +177,14 @@ export class SettingsPersonProfileComponent implements OnDestroy {
   public onOpenCrop(type: UserAvatarCropDataKeys): void {
     if (this.user) {
       const data: PopupCropImageData = {
+        title: "Обрезка аватарки",
         image: this.user.avatars.full,
         coords: this.user.avatarCropData.crop,
         minimal: [400, 400]
       };
       // Для обрезки основной фотки
       if (type === "middle") {
+        data.title = "Создание миниатюры";
         data.image = this.user.avatars.crop;
         data.coords = this.user.avatarCropData.middle;
         data.aspectRatio = [1, 1];
