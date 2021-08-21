@@ -1,11 +1,13 @@
+@use "sass:map";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/colors";
 
-$back_1: #3d35ce;
-$back_2: #934ae8;
+$back_1: map.get(colors.$mat-primary, 400);
+$back_2: map.get(colors.$mat-secondary, 400);
 
-$shape_1: #615cfd;
-$shape_2: #6c4fef;
-$shape_3: #b657ec;
+$shape_1: map.get(colors.$mat-primary, 300);
+$shape_2: map.get(colors.$mat-secondary, 300);
+$shape_3: map.get(colors.$mat-secondary, 300);
 $shape_4: rgba(255, 255, 255, 0.05);
 
 $shape_size: 1vw;
