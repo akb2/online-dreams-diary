@@ -75,7 +75,7 @@ $colors: (
         grid-template-columns: 1fr #{$menu-size};
       }
       // Макет с меню и аватаркой
-      &.use-menu {
+      &.use-avatar.use-menu {
         grid-template-areas: "avatar title menu" "avatar subtitle menu";
         grid-template-columns: #{$image-size} 1fr #{$menu-size};
       }

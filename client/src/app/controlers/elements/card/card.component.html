@@ -50,6 +50,7 @@
 
 <!-- Меню карточки -->
 <mat-menu #menuPanel="matMenu"
+          xPosition="before"
           [hidden]="!showMenuPanel">
   <div #menuPanelHelper>
     <ng-content select="[menus]"></ng-content>
