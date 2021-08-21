@@ -38,13 +38,22 @@ export class AccountService {
     private localStorageService: LocalStorageService,
     private tokenService: TokenService
   ) {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.configLocalStorage();
   }
 
   // Проверить авторизацию
   public get checkAuth(): boolean {
-    return !!this.tokenService.token && !!this.tokenService.id;
+    return this.tokenService.checkAuth;
+  }
+
+
+
+
+
+  // Инициализация Local Storage
+  private configLocalStorage(): void {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
   }
 
 
@@ -162,6 +171,7 @@ export class AccountService {
   // Сведения о текущем пользователе
   public getCurrentUser(): User {
     if (this.checkAuth) {
+      this.configLocalStorage();
       const userString: string = this.localStorageService.getCookie("current_user");
       if (userString) {
         return JSON.parse(userString) as User;
@@ -174,6 +184,7 @@ export class AccountService {
   // Сведения о текущем пользователе
   private saveCurrentUser(user: User): void {
     if (this.checkAuth) {
+      this.configLocalStorage();
       this.localStorageService.setCookie("current_user", JSON.stringify(user));
     }
   }

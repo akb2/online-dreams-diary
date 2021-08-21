@@ -38,8 +38,7 @@ export class TokenService {
     private router: Router,
     private localStorageService: LocalStorageService
   ) {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.configLocalStorage();
     this.token = this.localStorageService.getCookie("token");
     this.id = this.localStorageService.getCookie("id");
   }
@@ -47,6 +46,16 @@ export class TokenService {
   // Проверить авторизацию
   public get checkAuth(): boolean {
     return !!this.token && !!this.id;
+  }
+
+
+
+
+
+  // Инициализация Local Storage
+  private configLocalStorage(): void {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
   }
 
 
@@ -77,16 +86,11 @@ export class TokenService {
     ));
   }
 
-
-
-
-
-
-
   // Запомнить авторизацию
   public saveAuth(token: string, id: string): void {
     this.id = id;
     this.token = token;
+    this.configLocalStorage();
     this.localStorageService.setCookie("token", this.token);
     this.localStorageService.setCookie("id", this.id);
   }
@@ -100,6 +104,7 @@ export class TokenService {
       }
     )).subscribe(code => {
       this.token = "";
+      this.configLocalStorage();
       this.localStorageService.deleteCookie("token");
       this.router.navigate([""]);
     });
