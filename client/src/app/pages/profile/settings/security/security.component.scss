@@ -11,23 +11,27 @@
     large: 4,
     xlarge: 5,
   );
+  $gap: 30px;
   // Свойства
-  display: grid;
-  gap: 15px;
-  // Адаптив
-  @include screens.adaptiveFor($counts) using($count) {
-    grid-template-columns: repeat(#{$count}, 1fr);
-  }
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 45px $gap;
   // Элемент
   &__element {
-    $size: 48px;
-    $title-height: 12px;
-    $text-spacing: 8px;
+    $size: 64px;
+    $title-height: 16px;
+    $text-spacing: 10px;
     // Свойства
     display: grid;
     grid-template-columns: #{$size} 1fr;
     grid-template-areas: "image title" "image subtitle";
     gap: 0 10px;
+    // Адаптив
+    @include screens.adaptiveFor($counts) using($count) {
+      width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
+    }
     // Картинка
     &-image {
       width: $size;
@@ -54,16 +58,17 @@
       margin-top: $text-spacing;
       line-height: $title-height;
       height: $title-height;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 300;
       color: colors.$subtitle;
     }
     // Подзаголовок
     &-value {
       grid-area: subtitle;
+      margin-bottom: $text-spacing;
       line-height: $size - $title-height - ($text-spacing * 2);
       height: $size - $title-height - ($text-spacing * 2);
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 500;
       color: colors.$title;
     }
