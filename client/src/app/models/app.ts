@@ -48,3 +48,15 @@ export const AppMatDialogConfig: MatDialogConfig = {
 
 // Пустая функция
 export const VoidFunctionVar: VoidFunction = () => { };
+
+// Информация о браузере
+export interface BrowserInfo {
+  os: string;
+  name: string;
+  version: string;
+}
+
+// Данные об операционных системах
+export const OsNames: SimpleObject = {
+  Win10: "Windows 10"
+};
