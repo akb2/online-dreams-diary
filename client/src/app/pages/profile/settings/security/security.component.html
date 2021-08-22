@@ -1,7 +1,7 @@
 <ng-container *ngIf="user">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
-                 type="short"
+                 type="collapse"
                  image="../../../../assets/images/backgrounds/4.jpg"
                  imagePositionX="center"
                  imagePositionY="center"
@@ -16,6 +16,54 @@
   <!-- Контейнер с данными -->
   <div class="root-section">
     <div class="container">
+      <!-- Сведения о текущем токене -->
+      <ng-container>
+        <div class="token"
+             *ngIf="!loadingTokenInfo">
+          <!-- Дата авторизации -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <mat-icon>history</mat-icon>
+            </div>
+            <div class="token__element-name">Дата авторизации</div>
+            <div class="token__element-value">{{tokenInfo.createDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+          </div>
+          <!-- Последнее действие -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <mat-icon>history</mat-icon>
+            </div>
+            <div class="token__element-name">Последняя активность</div>
+            <div class="token__element-value">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+          </div>
+          <!-- Операционная система -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
+            </div>
+            <div class="token__element-name">Операционная система</div>
+            <div class="token__element-value">{{osNames[tokenInfo.browser.os]}}</div>
+          </div>
+        </div>
+        <!-- Загрузка токена -->
+        <ng-container [ngTemplateOutlet]="loadingData"
+                      [ngTemplateOutletContext]="{ $implicit: {
+                        title: 'Загрузка',
+                        subTitle: 'Пожалуйста, подождите',
+                        description: 'Идет получение сведений о текущей авторизации'
+                      }}"
+                      *ngIf="loadingTokenInfo"></ng-container>
+      </ng-container>
     </div>
   </div>
 </ng-container>
+
+
+
+<!-- Загрузка -->
+<ng-template #loadingData
+             let-data>
+  <app-inform [title]="data.title"
+              [subTitle]="data.subTitle"
+              [description]="data.description"></app-inform>
+</ng-template>

@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { User } from '@_models/account';
+import { OsNames, SimpleObject } from '@_models/app';
+import { TokenInfo } from '@_models/token';
 import { AccountService } from '@_services/account.service';
+import { TokenService } from '@_services/token.service';
 import { Observable, Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 
@@ -20,12 +23,18 @@ export class SettingsSecurityComponent {
 
 
   public user: User;
+  public tokenInfo: TokenInfo;
+  public osNames: SimpleObject = OsNames;
+
+  public loadingTokenInfo: boolean = true;
 
   private destroy$: Subject<void> = new Subject<void>();
 
   constructor(
-    private accountService: AccountService
+    private accountService: AccountService,
+    private tokenService: TokenService
   ) {
+    this.getToken();
     // Подписка на данные пользвателя
     this.subscribeUser().subscribe();
   }
@@ -33,6 +42,16 @@ export class SettingsSecurityComponent {
 
 
 
+
+  // Получить сведения о токене
+  private getToken(): void {
+    this.loadingTokenInfo = true;
+    // Загрузка информации о токене
+    this.tokenService.getToken().subscribe(tokenInfo => {
+      this.loadingTokenInfo = false;
+      this.tokenInfo = tokenInfo;
+    });
+  }
 
   // Подписка на пользователя
   private subscribeUser(): Observable<User> {

@@ -1,0 +1,71 @@
+@use "sass:map";
+@use "../../../../../assets/styles/screens";
+@use "../../../../../assets/styles/colors";
+
+// Текущие данные о токене
+.token {
+  $counts: (
+    xsmall: 1,
+    small: 2,
+    middle: 3,
+    large: 4,
+    xlarge: 5,
+  );
+  // Свойства
+  display: grid;
+  gap: 15px;
+  // Адаптив
+  @include screens.adaptiveFor($counts) using($count) {
+    grid-template-columns: repeat(#{$count}, 1fr);
+  }
+  // Элемент
+  &__element {
+    $size: 48px;
+    $title-height: 12px;
+    $text-spacing: 8px;
+    // Свойства
+    display: grid;
+    grid-template-columns: #{$size} 1fr;
+    grid-template-areas: "image title" "image subtitle";
+    gap: 0 10px;
+    // Картинка
+    &-image {
+      width: $size;
+      height: $size;
+      grid-area: image;
+      overflow: hidden;
+      // Иконка
+      > mat-icon {
+        width: inherit;
+        height: inherit;
+        line-height: $size;
+        font-size: $size;
+      }
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    // Заголовок
+    &-name {
+      grid-area: title;
+      margin-top: $text-spacing;
+      line-height: $title-height;
+      height: $title-height;
+      font-size: 12px;
+      font-weight: 300;
+      color: colors.$subtitle;
+    }
+    // Подзаголовок
+    &-value {
+      grid-area: subtitle;
+      line-height: $size - $title-height - ($text-spacing * 2);
+      height: $size - $title-height - ($text-spacing * 2);
+      font-size: 16px;
+      font-weight: 500;
+      color: colors.$title;
+    }
+  }
+}
