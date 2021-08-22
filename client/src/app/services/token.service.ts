@@ -5,10 +5,11 @@ import { environment } from '@_environments/environment';
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
+import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { BehaviorSubject, Observable } from "rxjs";
-import { switchMap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of } from "rxjs";
+import { map, switchMap } from "rxjs/operators";
 
 
 
@@ -48,10 +49,6 @@ export class TokenService {
     return !!this.token && !!this.id;
   }
 
-
-
-
-
   // Инициализация Local Storage
   private configLocalStorage(): void {
     this.localStorageService.cookieKey = this.cookieKey;
@@ -81,10 +78,42 @@ export class TokenService {
             this.router.navigate([""]);
           }
         }
+        // Вернуть данные
         return this.apiService.checkResponse(result.result.code, codes);
       }
     ));
   }
+
+  // Информация о текущем токене
+  public getToken(token: string = this.token, codes: string[] = []): Observable<TokenInfo> {
+    return this.httpClient.get<ApiResponse>(this.baseUrl + "token/getToken?token=" + token, this.httpHeader).pipe(switchMap(
+      result => {
+        const code: string = result.result.code;
+        // Сохранить токен
+        if (code === "0001") {
+          return of(result);
+        }
+        // Вернуть данные
+        return this.apiService.checkResponse(result.result.code, codes);
+      }
+    ), map(result => ({
+      id: result.result.data.tokenData.id,
+      token: result.result.data.tokenData.token,
+      createDate: new Date(result.result.data.tokenData.create_date),
+      lastActionDate: new Date(result.result.data.tokenData.last_action_date),
+      userId: result.result.data.tokenData.user_id,
+      ip: result.result.data.tokenData.ip,
+      browser: {
+        os: result.result.data.tokenData.os,
+        name: result.result.data.tokenData.browser,
+        version: result.result.data.tokenData.browser_version
+      }
+    })));
+  }
+
+
+
+
 
   // Запомнить авторизацию
   public saveAuth(token: string, id: string): void {
