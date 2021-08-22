@@ -1,14 +1,15 @@
 @use "sass:map";
+@use "sass:math";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
 
 $size: 15px;
 $spacing: 1px;
-$borderRadius: $size / 2;
+$borderRadius: math.div($size, 2);
 
 $sliderSize: $size * 0.6;
 $sliderMinHeight: $sliderSize * 3;
-$sliderBorderRadius: $sliderSize / 2;
+$sliderBorderRadius: math.div($sliderSize, 2);
 
 // Оющие стили
 :host {
