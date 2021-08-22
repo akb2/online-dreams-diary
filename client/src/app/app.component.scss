@@ -1,3 +1,4 @@
+@use "sass:math";
 @use "../assets/styles/colors";
 
 // Прелоадер
@@ -43,7 +44,7 @@
         content: "";
         display: block;
         position: absolute;
-        inset: ($size-1 - $size-2) / 2;
+        inset: math.div(($size-1 - $size-2), 2);
         border: $border-2 solid transparent;
         border-bottom-color: #fff;
         border-radius: 50%;

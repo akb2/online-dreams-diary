@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "sass:list";
+@use "sass:math";
 @use "./colors";
 @use "./screens";
 
@@ -97,11 +98,11 @@
     // Свойства
     display: grid;
     grid-template-columns: 1fr #{$title-size};
-    grid-template-rows: #{$title-size / 2} #{$title-size / 2};
+    grid-template-rows: #{math.div($title-size, 2)} #{math.div($title-size, 2)};
     grid-template-areas: "title button" "subtitle button";
     grid-gap: 0 15px;
     align-items: center;
-    line-height: $title-size / 2;
+    line-height: math.div($title-size, 2);
     // Заголовок
     &__title {
       grid-area: title;

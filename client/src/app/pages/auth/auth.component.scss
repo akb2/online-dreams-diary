@@ -1,5 +1,5 @@
 @use "sass:map";
-
+@use "sass:math";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/material";
 
@@ -24,7 +24,7 @@
   @each $screen, $resolution in screens.$breakpoints {
     @media (min-width: #{screens.min_resolution( $screen )}px) and (max-width: #{screens.max_resolution( $screen )}px) {
       > * {
-        width: 100% / map.get($counts, $screen);
+        width: math.div(100%, map.get($counts, $screen));
       }
     }
   }
