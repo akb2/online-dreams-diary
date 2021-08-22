@@ -46,10 +46,6 @@ export class AccountService {
     return this.tokenService.checkAuth;
   }
 
-
-
-
-
   // Инициализация Local Storage
   private configLocalStorage(): void {
     this.localStorageService.cookieKey = this.cookieKey;
