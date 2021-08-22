@@ -10,7 +10,7 @@ $breakpointMobile: small;
   $header-size: (
     xsmall: 180px,
     small: 180px,
-    middle: 180px,
+    middle: 240px,
     large: 360px,
     xlarge: 420px,
   );
@@ -534,6 +534,7 @@ $breakpointMobile: small;
         text-transform: none;
         width: 100%;
         text-align: left;
+        white-space: nowrap;
         // Линия
         > #{$__elm}-line {
           width: 5px;
