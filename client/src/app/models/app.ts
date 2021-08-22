@@ -58,5 +58,6 @@ export interface BrowserInfo {
 
 // Данные об операционных системах
 export const OsNames: SimpleObject = {
-  Win10: "Windows 10"
+  Win10: "Windows 10",
+  Android: "Android OS"
 };
