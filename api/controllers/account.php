@@ -46,13 +46,6 @@ class Account
 
 
 
-  // Создание таблиц
-  // * POST
-  public function createTable($data): array
-  {
-    return $this->userService->createTableApi($data["password"]);
-  }
-
   // Авторизация пользователя
   // * POST
   public function auth($data): array

@@ -43,13 +43,6 @@ class Token
 
 
 
-  // Создание таблиц
-  // * POST
-  public function createTable($data): array
-  {
-    return $this->tokenService->createTableApi($data["password"]);
-  }
-
   // Проверка токена
   // * POST
   public function checkToken($data): array
@@ -62,6 +55,13 @@ class Token
   public function deleteToken($data): array
   {
     return $this->tokenService->deleteTokenApi($data["token"]);
+  }
+
+  // Сведения о токене
+  // * GET
+  public function getToken($data): array
+  {
+    return $this->tokenService->getTokenApi($data);
   }
 }
 
