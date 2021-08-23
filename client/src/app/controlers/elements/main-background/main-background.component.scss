@@ -22,7 +22,7 @@ $shape_4_size_mobile: 190px;
   position: absolute;
   inset: 0;
 
-  @include screens.adaptive(small) {
+  @include screens.adaptive(middle) {
     background: radial-gradient(circle at 20% 40%, $shape_1 $shape_size, transparent ($shape_size + $shape_blur)),
       radial-gradient(circle at 50% 70%, $shape_2 $shape_size, transparent ($shape_size + $shape_blur)),
       radial-gradient(circle at 80% 80%, $shape_3 $shape_size, transparent ($shape_size + $shape_blur)),
@@ -30,7 +30,7 @@ $shape_4_size_mobile: 190px;
       linear-gradient(to right, $back_1 0, $back_2 100%);
   }
 
-  @include screens.adaptive(auto, small) {
+  @include screens.adaptive(auto, middle) {
     background: radial-gradient(
         circle at 20% 40%,
         $shape_1 $shape_size_mobile,
