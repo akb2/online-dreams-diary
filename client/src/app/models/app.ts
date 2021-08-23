@@ -58,7 +58,31 @@ export interface BrowserInfo {
 
 // Данные об операционных системах
 export const OsNames: SimpleObject = {
+  Win7: "Windows 7",
+  Win8: "Windows 8",
   Win10: "Windows 10",
+
+  Linux: "Linux",
   Android: "Android OS",
-  macOS: "Mac OS"
+
+  macOS: "Mac OS",
+  MacOSX: "Mac OS X",
+  iOS: "iOS",
+
+  unknown: "Неопределена"
+};
+
+// Данные об операционных системах
+export const BrowserNames: SimpleObject = {
+  Chrome: "Google Chrome",
+  Opera: "Opera",
+
+  IE: "Internet Explorer",
+  Edge: "Microsoft Edge",
+
+  Firefox: "Mozilla Firefox",
+
+  Safari: "Safari",
+
+  "Default Browser": "Неопределен",
 };
