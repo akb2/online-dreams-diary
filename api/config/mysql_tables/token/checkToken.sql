@@ -2,7 +2,7 @@ SELECT
   `id`,
   `token`,
   `user_id`,
-  `last_action_date`,
+  DATE_FORMAT(`last_action_date`, '%Y-%m-%dT%TZ') AS `last_action_date`,
   INET_NTOA(`ip`) AS `ip`,
   `os`,
   `browser`,
