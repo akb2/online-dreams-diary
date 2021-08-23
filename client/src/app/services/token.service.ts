@@ -4,7 +4,7 @@ import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
-import { SimpleObject } from "@_models/app";
+import { CustomObject, SimpleObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
@@ -96,19 +96,22 @@ export class TokenService {
         // Вернуть данные
         return this.apiService.checkResponse(result.result.code, codes);
       }
-    ), map(result => ({
-      id: result.result.data.tokenData.id,
-      token: result.result.data.tokenData.token,
-      createDate: new Date(result.result.data.tokenData.create_date),
-      lastActionDate: new Date(result.result.data.tokenData.last_action_date),
-      userId: result.result.data.tokenData.user_id,
-      ip: result.result.data.tokenData.ip,
-      browser: {
-        os: result.result.data.tokenData.os,
-        name: result.result.data.tokenData.browser,
-        version: result.result.data.tokenData.browser_version
-      }
-    })));
+    ), map(result => {
+      const tokenData: CustomObject<string | number> = result.result.data.tokenData;
+      return {
+        id: tokenData.id as number,
+        token: tokenData.token as string,
+        createDate: new Date(tokenData.create_date),
+        lastActionDate: new Date(tokenData.last_action_date),
+        userId: tokenData.user_id as number,
+        ip: tokenData.ip as string,
+        browser: {
+          os: tokenData.os as string,
+          name: tokenData.browser as string,
+          version: parseInt(tokenData.browser_version as string) > 0 ? tokenData.browser_version as string : ""
+        }
+      };
+    }));
   }
 
 
