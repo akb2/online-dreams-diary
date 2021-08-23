@@ -52,6 +52,13 @@
         object-fit: cover;
       }
     }
+    // Тексты
+    &-name,
+    &-value {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     // Заголовок
     &-name {
       grid-area: title;

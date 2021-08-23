@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { User } from '@_models/account';
-import { OsNames, SimpleObject } from '@_models/app';
+import { BrowserNames, OsNames, SimpleObject } from '@_models/app';
 import { TokenInfo } from '@_models/token';
 import { AccountService } from '@_services/account.service';
 import { TokenService } from '@_services/token.service';
@@ -25,6 +25,7 @@ export class SettingsSecurityComponent {
   public user: User;
   public tokenInfo: TokenInfo;
   public osNames: SimpleObject = OsNames;
+  public browserNames: SimpleObject = BrowserNames;
 
   public loadingTokenInfo: boolean = true;
 

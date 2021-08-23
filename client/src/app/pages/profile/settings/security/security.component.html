@@ -44,6 +44,14 @@
             <div class="token__element-name">Операционная система</div>
             <div class="token__element-value">{{osNames[tokenInfo.browser.os]}}</div>
           </div>
+          <!-- Браузер -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
+            </div>
+            <div class="token__element-name">Браузер</div>
+            <div class="token__element-value">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
+          </div>
         </div>
         <!-- Загрузка токена -->
         <ng-container [ngTemplateOutlet]="loadingData"
