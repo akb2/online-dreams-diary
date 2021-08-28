@@ -46,7 +46,6 @@ export class ScreenService implements OnDestroy {
     let breakpoint: ScreenKeys = "default";
     // Цикл по брейкпоинтам
     for (let key in this.breakpoints) {
-      console.log(this.getMin(key), resolution, this.getMax(key));
       breakpoint = this.getMin(key) < resolution && resolution <= this.getMax(key) ? key as ScreenKeys : breakpoint;
     }
     // Вернуть имя брейкпоинта
