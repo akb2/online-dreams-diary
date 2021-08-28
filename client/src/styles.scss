@@ -77,8 +77,28 @@ html {
 }
 
 // Секции
-.root-section {
-  min-height: calc(100vh - 60px);
+* {
+  $_elm: section;
+  // Свойства
+  &.#{$_elm} {
+    background-color: colors.$background;
+    width: 100%;
+    // Главный контейнер
+    &.white {
+      background-color: colors.$card;
+    }
+  }
+  // Основная секция
+  &.root-#{$_elm} {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    // Последний элемент
+    > .#{$_elm}:last-child {
+      flex-grow: 1;
+    }
+  }
 }
 
 // Материал иконки
