@@ -141,7 +141,7 @@
     }
 
     // Адаптив для маленьких экранов
-    @include screens.adaptive(auto, small) {
+    @include screens.adaptive(auto, xsmall) {
       $_elm: &;
       // Свойства
       &:nth-child(1) ~ & {
