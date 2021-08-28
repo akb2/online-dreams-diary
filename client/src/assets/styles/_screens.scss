@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:list";
 @use "./colors";
 
 $breakpoints: (
@@ -75,10 +76,24 @@ $card-shadow: 1px 1px 10px 1px #{colors.$shadow};
 }
 
 // Адаптация под разные экраны
-@mixin adaptiveFor($values) {
-  @each $screen, $value in $values {
+@mixin adaptiveFor($values...) {
+  @each $screen, $value in $breakpoints {
     @include adaptive($screen, $screen) {
-      @content ($value);
+      $datas: ();
+      @each $value in $values {
+        $data: "";
+        // Значение для экрана
+        @if (map.has-key($value, $screen)) {
+          $data: map.get($value, $screen);
+        }
+        // Значение по умолчанию
+        @else if(map.has-key($value, default)) {
+          $data: map.get($value, default);
+        }
+        // Добавить значение
+        $datas: list.append($datas, $data);
+      }
+      @content ($datas...);
     }
   }
 }
