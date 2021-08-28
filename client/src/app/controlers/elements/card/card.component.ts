@@ -1,5 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from "@angular/core";
-import { IconBackground, IconColor } from "@_models/app";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
+import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 
 
 
@@ -9,11 +9,12 @@ import { IconBackground, IconColor } from "@_models/app";
 @Component({
   selector: "app-card",
   templateUrl: "./card.component.html",
-  styleUrls: ["./card.component.scss"]
+  styleUrls: ["./card.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 // Класс
-export class CardComponent implements AfterViewInit {
+export class CardComponent implements AfterViewInit, OnChanges {
 
 
   @Input() public title: string | null;
@@ -24,7 +25,8 @@ export class CardComponent implements AfterViewInit {
   @Input() public avatarBackground: IconBackground = "transparent";
   @Input() public fullHeight: boolean = false;
   @Input() public routerLink: string | null;
-  @Input() public queryParams: { [key: string]: string } | null;
+  @Input() public queryParams: SimpleObject | null;
+  @Input() public changeDetection: boolean;
 
   @ViewChild('contentPanel') private contentPanel: ElementRef;
   @ViewChild('actionsPanel') private actionsPanel: ElementRef;
@@ -33,6 +35,11 @@ export class CardComponent implements AfterViewInit {
   public showContentPanel: boolean = false;
   public showActionsPanel: boolean = false;
   public showMenuPanel: boolean = false;
+  public changeDetectionHelper: boolean;
+
+
+
+
 
   // Конструктор
   constructor(
@@ -40,9 +47,12 @@ export class CardComponent implements AfterViewInit {
   ) {
   }
 
-
-
-
+  // Получены изменения
+  public ngOnChanges(): void {
+    if (this.changeDetection != this.changeDetectionHelper) {
+      this.changeDetectorRef.markForCheck();
+    }
+  }
 
   // После проверки элементов
   public ngAfterViewInit(): void {
