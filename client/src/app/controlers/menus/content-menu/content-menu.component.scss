@@ -140,6 +140,27 @@
       }
     }
 
+    // Адаптив для маленьких экранов
+    @include screens.adaptive(auto, small) {
+      $_elm: &;
+      // Свойства
+      &:nth-child(1) ~ & {
+        flex-flow: row wrap;
+        // Картинка
+        #{$_elm}-image {
+          order: 1;
+        }
+        // Текст
+        #{$_elm}-content {
+          order: 3;
+        }
+        // Кнопка далее
+        #{$_elm}-more {
+          order: 2;
+        }
+      }
+    }
+
     // Выделение
     &:hover {
       background-color: $color;
