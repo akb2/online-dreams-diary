@@ -1,6 +1,9 @@
 @use "sass:map";
 @use "../../../../../assets/styles/screens";
 @use "../../../../../assets/styles/colors";
+@use "../../../../../assets/styles/material";
+
+@include material.mat-title;
 
 // Текущие данные о токене
 .token {
@@ -26,22 +29,13 @@
   // Свойства
   display: flex;
   flex-flow: row wrap;
-  justify-content: center;
-  align-items: flex-start;
   text-align: left;
   // Адаптив
   @include screens.adaptiveFor($gaps-x, $gaps-y) using($gap-x, $gap-y) {
     gap: #{$gap-y} #{$gap-x};
   }
   @include screens.adaptive(xsmall, xsmall) {
-    display: inline-flex;
     flex-flow: column nowrap;
-    width: auto;
-    margin: 0 auto;
-  }
-  // Обертка
-  &__layout {
-    text-align: center;
   }
   // Элемент
   &__element {
@@ -76,7 +70,9 @@
         width: inherit;
         height: inherit;
         line-height: $size;
-        font-size: $size;
+        font-size: $size * 0.78;
+        color: map.get(colors.$mat-secondary, 500);
+        text-align: center;
       }
       // Картинка
       > img {
