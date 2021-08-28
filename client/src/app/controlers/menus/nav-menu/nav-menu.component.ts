@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { SimpleObject } from "@_models/app";
 import { MenuItem } from "@_models/menu";
@@ -16,7 +16,8 @@ import smoothscroll from "smoothscroll-polyfill";
 @Component({
   selector: "app-main-menu",
   templateUrl: "./nav-menu.component.html",
-  styleUrls: ["./nav-menu.component.scss"]
+  styleUrls: ["./nav-menu.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 // Основной класс
@@ -53,8 +54,8 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
-  private breakpoint: string = "default";
-  public breakpointMobile: string = "small";
+  private breakpoint: ScreenKeys = "default";
+  public breakpointMobile: ScreenKeys = "small";
   public headerHeight: number = DrawDatas.minHeight;
 
   public showMobileMenu: boolean = false;
@@ -191,7 +192,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     // Отрисовка
     this.onResize();
     // Обновить
-    this.changeDetectorRef.detectChanges();
+    this.changeDetectorRef.markForCheck();
   }
 
   // Конец класса
@@ -262,6 +263,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth || 0;
     DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth || 0;
     // Расчет и отрисовка
+    const breakpoint: ScreenKeys = this.breakpoint;
     DrawDatas.dataRender();
     this.dataCalculate();
     // Разрешить / запретить скролл
@@ -273,6 +275,12 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
         elm.classList.remove("no-scroll");
       }
     });
+    // Пункты меню
+    if (this.breakpoint != breakpoint) {
+      this.menuService.createMenuItems();
+      [this.menuItems] = [this.menuService.menuItems];
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   // Фокус для скролла смахиванием
@@ -348,7 +356,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     for (let titleKey in this.cssNames) {
       let titleValue: string = this.cssNames[titleKey];
       this.css[titleKey] = "";
-
+      // Свойство существует
       if (DrawDatas[titleValue as DrawDatasKeys]) {
         for (let datas of DrawDatas[titleValue as DrawDatasKeys]) {
           let sizes: DrawDataPeriod = datas.data[this.breakpoint as ScreenKeys] ?
@@ -383,6 +391,8 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     }
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Формула расчета параметров

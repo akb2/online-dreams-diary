@@ -1,5 +1,6 @@
 <div id="mainMenuCollapsedHelperBefore"></div>
 
+<!-- Шапка -->
 <div class="main-menu {{ class }} type-{{ type }}"
      [style]="css.menu"
      (mousedown)="onScrollMouseDown($event)">
@@ -42,7 +43,7 @@
              [queryParams]="backButtonLinkParams"
              *ngIf="backButtonLink"
              unselectable="on">
-          <mat-icon>chevron_left</mat-icon>
+          <mat-icon>arrow_back_ios</mat-icon>
         </div>
         <!-- Вызов главного меню -->
         <div class="menu-button"
@@ -113,63 +114,9 @@
 
   <!-- Передний фон -->
   <div class="main-menu__layer front">
-    <div class="mobile-menu {{showMobileMenu?'show':''}}"
-         *ngIf="isMobile()">
-      <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
-           (click)="toggleMobileMenu(-1)"></div>
-      <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">
-        <!-- Информация о странице -->
-        <div class="mobile-menu__info">
-          <!-- Картинка -->
-          <div class="mobile-menu__info-image type-{{ type }}"
-               *ngIf="image">
-            <img [src]="image" />
-          </div>
-          <!-- Заголовок -->
-          <div class="mobile-menu__info-title"
-               *ngIf="title">{{title}}</div>
-          <!-- Подзаголовок -->
-          <div class="mobile-menu__info-subtitle"
-               *ngIf="subTitle">{{subTitle}}</div>
-          <!-- Закрытие меню -->
-          <div class="mobile-menu__info-close"
-               (click)="toggleMobileMenu(-1)"
-               unselectable="on">
-            <mat-icon>close</mat-icon>
-          </div>
-        </div>
-        <!-- Пункты главного меню -->
-        <nav class="mobile-menu__list">
-          <ul>
-            <!--
-            <ng-container *ngFor="let group of menuItems">
-              <div class="mobile-menu__list-group">
-                <ng-container *ngFor="let item of group">
-                  <li class="mobile-menu__list-item"
-                      *ngIf="(item.auth == 1 && accountService.checkAuth) || (item.auth == -1 && !accountService.checkAuth) || item.auth == 0">
-                    <a class="mobile-menu__list-link"
-                       [routerLink]="item.link"
-                       routerLinkActive="active"
-                       [routerLinkActiveOptions]="{ exact: true }"
-                       *ngIf="item.link && !item.callback">
-                      <mat-icon>{{item.icon}}</mat-icon>
-                      <span>{{item.text}}</span>
-                    </a>
-                    <button class="mobile-menu__list-link"
-                            (click)="item.callback()"
-                            *ngIf="!item.link && item.callback">
-                      <mat-icon>{{item.icon}}</mat-icon>
-                      <span>{{item.text}}</span>
-                    </button>
-                  </li>
-                </ng-container>
-              </div>
-            </ng-container>
-            -->
-          </ul>
-        </nav>
-      </div>
-    </div>
+    <!-- Пункты главного меню -->
+    <ng-container [ngTemplateOutlet]="mobileMenu"
+                  *ngIf="isMobile()"></ng-container>
   </div>
 </div>
 
@@ -241,9 +188,103 @@
   </div>
 </ng-template>
 
+<!-- Соджержимое пункта главного меню -->
 <ng-template #mainMenuItemContent
              let-item>
   <span>{{item.text}}</span>
   <div class="menu-list__item-line"
        [style]="css.menuItemLine"></div>
+</ng-template>
+
+
+
+<!-- Мобильное меню -->
+<ng-template #mobileMenu>
+  <div class="mobile-menu {{showMobileMenu?'show':''}}"
+       *ngIf="isMobile()">
+    <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
+         (click)="toggleMobileMenu(-1)"></div>
+    <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">
+
+      <!-- Информация о странице -->
+      <div class="mobile-menu__info">
+        <!-- Картинка -->
+        <div class="mobile-menu__info-image type-{{ type }}"
+             *ngIf="image">
+          <img [src]="image" />
+        </div>
+        <!-- Закрытие меню -->
+        <div class="mobile-menu__info-close"
+             (click)="toggleMobileMenu(-1)"
+             unselectable="on">
+          <mat-icon>close</mat-icon>
+        </div>
+        <!-- Данные -->
+        <div class="mobile-menu__info-content"
+             [ngClass]="{ avatar: avatarImage || avatarIcon }">
+          <!-- Аватарка -->
+          <div class="mobile-menu__info-avatar"
+               *ngIf="avatarImage || avatarIcon">
+            <img [src]="avatarImage"
+                 *ngIf="avatarImage" />
+            <mat-icon *ngIf="!avatarImage && avatarIcon">{{avatarIcon}}</mat-icon>
+          </div>
+          <!-- Заголовок -->
+          <div class="mobile-menu__info-title"
+               *ngIf="title">{{title}}</div>
+          <!-- Подзаголовок -->
+          <div class="mobile-menu__info-subtitle"
+               *ngIf="subTitle">{{subTitle}}</div>
+        </div>
+      </div>
+
+      <!-- Пункты главного меню -->
+      <nav class="mobile-menu__list">
+        <ul>
+          <li *ngFor="let item of menuItems">
+            <ng-template [ngTemplateOutlet]="mobileMenuItem"
+                         [ngTemplateOutletContext]="{ $implicit: item }"></ng-template>
+            <!-- Список -->
+            <div class="mobile-menu__list-list"
+                 *ngIf="item.children?.length">
+              <ng-container [ngTemplateOutlet]="mobileMenuItem"
+                            [ngTemplateOutletContext]="{ $implicit: subItem }"
+                            *ngFor="let subItem of item.children"></ng-container>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Пункты мобильного меню -->
+<ng-template #mobileMenuItem
+             let-item>
+  <!-- Кнопка с ссылкой -->
+  <a class="mobile-menu__list-link"
+     [ngClass]="{ active: item.active }"
+     [routerLink]="item.link"
+     *ngIf="!item.isSeparate && item.link && !item.callback">
+    <ng-container [ngTemplateOutlet]="mobileMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+  </a>
+  <!-- Кнопка без ссылки -->
+  <button class="mobile-menu__list-link"
+          (click)="item.callback()"
+          *ngIf="!item.isSeparate && !item.link && item.callback">
+    <ng-container [ngTemplateOutlet]="mobileMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+  </button>
+  <!-- Кнопка без действия -->
+  <div class="mobile-menu__list-link"
+       *ngIf="!item.isSeparate && !item.link && !item.callback">
+  </div>
+</ng-template>
+
+<!-- Соджержимое пункта мобильного меню -->
+<ng-template #mobileMenuItemContent
+             let-item>
+  <mat-icon>{{item.icon}}</mat-icon>
+  <span>{{item.text}}</span>
 </ng-template>

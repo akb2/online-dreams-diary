@@ -222,8 +222,8 @@ $breakpointMobile: small;
 // Мобильное меню
 .mobile-menu {
   $layout-width: 280px;
-  $info-height: 180px;
-
+  $info-height: 240px;
+  // Свойства
   position: fixed;
   z-index: 20;
   top: 0;
@@ -232,9 +232,18 @@ $breakpointMobile: small;
   bottom: 0;
   pointer-events: none;
   user-select: none;
-
+  // Открытое меню
   &.show {
     pointer-events: auto;
+  }
+  // Размеры
+  &,
+  * {
+    &,
+    &:before,
+    &:after {
+      box-sizing: border-box;
+    }
   }
 
   // Затенение
@@ -266,7 +275,8 @@ $breakpointMobile: small;
     transition: margin-left screens.$animation-time;
     display: grid;
     grid-template-rows: $info-height 1fr;
-
+    grid-template-columns: 1fr;
+    // Открытое меню
     &.show {
       margin-left: 0;
     }
@@ -274,17 +284,33 @@ $breakpointMobile: small;
 
   // Информация о странице
   &__info {
+    $_elm: &;
     $padding: 15px;
+    $title-size: 16px;
+    $subtitle-size: 13px;
+    $line-height: 1.2;
+    $avatar-size: 48px;
     // Свойства
     width: 100%;
     height: $info-height;
     position: relative;
     padding: $padding;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-end;
-    align-items: flex-start;
-
+    display: block;
+    // Содержимое
+    &-content {
+      @include mixins.inset(auto, 0, 0, 0);
+      position: absolute;
+      display: grid;
+      grid-template-areas: "title" "subtitle";
+      gap: 0 12px;
+      padding: 15px;
+      align-items: center;
+      // С аватаркой
+      &.avatar {
+        grid-template-columns: #{$avatar-size} 1fr;
+        grid-template-areas: "avatar title" "avatar subtitle";
+      }
+    }
     // Картинка
     &-image {
       position: absolute;
@@ -311,32 +337,50 @@ $breakpointMobile: small;
         background-color: colors.$overlay-color;
       }
     }
-
+    // Аватарка
+    &-avatar {
+      grid-area: avatar;
+      width: $avatar-size;
+      height: $avatar-size;
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+    }
     // Заголовок
     &-title {
       color: colors.$title-dark;
-      font-size: 16px;
+      font-size: $title-size;
+      grid-area: title;
+      height: $title-size * $line-height;
+      #{$_elm}-content.avatar & {
+        margin-top: ($avatar-size / 2)- ($title-size * $line-height);
+      }
     }
-
     // Подзаголовок
     &-subtitle {
       color: colors.$subtitle-dark;
-      font-size: 13px;
+      font-size: $subtitle-size;
+      grid-area: subtitle;
+      height: $subtitle-size * $line-height;
+      #{$_elm}-content.avatar & {
+        margin-bottom: ($avatar-size / 2)- ($subtitle-size * $line-height);
+      }
     }
-
     // Заголовок, gодзаголовок
     &-title,
     &-subtitle {
-      width: $layout-width - ($padding * 2);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       position: relative;
       z-index: 1;
-      line-height: 1.2;
+      line-height: $line-height;
       font-weight: 300;
     }
-
     // Закрытие окна
     &-close {
       position: absolute;
@@ -358,13 +402,13 @@ $breakpointMobile: small;
   // Пункты меню
   &__list {
     $__list: &;
+    // Свойства
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
     padding: 0;
     overflow-y: scroll;
-
     // Группы пунктов
     &-group {
       border-top: 0 solid colors.$border-light;
@@ -372,33 +416,32 @@ $breakpointMobile: small;
         border-top-width: 1px;
       }
     }
-
     // Элемент списка
     &-item {
       $__item: &;
+      // Свойства
       width: 100%;
       transition: border-top-color screens.$animation-time;
-
+      // Выделение
       &:hover {
         &,
         & + #{$__item} {
           border-top-color: colors.$color_1;
         }
-
+        // Ссылка
         #{$__list}-link {
           background-color: colors.$color_1;
-
+          // Иконка
           > mat-icon {
             color: colors.$title-dark;
           }
-
+          // Текст
           > span {
             color: colors.$subtitle-dark;
           }
         }
       }
     }
-
     // Ссылка
     &-link {
       $icon-size: 48px;
@@ -449,12 +492,19 @@ $breakpointMobile: small;
         }
       }
     }
-
+    // Список
     > ul {
       list-style-type: none;
       padding: 0;
       margin: 0;
       width: 100%;
+      // Элемент списка
+      > li {
+        // Следующий элемент
+        + li {
+          border-top: 1px solid #{colors.$border};
+        }
+      }
     }
   }
 }
@@ -633,13 +683,6 @@ $breakpointMobile: small;
   border-radius: 0;
   position: absolute;
   left: 0;
-}
-
-// Кнопка назад
-.back-button {
-  > mat-icon {
-    transform: scale(1.5);
-  }
 }
 
 // Кнопка до контента
