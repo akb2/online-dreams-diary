@@ -1,7 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { MenuItem } from "@_models/menu";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
+import { ScreenService } from "@_services/screen.service";
 import { TokenService } from "@_services/token.service";
 
 
@@ -17,44 +19,24 @@ import { TokenService } from "@_services/token.service";
 export class MenuService {
 
 
+  public menuItems: MenuItem[];
   private menuItemsOther: MenuItem[];
   private menuItemsAuth: MenuItem[];
   private menuItemsNotAuth: MenuItem[];
 
+  private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
+
+
+
+
+
   constructor(
     private accountService: AccountService,
     private tokenService: TokenService,
-    private router: Router
+    private router: Router,
+    private screenService: ScreenService
   ) {
-    this.createMenuItemsOther();
-    this.createMenuItemsAuth();
-    this.createMenuItemsNotAuth();
-  }
-
-  public get menuItems(): MenuItem[] {
-    const menuItems: MenuItem[] = [];
-    // Авторизованные пункты меню
-    if (this.accountService.checkAuth && this.menuItemsAuth) {
-      this.menuItemsAuth.map(menuItem => menuItems.push(menuItem));
-    }
-    // Неавторизованные пункты меню
-    else if (!this.accountService.checkAuth && this.menuItemsNotAuth) {
-      this.menuItemsNotAuth.map(menuItem => menuItems.push(menuItem));
-    }
-    // Общие пункты меню
-    if (this.menuItemsOther) {
-      this.menuItemsOther.map(menuItem => menuItems.push(menuItem));
-    }
-    // Отсортировать меню
-    menuItems.sort((itemA, itemB) => this.sortMenu(itemA, itemB));
-    menuItems.forEach(item => item?.children?.sort((itemA, itemB) => this.sortMenu(itemA, itemB)));
-    // Активные элементы
-    menuItems.forEach(item => {
-      item.children?.forEach(subItem => subItem.active = this.checkActive(subItem));
-      item.active = this.checkActive(item);
-    });
-    // Вернуть объект
-    return menuItems;
+    this.createMenuItems();
   }
 
 
@@ -70,114 +52,249 @@ export class MenuService {
 
 
 
+  // Регистрация пунктов меню
+  public createMenuItems(): void {
+    // Новое меню
+    this.menuItems = [];
+    // Загрузить пункты
+    this.createMenuItemsOther();
+    this.createMenuItemsAuth();
+    this.createMenuItemsNotAuth();
+
+    // Авторизованные пункты меню
+    if (this.accountService.checkAuth && this.menuItemsAuth) {
+      this.menuItemsAuth.map(menuItem => this.menuItems.push(menuItem));
+    }
+    // Неавторизованные пункты меню
+    else if (!this.accountService.checkAuth && this.menuItemsNotAuth) {
+      this.menuItemsNotAuth.map(menuItem => this.menuItems.push(menuItem));
+    }
+    // Общие пункты меню
+    if (this.menuItemsOther) {
+      this.menuItemsOther.map(menuItem => this.menuItems.push(menuItem));
+    }
+
+    // Отсортировать меню
+    this.menuItems.sort((itemA, itemB) => this.sortMenu(itemA, itemB));
+    this.menuItems.forEach(item => item?.children?.sort((itemA, itemB) => this.sortMenu(itemA, itemB)));
+    // Активные элементы
+    this.menuItems.forEach(item => {
+      item.children?.forEach(subItem => subItem.active = this.checkActive(subItem));
+      item.active = this.checkActive(item);
+    });
+  }
+
   // Общие пункты меню
   private createMenuItemsOther(): void {
-    this.menuItemsOther = [
-      // Материалы
-      {
-        sort: 100,
-        icon: "help_outline",
-        text: "Материалы",
-        children: [
-          // Дневники
-          {
-            icon: "book",
-            text: "Дневники снов",
-            link: "/diary/all"
-          },
-          // Разделитель
-          {
-            isSeparate: true
-          },
-          // Блог
-          {
-            icon: "note_alt",
-            text: "Блог",
-            link: "/blog"
-          },
-          // Разделитель
-          {
-            isSeparate: true
-          },
-          // Форум
-          {
-            icon: "forum",
-            text: "Форум",
-            link: "/forum"
-          }
-        ]
-      }
-    ];
+    // Меню для телефона
+    if (this.isMobile()) {
+      this.menuItemsOther = [
+        // Материалы
+        {
+          sort: 100,
+          children: [
+            // Дневники
+            {
+              icon: "collections_bookmark",
+              text: "Дневники снов",
+              link: "/diary/all"
+            },
+            // Блог
+            {
+              icon: "edit_note",
+              text: "Блог",
+              link: "/blog"
+            },
+            // Форум
+            {
+              icon: "forum",
+              text: "Форум",
+              link: "/forum"
+            }
+          ]
+        }
+      ];
+    }
+    // Для десктопа
+    else {
+      this.menuItemsOther = [
+        // Материалы
+        {
+          sort: 100,
+          icon: "help_outline",
+          text: "Материалы",
+          children: [
+            // Дневники
+            {
+              icon: "book",
+              text: "Дневники снов",
+              link: "/diary/all"
+            },
+            // Разделитель
+            {
+              isSeparate: true
+            },
+            // Блог
+            {
+              icon: "edit_note",
+              text: "Блог",
+              link: "/blog"
+            },
+            // Разделитель
+            {
+              isSeparate: true
+            },
+            // Форум
+            {
+              icon: "forum",
+              text: "Форум",
+              link: "/forum"
+            }
+          ]
+        }
+      ];
+    }
   }
 
   // Авторизованные пункты меню
   private createMenuItemsAuth(): void {
-    this.menuItemsAuth = [
-      // Личный кабинет
-      {
-        sort: 500,
-        icon: "home",
-        text: "Кабинет",
-        link: "/profile",
-        children: [
-          // Настройки аккаунта
-          {
-            icon: "settings",
-            text: "Настройки",
-            link: "/profile/settings",
-          },
-          // Разделитель
-          {
-            isSeparate: true
-          },
-          // Выход
-          {
-            icon: "exit_to_app",
-            text: "Выход",
-            callback: this.onLogOut.bind(this)
-          }
-        ]
-      },
-      // Дневник
-      {
-        icon: "book",
-        text: "Дневник",
-        link: "/diary/my"
-      }
-    ];
+    // Меню для телефона
+    if (this.isMobile()) {
+      this.menuItemsAuth = [
+        // Личный кабинет
+        {
+          icon: "home",
+          text: "Моя страница",
+          link: "/profile"
+        },
+        // Дневник
+        {
+          sort: 1,
+          icon: "book",
+          text: "Дневник",
+          link: "/diary/my"
+        },
+        // Настройки
+        {
+          sort: 500,
+          children: [
+            // Настройки аккаунта
+            {
+              icon: "settings",
+              text: "Настройки",
+              link: "/profile/settings",
+            },
+            // Выход
+            {
+              icon: "exit_to_app",
+              text: "Выход",
+              callback: this.onLogOut.bind(this)
+            }
+          ]
+        },
+      ];
+    }
+    // Для десктопа
+    else {
+      this.menuItemsAuth = [
+        // Личный кабинет
+        {
+          sort: 500,
+          icon: "home",
+          text: "Кабинет",
+          link: "/profile",
+          children: [
+            // Настройки аккаунта
+            {
+              icon: "settings",
+              text: "Настройки",
+              link: "/profile/settings",
+            },
+            // Разделитель
+            {
+              isSeparate: true
+            },
+            // Выход
+            {
+              icon: "exit_to_app",
+              text: "Выход",
+              callback: this.onLogOut.bind(this)
+            }
+          ]
+        },
+        // Дневник
+        {
+          icon: "book",
+          text: "Дневник",
+          link: "/diary/my"
+        }
+      ];
+    }
   }
 
   // Неавторизованные пункты меню
   private createMenuItemsNotAuth(): void {
-    this.menuItemsNotAuth = [
-      // Главная
-      {
-        icon: "home",
-        text: "Главная",
-        link: "/home"
-      },
-      // Личный кабинет
-      {
-        sort: 1000,
-        icon: "person",
-        text: "Кабинет",
-        link: "/auth",
-        children: [
-          // Вход
-          {
-            icon: "lock",
-            text: "Вход",
-            link: "/auth"
-          },
-          // Регистрация
-          {
-            icon: "person_add",
-            text: "Регистрация",
-            link: "/register"
-          }
-        ]
-      },
-    ];
+    // Меню для телефона
+    if (this.isMobile()) {
+      this.menuItemsNotAuth = [
+        // Главная
+        {
+          icon: "home",
+          text: "Главная",
+          link: "/home"
+        },
+        // Личный кабинет
+        {
+          sort: 1000,
+          children: [
+            // Вход
+            {
+              icon: "lock",
+              text: "Вход",
+              link: "/auth"
+            },
+            // Регистрация
+            {
+              icon: "person_add",
+              text: "Регистрация",
+              link: "/register"
+            }
+          ]
+        },
+      ];
+    }
+    // Для десктопа
+    else {
+      this.menuItemsNotAuth = [
+        // Главная
+        {
+          icon: "home",
+          text: "Главная",
+          link: "/home"
+        },
+        // Личный кабинет
+        {
+          sort: 1000,
+          icon: "person",
+          text: "Кабинет",
+          link: "/auth",
+          children: [
+            // Вход
+            {
+              icon: "lock",
+              text: "Вход",
+              link: "/auth"
+            },
+            // Регистрация
+            {
+              icon: "person_add",
+              text: "Регистрация",
+              link: "/register"
+            }
+          ]
+        },
+      ];
+    }
   }
 
 
@@ -209,65 +326,9 @@ export class MenuService {
     // Не активен
     return active;
   }
+
+  // Проверить мобильное меню или нет
+  private isMobile(): boolean {
+    return this.mobileBreakpoints.includes(this.screenService.getBreakpoint());
+  }
 }
-
-
-/*
-
-      // * Авторизованное меню
-      // Группа аккаунта
-      [
-        // Мой дневник сновидений
-        {
-          auth: 1,
-          icon: "book",
-          text: "Мой дневник",
-          link: "/my-diary"
-        },
-      ],
-      // Группа общих разделов
-      [
-        // Общий дневник
-        {
-          auth: 1,
-          icon: "collections_bookmark",
-          text: "Все дневники",
-          link: "/diaries"
-        },
-        // Блог
-        {
-          auth: 1,
-          icon: "edit",
-          text: "Блог",
-          link: "/blog"
-        },
-        // Форум
-        {
-          auth: 1,
-          icon: "forum",
-          text: "Форум",
-          link: "/forum"
-        }
-      ],
-      // Аккаунт
-      [
-        // Выход
-        {
-          auth: 1,
-          icon: "exit_to_app",
-          text: "Выход",
-          callback: this.onLogOut.bind(this)
-        },
-      ],
-      // * Неавторизованное меню
-      // Главная группа
-      [
-        // Главная страница
-        {
-          auth: -1,
-          icon: "home",
-          text: "Главная",
-          link: "/home"
-        },
-      ],
-*/
