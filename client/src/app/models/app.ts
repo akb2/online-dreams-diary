@@ -60,6 +60,7 @@ export interface BrowserInfo {
 export const OsNames: SimpleObject = {
   Win7: "Windows 7",
   Win8: "Windows 8",
+  "Win8.1": "Windows 8.1",
   Win10: "Windows 10",
 
   Linux: "Linux",
