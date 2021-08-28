@@ -1,4 +1,5 @@
 import { DrawInterface } from "@_models/nav-menu";
+import { ScreenKeys } from "@_models/screen";
 
 
 
@@ -12,8 +13,6 @@ export class DrawDatas {
   public static screenHeight: number = 0;
   public static containerWidth: number = 0;
   public static containerLeftWidth: number = 0;
-  private static shortHeight: number = 420;
-
 
   public static menu: DrawInterface[];
   public static menuList: DrawInterface[];
@@ -39,6 +38,18 @@ export class DrawDatas {
   public static floatingButtonOverlay: DrawInterface[];
   public static backButton: DrawInterface[];
   public static toContentButton: DrawInterface[];
+
+  private static get shortHeight(): number {
+    if (DrawDatas.screenWidth < 900) {
+      return 240;
+    }
+    // Для средних экранов
+    if (DrawDatas.screenWidth < 1200) {
+      return 320;
+    }
+    // По умолчанию
+    return 420;
+  }
 
 
 
@@ -411,21 +422,21 @@ export class DrawDatas {
     DrawDatas.backButton = [{
       property: "top",
       data: {
-        default: { min: 0, max: 15, unit: "px" }
+        default: { min: 0, max: 15, unit: "px" },
+        small: { min: 0, max: 0, unit: "px" },
+        xsmall: { min: 0, max: 0, unit: "px" }
       }
     }, {
       property: "margin-left",
       data: {
         default: { min: 0, max: 0, unit: "px" },
-        small: { min: 0, max: 15, unit: "px" },
-        xsmall: { min: 0, max: 15, unit: "px" }
       }
     }, {
       property: "font-size",
       data: {
         default: { min: 32, max: 48, unit: "px" },
-        small: { min: 24, max: 48, unit: "px" },
-        xsmall: { min: 24, max: 48, unit: "px" }
+        small: { min: 24, max: 24, unit: "px" },
+        xsmall: { min: 24, max: 24, unit: "px" }
       }
     }];
 
