@@ -63,6 +63,7 @@ export const OsNames: SimpleObject = {
   Win10: "Windows 10",
 
   Linux: "Linux",
+  Ubuntu: "Ubuntu",
   Android: "Android OS",
 
   macOS: "Mac OS",
