@@ -16,7 +16,7 @@
   <div class="root-section">
     <div class="container">
       <!-- Сведения о текущем токене -->
-      <ng-container>
+      <div class="token__layout">
         <div class="token"
              *ngIf="!loadingTokenInfo">
           <!-- Дата авторизации -->
@@ -60,7 +60,7 @@
                         description: 'Идет получение сведений о текущей авторизации'
                       }}"
                       *ngIf="loadingTokenInfo"></ng-container>
-      </ng-container>
+      </div>
     </div>
   </div>
 </ng-container>

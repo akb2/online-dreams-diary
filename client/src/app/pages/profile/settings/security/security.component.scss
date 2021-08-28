@@ -5,19 +5,44 @@
 // Текущие данные о токене
 .token {
   $counts: (
-    xsmall: 1,
+    xsmall: auto,
     small: 2,
     middle: 3,
     large: 4,
     xlarge: 5,
   );
-  $gap: 30px;
+  $gaps-x: (
+    default: 45px,
+    middle: 30px,
+    small: 20px,
+    xsmall: 10px,
+  );
+  $gaps-y: (
+    default: 30px,
+    middle: 25px,
+    small: 20px,
+    xsmall: 15px,
+  );
   // Свойства
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 45px $gap;
+  text-align: left;
+  // Адаптив
+  @include screens.adaptiveFor($gaps-x, $gaps-y) using($gap-x, $gap-y) {
+    gap: #{$gap-y} #{$gap-x};
+  }
+  @include screens.adaptive(xsmall, xsmall) {
+    display: inline-flex;
+    flex-flow: column nowrap;
+    width: auto;
+    margin: 0 auto;
+  }
+  // Обертка
+  &__layout {
+    text-align: center;
+  }
   // Элемент
   &__element {
     $size: 64px;
@@ -29,8 +54,16 @@
     grid-template-areas: "image title" "image subtitle";
     gap: 0 10px;
     // Адаптив
-    @include screens.adaptiveFor($counts) using($count) {
-      width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
+    @include screens.adaptiveFor($counts, $gaps-x) using($count, $gap-x) {
+      // Один элемент на строке
+      @if ($count == auto) {
+        width: auto;
+        max-width: 100%;
+      }
+      // Расчитать ширину
+      @else {
+        width: calc((100% - #{$gap-x * ($count - 1)}) / #{$count});
+      }
     }
     // Картинка
     &-image {
