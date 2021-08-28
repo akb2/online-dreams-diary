@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { LoadingImageData, ScreenBreakpoints } from "@_models/screen";
+import { LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
 import { Observable, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -42,13 +42,14 @@ export class ScreenService implements OnDestroy {
 
 
   // Определить брейкпоинт
-  public getBreakpoint(resolution: number): string {
-    let breakpoint: string = "default";
-
+  public getBreakpoint(resolution: number = window.innerWidth): ScreenKeys {
+    let breakpoint: ScreenKeys = "default";
+    // Цикл по брейкпоинтам
     for (let key in this.breakpoints) {
-      breakpoint = this.getMin(key) < resolution && this.getMax(key) >= resolution ? key : breakpoint;
+      console.log(this.getMin(key), resolution, this.getMax(key));
+      breakpoint = this.getMin(key) < resolution && resolution <= this.getMax(key) ? key as ScreenKeys : breakpoint;
     }
-
+    // Вернуть имя брейкпоинта
     return breakpoint;
   }
 
@@ -62,7 +63,7 @@ export class ScreenService implements OnDestroy {
       result = result < resolution && test > resolution ? resolution : result;
     }
 
-    return result;
+    return result + 1;
   }
 
   // Максимальное разрешение
