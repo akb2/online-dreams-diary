@@ -38,11 +38,11 @@ $card-shadow: 1px 1px 10px 1px #{colors.$shadow};
     }
 
     @if (map.has-key($breakpoints, $prev_screen)) {
-      @return map.get($breakpoints, $prev_screen);
+      @return map.get($breakpoints, $prev_screen) + 1;
     }
   }
 
-  @return 0;
+  @return 1;
 }
 
 // Адаптация
