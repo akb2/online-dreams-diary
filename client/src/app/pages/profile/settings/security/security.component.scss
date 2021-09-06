@@ -26,6 +26,21 @@
     small: 20px,
     xsmall: 15px,
   );
+  $image-sizes: (
+    default: 64px,
+    small: 50px,
+    xsmall: 40px,
+  );
+  $text-spacings: (
+    default: 10px,
+    small: 3px,
+    xsmall: 0px,
+  );
+  $title-heights: (
+    default: 18px,
+    small: 17px,
+    xsmall: 15px,
+  );
   // Свойства
   display: flex;
   flex-flow: row wrap;
@@ -39,38 +54,18 @@
   }
   // Элемент
   &__element {
-    $size: 64px;
-    $title-height: 16px;
-    $text-spacing: 10px;
-    // Свойства
     display: grid;
-    grid-template-columns: #{$size} 1fr;
     grid-template-areas: "image title" "image subtitle";
     gap: 0 10px;
-    // Адаптив
-    @include screens.adaptiveFor($counts, $gaps-x) using($count, $gap-x) {
-      // Один элемент на строке
-      @if ($count == auto) {
-        width: auto;
-        max-width: 100%;
-      }
-      // Расчитать ширину
-      @else {
-        width: calc((100% - #{$gap-x * ($count - 1)}) / #{$count});
-      }
-    }
+
     // Картинка
     &-image {
-      width: $size;
-      height: $size;
       grid-area: image;
       overflow: hidden;
       // Иконка
       > mat-icon {
         width: inherit;
         height: inherit;
-        line-height: $size;
-        font-size: $size * 0.78;
         color: map.get(colors.$mat-secondary, 500);
         text-align: center;
       }
@@ -91,9 +86,6 @@
     // Заголовок
     &-name {
       grid-area: title;
-      margin-top: $text-spacing;
-      line-height: $title-height;
-      height: $title-height;
       font-size: 14px;
       font-weight: 300;
       color: colors.$subtitle;
@@ -101,12 +93,54 @@
     // Подзаголовок
     &-value {
       grid-area: subtitle;
-      margin-bottom: $text-spacing;
-      line-height: $size - $title-height - ($text-spacing * 2);
-      height: $size - $title-height - ($text-spacing * 2);
       font-size: 20px;
       font-weight: 500;
       color: colors.$title;
+    }
+
+    // Адаптив
+    @include screens.adaptiveFor($counts, $gaps-x, $image-sizes, $text-spacings, $title-heights)
+      using($count, $gap-x, $image-size, $text-spacing, $title-height) {
+      grid-template-columns: #{$image-size} 1fr;
+      // Один элемент на строке
+      @if ($count == auto) {
+        width: auto;
+        max-width: 100%;
+      }
+      // Расчитать ширину
+      @else {
+        width: calc((100% - #{$gap-x * ($count - 1)}) / #{$count});
+      }
+
+      // Картинка
+      &-image {
+        width: $image-size;
+        height: $image-size;
+        // Иконка
+        > mat-icon {
+          line-height: $image-size;
+          font-size: $image-size * 0.78;
+        }
+      }
+      // Заголовок
+      &-name {
+        margin-top: $text-spacing;
+        line-height: $title-height;
+        height: $title-height;
+        font-size: $title-height * 0.85;
+      }
+      // Подзаголовок
+      &-value {
+        margin-bottom: $text-spacing;
+      }
+      // Подзаголовок
+      &-value {
+        $line-height: $image-size - $title-height - ($text-spacing * 2);
+        // Свойства
+        line-height: $line-height;
+        height: $line-height;
+        font-size: $line-height * 0.7;
+      }
     }
   }
 }
