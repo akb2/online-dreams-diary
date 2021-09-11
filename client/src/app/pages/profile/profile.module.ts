@@ -10,6 +10,7 @@ import { ImageUploadModule } from '@_controlers/image-upload/image-upload.module
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { TextInputModule } from '@_controlers/text-input/text-input.module';
+import { TitleModule } from '@_controlers/title/title.module';
 import { ToggleInputModule } from '@_controlers/toggle-input/toggle-input.module';
 import { CoreModule } from '@_modules/core.module';
 import { DetailProfileComponent } from '@_pages/profile/detail/detail-profile.component';
@@ -23,7 +24,6 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
 
 
 
-// Декоратор
 @NgModule({
   declarations: [
     ProfileComponent,
@@ -47,9 +47,9 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
     MatButtonModule,
     InformModule,
     PopupCropImageModule,
-    MatMenuModule
+    MatMenuModule,
+    TitleModule
   ]
 })
 
-// Модуль
 export class ProfileModule { }
