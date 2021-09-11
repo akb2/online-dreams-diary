@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { ApiResponseMessages } from "@_models/api";
+import { ApiResponse, ApiResponseMessages } from "@_models/api";
 import { SnackbarService } from "@_services/snackbar.service";
 import { Observable, of, throwError } from "rxjs";
 
@@ -37,6 +37,17 @@ export class ApiService {
     return "Неизвестная ошибка. Повторите позже";
   }
 
+
+  // Функция для переключения ошибок
+  public checkSwitchMap(result: ApiResponse, codes: string[] = []): Observable<ApiResponse> {
+    const code: string = result.result.code;
+    // Сохранить токен
+    if (code === "0001") {
+      return of(result);
+    }
+    // Вернуть данные
+    return this.checkResponse(result.result.code, codes);
+  }
 
   // Функция обработки ошибок
   public checkResponse(code: string, codes: string[] = []): Observable<any> {
