@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-
 import { InformComponent } from "./inform.component";
+import { MatIconModule } from "@angular/material/icon";
 
 
 
@@ -18,9 +18,5 @@ import { InformComponent } from "./inform.component";
     CommonModule
   ]
 })
-
-
-
-
 
 export class InformModule { }
