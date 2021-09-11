@@ -1,0 +1,33 @@
+<h1 *ngIf="type == 1"
+    [ngClass]="class">
+  <ng-container [ngTemplateOutlet]="content"></ng-container>
+</h1>
+
+<h2 *ngIf="type == 2"
+    [ngClass]="class">
+  <ng-container [ngTemplateOutlet]="content"></ng-container>
+</h2>
+
+<h3 *ngIf="type == 3"
+    [ngClass]="class">
+  <ng-container [ngTemplateOutlet]="content"></ng-container>
+</h3>
+
+<h4 *ngIf="type == 4"
+    [ngClass]="class">
+  <ng-container [ngTemplateOutlet]="content"></ng-container>
+</h4>
+
+<h5 *ngIf="type == 5"
+    [ngClass]="class">
+  <ng-container [ngTemplateOutlet]="content"></ng-container>
+</h5>
+
+
+
+<!-- Шаблон -->
+<ng-template #content>
+  <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+  <sup>{{title}}</sup>
+  <sub *ngIf="subTitle">{{subTitle}}</sub>
+</ng-template>

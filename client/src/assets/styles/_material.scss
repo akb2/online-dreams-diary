@@ -30,16 +30,16 @@
   // Обертка
   .mat-form-field {
     $elm: &;
-
+    // Свойства
     width: 100%;
-
+    // Обертка заполненного стиля
     :host ::ng-deep &-appearance-fill & {
       &-subscript-wrapper {
         margin-top: 4px;
         padding-left: 0;
         padding-right: 0;
       }
-
+      // Флекс коробка
       &-flex {
         border-radius: 0;
         padding: 8px 18px 0 18px;
@@ -164,82 +164,5 @@
     line-height: 1;
     height: auto;
     padding: 0;
-  }
-}
-
-// Заголовки
-@mixin mat-title {
-  $font-sizes: (
-    default: 40px,
-    large: 36px,
-    middle: 32px,
-    small: 28px,
-    xsmall: 20px,
-  );
-  $spacings: containers.$paddings-y;
-  $image-koof: 1;
-  $subtitle-koof: 0.7;
-  $line-height: 1.3;
-  $gap-koof: 0.3;
-  // Свойства
-  @for $i from 1 to 5 {
-    h#{$i} {
-      line-height: $line-height;
-      display: grid;
-      width: 100%;
-      grid-template-areas: "image title" "image subtitle";
-      align-items: center;
-      // Адаптив
-      @include screens.adaptiveFor($font-sizes, $spacings) using($font-size, $spacing) {
-        $image-size: $font-size * (1 + $subtitle-koof) * $line-height * $image-koof;
-        // Свойства
-        font-size: $font-size;
-        margin-bottom: $spacing;
-        gap: 0 #{$gap-koof * $font-size};
-        grid-template-columns: #{$image-size} 1fr;
-        // Картинка
-        > .image,
-        mat-icon {
-          width: $image-size;
-          height: $image-size;
-        }
-        // Иконка
-        mat-icon {
-          line-height: $image-size;
-          font-size: $image-size;
-        }
-      }
-      // Заголовок
-      > sup {
-        display: block;
-        font-size: inherit;
-        font-weight: 400;
-        color: colors.$title;
-        grid-area: title;
-      }
-      // Подзаголовок
-      > sub {
-        display: block;
-        font-size: #{$subtitle-koof}em;
-        font-weight: 300;
-        color: colors.$subtitle;
-        grid-area: subtitle;
-      }
-      // Картинка
-      > .image {
-        grid-area: image;
-        // Картинка
-        > img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-      // Иконка
-      mat-icon {
-        grid-area: image;
-        text-align: center;
-      }
-    }
   }
 }
