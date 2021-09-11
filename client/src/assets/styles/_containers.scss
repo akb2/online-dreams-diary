@@ -9,6 +9,7 @@ $widths: (
   large: 1200px,
   xlarge: 1600px,
 );
+
 $paddings-y: (
   xsmall: 15px,
   small: 30px,
@@ -16,6 +17,9 @@ $paddings-y: (
   large: 60px,
   xlarge: 90px,
 );
+
+$border-radius: 5px;
+$box-shadow: 1px 1px 15px 2px colors.$shadow;
 
 // Контейнер
 .container {
