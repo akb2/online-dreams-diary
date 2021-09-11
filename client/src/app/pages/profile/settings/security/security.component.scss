@@ -1,9 +1,7 @@
 @use "sass:map";
 @use "../../../../../assets/styles/screens";
 @use "../../../../../assets/styles/colors";
-@use "../../../../../assets/styles/material";
-
-@include material.mat-title;
+@use "../../../../../assets/styles/containers";
 
 // Текущие данные о токене
 .token {
@@ -142,5 +140,89 @@
         font-size: $line-height * 0.7;
       }
     }
+  }
+}
+
+// Таблица данных
+.table {
+  border-radius: containers.$border-radius;
+  box-shadow: containers.$box-shadow;
+  // Линии
+  &__line {
+    display: grid;
+    grid-template-columns: 160px 160px 1fr 1fr 1fr 40px;
+    align-items: stretch;
+    background-color: map.get(colors.$mat-primary, 50);
+    color: map.get(colors.$mat-primary, contrast, 50);
+    // Заголовок
+    &.title {
+      background-color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$mat-primary, contrast, 500);
+    }
+    // Четные линии
+    &:nth-child(2n) {
+      background-color: colors.$card;
+      color: colors.$text;
+    }
+    // Первая линия
+    &:first-child {
+      border-radius: containers.$border-radius containers.$border-radius 0 0;
+    }
+    // Последняя линия
+    &:last-child {
+      border-radius: 0 0 containers.$border-radius containers.$border-radius;
+    }
+  }
+  // Ячейки
+  &__ceil {
+    $paddings: (
+      default: 14px 20px,
+    );
+    $font-sizes: (
+      default: 15px,
+    );
+    // Свойства
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    // Адаптив
+    @include screens.adaptiveFor($paddings, $font-sizes) using($padding, $font-size) {
+      padding: $padding;
+      font-size: $font-size;
+    }
+
+    // Мелкий текст
+    .light {
+      font-size: 0.8em;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Иконки
+.attach {
+  $image-size: 42px;
+  // Свойства
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  // Картинка
+  &__image {
+    width: $image-size;
+    height: $image-size;
+    flex-basis: $image-size;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+  // Текст
+  &__text {
+    flex-grow: 1;
   }
 }

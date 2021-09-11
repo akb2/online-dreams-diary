@@ -17,68 +17,139 @@
     <!-- Данные текущей авторизации -->
     <div class="section">
       <div class="container">
-        <h1>
-          <mat-icon>lock_clock</mat-icon>
-          <sup>Текущая авторизация</sup>
-          <sub>Сведения о вашей активности</sub>
-        </h1>
+        <app-title [type]="1"
+                   title="Текущая авторизация"></app-title>
         <!-- Сведения о текущем токене -->
-        <ng-container>
-          <div class="token"
-               *ngIf="!loadingTokenInfo">
-            <!-- Дата авторизации -->
-            <div class="token__element">
-              <div class="token__element-image">
-                <mat-icon>history</mat-icon>
-              </div>
-              <div class="token__element-name">Дата авторизации</div>
-              <div class="token__element-value">{{tokenInfo.createDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+        <div class="token"
+             *ngIf="!loadingTokenInfo && tokenInfo">
+          <!-- Дата авторизации -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <mat-icon>history</mat-icon>
             </div>
-            <!-- Последнее действие -->
-            <div class="token__element">
-              <div class="token__element-image">
-                <mat-icon>touch_app</mat-icon>
-              </div>
-              <div class="token__element-name">Последняя активность</div>
-              <div class="token__element-value">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
-            </div>
-            <!-- Операционная система -->
-            <div class="token__element">
-              <div class="token__element-image">
-                <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
-              </div>
-              <div class="token__element-name">Операционная система</div>
-              <div class="token__element-value">{{osNames[tokenInfo.browser.os]}}</div>
-            </div>
-            <!-- Браузер -->
-            <div class="token__element">
-              <div class="token__element-image">
-                <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
-              </div>
-              <div class="token__element-name">Браузер</div>
-              <div class="token__element-value">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
-            </div>
+            <div class="token__element-name">Дата авторизации</div>
+            <div class="token__element-value">{{tokenInfo.createDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
           </div>
-          <!-- Загрузка токена -->
-          <ng-container [ngTemplateOutlet]="loadingData"
-                        [ngTemplateOutletContext]="{ $implicit: {
-                            title: 'Загрузка',
-                            subTitle: 'Пожалуйста, подождите',
-                            description: 'Идет получение сведений о текущей авторизации'
-                          }}"
-                        *ngIf="loadingTokenInfo"></ng-container>
-        </ng-container>
+          <!-- Последнее действие -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <mat-icon>touch_app</mat-icon>
+            </div>
+            <div class="token__element-name">Последняя активность</div>
+            <div class="token__element-value">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+          </div>
+          <!-- IP -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <mat-icon>wifi</mat-icon>
+            </div>
+            <div class="token__element-name">IP адрес</div>
+            <div class="token__element-value">{{tokenInfo.ip}}</div>
+          </div>
+          <!-- Операционная система -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
+            </div>
+            <div class="token__element-name">Операционная система</div>
+            <div class="token__element-value">{{osNames[tokenInfo.browser.os]}}</div>
+          </div>
+          <!-- Браузер -->
+          <div class="token__element">
+            <div class="token__element-image">
+              <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
+            </div>
+            <div class="token__element-name">Браузер</div>
+            <div class="token__element-value">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
+          </div>
+        </div>
+        <!-- Ошибка данных -->
+        <ng-container [ngTemplateOutlet]="loadingData"
+                      [ngTemplateOutletContext]="{ $implicit: {
+                        icon: 'highlight_off',
+                        title: 'Ошибка',
+                        subTitle: 'Не удалось загрузить данные'
+                      }}"
+                      *ngIf="!loadingTokenInfo && !tokenInfo"></ng-container>
+        <!-- Загрузка токена -->
+        <ng-container [ngTemplateOutlet]="loadingData"
+                      [ngTemplateOutletContext]="{ $implicit: {
+                        title: 'Загрузка',
+                        subTitle: 'Пожалуйста, подождите',
+                        description: 'Идет получение сведений о текущей авторизации'
+                      }}"
+                      *ngIf="loadingTokenInfo"></ng-container>
       </div>
     </div>
 
     <!-- Контейнер со списками авторизаций -->
     <div class="section white">
       <div class="container">
-        <h2>
-          <mat-icon>phonelink_lock</mat-icon>
-          <sup>Другие авторизации</sup>
-          <sub>Вход с других устройств</sub>
-        </h2>
+        <app-title [type]="2"
+                   title="Вход с других устройств"></app-title>
+        <!-- Список авторизаций -->
+        <div class="table"
+             *ngIf="!loadingTokensInfo && tokensInfo.length">
+          <!-- Заголовки -->
+          <div class="table__line title">
+            <div class="table__ceil create-date">Дата авторизации</div>
+            <div class="table__ceil last-action-date">Последняя активность</div>
+            <div class="table__ceil ip">IP адрес</div>
+            <div class="table__ceil os">Операционная система</div>
+            <div class="table__ceil browser">Браузер</div>
+            <div class="table__ceil controls"></div>
+          </div>
+          <!-- Данные -->
+          <div class="table__line"
+               *ngFor="let tokenInfo of tokensInfo">
+            <!-- Дата авторизации -->
+            <div class="table__ceil create-date">
+              {{tokenInfo.createDate | date: 'HH:mm'}}
+              <div class="light">{{tokenInfo.createDate | date: 'dd.MM.yyyy'}}</div>
+            </div>
+            <!-- Последнее действие -->
+            <div class="table__ceil last-action-date">
+              {{tokenInfo.lastActionDate | date: 'HH:mm'}}
+              <div class="light">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy'}}</div>
+            </div>
+            <!-- IP -->
+            <div class="table__ceil ip">{{tokenInfo.ip}}</div>
+            <!-- Операционная система -->
+            <div class="table__ceil os">
+              <div class="attach">
+                <div class="attach__image">
+                  <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
+                </div>
+                <div class="attach__text">{{osNames[tokenInfo.browser.os]}}</div>
+              </div>
+            </div>
+            <!-- Браузер -->
+            <div class="table__ceil browser">
+              <div class="attach">
+                <div class="attach__image">
+                  <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
+                </div>
+                <div class="attach__text">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Ошибка данных -->
+        <ng-container [ngTemplateOutlet]="loadingData"
+                      [ngTemplateOutletContext]="{ $implicit: {
+                        icon: 'error_outline',
+                        title: 'Информация',
+                        subTitle: 'Нет данных о других авторизациях'
+                      }}"
+                      *ngIf="!loadingTokensInfo && !tokensInfo.length"></ng-container>
+        <!-- Загрузка токенов -->
+        <ng-container [ngTemplateOutlet]="loadingData"
+                      [ngTemplateOutletContext]="{ $implicit: {
+                        title: 'Загрузка',
+                        subTitle: 'Пожалуйста, подождите',
+                        description: 'Идет получение сведений о всех ваших авторизациях на других устройствах'
+                      }}"
+                      *ngIf="loadingTokensInfo"></ng-container>
       </div>
     </div>
   </div>
@@ -89,7 +160,8 @@
 <!-- Загрузка -->
 <ng-template #loadingData
              let-data>
-  <app-inform [title]="data.title"
+  <app-inform [icon]="data.icon"
+              [title]="data.title"
               [subTitle]="data.subTitle"
               [description]="data.description"></app-inform>
 </ng-template>
