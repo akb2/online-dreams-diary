@@ -151,19 +151,16 @@ class TokenService
     );
   }
 
-  // Проверить токен
+  // Получить информацию о токене
   public function getTokenApi(array $data): array
   {
     $code = "0000";
     $message = "";
-    $sqlData = array();
     $tokenData = array();
 
     // Если получены данные
     if (strlen($data["token"]) > 0) {
       $code = "9015";
-      // Данные
-      $sqlData = array($data["token"]);
       // Запрос проверки токена
       $token = $this->getToken($data["token"]);
       // Проверить токен
@@ -182,8 +179,43 @@ class TokenService
       "code" => $code,
       "message" => $message,
       "data" => array(
-        "input" => $sqlData,
+        "input" => array(),
         "tokenData" => $tokenData,
+        "result" => $code == "0001"
+      )
+    );
+  }
+
+  // Получить информацию о токенах
+  public function getTokensApi(array $data): array
+  {
+    $code = "0000";
+    $message = "";
+    $tokenDatas = array();
+
+    // Если получены данные
+    if (strlen($data["token"]) > 0 && strlen($data["id"]) > 0) {
+      $code = "9015";
+      // Запрос проверки токена
+      $token = $this->getTokens($data["id"], $data["hideCurrent"] ? $data["token"] : "");
+      // Проверить токен
+      if (count($token) > 0) {
+        $tokenDatas = $token;
+        $code = "0001";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array(
+        "input" => array(),
+        "tokenDatas" => $tokenDatas,
         "result" => $code == "0001"
       )
     );
@@ -262,6 +294,23 @@ class TokenService
         if (strlen($auth[0]["user_id"]) > 0) {
           return $auth[0];
         }
+      }
+    }
+    // Токен не валидный
+    return array();
+  }
+
+  // Сведения о токенах
+  public function getTokens(int $id, string $token): array
+  {
+    if (strlen($id) > 0) {
+      // Данные
+      $sqlData = array($id, $token);
+      // Запрос проверки токена
+      $auth = $this->dataBaseService->getDatasFromFile("token/getTokens.sql", $sqlData);
+      // Проверить авторизацию
+      if (count($auth) > 0) {
+        return $auth;
       }
     }
     // Токен не валидный

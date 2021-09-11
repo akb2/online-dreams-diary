@@ -63,6 +63,13 @@ class Token
   {
     return $this->tokenService->getTokenApi($data);
   }
+
+  // Сведения о токенах
+  // * GET
+  public function getTokens($data): array
+  {
+    return $this->tokenService->getTokensApi($data);
+  }
 }
 
 
