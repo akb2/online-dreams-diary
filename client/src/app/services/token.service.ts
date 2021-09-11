@@ -86,32 +86,37 @@ export class TokenService {
 
   // Информация о текущем токене
   public getToken(token: string = this.token, codes: string[] = []): Observable<TokenInfo> {
-    return this.httpClient.get<ApiResponse>(this.baseUrl + "token/getToken?token=" + token, this.httpHeader).pipe(switchMap(
-      result => {
-        const code: string = result.result.code;
-        // Сохранить токен
-        if (code === "0001") {
-          return of(result);
-        }
-        // Вернуть данные
-        return this.apiService.checkResponse(result.result.code, codes);
+    return this.httpClient.get<ApiResponse>(this.baseUrl + "token/getToken?token=" + token, this.httpHeader).pipe(
+      switchMap(result => this.apiService.checkSwitchMap(result, codes)),
+      map(result => this.convertToken(result.result.data.tokenData))
+    );
+  }
+
+  // Информация о всех токенах
+  public getTokens(hideCurrent: boolean = false, id: string = this.id, codes: string[] = []): Observable<TokenInfo[]> {
+    const url: string = this.baseUrl + "token/getTokens?token=" + this.token + "&id=" + id + "&hideCurrent=" + (hideCurrent ? 1 : 0);
+    // Вернуть подписку
+    return this.httpClient.get<ApiResponse>(url, this.httpHeader).pipe(
+      switchMap(result => this.apiService.checkSwitchMap(result, codes)),
+      map(result => (result.result.data.tokenDatas as any[]).map(token => this.convertToken(token)))
+    );
+  }
+
+  // Преобразование информации о токене
+  private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
+    return {
+      id: tokenData.id as number,
+      token: tokenData.token as string,
+      createDate: new Date(tokenData.create_date),
+      lastActionDate: new Date(tokenData.last_action_date),
+      userId: tokenData.user_id as number,
+      ip: tokenData.ip as string,
+      browser: {
+        os: tokenData.os as string,
+        name: tokenData.browser as string,
+        version: parseInt(tokenData.browser_version as string) > 0 ? tokenData.browser_version as string : ""
       }
-    ), map(result => {
-      const tokenData: CustomObject<string | number> = result.result.data.tokenData;
-      return {
-        id: tokenData.id as number,
-        token: tokenData.token as string,
-        createDate: new Date(tokenData.create_date),
-        lastActionDate: new Date(tokenData.last_action_date),
-        userId: tokenData.user_id as number,
-        ip: tokenData.ip as string,
-        browser: {
-          os: tokenData.os as string,
-          name: tokenData.browser as string,
-          version: parseInt(tokenData.browser_version as string) > 0 ? tokenData.browser_version as string : ""
-        }
-      };
-    }));
+    };
   }
 
 
