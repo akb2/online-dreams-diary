@@ -195,13 +195,16 @@ class TokenService
 
     // Если получены данные
     if (strlen($data["token"]) > 0 && strlen($data["id"]) > 0) {
-      $code = "9015";
-      // Запрос проверки токена
       $token = $this->getTokens($data["id"], $data["hideCurrent"] ? $data["token"] : "");
       // Проверить токен
       if (count($token) > 0) {
         $tokenDatas = $token;
         $code = "0001";
+      }
+      // Нет токенов
+      else {
+        $tokenDatas = array();
+        $code = "0002";
       }
     }
     // Получены пустые данные
@@ -218,6 +221,33 @@ class TokenService
         "tokenDatas" => $tokenDatas,
         "result" => $code == "0001"
       )
+    );
+  }
+
+  // Получить информацию о токенах
+  public function deleteTokenByIdApi(int $id): array
+  {
+    $code = "0000";
+
+    // Если получены данные
+    if ($id > 0) {
+      // Удаление токена
+      if ($this->dataBaseService->executeFromFile("token/deleteTokenById.sql", array($id))) {
+        $code = "0001";
+      }
+      // Неудалось удалить токен
+      else {
+        $code = "9017";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code
     );
   }
 

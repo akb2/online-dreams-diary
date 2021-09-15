@@ -70,6 +70,38 @@ class Token
   {
     return $this->tokenService->getTokensApi($data);
   }
+
+  // Удалить токен
+  // * DELETE
+  public function deleteTokenById($data): array
+  {
+    $code = "0000";
+    $id = $data["id"];
+    $token = $data["token"];
+
+    // Проверить токен
+    if ($this->tokenService->checkToken($id, $token)) {
+      // Проверка доступа
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
+        return $this->tokenService->deleteTokenByIdApi($data["tokenId"]);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
 }
 
 
