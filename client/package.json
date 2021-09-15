@@ -5,7 +5,7 @@
     "ng": "ng",
     "puggy": "pug src -P -w",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --output-hashing=all",
     "build:ssr": "ng run Project1:server:dev",
     "test": "ng test",
     "lint": "ng lint",
