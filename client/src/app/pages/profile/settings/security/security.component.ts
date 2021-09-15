@@ -85,6 +85,11 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Удалить токен
+  public deleteToken(tokenId: number): void {
+    console.log(tokenId);
+  }
+
   // Подписка на пользователя
   private subscribeUser(): Observable<User> {
     return this.accountService.user$.pipe(

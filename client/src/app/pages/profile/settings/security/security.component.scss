@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:list";
 @use "../../../../../assets/styles/screens";
 @use "../../../../../assets/styles/colors";
 @use "../../../../../assets/styles/containers";
@@ -145,24 +146,60 @@
 
 // Таблица данных
 .table {
+  $paddings: (
+    default: 7px 12px,
+    xlarge: 14px 20px,
+    large: 10px 15px,
+  );
+  $font-sizes: (
+    default: 12px,
+    xlarge: 15px,
+    large: 14px,
+  );
+  // Свойства
   border-radius: containers.$border-radius;
   box-shadow: containers.$box-shadow;
   // Линии
   &__line {
     display: grid;
-    grid-template-columns: 160px 160px 1fr 1fr 1fr 40px;
+    grid-template-areas:
+      "title-create-date title-last-action-date title-ip title-os title-browser title-controls"
+      "create-date last-action-date ip os browser controls";
     align-items: stretch;
-    background-color: map.get(colors.$mat-primary, 50);
-    color: map.get(colors.$mat-primary, contrast, 50);
+    background-color: colors.$card;
+    color: colors.$text;
+    // Адаптив
+    @include screens.adaptiveFor($paddings) using($padding) {
+      grid-template-columns: 140px 140px 1fr 1fr 1fr #{40px+ (list.nth($padding, 2) * 2)};
+    }
     // Заголовок
-    &.title {
+    > .title {
       background-color: map.get(colors.$mat-primary, 500);
       color: map.get(colors.$mat-primary, contrast, 500);
+      display: none;
+      // Закругление первой ячейки
+      &.create-date {
+        border-radius: containers.$border-radius 0 0 0;
+      }
+      // Закругление последней ячейки
+      &.controls {
+        border-radius: 0 containers.$border-radius 0 0;
+      }
+    }
+    // Последующие блоки
+    &:first-child {
+      // Заголовок
+      > .title {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+      }
     }
     // Четные линии
     &:nth-child(2n) {
-      background-color: colors.$card;
-      color: colors.$text;
+      background-color: map.get(colors.$mat-primary, 50);
+      color: map.get(colors.$mat-primary, contrast, 50);
     }
     // Первая линия
     &:first-child {
@@ -175,13 +212,6 @@
   }
   // Ячейки
   &__ceil {
-    $paddings: (
-      default: 14px 20px,
-    );
-    $font-sizes: (
-      default: 15px,
-    );
-    // Свойства
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
@@ -191,11 +221,106 @@
       padding: $padding;
       font-size: $font-size;
     }
+    // Убрать контроль
+    &.controls {
+      // Полный экран
+      .desktop {
+        display: inline-block;
+      }
+      // Мобильный экран
+      .mobile {
+        display: none;
+      }
+    }
+    // Названия
+    & {
+      $names: create-date last-action-date ip os browser controls;
+      // Цикл по классам
+      @each $class in $names {
+        &.#{$class} {
+          grid-area: $class;
+          // Для заголовка
+          &.title {
+            grid-area: title-#{$class};
+          }
+        }
+      }
+    }
 
     // Мелкий текст
     .light {
       font-size: 0.8em;
       opacity: 0.8;
+    }
+  }
+
+  // Адаптив
+  @include screens.adaptive(auto, small) {
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    // Линии
+    &__line {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      box-shadow: containers.$box-shadow;
+      grid-template-areas:
+        "title-create-date create-date"
+        "title-last-action-date last-action-date"
+        "title-ip ip"
+        "title-os os"
+        "title-browser browser"
+        "title-controls controls";
+      // Фон
+      &,
+      &:nth-child(2n) {
+        background-color: colors.$card;
+        color: colors.$text;
+      }
+      // Скругления
+      &,
+      &:first-child,
+      &:last-child {
+        border-radius: containers.$border-radius;
+      }
+      // Заголовок
+      &,
+      &:first-child {
+        > .title {
+          display: flex;
+          // Закругление первой ячейки
+          &.create-date {
+            border-radius: containers.$border-radius 0 0 0;
+          }
+          // Закругление последней ячейки
+          &.controls {
+            border-radius: 0 0 0 containers.$border-radius;
+          }
+        }
+      }
+      // Отступы
+      & + & {
+        margin-top: 15px;
+      }
+    }
+    // Ячейка
+    &__ceil {
+      // Цвета
+      &:nth-child(6) ~ &:nth-child(2n) {
+        background-color: map.get(colors.$mat-primary, 50);
+        color: map.get(colors.$mat-primary, contrast, 50);
+      }
+      // Кнопки
+      &.controls {
+        // Полный экран
+        .desktop {
+          display: none;
+        }
+        // Мобильный экран
+        .mobile {
+          display: inline-block;
+        }
+      }
     }
   }
 }

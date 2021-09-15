@@ -90,49 +90,10 @@
         <!-- Список авторизаций -->
         <div class="table"
              *ngIf="!loadingTokensInfo && tokensInfo.length">
-          <!-- Заголовки -->
-          <div class="table__line title">
-            <div class="table__ceil create-date">Дата авторизации</div>
-            <div class="table__ceil last-action-date">Последняя активность</div>
-            <div class="table__ceil ip">IP адрес</div>
-            <div class="table__ceil os">Операционная система</div>
-            <div class="table__ceil browser">Браузер</div>
-            <div class="table__ceil controls"></div>
-          </div>
-          <!-- Данные -->
-          <div class="table__line"
-               *ngFor="let tokenInfo of tokensInfo">
-            <!-- Дата авторизации -->
-            <div class="table__ceil create-date">
-              {{tokenInfo.createDate | date: 'HH:mm'}}
-              <div class="light">{{tokenInfo.createDate | date: 'dd.MM.yyyy'}}</div>
-            </div>
-            <!-- Последнее действие -->
-            <div class="table__ceil last-action-date">
-              {{tokenInfo.lastActionDate | date: 'HH:mm'}}
-              <div class="light">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy'}}</div>
-            </div>
-            <!-- IP -->
-            <div class="table__ceil ip">{{tokenInfo.ip}}</div>
-            <!-- Операционная система -->
-            <div class="table__ceil os">
-              <div class="attach">
-                <div class="attach__image">
-                  <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
-                </div>
-                <div class="attach__text">{{osNames[tokenInfo.browser.os]}}</div>
-              </div>
-            </div>
-            <!-- Браузер -->
-            <div class="table__ceil browser">
-              <div class="attach">
-                <div class="attach__image">
-                  <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
-                </div>
-                <div class="attach__text">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
-              </div>
-            </div>
-          </div>
+          <!-- Цикл по данным -->
+          <ng-container [ngTemplateOutlet]="tokensLine"
+                        [ngTemplateOutletContext]="{ $implicit: tokenInfo }"
+                        *ngFor="let tokenInfo of tokensInfo"></ng-container>
         </div>
         <!-- Ошибка данных -->
         <ng-container [ngTemplateOutlet]="loadingData"
@@ -164,4 +125,66 @@
               [title]="data.title"
               [subTitle]="data.subTitle"
               [description]="data.description"></app-inform>
+</ng-template>
+
+<!-- Шаблон данных таблицы -->
+<ng-template #tokensLine
+             let-tokenInfo>
+  <div class="table__line">
+    <!-- Заголовки -->
+    <div class="table__ceil title create-date">Дата авторизации</div>
+    <div class="table__ceil title last-action-date">Последняя активность</div>
+    <div class="table__ceil title ip">IP адрес</div>
+    <div class="table__ceil title os">Операционная система</div>
+    <div class="table__ceil title browser">Браузер</div>
+    <div class="table__ceil title controls"></div>
+    <!-- Дата авторизации -->
+    <div class="table__ceil create-date">
+      {{tokenInfo.createDate | date: 'HH:mm'}}
+      <div class="light">{{tokenInfo.createDate | date: 'dd.MM.yyyy'}}</div>
+    </div>
+    <!-- Последнее действие -->
+    <div class="table__ceil last-action-date">
+      {{tokenInfo.lastActionDate | date: 'HH:mm'}}
+      <div class="light">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy'}}</div>
+    </div>
+    <!-- IP -->
+    <div class="table__ceil ip">{{tokenInfo.ip}}</div>
+    <!-- Операционная система -->
+    <div class="table__ceil os">
+      <div class="attach">
+        <div class="attach__image">
+          <img src="../../../../assets/images/icons/os/{{tokenInfo.browser.os}}.png" />
+        </div>
+        <div class="attach__text">{{osNames[tokenInfo.browser.os]}}</div>
+      </div>
+    </div>
+    <!-- Браузер -->
+    <div class="table__ceil browser">
+      <div class="attach">
+        <div class="attach__image">
+          <img src="../../../../assets/images/icons/browser/{{tokenInfo.browser.name}}.png" />
+        </div>
+        <div class="attach__text">{{browserNames[tokenInfo.browser.name]}} {{tokenInfo.browser.version}}</div>
+      </div>
+    </div>
+    <!-- Управление -->
+    <div class="table__ceil controls">
+      <!-- Удалить -->
+      <a mat-icon-button
+         color="warn"
+         class="desktop"
+         (click)="deleteToken(tokenInfo.id)">
+        <mat-icon>close</mat-icon>
+      </a>
+      <!-- Удалить -->
+      <a mat-stroked-button
+         color="warn"
+         class="mobile"
+         (click)="deleteToken(tokenInfo.id)">
+        <mat-icon>close</mat-icon>
+        Удалить
+      </a>
+    </div>
+  </div>
 </ng-template>
