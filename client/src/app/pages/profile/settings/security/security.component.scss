@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "sass:list";
+@use "sass:math";
 @use "../../../../../assets/styles/screens";
 @use "../../../../../assets/styles/colors";
 @use "../../../../../assets/styles/containers";
@@ -327,6 +328,7 @@
 
 // Иконки
 .attach {
+  $_elm: &;
   $image-size: 42px;
   // Свойства
   display: flex;
@@ -349,5 +351,83 @@
   // Текст
   &__text {
     flex-grow: 1;
+  }
+
+  // Загрузка
+  &.loading {
+    position: relative;
+    // Остальное
+    #{$_elm} {
+      $size-1: 40px;
+      $size-2: 30px;
+      $line-1: 2px;
+      $line-2: 1px;
+      $time-1: 0.5s;
+      $time-2: 1s;
+      // Картинка
+      &__image {
+        width: math.max($size-1, $size-2);
+        height: math.max($size-1, $size-2);
+        flex-basis: math.max($size-1, $size-2);
+        // Общие правила
+        &:before,
+        &:after {
+          display: block;
+          position: absolute;
+          content: "";
+          border-radius: 50%;
+          border-color: transparent;
+          border-style: solid;
+        }
+        // Лоадер
+        &:before {
+          width: $size-1;
+          height: $size-1;
+          border-width: #{$line-1};
+          border-top-color: map.get(colors.$mat-primary, 500);
+          top: math.div(math.max($size-1, $size-2) - $size-1, 2);
+          left: math.div(math.max($size-1, $size-2) - $size-1, 2);
+          animation: loader-animation #{$time-1} linear infinite;
+        }
+        // Лоадер
+        &:after {
+          width: $size-2;
+          height: $size-2;
+          border-width: #{$line-2};
+          border-top-color: map.get(colors.$mat-primary, 400);
+          top: math.div(math.max($size-1, $size-2) - $size-2, 2);
+          left: math.div(math.max($size-1, $size-2) - $size-2, 2);
+          animation: loader-animation #{$time-2} linear infinite;
+        }
+      }
+      // Текст
+      &__text {
+        display: none;
+      }
+
+      // Адаптив
+      @include screens.adaptive(auto, small) {
+        // Текст
+        &__text {
+          display: block;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// Правила анимации
+@keyframes loader-animation {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 1;
   }
 }

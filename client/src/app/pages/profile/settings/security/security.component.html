@@ -130,6 +130,7 @@
 <!-- Шаблон данных таблицы -->
 <ng-template #tokensLine
              let-tokenInfo>
+  <!-- Данные -->
   <div class="table__line">
     <!-- Заголовки -->
     <div class="table__ceil title create-date">Дата авторизации</div>
@@ -170,21 +171,31 @@
     </div>
     <!-- Управление -->
     <div class="table__ceil controls">
-      <!-- Удалить -->
-      <a mat-icon-button
-         color="warn"
-         class="desktop"
-         (click)="deleteToken(tokenInfo.id)">
-        <mat-icon>close</mat-icon>
-      </a>
-      <!-- Удалить -->
-      <a mat-stroked-button
-         color="warn"
-         class="mobile"
-         (click)="deleteToken(tokenInfo.id)">
-        <mat-icon>close</mat-icon>
-        Удалить
-      </a>
+      <!-- Загрузка -->
+      <ng-container *ngIf="tokenInfo.loading">
+        <div class="attach loading">
+          <div class="attach__image"></div>
+          <div class="attach__text">Удаление токена</div>
+        </div>
+      </ng-container>
+      <!-- Кнопки -->
+      <ng-container *ngIf="!tokenInfo.loading">
+        <!-- Удалить -->
+        <a mat-icon-button
+           color="warn"
+           class="desktop"
+           (click)="deleteToken(tokenInfo.id)">
+          <mat-icon>close</mat-icon>
+        </a>
+        <!-- Удалить -->
+        <a mat-stroked-button
+           color="warn"
+           class="mobile"
+           (click)="deleteToken(tokenInfo.id)">
+          <mat-icon>close</mat-icon>
+          Удалить
+        </a>
+      </ng-container>
     </div>
   </div>
 </ng-template>
