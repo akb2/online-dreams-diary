@@ -160,6 +160,7 @@
   // Свойства
   border-radius: containers.$border-radius;
   box-shadow: containers.$box-shadow;
+  width: 100%;
   // Линии
   &__line {
     display: grid;
