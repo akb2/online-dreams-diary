@@ -98,7 +98,15 @@ export class TokenService {
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(url, this.httpHeader).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
-      map(result => (result.result.data.tokenDatas as any[]).map(token => this.convertToken(token)))
+      map(result => {
+        const tokensInfo: any[] = result.result?.data?.tokenDatas as any[] || [];
+        // Список
+        if (tokensInfo.length) {
+          return tokensInfo.map(token => this.convertToken(token));
+        }
+        // Пустой ответ
+        return [];
+      })
     );
   }
 

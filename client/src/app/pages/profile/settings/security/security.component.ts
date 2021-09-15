@@ -97,7 +97,7 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
       tokenInfo.loading = true;
       // Запрос
       this.tokenService.deleteTokenById(tokenId)
-        .pipe(switchMap(d => d ? this.tokenService.getTokens(true) : of([] as TokenInfo[]), (d, u) => [d, u]))
+        .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
         .subscribe((response: [boolean, TokenInfo[]]) => {
           const [del, tokensInfo] = response;
           // Токен удален
