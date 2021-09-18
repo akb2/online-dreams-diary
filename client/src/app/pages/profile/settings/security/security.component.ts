@@ -98,27 +98,30 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
       // Запрос
       this.tokenService.deleteTokenById(tokenId)
         .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
-        .subscribe((response: [boolean, TokenInfo[]]) => {
-          const [del, tokensInfo] = response;
-          // Токен удален
-          if (del) {
-            const loadings: { id: number, loading: boolean }[] = this.tokensInfo.map(({ id, loading }) => ({ id, loading }));
-            // Обновить сведения
-            this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: loadings.find(l => l.id === tokenInfo.id).loading }));
-            // Сообщение об удалении
-            this.snackbarService.open({
-              mode: "success",
-              message: "Выбранный токен успешно удален"
-            });
-          }
-          // Токен не удален
-          else {
-            this.snackbarService.open({
-              mode: "error",
-              message: "Не удалось удалить выбранный токен"
-            });
-          }
-        });
+        .subscribe(
+          (response: [boolean, TokenInfo[]]) => {
+            const [del, tokensInfo] = response;
+            // Токен удален
+            if (del) {
+              const loadings: { id: number, loading: boolean }[] = this.tokensInfo.map(({ id, loading }) => ({ id, loading }));
+              // Обновить сведения
+              this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: loadings.find(l => l.id === tokenInfo.id).loading }));
+              // Сообщение об удалении
+              this.snackbarService.open({
+                mode: "success",
+                message: "Выбранный токен успешно удален"
+              });
+            }
+            // Токен не удален
+            else {
+              this.snackbarService.open({
+                mode: "error",
+                message: "Не удалось удалить выбранный токен"
+              });
+            }
+          },
+          () => tokenInfo.loading = false
+        );
     }
   }
 
@@ -128,26 +131,32 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
     // Запрос
     this.tokenService.deleteTokensByUser(true)
       .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
-      .subscribe((response: [boolean, TokenInfo[]]) => {
-        const [del, tokensInfo] = response;
-        // Токены удалены
-        if (del) {
-          // Обновить сведения
-          this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: false }));
-          // Сообщение об удалении
-          this.snackbarService.open({
-            mode: "success",
-            message: "Все авторизации кроме текущей удалены"
-          });
-        }
-        // Токен не удален
-        else {
-          this.snackbarService.open({
-            mode: "error",
-            message: "Не удалось удалить все авторизации. Обратитесь за помощью в техническую поддержку"
-          });
-        }
-      });
+      .subscribe(
+        (response: [boolean, TokenInfo[]]) => {
+          const [del, tokensInfo] = response;
+          this.loadingTokensInfo = false;
+          // Токены удалены
+          if (del) {
+            // Обновить сведения
+            this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: false }));
+            // Сообщение об удалении
+            this.snackbarService.open({
+              mode: "success",
+              message: "Все авторизации кроме текущей удалены"
+            });
+          }
+          // Токен не удален
+          else {
+            this.loadingTokensInfo = false;
+            // Сообщение об удалении
+            this.snackbarService.open({
+              mode: "error",
+              message: "Не удалось удалить все авторизации. Обратитесь за помощью в техническую поддержку"
+            });
+          }
+        },
+        () => this.loadingTokensInfo = false
+      );
   }
 
   // Подписка на пользователя
