@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@_models/account';
-import { BrowserNames, CustomObject, OsNames, SimpleObject } from '@_models/app';
+import { BrowserNames, OsNames, SimpleObject } from '@_models/app';
 import { TokenInfo } from '@_models/token';
 import { AccountService } from '@_services/account.service';
 import { SnackbarService } from '@_services/snackbar.service';
@@ -12,7 +12,6 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
 
 
 
-// Декоратор компонента
 @Component({
   selector: 'app-settings-security',
   templateUrl: './security.component.html',
@@ -20,7 +19,6 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-// Основной класс
 export class SettingsSecurityComponent implements OnInit, OnDestroy {
 
 
