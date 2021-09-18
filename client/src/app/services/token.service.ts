@@ -120,6 +120,16 @@ export class TokenService {
     );
   }
 
+  // Удалить все токены по ID пользователя
+  public deleteTokensByUser(hideCurrent: boolean = false, codes: string[] = []): Observable<boolean> {
+    const url: string = this.baseUrl + "token/deleteTokensByUser?token=" + this.token + "&id=" + this.id;
+    // Вернуть подписку
+    return this.httpClient.delete<ApiResponse>(url, this.httpHeader).pipe(
+      switchMap(result => this.apiService.checkSwitchMap(result, codes)),
+      map(result => result.result.code === "0001")
+    );
+  }
+
   // Преобразование информации о токене
   private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
     return {
