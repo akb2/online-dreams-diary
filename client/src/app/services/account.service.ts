@@ -28,7 +28,7 @@ export class AccountService {
   private cookieLifeTime: number = 604800;
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
-  public readonly user$: Observable<User> = this.user.asObservable();
+  readonly user$: Observable<User> = this.user.asObservable();
 
   // Конструктор
   constructor(
@@ -42,7 +42,7 @@ export class AccountService {
   }
 
   // Проверить авторизацию
-  public get checkAuth(): boolean {
+  get checkAuth(): boolean {
     return this.tokenService.checkAuth;
   }
 
@@ -57,7 +57,7 @@ export class AccountService {
 
 
   // Авторизация
-  public auth(login: string, password: string, codes: string[] = []): Observable<string> {
+  auth(login: string, password: string, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     formData.append("login", login);
     formData.append("password", password);
@@ -75,7 +75,7 @@ export class AccountService {
   }
 
   // Регистрация
-  public register(data: UserRegister, codes: string[] = []): Observable<string> {
+  register(data: UserRegister, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     Object.entries(data).map(value => formData.append(value[0], value[1]));
     // Вернуть подписку
@@ -87,12 +87,12 @@ export class AccountService {
 
 
   // Информация о текущем пользователе
-  public syncCurrentUser(codes: string[] = []): Observable<string> {
+  syncCurrentUser(codes: string[] = []): Observable<string> {
     return this.getUser(this.tokenService.id, codes);
   }
 
   // Информация о пользователе
-  public getUser(id: string, codes: string[] = []): Observable<string> {
+  getUser(id: string, codes: string[] = []): Observable<string> {
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(switchMap(
       result => {
@@ -108,7 +108,7 @@ export class AccountService {
   }
 
   // Сохранить данные аккаунта
-  public saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
+  saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     Object.entries(userSave).map(value => formData.append(value[0], value[1]));
     // Вернуть подписку
@@ -122,7 +122,7 @@ export class AccountService {
 
 
   // Загрузить аватарку
-  public uploadAvatar(file: File, codes: string[] = []): Observable<string> {
+  uploadAvatar(file: File, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     formData.append("file", file);
     // Вернуть подписку
@@ -134,7 +134,7 @@ export class AccountService {
   }
 
   // Обрезать аватарку
-  public cropAvatar(type: UserAvatarCropDataKeys, coords: UserAvatarCropDataElement, codes: string[] = []): Observable<string> {
+  cropAvatar(type: UserAvatarCropDataKeys, coords: UserAvatarCropDataElement, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     formData.append("type", type);
     formData.append("startX", coords.startX.toString());
@@ -150,7 +150,7 @@ export class AccountService {
   }
 
   // Удалить аватарку
-  public deleteAvatar(codes: string[] = []): Observable<string> {
+  deleteAvatar(codes: string[] = []): Observable<string> {
     // Вернуть подписку
     return this.httpClient.delete<ApiResponse>(
       this.baseUrl + "account/deleteAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
@@ -165,7 +165,7 @@ export class AccountService {
 
 
   // Сведения о текущем пользователе
-  public getCurrentUser(): User {
+  getCurrentUser(): User {
     if (this.checkAuth) {
       this.configLocalStorage();
       const userString: string = this.localStorageService.getCookie("current_user");
