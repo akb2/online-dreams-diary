@@ -10,6 +10,7 @@ import { ScreenService } from "@_services/screen.service";
   templateUrl: "./scroll.component.html",
   styleUrls: ["./scroll.component.scss"]
 })
+
 export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnDestroy {
 
 
@@ -44,19 +45,20 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
     return this.screenService.getMax(this.breakpointMobile) >= window.innerWidth;
   }
 
-  // Конструктор
+
+
+
+
   constructor(
     private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef
-  ) {
+  ) { }
+
+  ngOnChanges() {
+    this.onWindowScroll();
   }
 
-
-
-
-
-  // Элементы страницы отрисованы
-  public ngOnInit(): void {
+  ngOnInit() {
     this.onWindowScroll();
     window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.addEventListener("resize", this.onWindowScroll.bind(this), true);
@@ -64,24 +66,21 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
     window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
   }
 
-  // После загрузки элементов страницы
-  public ngAfterViewChecked(): void {
+  ngAfterViewChecked() {
     this.onWindowScroll();
     this.changeDetectorRef.detectChanges();
   }
 
-  // При получении изменений
-  public ngOnChanges(): void {
-    this.onWindowScroll();
-  }
-
-  // Завершение класса
-  public ngOnDestroy(): void {
+  ngOnDestroy() {
     window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.removeEventListener("resize", this.onWindowScroll.bind(this), true);
     window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
     window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
   }
+
+
+
+
 
   // Скролл страницы
   public onWindowScroll(event?: Event): void {
