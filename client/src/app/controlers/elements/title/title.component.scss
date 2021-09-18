@@ -5,10 +5,10 @@
 @use "../../../../assets/styles/containers";
 
 $font-sizes: (
-  default: 40px,
-  large: 36px,
-  middle: 32px,
-  small: 28px,
+  default: 32px,
+  large: 28px,
+  middle: 24px,
+  small: 22px,
   xsmall: 20px,
 );
 
@@ -47,8 +47,8 @@ $gap-koof: 0.3;
       $image-size: $font-size * (1 + $subtitle-koof) * $line-height * $image-koof;
       // Свойства
       font-size: $font-size;
-      padding-bottom: math.div($spacing, 2);
-      margin-bottom: math.div($spacing, 2);
+      padding-bottom: math.div($spacing, 4);
+      margin-bottom: math.div($spacing, 4) * 3;
       gap: 0 #{$gap-koof * $font-size};
       grid-template-columns: 1fr;
       // Варианты
