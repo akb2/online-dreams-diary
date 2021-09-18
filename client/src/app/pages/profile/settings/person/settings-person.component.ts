@@ -1,5 +1,5 @@
 import { formatDate } from '@angular/common';
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupConfirmComponent } from '@_controlers/confirm/confirm.component';
@@ -51,7 +51,8 @@ export class SettingsPersonProfileComponent implements OnDestroy {
     private accountService: AccountService,
     private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // Настройка формы
     this.form = this.formBuilder.group({
@@ -70,7 +71,8 @@ export class SettingsPersonProfileComponent implements OnDestroy {
     });
     this.avatar = this.formBuilder.control(null);
     // Подписка на данные пользвателя
-    this.subscribeUser().subscribe();
+    this.subscribeUser().subscribe(() => this.changeDetectorRef.detectChanges());
+    this.accountService.syncCurrentUser().subscribe();
   }
 
 

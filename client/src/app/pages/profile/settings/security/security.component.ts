@@ -48,7 +48,8 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
     this.getToken();
     this.getTokens();
     // Подписка на данные пользвателя
-    this.subscribeUser().subscribe();
+    this.subscribeUser().subscribe(() => this.changeDetectorRef.detectChanges());
+    this.accountService.syncCurrentUser().subscribe();
   }
 
   ngOnDestroy() {
