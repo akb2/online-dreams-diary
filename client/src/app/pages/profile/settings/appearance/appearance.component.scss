@@ -1,0 +1,94 @@
+@use "../../../../../assets/styles/screens";
+@use "../../../../../assets/styles/containers";
+@use "../../../../../assets/styles/mixins";
+
+// Иконки выбора картинок
+.settings {
+  $counts: (
+    default: 3,
+    middle: 2,
+    small: 1,
+    xsmall: 1,
+  );
+  $heights: (
+    default: 140px,
+    xlarge: 120px,
+    small: 160px,
+  );
+  $gaps: (
+    default: 30px,
+    xsmall: 15px,
+  );
+  // Свойства
+  display: grid;
+
+  // Ячейка
+  &__element {
+    border-radius: containers.$border-radius;
+    box-shadow: containers.$box-shadow;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    cursor: pointer;
+    // Картинка
+    &-image {
+      $positions-x: left center right;
+      $positions-y: top center bottom;
+      // Свойства
+      width: 100%;
+      border-radius: containers.$border-radius containers.$border-radius 0 0;
+      overflow: hidden;
+      position: relative;
+      // Позиция по ширине
+      @each $position-x in $positions-x {
+        @each $position-y in $positions-y {
+          &[positionX="#{$position-x}"][positionY="#{$position-y}"] {
+            > img {
+              object-position: $position-x $position-y;
+            }
+          }
+        }
+      }
+      // Затенение
+      &[imageOverlay="true"] {
+        &:after {
+          @include mixins.inset;
+          position: absolute;
+          display: block;
+          content: "";
+          background-color: #000;
+          opacity: 0.4;
+        }
+      }
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    // Описание
+    &-title {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      flex-grow: 1;
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($counts, $heights, $gaps) using($count, $height, $gap) {
+    grid-template-columns: repeat(#{$count}, 1fr);
+    gap: $gap;
+    // Ячейка
+    &__element {
+      // Картинка
+      &-image {
+        height: $height;
+      }
+    }
+  }
+}

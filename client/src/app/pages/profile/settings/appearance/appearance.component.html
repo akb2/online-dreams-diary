@@ -1,11 +1,11 @@
 <ng-container *ngIf="user">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
-                 type="collapse"
-                 image="../../../../assets/images/backgrounds/5.jpg"
-                 imagePositionX="center"
-                 imagePositionY="center"
-                 [imageOverlay]="true"
+                 type="short"
+                 image="../../../../assets/images/backgrounds/{{backgroundImageData.imageName}}"
+                 [imagePositionX]="backgroundImageData.positionX"
+                 [imagePositionY]="backgroundImageData.positionY"
+                 [imageOverlay]="backgroundImageData.imageOverlay"
                  [title]="user.name + ' ' + user.lastName"
                  subTitle="Персонализация"
                  [avatarImage]="user.avatars.middle"
@@ -14,7 +14,20 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <div class="section">
+    <div class="container">
+      <div class="settings">
+        <div class="settings__element"
+             (click)="changeImage(data)"
+             *ngFor="let data of backgroundImageDatas">
+          <div class="settings__element-image"
+               [attr.positionX]="data.positionX"
+               [attr.positionY]="data.positionY"
+               [attr.imageOverlay]="data.imageOverlay">
+            <img src="../../../../assets/images/backgrounds/{{data.imageName}}" />
+          </div>
+          <div class="settings__element-title">{{data.title}}</div>
+        </div>
+      </div>
     </div>
   </div>
 </ng-container>
