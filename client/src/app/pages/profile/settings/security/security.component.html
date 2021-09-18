@@ -85,8 +85,20 @@
     <!-- Контейнер со списками авторизаций -->
     <div class="section white">
       <div class="container">
-        <app-title [type]="2"
-                   title="Вход с других устройств"></app-title>
+        <div class="control">
+          <!-- Заголовок -->
+          <app-title [type]="2"
+                     title="Вход с других устройств"></app-title>
+          <!-- Управление -->
+          <div class="control__buttons"
+               *ngIf="tokensInfo?.length">
+            <!-- Удалить все токены кроме текущего -->
+            <a mat-flat-button
+               color="warn"
+               [disabled]="loadingTokensInfo"
+               (click)="loadingTokensInfo? false: deleteTokens()">Удалить все</a>
+          </div>
+        </div>
         <!-- Список авторизаций -->
         <div class="table"
              *ngIf="!loadingTokensInfo && tokensInfo.length">

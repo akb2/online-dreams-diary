@@ -418,6 +418,22 @@
   }
 }
 
+// Контроль в заголовке
+.control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0;
+  // Адаптив
+  @include screens.adaptive(auto, xsmall) {
+    grid-template-columns: 1fr;
+    margin-bottom: 10px;
+    // Кнопка
+    &__buttons {
+      text-align: right;
+    }
+  }
+}
+
 // Правила анимации
 @keyframes loader-animation {
   0% {

@@ -115,11 +115,39 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
           else {
             this.snackbarService.open({
               mode: "error",
-              message: "Ytудалось удалить выбранный токен"
+              message: "Не удалось удалить выбранный токен"
             });
           }
         });
     }
+  }
+
+  // Удалить все токены
+  public deleteTokens(): void {
+    this.loadingTokensInfo = true;
+    // Запрос
+    this.tokenService.deleteTokensByUser(true)
+      .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
+      .subscribe((response: [boolean, TokenInfo[]]) => {
+        const [del, tokensInfo] = response;
+        // Токены удалены
+        if (del) {
+          // Обновить сведения
+          this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: false }));
+          // Сообщение об удалении
+          this.snackbarService.open({
+            mode: "success",
+            message: "Все авторизации кроме текущей удалены"
+          });
+        }
+        // Токен не удален
+        else {
+          this.snackbarService.open({
+            mode: "error",
+            message: "Не удалось удалить все авторизации. Обратитесь за помощью в техническую поддержку"
+          });
+        }
+      });
   }
 
   // Подписка на пользователя
