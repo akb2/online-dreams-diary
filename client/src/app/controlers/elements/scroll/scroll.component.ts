@@ -1,5 +1,7 @@
-import { OnInit, Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewChecked, OnChanges, ChangeDetectorRef } from "@angular/core";
+import { OnInit, Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewChecked, OnChanges, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
 import { ScreenService } from "@_services/screen.service";
+import { Subject, timer } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 
 
@@ -8,28 +10,32 @@ import { ScreenService } from "@_services/screen.service";
 @Component({
   selector: "app-scroll",
   templateUrl: "./scroll.component.html",
-  styleUrls: ["./scroll.component.scss"]
+  styleUrls: ["./scroll.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnDestroy {
 
 
-  @Input() public styles: string;
-  @Input() public breakpointMobile: string = "small";
-  @Input() public headerHeight: number = 0;
+  @Input() styles: string;
+  @Input() breakpointMobile: string = "small";
+  @Input() headerHeight: number = 0;
 
-  @ViewChild("layout") public layout: ElementRef;
-  @ViewChild("track") public track: ElementRef;
-  @ViewChild("slider") public slider: ElementRef;
+  @ViewChild("layout") layout: ElementRef;
+  @ViewChild("track") track: ElementRef;
+  @ViewChild("slider") slider: ElementRef;
 
-  public sliderPosition: number = 0;
-  public sliderHeight: number = 0;
+  sliderPosition: number = 0;
+  sliderHeight: number = 0;
   private scrollStep: number = 20;
+  private checkInterval: number = 150;
 
-  public sliderMousePosY: number = 0;
-  public scrollActive: boolean = false;
-  public sliderMousePress: boolean = false;
-  public buttonMousePress: boolean = false;
+  sliderMousePosY: number = 0;
+  scrollActive: boolean = false;
+  sliderMousePress: boolean = false;
+  buttonMousePress: boolean = false;
+
+  private destroy$: Subject<void> = new Subject<void>();
 
   // Высота документа для скролла
   get scrollHeight(): number {
@@ -60,10 +66,13 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
   ngOnInit() {
     this.onWindowScroll();
+    // События
     window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.addEventListener("resize", this.onWindowScroll.bind(this), true);
     window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
     window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
+    // Проверка изменений скролла
+    timer(0, this.checkInterval).pipe(takeUntil(this.destroy$)).subscribe(() => this.onWindowScroll());
   }
 
   ngAfterViewChecked() {
@@ -72,6 +81,9 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // События
     window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.removeEventListener("resize", this.onWindowScroll.bind(this), true);
     window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
@@ -83,7 +95,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
 
   // Скролл страницы
-  public onWindowScroll(event?: Event): void {
+  onWindowScroll(event?: Event): void {
     this.scrollActive = window.innerHeight < this.scrollHeight + this.headerHeight;
     // Отрисовка позиций скролла
     if (this.scrollActive && !this.isMobile) {
@@ -92,17 +104,19 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
       this.sliderHeight = (screenHeight / this.scrollHeight) * trackHeight;
       this.sliderPosition = (window.scrollY / this.scrollHeight) * trackHeight;
     }
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Фокус внутри слайдера
-  public onSliderMouseDown(event: MouseEvent): void {
+  onSliderMouseDown(event: MouseEvent): void {
     this.sliderMousePosY = event.y - this.slider.nativeElement.getBoundingClientRect().top;
     // Включить обнаружение движения мышкой
     this.sliderMousePress = true;
   }
 
   // Движение мышкой
-  public onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent): void {
     if (this.sliderMousePress) {
       const pageY: number = event.y - this.track.nativeElement.getBoundingClientRect().top - this.sliderMousePosY;
       const maxY: number = this.track.nativeElement.getBoundingClientRect().height;
@@ -111,7 +125,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   }
 
   // Фокус внутри кнопки
-  public onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
+  onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
     if (window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height || (window.scrollY == 0 && direction > 0)) {
       // Установить индикатор нажатия
       if (setIndicator) {
@@ -126,7 +140,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   }
 
   // Потеря фокуса любым элементом
-  public onMouseUp(event: MouseEvent): void {
+  onMouseUp(event: MouseEvent): void {
     this.sliderMousePress = false;
     this.buttonMousePress = false;
   }
