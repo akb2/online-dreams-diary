@@ -7,14 +7,12 @@ import { MenuItem } from '@_models/menu';
 
 
 
-// Декоратор компонента
 @Component({
   selector: 'app-settings-profile',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
 })
 
-// Основной класс
 export class SettingsProfileComponent {
 
 
@@ -31,6 +29,11 @@ export class SettingsProfileComponent {
       text: "Персональные данные",
       desc: "Настройки всех личных персональных данных вашего аккаунта",
       link: "person"
+    }, {
+      icon: "color_lens",
+      text: "Персонализация",
+      desc: "Настройка внешнего вида приложения",
+      link: "appearance"
     }, {
       icon: "security",
       text: "Безопасность аккаунта",
