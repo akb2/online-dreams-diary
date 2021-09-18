@@ -251,6 +251,33 @@ class TokenService
     );
   }
 
+  // Получить информацию о токенах
+  public function deleteTokensByUserApi(int $id, bool $hideCurrent = false, string $excludeToken = ""): array
+  {
+    $code = "0000";
+
+    // Если получены данные
+    if ($id > 0 && (!$hideCurrent || ($hideCurrent && strlen($excludeToken) > 0))) {
+      // Удаление токена
+      if ($this->dataBaseService->executeFromFile("token/deleteTokensByUser.sql", array($id, ($hideCurrent ? $excludeToken : "")))) {
+        $code = "0001";
+      }
+      // Неудалось удалить токен
+      else {
+        $code = "9017";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code
+    );
+  }
+
 
 
   // Проверить токен
