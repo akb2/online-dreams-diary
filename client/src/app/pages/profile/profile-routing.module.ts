@@ -2,6 +2,7 @@ import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
 import { DetailProfileComponent } from "@_pages/profile/detail/detail-profile.component";
 import { ProfileComponent } from "@_pages/profile/profile.component";
+import { SettingsAppearanceComponent } from "@_pages/profile/settings/appearance/appearance.component";
 import { SettingsPersonProfileComponent } from "@_pages/profile/settings/person/settings-person.component";
 import { SettingsSecurityComponent } from "@_pages/profile/settings/security/security.component";
 import { SettingsProfileComponent } from "@_pages/profile/settings/settings.component";
@@ -35,6 +36,12 @@ const routes: Routes = [{
           path: "person",
           data: { title: "Настройки персональных данных" },
           component: SettingsPersonProfileComponent
+        },
+        // Персонализация
+        {
+          path: "appearance",
+          data: { title: "Персонализация" },
+          component: SettingsAppearanceComponent
         },
         // Безопасность
         {

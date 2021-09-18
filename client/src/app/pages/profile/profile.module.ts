@@ -16,6 +16,7 @@ import { CoreModule } from '@_modules/core.module';
 import { DetailProfileComponent } from '@_pages/profile/detail/detail-profile.component';
 import { ProfileRoutingModule } from '@_pages/profile/profile-routing.module';
 import { ProfileComponent } from '@_pages/profile/profile.component';
+import { SettingsAppearanceComponent } from '@_pages/profile/settings/appearance/appearance.component';
 import { SettingsPersonProfileComponent } from '@_pages/profile/settings/person/settings-person.component';
 import { SettingsSecurityComponent } from '@_pages/profile/settings/security/security.component';
 import { SettingsProfileComponent } from '@_pages/profile/settings/settings.component';
@@ -30,7 +31,8 @@ import { SettingsProfileComponent } from '@_pages/profile/settings/settings.comp
     DetailProfileComponent,
     SettingsProfileComponent,
     SettingsPersonProfileComponent,
-    SettingsSecurityComponent
+    SettingsSecurityComponent,
+    SettingsAppearanceComponent
   ],
   imports: [
     CoreModule,
