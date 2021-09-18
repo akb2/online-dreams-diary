@@ -1,0 +1,20 @@
+<ng-container *ngIf="user">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 type="collapse"
+                 image="../../../../assets/images/backgrounds/5.jpg"
+                 imagePositionX="center"
+                 imagePositionY="center"
+                 [imageOverlay]="true"
+                 [title]="user.name + ' ' + user.lastName"
+                 subTitle="Персонализация"
+                 [avatarImage]="user.avatars.middle"
+                 avatarIcon="person"
+                 backButtonLink="/profile/settings"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <div class="section">
+    </div>
+  </div>
+</ng-container>
