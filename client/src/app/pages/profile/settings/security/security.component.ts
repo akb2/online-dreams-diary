@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@_models/account';
 import { BrowserNames, CustomObject, OsNames, SimpleObject } from '@_models/app';
 import { TokenInfo } from '@_models/token';
@@ -16,7 +16,8 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-settings-security',
   templateUrl: './security.component.html',
-  styleUrls: ['./security.component.scss']
+  styleUrls: ['./security.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 // Основной класс
@@ -41,7 +42,8 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
   constructor(
     private accountService: AccountService,
     private tokenService: TokenService,
-    private snackbarService: SnackbarService
+    private snackbarService: SnackbarService,
+    private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -68,6 +70,8 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
       tokenInfo => {
         this.loadingTokenInfo = false;
         this.tokenInfo = tokenInfo;
+        // Обновить
+        this.changeDetectorRef.detectChanges();
       },
       () => this.loadingTokenInfo = false
     );
@@ -81,10 +85,14 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
       tokensInfo => {
         this.loadingTokensInfo = false;
         this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: false }));
+        // Обновить
+        this.changeDetectorRef.detectChanges();
       },
       () => {
         this.loadingTokensInfo = false;
         this.tokensInfo = [];
+        // Обновить
+        this.changeDetectorRef.detectChanges();
       }
     );
   }
@@ -114,11 +122,15 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
             }
             // Токен не удален
             else {
+              tokenInfo.loading = false;
+              // Сообщение об удалении
               this.snackbarService.open({
                 mode: "error",
                 message: "Не удалось удалить выбранный токен"
               });
             }
+            // Обновить
+            this.changeDetectorRef.detectChanges();
           },
           () => tokenInfo.loading = false
         );
@@ -154,6 +166,8 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
               message: "Не удалось удалить все авторизации. Обратитесь за помощью в техническую поддержку"
             });
           }
+          // Обновить
+          this.changeDetectorRef.detectChanges();
         },
         () => this.loadingTokensInfo = false
       );
