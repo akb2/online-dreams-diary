@@ -22,7 +22,7 @@ export const BackgroundImageDatas: BackgroundImageData[] = [{
   imageName: "3.jpg",
   positionX: "center",
   positionY: "center",
-  imageOverlay: false
+  imageOverlay: true
 }, {
   id: 4,
   title: "Странник на краю скалы у моря",
@@ -41,7 +41,7 @@ export const BackgroundImageDatas: BackgroundImageData[] = [{
   id: 6,
   title: "Карманные часы на песке",
   imageName: "6.jpg",
-  positionX: "right",
+  positionX: "center",
   positionY: "center",
   imageOverlay: true
 }, {
