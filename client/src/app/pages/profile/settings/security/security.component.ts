@@ -48,8 +48,10 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
     this.getToken();
     this.getTokens();
     // Подписка на данные пользвателя
-    this.subscribeUser().subscribe(() => this.changeDetectorRef.detectChanges());
-    this.accountService.syncCurrentUser().subscribe();
+    this.subscribeUser().subscribe(user => {
+      this.user = user;
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   ngOnDestroy() {
@@ -174,14 +176,7 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
 
   // Подписка на пользователя
   private subscribeUser(): Observable<User> {
-    return this.accountService.user$.pipe(
-      takeUntil(this.destroy$),
-      map(user => {
-        this.user = user;
-        // Вернуть юзера
-        return user;
-      })
-    );
+    return this.accountService.user$.pipe(takeUntil(this.destroy$));
   }
 }
 
