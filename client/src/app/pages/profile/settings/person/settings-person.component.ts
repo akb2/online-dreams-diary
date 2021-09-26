@@ -1,5 +1,5 @@
 import { formatDate } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupConfirmComponent } from '@_controlers/confirm/confirm.component';
@@ -21,11 +21,12 @@ import { map, takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-settings-person-profile',
   templateUrl: './settings-person.component.html',
-  styleUrls: ['./settings-person.component.scss']
+  styleUrls: ['./settings-person.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 // Основной класс
-export class SettingsPersonProfileComponent implements OnDestroy {
+export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
 
 
   @ViewChild(ImageUploadComponent) appImageUpload: ImageUploadComponent;
@@ -46,6 +47,10 @@ export class SettingsPersonProfileComponent implements OnDestroy {
   public fileLoaderKey: number = 0;
 
   private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
 
   constructor(
     private accountService: AccountService,
@@ -70,22 +75,24 @@ export class SettingsPersonProfileComponent implements OnDestroy {
       ]
     });
     this.avatar = this.formBuilder.control(null);
-    // Подписка на данные пользвателя
-    this.subscribeUser().subscribe(() => this.changeDetectorRef.detectChanges());
-    this.accountService.syncCurrentUser().subscribe();
   }
 
+  ngOnInit() {
+    this.subscribeUser().subscribe(user => {
+      this.user = user;
+      this.changeDetectorRef.detectChanges();
+    });
+  }
 
-
-
-
-  // Конец класса
-  public ngOnDestroy(): void {
+  ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // Сохранение данных
+
+
+
+
   public onSaveData(): void {
     // Форма без ошибок
     if (this.form.valid) {
@@ -269,20 +276,18 @@ export class SettingsPersonProfileComponent implements OnDestroy {
     return this.accountService.user$.pipe(
       takeUntil(this.destroy$),
       map(user => {
-        this.user = user;
-        // Значения формы
-        if (this.user) {
-          this.form.get("name").setValue(this.user.name);
-          this.form.get("lastName").setValue(this.user.lastName);
-          this.form.get("patronymic").setValue(this.user.patronymic);
-          this.form.get("birthDate").setValue(new Date(this.user.birthDate));
-          this.form.get("sex").setValue(this.user.sex == 1 ? true : false);
-          this.form.get("email").setValue(this.user.email);
-          this.avatar.setValue(this.user.avatars.full);
+        if (user) {
+          this.form.get("name").setValue(user.name);
+          this.form.get("lastName").setValue(user.lastName);
+          this.form.get("patronymic").setValue(user.patronymic);
+          this.form.get("birthDate").setValue(new Date(user.birthDate));
+          this.form.get("sex").setValue(user.sex == 1);
+          this.form.get("email").setValue(user.email);
+          this.avatar.setValue(user.avatars.full);
         }
         // Работа с аватаркой
         if (this.appImageUpload) {
-          this.appImageUpload.clearInput(this.user.avatars.full);
+          this.appImageUpload.clearInput(user.avatars.full);
         }
         // Вернуть юзера
         return user;
