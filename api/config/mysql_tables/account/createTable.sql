@@ -1,7 +1,7 @@
 CREATE TABLE `users`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
-    `page_status` TINYINT(1) NOT NULL DEFAULT 0,
+    `page_status` VARCHAR(128) NOT NULL DEFAULT "",
     `status` TINYINT(1) NOT NULL DEFAULT 0,
     `login` VARCHAR(24) NOT NULL DEFAULT "",
     `password` VARCHAR(128) NOT NULL DEFAULT "",
