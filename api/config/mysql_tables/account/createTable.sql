@@ -13,6 +13,7 @@ CREATE TABLE `users`
     `email` VARCHAR(120) NOT NULL DEFAULT "",
     `roles` JSON NOT NULL,
     `avatar_crop_data` JSON NOT NULL,
+    `settings` JSON NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE `login` (`login`),
     UNIQUE `email` (`email`)
