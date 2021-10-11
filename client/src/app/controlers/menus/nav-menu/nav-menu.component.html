@@ -15,9 +15,16 @@
     <!-- Картинка -->
     <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
          [style]="css.image"
-         *ngIf="image && (type != 'full' || imageFullShow)">
+         *ngIf="image.length && (type != 'full' || imageFullShow)">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
+    </div>
+    <!-- Временная картинка -->
+    <div class="main-menu__layer-image temp type-{{ imageFullShow? 'short': type }} {{tempImageOverlay? 'overlay': ''}}"
+         [style]="css.image"
+         *ngIf="tempImage.length && (type != 'full' || imageFullShow)">
+      <img [src]="tempImage"
+           [style.object-position]="tempImagePositionY + ' ' + tempImagePositionX" />
     </div>
     <div class="main-menu__layer-image type-full {{imageOverlay? 'overlay': ''}}"
          *ngIf="image && type == 'full' && !imageFullShow">

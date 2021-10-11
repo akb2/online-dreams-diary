@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { SimpleObject } from "@_models/app";
 import { MenuItem } from "@_models/menu";
@@ -6,6 +6,8 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue } from "@_models/nav-menu"
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
+import { of, timer } from "rxjs";
+import { delay } from "rxjs/operators";
 import smoothscroll from "smoothscroll-polyfill";
 
 
@@ -21,47 +23,53 @@ import smoothscroll from "smoothscroll-polyfill";
 })
 
 // Основной класс
-export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
+export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
 
-  @Input() public type: "full" | "short" | "collapse" = "collapse";
-  @Input() public image: string = "";
-  @Input() public class: string = "";
-  @Input() public autoCollapse: boolean = false;
-  @Input() public imagePositionX: string = "center";
-  @Input() public imagePositionY: string = "center";
-  @Input() public imageOverlay: boolean = true;
-  @Input() public imageFullShow: boolean = false;
+  @Input() type: "full" | "short" | "collapse" = "collapse";
+  @Input() image: string = "";
+  @Input() class: string = "";
+  @Input() autoCollapse: boolean = false;
+  @Input() imagePositionX: string = "center";
+  @Input() imagePositionY: string = "center";
+  @Input() imageOverlay: boolean = true;
+  @Input() imageFullShow: boolean = false;
 
-  @Input() public title: string = "";
-  @Input() public subTitle: string = "";
-  @Input() public avatarImage: string = "";
-  @Input() public avatarIcon: string = "";
+  @Input() title: string = "";
+  @Input() subTitle: string = "";
+  @Input() avatarImage: string = "";
+  @Input() avatarIcon: string = "";
 
-  @Input() public floatButtonIcon: string = "";
-  @Input() public floatButtonText: string = "";
-  @Output() public floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
-  @Input() public floatButtonLink: string;
-  @Input() public floatButtonLinkParams: SimpleObject;
+  @Input() floatButtonIcon: string = "";
+  @Input() floatButtonText: string = "";
+  @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
+  @Input() floatButtonLink: string;
+  @Input() floatButtonLinkParams: SimpleObject;
 
-  @Input() public backButtonLink: string;
-  @Input() public backButtonLinkParams: SimpleObject;
+  @Input() backButtonLink: string;
+  @Input() backButtonLinkParams: SimpleObject;
 
-  @Input() public hideToContentButton: boolean = false;
+  @Input() hideToContentButton: boolean = false;
 
   @ViewChild("contentLayerContainer") private contentLayerContainer: ElementRef;
   @ViewChild("contentLayerContainerLeft") private contentLayerContainerLeft: ElementRef;
 
+  tempImage: string = "";
+  tempImagePositionY: string = "";
+  tempImagePositionX: string = "";
+  tempImageOverlay: boolean = true;
+  private clearTempImageTimeout: number = 300;
+
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
   private breakpoint: ScreenKeys = "default";
-  public breakpointMobile: ScreenKeys = "small";
-  public headerHeight: number = DrawDatas.minHeight;
+  breakpointMobile: ScreenKeys = "small";
+  headerHeight: number = DrawDatas.minHeight;
 
-  public showMobileMenu: boolean = false;
-  public menuItems: MenuItem[] = [];
-  public minHeight: number = 0;
-  public maxHeight: number = 0;
+  showMobileMenu: boolean = false;
+  menuItems: MenuItem[] = [];
+  minHeight: number = 0;
+  maxHeight: number = 0;
 
   private scrollMousePosY: number = 0;
   private scrollMouseStartY: number = 0;
@@ -70,7 +78,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private lastScrollTime: number = new Date().getTime();
   private scrollTimeWait: number = 150;
 
-  public css: SimpleObject = {};
+  css: SimpleObject = {};
 
   private cssNamesVar: SimpleObject = {
     menu: "menu",
@@ -154,7 +162,10 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     ) - this.headerHeight;
   }
 
-  // Конструктор
+
+
+
+
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
@@ -166,12 +177,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.menuItems = this.menuService.menuItems;
   }
 
-
-
-
-
-  // Запуск класса
-  public ngOnInit(): void {
+  ngOnInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
     // Отрисовка
@@ -185,8 +191,32 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     window.scroll({ top: 0 });
   }
 
-  // Запуск класса
-  public ngAfterViewInit(): void {
+  ngOnChanges(changes: SimpleChanges) {
+    // Установить новую картинку
+    if (changes.image && !changes.image.firstChange && changes.image.previousValue !== changes.image.currentValue) {
+      // Старые значения
+      this.tempImage = changes.image.previousValue;
+      this.tempImagePositionY = changes.imagePositionY?.previousValue || this.imagePositionY;
+      this.tempImagePositionX = changes.imagePositionX?.previousValue || this.imagePositionX;
+      this.tempImageOverlay = changes.imageOverlay?.previousValue || this.imageOverlay;
+      // Новые значения
+      this.image = changes.image.currentValue;
+      this.imagePositionY = changes.imagePositionY?.currentValue || this.imagePositionY;
+      this.imagePositionX = changes.imagePositionX?.currentValue || this.imagePositionX;
+      this.imageOverlay = changes.imageOverlay?.currentValue || this.imageOverlay;
+      // Очистить временную картинку
+      setTimeout(() => {
+        this.tempImage = "";
+        this.changeDetectorRef.detectChanges();
+      }, this.clearTempImageTimeout);
+    }
+    // Очистить старую картинку
+    else {
+      this.tempImage = "";
+    }
+  }
+
+  ngAfterViewInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
     // Отрисовка
@@ -195,13 +225,16 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.changeDetectorRef.markForCheck();
   }
 
-  // Конец класса
-  public ngOnDestroy(): void {
+  ngOnDestroy() {
     window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
     window.removeEventListener("resize", this.onResize.bind(this), true);
     window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
     window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
   }
+
+
+
+
 
   // Скролл страницы
   private onWindowScroll(event: Event): boolean {
@@ -256,7 +289,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Изменение размеров экрана
-  public onResize(event?: Event): void {
+  onResize(event?: Event): void {
     DrawDatas.type = this.type;
     DrawDatas.screenWidth = window.innerWidth;
     DrawDatas.screenHeight = window.innerHeight;
@@ -284,7 +317,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Фокус для скролла смахиванием
-  public onScrollMouseDown(event: MouseEvent): void {
+  onScrollMouseDown(event: MouseEvent): void {
     this.scrollMousePosY = event.y;
     this.scrollMouseStartY = window.scrollY;
     // Включить обнаружение движения мышкой
@@ -292,7 +325,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Движение мышкой
-  public onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent): void {
     if (this.swipeScrollPress) {
       this.swipeScrollDistance = event.y - this.scrollMousePosY;
       // Установить скролл
@@ -301,7 +334,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Потеря фокуса любым элементом
-  public onMouseUp(event: MouseEvent): void {
+  onMouseUp(event: MouseEvent): void {
     this.swipeScrollPress = false;
     this.onSwipeDetect();
   }
@@ -340,7 +373,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Нажатие по плавающей кнопке
-  public onFloatButtonClick(): void {
+  onFloatButtonClick(): void {
     this.floatButtonCallback.emit();
   }
 
@@ -422,7 +455,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Проверить мобильный ли экран
-  public isMobile(): boolean {
+  isMobile(): boolean {
     return this.screenService.getMax(this.breakpointMobile) >= DrawDatas.screenWidth;
   }
 
@@ -431,7 +464,7 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   // Переключить меню
-  public toggleMobileMenu(action: -1 | 1): void {
+  toggleMobileMenu(action: -1 | 1): void {
     // Открыть меню
     if (action === 1) {
       this.showMobileMenu = true;
@@ -445,12 +478,12 @@ export class NavMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Схлопнуть меню
-  public collapseMenu(): void {
+  collapseMenu(): void {
     this.scrollTo(DrawDatas.maxHeight - DrawDatas.minHeight);
   }
 
   // Развернуть меню
-  public expandMenu(): void {
+  expandMenu(): void {
     this.scrollTo(0);
   }
 

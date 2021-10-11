@@ -15,18 +15,16 @@ $breakpointMobile: small;
     large: 360px,
     xlarge: 420px,
   );
-
+  // Свойства
   position: fixed;
   z-index: 10;
   top: 0;
   width: 100%;
   user-select: none;
-
   // Полноразмерное меню
   &.type-full {
     height: 100vh;
   }
-
   // Вспомогательный блок
   &.helper {
     position: static;
@@ -42,11 +40,9 @@ $breakpointMobile: small;
     &.back {
       overflow: hidden;
     }
-
     // Контент
     &.content {
     }
-
     // Передний фон
     &.front {
       pointer-events: none;
@@ -101,13 +97,11 @@ $breakpointMobile: small;
         grid-area: full;
       }
     }
-
     // Картинка
     &-image {
       display: block;
       width: 100%;
       height: 100%;
-
       // Полноразмерное меню
       &.type-full {
         border-radius: 50%;
@@ -156,8 +150,23 @@ $breakpointMobile: small;
         position: absolute;
         display: block;
       }
-    }
 
+      // Временная картинка
+      &.temp {
+        position: absolute;
+        animation: temp-image-hidden #{screens.$animation-time} linear 1;
+        opacity: 0;
+        // Правила анимации
+        @keyframes temp-image-hidden {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+      }
+    }
     // Градиент
     &-gradient {
       position: absolute;
@@ -170,14 +179,12 @@ $breakpointMobile: small;
       background-color: map.get(colors.$mat-primary, 500);
     }
   }
-
   // Заголовок
   &__title {
     line-height: 1.2;
     color: colors.$title-dark;
     font-weight: 400;
   }
-
   // Подзаголовок
   &__subtitle {
     line-height: 1.14;
@@ -185,7 +192,6 @@ $breakpointMobile: small;
     font-weight: 300;
     letter-spacing: 0;
   }
-
   // Заголовок, gодзаголовок
   &__title,
   &__subtitle {
@@ -193,7 +199,6 @@ $breakpointMobile: small;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   // Аватарка
   &__avatar {
     position: absolute;
