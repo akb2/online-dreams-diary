@@ -1,7 +1,8 @@
 <ng-container *ngIf="user">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
-                 type="short"
+                 [imageFullShow]="true"
+                 type="full"
                  image="../../../../assets/images/backgrounds/{{user.settings.profileBackground.imageName}}"
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
