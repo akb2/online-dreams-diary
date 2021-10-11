@@ -381,6 +381,11 @@ export class DrawDatas {
       data: {
         default: { min: -(DrawDatas.maxHeight - DrawDatas.minHeight) / 2, max: 0, unit: "px" },
       }
+    }, {
+      property: "filter",
+      data: {
+        default: { min: 5, max: 0, prefixUnit: "blur(", unit: "px)" },
+      }
     }];
 
     DrawDatas.floatingButton = [{
