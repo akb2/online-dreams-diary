@@ -3,7 +3,7 @@ import { User } from '@_models/account';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
 import { AccountService } from '@_services/account.service';
 import { Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 
 
 
@@ -21,7 +21,7 @@ export class SettingsAppearanceComponent {
 
   user: User;
   backgroundImageDatas: BackgroundImageData[] = BackgroundImageDatas;
-  backgroundImageData: BackgroundImageData = BackgroundImageDatas[0];
+  backgroundImageLoader: boolean = false;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -51,8 +51,20 @@ export class SettingsAppearanceComponent {
 
 
   // Изменить фон
-  changeImage(data: BackgroundImageData): void {
-    this.backgroundImageData = data;
+  changeImage(profileBackground: BackgroundImageData): void {
+    if (this.user.settings.profileBackground.id !== profileBackground.id) {
+      this.backgroundImageLoader = true;
+      this.accountService.saveUserSettings({ ...this.user.settings, profileBackground }).subscribe(
+        code => {
+          if (code === "0001") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+          // Отключить загрузку
+          this.hideLoader();
+        },
+        () => this.hideLoader()
+      );
+    }
   }
 
 
@@ -62,5 +74,12 @@ export class SettingsAppearanceComponent {
   // Подписка на пользователя
   private subscribeUser(): Observable<User> {
     return this.accountService.user$.pipe(takeUntil(this.destroy$));
+  }
+
+  // Отключить лоадер
+  private hideLoader(): void {
+    this.backgroundImageLoader = false;
+    // Изменения
+    this.changeDetectorRef.detectChanges();
   }
 }

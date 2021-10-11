@@ -1,11 +1,12 @@
 <ng-container *ngIf="user">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
+                 [imageFullShow]="true"
                  type="short"
-                 image="../../../../assets/images/backgrounds/{{backgroundImageData.imageName}}"
-                 [imagePositionX]="backgroundImageData.positionX"
-                 [imagePositionY]="backgroundImageData.positionY"
-                 [imageOverlay]="backgroundImageData.imageOverlay"
+                 image="../../../../assets/images/backgrounds/{{user.settings.profileBackground.imageName}}"
+                 [imagePositionX]="user.settings.profileBackground.positionX"
+                 [imagePositionY]="user.settings.profileBackground.positionY"
+                 [imageOverlay]="user.settings.profileBackground.imageOverlay"
                  [title]="user.name + ' ' + user.lastName"
                  subTitle="Персонализация"
                  [avatarImage]="user.avatars.middle"
@@ -15,8 +16,11 @@
   <!-- Контейнер с данными -->
   <div class="root-section">
     <div class="container">
-      <div class="settings">
+      <!-- Список фонов -->
+      <div class="settings"
+           *ngIf="!backgroundImageLoader; else loader">
         <div class="settings__element"
+             [ngClass]="{ checked: data.id === user.settings.profileBackground.id }"
              (click)="changeImage(data)"
              *ngFor="let data of backgroundImageDatas">
           <div class="settings__element-image"
@@ -28,6 +32,11 @@
           <div class="settings__element-title">{{data.title}}</div>
         </div>
       </div>
+      <!-- Загрузка данных -->
+      <ng-template #loader>
+        <app-inform title="Изменение фона"
+                    subTitle="Пожалуйста, подождите..."></app-inform>
+      </ng-template>
     </div>
   </div>
 </ng-container>
