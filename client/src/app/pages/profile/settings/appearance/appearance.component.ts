@@ -3,7 +3,7 @@ import { User } from '@_models/account';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
 import { AccountService } from '@_services/account.service';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { delay, takeUntil } from 'rxjs/operators';
 
 
 
@@ -20,7 +20,7 @@ export class SettingsAppearanceComponent {
 
 
   user: User;
-  backgroundImageDatas: BackgroundImageData[] = BackgroundImageDatas;
+  backgroundImageDatas: BackgroundImageData[] = BackgroundImageDatas.reverse();
   backgroundImageLoader: boolean = false;
 
   private destroy$: Subject<void> = new Subject<void>();
