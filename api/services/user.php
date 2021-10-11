@@ -557,6 +557,7 @@ class UserService
     return array(
       "id" => $user["id"],
       "name" => $user["name"],
+      "pageStatus" => $user["page_status"],
       "lastName" => $user["last_name"],
       "patronymic" => $user["patronymic"],
       "birthDate" => $user["birth_date"],
