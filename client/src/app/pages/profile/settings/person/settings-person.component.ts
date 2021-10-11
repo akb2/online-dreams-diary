@@ -112,10 +112,10 @@ export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
           this.dataLoading = false;
           // Успешная регистрация
           if (code == "0001") {
-            this.accountService.syncCurrentUser().subscribe(() => this.snackbarService.open({
+            this.snackbarService.open({
               message: "Данные успешно сохранены",
               mode: "success"
-            }));
+            });
           }
           // Ошибка почты
           else if (code == "9012") {
@@ -124,8 +124,13 @@ export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
               testEmail.push(userSave.email);
             }
           }
+          // Изменения
+          this.changeDetectorRef.detectChanges();
         },
-        () => this.dataLoading = false
+        () => {
+          this.dataLoading = false;
+          this.changeDetectorRef.detectChanges();
+        }
       );
     }
     // Есть ошибки
@@ -157,19 +162,20 @@ export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
           this.fileLoading = false;
           // Успешная загрузка аватарки
           if (code == "0001") {
-            this.accountService.syncCurrentUser().subscribe(() => {
-              this.snackbarService.open({
-                message: "Аватарка успешно загружена",
-                mode: "success"
-              });
-              // Обрезать аватарку
-              this.onOpenCrop("crop");
+            this.snackbarService.open({
+              message: "Аватарка успешно загружена",
+              mode: "success"
             });
+            // Обрезать аватарку
+            this.onOpenCrop("crop");
           }
+          // Изменения
+          this.changeDetectorRef.detectChanges();
         },
         () => {
           this.fileLoading = false;
           this.appImageUpload.clearInput();
+          this.changeDetectorRef.detectChanges();
         }
       );
     }
@@ -215,19 +221,22 @@ export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
           this.fileLoading = false;
           // Успешная обрезка аватарки
           if (code == "0001") {
-            this.accountService.syncCurrentUser().subscribe(() => {
-              this.snackbarService.open({
-                message: type === 'crop' ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
-                mode: "success"
-              })
-              // Открыть изменение миниатюры
-              if (type === "crop") {
-                this.onOpenCrop("middle");
-              }
+            this.snackbarService.open({
+              message: type === 'crop' ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
+              mode: "success"
             });
+            // Открыть изменение миниатюры
+            if (type === "crop") {
+              this.onOpenCrop("middle");
+            }
           }
+          // Изменения
+          this.changeDetectorRef.detectChanges();
         },
-        () => this.fileLoading = false
+        () => {
+          this.fileLoading = false;
+          this.changeDetectorRef.detectChanges();
+        }
       );
     }
   }
@@ -247,16 +256,19 @@ export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
             this.fileLoading = false;
             // Успешная обрезка аватарки
             if (code == "0001") {
-              this.accountService.syncCurrentUser().subscribe(() => {
-                this.appImageUpload.clearInput(null);
-                this.snackbarService.open({
-                  message: "Ваша аватарка успешно удалена",
-                  mode: "success"
-                });
+              this.appImageUpload.clearInput(null);
+              this.snackbarService.open({
+                message: "Ваша аватарка успешно удалена",
+                mode: "success"
               });
             }
+            // Изменения
+            this.changeDetectorRef.detectChanges();
           },
-          () => this.fileLoading = false
+          () => {
+            this.fileLoading = false;
+            this.changeDetectorRef.detectChanges();
+          }
         );
       }
     });
