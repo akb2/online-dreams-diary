@@ -7,6 +7,7 @@ import { BackgroundImageData } from "@_models/appearance";
 // Интерфейс данных о пользователе
 export interface User {
   id: number;
+  pageStatus: string;
   settings: UserSettings;
   name: string;
   lastName: string;
