@@ -35,4 +35,18 @@ export const BackgroundImageDatas: BackgroundImageData[] = [{
   imageNameShort: "short/2.jpg",
   positionY: "top",
   imageOverlay: false
+}, {
+  ...BackgroundImageDataDefault,
+  id: 3,
+  title: "Побег от НЛО",
+  imageName: "full/3.jpg",
+  imageNameShort: "short/3.jpg",
+  imageOverlay: false
+}, {
+  ...BackgroundImageDataDefault,
+  id: 4,
+  title: "В пламени красного дракона",
+  imageName: "full/4.jpg",
+  imageNameShort: "short/4.jpg",
+  imageOverlay: false
 }];
