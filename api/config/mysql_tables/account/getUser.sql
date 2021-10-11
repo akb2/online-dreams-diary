@@ -1,5 +1,6 @@
 SELECT
   `id`,
+  `settings`,
   `status`,
   `login`,
   `name`,
