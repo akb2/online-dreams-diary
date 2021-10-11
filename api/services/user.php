@@ -207,7 +207,6 @@ class UserService
   {
     $code = "0000";
     $user = array();
-    $users = array();
 
     // Проверка ID
     if (strlen($id) > 0) {
@@ -264,6 +263,38 @@ class UserService
       // Почта повторяется
       else {
         $code = "9012";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
+
+  // Сохранить данные
+  public function saveUserSettingsApi(string $id, array $data): array
+  {
+    $code = "0000";
+
+    // Проверка ID
+    if (strlen($id) > 0) {
+      $sqlData = array(
+        "profileBackground" => $data["profileBackground"]
+      );
+      // Сохранение данных
+      if ($this->dataBaseService->executeFromFile("account/saveUserSettings.sql", array(json_encode($sqlData), $id))) {
+        $code = "0001";
+      }
+      // Регистрация неудалась
+      else {
+        $code = "9021";
       }
     }
     // Получены пустые данные
@@ -508,10 +539,18 @@ class UserService
     }
 
     // Данные об обрезке аватарки
-    $user["avatar_crop_data"] = @json_decode($user["avatar_crop_data"]) ? json_decode($user["avatar_crop_data"], true) : array();
-    foreach ($this->avatarKeysCrop as $value) {
-      $user["avatar_crop_data"][$value] = isset($user["avatar_crop_data"][$value]) ? $user["avatar_crop_data"][$value] : array();
-      $user["avatar_crop_data"][$value] = $this->checkUserAvatarCropDatas($user["avatar_crop_data"][$value]);
+    $avatarCropData = array();
+    if ($avatarCropData = @json_decode($user["avatar_crop_data"], true)) {
+      foreach ($this->avatarKeysCrop as $value) {
+        $avatarCropData[$value] = isset($avatarCropData[$value]) ? $avatarCropData[$value] : array();
+        $avatarCropData[$value] = $this->checkUserAvatarCropDatas($avatarCropData[$value]);
+      }
+    }
+
+    // Данные о настройках
+    $settings = array();
+    if ($settings = @json_decode($user["settings"], true)) {
+      $settings["profileBackground"] = isset($settings["profileBackground"]) ? $settings["profileBackground"] : 0;
     }
 
     // Вернуть данные
@@ -525,7 +564,8 @@ class UserService
       "sex" => $user["sex"],
       "email" => $user["email"],
       "roles" => json_decode($user["roles"]),
-      "avatarCropData" => $user["avatar_crop_data"],
+      "avatarCropData" => $avatarCropData,
+      "settings" => $settings,
       "avatars" => $avatars
     );
   }
