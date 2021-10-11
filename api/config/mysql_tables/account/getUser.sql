@@ -1,5 +1,6 @@
 SELECT
   `id`,
+  `page_status`,
   `settings`,
   `status`,
   `login`,

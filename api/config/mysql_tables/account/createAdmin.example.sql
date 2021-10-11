@@ -1,6 +1,7 @@
 INSERT INTO `users`
   (
     `status`,
+    `page_status`,
     `login`,
     `password`,
     `name`,
@@ -10,10 +11,13 @@ INSERT INTO `users`
     `birth_date`,
     `sex`,
     `email`,
-    `roles`
+    `roles`,
+    `avatar_crop_data`,
+    `settings`
   )
   VALUES (
     1,
+    "**Текст статуса на странице**",
     "**Логин**",
     "**Хэш пароля**",
     "**Имя**",
@@ -23,5 +27,7 @@ INSERT INTO `users`
     "**Дата рождения**",
     0,
     "**Адрес почты**",
-    "[\"admin\"]"
+    "[\"admin\"]",
+    "[]",
+    "[]"
   )
