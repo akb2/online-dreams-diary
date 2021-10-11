@@ -48,7 +48,7 @@ export class DrawDatas {
       return 320;
     }
     // По умолчанию
-    return 420;
+    return 440;
   }
 
 
