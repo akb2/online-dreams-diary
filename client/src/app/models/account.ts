@@ -1,6 +1,13 @@
+import { BackgroundImageData } from "@_models/appearance";
+
+
+
+
+
 // Интерфейс данных о пользователе
 export interface User {
   id: number;
+  settings: UserSettings;
   name: string;
   lastName: string;
   patronymic: string;
@@ -8,9 +15,18 @@ export interface User {
   registerDate: Date;
   sex: number;
   email: string;
-  roles: string[];
+  roles: UserRoles[];
   avatars: UserAvatars;
   avatarCropData: UserAvatarCropData;
+}
+
+// Интерфейс настроек пользователя
+export interface UserSettings {
+  profileBackground: BackgroundImageData;
+}
+
+export interface UserSettingsDto {
+  profileBackground: number;
 }
 
 // Интерфейс массива аватарок
@@ -19,6 +35,11 @@ interface UserAvatars {
   crop: string;
   middle: string;
   small: string;
+}
+
+// Интерфейс прав доступа
+export enum UserRoles {
+  admin = "admin"
 }
 
 // Интерфейс массива аватарок
