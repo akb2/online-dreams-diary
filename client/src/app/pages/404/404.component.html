@@ -1,9 +1,11 @@
 <!-- Меню -->
 <app-main-menu [autoCollapse]="true"
                type="full"
-               image="../../../../assets/images/backgrounds/2.jpg"
-               [imageOverlay]="true"
+               image="../../../../assets/images/backgrounds/{{backgroundImageData.imageName}}"
+               [imageOverlay]="backgroundImageData.imageOverlay"
                [imageFullShow]="true"
+               [imagePositionX]="backgroundImageData.positionX"
+               [imagePositionY]="backgroundImageData.positionY"
                title="Ошибка"
                subTitle="Страница не найдена"
                floatButtonIcon="home"
