@@ -6,8 +6,6 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue } from "@_models/nav-menu"
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { of, timer } from "rxjs";
-import { delay } from "rxjs/operators";
 import smoothscroll from "smoothscroll-polyfill";
 
 
