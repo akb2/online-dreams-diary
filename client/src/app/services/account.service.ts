@@ -2,14 +2,15 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
-import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave } from "@_models/account";
+import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
+import { BackgroundImageDatas } from "@_models/appearance";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable } from "rxjs";
-import { switchMap } from "rxjs/operators";
+import { map, mergeMap, switchMap } from "rxjs/operators";
 
 
 
@@ -98,8 +99,10 @@ export class AccountService {
       result => {
         // Сохранить данные текущего пользователя
         if (result.result.code === "0001" && result.result.data?.id === this.tokenService.id) {
-          this.saveCurrentUser(result.result.data as User);
-          this.user.next(result.result.data as User);
+          const user: User = this.userConverter(result.result.data);
+          // Сохранить данные
+          this.saveCurrentUser(user);
+          this.user.next(user);
         }
         // Вернуть обработку кодов
         return this.apiService.checkResponse(result.result.code, codes);
@@ -110,13 +113,33 @@ export class AccountService {
   // Сохранить данные аккаунта
   saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
-    Object.entries(userSave).map(value => formData.append(value[0], value[1]));
+    Object.entries(userSave).map(([key, value]) => formData.append(key, value));
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(
       this.baseUrl + "account/saveUserData?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
       formData,
       this.httpHeader
-    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
+  }
+
+  // Сохранить настройки аккаунта
+  saveUserSettings(settings: UserSettings, codes: string[] = []): Observable<string> {
+    const settingsDto: UserSettingsDto = { profileBackground: settings.profileBackground.id };
+    // Тело запроса
+    const formData: FormData = new FormData();
+    Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
+    // Запрос
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/saveUserSettings?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
   }
 
 
@@ -130,7 +153,10 @@ export class AccountService {
       this.baseUrl + "account/uploadAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
       formData,
       this.httpHeader
-    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
   }
 
   // Обрезать аватарку
@@ -146,7 +172,10 @@ export class AccountService {
       this.baseUrl + "account/cropAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
       formData,
       this.httpHeader
-    ).pipe(switchMap(result => this.apiService.checkResponse(result.result.code, codes)));
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
   }
 
   // Удалить аватарку
@@ -155,9 +184,10 @@ export class AccountService {
     return this.httpClient.delete<ApiResponse>(
       this.baseUrl + "account/deleteAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
       this.httpHeader
-    ).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
-    ));
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
   }
 
 
@@ -183,5 +213,17 @@ export class AccountService {
       this.configLocalStorage();
       this.localStorageService.setCookie("current_user", JSON.stringify(user));
     }
+  }
+
+  // Преобразовать данные с сервера
+  private userConverter(data: any): User {
+    const user: User = data as User;
+    // Обработка настройки заднего фона страницы
+    const background: number = parseInt(user.settings?.profileBackground as unknown as string);
+    user.settings.profileBackground = BackgroundImageDatas.some(d => d.id === background) ?
+      BackgroundImageDatas.find(d => d.id == background) :
+      BackgroundImageDatas[0];
+    // Вернуть данные
+    return user;
   }
 }
