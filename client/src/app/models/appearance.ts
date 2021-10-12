@@ -50,6 +50,9 @@ export const BackgroundImageDatas: BackgroundImageData[] = [
   }, {
     id: 8,
     title: "Вечный фрактальный механизм"
+  }, {
+    id: 9,
+    title: "Полет над солнечным городом"
   }
 ].map(d => ({
   ...BackgroundImageDataDefault,
