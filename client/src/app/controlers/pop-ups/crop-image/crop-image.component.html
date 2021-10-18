@@ -10,7 +10,8 @@
 
 <!-- Содержимое -->
 <ng-container mat-dialog-content>
-  <div class="images">
+  <div class="images"
+       *ngIf="position">
     <!-- Оригинальная картинка -->
     <div class="images__original">
       <div class="image">

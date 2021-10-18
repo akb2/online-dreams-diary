@@ -42,12 +42,19 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     private matDialogRef: MatDialogRef<PopupCropImageComponent, UserAvatarCropDataElement | null>
   ) {
     this.data.title = this.data.title ? this.data.title : "Обрезка фотографии";
-    this.cropSizesToCoords();
     // Данные фотки
     this.screenService.loadImage(this.data.image).subscribe(
       image => {
         this.imageWidth = image.width;
         this.imageHeight = image.height;
+        // Проверка данных
+        const startX: number = this.data.coords?.startX || 0;
+        const startY: number = this.data.coords?.startY || 0;
+        const width: number = this.data.coords?.width || this.imageWidth;
+        const height: number = this.data.coords?.height || this.imageHeight;
+        this.data.coords = { startX, startY, width, height };
+        // Сохранить координаты
+        this.cropSizesToCoords();
       }
     );
   }
@@ -64,12 +71,14 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Элементы определены
   public ngAfterViewChecked(): void {
-    const width: number = this.scaledImage.nativeElement.getBoundingClientRect().width;
-    const height: number = this.scaledImage.nativeElement.getBoundingClientRect().height;
-    // Коэффицент уменьшения
-    this.sizeKoof = (width + height) / (this.imageWidth + this.imageHeight);
-    // Позиция отрисовки
-    this.drawPreview();
+    if (this.scaledImage) {
+      const width: number = this.scaledImage.nativeElement.getBoundingClientRect().width;
+      const height: number = this.scaledImage.nativeElement.getBoundingClientRect().height;
+      // Коэффицент уменьшения
+      this.sizeKoof = (width + height) / (this.imageWidth + this.imageHeight);
+      // Позиция отрисовки
+      this.drawPreview();
+    }
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -231,12 +240,13 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Преобразовать входящие данные в локальные
   private cropSizesToCoords(): void {
-    this.position = {
-      x1: this.data.coords.startX,
-      x2: this.data.coords.startX + this.data.coords.width,
-      y1: this.data.coords.startY,
-      y2: this.data.coords.startY + this.data.coords.height
-    };
+    // Определить координаты
+    const x1: number = this.data.coords?.startX || 0;
+    const x2: number = x1 + (this.data.coords?.width || this.imageWidth);
+    const y1: number = this.data.coords?.startY || 0;
+    const y2: number = y1 + (this.data.coords?.height || this.imageHeight);
+    // Сохранить координаты
+    this.position = { x1, x2, y1, y2 };
   }
 
   // Преобразовать локальные данные в исходящие
