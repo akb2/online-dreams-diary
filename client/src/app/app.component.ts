@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { User } from "@_models/account";
@@ -19,6 +19,7 @@ import { delay, switchMap, takeUntil, takeWhile } from "rxjs/operators";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
+
 export class AppComponent implements OnInit, OnDestroy {
 
 
