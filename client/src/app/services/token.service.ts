@@ -165,7 +165,6 @@ export class TokenService {
     this.httpClient.delete<ApiResponse>(this.baseUrl + "token/deleteToken?token=" + this.token).pipe(switchMap(
       result => {
         this.deleteCurrentUser();
-        console.log(result);
         return this.apiService.checkResponse(result.result.code);
       }
     )).subscribe(code => {
