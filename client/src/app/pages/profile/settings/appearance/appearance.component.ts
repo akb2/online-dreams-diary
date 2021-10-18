@@ -55,7 +55,7 @@ export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
     // Пункты меню
     this.menuItems = this.menuService.menuItems;
     // Фоновые картинки
-    this.backgroundImageDatas = BackgroundImageDatas.reverse();
+    this.backgroundImageDatas = BackgroundImageDatas.sort((b1, b2) => b1.id < b2.id ? 1 : b1.id > b2.id ? -1 : 0);
   }
 
   ngOnDestroy() {
