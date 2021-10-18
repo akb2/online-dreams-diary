@@ -6,6 +6,7 @@ import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, 
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
+import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
@@ -127,7 +128,10 @@ export class AccountService {
 
   // Сохранить настройки аккаунта
   saveUserSettings(settings: UserSettings, codes: string[] = []): Observable<string> {
-    const settingsDto: UserSettingsDto = { profileBackground: settings.profileBackground.id };
+    const settingsDto: UserSettingsDto = {
+      profileBackground: settings.profileBackground.id,
+      profileHeaderType: settings.profileHeaderType as string
+    };
     // Тело запроса
     const formData: FormData = new FormData();
     Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
@@ -223,6 +227,9 @@ export class AccountService {
     user.settings.profileBackground = BackgroundImageDatas.some(d => d.id === background) ?
       BackgroundImageDatas.find(d => d.id == background) :
       BackgroundImageDatas[0];
+    // Обработка настройки типа шапки
+    const headerType: NavMenuType = user.settings.profileHeaderType as NavMenuType;
+    user.settings.profileHeaderType = headerType ? headerType : NavMenuType.full;
     // Вернуть данные
     return user;
   }
