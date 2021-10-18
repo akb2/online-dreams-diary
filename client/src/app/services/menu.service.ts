@@ -208,6 +208,10 @@ export class MenuService {
               text: "Настройки",
               link: "/profile/settings",
             },
+            // Разделитель
+            {
+              isSeparate: true
+            },
             // Выход
             {
               text: "Выход",
