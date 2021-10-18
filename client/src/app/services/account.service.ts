@@ -229,7 +229,7 @@ export class AccountService {
       BackgroundImageDatas[0];
     // Обработка настройки типа шапки
     const headerType: NavMenuType = user.settings.profileHeaderType as NavMenuType;
-    user.settings.profileHeaderType = headerType ? headerType : NavMenuType.full;
+    user.settings.profileHeaderType = headerType ? headerType : NavMenuType.short;
     // Вернуть данные
     return user;
   }
