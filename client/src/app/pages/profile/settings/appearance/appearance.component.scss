@@ -61,8 +61,7 @@ $keys: full short collapse;
     background-color: colors.$card;
     color: colors.$title;
     overflow: hidden;
-    transition: transform #{screens.$animation-time}, background-color #{screens.$animation-time},
-      color #{screens.$animation-time};
+    transition: transform #{screens.$animation-time};
 
     // Картинка
     &-image {
@@ -156,6 +155,20 @@ $keys: full short collapse;
         animation: loader-animation #{$time-2} linear infinite;
       }
     }
+    // Отметка о выборе
+    &:before,
+    &:after {
+      // Свойства
+      content: "";
+      font-family: "Material Icons";
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity #{screens.$animation-time};
+    }
 
     // Наведенный элемент
     &:hover {
@@ -170,8 +183,8 @@ $keys: full short collapse;
     }
     // Выбранный элемент
     &.checked {
-      background-color: map.get(colors.$mat-primary, 500);
-      color: map.get(colors.$mat-primary, contrast, 500);
+      $size: 64px;
+      $size-k: 0.65;
       // Прочие блоки
       #{$_elm} {
         // Картинка
@@ -179,12 +192,40 @@ $keys: full short collapse;
           filter: grayscale(0%);
         }
       }
+      // Отметка о выборе
+      &:before,
+      &:after {
+        opacity: 1;
+      }
+      // Фон отметки о выборе
+      &:before {
+        width: $size;
+        height: $size;
+        border: #{math.div($size, 2)} solid transparent;
+        border-top-color: map.get(colors.$mat-primary, 500);
+        border-left-color: map.get(colors.$mat-primary, 500);
+      }
+      // Текст отметки о выборе
+      &:after {
+        width: $size * $size-k;
+        height: $size * $size-k;
+        line-height: $size * $size-k;
+        font-size: $size * $size-k * 0.6;
+        content: "check";
+        text-align: center;
+        color: map.get(colors.$mat-primary, contrast, 500);
+      }
     }
     // Загрузка
     &.loader {
       transform: scale(1);
       background-color: colors.$card;
       color: colors.$title;
+      // Отметка о выборе
+      &:before,
+      &:after {
+        opacity: 0;
+      }
       // Прочие блоки
       #{$_elm} {
         // Загрузчик

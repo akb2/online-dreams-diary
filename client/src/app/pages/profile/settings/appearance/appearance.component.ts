@@ -7,8 +7,9 @@ import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { MenuService } from '@_services/menu.service';
 import { ScreenService } from '@_services/screen.service';
-import { Subject } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { SnackbarService } from '@_services/snackbar.service';
+import { forkJoin, of, Subject } from 'rxjs';
+import { delay, mergeMap } from 'rxjs/operators';
 
 
 
@@ -29,6 +30,7 @@ export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
   navMenuTypes: NavMenuType[] = Object.values(NavMenuType);
   navMenuType: typeof NavMenuType = NavMenuType;
   menuItems: MenuItem[] = [];
+  private saveSettingDelay: number = 500;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
@@ -47,7 +49,8 @@ export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private snackbarService: SnackbarService
   ) {
     // Пункты меню
     this.menuItems = this.menuService.menuItems;
@@ -99,12 +102,17 @@ export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
   // Сохранить настройки
   private saveUserSettings(userSettings: UserSettings): void {
     this.backgroundImageLoader = true;
-    this.accountService.saveUserSettings(userSettings)
+    // Запрос
+    forkJoin([this.accountService.saveUserSettings(userSettings), of(true).pipe(delay(this.saveSettingDelay))])
       .pipe(mergeMap(() => this.screenService.loadImage(this.imagePrefix + userSettings.profileBackground.imageName), data => data))
       .subscribe(
-        code => {
+        ([code]) => {
           if (code === "0001") {
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            //window.scrollTo({ top: 0, behavior: "smooth" });
+            this.snackbarService.open({
+              mode: "success",
+              message: "Настройки сохранены"
+            });
           }
           // Отключить загрузку
           this.hideLoader();

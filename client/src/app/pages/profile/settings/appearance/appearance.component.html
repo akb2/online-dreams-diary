@@ -2,7 +2,7 @@
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
-                 [type]="user.settings.profileHeaderType"
+                 type="collapse"
                  [image]="imagePrefix + user.settings.profileBackground[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )]"
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
@@ -22,12 +22,22 @@
         <!-- Список типов -->
         <div class="settings">
           <div class="settings__element min-height"
-               [ngClass]="{ loader: backgroundImageLoader }"
+               [ngClass]="{
+                 checked: type === user.settings.profileHeaderType,
+                 loader: backgroundImageLoader
+               }"
                (click)="changeHeaderType(type)"
                *ngFor="let type of navMenuTypes">
             <!-- Обозначение главного блока -->
             <ng-container [ngTemplateOutlet]="mainMenu"
-                          [ngTemplateOutletContext]="{ type }"></ng-container>
+                          [ngTemplateOutletContext]="{
+                            type,
+                            image: user.settings.profileBackground[( type === navMenuType.full? 'imageName': 'imageNameShort' )],
+                            positionX: user.settings.profileBackground.positionX,
+                            positionY: user.settings.profileBackground.positionY,
+                            imageOverlay: user.settings.profileBackground.imageOverlay,
+                            checked: type === user.settings.profileHeaderType
+                          }"></ng-container>
             <!-- Обозначение дальнейшего содержимого -->
             <div class="any-content"
                  *ngIf="type === navMenuType.full || type === navMenuType.short"></div>
@@ -44,20 +54,26 @@
         <app-title title="Фоновая картинка"></app-title>
         <!-- Список фонов -->
         <div class="settings">
-          <div class="settings__element"
+          <div class="settings__element min-height"
                [ngClass]="{
                  checked: data.id === user.settings.profileBackground.id,
                  loader: backgroundImageLoader
                }"
                (click)="backgroundImageLoader? false: changeImage(data)"
                *ngFor="let data of backgroundImageDatas">
-            <div class="settings__element-image"
-                 [attr.positionX]="data.positionX"
-                 [attr.positionY]="data.positionY"
-                 [attr.imageOverlay]="data.imageOverlay">
-              <img [src]="imagePrefix + data[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )]" />
-            </div>
-            <div class="settings__element-title">{{data.title}}</div>
+            <!-- Обозначение главного блока -->
+            <ng-container [ngTemplateOutlet]="mainMenu"
+                          [ngTemplateOutletContext]="{
+                            type: user.settings.profileHeaderType,
+                            image: data[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )],
+                            positionX: data.positionX,
+                            positionY: data.positionY,
+                            imageOverlay: data.imageOverlay,
+                            checked: data.id === user.settings.profileBackground.id
+                          }"></ng-container>
+            <!-- Обозначение дальнейшего содержимого -->
+            <div class="any-content"
+                 *ngIf="type === navMenuType.full || type === navMenuType.short"></div>
             <div class="settings__element-loading"></div>
           </div>
         </div>
@@ -72,14 +88,19 @@
 
 <!-- Блок меню -->
 <ng-template #mainMenu
-             let-type="type">
+             let-type="type"
+             let-checked="checked"
+             let-image="image"
+             let-positionX="positionX"
+             let-positionY="positionY"
+             let-imageOverlay="imageOverlay">
   <div class="main-block type-{{type}}"
-       [ngClass]="{ checked: type === user.settings.profileHeaderType }">
+       [ngClass]="{ checked }">
     <div class="main-block__image type-{{type}}"
-         [attr.positionX]="user.settings.profileBackground.positionX"
-         [attr.positionY]="user.settings.profileBackground.positionY"
-         [attr.imageOverlay]="user.settings.profileBackground.imageOverlay">
-      <img [src]="imagePrefix + user.settings.profileBackground[( type === navMenuType.full? 'imageName': 'imageNameShort' )]" />
+         [attr.positionX]="positionX"
+         [attr.positionY]="positionY"
+         [attr.imageOverlay]="imageOverlay">
+      <img [src]="imagePrefix + image" />
     </div>
     <div class="main-block__data type-{{type}}">
       <div class="main-block__data-image">
