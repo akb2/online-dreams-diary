@@ -163,7 +163,7 @@ export class MenuService {
       this.menuItemsAuth = [
         // Личный кабинет
         {
-          icon: "home",
+          icon: "person",
           text: "Моя страница",
           link: "/profile"
         },
@@ -199,24 +199,17 @@ export class MenuService {
       this.menuItemsAuth = [
         // Личный кабинет
         {
-          sort: 500,
-          icon: "home",
+          sort: 0,
           text: "Моя страница",
           link: "/profile",
           children: [
             // Настройки аккаунта
             {
-              icon: "settings",
               text: "Настройки",
               link: "/profile/settings",
             },
-            // Разделитель
-            {
-              isSeparate: true
-            },
             // Выход
             {
-              icon: "exit_to_app",
               text: "Выход",
               callback: this.onLogOut.bind(this)
             }
@@ -224,6 +217,7 @@ export class MenuService {
         },
         // Дневник
         {
+          sort: 100,
           icon: "book",
           text: "Дневник",
           link: "/diary/my"
