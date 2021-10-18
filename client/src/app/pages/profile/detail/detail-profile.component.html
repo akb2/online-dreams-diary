@@ -2,8 +2,8 @@
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
-                 type="full"
-                 image="../../../../assets/images/backgrounds/{{user.settings.profileBackground.imageName}}"
+                 [type]="user.settings.profileHeaderType"
+                 [image]="imagePrefix + user.settings.profileBackground[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )]"
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
