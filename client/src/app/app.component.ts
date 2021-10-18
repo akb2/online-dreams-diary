@@ -125,11 +125,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.titleService.setTitle((title ? title + " | " : "") + this.mainTitle);
     // Отключение прелоадера
     timer(0, 100).pipe(
-      takeWhile(() => this.validToken && this.showPreloader, true),
-      switchMap(() => of(!this.validToken)),
+      takeWhile(() => this.showPreloader, true),
+      switchMap(() => of(this.validToken)),
       delay(this.loaderDelay)
     ).subscribe(t => {
-      if (!t) {
+      if (t) {
         this.showPreloader = false;
         document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
       }
