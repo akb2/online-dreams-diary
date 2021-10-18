@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { User } from "@_models/account";
@@ -7,8 +7,8 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { Observable, of, Subject, timer } from "rxjs";
+import { delay, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 
 
 
@@ -19,7 +19,7 @@ import { takeUntil } from "rxjs/operators";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
 
 
   public static user: User;
@@ -28,10 +28,14 @@ export class AppComponent {
 
   public showPreloader: boolean = true;
   public validToken: boolean = false;
-  private loaderDelay: number = 300;
   private pageData: RouteData;
+  private loaderDelay: number = 150;
 
-  private destroyed$: Subject<void> = new Subject();
+  private destroy$: Subject<void> = new Subject();
+
+
+
+
 
   constructor(
     private router: Router,
@@ -42,9 +46,11 @@ export class AppComponent {
     private titleService: Title,
     private activatedRoute: ActivatedRoute
   ) {
+    this.validToken = false;
+    // Подписка на пользователя
     this.accountService.user$.subscribe(user => AppComponent.user = user);
     // События старта и окочания лоадера
-    this.router.events.pipe(takeUntil(this.destroyed$)).subscribe(event => {
+    this.router.events.pipe(takeUntil(this.destroy$)).subscribe(event => {
       if (event instanceof NavigationStart) {
         this.beforeLoadPage();
       }
@@ -61,14 +67,15 @@ export class AppComponent {
     });
   }
 
+  ngOnInit() {
+    this.subscribeUser().subscribe(user => {
+      AppComponent.user = user;
+    });
+  }
 
-
-
-
-  // Завершение класса
-  public ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -117,9 +124,20 @@ export class AppComponent {
     const title: string = this.pageData?.title || "";
     this.titleService.setTitle((title ? title + " | " : "") + this.mainTitle);
     // Отключение прелоадера
-    setTimeout(timer => {
-      this.showPreloader = false;
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
-    }, this.loaderDelay);
+    timer(0, 100).pipe(
+      takeWhile(() => this.validToken && this.showPreloader, true),
+      switchMap(() => of(!this.validToken)),
+      delay(this.loaderDelay)
+    ).subscribe(t => {
+      if (!t) {
+        this.showPreloader = false;
+        document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+      }
+    });
+  }
+
+  // Подписка на пользователя
+  private subscribeUser(): Observable<User> {
+    return this.accountService.user$.pipe(takeUntil(this.destroy$));
   }
 }
