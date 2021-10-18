@@ -59,3 +59,10 @@ export type DrawDatasKeys =
   "backButton" |
   "toContentButton"
   ;
+
+// Типы меню
+export enum NavMenuType {
+  full = "full",
+  short = "short",
+  collapse = "collapse"
+};
