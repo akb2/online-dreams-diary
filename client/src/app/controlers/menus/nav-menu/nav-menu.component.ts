@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { DrawDatas } from "@_helpers/draw-datas";
 import { SimpleObject } from "@_models/app";
 import { MenuItem } from "@_models/menu";
-import { DrawDataPeriod, DrawDatasKeys, DrawDataValue } from "@_models/nav-menu";
+import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
@@ -24,7 +24,7 @@ import smoothscroll from "smoothscroll-polyfill";
 export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
 
-  @Input() type: "full" | "short" | "collapse" = "collapse";
+  @Input() type: NavMenuType = NavMenuType.collapse;
   @Input() image: string = "";
   @Input() class: string = "";
   @Input() autoCollapse: boolean = false;
@@ -106,7 +106,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   get cssNames(): SimpleObject {
     this.cssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
     this.cssNamesVar.menuList = this.floatButtonIcon?.length > 0 ? "menuListWithFloatingButton" : "menuList";
-    this.cssNamesVar.helper = this.type == "short" && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
+    this.cssNamesVar.helper = this.type == NavMenuType.short && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
     // Расчет заголовка
     {
       this.cssNamesVar.title = "title";
@@ -211,6 +211,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Очистить старую картинку
     else {
       this.tempImage = "";
+    }
+    // Изменился тип шапки
+    if (changes.type && !changes.type.firstChange && changes.type.previousValue !== changes.type.currentValue) {
+      this.onResize();
     }
   }
 
