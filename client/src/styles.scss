@@ -28,7 +28,6 @@ html {
   background-color: colors.$background;
   top: 0 !important;
   position: static !important;
-  scroll-behavior: smooth;
   // Скролл запрещен
   &.no-scroll {
     overflow-y: hidden;
