@@ -11,12 +11,27 @@ $counts: (
   small: 1,
   xsmall: 1,
 );
+$heights-default: (
+  full: 280px,
+  short: 140px,
+  collapse: 24px,
+);
 $heights: (
-  default: (
-    full: 280px,
-    short: 140px,
-    collapse: 24px,
-  ),
+  default: $heights-default,
+  large:
+    map.merge(
+      $heights-default,
+      (
+        full: 240px,
+      )
+    ),
+  middle:
+    map.merge(
+      $heights-default,
+      (
+        full: 240px,
+      )
+    ),
 );
 $gaps: (
   default: 30px,
@@ -190,6 +205,10 @@ $keys: full short collapse;
     gap: $gap;
     // Ячейка
     &__element {
+      // Минимальная высота
+      &.min-height {
+        height: map.get($height, full);
+      }
       // Картинка
       &-image {
         height: map.get($height, full);

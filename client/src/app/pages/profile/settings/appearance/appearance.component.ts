@@ -24,7 +24,7 @@ import { mergeMap } from 'rxjs/operators';
 export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
 
 
-  backgroundImageDatas: BackgroundImageData[] = BackgroundImageDatas.reverse();
+  backgroundImageDatas: BackgroundImageData[] = [];
   backgroundImageLoader: boolean = false;
   navMenuTypes: NavMenuType[] = Object.values(NavMenuType);
   navMenuType: typeof NavMenuType = NavMenuType;
@@ -51,6 +51,8 @@ export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
   ) {
     // Пункты меню
     this.menuItems = this.menuService.menuItems;
+    // Фоновые картинки
+    this.backgroundImageDatas = BackgroundImageDatas.reverse();
   }
 
   ngOnDestroy() {

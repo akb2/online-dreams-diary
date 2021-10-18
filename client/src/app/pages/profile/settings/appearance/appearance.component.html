@@ -21,7 +21,7 @@
         <app-title title="Тип главного блока"></app-title>
         <!-- Список типов -->
         <div class="settings">
-          <div class="settings__element"
+          <div class="settings__element min-height"
                [ngClass]="{ loader: backgroundImageLoader }"
                (click)="changeHeaderType(type)"
                *ngFor="let type of navMenuTypes">
