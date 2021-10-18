@@ -201,7 +201,7 @@ export class MenuService {
         {
           sort: 500,
           icon: "home",
-          text: "Кабинет",
+          text: "Моя страница",
           link: "/profile",
           children: [
             // Настройки аккаунта
@@ -276,7 +276,7 @@ export class MenuService {
         {
           sort: 1000,
           icon: "person",
-          text: "Кабинет",
+          text: "Вход",
           link: "/auth",
           children: [
             // Вход
