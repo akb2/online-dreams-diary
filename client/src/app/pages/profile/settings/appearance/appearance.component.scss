@@ -119,8 +119,8 @@
       &:before {
         width: $size-1;
         height: $size-1;
-        top: calc(50% - #{$size-1 / 2});
-        left: calc(50% - #{$size-1 / 2});
+        top: calc(50% - #{math.div($size-1, 2)});
+        left: calc(50% - #{math.div($size-1, 2)});
         border-width: #{$line-1};
         border-top-color: colors.$card;
         animation: loader-animation #{$time-1} linear infinite;
@@ -129,8 +129,8 @@
       &:after {
         width: $size-2;
         height: $size-2;
-        top: calc(50% - #{$size-2 / 2});
-        left: calc(50% - #{$size-2 / 2});
+        top: calc(50% - #{math.div($size-2, 2)});
+        left: calc(50% - #{math.div($size-2, 2)});
         border-width: #{$line-2};
         border-top-color: colors.$background;
         animation: loader-animation #{$time-2} linear infinite;
