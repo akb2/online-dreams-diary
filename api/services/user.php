@@ -287,7 +287,8 @@ class UserService
     // Проверка ID
     if (strlen($id) > 0) {
       $sqlData = array(
-        "profileBackground" => $data["profileBackground"]
+        "profileBackground" => $data["profileBackground"],
+        "profileHeaderType" => $data["profileHeaderType"]
       );
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile("account/saveUserSettings.sql", array(json_encode($sqlData), $id))) {
