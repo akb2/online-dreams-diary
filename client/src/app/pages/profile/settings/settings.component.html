@@ -2,7 +2,7 @@
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  type="short"
-                 image="../../../../assets/images/backgrounds/{{user.settings.profileBackground.imageNameShort}}"
+                 [image]="imagePrefix + user.settings.profileBackground.imageNameShort"
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
@@ -11,6 +11,9 @@
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
                  backButtonLink="/profile"></app-main-menu>
+
+  <!-- Редактирование статуса -->
+  <div></div>
 
   <!-- Контейнер с данными -->
   <div class="root-section">

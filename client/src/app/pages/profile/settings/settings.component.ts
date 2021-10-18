@@ -16,9 +16,11 @@ import { MenuItem } from '@_models/menu';
 export class SettingsProfileComponent {
 
 
-  public menuItems: MenuItem[];
+  imagePrefix: string = "../../../../assets/images/backgrounds/";
 
-  public get user(): User {
+  menuItems: MenuItem[];
+
+  get user(): User {
     return AppComponent.user;
   };
 
