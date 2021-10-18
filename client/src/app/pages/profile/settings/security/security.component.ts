@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { BrowserNames, OsNames, SimpleObject } from '@_models/app';
 import { TokenInfo } from '@_models/token';
@@ -19,10 +20,9 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SettingsSecurityComponent implements OnInit, OnDestroy {
+export class SettingsSecurityComponent implements OnInit {
 
 
-  public user: User;
   public tokenInfo: TokenInfo;
   public tokensInfo: LoadingTokenInfo[];
   public osNames: SimpleObject = OsNames;
@@ -31,7 +31,9 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
   public loadingTokenInfo: boolean = true;
   public loadingTokensInfo: boolean = true;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  public get user(): User {
+    return AppComponent.user;
+  };
 
 
 
@@ -47,16 +49,6 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.getToken();
     this.getTokens();
-    // Подписка на данные пользвателя
-    this.subscribeUser().subscribe(user => {
-      this.user = user;
-      this.changeDetectorRef.detectChanges();
-    });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
 
@@ -172,11 +164,6 @@ export class SettingsSecurityComponent implements OnInit, OnDestroy {
         },
         () => this.loadingTokensInfo = false
       );
-  }
-
-  // Подписка на пользователя
-  private subscribeUser(): Observable<User> {
-    return this.accountService.user$.pipe(takeUntil(this.destroy$));
   }
 }
 
