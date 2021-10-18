@@ -36,7 +36,8 @@
                             positionX: user.settings.profileBackground.positionX,
                             positionY: user.settings.profileBackground.positionY,
                             imageOverlay: user.settings.profileBackground.imageOverlay,
-                            checked: type === user.settings.profileHeaderType
+                            checked: type === user.settings.profileHeaderType,
+                            status: user.pageStatus
                           }"></ng-container>
             <!-- Обозначение дальнейшего содержимого -->
             <div class="any-content"
@@ -69,7 +70,8 @@
                             positionX: data.positionX,
                             positionY: data.positionY,
                             imageOverlay: data.imageOverlay,
-                            checked: data.id === user.settings.profileBackground.id
+                            checked: data.id === user.settings.profileBackground.id,
+                            status: data.title
                           }"></ng-container>
             <!-- Обозначение дальнейшего содержимого -->
             <div class="any-content"
@@ -93,7 +95,8 @@
              let-image="image"
              let-positionX="positionX"
              let-positionY="positionY"
-             let-imageOverlay="imageOverlay">
+             let-imageOverlay="imageOverlay"
+             let-status="status">
   <div class="main-block type-{{type}}"
        [ngClass]="{ checked }">
     <div class="main-block__image type-{{type}}"
@@ -109,7 +112,7 @@
         <mat-icon *ngIf="!user.avatars.small">person</mat-icon>
       </div>
       <div class="main-block__data-title">{{user.name}} {{user.lastName}}</div>
-      <div class="main-block__data-subtitle">{{user.pageStatus}}</div>
+      <div class="main-block__data-subtitle">{{status}}</div>
       <ng-container [ngTemplateOutlet]="mainMenuItems"
                     [ngTemplateOutletContext]="{ type }"
                     *ngIf="type === navMenuType.collapse"></ng-container>
