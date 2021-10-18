@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, DoCheck } from '@angular/core';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { MenuItem } from '@_models/menu';
@@ -13,18 +13,25 @@ import { MenuItem } from '@_models/menu';
   styleUrls: ['./settings.component.scss']
 })
 
-export class SettingsProfileComponent {
+export class SettingsProfileComponent implements DoCheck {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
   menuItems: MenuItem[];
 
+  oldUser: User;
   get user(): User {
     return AppComponent.user;
   };
 
-  constructor() {
+
+
+
+
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
     // Настройки пунктов меню
     this.menuItems = [{
       icon: "assignment_ind",
@@ -42,5 +49,12 @@ export class SettingsProfileComponent {
       desc: "Просмотр всех активных сессий, изменение пароля",
       link: "security"
     }];
+  }
+
+  ngDoCheck() {
+    if (this.oldUser != this.user) {
+      this.oldUser = this.user;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 }

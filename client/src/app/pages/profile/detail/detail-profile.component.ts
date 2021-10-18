@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck } from '@angular/core';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { NavMenuType } from '@_models/nav-menu';
@@ -10,15 +10,34 @@ import { NavMenuType } from '@_models/nav-menu';
 @Component({
   selector: 'app-detail-profile',
   templateUrl: './detail-profile.component.html',
-  styleUrls: ['./detail-profile.component.scss']
+  styleUrls: ['./detail-profile.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DetailProfileComponent {
+
+export class DetailProfileComponent implements DoCheck {
+
 
   navMenuType: typeof NavMenuType = NavMenuType;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
+  oldUser: User;
   public get user(): User {
     return AppComponent.user;
   };
+
+
+
+
+
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef
+  ) { }
+
+  ngDoCheck() {
+    if (this.oldUser != this.user) {
+      this.oldUser = this.user;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
 }

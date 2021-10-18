@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { BrowserNames, OsNames, SimpleObject } from '@_models/app';
@@ -6,8 +6,8 @@ import { TokenInfo } from '@_models/token';
 import { AccountService } from '@_services/account.service';
 import { SnackbarService } from '@_services/snackbar.service';
 import { TokenService } from '@_services/token.service';
-import { Observable, of, Subject } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 
 
@@ -20,18 +20,19 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SettingsSecurityComponent implements OnInit {
+export class SettingsSecurityComponent implements OnInit, DoCheck {
 
 
-  public tokenInfo: TokenInfo;
-  public tokensInfo: LoadingTokenInfo[];
-  public osNames: SimpleObject = OsNames;
-  public browserNames: SimpleObject = BrowserNames;
+  tokenInfo: TokenInfo;
+  tokensInfo: LoadingTokenInfo[];
+  osNames: SimpleObject = OsNames;
+  browserNames: SimpleObject = BrowserNames;
 
-  public loadingTokenInfo: boolean = true;
-  public loadingTokensInfo: boolean = true;
+  loadingTokenInfo: boolean = true;
+  loadingTokensInfo: boolean = true;
 
-  public get user(): User {
+  oldUser: User;
+  get user(): User {
     return AppComponent.user;
   };
 
@@ -49,6 +50,13 @@ export class SettingsSecurityComponent implements OnInit {
   ngOnInit() {
     this.getToken();
     this.getTokens();
+  }
+
+  ngDoCheck() {
+    if (this.oldUser != this.user) {
+      this.oldUser = this.user;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
 
@@ -91,7 +99,7 @@ export class SettingsSecurityComponent implements OnInit {
   }
 
   // Удалить токен
-  public deleteToken(tokenId: number): void {
+  deleteToken(tokenId: number): void {
     const tokenInfo: LoadingTokenInfo = this.tokensInfo.find(t => t.id === tokenId)
     // Найден объект
     if (tokenInfo) {
@@ -131,7 +139,7 @@ export class SettingsSecurityComponent implements OnInit {
   }
 
   // Удалить все токены
-  public deleteTokens(): void {
+  deleteTokens(): void {
     this.loadingTokensInfo = true;
     // Запрос
     this.tokenService.deleteTokensByUser(true)
