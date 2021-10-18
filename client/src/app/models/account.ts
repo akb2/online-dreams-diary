@@ -1,4 +1,5 @@
 import { BackgroundImageData } from "@_models/appearance";
+import { NavMenuType } from "@_models/nav-menu";
 
 
 
@@ -24,10 +25,12 @@ export interface User {
 // Интерфейс настроек пользователя
 export interface UserSettings {
   profileBackground: BackgroundImageData;
+  profileHeaderType: NavMenuType;
 }
 
 export interface UserSettingsDto {
   profileBackground: number;
+  profileHeaderType: string;
 }
 
 // Интерфейс массива аватарок
