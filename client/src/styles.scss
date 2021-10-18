@@ -1,4 +1,4 @@
-@use '~@angular/material' as mat;
+@use "~@angular/material" as mat;
 @use "./assets/styles/colors";
 @use "./assets/styles/containers";
 @use "./assets/styles/material";
@@ -22,17 +22,18 @@ $mat-theme: mat.define-light-theme(
 // Базовый стиль
 html {
   $scroll-size: 0;
-
+  // Свойства
   overflow-x: hidden;
   overflow-y: scroll;
   background-color: colors.$background;
   top: 0 !important;
   position: static !important;
-
+  scroll-behavior: smooth;
+  // Скролл запрещен
   &.no-scroll {
     overflow-y: hidden;
   }
-
+  // Свойства потомков
   &,
   * {
     &,
@@ -46,18 +47,18 @@ html {
       letter-spacing: 0.3px;
     }
   }
-
+  // Документ и тело
   &,
   body {
     padding: 0;
     margin: 0;
     min-height: 100%;
   }
-
+  // Скроллбар
   &::-webkit-scrollbar {
     width: $scroll-size;
   }
-
+  // Тело
   body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
   }

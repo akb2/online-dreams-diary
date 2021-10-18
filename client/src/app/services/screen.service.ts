@@ -31,8 +31,7 @@ export class ScreenService implements OnDestroy {
 
 
 
-  // Конец класса
-  public ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -42,7 +41,7 @@ export class ScreenService implements OnDestroy {
 
 
   // Определить брейкпоинт
-  public getBreakpoint(resolution: number = window.innerWidth): ScreenKeys {
+  getBreakpoint(resolution: number = window.innerWidth): ScreenKeys {
     let breakpoint: ScreenKeys = "default";
     // Цикл по брейкпоинтам
     for (let key in this.breakpoints) {
@@ -53,7 +52,7 @@ export class ScreenService implements OnDestroy {
   }
 
   // Минимальное разрешение
-  public getMin(screen: string): number {
+  getMin(screen: string): number {
     let result = this.breakpoints.default;
     let test = this.getMax(screen);
 
@@ -66,12 +65,12 @@ export class ScreenService implements OnDestroy {
   }
 
   // Максимальное разрешение
-  public getMax(screen: string): number {
+  getMax(screen: string): number {
     return this.breakpoints[screen] ? this.breakpoints[screen] : this.breakpoints.default;
   }
 
   // Подписчик на загрузку картинки
-  public loadImage(url: string): Observable<LoadingImageData> {
+  loadImage(url: string): Observable<LoadingImageData> {
     const observable: Observable<LoadingImageData> = new Observable(observer => {
       const image: HTMLImageElement = new Image();
       // Путь к картинке
