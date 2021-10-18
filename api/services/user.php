@@ -145,6 +145,7 @@ class UserService
         $data["sex"],
         $data["email"],
         json_encode(array()),
+        json_encode(array()),
         json_encode(array())
       );
 

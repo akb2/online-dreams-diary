@@ -8,9 +8,11 @@ INSERT INTO `users`
     `sex`,
     `email`,
     `roles`,
-    `avatar_crop_data`
+    `avatar_crop_data`,
+    `settings`
   )
   VALUES (
+    ?,
     ?,
     ?,
     ?,
