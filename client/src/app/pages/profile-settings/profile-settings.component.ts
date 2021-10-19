@@ -8,12 +8,12 @@ import { MenuItem } from '@_models/menu';
 
 
 @Component({
-  selector: 'app-settings-profile',
-  templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.scss']
+  selector: 'app-profile-settings',
+  templateUrl: './profile-settings.component.html',
+  styleUrls: ['./profile-settings.component.scss']
 })
 
-export class SettingsProfileComponent implements DoCheck {
+export class ProfileSettingsComponent implements DoCheck {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";

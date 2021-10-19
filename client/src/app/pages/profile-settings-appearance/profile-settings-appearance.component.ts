@@ -16,13 +16,13 @@ import { delay, mergeMap } from 'rxjs/operators';
 
 
 @Component({
-  selector: 'app-settings-appearance',
-  templateUrl: './appearance.component.html',
-  styleUrls: ['./appearance.component.scss'],
+  selector: 'app-profile-settings-appearance',
+  templateUrl: './profile-settings-appearance.component.html',
+  styleUrls: ['./profile-settings-appearance.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SettingsAppearanceComponent implements OnDestroy, DoCheck {
+export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
 
 
   backgroundImageDatas: BackgroundImageData[] = [];

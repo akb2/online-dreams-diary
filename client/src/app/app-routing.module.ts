@@ -31,11 +31,39 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   // * Для авторизованных пользователей
-  // Личный кабинет
+  // Моя страницы
   {
     path: "profile",
-    loadChildren: () => import("@_pages/profile/profile.module").then(m => m.ProfileModule),
-    data: { title: "Кабинет сновидца", authRule: 1 },
+    loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
+    data: { authRule: 1 },
+    canActivate: [AuthGuard]
+  },
+  // Настройки
+  {
+    path: "profile/settings",
+    loadChildren: () => import("@_pages/profile-settings/profile-settings.module").then(m => m.ProfileSettingsModule),
+    data: { authRule: 1 },
+    canActivate: [AuthGuard]
+  },
+  // Настройки: Перснальные данные
+  {
+    path: "profile/settings/person",
+    loadChildren: () => import("@_pages/profile-settings-person/profile-settings-person.module").then(m => m.ProfileSettingsPersonModule),
+    data: { authRule: 1 },
+    canActivate: [AuthGuard]
+  },
+  // Настройки: Персонализация
+  {
+    path: "profile/settings/appearance",
+    loadChildren: () => import("@_pages/profile-settings-appearance/profile-settings-appearance.module").then(m => m.ProfileSettingsAppearanceModule),
+    data: { authRule: 1 },
+    canActivate: [AuthGuard]
+  },
+  // Настройки: Безопасность
+  {
+    path: "profile/settings/security",
+    loadChildren: () => import("@_pages/profile-settings-security/profile-settings-security.module").then(m => m.ProfileSettingsSecurityModule),
+    data: { authRule: 1 },
     canActivate: [AuthGuard]
   },
   // * Страницы, не имеющие значения авторизации

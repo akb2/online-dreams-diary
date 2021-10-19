@@ -1,8 +1,8 @@
 @use "sass:map";
-@use "../../../../../assets/styles/screens";
-@use "../../../../../assets/styles/material";
-@use "../../../../../assets/styles/containers";
-@use "../../../../controlers/elements/image-upload/image-upload.component.scss" as imageUpload;
+@use "../../../assets/styles/screens";
+@use "../../../assets/styles/material";
+@use "../../../assets/styles/containers";
+@use "../../controlers/elements/image-upload/image-upload.component.scss" as imageUpload;
 
 $properties: (
   xsmall: (

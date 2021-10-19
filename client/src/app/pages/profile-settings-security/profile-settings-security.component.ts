@@ -1,26 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
-import { AppComponent } from '@app/app.component';
-import { User } from '@_models/account';
-import { BrowserNames, OsNames, SimpleObject } from '@_models/app';
-import { TokenInfo } from '@_models/token';
-import { AccountService } from '@_services/account.service';
-import { SnackbarService } from '@_services/snackbar.service';
-import { TokenService } from '@_services/token.service';
-import { of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from "@angular/core";
+import { AppComponent } from "@app/app.component";
+import { User } from "@_models/account";
+import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
+import { TokenInfo } from "@_models/token";
+import { SnackbarService } from "@_services/snackbar.service";
+import { TokenService } from "@_services/token.service";
+import { of } from "rxjs";
+import { switchMap } from "rxjs/operators";
 
 
 
 
 
 @Component({
-  selector: 'app-settings-security',
-  templateUrl: './security.component.html',
-  styleUrls: ['./security.component.scss'],
+  selector: "app-profile-settings-security",
+  templateUrl: "./profile-settings-security.component.html",
+  styleUrls: ["./profile-settings-security.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SettingsSecurityComponent implements OnInit, DoCheck {
+export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
 
 
   tokenInfo: TokenInfo;
@@ -41,7 +40,6 @@ export class SettingsSecurityComponent implements OnInit, DoCheck {
 
 
   constructor(
-    private accountService: AccountService,
     private tokenService: TokenService,
     private snackbarService: SnackbarService,
     private changeDetectorRef: ChangeDetectorRef

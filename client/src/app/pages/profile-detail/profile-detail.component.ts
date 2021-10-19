@@ -8,13 +8,13 @@ import { NavMenuType } from '@_models/nav-menu';
 
 
 @Component({
-  selector: 'app-detail-profile',
-  templateUrl: './detail-profile.component.html',
-  styleUrls: ['./detail-profile.component.scss'],
+  selector: 'app-profile-detail',
+  templateUrl: './profile-detail.component.html',
+  styleUrls: ['./profile-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DetailProfileComponent implements DoCheck {
+export class ProfileDetailComponent implements DoCheck {
 
 
   navMenuType: typeof NavMenuType = NavMenuType;

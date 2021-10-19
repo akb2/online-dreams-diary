@@ -19,14 +19,14 @@ import { map, takeUntil } from 'rxjs/operators';
 
 // Декоратор компонента
 @Component({
-  selector: 'app-settings-person-profile',
-  templateUrl: './settings-person.component.html',
-  styleUrls: ['./settings-person.component.scss'],
+  selector: 'app-profile-settings-person',
+  templateUrl: './profile-settings-person.component.html',
+  styleUrls: ['./profile-settings-person.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 // Основной класс
-export class SettingsPersonProfileComponent implements OnInit, OnDestroy {
+export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
 
   @ViewChild(ImageUploadComponent) appImageUpload: ImageUploadComponent;
