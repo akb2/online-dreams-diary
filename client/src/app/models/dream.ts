@@ -1,7 +1,32 @@
+import { User } from "@_models/account";
+import { BackgroundImageData } from "@_models/appearance";
+import { NavMenuType } from "@_models/nav-menu";
+
+
+
+
+
+// Интерфейс сновидения API
+export interface DreamDto {
+  id: number;
+  userId: number;
+  createDate: string;
+  date: string;
+  title: string;
+  keywords: string;
+  text: string;
+  places: string;
+  members: string;
+  map: string;
+  mode: DreamMode;
+  headerType: NavMenuType;
+  headerBackgroundId: number;
+}
+
 // Интерфейс сновидения
 export interface Dream {
   id: number;
-  userId: number;
+  user: User;
   createDate: Date;
   date: Date;
   title: string;
@@ -11,6 +36,8 @@ export interface Dream {
   members: number[] | null;
   map: DreamMap | null;
   mode: DreamMode;
+  headerType: NavMenuType;
+  headerBackground: BackgroundImageData;
 }
 
 // Интерфейс локаций
