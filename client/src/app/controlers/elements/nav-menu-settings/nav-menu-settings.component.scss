@@ -1,0 +1,601 @@
+@use "sass:map";
+@use "sass:math";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/colors";
+
+$counts: (
+  default: 3,
+  middle: 2,
+  small: 1,
+  xsmall: 1,
+);
+$heights-default: (
+  full: 280px,
+  short: 140px,
+  collapse: 24px,
+);
+$heights: (
+  default: $heights-default,
+  large:
+    map.merge(
+      $heights-default,
+      (
+        full: 240px,
+      )
+    ),
+  middle:
+    map.merge(
+      $heights-default,
+      (
+        full: 240px,
+      )
+    ),
+  xsmall:
+    map.merge(
+      $heights-default,
+      (
+        full: 55vw,
+      )
+    ),
+);
+$gaps: (
+  default: 30px,
+  xsmall: 15px,
+);
+
+$positions-x: left center right;
+$positions-y: top center bottom;
+$filter: grayscale(90%);
+$keys: full short collapse;
+
+// Иконки выбора картинок
+.settings {
+  display: grid;
+
+  // Ячейка
+  &__element {
+    $_elm: &;
+    // Свойства
+    border-radius: containers.$border-radius;
+    box-shadow: containers.$box-shadow;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    cursor: pointer;
+    position: relative;
+    background-color: colors.$card;
+    color: colors.$title;
+    overflow: hidden;
+    transition: transform #{screens.$animation-time};
+
+    // Картинка
+    &-image {
+      width: 100%;
+      border-radius: containers.$border-radius containers.$border-radius 0 0;
+      overflow: hidden;
+      position: relative;
+      // Позиция по ширине
+      @each $position-x in $positions-x {
+        // Позиция по высоте
+        @each $position-y in $positions-y {
+          &[positionX="#{$position-x}"][positionY="#{$position-y}"] {
+            > img {
+              object-position: $position-x $position-y;
+            }
+          }
+        }
+      }
+      // Затенение
+      &[imageOverlay="true"] {
+        &:after {
+          @include mixins.inset;
+          position: absolute;
+          display: block;
+          content: "";
+          background-color: #000;
+          opacity: 0.4;
+        }
+      }
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: $filter;
+        transition: filter #{screens.$animation-time};
+      }
+    }
+    // Описание
+    &-title {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      flex-grow: 1;
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+    // Загрузчик
+    &-loading {
+      $size-1: 80px;
+      $size-2: 66px;
+      $line-1: 3px;
+      $line-2: 1px;
+      $time-1: 0.5s;
+      $time-2: 1s;
+      // Свойства
+      @include mixins.inset;
+      display: none;
+      position: absolute;
+      background-color: colors.$overlay-color;
+      border-radius: containers.$border-radius;
+      // Общие правила
+      &:before,
+      &:after {
+        display: block;
+        position: absolute;
+        content: "";
+        border-radius: 50%;
+        border-color: transparent;
+        border-style: solid;
+      }
+      // Лоадер
+      &:before {
+        width: $size-1;
+        height: $size-1;
+        top: calc(50% - #{math.div($size-1, 2)});
+        left: calc(50% - #{math.div($size-1, 2)});
+        border-width: #{$line-1};
+        border-top-color: colors.$card;
+        animation: loader-animation #{$time-1} linear infinite;
+      }
+      // Лоадер
+      &:after {
+        width: $size-2;
+        height: $size-2;
+        top: calc(50% - #{math.div($size-2, 2)});
+        left: calc(50% - #{math.div($size-2, 2)});
+        border-width: #{$line-2};
+        border-top-color: colors.$background;
+        animation: loader-animation #{$time-2} linear infinite;
+      }
+    }
+    // Отметка о выборе
+    &:before,
+    &:after {
+      // Свойства
+      content: "";
+      font-family: "Material Icons";
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity #{screens.$animation-time};
+    }
+
+    // Наведенный элемент
+    &:hover {
+      transform: scale(0.95);
+      // Прочие блоки
+      #{$_elm} {
+        // Картинка
+        &-image > img {
+          filter: grayscale(0%);
+        }
+      }
+    }
+    // Выбранный элемент
+    &.checked {
+      $size: 64px;
+      $size-k: 0.65;
+      // Прочие блоки
+      #{$_elm} {
+        // Картинка
+        &-image > img {
+          filter: grayscale(0%);
+        }
+      }
+      // Отметка о выборе
+      &:before,
+      &:after {
+        opacity: 1;
+      }
+      // Фон отметки о выборе
+      &:before {
+        width: $size;
+        height: $size;
+        border: #{math.div($size, 2)} solid transparent;
+        border-top-color: map.get(colors.$mat-primary, 500);
+        border-left-color: map.get(colors.$mat-primary, 500);
+      }
+      // Текст отметки о выборе
+      &:after {
+        width: $size * $size-k;
+        height: $size * $size-k;
+        line-height: $size * $size-k;
+        font-size: $size * $size-k * 0.6;
+        content: "check";
+        text-align: center;
+        color: map.get(colors.$mat-primary, contrast, 500);
+      }
+    }
+    // Загрузка
+    &.loader {
+      transform: scale(1);
+      background-color: colors.$card;
+      color: colors.$title;
+      // Отметка о выборе
+      &:before,
+      &:after {
+        opacity: 0;
+      }
+      // Прочие блоки
+      #{$_elm} {
+        // Загрузчик
+        &-loading {
+          display: block;
+        }
+        // Картинка
+        &-image > img {
+          filter: $filter;
+        }
+      }
+    }
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($counts, $heights, $gaps) using($count, $height, $gap) {
+    grid-template-columns: repeat(#{$count}, 1fr);
+    gap: $gap;
+    // Ячейка
+    &__element {
+      // Минимальная высота
+      &.min-height {
+        height: map.get($height, full);
+      }
+      // Картинка
+      &-image {
+        height: map.get($height, full);
+      }
+    }
+  }
+}
+
+// Иконки выбора типа шапки
+.main-block {
+  $data-image-sizes: (
+    default: (
+      default: 48px,
+      collapse: 18px,
+    ),
+  );
+  $data-button-sizes: (
+    default: (
+      default: 34px,
+      collapse: map.get($heights, default, collapse),
+    ),
+  );
+  $data-gaps-y: (
+    default: (
+      default: 4px,
+      collapse: 2px,
+    ),
+  );
+  $data-paddings-y: (
+    default: (
+      default: 6px,
+      collapse: 1px,
+    ),
+  );
+  $data-paddings-x: (
+    default: 30px,
+  );
+  $data-menu-sizes: (
+    default: (
+      default: 9px,
+      collapse: 5px,
+    ),
+  );
+  $data-menu-spacings: (
+    default: (
+      default: 4px,
+      collapse: 3px,
+    ),
+  );
+  // Свойства
+  position: relative;
+  width: 100%;
+  filter: $filter;
+  transition: filter #{screens.$animation-time};
+  background-color: map.get(colors.$mat-primary, 500);
+
+  // Фон
+  &__image {
+    @include mixins.inset();
+    position: absolute;
+    // Позиция по ширине
+    @each $position-x in $positions-x {
+      // Позиция по высоте
+      @each $position-y in $positions-y {
+        &[positionX="#{$position-x}"][positionY="#{$position-y}"] {
+          > img {
+            object-position: $position-x $position-y;
+          }
+        }
+      }
+    }
+    // Затенение
+    &[imageOverlay="true"] {
+      &:after {
+        @include mixins.inset;
+        position: absolute;
+        display: block;
+        content: "";
+        background-color: #000;
+        opacity: 0.4;
+      }
+    }
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    // Схлопнутая шапка
+    &.type-collapse {
+      display: none;
+    }
+  }
+  // Данные
+  &__data {
+    position: absolute;
+    display: grid;
+    grid-template-areas: "image title" "image subtitle";
+    align-items: center;
+    // Картинка
+    &-image {
+      border-radius: 50%;
+      overflow: hidden;
+      grid-area: image;
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      // Окнка
+      > mat-icon {
+        width: inherit;
+        height: inherit;
+        line-height: inherit;
+        font-size: inherit;
+        display: block;
+        text-align: center;
+        background-color: map.get(colors.$mat-primary, contrast, 500);
+        color: map.get(colors.$mat-primary, 500);
+      }
+    }
+    // Текст
+    &-title,
+    &-subtitle {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      color: map.get(colors.$mat-primary, contrast, 500);
+    }
+    // Заголовок
+    &-title {
+      grid-area: title;
+    }
+    // Подзаголовок
+    &-subtitle {
+      grid-area: subtitle;
+    }
+
+    // Схлопнутое меню
+    &.type-collapse {
+      grid-template-areas: "image title menu" "image subtitle menu";
+    }
+    // Меню без аватарки
+    &.no-avatar {
+      grid-template-areas: "title" "subtitle";
+      &.type-collapse {
+        grid-template-areas: "title menu" "subtitle menu";
+      }
+    }
+  }
+  // Плавающая кнопка
+  &__button {
+    position: absolute;
+    display: block;
+    text-align: center;
+    border-radius: 50%;
+    background-color: map.get(colors.$mat-primary, 500);
+    color: map.get(colors.$mat-primary, contrast, 500);
+  }
+  // Главное меню
+  &__menu {
+    width: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    grid-area: menu;
+    // Кнопки
+    &-item {
+      text-transform: uppercase;
+      color: map-get(colors.$mat-primary, contrast, 500);
+    }
+
+    // Плавающее меню
+    &.type-full,
+    &.type-short {
+      position: absolute;
+    }
+  }
+
+  // Наведенный элемент
+  .settings__element:hover > & {
+    filter: grayscale(0%);
+  }
+  // Выбранный элемент
+  &.checked {
+    filter: grayscale(0%);
+  }
+  // Загрузка
+  &.loader {
+    filter: $filter;
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor(
+      $heights,
+      $data-image-sizes,
+      $data-button-sizes,
+      $data-gaps-y,
+      $data-paddings-y,
+      $data-paddings-x,
+      $data-menu-sizes,
+      $data-menu-spacings
+    )
+    using(
+      $height-list,
+      $data-image-size,
+      $data-button-size,
+      $data-gap-y,
+      $data-padding-y,
+      $data-padding-x,
+      $data-menu-size,
+      $data-menu-spacing
+    ) {
+    $_elm: &;
+    // По типам
+    @each $key in $keys {
+      &.type-#{$key} {
+        $header-height: mixins.map-get($height-list, $key);
+        // Свойства
+        height: $header-height;
+        // Потомки
+        #{$_elm} {
+          // Данные
+          &__data {
+            $gap-y: mixins.map-get($data-gap-y, $key);
+            $image-size: mixins.map-get($data-image-size, $key);
+            $padding-y: mixins.map-get($data-padding-y, $key);
+            $title-koof: 0.65;
+            $font-koof: 0.94;
+            // Расчеты
+            $base-height: math.div($header-height, 2);
+            $base-image: math.div($image-size, 2);
+            $title-height: ($image-size - ($padding-y * 2)) * $title-koof - math.div($gap-y, 2);
+            $subtitle-height: ($image-size - ($padding-y * 2)) - $title-height - math.div($gap-y, 2);
+            // Свойства
+            @include mixins.inset(calc(#{$base-height} - #{$base-image}), $data-padding-x, auto, $data-padding-x);
+            grid-template-columns: #{$image-size} 1fr;
+            grid-template-rows: #{$title-height + $padding-y} #{$subtitle-height + $padding-y};
+            grid-gap: #{$gap-y} 10px;
+            // Картинка
+            &-image {
+              width: $image-size;
+              height: $image-size;
+              line-height: $image-size;
+              font-size: $image-size * 0.7;
+            }
+            // Заголовок
+            &-title {
+              line-height: $title-height;
+              font-size: $title-height * $font-koof;
+              padding-top: $padding-y;
+            }
+            // Подзаголовок
+            &-subtitle {
+              line-height: $subtitle-height;
+              font-size: $subtitle-height * $font-koof;
+              padding-bottom: $padding-y;
+            }
+
+            // Меню без аватарки
+            &.no-avatar {
+              grid-template-columns: 1fr;
+            }
+          }
+          // Кнопка
+          &__button {
+            $button-size: mixins.map-get($data-button-size, $key);
+            // Свойства
+            width: $button-size;
+            height: $button-size;
+            line-height: $button-size;
+            font-size: $button-size * 0.6;
+            // Короткое меню
+            &.type-short {
+              top: calc(#{$header-height} - #{math.div($button-size, 2)});
+            }
+          }
+          // Меню
+          &__menu {
+            $size: mixins.map-get($data-menu-size, $key);
+            $spacing: mixins.map-get($data-menu-spacing, $key);
+            // Кнопки
+            &-item {
+              font-size: $size * 0.8;
+              line-height: $size;
+              padding: 0 #{$spacing};
+            }
+          }
+        }
+      }
+    }
+    // Универсальные правила
+    & {
+      // Кнопка
+      &__button {
+        right: $data-padding-x;
+        // Полноэкранное меню
+        &.type-full {
+          bottom: 5px;
+        }
+      }
+      // Меню
+      &__menu {
+        top: 10px;
+        right: $data-padding-x;
+      }
+
+      // Схлопнутое меню
+      &.type-collapse {
+        #{$_elm} {
+          // Данные
+          &__data {
+            $header-height: mixins.map-get($height-list, collapse);
+            $image-size: mixins.map-get($data-image-size, collapse);
+            $button-size: mixins.map-get($data-button-size, collapse);
+            // Расчеты
+            $base-height: math.div($header-height, 2);
+            $base-image: math.div($image-size, 2);
+            // Свойства
+            @include mixins.inset(
+              $base-height - $base-image,
+              $data-padding-x,
+              auto,
+              $data-padding-x + $button-size + 10px
+            );
+            grid-template-columns: #{$image-size} 1fr auto;
+
+            // Меню без аватарки
+            &.no-avatar {
+              &.type-collapse {
+                grid-template-columns: 1fr auto;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
