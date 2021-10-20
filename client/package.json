@@ -26,6 +26,7 @@
     "@angular/router": "12.1.1",
     "@nguniversal/module-map-ngfactory-loader": "9.0.0-next.9",
     "bootstrap": "^4.6.0",
+    "ckeditor4-angular": "^2.2.2",
     "core-js": "^3.8.3",
     "jquery": "^3.5.1",
     "material-design-icons": "^3.0.1",
