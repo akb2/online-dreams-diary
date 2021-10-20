@@ -5,12 +5,10 @@ import { CookieInterface } from "@_models/app";
 
 
 
-// Декоратор
 @Injectable({
   providedIn: "root"
 })
 
-// Основной класс
 export class LocalStorageService {
 
 
