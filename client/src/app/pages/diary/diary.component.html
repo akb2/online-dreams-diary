@@ -1,0 +1,21 @@
+<ng-container *ngIf="ready">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 [imageFullShow]="true"
+                 type="short"
+                 [image]="imagePrefix + backgroundImageData.imageNameShort"
+                 [imagePositionX]="backgroundImageData.positionX"
+                 [imagePositionY]="backgroundImageData.positionY"
+                 [imageOverlay]="backgroundImageData.imageOverlay"
+                 [title]="title"
+                 [subTitle]="subTitle"
+                 [avatarImage]="menuAvatarImage"
+                 [avatarIcon]="menuAvatarIcon"
+                 floatButtonIcon="search"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <div class="container">
+    </div>
+  </div>
+</ng-container>
