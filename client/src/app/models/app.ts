@@ -21,6 +21,7 @@ export interface SnackbarProps {
 // Данные роутов
 export interface RouteData {
   title?: string;
+  userId?: number;
   authRule?: AuthRules;
   redirectAuth?: string;
   redirectNotAuth?: string;
