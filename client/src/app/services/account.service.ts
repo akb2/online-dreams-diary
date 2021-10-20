@@ -11,7 +11,7 @@ import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable } from "rxjs";
-import { map, mergeMap, switchMap } from "rxjs/operators";
+import { mergeMap, switchMap } from "rxjs/operators";
 
 
 
