@@ -4,7 +4,9 @@ import { AppComponent } from "@app/app.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { User } from "@_models/account";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
+import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
+import { DreamService } from "@_services/dream.service";
 import { of, Subject } from "rxjs";
 import { delay } from "rxjs/operators";
 
@@ -26,12 +28,10 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   title: string = "Редактор сновидения";
   subTitle: string = "Новое сновидение";
-  backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 11);
-  navMenuType: NavMenuType = NavMenuType.short;
-  menuAvatarImage: string = "";
-  menuAvatarIcon: string = "";
+  _navMenuType: typeof NavMenuType = NavMenuType;
 
   dreamId: number = 0;
+  dream: Dream;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -46,7 +46,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   constructor(
     private activateRoute: ActivatedRoute,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private dreamService: DreamService
   ) {
     this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -56,8 +57,6 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     if (this.oldUser != this.user) {
       this.oldUser = this.user;
       this.changeDetectorRef.detectChanges();
-      // Определить тему
-      this.backgroundImageData = this.user.settings.profileBackground;
     }
   }
 
@@ -78,20 +77,27 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private defineData(): void {
     // Редактирование сновидения
     if (this.dreamId > 0) {
-      of(true).pipe(delay(3000)).subscribe(() => {
+      of(this.dreamService.newDream()).pipe(delay(3000)).subscribe(dream => {
         this.title = "Редактор сновидения";
         this.subTitle = "*** Название сновидения ***";
+        this.dream = dream;
         // Отметить готовность
         this.ready = true;
       });
     }
     // Новое сновидение
     else {
+      this.dream = this.dreamService.newDream();
+      // Отметить готовность
       this.ready = true;
     }
   }
 
   // Изменить настройки оформления
   changeSettings(settings: NavMenuSettingData): void {
+    this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === settings.backgroundId);
+    this.dream.headerType = settings.navMenuType;
+    // Скролл в начало
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }

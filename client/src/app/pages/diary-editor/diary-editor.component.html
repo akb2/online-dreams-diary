@@ -3,23 +3,20 @@
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
-                 type="short"
-                 [image]="imagePrefix + backgroundImageData.imageNameShort"
-                 [imagePositionX]="backgroundImageData.positionX"
-                 [imagePositionY]="backgroundImageData.positionY"
-                 [imageOverlay]="backgroundImageData.imageOverlay"
+                 [type]="dream.headerType"
+                 [image]="imagePrefix + dream.headerBackground[dream.headerType === _navMenuType.full? 'imageName': 'imageNameShort']"
+                 [imagePositionX]="dream.headerBackground.positionX"
+                 [imagePositionY]="dream.headerBackground.positionY"
+                 [imageOverlay]="dream.headerBackground.imageOverlay"
                  [title]="title"
                  [subTitle]="subTitle"
-                 [avatarImage]="menuAvatarImage"
-                 [avatarIcon]="menuAvatarIcon"
                  floatButtonIcon="save"></app-main-menu>
 
   <!-- Контейнер с данными -->
   <div class="root-section">
     <div class="container">
       <mat-tab-group dynamicHeight
-                     color="primary"
-                     backgroundColor="primary">
+                     color="primary">
         <!-- Общее -->
         <mat-tab label="Общее">
         </mat-tab>
@@ -31,8 +28,8 @@
         </mat-tab>
         <!-- Оформление -->
         <mat-tab label="Оформление">
-          <app-nav-menu-settings [backgroundId]="backgroundImageData.id"
-                                 [navMenuType]="navMenuType"
+          <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
+                                 [navMenuType]="dream.headerType"
                                  [useAvatar]="false"
                                  [diffBlockColor]="false"
                                  (changeSettings)="changeSettings($event)"></app-nav-menu-settings>
