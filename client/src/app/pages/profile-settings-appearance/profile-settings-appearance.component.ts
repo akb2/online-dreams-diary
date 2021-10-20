@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy } from '@angular/core';
 import { AppComponent } from '@app/app.component';
+import { NavMenuSettingData } from '@_controlers/nav-menu-settings/nav-menu-settings.component';
 import { User, UserSettings } from '@_models/account';
-import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
-import { MenuItem } from '@_models/menu';
+import { BackgroundImageDatas } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
-import { MenuService } from '@_services/menu.service';
 import { ScreenService } from '@_services/screen.service';
 import { SnackbarService } from '@_services/snackbar.service';
 import { forkJoin, of, Subject } from 'rxjs';
@@ -25,12 +24,9 @@ import { delay, mergeMap } from 'rxjs/operators';
 export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
 
 
-  backgroundImageDatas: BackgroundImageData[] = [];
   backgroundImageLoader: boolean = false;
-  navMenuTypes: NavMenuType[] = Object.values(NavMenuType);
-  navMenuType: typeof NavMenuType = NavMenuType;
-  menuItems: MenuItem[] = [];
   private saveSettingDelay: number = 500;
+  navMenuType: typeof NavMenuType = NavMenuType;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
@@ -49,13 +45,8 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
-    private menuService: MenuService,
     private snackbarService: SnackbarService
   ) {
-    // Пункты меню
-    this.menuItems = this.menuService.menuItems;
-    // Фоновые картинки
-    this.backgroundImageDatas = BackgroundImageDatas.sort((b1, b2) => b1.id < b2.id ? 1 : b1.id > b2.id ? -1 : 0);
   }
 
   ngOnDestroy() {
@@ -74,17 +65,15 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
 
 
 
-  // Изменить фон
-  changeImage(profileBackground: BackgroundImageData): void {
-    if (this.user.settings.profileBackground.id !== profileBackground.id && !this.backgroundImageLoader) {
-      this.saveUserSettings({ ...this.user.settings, profileBackground });
-    }
-  }
-
-  // Изменить тип шапки
-  changeHeaderType(profileHeaderType: NavMenuType): void {
-    if (this.user.settings.profileHeaderType !== profileHeaderType && !this.backgroundImageLoader) {
-      this.saveUserSettings({ ...this.user.settings, profileHeaderType });
+  // Изменить настройки
+  changeSettings(settings: NavMenuSettingData): void {
+    if (!this.backgroundImageLoader) {
+      if (this.user.settings.profileBackground.id !== settings.backgroundId || this.user.settings.profileHeaderType !== settings.navMenuType) {
+        this.saveUserSettings({
+          profileBackground: BackgroundImageDatas.find(b => b.id === settings.backgroundId),
+          profileHeaderType: settings.navMenuType
+        });
+      }
     }
   }
 
