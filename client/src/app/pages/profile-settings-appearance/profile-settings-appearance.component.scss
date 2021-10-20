@@ -32,6 +32,13 @@ $heights: (
         full: 240px,
       )
     ),
+  xsmall:
+    map.merge(
+      $heights-default,
+      (
+        full: 55vw,
+      )
+    ),
 );
 $gaps: (
   default: 30px,
@@ -481,7 +488,7 @@ $keys: full short collapse;
             $title-height: ($image-size - ($padding-y * 2)) * $title-koof - math.div($gap-y, 2);
             $subtitle-height: ($image-size - ($padding-y * 2)) - $title-height - math.div($gap-y, 2);
             // Свойства
-            @include mixins.inset($base-height - $base-image, $data-padding-x, auto, $data-padding-x);
+            @include mixins.inset(calc(#{$base-height} - #{$base-image}), $data-padding-x, auto, $data-padding-x);
             grid-template-columns: #{$image-size} 1fr;
             grid-template-rows: #{$title-height + $padding-y} #{$subtitle-height + $padding-y};
             grid-gap: #{$gap-y} 10px;
@@ -515,7 +522,7 @@ $keys: full short collapse;
             font-size: $button-size * 0.6;
             // Короткое меню
             &.type-short {
-              top: $header-height - math.div($button-size, 2);
+              top: calc(#{$header-height} - #{math.div($button-size, 2)});
             }
           }
           // Меню
