@@ -66,6 +66,13 @@ const routes: Routes = [
     data: { authRule: 1 },
     canActivate: [AuthGuard]
   },
+  // Дневник: Мои сновидения
+  {
+    path: "diary/my",
+    loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
+    data: { title: "Мой дневник сновидений", userId: 0, authRule: 1 },
+    canActivate: [AuthGuard]
+  },
   // * Страницы, не имеющие значения авторизации
   // Главная страница
   {
@@ -76,6 +83,24 @@ const routes: Routes = [
       redirectAuth: "/profile",
       redirectNotAuth: "/home",
     },
+    canActivate: [AuthGuard]
+  },
+  // Дневник
+  {
+    path: "diary",
+    children: [],
+    data: {
+      authRule: 0,
+      redirectAuth: "/diary/my",
+      redirectNotAuth: "/diary/all",
+    },
+    canActivate: [AuthGuard]
+  },
+  // Дневник: Мои сновидения
+  {
+    path: "diary/all",
+    loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
+    data: { title: "Общий дневник сновидений", userId: -1, authRule: 0 },
     canActivate: [AuthGuard]
   },
   // Ошибка 404
