@@ -1,0 +1,48 @@
+<div class="section white"
+     *ngIf="ready && user; else pageLoader">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 [imageFullShow]="true"
+                 type="short"
+                 [image]="imagePrefix + backgroundImageData.imageNameShort"
+                 [imagePositionX]="backgroundImageData.positionX"
+                 [imagePositionY]="backgroundImageData.positionY"
+                 [imageOverlay]="backgroundImageData.imageOverlay"
+                 [title]="title"
+                 [subTitle]="subTitle"
+                 [avatarImage]="menuAvatarImage"
+                 [avatarIcon]="menuAvatarIcon"
+                 floatButtonIcon="save"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <div class="container">
+      <mat-tab-group dynamicHeight
+                     color="primary"
+                     backgroundColor="primary">
+        <!-- Общее -->
+        <mat-tab label="Общее">
+        </mat-tab>
+        <!-- Описание -->
+        <mat-tab label="Описание">
+        </mat-tab>
+        <!-- Карта -->
+        <mat-tab label="Карта">
+        </mat-tab>
+        <!-- Оформление -->
+        <mat-tab label="Оформление">
+          <app-nav-menu-settings [backgroundId]="backgroundImageData.id"
+                                 [navMenuType]="navMenuType"
+                                 [useAvatar]="false"
+                                 [diffBlockColor]="false"
+                                 (changeSettings)="changeSettings($event)"></app-nav-menu-settings>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+</div>
+
+<!-- Лоадер страницы -->
+<ng-template #pageLoader>
+  <app-page-loader></app-page-loader>
+</ng-template>
