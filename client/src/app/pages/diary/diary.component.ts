@@ -31,12 +31,11 @@ export class DiaryComponent implements OnInit, OnDestroy {
   menuAvatarImage: string = "";
   menuAvatarIcon: string = "";
 
+  user: User;
+  currentUser: User;
   navMenuType: typeof NavMenuType = NavMenuType;
 
   private destroy$: Subject<void> = new Subject<void>();
-
-  public user: User;
-  public currentUser: User;
 
 
 
@@ -45,8 +44,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   constructor(
     private accountService: AccountService,
     private activatedRoute: ActivatedRoute
-  ) {
-  }
+  ) { }
 
   ngOnInit() {
     this.defineData();
@@ -69,7 +67,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     );
   }
 
-  //
+  // Определить данные
   private defineData(): void {
     let snapshots: ActivatedRouteSnapshot = this.activatedRoute.snapshot;
     while (snapshots.firstChild) {
@@ -97,16 +95,3 @@ export class DiaryComponent implements OnInit, OnDestroy {
     }
   }
 }
-
-
-
-
-
-// Тип для заголовков
-type StringType = [string, string, string];
-
-// Тип для булевых
-type BooleanType = [boolean, boolean, boolean];
-
-// Тип страницы
-type Type = 0 | 1 | 2;
