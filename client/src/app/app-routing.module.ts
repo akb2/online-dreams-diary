@@ -73,6 +73,13 @@ const routes: Routes = [
     data: { title: "Мой дневник сновидений", userId: 0, authRule: 1 },
     canActivate: [AuthGuard]
   },
+  // Дневник: Редактор
+  {
+    path: "diary/editor",
+    loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
+    data: { title: "Редактор сновидения", userId: 0, authRule: 1 },
+    canActivate: [AuthGuard]
+  },
   // * Страницы, не имеющие значения авторизации
   // Главная страница
   {
@@ -96,7 +103,7 @@ const routes: Routes = [
     },
     canActivate: [AuthGuard]
   },
-  // Дневник: Мои сновидения
+  // Дневник: Публичные сновидения
   {
     path: "diary/all",
     loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
