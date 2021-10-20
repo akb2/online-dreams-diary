@@ -83,10 +83,6 @@ html {
   &.#{$_elm} {
     background-color: colors.$background;
     width: 100%;
-    // Главный контейнер
-    &.white {
-      background-color: colors.$card;
-    }
   }
   // Основная секция
   &.root-#{$_elm} {
@@ -97,6 +93,14 @@ html {
     // Последний элемент
     > .#{$_elm}:last-child {
       flex-grow: 1;
+    }
+  }
+  // Цвета
+  &.#{$_elm},
+  &.root-#{$_elm} {
+    // Главный контейнер
+    &.white {
+      background-color: colors.$card;
     }
   }
 }
