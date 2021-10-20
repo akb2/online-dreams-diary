@@ -92,6 +92,7 @@ export class MenuService {
         // Материалы
         {
           sort: 100,
+          text: "Материалы",
           children: [
             // Дневники
             {
@@ -177,6 +178,7 @@ export class MenuService {
         // Настройки
         {
           sort: 500,
+          text: "Настройки",
           children: [
             // Настройки аккаунта
             {
