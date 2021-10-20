@@ -8,6 +8,7 @@ import { PopupCropImageModule } from '@_controlers/crop-image/crop-image.module'
 import { ImageUploadModule } from '@_controlers/image-upload/image-upload.module';
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
+import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { TextInputModule } from '@_controlers/text-input/text-input.module';
 import { ToggleInputModule } from '@_controlers/toggle-input/toggle-input.module';
 import { CoreModule } from '@_modules/core.module';
@@ -36,7 +37,8 @@ import { ProfileSettingsPersonComponent } from '@_pages/profile-settings-person/
     MatButtonModule,
     InformModule,
     PopupCropImageModule,
-    MatMenuModule
+    MatMenuModule,
+    PageLoaderModule
   ]
 })
 
