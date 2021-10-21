@@ -51,8 +51,23 @@
       flex-flow: row nowrap;
     }
 
-    app-text-input + :host > & {
-      margin-top: 15px;
+    // Отключение валидаторов
+    :host ::ng-deep &.disabled-validators {
+      > #{$elm}-wrapper {
+        padding-bottom: 0;
+        > #{$elm}-underline {
+          bottom: 0;
+        }
+      }
+    }
+
+    $__elms: app-text-input app-autocomplete-input app-toggle-input app-chips-input;
+    @each $__elm in $__elms {
+      #{$__elm} + :host > &,
+      #{$__elm} + :host > .layout > &,
+      #{$__elm} + :host > .layout > & + .image {
+        margin-top: 15px;
+      }
     }
 
     @content;
