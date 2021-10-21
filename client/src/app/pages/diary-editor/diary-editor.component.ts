@@ -1,9 +1,13 @@
 import { ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { AppComponent } from "@app/app.component";
+import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { User } from "@_models/account";
-import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
+import { SimpleObject } from "@_models/app";
+import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService } from "@_services/dream.service";
@@ -23,6 +27,8 @@ import { delay } from "rxjs/operators";
 export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
 
+  editor: any = ClassicEditor;
+  config: SimpleObject = { language: "ru" };
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
 
@@ -30,6 +36,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   subTitle: string = "Новое сновидение";
   _navMenuType: typeof NavMenuType = NavMenuType;
 
+  dreamForm: FormGroup;
   dreamId: number = 0;
   dream: Dream;
 
@@ -47,7 +54,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   constructor(
     private activateRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
-    private dreamService: DreamService
+    private dreamService: DreamService,
+    private formBuilder: FormBuilder
   ) {
     this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -73,6 +81,26 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
 
 
+  // Сохранение
+  onSave(): void {
+    this.dream.keywords = this.dreamForm.get("keywords").value;
+    this.dream.text = this.dreamForm.get("text").value;
+    // Сохранить
+    console.log(this.dream);
+  }
+
+  // Изменить настройки оформления
+  onChangeSettings(settings: NavMenuSettingData): void {
+    this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === settings.backgroundId);
+    this.dream.headerType = settings.navMenuType;
+    // Скролл в начало
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+
+
+
+
   // Определить данные
   private defineData(): void {
     // Редактирование сновидения
@@ -81,23 +109,25 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
         this.title = "Редактор сновидения";
         this.subTitle = "*** Название сновидения ***";
         this.dream = dream;
-        // Отметить готовность
-        this.ready = true;
+        // Создать форму
+        this.createFrom();
       });
     }
     // Новое сновидение
     else {
       this.dream = this.dreamService.newDream();
-      // Отметить готовность
-      this.ready = true;
+      // Создать форму
+      this.createFrom();
     }
   }
 
-  // Изменить настройки оформления
-  changeSettings(settings: NavMenuSettingData): void {
-    this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === settings.backgroundId);
-    this.dream.headerType = settings.navMenuType;
-    // Скролл в начало
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // Создать форму
+  private createFrom(): void {
+    this.dreamForm = this.formBuilder.group({
+      keywords: [this.dream.keywords],
+      text: [this.dream.text]
+    });
+    // Отметить готовность
+    this.ready = true;
   }
 }
