@@ -1,3 +1,4 @@
+import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
 import { User } from "@_models/account";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
@@ -28,14 +29,15 @@ export interface Dream {
   id: number;
   user: User;
   createDate: Date;
-  date: Date;
   title: string;
+  date: Date;
+  description: string;
+  mode: DreamMode;
   keywords: string[];
-  text: string;
   places: Place[] | null;
   members: number[] | null;
+  text: string;
   map: DreamMap | null;
-  mode: DreamMode;
   headerType: NavMenuType;
   headerBackground: BackgroundImageData;
 }
@@ -98,7 +100,8 @@ export interface Coord {
 // Тип сновидения
 export enum DreamMode {
   text,
-  map
+  map,
+  mixed
 }
 
 // Типы цветов пути
@@ -135,4 +138,25 @@ export const WayLineTypes: WayLineType[] = [{
   type: "dotted",
   title: "Телепортация",
   description: "Персонаж перемещается из одной точки в другую, минуя пространство"
+}];
+
+// Набор методов для типа новидения
+export const DreamModes: OptionData[] = [{
+  key: DreamMode.text.toString(),
+  title: "В виде текста",
+  icon: "notes",
+  iconColor: "primary",
+  iconBackground: "fill"
+}, {
+  key: DreamMode.map.toString(),
+  title: "В виде карты",
+  icon: "explore",
+  iconColor: "primary",
+  iconBackground: "fill"
+}, {
+  key: DreamMode.mixed.toString(),
+  title: "В виде карты и описания",
+  icon: "library_books",
+  iconColor: "primary",
+  iconBackground: "fill"
 }];
