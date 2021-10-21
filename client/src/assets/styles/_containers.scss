@@ -17,20 +17,26 @@ $paddings-y: (
   large: 60px,
   xlarge: 90px,
 );
+$padding-x: 15px;
 
 $border-radius: 5px;
 $box-shadow: 1px 1px 15px 2px colors.$shadow;
 
-// Контейнер
-.container {
+// Миксин
+@mixin container {
   margin: 0 auto;
   max-width: 100%;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: $padding-x;
+  padding-right: $padding-x;
   // Цикл по размерам
   @include screens.adaptiveFor($widths, $paddings-y) using ($width, $padding-y) {
     width: $width;
     padding-top: $padding-y;
     padding-bottom: $padding-y;
   }
+}
+
+// Контейнер
+.container {
+  @include container;
 }
