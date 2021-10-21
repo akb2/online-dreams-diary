@@ -41,12 +41,13 @@ export class DreamService {
       createDate: null,
       date: null,
       title: "",
+      description: "",
       keywords: [],
       text: "",
       places: [],
       members: [],
       map: null,
-      mode: DreamMode.text,
+      mode: DreamMode.map,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
     };
