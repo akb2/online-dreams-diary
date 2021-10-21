@@ -26,6 +26,20 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
     return this.controlDir.control as FormControl;
   }
 
+  // Есть ли валидаторы
+  get hasValidators(): boolean {
+    // Если заблокированно
+    if (this.disabled) {
+      return false;
+    }
+    // Сообщения об ошибках
+    else if (Object.entries(this.errors).length > 0) {
+      return true;
+    }
+    // По умолчанию
+    return false;
+  }
+
   onChange: Function = (_: any) => { };
   onTouched: Function = () => { };
 
