@@ -8,7 +8,7 @@ import { CustomObject, SimpleObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { BehaviorSubject, Observable, of } from "rxjs";
+import { BehaviorSubject, Observable } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
 
 
@@ -18,6 +18,7 @@ import { map, switchMap } from "rxjs/operators";
 @Injectable({
   providedIn: "root"
 })
+
 export class TokenService {
 
 
