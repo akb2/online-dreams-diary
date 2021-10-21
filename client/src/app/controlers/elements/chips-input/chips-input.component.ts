@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Optional, Self } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, Input, OnChanges, OnInit, Optional, Self, SimpleChanges } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { MatChipInputEvent } from "@angular/material/chips";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
@@ -15,7 +15,7 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ChipsInputComponent extends BaseInputDirective implements OnInit {
+export class ChipsInputComponent extends BaseInputDirective implements DoCheck, OnInit {
 
 
   @Input() label: string = "";
@@ -24,6 +24,8 @@ export class ChipsInputComponent extends BaseInputDirective implements OnInit {
   @Input() separator: string = ",";
 
   words: string[];
+
+  private oldValues: string[];
 
 
 
@@ -34,6 +36,17 @@ export class ChipsInputComponent extends BaseInputDirective implements OnInit {
     private changeDetectorRef: ChangeDetectorRef
   ) {
     super(controlDir);
+  }
+
+  ngDoCheck() {
+    super.ngDoCheck();
+    // Проверка значений
+    if ((this.oldValues || []).join(this.separator) != (this.control.value || []).join(this.separator)) {
+      // Обновить проверочные значения
+      this.oldValues = this.control.value.slice();
+      // Обновить
+      this.createWords();
+    }
   }
 
   ngOnInit() {
@@ -51,8 +64,6 @@ export class ChipsInputComponent extends BaseInputDirective implements OnInit {
       event.chipInput.clear();
       // Добавить в форму
       this.control.setValue(this.words);
-      // Обновить
-      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -64,8 +75,6 @@ export class ChipsInputComponent extends BaseInputDirective implements OnInit {
       this.words.splice(key, 1);
       // Добавить в форму
       this.control.setValue(this.words);
-      // Обновить
-      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -89,6 +98,8 @@ export class ChipsInputComponent extends BaseInputDirective implements OnInit {
       this.words = [mixedValue.toString()];
     }
     // Пустой результат
-    this.words = [];
+    else {
+      this.words = [];
+    }
   }
 }
