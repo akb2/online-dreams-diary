@@ -1,0 +1,22 @@
+<mat-form-field [appearance]="appearance">
+  <mat-label>{{label}}</mat-label>
+  <mat-chip-list #chipList
+                 aria-label="label"
+                 multiple
+                 [formControl]="control">
+    <mat-chip *ngFor="let word of words"
+              [selected]="word"
+              [value]="word"
+              (removed)="onRemoveWord(word)">
+      {{word}}
+      <div matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </div>
+    </mat-chip>
+    <input [placeholder]="placeholder"
+           [matChipInputFor]="chipList"
+           [matChipInputAddOnBlur]="true"
+           (matChipInputTokenEnd)="onAddWord($event)">
+  </mat-chip-list>
+  <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+</mat-form-field>

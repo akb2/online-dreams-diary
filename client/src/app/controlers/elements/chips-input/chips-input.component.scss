@@ -1,0 +1,22 @@
+@use "../../../../assets/styles/material";
+
+// Обертка поля
+@include material.mat-form-field;
+
+// Список
+mat-chip-list {
+  width: 100%;
+}
+
+// Поле ввода
+.mat-input-element {
+  font-weight: 400;
+}
+
+// Кнопка удаления
+.mat-chip-remove > mat-icon {
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 18px;
+}
