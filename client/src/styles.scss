@@ -61,6 +61,13 @@ html {
   body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
   }
+  // Текст
+  & {
+    b,
+    strong {
+      font-weight: 900;
+    }
+  }
 }
 
 // Всплывающие элементы
