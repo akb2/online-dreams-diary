@@ -10,8 +10,8 @@ import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { BehaviorSubject, Observable } from "rxjs";
-import { mergeMap, switchMap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of } from "rxjs";
+import { map, mergeMap, switchMap } from "rxjs/operators";
 
 
 
@@ -95,26 +95,35 @@ export class AccountService {
 
 
   // Информация о текущем пользователе
-  syncCurrentUser(codes: string[] = []): Observable<string> {
+  syncCurrentUser(codes: string[] = []): Observable<User> {
     return this.getUser(this.tokenService.id, codes);
   }
 
   // Информация о пользователе
-  getUser(id: string, codes: string[] = []): Observable<string> {
+  getUser(id: string | number, codes: string[] = []): Observable<User> {
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(switchMap(
-      result => {
-        // Сохранить данные текущего пользователя
-        if (result.result.code === "0001" && result.result.data?.id === this.tokenService.id) {
-          const user: User = this.userConverter(result.result.data);
-          // Сохранить данные
-          this.saveCurrentUser(user);
-          this.user.next(user);
+    return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(
+      switchMap(
+        result => {
+          // Сохранить данные текущего пользователя
+          if (result.result.code === "0001" && result.result.data?.id === this.tokenService.id) {
+            const user: User = this.userConverter(result.result.data);
+            // Сохранить данные
+            this.saveCurrentUser(user);
+            this.user.next(user);
+          }
+          // Вернуть данные пользователя
+          if (result.result.code === "0001" || codes.some(testCode => testCode === result.result.code)) {
+            return of(result.result.data);
+          }
+          // Вернуть обработку кодов
+          else {
+            return this.apiService.checkResponse(result.result.code, codes);
+          }
         }
-        // Вернуть обработку кодов
-        return this.apiService.checkResponse(result.result.code, codes);
-      }
-    ));
+      ),
+      map(user => this.userConverter(user))
+    );
   }
 
   // Сохранить данные аккаунта
@@ -243,7 +252,10 @@ export class AccountService {
 
   // Преобразовать данные с сервера
   private userConverter(data: any): User {
-    const user: User = data as User;
+    const user: User = {
+      ...data,
+      id: parseInt(data.id)
+    } as User;
     // Обработка настройки заднего фона страницы
     const background: number = parseInt(user.settings?.profileBackground as unknown as string);
     user.settings.profileBackground = BackgroundImageDatas.some(d => d.id === background) ?
