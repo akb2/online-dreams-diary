@@ -16,9 +16,15 @@ export class DrawDatas {
 
   public static menu: DrawInterface[];
   public static menuList: DrawInterface[];
+  public static menuSubList: DrawInterface[];
+  public static menuSubListDecorator: DrawInterface[];
   public static menuListWithFloatingButton: DrawInterface[];
   public static menuItem: DrawInterface[];
   public static menuItemLine: DrawInterface[];
+  public static menuSubItem: DrawInterface[];
+  public static menuSubItemLast: DrawInterface[];
+  public static menuSubItemLine: DrawInterface[];
+  public static menuSubItemSeparator: DrawInterface[];
   public static helper: DrawInterface[];
   public static helperWithFloatingButton: DrawInterface[];
   public static header: DrawInterface[];
@@ -63,6 +69,19 @@ export class DrawDatas {
         default: { min: DrawDatas.minHeight, max: DrawDatas.maxHeight, unit: "px" }
       }
     }];
+
+    DrawDatas.menuList = [{
+      property: "right",
+      data: {
+        default: { min: -75, max: -75, unit: "px" }
+      }
+    }];
+    DrawDatas.menuListWithFloatingButton = [{
+      property: "right",
+      data: {
+        default: { min: 0, max: -75, unit: "px" }
+      }
+    }];
     DrawDatas.menuItem = [{
       property: "font-size",
       data: {
@@ -101,16 +120,77 @@ export class DrawDatas {
       }
     }];
 
-    DrawDatas.menuList = [{
-      property: "right",
+    DrawDatas.menuSubList = [{
+      property: "background-color",
       data: {
-        default: { min: -75, max: -75, unit: "px" }
+        default: { min: [49, 65, 165, 1], max: [0, 0, 0, 0.8], prefixUnit: "rgba(", sufixUnit: ")", separatorUnit: ", " }
+      }
+    }, {
+      property: "border-width",
+      data: {
+        default: { min: [1, 0, 0, 0], max: [0, 1, 1, 1], separatorUnit: " ", unit: "px" }
+      }
+    }, {
+      property: "border-color",
+      data: {
+        default: { min: [92, 108, 192, 1], max: [255, 255, 255, 1], separatorUnit: ", ", prefixUnit: "rgba(", sufixUnit: ")" }
+      }
+    }, {
+      property: "border-radius",
+      data: {
+        default: { min: [0, 0, 0, 0], max: [0, 0, 5, 5], unit: "px", separatorUnit: " " }
       }
     }];
-    DrawDatas.menuListWithFloatingButton = [{
-      property: "right",
+    DrawDatas.menuSubListDecorator = [{
+      property: "width",
       data: {
-        default: { min: 0, max: -75, unit: "px" }
+        default: { min: 0, max: 60, unit: "px", prefixUnit: "calc(100% + ", sufixUnit: ")" }
+      }
+    }, {
+      property: "height",
+      data: {
+        default: { min: 0, max: 1, unit: "px" }
+      }
+    }, {
+      property: "left",
+      data: {
+        default: { min: 0, max: -30, unit: "px" }
+      }
+    }];
+    DrawDatas.menuSubItem = [{
+      property: ["padding-left", "padding-right"],
+      data: {
+        default: { min: 26, max: 38, unit: "px" }
+      }
+    }, {
+      property: "line-height",
+      data: {
+        default: { min: 44, max: 56, unit: "px" }
+      }
+    }, {
+      property: "font-size",
+      data: {
+        default: { min: 14, max: 17, unit: "px" }
+      }
+    }];
+    DrawDatas.menuSubItemLast = [];
+    Object.assign(DrawDatas.menuSubItemLast, DrawDatas.menuSubItem);
+    DrawDatas.menuSubItemLast.push({
+      property: "border-radius",
+      data: {
+        default: { min: [0, 0, 0, 0], max: [0, 0, 5, 5], unit: "px", separatorUnit: " " }
+      }
+    });
+    DrawDatas.menuSubItemLine = [{
+      property: "width",
+      data: {
+        default: { min: [100, 0], max: [0, 5], unit: ["%", "px"], separatorUnit: " + ", prefixUnit: "calc(", sufixUnit: ")" }
+      }
+    }];
+    DrawDatas.menuSubItemSeparator = [{
+      property: "background-color",
+      data: {
+        default: { min: [92, 108, 192, 1], max: [255, 255, 255, 0.5], prefixUnit: "rgba(", sufixUnit: ")", separatorUnit: ", " }
       }
     }];
 
