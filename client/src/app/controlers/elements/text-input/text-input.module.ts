@@ -12,6 +12,7 @@ import { CoreModule } from "@_modules/core.module";
 import { CustomDateAdapter } from "@_helpers/custom-date-adapter";
 
 import { TextInputComponent } from "./text-input.component";
+import { TextFieldModule } from "@angular/cdk/text-field";
 
 
 
@@ -43,7 +44,8 @@ import { TextInputComponent } from "./text-input.component";
     MatInputModule,
     FormsModule,
     ReactiveFormsModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    TextFieldModule
   ]
 })
 

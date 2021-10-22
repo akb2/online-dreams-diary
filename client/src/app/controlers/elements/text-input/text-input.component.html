@@ -1,22 +1,38 @@
-<mat-form-field [appearance]="appearance">
+<mat-form-field [appearance]="appearance"
+                [class]="hasValidators? '': 'disabled-validators'">
   <mat-label>{{label}}</mat-label>
+  <!-- Текстовое поле -->
   <ng-container *ngIf="type == 'text' || type == 'password' || type == 'email'">
-    <input matInput
+    <input #input
+           matInput
            [type]="type=='password'?(showPassword?'text':'password'):type"
            [formControl]="control"
            [maxlength]="maxLength"
-           (keyup)="onKeyup($event)" />
+           (keyup)="onKeyup($event)"
+           *ngIf="!multiLine" />
+    <textarea #input
+              matInput
+              cdkTextareaAutosize
+              [cdkAutosizeMinRows]="multiLineMinLines"
+              [cdkAutosizeMaxRows]="multiLineMaxLines"
+              [formControl]="control"
+              [maxlength]="maxLength"
+              (keyup)="onKeyup($event)"
+              *ngIf="multiLine"></textarea>
     <mat-icon class="showPassword"
               matSuffix
               (click)="togglePasswordVisibility()"
               *ngIf="type=='password'">{{showPassword?'visibility_off':'visibility'}}</mat-icon>
   </ng-container>
+  <!-- Дата -->
   <ng-container *ngIf="type == 'date'">
-    <input matInput
+    <input #input
+           matInput
            [formControl]="control"
            [min]="minDate"
            [max]="maxDate"
            [matDatepicker]="datePicker"
+           (keyup)="onKeyup($event)"
            (click)="datePicker.open()" />
     <mat-icon class="showPassword"
               matSuffix="matSuffix"
