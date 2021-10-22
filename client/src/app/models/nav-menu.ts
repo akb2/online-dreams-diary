@@ -16,19 +16,13 @@ export interface DrawData {
 
 // Данные размеров
 export interface DrawDataPeriod {
-  min?: number;
-  max?: number;
+  min?: number | number[];
+  max?: number | number[];
   value?: DrawDataValue;
-  unit?: string;
   prefixUnit?: string;
-}
-
-// Данные размеров
-export interface DrawDataPeriod {
-  min?: number;
-  max?: number;
-  value?: DrawDataValue;
-  unit?: string;
+  sufixUnit?: string;
+  unit?: string | string[];
+  separatorUnit?: string;
 }
 
 // Интерфейс выбора заранее заданных значений
