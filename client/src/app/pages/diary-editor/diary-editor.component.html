@@ -8,48 +8,110 @@
                  [imagePositionX]="dream.headerBackground.positionX"
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
-                 [title]="title"
-                 [subTitle]="subTitle"
+                 [title]="dream.title || defaultTitle"
+                 subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
                  floatButtonIcon="save"
                  (floatButtonCallback)="onSave()"></app-main-menu>
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <form class="container">
+    <div [ngClass]="{ 'floating-margin': dream.headerType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
-                     color="primary">
+                     color="primary"
+                     (selectedIndexChange)="onChangeTab($event)">
         <!-- Общее -->
         <mat-tab label="Общее">
-          <div class="container"
-               [formGroup]="dreamForm">
-            <app-chips-input label="Ключевые слова для поиска"
-                             placeholder="Введите ключевое слово"
-                             formControlName="keywords"></app-chips-input>
+          <div class="overlay">
+            <div class="section">
+              <div class="container">
+                <div class="cards-list">
+                  <!-- Общие данные -->
+                  <app-card title="Общие данные"
+                            avatarIcon="format_list_bulleted"
+                            avatarColor="primary"
+                            avatarBackground="fill"
+                            [fullHeight]="true">
+                    <form content
+                          [formGroup]="dreamForm">
+                      <!-- Название -->
+                      <app-text-input required
+                                      label="Название"
+                                      formControlName="title"
+                                      [maxLength]="titleMaxLength"></app-text-input>
+                      <!-- Описание -->
+                      <app-text-input required
+                                      label="Краткое описание"
+                                      formControlName="description"
+                                      [multiLine]="true"
+                                      [multiLineMinLines]="1"
+                                      [multiLineMaxLines]="6"
+                                      [maxLength]="descriptionMaxLength"></app-text-input>
+                      <!-- Когда приснился сон -->
+                      <app-text-input required
+                                      type="date"
+                                      label="Дата сновидения"
+                                      formControlName="date"
+                                      [minDate]="dateMin"
+                                      [maxDate]="dateMax"></app-text-input>
+                      <!-- Тип данных -->
+                      <app-autocomplete-input required
+                                              label="Тип описания сновидения"
+                                              formControlName="mode"
+                                              [optionData]="dreamModes"
+                                              (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
+                    </form>
+                  </app-card>
+                  <!-- Настройки -->
+                  <app-card title="Настройки"
+                            subTitle="Упоминания и поиск"
+                            avatarIcon="settings"
+                            avatarColor="primary"
+                            avatarBackground="fill"
+                            [fullHeight]="true">
+                    <form content
+                          [formGroup]="dreamForm">
+                      <!-- Ключевые слова -->
+                      <app-chips-input label="Ключевые слова для поиска"
+                                       placeholder="Введите ключевое слово"
+                                       formControlName="keywords"></app-chips-input>
+                    </form>
+                  </app-card>
+                </div>
+              </div>
+            </div>
           </div>
         </mat-tab>
         <!-- Описание -->
-        <mat-tab label="События сновидения">
-          <div class="container"
-               [formGroup]="dreamForm">
-            <ckeditor #dreamTextEditor
-                      formControlName="text"
-                      [editor]="editor"
-                      [config]="config"></ckeditor>
+        <mat-tab label="События сновидения"
+                 *ngIf="dream.mode === _dreamMode.text || dream.mode === _dreamMode.mixed">
+          <div class="overlay">
+            <div class="container"
+                 [formGroup]="dreamForm">
+              <ckeditor #dreamTextEditor
+                        formControlName="text"
+                        [editor]="editor"
+                        [config]="config"></ckeditor>
+            </div>
           </div>
         </mat-tab>
         <!-- Карта -->
-        <mat-tab label="Карта сновидения">
+        <mat-tab label="Карта сновидения"
+                 *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
+          <div class="overlay"></div>
         </mat-tab>
         <!-- Оформление -->
         <mat-tab label="Оформление">
-          <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
-                                 [navMenuType]="dream.headerType"
-                                 [useAvatar]="false"
-                                 [diffBlockColor]="false"
-                                 (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+          <div class="overlay">
+            <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
+                                   [navMenuType]="dream.headerType"
+                                   [useAvatar]="false"
+                                   [title]="dream.title || defaultTitle"
+                                   subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                                   (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+          </div>
         </mat-tab>
       </mat-tab-group>
-    </form>
+    </div>
   </div>
 </div>
 
