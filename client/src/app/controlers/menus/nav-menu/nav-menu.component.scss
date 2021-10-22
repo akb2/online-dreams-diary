@@ -21,6 +21,7 @@ $breakpointMobile: small;
   top: 0;
   width: 100%;
   user-select: none;
+  box-shadow: screens.$card-shadow;
   // Полноразмерное меню
   &.type-full {
     height: 100vh;

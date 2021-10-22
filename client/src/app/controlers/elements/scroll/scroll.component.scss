@@ -36,6 +36,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   gap: $spacing;
   justify-content: space-between;
   align-items: center;
+  z-index: 10;
 }
 
 // Кнопки
@@ -46,7 +47,8 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   cursor: pointer;
   background-color: map.get(colors.$mat-primary, 500);
   transition: background-color screens.$animation-time;
-
+  box-shadow: screens.$card-shadow;
+  // Выделение
   &:hover {
     background-color: map.get(colors.$mat-primary, 500);
   }
@@ -57,7 +59,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   width: $sliderSize;
   flex-grow: 1;
   position: relative;
-
+  // Полоска
   &:before {
     content: "";
     display: block;
@@ -83,7 +85,8 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   transition: background-color screens.$animation-time;
   z-index: 1;
   cursor: pointer;
-
+  box-shadow: screens.$card-shadow;
+  // Выделение
   &:hover,
   &.hover {
     background-color: map.get(colors.$mat-primary, 500);

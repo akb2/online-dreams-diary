@@ -389,6 +389,11 @@ export class DrawDatas {
     }];
 
     DrawDatas.floatingButton = [{
+      property: "box-shadow",
+      data: {
+        default: { min: 0, max: 0.15, prefixUnit: "1px 1px 10px 1px rgba(0,0,0,", unit: ")" }
+      }
+    }, {
       property: ["width", "min-width", "height", "line-height"],
       data: {
         default: { min: 60, max: 90, unit: "px" },
