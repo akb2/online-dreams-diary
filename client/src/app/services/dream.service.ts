@@ -4,6 +4,7 @@ import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { Observable, of } from "rxjs";
 
 
 
@@ -34,6 +35,7 @@ export class DreamService {
 
 
 
+  // Сформировать объект нового сновидения
   newDream(): Dream {
     return {
       id: 0,
@@ -51,5 +53,14 @@ export class DreamService {
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
     };
+  }
+
+  // Данные о сновидении
+  getDream(id: number): Observable<Dream> {
+    const dream: Dream = this.newDream();
+    // Заполнить данные
+    dream.title = "Полет над миром";
+    // Вернуть подписку
+    return of(dream);
   }
 }
