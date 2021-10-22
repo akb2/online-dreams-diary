@@ -50,7 +50,7 @@ export class CardComponent implements AfterViewInit, OnChanges {
   // Получены изменения
   public ngOnChanges(): void {
     if (this.changeDetection != this.changeDetectionHelper) {
-      this.changeDetectorRef.markForCheck();
+      this.changeDetectorRef.detectChanges();
     }
   }
 
