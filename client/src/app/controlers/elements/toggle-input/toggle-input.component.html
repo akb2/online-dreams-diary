@@ -1,4 +1,5 @@
-<mat-form-field [appearance]="appearance">
+<mat-form-field [appearance]="appearance"
+                [class]="hasValidators? '': 'disabled-validators'">
   <mat-label>{{label}}</mat-label>
   <div class="values"><span class="values__label"
           [ngClass]="{ select: !isChecked }"
