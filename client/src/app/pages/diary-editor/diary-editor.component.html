@@ -22,7 +22,7 @@
         <!-- Общее -->
         <mat-tab label="Общее">
           <div class="overlay">
-            <div class="section">
+            <div class="section root-section tabs">
               <div class="container">
                 <div class="cards-list">
                   <!-- Общие данные -->
@@ -85,29 +85,36 @@
         <mat-tab label="События сновидения"
                  *ngIf="dream.mode === _dreamMode.text || dream.mode === _dreamMode.mixed">
           <div class="overlay">
-            <div class="container"
-                 [formGroup]="dreamForm">
-              <ckeditor #dreamTextEditor
-                        formControlName="text"
-                        [editor]="editor"
-                        [config]="config"></ckeditor>
+            <div class="section root-section tabs">
+              <div class="container"
+                   [formGroup]="dreamForm">
+                <ckeditor #dreamTextEditor
+                          formControlName="text"
+                          [editor]="editor"
+                          [config]="config"></ckeditor>
+              </div>
             </div>
           </div>
         </mat-tab>
         <!-- Карта -->
         <mat-tab label="Карта сновидения"
                  *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
-          <div class="overlay"></div>
+          <div class="overlay">
+            <div class="section root-section tabs">
+            </div>
+          </div>
         </mat-tab>
         <!-- Оформление -->
         <mat-tab label="Оформление">
           <div class="overlay">
-            <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
-                                   [navMenuType]="dream.headerType"
-                                   [useAvatar]="false"
-                                   [title]="dream.title || defaultTitle"
-                                   subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
-                                   (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+            <div class="section root-section tabs">
+              <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
+                                     [navMenuType]="dream.headerType"
+                                     [useAvatar]="false"
+                                     [title]="dream.title || defaultTitle"
+                                     subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                                     (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+            </div>
           </div>
         </mat-tab>
       </mat-tab-group>
