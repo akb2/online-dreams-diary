@@ -17,7 +17,7 @@ $mat-theme: mat.define-light-theme(
 @include mat.all-component-themes($mat-theme);
 
 @import "https://fonts.googleapis.com/icon?family=Material+Icons&display=block";
-@import "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500&display=swap";
+@import "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@200;300;400;500&display=swap";
 @import "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&display=swap";
 
 // Базовый стиль
