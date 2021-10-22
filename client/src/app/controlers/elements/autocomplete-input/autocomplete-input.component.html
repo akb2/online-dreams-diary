@@ -1,0 +1,82 @@
+<div class="layout"
+     (click)="autoComplete.openPanel()">
+  <!-- Поле ввода -->
+  <mat-form-field [appearance]="appearance"
+                  [class]="hasValidators? '': 'disabled-validators'">
+    <!-- Заголовок -->
+    <mat-label>{{label}}</mat-label>
+
+    <!-- Поле ввода -->
+    <input matInput
+           #inputElement
+           type="text"
+           [value]="getOptionText(optionDataSelected)"
+           [matAutocomplete]="autocompleteElement"
+           [readonly]="type == 'select'"
+           (keyup)="onKeyUp($event,inputElement.value)"
+           (focus)="onFocus($event)"
+           (blur)="onBlur($event)">
+    <!-- Дополнительная кнопка -->
+    <div matSuffix
+         class="iconButton"
+         *ngIf="buttonIcon"
+         (click)="onButtonClick()">
+      <mat-icon>{{buttonIcon}}</mat-icon>
+    </div>
+    <!-- Список -->
+    <mat-autocomplete #autocompleteElement="matAutocomplete"
+                      [displayWith]="displayWith.bind(this)"
+                      [panelWidth]="panelWidth"
+                      (optionSelected)="setValue($event.option?.value, true, true)">
+      <mat-option [value]="optionData"
+                  *ngFor="let optionData of optionDataFiltered">
+        <ng-container [ngTemplateOutlet]="optionDataElement"
+                      [ngTemplateOutletContext]="{ $implicit: optionData }"></ng-container>
+      </mat-option>
+    </mat-autocomplete>
+    <!-- Вывод ошибок -->
+    <mat-error *ngIf="control?.invalid">{{getErrorMessageKey()}}</mat-error>
+
+    <!-- Отвлекающее поле -->
+    <input type="hidden"
+           [formControl]="control" />
+  </mat-form-field>
+
+  <!-- Картинка -->
+  <div class="image"
+       [attr.position]="imagePosition"
+       [attr.color]="iconColor"
+       [attr.background]="iconBackground"
+       *ngIf="image || icon">
+    <img [src]="image"
+         *ngIf="image" />
+    <mat-icon *ngIf="!image && icon">{{icon}}</mat-icon>
+  </div>
+</div>
+
+
+
+
+
+<!-- Элементы списка -->
+<ng-template #optionDataElement
+             let-item>
+  <div class="option">
+    <div class="option__image"
+         [attr.position]="item.imagePosition"
+         [attr.color]="item.iconColor"
+         [attr.background]="item.iconBackground"
+         *ngIf="item.image?.length || item.icon?.length || optionHasImage">
+      <img [src]="item.image"
+           *ngIf="item.image?.length && !item.icon?.length" />
+      <mat-icon *ngIf="item.icon?.length">
+        {{item.icon}}
+      </mat-icon>
+    </div>
+    <div class="option__name">
+      <div class="option__name-title">{{item.title}}</div>
+      <div class="option__name-subTitle"
+           *ngIf="item.subTitle">{{item.subTitle}}</div>
+    </div>
+  </div>
+</ng-template>
