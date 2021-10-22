@@ -20,6 +20,7 @@ import { mergeMap, switchMap } from "rxjs/operators";
 @Injectable({
   providedIn: "root"
 })
+
 export class AccountService {
 
 
@@ -32,7 +33,10 @@ export class AccountService {
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   readonly user$: Observable<User> = this.user.asObservable();
 
-  // Конструктор
+
+
+
+
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
@@ -85,6 +89,8 @@ export class AccountService {
       result => this.apiService.checkResponse(result.result.code, codes)
     ));
   }
+
+
 
 
 
@@ -145,6 +151,22 @@ export class AccountService {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
+
+  // Получить возраст пользователя
+  getAge(mixedDate: Date | string): number {
+    const today: Date = new Date();
+    const date: Date = mixedDate ? typeof mixedDate === "string" ? new Date(mixedDate) : mixedDate : new Date();
+    let age: number = today.getFullYear() - date.getFullYear();
+    const m: number = today.getMonth() - date.getMonth();
+    // Вычисление ДР
+    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    // Вернуть возраст
+    return age;
+  }
+
+
 
 
 
