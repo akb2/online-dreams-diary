@@ -155,7 +155,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private defineData(): void {
     // Редактирование сновидения
     if (this.dreamId > 0) {
-      of(this.dreamService.newDream()).pipe(delay(3000)).subscribe(dream => {
+      this.dreamService.getDream(this.dreamId).subscribe(dream => {
         this.dream = dream;
         // Создать форму
         this.createForm();
