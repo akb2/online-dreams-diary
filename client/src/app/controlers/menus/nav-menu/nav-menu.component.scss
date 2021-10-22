@@ -577,39 +577,46 @@ $breakpointMobile: small;
       right: 0;
       opacity: 0;
       visibility: hidden;
+      border-style: solid;
       transition: opacity #{screens.$animation-time}, visibility #{screens.$animation-time};
-      // отступ сверху
-      @include screens.adaptive(middle, large) {
-        padding-top: 10px;
-      }
-      // Пункты
-      > #{$__elm}-link {
-        background-color: map.get(colors.$mat-primary, 700);
-        color: map.get(colors.$mat-primary, contrast, 700);
-        color: #fff;
-        margin-top: 0 !important;
-        font-size: 15px !important;
-        line-height: 44px !important;
-        padding: 0 26px !important;
-        text-transform: none;
-        width: 100%;
-        text-align: left;
-        white-space: nowrap;
-        // Линия
-        > #{$__elm}-line {
-          width: 5px;
-          height: 100% !important;
+      // Потомки
+      > #{$__elm} {
+        // Декорация
+        &-list-decorator {
+          display: block;
+          position: absolute;
+          top: -1px;
+          background-image: linear-gradient(90deg, transparent 0, #fff 30px, #fff calc(100% - 30px), transparent 100%);
         }
-        // Выделить
-        &:hover {
-          background-color: map.get(colors.$mat-primary, 900);
-          color: map.get(colors.$mat-primary, contrast, 900);
+        // Пункты
+        &-link {
+          text-transform: none;
+          width: 100%;
+          text-align: left;
+          white-space: nowrap;
+          font-weight: 200;
+          // Текст
+          > span {
+            font-size: inherit;
+            font-weight: inherit;
+          }
+          // Разделить
+          > #{$__elm}-line {
+            height: 100%;
+          }
+          // Выделение
+          &:hover {
+            background-color: map.get(colors.$mat-primary, 900);
+            // Разделить
+            > #{$__elm}-line {
+              background-color: transparent;
+            }
+          }
         }
-      }
-      // Разделитель
-      > #{$__elm}-separate {
-        height: 1px;
-        background-color: map.get(colors.$mat-primary, 400);
+        // Разделитель
+        &-separate {
+          height: 1px;
+        }
       }
     }
 

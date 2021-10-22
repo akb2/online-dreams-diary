@@ -2,7 +2,7 @@
 
 <!-- Шапка -->
 <div class="main-menu {{ class }} type-{{ type }}"
-     [style]="css.menu"
+     [ngStyle]="css.menu"
      (mousedown)="onScrollMouseDown($event)">
 
   <!-- Задний фон -->
@@ -14,14 +14,14 @@
     </div>
     <!-- Картинка -->
     <div class="main-menu__layer-image type-{{ imageFullShow? 'short': type }} {{imageOverlay? 'overlay': ''}}"
-         [style]="css.image"
+         [ngStyle]="css.image"
          *ngIf="image.length && (type != 'full' || imageFullShow)">
       <img [src]="image"
            [style.object-position]="imagePositionY + ' ' + imagePositionX" />
     </div>
     <!-- Временная картинка -->
     <div class="main-menu__layer-image temp type-{{ imageFullShow? 'short': type }} {{tempImageOverlay? 'overlay': ''}}"
-         [style]="css.image"
+         [ngStyle]="css.image"
          *ngIf="tempImage.length && (type != 'full' || imageFullShow)">
       <img [src]="tempImage"
            [style.object-position]="tempImagePositionY + ' ' + tempImagePositionX" />
@@ -33,7 +33,7 @@
     </div>
     <!-- Заливка цветом -->
     <div class="main-menu__layer-fill"
-         [style]="css.header"></div>
+         [ngStyle]="css.header"></div>
   </div>
 
   <!-- Средний фон -->
@@ -45,7 +45,7 @@
            class="main-menu__layer-container_left {{backButtonLink? 'has-back-button': ''}}">
         <!-- Кнопка назад -->
         <div class="back-button"
-             [style]="css.backButton"
+             [ngStyle]="css.backButton"
              [routerLink]="backButtonLink"
              [queryParams]="backButtonLinkParams"
              *ngIf="backButtonLink"
@@ -54,7 +54,7 @@
         </div>
         <!-- Вызов главного меню -->
         <div class="menu-button"
-             [style]="css.backButton"
+             [ngStyle]="css.backButton"
              *ngIf="isMobile() && !backButtonLink"
              (click)="toggleMobileMenu(1)"
              unselectable="on">
@@ -62,7 +62,7 @@
         </div>
         <!-- Аватарка -->
         <div class="main-menu__avatar"
-             [style]="css.avatar"
+             [ngStyle]="css.avatar"
              *ngIf="avatarImage || avatarIcon">
           <img [src]="avatarImage"
                *ngIf="avatarImage" />
@@ -70,11 +70,11 @@
         </div>
         <!-- Заголовок -->
         <div class="main-menu__title"
-             [style]="css.title"
+             [ngStyle]="css.title"
              *ngIf="title">{{title}}</div>
         <!-- Подзаголовок -->
         <div class="main-menu__subtitle"
-             [style]="css.subtitle"
+             [ngStyle]="css.subtitle"
              *ngIf="subTitle">{{subTitle}}</div>
       </div>
       <!-- Слой посередине -->
@@ -88,21 +88,21 @@
            *ngIf="floatButtonIcon && (floatButtonCallback || floatButtonLink)">
         <!-- Кнопка с ссылкой -->
         <a class="floating-button"
-           [style]="css.floatingButton"
+           [ngStyle]="css.floatingButton"
            [routerLink]="floatButtonLink"
            [queryParams]="floatButtonLinkParams"
            *ngIf="floatButtonLink">
           <div class="floating-button__overlay"
-               [style]="css.floatingButtonOverlay"></div>
+               [ngStyle]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
         </a>
         <!-- Кнопка без ссылки -->
         <button class="floating-button"
-                [style]="css.floatingButton"
+                [ngStyle]="css.floatingButton"
                 *ngIf="!floatButtonLink"
                 (click)="onFloatButtonClick()">
           <div class="floating-button__overlay"
-               [style]="css.floatingButtonOverlay"></div>
+               [ngStyle]="css.floatingButtonOverlay"></div>
           <mat-icon>{{floatButtonIcon}}</mat-icon>
         </button>
       </div>
@@ -112,7 +112,7 @@
     </div>
     <!-- Кнопка вниз -->
     <a class="to-content-button"
-       [style]="css.toContentButton"
+       [ngStyle]="css.toContentButton"
        (click)="collapseMenu()"
        *ngIf="type=='full' && !hideToContentButton">
       <mat-icon>expand_more</mat-icon>
@@ -129,7 +129,7 @@
 
 <!-- Вспомогательный блок для коррекции контента -->
 <div class="main-menu {{ class }} type-{{ type }} helper"
-     [style]="css.helper"></div>
+     [ngStyle]="css.helper"></div>
 <div id="mainMenuCollapsedHelperAfter"></div>
 
 <!-- Скролл страницы -->
@@ -143,18 +143,25 @@
 <ng-template #mainMenu>
   <nav>
     <ul class="menu-list"
-        [style]="css.menuList">
+        [ngStyle]="css.menuList">
       <li class="menu-list__item"
           *ngFor="let item of menuItems">
         <!-- Содержимое пункта меню -->
         <ng-container [ngTemplateOutlet]="mainMenuItem"
-                      [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+                      [ngTemplateOutletContext]="{ $implicit: item, style: css.menuItem, lineStyle: css.menuItemLine }"></ng-container>
         <!-- Список -->
         <div class="menu-list__item-list"
+             [ngStyle]="css.menuSubList"
              *ngIf="item.children?.length">
+          <div class="menu-list__item-list-decorator"
+               [ngStyle]="css.menuSubListDecorator"></div>
           <ng-container [ngTemplateOutlet]="mainMenuItem"
-                        [ngTemplateOutletContext]="{ $implicit: subItem }"
-                        *ngFor="let subItem of item.children"></ng-container>
+                        [ngTemplateOutletContext]="{
+                          $implicit: subItem,
+                          style: key === item.children.length - 1? css.menuSubItemLast: css.menuSubItem,
+                          lineStyle: css.menuSubItemLine
+                        }"
+                        *ngFor="let subItem of item.children; let key = index"></ng-container>
         </div>
       </li>
     </ul>
@@ -164,43 +171,48 @@
 <!-- Пункты главного меню -->
 <ng-template #mainMenuItem
              let-item
-             let-classes>
+             let-classes
+             let-last
+             let-style="style"
+             let-lineStyle="lineStyle">
   <!-- Кнопка с ссылкой -->
   <a class="menu-list__item-link"
      [ngClass]="{ active: item.active }"
-     [style]="css.menuItem"
+     [ngStyle]="style"
      [routerLink]="item.link"
      *ngIf="!item.isSeparate && item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
-                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+                  [ngTemplateOutletContext]="{ $implicit: item, lineStyle }"></ng-container>
   </a>
   <!-- Кнопка без ссылки -->
   <button class="menu-list__item-link"
-          [style]="css.menuItem"
+          [ngStyle]="style"
           (click)="item.callback()"
           *ngIf="!item.isSeparate && !item.link && item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
-                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+                  [ngTemplateOutletContext]="{ $implicit: item, lineStyle }"></ng-container>
   </button>
   <!-- Кнопка без действия -->
   <div class="menu-list__item-link"
-       [style]="css.menuItem"
+       [ngStyle]="style"
        *ngIf="!item.isSeparate && !item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
-                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+                  [ngTemplateOutletContext]="{ $implicit: item, lineStyle }"></ng-container>
   </div>
   <!-- Разделитель -->
   <div class="menu-list__item-separate"
+       [ngStyle]="css.menuSubItemSeparator"
        *ngIf="item.isSeparate">
   </div>
 </ng-template>
 
 <!-- Соджержимое пункта главного меню -->
 <ng-template #mainMenuItemContent
-             let-item>
+             let-item
+             let-lineStyle="lineStyle">
   <span>{{item.text}}</span>
   <div class="menu-list__item-line"
-       [style]="css.menuItemLine"></div>
+       [ngStyle]="lineStyle"></div>
 </ng-template>
 
 

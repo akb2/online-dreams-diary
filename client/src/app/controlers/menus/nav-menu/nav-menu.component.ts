@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { SimpleObject } from "@_models/app";
+import { CustomObject, SimpleObject } from "@_models/app";
 import { MenuItem } from "@_models/menu";
 import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
@@ -76,13 +76,19 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private lastScrollTime: number = new Date().getTime();
   private scrollTimeWait: number = 150;
 
-  css: SimpleObject = {};
+  css: CustomObject<SimpleObject> = {};
 
   private cssNamesVar: SimpleObject = {
     menu: "menu",
     menuList: "",
+    menuSubList: "menuSubList",
+    menuSubListDecorator: "menuSubListDecorator",
     menuItem: "menuItem",
     menuItemLine: "menuItemLine",
+    menuSubItem: "menuSubItem",
+    menuSubItemLast: "menuSubItemLast",
+    menuSubItemLine: "menuSubItemLine",
+    menuSubItemSeparator: "menuSubItemSeparator",
     helper: "",
     header: "header",
     image: "image",
@@ -390,14 +396,13 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Цикл по свойствам
     for (let titleKey in this.cssNames) {
       let titleValue: string = this.cssNames[titleKey];
-      this.css[titleKey] = "";
+      this.css[titleKey] = {};
       // Свойство существует
       if (DrawDatas[titleValue as DrawDatasKeys]) {
         for (let datas of DrawDatas[titleValue as DrawDatasKeys]) {
           let sizes: DrawDataPeriod = datas.data[this.breakpoint as ScreenKeys] ?
             datas.data[this.breakpoint as ScreenKeys] as DrawDataPeriod :
             datas.data.default;
-          let css: string;
 
           // Значение
           let value: string
@@ -407,22 +412,23 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           }
           // Расчитать зависимое значение
           else {
-            value = (sizes.prefixUnit ? sizes.prefixUnit : "") + this.dataCalculateFormula(sizes.max || 0, sizes.min || 0) + (sizes.unit ? sizes.unit : "");
+            value =
+              (sizes.prefixUnit ? sizes.prefixUnit : "") +
+              this.dataCalculateFormula(sizes.max || 0, sizes.min || 0, sizes.unit, sizes.separatorUnit) +
+              (sizes.sufixUnit ? sizes.sufixUnit : "")
+              ;
           }
 
           // Установить для одного свойства
           if (typeof datas.property === "string") {
-            css = datas.property + ": " + value + ";";
+            this.css[titleKey][datas.property] = value;
           }
           // Для массива свойств
           else {
-            css = "";
             for (let property of datas.property) {
-              css = css + property + ": " + value + ";";
+              this.css[titleKey][property] = value;
             }
           }
-          // Строка CSS
-          this.css[titleKey] = this.css[titleKey] + css;
         }
       }
     }
@@ -431,13 +437,59 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Формула расчета параметров
-  private dataCalculateFormula(max: number, min: number): number {
+  private dataCalculateFormula(max: number | number[], min: number | number[], unit: string | string[] = "", separator: string = ""): string {
+    // Расчет
     if (this.scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
-      const koof: number = (min - max) / (DrawDatas.maxHeight - DrawDatas.minHeight);
-      return (koof * this.scroll) + max;
+      // Для массивов
+      if (Array.isArray(min) || Array.isArray(max)) {
+        let value: string = "";
+        const length: number = Array.isArray(min) && Array.isArray(max) ?
+          (min.length + max.length) / 2 :
+          (Array.isArray(min) ? min.length : Array.isArray(max) ? max.length : 1);
+        // Цикл по данным
+        for (let i = 0; i < length; i++) {
+          const tempMin: number = Array.isArray(min) ? min[i] || 0 : min;
+          const tempMax: number = Array.isArray(max) ? max[i] || 0 : max;
+          const tempUnit: string = Array.isArray(unit) ? unit[i] || "" : unit;
+          const koof: number = (tempMin - tempMax) / (DrawDatas.maxHeight - DrawDatas.minHeight);
+          // Присвоение значения
+          value += (i > 0 ? separator : "") + ((koof * this.scroll) + tempMax) + tempUnit;
+        }
+        // Вернуть значение
+        return value;
+      }
+      // Оба числа
+      else {
+        unit = Array.isArray(unit) ? unit[0] : unit;
+        // Расчитать значение
+        const koof: number = (min - max) / (DrawDatas.maxHeight - DrawDatas.minHeight);
+        return ((koof * this.scroll) + max) + unit;
+      }
     }
-
-    return min;
+    // Вернуть минимальное значение
+    else {
+      // Для массивов
+      if (Array.isArray(min) || Array.isArray(max)) {
+        let value: string = "";
+        const length: number = Array.isArray(min) && Array.isArray(max) ?
+          (min.length + max.length) / 2 :
+          (Array.isArray(min) ? min.length : Array.isArray(max) ? max.length : 1);
+        // Цикл по данным
+        for (let i = 0; i < length; i++) {
+          const tempMin: number = Array.isArray(min) ? min[i] || 0 : min;
+          const tempUnit: string = Array.isArray(unit) ? unit[i] || "" : unit;
+          // Присвоение значения
+          value += (i > 0 ? separator : "") + tempMin + tempUnit;
+        }
+        // Вернуть значение
+        return value;
+      }
+      // Для чисел
+      else {
+        unit = Array.isArray(unit) ? unit[0] || "" : unit;
+        return min + unit;
+      }
+    }
   }
 
   // Выбрать значение из списка
