@@ -91,7 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.tokenService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
         if (code == "0001") {
-          this.accountService.syncCurrentUser().subscribe(code => {
+          this.accountService.syncCurrentUser().subscribe(() => {
             this.validToken = true;
           });
         }
