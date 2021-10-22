@@ -14,6 +14,7 @@ export interface DreamDto {
   createDate: string;
   date: string;
   title: string;
+  description: string;
   keywords: string;
   text: string;
   places: string;
