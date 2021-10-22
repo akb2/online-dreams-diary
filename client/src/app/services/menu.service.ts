@@ -26,6 +26,8 @@ export class MenuService {
 
   private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
 
+  private separator: MenuItem = { isSeparate: true };
+
 
 
 
@@ -211,9 +213,24 @@ export class MenuService {
               link: "/profile/settings",
             },
             // Разделитель
+            this.separator,
+            // Настройки аккаунта
             {
-              isSeparate: true
+              text: "Настройки аккаунта",
+              link: "/profile/settings/person",
             },
+            // Настройки внешнего вида
+            {
+              text: "Персонализация",
+              link: "/profile/settings/appearance",
+            },
+            // Настройки безопасности
+            {
+              text: "Безопасность",
+              link: "/profile/settings/security",
+            },
+            // Разделитель
+            this.separator,
             // Выход
             {
               text: "Выход",
@@ -224,9 +241,27 @@ export class MenuService {
         // Дневник
         {
           sort: 100,
-          icon: "book",
-          text: "Дневник",
-          link: "/diary/my"
+          text: "Дневник сновидений",
+          link: "/diary",
+          children: [
+            // Мои сновидения
+            {
+              text: "Мои сновидения",
+              link: "/diary/my",
+            },
+            // Новое сновидение
+            {
+              text: "Новое сновидение",
+              link: "/diary/editor",
+            },
+            // Разделитель
+            this.separator,
+            // Общий дневник
+            {
+              text: "Общий дневник",
+              link: "/diary/all",
+            }
+          ]
         }
       ];
     }
@@ -321,7 +356,7 @@ export class MenuService {
       let url: string = this.router.url;
       url = (url.split("?"))[0];
       // Активность
-      return item.link == url ? true : active;
+      return item.link === url ? true : active;
     }
     // Не активен
     return active;
