@@ -39,7 +39,7 @@ export class DreamService {
       id: 0,
       user: this.currentUser,
       createDate: null,
-      date: null,
+      date: new Date(),
       title: "",
       description: "",
       keywords: [],
