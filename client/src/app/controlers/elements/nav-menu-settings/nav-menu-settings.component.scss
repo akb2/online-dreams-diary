@@ -50,6 +50,12 @@ $positions-y: top center bottom;
 $filter: grayscale(90%);
 $keys: full short collapse;
 
+// Главный блок
+:host {
+  display: block;
+  width: 100%;
+}
+
 // Иконки выбора картинок
 .settings {
   display: grid;
