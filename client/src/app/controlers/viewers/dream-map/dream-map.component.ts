@@ -20,7 +20,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   @Input() dreamMap: DreamMap;
-  @Input() zoom: number = 2;
+  @Input() zoom: number = 4;
   @Input() rotateX: number = 70;
   @Input() rotateZ: number = 0;
 
@@ -43,7 +43,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private zoomMax: number = 6;
 
   private size: number = 30;
-  private zSize: number = 4;
   private visibleCeil: number = 4;
 
   private rotateMap: boolean = false;
@@ -52,7 +51,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private rotateAngleStepX: number = 3;
   private rotateAngleStepZ: number = 3;
   private minRotateX: number = 0;
-  private maxRotateX: number = 70;
+  private maxRotateX: number = 85;
 
   private moveMap: boolean = false;
   private moveStartX: number = 0;
@@ -70,10 +69,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   get ceilSize(): number {
     return this.size * this.zoom;
-  }
-
-  get ceilZSize(): number {
-    return this.ceilSize / this.zSize;
   }
 
   get mapWidth(): number {
@@ -126,12 +121,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Проверка данных
       this.correctData();
       // Изменить позицию
-      const viewerX: number = this.viewerWidth / 2;
-      const viewerY: number = this.viewerHeight / 2;
-      const mapX: number = viewerX - this.positionX;
-      const mapY: number = viewerY - this.positionY;
-      this.positionX = viewerX - (mapX / oldZoom * this.zoom);
-      this.positionY = viewerY - (mapY / oldZoom * this.zoom);
+      this.positionX = (this.viewerWidth / 2) - (((this.viewerWidth / 2) - this.positionX) / oldZoom * this.zoom);
+      this.positionY = (this.viewerHeight / 2) - (((this.viewerHeight / 2) - this.positionY) / oldZoom * this.zoom);
       // Обновить
       this.changeDetectorRef.detectChanges();
     }
@@ -256,39 +247,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         "rotateZ(" + this.rotateZ + "deg) " +
         "translate3D(" + this.translateX + "px, " + this.translateY + "px, " + this.translateZ + "px)"
     };
-  }
-
-  // Стили ячеек
-  ceilStyle(ceil: DreamMapCeil): SimpleObject {
-    const zIndexY: number = (ceil.coord.y + 1) * 1000;
-    const zIndexX: number = ceil.coord.x < this.dreamMap.size.width / 2 ? ceil.coord.x + 1 : Math.abs(ceil.coord.x - this.dreamMap.size.width);
-    // Вернуть объект
-    return {
-      'z-index': (zIndexX + zIndexY).toString(),
-      width: (this.size * this.zoom) + "px",
-      height: (this.size * this.zoom) + "px",
-      top: (ceil.coord.y * this.ceilSize) + "px",
-      left: (ceil.coord.x * this.ceilSize) + "px",
-      perspective: ((this.ceilSize * this.visibleCeil) + (((ceil.coord.y + 1) - this.dreamMap.size.width) * this.ceilSize)) + "px"
-    };
-  }
-
-  // Стили подземного слоя
-  ceilUndergroundStyle(ceil: DreamMapCeil, type: WallType): SimpleObject {
-    const zIndexY: number = (ceil.coord.y + 1) * 1000;
-    const zIndexX: number = ceil.coord.x < this.dreamMap.size.width / 2 ? ceil.coord.x + 1 : Math.abs(ceil.coord.x - this.dreamMap.size.width);
-    // Задняя стенка
-    if (type === WallType.side) {
-      return {
-        'z-index': (100000 + zIndexX + zIndexY).toString(),
-        top: (ceil.coord.y * this.ceilSize) + "px",
-        left: (ceil.coord.x * this.ceilSize) + "px",
-        width: this.ceilSize + "px",
-        height: (this.ceilZSize * ceil.coord.z) + "px"
-      };
-    }
-    // Прочее
-    return {};
   }
 
 
