@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMode, Place } from "@_models/dream";
+import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode, Place } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { Observable, of, throwError } from "rxjs";
@@ -20,6 +20,9 @@ export class DreamService {
 
   private currentUser: User;
   private tempUsers: User[] = [];
+
+  private dreamMapWidth: number = 32;
+  private dreamMapHeight: number = 32;
 
 
 
@@ -93,7 +96,7 @@ export class DreamService {
       places: null,
       members: null,
       text: dreamDto.text,
-      map: null,
+      map: this.dreamMapConverter(JSON.parse(dreamDto.map)),
       headerType: dreamDto.headerType as NavMenuType,
       headerBackground: BackgroundImageDatas.find(b => b.id === dreamDto.headerBackgroundId)
     };
@@ -119,6 +122,34 @@ export class DreamService {
       })));
     }
   }
+
+  // Конвертер карты
+  private dreamMapConverter(dreamMapDto: DreamMapDto | null): DreamMap {
+    // Преобразование карты
+    if (dreamMapDto) {
+      return {
+        size: {
+          width: dreamMapDto.size.width || this.dreamMapWidth,
+          height: dreamMapDto.size.height || this.dreamMapHeight
+        },
+        ceils: dreamMapDto.ceils.map(c => ({
+          place: null,
+          terrain: null,
+          object: null,
+          coord: c.coord
+        })),
+        dreamerWay: dreamMapDto.dreamerWay
+      } as DreamMap;
+    }
+    // Карта по умолчанию
+    else {
+      return {
+        size: { width: this.dreamMapWidth, height: this.dreamMapHeight },
+        ceils: [],
+        dreamerWay: []
+      };
+    }
+  }
 }
 
 
@@ -138,7 +169,16 @@ const Dreams: DreamDto[] = [{
   places: "",
   members: "",
   text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
-  map: "",
-  headerType: NavMenuType.full,
+  map: JSON.stringify({
+    dreamerWay: null,
+    size: { width: 20, height: 20 },
+    ceils: [
+      {
+        coord: { x: 5, y: 7, z: 4 },
+        terrain: 1
+      }
+    ]
+  } as DreamMapDto),
+  headerType: NavMenuType.collapse,
   headerBackgroundId: 9
 }];
