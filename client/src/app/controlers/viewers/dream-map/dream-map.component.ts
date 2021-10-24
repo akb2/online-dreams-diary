@@ -298,7 +298,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Коррекция параметров
   private correctData(): void {
     // Проверка оси X
-    this.rotateX = this.checkAngle(this.rotateX);
     this.rotateX = this.rotateX < this.minRotateX ? this.minRotateX : this.rotateX;
     this.rotateX = this.rotateX > this.maxRotateX ? this.maxRotateX : this.rotateX;
     // Проверка оси Z
