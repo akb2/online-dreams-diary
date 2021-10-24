@@ -18,6 +18,7 @@
     <div [ngClass]="{ 'floating-margin': dream.headerType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
+                     [selectedIndex]="2"
                      (selectedIndexChange)="onChangeTab($event)">
         <!-- Общее -->
         <mat-tab label="Общее">
@@ -101,6 +102,9 @@
                  *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
           <div class="overlay">
             <div class="section root-section tabs">
+              <div class="container all-height">
+                <app-dream-map-viewer [dreamMap]="dream.map"></app-dream-map-viewer>
+              </div>
             </div>
           </div>
         </mat-tab>

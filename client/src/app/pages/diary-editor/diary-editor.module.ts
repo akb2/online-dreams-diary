@@ -4,6 +4,7 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocomplete-input.module';
 import { CardModule } from '@_controlers/card/card.module';
 import { ChipsInputModule } from '@_controlers/chips-input/chips-input.module';
+import { DreamMapViewerModule } from '@_controlers/dream-map/dream-map.module';
 import { NavMenuSettingsModule } from '@_controlers/nav-menu-settings/nav-menu-settings.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
@@ -31,7 +32,8 @@ import { DiaryEditorComponent } from '@_pages/diary-editor/diary-editor.componen
     ChipsInputModule,
     CardModule,
     TextInputModule,
-    AutocompleteInputModule
+    AutocompleteInputModule,
+    DreamMapViewerModule
   ]
 })
 

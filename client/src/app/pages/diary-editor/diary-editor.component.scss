@@ -120,3 +120,8 @@ $tabs-height: 48px;
 .root-section.tabs {
   min-height: calc(100vh - #{$header-height + $tabs-height});
 }
+
+// Занять все пространство
+.all-height {
+  height: calc(100vh - #{$header-height + $tabs-height});
+}
