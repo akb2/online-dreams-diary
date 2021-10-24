@@ -1,0 +1,29 @@
+<div #map
+     class="map"
+     (mousedown)="onMapMoveStart($event)"
+     (contextmenu)="$event.preventDefault()"
+     (wheel)="onZoom($event)"
+     *ngIf="dreamMap">
+  <div class="map__layout"
+       [ngStyle]="layoutStyle()">
+    <ng-container *ngFor="let y of iY">
+      <ng-container *ngFor="let x of iX">
+        <!-- Ячейка -->
+        <div class="ceil"
+             [ngStyle]="ceilStyle(ceil(x,y))">
+        </div>
+        <!-- Подземный слой -->
+        <ng-container *ngIf="ceil(x,y).coord.z">
+          <div class="ceil__underground-side"
+               [ngStyle]="ceilUndergroundStyle(ceil(x,y), 0)"></div>
+          <div class="ceil__underground-left"
+               [ngStyle]="ceilUndergroundStyle(ceil(x,y), 1)"></div>
+          <div class="ceil__underground-right"
+               [ngStyle]="ceilUndergroundStyle(ceil(x,y), 2)"></div>
+          <div class="ceil__underground-front"
+               [ngStyle]="ceilUndergroundStyle(ceil(x,y), 3)"></div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>
