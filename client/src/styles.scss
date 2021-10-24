@@ -61,6 +61,17 @@ html {
   // Тело
   body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    // Курсоры
+    &.cursor {
+      // Повороты
+      &-move {
+        cursor: move !important;
+      }
+      // Перемещения
+      &-all-scroll {
+        cursor: all-scroll !important;
+      }
+    }
   }
   // Текст
   & {
