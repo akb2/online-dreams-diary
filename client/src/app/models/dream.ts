@@ -66,6 +66,7 @@ export interface DreamerWay {
 // Интерфейс карты
 export interface DreamMap {
   ceils: (DreamMapCeil | null)[];
+  size: MapSize;
   dreamerWay: DreamerWay[] | null;
 }
 
@@ -74,6 +75,7 @@ export interface DreamMapCeil {
   place: Place | null;
   terrain: MapTerrain | null;
   object: MapObject | null;
+  coord: Coord
 }
 
 // Интерфейс типа местности
@@ -88,14 +90,36 @@ export interface MapObject {
   name: string;
 }
 
+// Интерфейс карты для сервера
+export interface DreamMapDto {
+  ceils: (DreamMapCeilDto | null)[];
+  size: MapSize;
+  dreamerWay: DreamerWay[] | null;
+}
+
+// Интерфейс ячейки сновидения
+export interface DreamMapCeilDto {
+  place: number | null;
+  terrain: number | null;
+  object: number | null;
+  coord: Coord
+}
 
 
 
+
+
+// Интерфейс размера
+export interface MapSize {
+  width: number;
+  height: number;
+}
 
 // Интерфейс координат
 export interface Coord {
   x: number;
   y: number;
+  z: number;
 }
 
 // Тип сновидения
