@@ -2,7 +2,8 @@
 @use "../../../../assets/styles/mixins";
 
 $border-size: 3px;
-$border-color: #bbb;
+$border-color: #000;
+$background-color: rgba(180, 180, 180, 0.5);
 
 $z-koof: 10;
 $z-max: $z-koof * 10;
@@ -26,21 +27,12 @@ $z-max: $z-koof * 10;
   perspective: 800px;
   // Сетка
   &__layout {
-    border: 0 dotted #{$border-color};
-    border-width: 0 #{$border-size} #{$border-size} 0;
+    // border: 0 dotted #{$border-color};
+    // border-width: 0 #{$border-size} #{$border-size} 0;
     position: relative;
     display: grid;
     transform-style: preserve-3d;
     perspective: 999999px;
-    // Размеры ячеек
-    @for $i from 1 to 100 {
-      &[width="#{$i}"] {
-        grid-template-columns: repeat(#{$i}, 1fr);
-      }
-      &[height="#{$i}"] {
-        grid-template-rows: repeat(#{$i}, 1fr);
-      }
-    }
   }
 }
 
@@ -49,7 +41,10 @@ $z-max: $z-koof * 10;
   position: relative;
   transform-style: preserve-3d;
   perspective: 999999px;
-  font-size: inherit;
+  font-size: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   // Опорная сетка
   &:before {
     @include mixins.inset;
@@ -57,9 +52,9 @@ $z-max: $z-koof * 10;
     content: "";
     display: block;
     position: absolute;
+    background-color: $background-color;
     border: 0 dotted #{$border-color};
     border-width: #{$border-size} 0 0 #{$border-size};
-    background-color: #000;
   }
   // Обозначение наземного слоя
   &__background {
@@ -131,36 +126,24 @@ $z-max: $z-koof * 10;
       }
     }
   }
-}
-
-// Условный центр
-.center {
-  $size: 10px;
-  // Свойства
-  position: absolute;
-  width: $size;
-  height: $size;
-  margin-top: -$size / 2;
-  margin-left: -$size / 2;
-  transform-style: preserve-3d;
-  perspective: 999999px;
-  // Дочерние элементы
-  > * {
-    @include mixins.inset;
-    // Свойства
-    display: block;
-    position: absolute;
-    border-radius: 50%;
-    background-color: #900;
-    // Смещение по Z
-    @for $i from 1 to 401 {
-      &:nth-child(#{$i}) {
-        transform: translateZ(#{1px * ($i - 1)});
+  // Туман
+  @for $layoutFog from 1 to 11 {
+    $__elm: &;
+    // Стили
+    .map__layout[fog="#{$layoutFog}"] > & {
+      @for $ceilFog from 1 to $layoutFog + 1 {
+        &[fog="#{$ceilFog}"] {
+          // Размытие и прозрачность
+          &:before,
+          #{$__elm}__background,
+          #{$__elm}__underground-side,
+          #{$__elm}__underground-front,
+          #{$__elm}__underground-left,
+          #{$__elm}__underground-right {
+            filter: blur(math.div(20px, $layoutFog) * $ceilFog);
+          }
+        }
       }
-    }
-    // Последний слой
-    &:nth-last-child(1) {
-      background-color: #700 !important;
     }
   }
 }

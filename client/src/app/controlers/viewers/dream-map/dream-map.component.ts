@@ -21,7 +21,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   @Input() dreamMap: DreamMap;
   @Input() zoom: number = 4;
-  @Input() rotateX: number = 0;
+  @Input() rotateX: number = 45;
   @Input() rotateZ: number = 0;
 
   @ViewChild("map") map: ElementRef;
@@ -31,13 +31,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   private positionX: number;
   private positionY: number;
-  private moveX: number = 0;
-  private moveY: number = 0;
   private translateX: number = 0;
   private translateY: number = 0;
 
-  private zoomStep: number = 0.05;
-  private zoomMin: number = 1;
+  private zoomStep: number = 0.2;
+  private zoomMin: number = 2;
   private zoomMax: number = 6;
 
   private size: number = 30;
@@ -53,10 +51,15 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private moveMap: boolean = false;
   private moveStartX: number = 0;
   private moveStartY: number = 0;
-  private moveStepX: number = 1;
-  private moveStepY: number = 1;
 
   iCenter: number[] = new Array(400);
+
+  private renderDistance: number = 0;
+  private renderDistanceCorrect: number = 7;
+  skipMinX: number = 0;
+  skipMaxX: number = 0;
+  skipMinY: number = 0;
+  skipMaxY: number = 0;
 
   get iX(): number[] {
     return Array.apply(null, { length: this.dreamMap?.size?.width || 0 }).map(Number.call, Number);
@@ -94,18 +97,28 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   ngAfterViewInit() {
     timer(0, 100).pipe(
       takeWhile(() => !this.viewerWidth || !this.viewerHeight),
-      tap(() => this.defineViewer())
+      tap(() => this.onViewerResize())
     ).subscribe(() => this.correctData());
   }
 
   ngOnDestroy() {
+    window.addEventListener("resize", this.onViewerResize.bind(this), true);
     window.removeEventListener("mousemove", this.onMapMove.bind(this), true);
     window.removeEventListener("mouseup", this.onMapMoveEnd.bind(this), true);
+    this.map.nativeElement.removeEventListener("resize", this.onViewerResize.bind(this), true);
   }
 
 
 
 
+
+  // Изменение размера окна
+  private onViewerResize(): void {
+    if (this.map) {
+      this.defineViewer();
+      this.correctData();
+    }
+  }
 
   // Изменение масштаба
   onZoom(event: WheelEvent): void {
@@ -113,8 +126,16 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Зум
     if (delta > 0 || delta < 0) {
       const oldZoom: number = this.zoom;
+      const oldMapWidth: number = this.mapWidth;
+      const oldMapHeight: number = this.mapHeight;
       // Изменить зум
       this.zoom -= this.zoomStep * delta;
+      // Корректировки масштаба
+      this.zoom = this.zoom < this.zoomMin ? this.zoomMin : this.zoom;
+      this.zoom = this.zoom > this.zoomMax ? this.zoomMax : this.zoom;
+      // Пересчитать смещение карты
+      this.translateX = (this.translateX / oldMapWidth) * this.mapWidth;
+      this.translateY = (this.translateY / oldMapWidth) * this.mapWidth;
       // Сбросить события
       event.preventDefault();
       // Проверка данных
@@ -157,36 +178,43 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Удерживание средней кнопки мыши
-  private onMapMove(event: MouseEvent): void {
+  private onMapMove(event?: MouseEvent): void {
+    const x: number = event ? event.pageX : 0;
+    const y: number = event ? event.pageY : 0;
     // Поворот карты
     if (this.rotateMap) {
-      const shiftX: number = event.pageX - this.rotateStartX;
-      const shiftY: number = event.pageY - this.rotateStartY;
+      const oldX: number = event ? this.rotateStartX : 0;
+      const oldY: number = event ? this.rotateStartY : 0;
+      // Посчитать смещение
+      const shiftX: number = x - oldX;
+      const shiftY: number = y - oldY;
       // Расчет углов
       const angleZ: number = shiftX / this.rotateAngleStepZ;
-      let angleX: number = shiftY / this.rotateAngleStepX;
+      const angleX: number = shiftY / this.rotateAngleStepX;
       // Присвоение значений
       this.rotateZ -= angleZ;
       this.rotateX -= angleX;
       // Сохранить предыдущий параметр
-      this.rotateStartX = event.pageX;
-      this.rotateStartY = event.pageY;
+      this.rotateStartX = x;
+      this.rotateStartY = y;
       // Проверка данных
       this.correctData();
     }
     // Перемещение карты
     else if (this.moveMap) {
-      const shiftX: number = event.pageX - this.moveStartX;
-      const shiftY: number = event.pageY - this.moveStartY;
-      // Присвоение значений
-      this.moveX += (shiftX * Cos(this.rotateZ)) + (shiftY * Sin(this.rotateZ));
-      this.moveY += (shiftX * -Sin(this.rotateZ)) + ((shiftY) * Cos(this.rotateZ));
+      const oldX: number = event ? this.moveStartX : 0;
+      const oldY: number = event ? this.moveStartY : 0;
+      // Посчитать смещение
+      const shiftX: number = x - oldX;
+      const shiftY: number = y - oldY;
       // Присвоение для сдвига карты
       this.translateX += (shiftX * Cos(this.rotateZ)) + (shiftY * Sin(this.rotateZ));
       this.translateY += (shiftX * -Sin(this.rotateZ)) + (shiftY * Cos(this.rotateZ));
+      this.translateX = this.translateX > (this.mapWidth / 2) ? this.mapWidth / 2 : this.translateX < (-this.mapWidth / 2) ? -this.mapWidth / 2 : this.translateX;
+      this.translateY = this.translateY > (this.mapHeight / 2) ? this.mapHeight / 2 : this.translateY < (-this.mapHeight / 2) ? -this.mapHeight / 2 : this.translateY;
       // Сохранить предыдущий параметр
-      this.moveStartX = event.pageX;
-      this.moveStartY = event.pageY;
+      this.moveStartX = x;
+      this.moveStartY = y;
       // Проверка данных
       this.correctData();
     }
@@ -236,14 +264,27 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Стили карты
   layoutStyle(): SimpleObject {
+    let skipMinY: number = this.skipMinY - this.renderDistanceCorrect;
+    skipMinY = skipMinY < 0 ? 0 : skipMinY;
+    let skipMinX: number = this.skipMinX - this.renderDistanceCorrect;
+    skipMinX = skipMinX < 0 ? 0 : skipMinX;
+    let skipMaxY: number = this.skipMaxY - this.renderDistanceCorrect;
+    skipMaxY = skipMaxY < 0 ? 0 : skipMaxY;
+    let skipMaxX: number = this.skipMaxX - this.renderDistanceCorrect;
+    skipMaxX = skipMaxX < 0 ? 0 : skipMaxX;
+    // Свойства
     return {
       top: this.positionY + "px",
       left: this.positionX + "px",
-      width: this.mapWidth + "px",
-      height: this.mapHeight + "px",
+      width: (this.mapWidth - ((skipMaxX) * this.ceilSize)) + "px",
+      height: (this.mapHeight - ((skipMaxY) * this.ceilSize)) + "px",
+      "padding-top": (skipMinY * this.ceilSize) + "px",
+      "padding-left": (skipMinX * this.ceilSize) + "px",
+      "grid-template-columns": "repeat(" + (this.dreamMap.size.width - skipMinX - skipMaxX) + ", 1fr)",
+      "grid-template-rows": "repeat(" + (this.dreamMap.size.height - skipMinY - skipMaxY) + ", 1fr)",
       "transform-origin":
-        ((this.mapWidth / 2) - this.moveX) + "px " +
-        ((this.mapHeight / 2) - this.moveY) + "px " +
+        ((this.mapWidth / 2) - this.translateX) + "px " +
+        ((this.mapHeight / 2) - this.translateY) + "px " +
         "0px ",
       transform:
         "translateX(" + this.translateX + "px) " +
@@ -265,12 +306,28 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     };
   }
 
-  // Позиция центра
-  centerStyle(): SimpleObject {
-    return {
-      top: ((this.mapWidth / 2) - ((this.moveY * this.moveKoof(this.rotateZ, 0)) + (this.moveX * this.moveKoof(this.rotateZ, 270)))) + "px",
-      left: ((this.mapHeight / 2) - ((this.moveX * this.moveKoof(this.rotateZ, 0)) + (this.moveY * this.moveKoof(this.rotateZ, 90)))) + "px"
-    };
+  // Рендерить ли строку
+  renderY(y: number): boolean {
+    return y >= this.skipMinY - this.renderDistanceCorrect && y < this.dreamMap.size.height - this.skipMaxY + this.renderDistanceCorrect;
+  }
+
+  // Рендерить ли колонку
+  renderX(x: number): boolean {
+    return x >= this.skipMinX - this.renderDistanceCorrect && x < this.dreamMap.size.width - this.skipMaxX + this.renderDistanceCorrect;
+  }
+
+  // Класс тумана
+  renderFog(x: number, y: number): number {
+    const fogX: number = !this.renderX(x) || (x >= this.skipMinX && x < this.dreamMap.size.width - this.skipMaxX) ? 0 :
+      x < this.skipMinX ? this.skipMinX - x :
+        x - this.dreamMap.size.width + this.skipMaxX + 1
+      ;
+    const fogY: number = !this.renderY(y) || (y >= this.skipMinY && y < this.dreamMap.size.height - this.skipMaxY) ? 0 :
+      y < this.skipMinY ? this.skipMinY - y :
+        y - this.dreamMap.size.width + this.skipMaxY + 1
+      ;
+    // Результат
+    return fogX === 0 && fogY === 0 ? 0 : Math.max(Math.max(fogX, 1), Math.max(fogY, 1));
   }
 
 
@@ -284,125 +341,43 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.rotateX = this.rotateX > this.maxRotateX ? this.maxRotateX : this.rotateX;
     // Проверка оси Z
     this.rotateZ = this.checkAngle(this.rotateZ);
-    // Корректировки масштаба
-    this.zoom = this.zoom < this.zoomMin ? this.zoomMin : this.zoom;
-    this.zoom = this.zoom > this.zoomMax ? this.zoomMax : this.zoom;
     // Определение позиции карты по горизонтали
     this.positionX = this.positionX ? this.positionX : (this.viewerWidth - this.mapWidth) / 2;
     this.positionY = this.positionY ? this.positionY : (this.viewerHeight - this.mapHeight) / 2;
-    // Перемещение карты
-    // const radius: number = Math.sqrt(Math.pow(this.moveX, 2) + Math.pow(this.moveY, 2));
-    // this.translateX = this.moveX;
-    // this.translateY = this.moveY;
-    /*this.translateX = (
-      ((this.moveX * this.moveKoof(this.rotateZ, 0))) +
-      ((this.moveY * this.moveKoof(this.rotateZ, 90)))
-    );
-    this.translateY = (
-      (this.moveY * this.moveKoof(this.rotateZ, 0)) +
-      (this.moveX * this.moveKoof(this.rotateZ, 270))
-    );*/
+    // Расчитать дальность прорисовки
+    this.checkRenderDistance();
     // Обновить
     this.changeDetectorRef.detectChanges();
+  }
+
+  // Определить дальность прорисовки
+  private checkRenderDistance(): void {
+    // Центральные координаты
+    const centerX: number = (this.mapWidth / 2) - this.translateX;
+    const centerY: number = (this.mapHeight / 2) - this.translateY;
+    // Минимальные ячейки
+    let minCeilX: number = Math.floor((centerX - this.renderDistance) / this.ceilSize);
+    let minCeilY: number = Math.floor((centerY - this.renderDistance) / this.ceilSize);
+    minCeilX = minCeilX < 0 ? 0 : minCeilX;
+    minCeilY = minCeilY < 0 ? 0 : minCeilY;
+    // Максимальные ячейки
+    let maxCeilX: number = Math.ceil((centerX + this.renderDistance) / this.ceilSize);
+    let maxCeilY: number = Math.ceil((centerY + this.renderDistance) / this.ceilSize);
+    maxCeilX = maxCeilX >= this.dreamMap.size.width ? this.dreamMap.size.width : maxCeilX;
+    maxCeilY = maxCeilY >= this.dreamMap.size.height ? this.dreamMap.size.height : maxCeilY;
+    // Расчитать отступы
+    this.skipMinX = minCeilX;
+    this.skipMaxX = this.dreamMap.size.width - maxCeilX;
+    this.skipMinY = minCeilY;
+    this.skipMaxY = this.dreamMap.size.height - maxCeilY;
   }
 
   // Расчет параметров просмотра
   private defineViewer(): void {
     this.viewerWidth = this.map?.nativeElement?.getBoundingClientRect().width;
     this.viewerHeight = this.map?.nativeElement?.getBoundingClientRect().height;
-  }
-
-  // Расчитать сдвиг по осям
-  private moveKoof(angle: number, forward: number): number {
-    angle = this.checkAngle(angle);
-    forward = this.checkAngle(forward);
-    const backward: number = this.checkAngle(forward + 180);
-    const left: number = this.checkAngle(forward - 90);
-    const right: number = this.checkAngle(forward + 90);
-    let min: number = 0;
-    let max: number = 0;
-    // 1 => 0
-    if ((angle >= forward && angle < right && right > 0) || (angle >= forward && angle < 360 && right === 0)) {
-      min = 1;
-      max = 0;
-    }
-    // 0 => -1
-    if ((angle >= right && angle < backward && backward > 0) || (angle >= right && angle < 360 && backward === 0)) {
-      min = 0;
-      max = -1;
-    }
-    // -1 => 0
-    if ((angle >= backward && angle < left && left > 0) || (angle >= backward && angle < 360 && left === 0)) {
-      min = -1;
-      max = 0;
-    }
-    // 0 => 1
-    if ((angle >= left && angle < forward && forward > 0) || (angle >= left && angle < 360 && forward === 0)) {
-      min = 0;
-      max = 1;
-    }
-    // Расчет кооэфициента
-    const value: number = angle - (Math.floor(angle / 90) * 90);
-    const koof: number = (max - min) / 90;
-    // Вернуть результат
-    return (koof * value) + min;
-  }
-
-  // Расчет свыига по осям для центровки
-  private unMoovKoof(hyp: number, angle: number, move: "x" | "y"): number {
-    let min: number = 0;
-    let max: number = 0;
-    let value: number = 90 - (angle - (Math.floor(angle / 90) * 90));
-    // Для оси Y
-    if (move === "y") {
-      // 0 => 1
-      if (angle >= 270 && angle < 360) {
-        min = 0;
-        max = hyp;
-      }
-      // 1 => 1
-      if (angle >= 180 && angle < 270) {
-        min = hyp;
-        max = hyp;
-      }
-      // 1 => 0
-      if (angle >= 90 && angle < 180) {
-        min = hyp;
-        max = 0;
-      }
-      // 0 => 0
-      if (angle >= 0 && angle < 90) {
-        min = 0;
-        max = 0;
-      }
-    }
-    // Для оси X
-    else if (move === "x") {
-      // 0 => 0
-      if (angle >= 270 && angle < 360) {
-        min = 0;
-        max = 0;
-      }
-      // 0 => 1
-      if (angle >= 180 && angle < 270) {
-        min = 0;
-        max = hyp;
-      }
-      // 1 => 1
-      if (angle >= 90 && angle < 180) {
-        min = hyp;
-        max = hyp;
-      }
-      // 1 => 0
-      if (angle >= 0 && angle < 90) {
-        min = hyp;
-        max = 0;
-      }
-    }
-    // Расчет кооэфициента
-    const koof: number = (max - min) / 90;
-    // Вернуть результат
-    return (koof * value) + min;
+    // Дальность прорисовки
+    this.renderDistance = Math.max(this.viewerWidth, this.viewerHeight) / 2;
   }
 
   // Проверить угол
