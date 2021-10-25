@@ -82,6 +82,9 @@ export interface DreamMapCeil {
 export interface MapTerrain {
   id: number;
   name: string;
+  backgroundImage: string;
+  undergroundImage: string;
+  undergroundBorderImage: string;
 }
 
 // Интерфейс объекта карты
