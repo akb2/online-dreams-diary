@@ -89,3 +89,9 @@ export const BrowserNames: SimpleObject = {
 
   "Default Browser": "Неопределен",
 };
+
+// Синус угла
+export const Sin: (angle: number) => number = (angle: number) => parseFloat(Math.sin((Math.PI * angle) / 180).toFixed(10))
+
+// Косинус угла
+export const Cos: (angle: number) => number = (angle: number) => parseFloat(Math.cos((Math.PI * angle) / 180).toFixed(10));
