@@ -1,11 +1,11 @@
 @use "sass:math";
 @use "../../../../assets/styles/mixins";
 
-$border-size: 1px;
+$border-size: 3px;
 $border-color: #bbb;
 
-$z-koof: 8;
-$z-max: 40;
+$z-koof: 10;
+$z-max: $z-koof * 10;
 
 // Родительский блок
 :host {
@@ -50,14 +50,24 @@ $z-max: 40;
   transform-style: preserve-3d;
   perspective: 999999px;
   font-size: inherit;
+  // Опорная сетка
+  &:before {
+    @include mixins.inset;
+    // Свойства
+    content: "";
+    display: block;
+    position: absolute;
+    border: 0 dotted #{$border-color};
+    border-width: #{$border-size} 0 0 #{$border-size};
+    background-color: #000;
+  }
   // Обозначение наземного слоя
   &__background {
     @include mixins.inset;
     // Свойства
-    border: 0 dotted #{$border-color};
-    border-width: #{$border-size} 0 0 #{$border-size};
-    background-color: #000;
     position: absolute;
+    background-position: 0 0;
+    background-size: 100%;
     // Цикл по высоте
     @for $i from 1 to $z-max {
       &[z="#{$i}"] {
@@ -74,67 +84,83 @@ $z-max: 40;
     &-right {
       display: block;
       position: absolute;
-      background-color: #900;
-    }
-    // Горизонтальные направляющие
-    &-side,
-    &-front {
+      left: 0;
+      background-position: bottom center;
+      background-size: 100% auto;
       width: 100%;
-    }
-    // Вертикальные направляющие
-    &-left,
-    &-right {
-      height: 100%;
     }
     // Задняя стенка
     &-side {
-      top: 0;
-      left: 0;
-      transform-origin: top left;
-      transform: rotateX(90deg);
-      filter: brightness(1);
+      bottom: 100%;
+      transform-origin: bottom left;
+      //filter: brightness(1);
+      transform: rotateX(-90deg);
     }
     // Левая стенка
     &-left {
-      top: 0;
-      left: 0;
-      transform-origin: top left;
-      transform: rotateY(-90deg);
-      filter: brightness(0.9);
+      bottom: 100%;
+      transform-origin: bottom left;
+      //filter: brightness(0.9);
+      transform: rotateX(-90deg) rotateY(-90deg);
     }
     // Правая стенка
     &-right {
-      top: 0;
-      right: 0;
-      transform-origin: top right;
-      transform: rotateY(90deg);
-      filter: brightness(0.8);
+      bottom: 0;
+      left: 100%;
+      transform-origin: bottom left;
+      //filter: brightness(0.8);
+      transform: rotateX(-90deg) rotateY(90deg);
     }
     // Передняя стенка
     &-front {
       bottom: 0;
-      right: 0;
       transform-origin: bottom left;
+      //filter: brightness(0.7);
       transform: rotateX(-90deg);
-      filter: brightness(0.7);
     }
 
     // Цикл по высоте
     @for $i from 1 to $z-max {
-      // Горизонтальные направляющие
       &-side,
-      &-front {
+      &-front,
+      &-left,
+      &-right {
         &[z="#{$i}"] {
           height: math.div(100%, $z-koof) * $i;
         }
       }
-      // Вертикальные направляющие
-      &-left,
-      &-right {
-        &[z="#{$i}"] {
-          width: math.div(100%, $z-koof) * $i;
-        }
+    }
+  }
+}
+
+// Условный центр
+.center {
+  $size: 10px;
+  // Свойства
+  position: absolute;
+  width: $size;
+  height: $size;
+  margin-top: -$size / 2;
+  margin-left: -$size / 2;
+  transform-style: preserve-3d;
+  perspective: 999999px;
+  // Дочерние элементы
+  > * {
+    @include mixins.inset;
+    // Свойства
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    background-color: #900;
+    // Смещение по Z
+    @for $i from 1 to 401 {
+      &:nth-child(#{$i}) {
+        transform: translateZ(#{1px * ($i - 1)});
       }
+    }
+    // Последний слой
+    &:nth-last-child(1) {
+      background-color: #700 !important;
     }
   }
 }

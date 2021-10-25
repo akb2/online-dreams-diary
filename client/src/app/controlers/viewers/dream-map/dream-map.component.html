@@ -13,21 +13,35 @@
         <!-- Ячейка -->
         <div class="ceil"
              attr.coord="{{x}}-{{y}}">
-          <div class="ceil__background"
-               [attr.z]="ceil(x,y).coord.z"></div>
-          <!-- Подземный слой -->
-          <ng-container *ngIf="ceil(x,y).coord.z">
-            <div class="ceil__underground-side"
+          <ng-container *ngIf="ceil(x,y).terrain">
+            <!-- Тип местности -->
+            <div class="ceil__background"
+                 [ngStyle]="{ 'background-image': 'url('+ceil(x,y).terrain.backgroundImage+')' }"
                  [attr.z]="ceil(x,y).coord.z"></div>
-            <div class="ceil__underground-left"
-                 [attr.z]="ceil(x,y).coord.z"></div>
-            <div class="ceil__underground-right"
-                 [attr.z]="ceil(x,y).coord.z"></div>
-            <div class="ceil__underground-front"
-                 [attr.z]="ceil(x,y).coord.z"></div>
+            <!-- Подземный слой -->
+            <ng-container *ngIf="ceil(x,y).coord.z">
+              <!-- Текстура земли -->
+              <div class="ceil__underground-side"
+                   [ngStyle]="ceilUndergroundStyle(ceil(x,y))"
+                   [attr.z]="ceil(x,y).coord.z"></div>
+              <div class="ceil__underground-left"
+                   [ngStyle]="ceilUndergroundStyle(ceil(x,y))"
+                   [attr.z]="ceil(x,y).coord.z"></div>
+              <div class="ceil__underground-right"
+                   [ngStyle]="ceilUndergroundStyle(ceil(x,y))"
+                   [attr.z]="ceil(x,y).coord.z"></div>
+              <div class="ceil__underground-front"
+                   [ngStyle]="ceilUndergroundStyle(ceil(x,y))"
+                   [attr.z]="ceil(x,y).coord.z"></div>
+            </ng-container>
           </ng-container>
         </div>
       </ng-container>
     </ng-container>
+    <!-- Условный центр -->
+    <!--<div class="center"
+         [ngStyle]="centerStyle()">
+      <div *ngFor="let i of iCenter"></div>
+    </div>-->
   </div>
 </div>
