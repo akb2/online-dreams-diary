@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode, Place } from "@_models/dream";
+import { MapTerrains } from "@_models/dream-map-terrain";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { Observable, of, throwError } from "rxjs";
@@ -134,7 +135,7 @@ export class DreamService {
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: null,
+          terrain: MapTerrains.some(t => t.id === c.terrain) ? MapTerrains.find(t => t.id === c.terrain) : null,
           object: null,
           coord: c.coord
         })),
