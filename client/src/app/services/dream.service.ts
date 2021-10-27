@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
+import { MapTerrains } from "@app/controlers/dream-map/terrain/terrain.component";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode, Place } from "@_models/dream";
-import { MapTerrains } from "@_models/dream-map-terrain";
+import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { Observable, of, throwError } from "rxjs";
@@ -172,30 +172,30 @@ const Dreams: DreamDto[] = [{
   text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
   map: JSON.stringify({
     dreamerWay: null,
-    size: { width: 30, height: 30 },
+    size: { width: 32, height: 32 },
     ceils: [
       {
-        coord: { x: 4, y: 7, z: 1 },
+        coord: { x: 4, y: 5, z: 28 },
         terrain: 1
       },
       {
-        coord: { x: 4, y: 6, z: 2 },
+        coord: { x: 4, y: 8, z: 14 },
         terrain: 1
       },
       {
-        coord: { x: 4, y: 5, z: 3 },
+        coord: { x: 6, y: 9, z: 12 },
         terrain: 1
       },
       {
-        coord: { x: 5, y: 5, z: 4 },
+        coord: { x: 7, y: 3, z: 46 },
         terrain: 1
       },
       {
-        coord: { x: 5, y: 6, z: 5 },
+        coord: { x: 7, y: 4, z: 38 },
         terrain: 1
       },
       {
-        coord: { x: 5, y: 7, z: 6 },
+        coord: { x: 8, y: 6, z: 40 },
         terrain: 1
       }
     ]
