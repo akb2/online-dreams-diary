@@ -10,7 +10,7 @@
         $koof: math.cos(math.div(90deg, $layoutFog + 1) * $ceilFog);
         // Свойства
         filter: blur(10px * (1 - $koof));
-        // opacity: 1 * $koof;
+        opacity: math.sqrt(1 * $koof);
       }
     }
   }

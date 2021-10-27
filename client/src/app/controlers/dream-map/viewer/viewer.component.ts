@@ -55,7 +55,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   iCenter: number[] = new Array(400);
 
   private renderDistance: number = 0;
-  private renderDistanceCorrect: number = 3;
+  private renderDistanceCorrect: number = 4;
   private renderMax: number = 16;
 
   skipMinX: number = 0;
