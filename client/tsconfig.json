@@ -42,7 +42,8 @@
         "src/app/controlers/lists/*",
         "src/app/controlers/menus/*",
         "src/app/controlers/viewers/*",
-        "src/app/controlers/pop-ups/*"
+        "src/app/controlers/pop-ups/*",
+        "src/app/controlers/dream-map/*"
       ],
       "@_pipes/*": [
         "src/app/pipes/*"
