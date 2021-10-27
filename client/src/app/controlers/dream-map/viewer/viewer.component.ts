@@ -1,8 +1,8 @@
-import { sanitizeIdentifier } from "@angular/compiler";
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { MapTerrains } from "@app/controlers/dream-map/terrain/terrain.component";
 import { Cos, SimpleObject, Sin } from "@_models/app";
 import { DreamMap, DreamMapCeil } from "@_models/dream";
-import { of, timer } from "rxjs";
+import { timer } from "rxjs";
 import { takeWhile, tap } from "rxjs/operators";
 
 
@@ -11,8 +11,8 @@ import { takeWhile, tap } from "rxjs/operators";
 
 @Component({
   selector: "app-dream-map-viewer",
-  templateUrl: "./dream-map.component.html",
-  styleUrls: ["./dream-map.component.scss"],
+  templateUrl: "./viewer.component.html",
+  styleUrls: ["./viewer.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -35,8 +35,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private translateY: number = 0;
 
   private zoomStep: number = 0.2;
-  private zoomMin: number = 2;
-  private zoomMax: number = 6;
+  private zoomMin: number = 1;
+  private zoomMax: number = 4.6;
 
   private size: number = 30;
 
@@ -45,8 +45,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private rotateStartY: number = 0;
   private rotateAngleStepX: number = 3;
   private rotateAngleStepZ: number = 3;
-  private minRotateX: number = 0;
-  private maxRotateX: number = 85;
+  private minRotateX: number = 20;
+  private maxRotateX: number = 70;
 
   private moveMap: boolean = false;
   private moveStartX: number = 0;
@@ -55,19 +55,16 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   iCenter: number[] = new Array(400);
 
   private renderDistance: number = 0;
-  private renderDistanceCorrect: number = 7;
+  private renderDistanceCorrect: number = 3;
+  private renderMax: number = 16;
+
   skipMinX: number = 0;
   skipMaxX: number = 0;
   skipMinY: number = 0;
   skipMaxY: number = 0;
 
-  get iX(): number[] {
-    return Array.apply(null, { length: this.dreamMap?.size?.width || 0 }).map(Number.call, Number);
-  }
-
-  get iY(): number[] {
-    return Array.apply(null, { length: this.dreamMap?.size?.height || 0 }).map(Number.call, Number);
-  }
+  iX: number[] = [];
+  iY: number[] = [];
 
   get ceilSize(): number {
     return this.size * this.zoom;
@@ -98,14 +95,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     timer(0, 100).pipe(
       takeWhile(() => !this.viewerWidth || !this.viewerHeight),
       tap(() => this.onViewerResize())
-    ).subscribe(() => this.correctData());
+    ).subscribe();
   }
 
   ngOnDestroy() {
     window.addEventListener("resize", this.onViewerResize.bind(this), true);
     window.removeEventListener("mousemove", this.onMapMove.bind(this), true);
     window.removeEventListener("mouseup", this.onMapMoveEnd.bind(this), true);
-    this.map.nativeElement.removeEventListener("resize", this.onViewerResize.bind(this), true);
   }
 
 
@@ -116,7 +112,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private onViewerResize(): void {
     if (this.map) {
       this.defineViewer();
-      this.correctData();
+      this.correctData(true);
     }
   }
 
@@ -139,7 +135,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Сбросить события
       event.preventDefault();
       // Проверка данных
-      this.correctData();
+      this.correctData(true);
       // Изменить позицию
       this.positionX = (this.viewerWidth / 2) - (((this.viewerWidth / 2) - this.positionX) / oldZoom * this.zoom);
       this.positionY = (this.viewerHeight / 2) - (((this.viewerHeight / 2) - this.positionY) / oldZoom * this.zoom);
@@ -216,7 +212,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.moveStartX = x;
       this.moveStartY = y;
       // Проверка данных
-      this.correctData();
+      this.correctData(true);
     }
   }
 
@@ -258,7 +254,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Ячейка не найдена
     return {
       ...DefaultCeil,
-      coord: { x, y, z: 0 }
+      coord: { x, y, z: DefaultCeil.coord.z }
     };
   }
 
@@ -287,6 +283,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         ((this.mapHeight / 2) - this.translateY) + "px " +
         "0px ",
       transform:
+        "translateZ(" + (-800 * Sin(this.rotateX)) + "px) " +
         "translateX(" + this.translateX + "px) " +
         "translateY(" + this.translateY + "px) " +
         "rotateX(" + this.rotateX + "deg) " +
@@ -295,25 +292,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     };
   }
 
-  // Стили фонов подземелья
-  ceilUndergroundStyle(ceil: DreamMapCeil): SimpleObject {
-    return {
-      background: "url(" + ceil.terrain.undergroundImage + "), url(" + ceil.terrain.undergroundBorderImage + ")",
-      "background-size": "100% auto, 100% auto",
-      "background-position": "bottom center, top center",
-      "background-repeat": "repeat, no-repeat",
-      "background-blend-mode": "multiply"
-    };
-  }
-
   // Рендерить ли строку
   renderY(y: number): boolean {
-    return y >= this.skipMinY - this.renderDistanceCorrect && y < this.dreamMap.size.height - this.skipMaxY + this.renderDistanceCorrect;
+    return (
+      y >= 0 &&
+      y < this.dreamMap.size.height &&
+      y >= this.skipMinY - this.renderDistanceCorrect &&
+      y < this.dreamMap.size.height - this.skipMaxY + this.renderDistanceCorrect
+    );
   }
 
   // Рендерить ли колонку
   renderX(x: number): boolean {
-    return x >= this.skipMinX - this.renderDistanceCorrect && x < this.dreamMap.size.width - this.skipMaxX + this.renderDistanceCorrect;
+    return (
+      x >= 0 &&
+      x < this.dreamMap.size.width &&
+      x >= this.skipMinX - this.renderDistanceCorrect &&
+      x < this.dreamMap.size.width - this.skipMaxX + this.renderDistanceCorrect
+    );
   }
 
   // Класс тумана
@@ -335,7 +331,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   // Коррекция параметров
-  private correctData(): void {
+  private correctData(render: boolean = false): void {
     // Проверка оси X
     this.rotateX = this.rotateX < this.minRotateX ? this.minRotateX : this.rotateX;
     this.rotateX = this.rotateX > this.maxRotateX ? this.maxRotateX : this.rotateX;
@@ -346,6 +342,18 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.positionY = this.positionY ? this.positionY : (this.viewerHeight - this.mapHeight) / 2;
     // Расчитать дальность прорисовки
     this.checkRenderDistance();
+    // Пределы видимости карты
+    const minX: number = Math.max(0, this.skipMinX - this.renderDistanceCorrect);
+    const maxX: number = Math.min(this.dreamMap.size.width, this.dreamMap.size.width - this.skipMaxX + this.renderDistanceCorrect);
+    const minY: number = Math.max(0, this.skipMinY - this.renderDistanceCorrect);
+    const maxY: number = Math.min(this.dreamMap.size.height, this.dreamMap.size.height - this.skipMaxY + this.renderDistanceCorrect);
+    // Расчитать массивы для прорисовки
+    if (render) {
+      this.iX = [];
+      this.iY = [];
+      for (let x = minX; x < maxX; x++) { this.iX.push(x); }
+      for (let y = minY; y < maxY; y++) { this.iY.push(y); }
+    }
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -355,14 +363,15 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Центральные координаты
     const centerX: number = (this.mapWidth / 2) - this.translateX;
     const centerY: number = (this.mapHeight / 2) - this.translateY;
+    const renderDistance: number = Math.min((this.renderMax / 2) * this.ceilSize, this.renderDistance);
     // Минимальные ячейки
-    let minCeilX: number = Math.floor((centerX - this.renderDistance) / this.ceilSize);
-    let minCeilY: number = Math.floor((centerY - this.renderDistance) / this.ceilSize);
+    let minCeilX: number = Math.floor((centerX - renderDistance) / this.ceilSize);
+    let minCeilY: number = Math.floor((centerY - renderDistance) / this.ceilSize);
     minCeilX = minCeilX < 0 ? 0 : minCeilX;
     minCeilY = minCeilY < 0 ? 0 : minCeilY;
     // Максимальные ячейки
-    let maxCeilX: number = Math.ceil((centerX + this.renderDistance) / this.ceilSize);
-    let maxCeilY: number = Math.ceil((centerY + this.renderDistance) / this.ceilSize);
+    let maxCeilX: number = Math.ceil((centerX + renderDistance) / this.ceilSize);
+    let maxCeilY: number = Math.ceil((centerY + renderDistance) / this.ceilSize);
     maxCeilX = maxCeilX >= this.dreamMap.size.width ? this.dreamMap.size.width : maxCeilX;
     maxCeilY = maxCeilY >= this.dreamMap.size.height ? this.dreamMap.size.height : maxCeilY;
     // Расчитать отступы
@@ -377,7 +386,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.viewerWidth = this.map?.nativeElement?.getBoundingClientRect().width;
     this.viewerHeight = this.map?.nativeElement?.getBoundingClientRect().height;
     // Дальность прорисовки
-    this.renderDistance = Math.max(this.viewerWidth, this.viewerHeight) / 2;
+    this.renderDistance = (this.viewerWidth + this.viewerHeight) / 2;
   }
 
   // Проверить угол
@@ -394,13 +403,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-// Перечисление стороны объекта
-export enum WallType { side, left, right, front };
-
 // Пустая ячейка
 const DefaultCeil: DreamMapCeil = {
   place: null,
-  terrain: null,
+  terrain: MapTerrains.find(t => t.id === 1),
   object: null,
-  coord: { x: 0, y: 0, z: 0 }
+  coord: { x: 0, y: 0, z: 16 }
 };

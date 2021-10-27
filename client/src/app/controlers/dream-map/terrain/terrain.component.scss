@@ -1,0 +1,111 @@
+@use "sass:math";
+@use "./../viewer/settings/styles" as settings;
+@use "../../../../assets/styles/mixins";
+
+// Цикл по туману
+@mixin fog-style {
+  @for $layoutFog from 1 to settings.$layout-fogs + 1 {
+    @for $ceilFog from 1 to $layoutFog + 1 {
+      &[max-fog="#{$layoutFog}"][fog="#{$ceilFog}"] {
+        $koof: math.cos(math.div(90deg, $layoutFog + 1) * $ceilFog);
+        // Свойства
+        filter: blur(10px * (1 - $koof));
+        // opacity: 1 * $koof;
+      }
+    }
+  }
+}
+
+// Основной блок
+:host {
+  @include mixins.inset;
+  // Свойства
+  display: block;
+  position: absolute;
+  transform-style: preserve-3d;
+  perspective: 999999px;
+  font-size: 50px;
+}
+
+// Обозначение наземного слоя
+.background {
+  @include mixins.inset;
+  // Свойства
+  position: absolute;
+  background-position: 0 0;
+  background-size: 100%;
+  // Цикл по высоте
+  @for $i from 1 to settings.$z-max {
+    &[z="#{$i}"] {
+      transform: rotateX(90deg) translateY(#{math.div(100%, settings.$z-koof) * $i}) rotateX(90deg);
+    }
+  }
+  // Цикл по фонfм
+  @for $i from 1 to settings.$background-images + 1 {
+    &[terrain="#{$i}"] {
+      background-image: url("./images/background/#{$i}.jpg");
+    }
+  }
+  // Цикл по туману
+  @include fog-style;
+}
+// Обозначение подземного слоя
+.underground {
+  // Общие стили
+  &-side,
+  &-front,
+  &-left,
+  &-right {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background-size: 100% auto, 100% auto;
+    background-position: bottom center, top center;
+    background-repeat: repeat, no-repeat;
+    background-blend-mode: multiply;
+    // Цикл по высоте
+    @for $i from 1 to settings.$z-max {
+      &[z="#{$i}"] {
+        height: math.div(100%, settings.$z-koof) * $i;
+      }
+    }
+    // Цикл по фоном
+    @for $i from 1 to settings.$background-images + 1 {
+      &[terrain="#{$i}"] {
+        background-image: url("./images/underground/#{$i}.jpg"), url("./images/border/z/#{$i}.jpg");
+      }
+    }
+    // Цикл по туману
+    @include fog-style;
+  }
+  // Задняя стенка
+  &-side {
+    bottom: 100%;
+    transform-origin: bottom left;
+    //filter: brightness(1);
+    transform: rotateX(-90deg);
+  }
+  // Левая стенка
+  &-left {
+    bottom: 100%;
+    transform-origin: bottom left;
+    //filter: brightness(0.9);
+    transform: rotateX(-90deg) rotateY(-90deg);
+  }
+  // Правая стенка
+  &-right {
+    bottom: 0;
+    left: 100%;
+    transform-origin: bottom left;
+    //filter: brightness(0.8);
+    transform: rotateX(-90deg) rotateY(90deg);
+  }
+  // Передняя стенка
+  &-front {
+    bottom: 0;
+    transform-origin: bottom left;
+    //filter: brightness(0.7);
+    transform: rotateX(-90deg);
+  }
+}
