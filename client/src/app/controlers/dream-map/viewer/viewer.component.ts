@@ -408,5 +408,5 @@ const DefaultCeil: DreamMapCeil = {
   place: null,
   terrain: MapTerrains.find(t => t.id === 1),
   object: null,
-  coord: { x: 0, y: 0, z: 16 }
+  coord: { x: 0, y: 0, z: 8 }
 };
