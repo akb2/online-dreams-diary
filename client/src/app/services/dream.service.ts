@@ -175,28 +175,9 @@ const Dreams: DreamDto[] = [{
     size: { width: 32, height: 32 },
     ceils: [
       {
-        coord: { x: 4, y: 5, z: 28 },
-        terrain: 1
-      },
-      {
-        coord: { x: 4, y: 8, z: 14 },
-        terrain: 1
-      },
-      {
-        coord: { x: 6, y: 9, z: 12 },
-        terrain: 1
-      },
-      {
-        coord: { x: 7, y: 3, z: 46 },
-        terrain: 1
-      },
-      {
-        coord: { x: 7, y: 4, z: 38 },
-        terrain: 1
-      },
-      {
-        coord: { x: 8, y: 6, z: 40 },
-        terrain: 1
+        coord: { x: 16, y: 16, z: 7 },
+        terrain: 1,
+        object: 1
       }
     ]
   } as DreamMapDto),
