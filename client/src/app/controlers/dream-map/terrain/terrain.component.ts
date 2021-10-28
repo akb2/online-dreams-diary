@@ -65,6 +65,29 @@ export class DreamMapTerrainComponent {
     // Скрыть
     return false;
   }
+
+  closestZ(side: WallType): number {
+    if (this.canRender(side)) {
+      // Показывать переднюю стенку
+      if (side === WallType.front && this.bottomCeil) {
+        return this.bottomCeil.coord.z;
+      }
+      // Показывать правую стенку
+      else if (side === WallType.right && this.rightCeil) {
+        return this.rightCeil.coord.z;
+      }
+      // Показывать правую стенку
+      else if (side === WallType.side && this.topCeil) {
+        return this.topCeil.coord.z;
+      }
+      // Показывать левую стенку
+      else if (side === WallType.left && this.leftCeil) {
+        return this.leftCeil.coord.z;
+      }
+    }
+    // Скрыть
+    return 0;
+  }
 }
 
 

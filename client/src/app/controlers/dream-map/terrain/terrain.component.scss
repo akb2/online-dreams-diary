@@ -7,10 +7,19 @@
   @for $layoutFog from 1 to settings.$layout-fogs + 1 {
     @for $ceilFog from 1 to $layoutFog + 1 {
       &[max-fog="#{$layoutFog}"][fog="#{$ceilFog}"] {
-        $koof: math.cos(math.div(90deg, $layoutFog + 1) * $ceilFog);
+        $sin: math.sin(math.div(90deg, $layoutFog) * $ceilFog);
+        $cos: math.cos(math.div(90deg, $layoutFog) * $ceilFog);
+        // Прозрачность
+        $opacity-min: 0.8;
+        $opacity-max: 0.99;
+        $opacity-koof: math.div($opacity-min - $opacity-max, 1);
+        // Блюр
+        $blur-min: 0.2px;
+        $blur-max: 3px;
+        $blur-koof: math.div($blur-min - $blur-max, 1);
         // Свойства
-        filter: blur(10px * (1 - $koof));
-        opacity: math.sqrt(1 * $koof);
+        filter: blur(#{($blur-koof * $cos) + $blur-max});
+        opacity: ($opacity-koof * $sin) + $opacity-max;
       }
     }
   }
@@ -64,12 +73,6 @@
     background-position: bottom center, top center;
     background-repeat: repeat, no-repeat;
     background-blend-mode: multiply;
-    // Цикл по высоте
-    @for $i from 1 to settings.$z-max {
-      &[z="#{$i}"] {
-        height: math.div(100%, settings.$z-koof) * $i;
-      }
-    }
     // Цикл по фоном
     @for $i from 1 to settings.$background-images + 1 {
       &[terrain="#{$i}"] {
@@ -79,19 +82,18 @@
     // Цикл по туману
     @include fog-style;
   }
+
   // Задняя стенка
   &-side {
     bottom: 100%;
     transform-origin: bottom left;
     //filter: brightness(1);
-    transform: rotateX(-90deg);
   }
   // Левая стенка
   &-left {
     bottom: 100%;
     transform-origin: bottom left;
     //filter: brightness(0.9);
-    transform: rotateX(-90deg) rotateY(-90deg);
   }
   // Правая стенка
   &-right {
@@ -99,13 +101,44 @@
     left: 100%;
     transform-origin: bottom left;
     //filter: brightness(0.8);
-    transform: rotateX(-90deg) rotateY(90deg);
   }
   // Передняя стенка
   &-front {
     bottom: 0;
     transform-origin: bottom left;
     //filter: brightness(0.7);
-    transform: rotateX(-90deg);
+  }
+
+  // Цикл по высоте
+  @for $z from 1 to settings.$z-max {
+    @for $c-z from 0 to $z {
+      $__selector: '[z="#{$z}"][closest-z="#{$c-z}"]';
+      $origin: math.div(100%, $z - $c-z) * $c-z;
+      // Общие свойства
+      &-side,
+      &-front,
+      &-left,
+      &-right {
+        &#{$__selector} {
+          height: math.div(100%, settings.$z-koof) * ($z - $c-z);
+        }
+      }
+      // Задняя
+      &-side#{$__selector} {
+        transform: rotateX(-90deg) translateY(#{-$origin});
+      }
+      // Левая
+      &-left#{$__selector} {
+        transform: rotateX(-90deg) rotateY(-90deg) translateY(#{-$origin});
+      }
+      // Правая
+      &-right#{$__selector} {
+        transform: rotateX(-90deg) rotateY(90deg) translateY(#{-$origin});
+      }
+      // Передняя
+      &-front#{$__selector} {
+        transform: rotateX(-90deg) translateY(#{-$origin});
+      }
+    }
   }
 }

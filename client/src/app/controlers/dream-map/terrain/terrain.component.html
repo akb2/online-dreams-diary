@@ -8,11 +8,12 @@
 <!-- Подземные слои -->
 <ng-container *ngIf="ceil.coord.z">
   <ng-container *ngFor="let wallType of wallTypes">
-    <!-- Задняя стенка -->
+    <!-- Стенки -->
     <div class="underground-{{wallType.value}}"
          [attr.terrain]="ceil.terrain.id"
          [attr.z]="ceil.coord.z"
          [attr.max-fog]="maxFog"
+         [attr.closest-z]="closestZ(wallType.key)"
          [attr.fog]="fog"
          *ngIf="canRender(wallType.key)"></div>
   </ng-container>
