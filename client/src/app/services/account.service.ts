@@ -252,18 +252,17 @@ export class AccountService {
 
   // Преобразовать данные с сервера
   private userConverter(data: any): User {
+    const background: number = parseInt(data.settings?.profileBackground as unknown as string);
+    const headerType: NavMenuType = data.settings.profileHeaderType as NavMenuType;
+    // Данные пользователя
     const user: User = {
       ...data,
-      id: parseInt(data.id)
+      id: parseInt(data.id) || 0,
+      settings: {
+        profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
+        profileHeaderType: headerType ? headerType : NavMenuType.short
+      }
     } as User;
-    // Обработка настройки заднего фона страницы
-    const background: number = parseInt(user.settings?.profileBackground as unknown as string);
-    user.settings.profileBackground = BackgroundImageDatas.some(d => d.id === background) ?
-      BackgroundImageDatas.find(d => d.id == background) :
-      BackgroundImageDatas[0];
-    // Обработка настройки типа шапки
-    const headerType: NavMenuType = user.settings.profileHeaderType as NavMenuType;
-    user.settings.profileHeaderType = headerType ? headerType : NavMenuType.short;
     // Вернуть данные
     return user;
   }
