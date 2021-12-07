@@ -1,4 +1,5 @@
 import { OnInit, Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewChecked, OnChanges, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
+import { SimpleObject } from "@_models/app";
 import { ScreenService } from "@_services/screen.service";
 import { Subject, timer } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -17,7 +18,7 @@ import { takeUntil } from "rxjs/operators";
 export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnDestroy {
 
 
-  @Input() styles: string;
+  @Input() styles: SimpleObject;
   @Input() breakpointMobile: string = "small";
   @Input() headerHeight: number = 0;
 

@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, DoCheck } from '@angular/core';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { MenuItem } from '@_models/menu';
+import { NavMenuType } from '@_models/nav-menu';
 
 
 
@@ -19,6 +20,7 @@ export class ProfileSettingsComponent implements DoCheck {
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
   menuItems: MenuItem[];
+  navMenuType: NavMenuType = NavMenuType.short;
 
   oldUser: User;
   get user(): User {

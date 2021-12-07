@@ -15,7 +15,8 @@ import { MatIconModule } from "@angular/material/icon";
     InformComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    MatIconModule
   ]
 })
 

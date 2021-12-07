@@ -1,4 +1,5 @@
 import { AbstractControlOptions, ValidatorFn, Validators } from "@angular/forms";
+import { CustomObject } from "@_models/app";
 
 
 
@@ -84,7 +85,7 @@ export const ValidatorData: ValidatorDataType = {
 }
 
 // Тексты ошибок
-export type ErrorMessagesType = { [key: string]: FormErrorsKeys };
+export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
 export const ErrorMessages: ErrorMessagesType = {
   login: {
     required: "Введите логин",

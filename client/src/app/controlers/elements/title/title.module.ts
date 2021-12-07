@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
 import { TitleComponent } from "@_controlers/title/title.component";
 
 
@@ -14,7 +15,8 @@ import { TitleComponent } from "@_controlers/title/title.component";
     TitleComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    MatIconModule
   ]
 })
 

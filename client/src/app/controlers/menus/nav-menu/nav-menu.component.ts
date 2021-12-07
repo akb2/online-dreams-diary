@@ -6,7 +6,6 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import smoothscroll from "smoothscroll-polyfill";
 
 
 
@@ -175,7 +174,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     private screenService: ScreenService,
     private menuService: MenuService
   ) {
-    smoothscroll.polyfill();
     DrawDatas.dataRender();
     // Пункты меню
     this.menuItems = this.menuService.menuItems;

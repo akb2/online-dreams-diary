@@ -9,23 +9,29 @@ import "@angular/common/locales/global/ru";
 
 
 
-
+// Компоненты
 const components = [
 ];
 
+// Директивы
 const directives = [
 ];
 
+// Пайпы
 const pipes = [
 ];
 
-
+// Модули
 const modules = [
   CommonModule,
   FormsModule,
   ReactiveFormsModule,
   MatIconModule
 ];
+
+
+
+
 
 @NgModule({
   declarations: [
@@ -49,9 +55,5 @@ const modules = [
     ...pipes
   ]
 })
-
-
-
-
 
 export class CoreModule { }

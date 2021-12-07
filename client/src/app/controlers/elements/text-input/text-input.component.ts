@@ -16,7 +16,6 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
 export class TextInputComponent extends BaseInputDirective {
 
 
-  @Input() label: string;
   @Input() type: TextInputType = "text";
   @Input() maxLength: number = 100;
   @Input() appearance: MatFormFieldAppearance = "fill";

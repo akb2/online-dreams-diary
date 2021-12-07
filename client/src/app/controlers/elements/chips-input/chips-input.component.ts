@@ -18,7 +18,6 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
 export class ChipsInputComponent extends BaseInputDirective implements DoCheck, OnInit {
 
 
-  @Input() label: string = "";
   @Input() placeholder: string = "Введите текст";
   @Input() appearance: MatFormFieldAppearance = "fill";
   @Input() separator: string = ",";
@@ -32,13 +31,13 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
 
 
   constructor(
-    @Optional() @Self() public controlDir: NgControl,
+    @Optional() @Self() override controlDir: NgControl,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     super(controlDir);
   }
 
-  ngDoCheck() {
+  override ngDoCheck() {
     super.ngDoCheck();
     // Проверка значений
     if ((this.oldValues || []).join(this.separator) != (this.control.value || []).join(this.separator)) {

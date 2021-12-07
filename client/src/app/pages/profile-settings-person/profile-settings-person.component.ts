@@ -1,17 +1,18 @@
-import { formatDate } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { PopupConfirmComponent } from '@_controlers/confirm/confirm.component';
-import { PopupCropImageComponent, PopupCropImageData } from '@_controlers/crop-image/crop-image.component';
-import { ImageUploadComponent } from '@_controlers/image-upload/image-upload.component';
-import { CustomValidators } from '@_helpers/custom-validators';
-import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserSave } from '@_models/account';
-import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from '@_models/form';
-import { AccountService } from '@_services/account.service';
-import { SnackbarService } from '@_services/snackbar.service';
-import { Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { formatDate } from "@angular/common";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { MatDialog } from "@angular/material/dialog";
+import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
+import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
+import { ImageUploadComponent } from "@_controlers/image-upload/image-upload.component";
+import { CustomValidators } from "@_helpers/custom-validators";
+import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserSave } from "@_models/account";
+import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { NavMenuType } from "@_models/nav-menu";
+import { AccountService } from "@_services/account.service";
+import { SnackbarService } from "@_services/snackbar.service";
+import { Observable, Subject } from "rxjs";
+import { map, takeUntil } from "rxjs/operators";
 
 
 
@@ -19,9 +20,9 @@ import { map, takeUntil } from 'rxjs/operators';
 
 // Декоратор компонента
 @Component({
-  selector: 'app-profile-settings-person',
-  templateUrl: './profile-settings-person.component.html',
-  styleUrls: ['./profile-settings-person.component.scss'],
+  selector: "app-profile-settings-person",
+  templateUrl: "./profile-settings-person.component.html",
+  styleUrls: ["./profile-settings-person.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -31,20 +32,21 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   @ViewChild(ImageUploadComponent) appImageUpload: ImageUploadComponent;
 
-  public form: FormGroup;
-  public avatar: FormControl;
-  public errors: ErrorMessagesType = ErrorMessages;
-  public formData: FormDataType = FormData;
-  public user: User;
+  form: FormGroup;
+  avatar: FormControl;
+  errors: ErrorMessagesType = ErrorMessages;
+  formData: FormDataType = FormData;
+  user: User;
+  navMenuType: NavMenuType = NavMenuType.collapse;
 
-  public dataLoading: boolean;
-  public fileLoading: boolean;
+  dataLoading: boolean;
+  fileLoading: boolean;
 
-  public fileLoaderTitles: string[][] = [
+  fileLoaderTitles: string[][] = [
     ["Отправка на сервер", "Пожалуйста подождите"],
     ["Подготовка файла", "Пожалуйста подождите"]
   ];
-  public fileLoaderKey: number = 0;
+  fileLoaderKey: number = 0;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -93,7 +95,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
 
 
-  public onSaveData(): void {
+  onSaveData(): void {
     // Форма без ошибок
     if (this.form.valid) {
       this.dataLoading = true;
@@ -140,18 +142,18 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   // Перед выбором файла
-  public onBeforeGetFile(file: File): void {
+  onBeforeGetFile(file: File): void {
     this.fileLoaderKey = 1;
     this.fileLoading = true;
   }
 
   // После выбора файла
-  public onAfterGetFile(file: File): void {
+  onAfterGetFile(file: File): void {
     this.fileLoading = false;
   }
 
   // Загрузка аватарки
-  public onUploadAvatar(file: File): void {
+  onUploadAvatar(file: File): void {
     // Файл без ошибок
     if (file) {
       this.fileLoaderKey = 0;
@@ -189,7 +191,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   // Открыть окно обрезки
-  public onOpenCrop(type: UserAvatarCropDataKeys): void {
+  onOpenCrop(type: UserAvatarCropDataKeys): void {
     if (this.user) {
       const data: PopupCropImageData = {
         title: "Обрезка аватарки",
@@ -212,7 +214,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   // Сохранить позицию обрезанной фотки
-  public onSaveCropPosition(type: UserAvatarCropDataKeys, position: UserAvatarCropDataElement): void {
+  onSaveCropPosition(type: UserAvatarCropDataKeys, position: UserAvatarCropDataElement): void {
     if (position) {
       this.fileLoading = true;
       // Запрос на сервер
@@ -222,7 +224,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
           // Успешная обрезка аватарки
           if (code == "0001") {
             this.snackbarService.open({
-              message: type === 'crop' ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
+              message: type === "crop" ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
               mode: "success"
             });
             // Открыть изменение миниатюры
@@ -242,7 +244,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   // Удаление аватарки
-  public onDeleteAvatar(): void {
+  onDeleteAvatar(): void {
     const dialog = PopupConfirmComponent.open(this.matDialog, {
       title: "Удаление аватарки",
       text: "Вы действительно хотите удалить свою аватарку с сайта?"
@@ -279,7 +281,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
 
   // Возраст до даты
-  public ageToDate(age: number): Date {
+  ageToDate(age: number): Date {
     return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
   }
 

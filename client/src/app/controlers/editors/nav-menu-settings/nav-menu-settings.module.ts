@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
 import { NavMenuSettingsComponent } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { TitleModule } from "@_controlers/title/title.module";
 
@@ -16,7 +17,8 @@ import { TitleModule } from "@_controlers/title/title.module";
   ],
   imports: [
     CommonModule,
-    TitleModule
+    TitleModule,
+    MatIconModule
   ]
 })
 

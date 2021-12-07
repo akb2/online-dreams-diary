@@ -19,7 +19,6 @@ import { SnackbarService } from "@_services/snackbar.service";
 export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 
-  @Input() public label: string;
   @Input() public appearance: MatFormFieldAppearance = "fill";
   @Input() public fileTypes: FileTypes[] = FileTypesDefault;
   @Input() public fileSize: number = 10485760;

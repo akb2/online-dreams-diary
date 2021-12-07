@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit 
 import { AppComponent } from "@app/app.component";
 import { User } from "@_models/account";
 import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
+import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
@@ -26,6 +27,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   tokensInfo: LoadingTokenInfo[];
   osNames: SimpleObject = OsNames;
   browserNames: SimpleObject = BrowserNames;
+  navMenuType: NavMenuType = NavMenuType.collapse;
 
   loadingTokenInfo: boolean = true;
   loadingTokensInfo: boolean = true;
@@ -106,8 +108,8 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
       this.tokenService.deleteTokenById(tokenId)
         .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
         .subscribe(
-          (response: [boolean, TokenInfo[]]) => {
-            const [del, tokensInfo] = response;
+          (response) => {
+            const [del, tokensInfo] = response as [boolean, TokenInfo[]];
             // Токен удален
             if (del) {
               const loadings: { id: number, loading: boolean }[] = this.tokensInfo.map(({ id, loading }) => ({ id, loading }));
@@ -143,8 +145,8 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
     this.tokenService.deleteTokensByUser(true)
       .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
       .subscribe(
-        (response: [boolean, TokenInfo[]]) => {
-          const [del, tokensInfo] = response;
+        (response) => {
+          const [del, tokensInfo] = response as [boolean, TokenInfo[]];
           this.loadingTokensInfo = false;
           // Токены удалены
           if (del) {

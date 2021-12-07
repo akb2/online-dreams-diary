@@ -8,7 +8,7 @@ export class CustomDateAdapter extends NativeDateAdapter {
 
 
   // Разобрать строку
-  public parse(value: any): Date | null {
+  override parse(value: any): Date | null {
     if ((typeof value === 'string') && (value.indexOf('/') > -1)) {
       const str: string[] = value.split('/');
 
@@ -25,7 +25,7 @@ export class CustomDateAdapter extends NativeDateAdapter {
 
 
   // Первый день недели
-  public getFirstDayOfWeek(): number {
+  override getFirstDayOfWeek(): number {
     return 1;
   }
 }

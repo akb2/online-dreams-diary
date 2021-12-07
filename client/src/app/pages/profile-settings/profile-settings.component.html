@@ -1,7 +1,7 @@
 <ng-container *ngIf="user">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
-                 type="short"
+                 [type]="navMenuType"
                  [image]="imagePrefix + user.settings.profileBackground.imageNameShort"
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"

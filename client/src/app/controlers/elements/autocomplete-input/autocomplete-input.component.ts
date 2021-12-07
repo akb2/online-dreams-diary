@@ -21,7 +21,6 @@ import { takeUntil } from "rxjs/operators";
 export class AutocompleteInputComponent extends BaseInputDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
 
-  @Input() label: string;
   @Input() type: AutocompleteType = "autocomplete";
   @Input() textDelimiter: string = " | ";
   @Input() appearance: MatFormFieldAppearance = "fill";

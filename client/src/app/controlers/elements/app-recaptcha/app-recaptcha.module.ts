@@ -4,9 +4,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { RecaptchaModule } from "ng-recaptcha";
-
 import { CoreModule } from "@_modules/core.module";
-
 import { AppRecaptchaComponent } from "./app-recaptcha.component";
 
 
@@ -30,9 +28,5 @@ import { AppRecaptchaComponent } from "./app-recaptcha.component";
     ReactiveFormsModule
   ]
 })
-
-
-
-
 
 export class AppRecaptchaModule { }

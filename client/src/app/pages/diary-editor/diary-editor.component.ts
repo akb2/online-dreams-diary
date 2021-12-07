@@ -12,10 +12,9 @@ import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode, DreamModes } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
-import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
-import { of, Subject } from "rxjs";
-import { delay, takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 
 

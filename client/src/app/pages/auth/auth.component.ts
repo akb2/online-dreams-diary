@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 
 
@@ -20,16 +21,17 @@ import { AccountService } from "@_services/account.service";
 export class AuthComponent implements OnInit {
 
 
-  public form: FormGroup;
-  public errors: ErrorMessagesType = ErrorMessages;
-  public formData: FormDataType = FormData;
+  form: FormGroup;
+  errors: ErrorMessagesType = ErrorMessages;
+  formData: FormDataType = FormData;
+  navMenuType: NavMenuType = NavMenuType.collapse;
 
-  public loginMinLength: number = 4;
-  public loginMaxLength: number = 24;
-  public passwordMinLength: number = 6;
-  public passwordMaxLength: number = 50;
+  loginMinLength: number = 4;
+  loginMaxLength: number = 24;
+  passwordMinLength: number = 6;
+  passwordMaxLength: number = 50;
 
-  public loading: boolean = false;
+  loading: boolean = false;
 
 
 
@@ -50,7 +52,7 @@ export class AuthComponent implements OnInit {
 
 
   // Запуск класса
-  public ngOnInit(): void {
+  ngOnInit(): void {
   }
 
 
@@ -58,7 +60,7 @@ export class AuthComponent implements OnInit {
 
 
   // Попытка авторизации
-  public tryLogin(): void {
+  tryLogin(): void {
     // Форма без ошибок
     if (this.form.valid) {
       const login: string = this.form.get("login").value;

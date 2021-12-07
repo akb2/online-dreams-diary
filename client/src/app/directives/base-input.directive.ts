@@ -1,5 +1,6 @@
-import { Directive, Input, Optional, Self, DoCheck } from "@angular/core";
-import { ControlValueAccessor, NgControl, FormControl, ValidationErrors } from "@angular/forms";
+import { Directive, DoCheck, Input, Optional, Self } from "@angular/core";
+import { ControlValueAccessor, FormControl, NgControl, ValidationErrors } from "@angular/forms";
+import { FormErrorsKeys } from "@_models/form";
 
 
 
@@ -15,7 +16,7 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
 
 
   @Input() label: string;
-  @Input() errors: { [key: string]: string } = {};
+  @Input() errors: FormErrorsKeys = {};
 
   value: any;
   text: string;

@@ -7,6 +7,7 @@ import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
 import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { NavMenuType } from "@_models/nav-menu";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -20,25 +21,22 @@ import { takeUntil } from "rxjs/operators";
   styleUrls: ["./register.component.scss"]
 })
 
-
-
-
-
 export class RegisterComponent implements OnInit, OnDestroy {
 
 
-  @ViewChild(AppRecaptchaComponent) public appRecaptchaComponent!: AppRecaptchaComponent;
+  @ViewChild(AppRecaptchaComponent) appRecaptchaComponent!: AppRecaptchaComponent;
 
-  public form: FormGroup[];
-  public errors: ErrorMessagesType = ErrorMessages;
-  public formData: FormDataType = FormData;
+  form: FormGroup[];
+  errors: ErrorMessagesType = ErrorMessages;
+  formData: FormDataType = FormData;
+  navMenuType: NavMenuType = NavMenuType.collapse;
 
-  public step: number = 0;
+  step: number = 0;
   private cookieKey: string = "register_form_data_";
   private cookieLifeTime: number = 60 * 30 * 10000000000;
-  public loading: boolean = false;
-  public registed: boolean = false;
-  public registerEmail: string;
+  loading: boolean = false;
+  registed: boolean = false;
+  registerEmail: string;
 
   private destroyed$: Subject<any> = new Subject();
 
@@ -95,7 +93,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
 
   // Запуск класса
-  public ngOnInit(): void {
+  ngOnInit(): void {
     // Переключить на нужную форму, если есть заполненные данные
     let skipForm: boolean = false;
     this.form.map((group, key) => {
@@ -112,7 +110,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   // Завершение класса
-  public ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.destroyed$.next(true);
     this.destroyed$.complete();
   }
@@ -134,14 +132,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   // Нажатие Enter в форме
-  public onKeySubmit(event: KeyboardEvent): void {
+  onKeySubmit(event: KeyboardEvent): void {
     if (event.key === "Enter" || event.key === "NumpadEnter") {
       this.nextStep();
     }
   }
 
   // Ответ от капчи
-  public captchaResolved(code: string): void {
+  captchaResolved(code: string): void {
     // * Secret key
     // * 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
     code = code ? code : "";
@@ -224,7 +222,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   // Следущий шаг
-  public nextStep(): void {
+  nextStep(): void {
     // Следующая форма
     if (this.step < this.form.length - 1 && this.form[this.step].valid) {
       this.step++;
@@ -244,7 +242,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   // Следущий шаг
-  public prevStep(): void {
+  prevStep(): void {
     // Предыдущая форма
     if (this.step > 0) {
       this.step--;
@@ -271,7 +269,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   // Возраст до даты
-  public ageToDate(age: number): Date {
+  ageToDate(age: number): Date {
     return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
   }
 }

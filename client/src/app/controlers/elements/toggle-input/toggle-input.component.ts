@@ -17,11 +17,11 @@ import { BaseInputDirective } from "@app/directives/base-input.directive";
 export class ToggleInputComponent extends BaseInputDirective {
 
 
-  @Input() public label: string = "Заголовок";
-  @Input() public values: [string, string] = ["Параметр 1", "Параметр 2"];
-  @Input() public appearance: MatFormFieldAppearance = "fill";
+  @Input() override label: string = "Заголовок";
+  @Input() values: [string, string] = ["Параметр 1", "Параметр 2"];
+  @Input() appearance: MatFormFieldAppearance = "fill";
 
-  public get isChecked(): boolean {
+  get isChecked(): boolean {
     return !!this.control.value;
   }
 }
