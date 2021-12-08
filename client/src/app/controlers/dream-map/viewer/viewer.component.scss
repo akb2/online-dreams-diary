@@ -1,5 +1,3 @@
-@use "sass:math";
-@use "./settings/styles" as settings;
 @use "../../../../assets/styles/mixins";
 
 // Родительский блок
@@ -8,55 +6,14 @@
   width: 100%;
   height: 100%;
   position: relative;
-  background-color: #ddd;
   overflow: hidden;
-}
-
-// Интерфейс карты
-.map {
-  @include mixins.inset;
-  // Свойства
-  position: absolute;
-  transform-style: preserve-3d;
-  perspective: 800px;
-  // Сетка
-  &__layout {
-    position: relative;
-    display: grid;
-    transform-style: preserve-3d;
-    perspective: 999999px;
-  }
-}
-
-// Ячейка
-.ceil {
-  position: relative;
-  transform-style: preserve-3d;
-  perspective: 999999px;
-  font-size: 45px;
-  color: #000;
-  // Опорная сетка
-  &.web-ceil:before {
+  // Область рендеринга
+  > canvas {
     @include mixins.inset;
     // Свойства
-    content: "";
     display: block;
     position: absolute;
-    background-color: settings.$background-color;
-    border: 0 dotted #{settings.$border-color};
-    border-width: #{settings.$border-size} 0 0 #{settings.$border-size};
-  }
-  // Туман
-  @for $layoutFog from 1 to settings.$layout-fogs + 1 {
-    $__elm: &;
-    // Стили
-    .map__layout[fog="#{$layoutFog}"] > & {
-      @for $ceilFog from 1 to $layoutFog + 1 {
-        &[fog="#{$ceilFog}"]:before {
-          filter: blur(math.div(20px, $layoutFog) * $ceilFog);
-          opacity: math.div(1, $layoutFog - 1) * ($layoutFog - $ceilFog + 1);
-        }
-      }
-    }
+    width: 100%;
+    height: 100%;
   }
 }
