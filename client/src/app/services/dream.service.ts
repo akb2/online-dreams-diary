@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { MapTerrains } from "@app/controlers/dream-map/terrain/terrain.component";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode } from "@_models/dream";
@@ -135,11 +134,12 @@ export class DreamService {
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: MapTerrains.some(t => t.id === c.terrain) ? MapTerrains.find(t => t.id === c.terrain) : null,
+          terrain: null,
           object: null,
           coord: c.coord
         })),
-        dreamerWay: dreamMapDto.dreamerWay
+        dreamerWay: dreamMapDto.dreamerWay,
+        skyBox: dreamMapDto.skyBox || 1
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -147,7 +147,8 @@ export class DreamService {
       return {
         size: { width: this.dreamMapWidth, height: this.dreamMapHeight },
         ceils: [],
-        dreamerWay: []
+        dreamerWay: [],
+        skyBox: null
       };
     }
   }
@@ -179,7 +180,8 @@ const Dreams: DreamDto[] = [{
         terrain: 1,
         object: 1
       }
-    ]
+    ],
+    skyBox: 1
   } as DreamMapDto),
   headerType: NavMenuType.collapse,
   headerBackgroundId: 9
