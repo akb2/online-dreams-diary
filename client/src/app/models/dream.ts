@@ -68,6 +68,7 @@ export interface DreamMap {
   ceils: (DreamMapCeil | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
+  skyBox: number;
 }
 
 // Интерфейс ячейки сновидения
@@ -84,6 +85,11 @@ export interface MapTerrain {
   name: string;
 }
 
+// Интерфейс типа неба
+export interface MapSkyBox extends MapTerrain {
+  title: string;
+}
+
 // Интерфейс объекта карты
 export interface MapObject {
   id: number;
@@ -95,6 +101,7 @@ export interface DreamMapDto {
   ceils: (DreamMapCeilDto | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
+  skyBox: number | null;
 }
 
 // Интерфейс ячейки сновидения
