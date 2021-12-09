@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { DreamMapViewerModule } from '@app/controlers/dream-map/viewer/viewer.module';
+import { DreamMapViewerModule } from '@_controlers/dream-map/dream-map.module';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocomplete-input.module';
 import { CardModule } from '@_controlers/card/card.module';
