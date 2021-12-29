@@ -134,7 +134,7 @@ export class DreamService {
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: null,
+          terrain: c.terrain,
           object: null,
           coord: c.coord
         })),
@@ -173,10 +173,46 @@ const Dreams: DreamDto[] = [{
   text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
   map: JSON.stringify({
     dreamerWay: null,
-    size: { width: 32, height: 32 },
+    size: { width: 56, height: 56 },
     ceils: [
       {
-        coord: { x: 16, y: 16, z: 7 },
+        coord: { x: 25, y: 25, z: 20 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 25, y: 26, z: 18 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 25, y: 27, z: 16 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 25, y: 28, z: 14 },
+        terrain: 1,
+        object: 1
+      },
+      // Углы
+      {
+        coord: { x: 1, y: 1, z: 30 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 48, y: 1, z: 30 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 1, y: 48, z: 30 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 48, y: 48, z: 30 },
         terrain: 1,
         object: 1
       }
