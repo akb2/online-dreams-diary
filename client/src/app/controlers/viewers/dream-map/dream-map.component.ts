@@ -1,17 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil } from "@_models/dream";
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from "@angular/core";
+import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream";
 import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
+import { TerrainService } from "@_services/terrain.service";
 import { timer } from "rxjs";
 import { takeWhile } from "rxjs/operators";
-import {
-  BoxGeometry,
-  DodecahedronGeometry, Mesh,
-  MeshLambertMaterial,
-  MeshPhongMaterial,
-  PerspectiveCamera, Scene,
-  TorusGeometry,
-  WebGLRenderer
-} from "three";
+import { CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -26,7 +19,7 @@ import Stats from "three/examples/jsm/libs/stats.module";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
 
 
   @Input() dreamMap: DreamMap;
@@ -35,24 +28,32 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  private ceils: DreamMapCeil[] = [];
   private width: number = 0;
   private height: number = 0;
   private sceneColor: number = 0x000000;
+  private ceilSize: number = 1;
+  private ceilHeightParts: number = 8;
+  private minCeilHeight: number = 1;
+  private maxCeilHeight: number = this.ceilHeightParts * 6;
+  private delta: number = 0;
+
+  private rotateSpeed: number = 1.4;
+  private moveSpeed: number = 1.8;
+  private zoomSpeed: number = 0.4;
+  private zoomMin: number = this.ceilSize;
+  private zoomMax: number = this.ceilSize * 10;
+  private minAngle: number = 0;
+  private maxAngle: number = 80;
+  private distance: number = 30;
+  private fpsLimit: number = 60;
+  private showHelpers: boolean = false;
 
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
   private control: OrbitControls;
+  private clock: Clock;
   stats: Stats;
-
-  private rotateSpeed: number = 5;
-  private moveSpeed: number = 0.7;
-  private zoomSpeed: number = 0.4;
-  private zoomMin: number = 15;
-  private zoomMax: number = 150;
-  private minAngle: number = 0;
-  private maxAngle: number = 80;
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
 
@@ -60,11 +61,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-  constructor(private skyBoxService: SkyBoxService) { }
-
-  ngOnInit() {
-    this.ceilsInit();
-  }
+  constructor(
+    private skyBoxService: SkyBoxService,
+    private terrainService: TerrainService
+  ) { }
 
   ngAfterViewInit() {
     // Создание сцены
@@ -98,20 +98,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-  // Инициализация объектов карты
-  private ceilsInit(): void {
-    this.ceils = [];
-    // Цикл по координатам
-    for (let y = 0; y < this.dreamMap.size.height; y++) {
-      for (let x = 0; x < this.dreamMap.size.width; x++) {
-        this.ceils.push(this.dreamMap.ceils.some(c => c.coord.y === y && c.coord.x === x) ?
-          this.dreamMap.ceils.find(c => c.coord.y === y && c.coord.x === x) :
-          DefaultCeil
-        );
-      }
-    }
-  }
-
   // Инициализация блока рендера
   private createCanvas(): void {
     this.width = this.canvas.nativeElement.getBoundingClientRect().width || 0;
@@ -123,11 +109,17 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.renderer = new WebGLRenderer({ canvas: this.canvas.nativeElement, antialias: true });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 1);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
     // Сцена
     this.scene = new Scene();
     // Камера
-    this.camera = new PerspectiveCamera(70, this.width / this.height);
-    this.camera.position.z = 50;
+    this.camera = new PerspectiveCamera(
+      45, this.width / this.height,
+      this.ceilSize / 10,
+      this.ceilSize * this.distance
+    );
+    this.camera.position.z = this.ceilSize * (this.zoomMin + this.zoomMax) / 2;
     this.scene.add(this.camera);
     // Управление
     this.control = new OrbitControls(this.camera, this.canvas.nativeElement);
@@ -142,32 +134,56 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Статистика
     this.stats = Stats();
     this.statsBlock.nativeElement.appendChild(this.stats.dom);
+    // Таймер
+    this.clock = new Clock();
   }
 
   // Объект
   private createObject(): void {
     if (this.scene) {
-      // TODO: Удалить
-      // Куб
-      const boxGeometry: BoxGeometry = new BoxGeometry(10, 10, 10);
-      const basicMaterial: MeshPhongMaterial = new MeshPhongMaterial({ color: 0x0095DD });
-      const cube: Mesh = new Mesh(boxGeometry, basicMaterial);
-      // Тор
-      const torusGeometry: TorusGeometry = new TorusGeometry(5, 1.2, 6, 12);
-      const phongMaterial: MeshPhongMaterial = new MeshPhongMaterial({ color: 0xFF9500 });
-      const torus: Mesh = new Mesh(torusGeometry, phongMaterial);
-      // Додекаидр
-      const dodecahedronGeometry: DodecahedronGeometry = new DodecahedronGeometry(5, 0);
-      const lambertMaterial: MeshLambertMaterial = new MeshLambertMaterial({ color: 0xEAEFF2 });
-      const dodecahedron: Mesh = new Mesh(dodecahedronGeometry, lambertMaterial);
       // Скайбокс
-      const skyBox: SkyBoxResult = this.skyBoxService.getObject(this.dreamMap.skyBox);
+      const skyBox: SkyBoxResult = this.skyBoxService.getObject(this.dreamMap.skyBox, this.distance, this.ceilSize);
+      // Освещения
+      const lightScene: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Scene).map(({ light }) => light);
+      const lightCamera: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Camera).map(({ light }) => light);
+      const helperScene: CameraHelper[] = this.showHelpers ?
+        skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Scene && helper).map(({ helper }) => helper) :
+        [];
+      const helperCamera: CameraHelper[] = this.showHelpers ?
+        skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Camera && helper).map(({ helper }) => helper) :
+        [];
+      // Объекты
+      for (let y = 0; y < this.dreamMap.size.height; y++) {
+        for (let x = 0; x < this.dreamMap.size.width; x++) {
+          const heightPart: number = this.ceilSize / this.ceilHeightParts;
+          const ceil: DreamMapCeil = this.dreamMap.ceils.some(c => c.coord.y === y && c.coord.x === x) ?
+            this.dreamMap.ceils.find(c => c.coord.y === y && c.coord.x === x) :
+            DefaultCeil;
+          // Обработка
+          ceil.coord.z = ceil.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (ceil.coord.z < this.minCeilHeight ? this.minCeilHeight : ceil.coord.z);
+          // Местность
+          const terrain: Mesh = this.terrainService.getObject(ceil.terrain, this.ceilSize, heightPart * ceil.coord.z);
+          // Настройки объекта
+          terrain.position.set(
+            (x - (this.dreamMap.size.width / 2)) * this.ceilSize,
+            -(heightPart * this.maxCeilHeight) + (heightPart * ceil.coord.z / 2),
+            (y - (this.dreamMap.size.height / 2)) * this.ceilSize
+          );
+          // Добавить объект на карту
+          this.scene.add(terrain);
+        }
+      }
       // Настройки
-      cube.position.x = -15;
-      dodecahedron.position.x = 15;
       this.scene.background = skyBox.skyBox;
-      // Добавить
-      this.scene.add(cube, torus, dodecahedron, ...skyBox.light);
+      this.scene.fog = skyBox.fog;
+      // Добавить к сцене
+      if (lightScene?.length > 0 || helperScene?.length > 0) {
+        this.scene.add(...lightScene, ...helperScene);
+      }
+      // Добавить к камере
+      if (lightCamera?.length > 0) {
+        this.camera.add(...lightCamera, ...helperCamera);
+      }
       // Рендер
       this.render();
     }
@@ -175,15 +191,23 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Рендер сцены
   private render(): void {
-    this.renderer.render(this.scene, this.camera)
+    this.renderer.render(this.scene, this.camera);
   }
 
   // Обновление сцены
   private animate(): void {
+    const interval: number = 1 / this.fpsLimit;
+    this.delta += this.clock.getDelta();
+    // Следующая отрисовка
     window.requestAnimationFrame(this.animate.bind(this));
-    this.control.update();
-    this.render();
-    this.stats.update();
+    // Ограничение FPS
+    if (this.delta > interval) {
+      this.control.update();
+      this.render();
+      this.stats.update();
+      // Обновить дельту
+      this.delta = this.delta % interval;
+    }
   }
 }
 
@@ -196,5 +220,5 @@ const DefaultCeil: DreamMapCeil = {
   place: null,
   terrain: null,
   object: null,
-  coord: { x: 0, y: 0, z: 8 }
+  coord: { x: 0, y: 0, z: 10 }
 };
