@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
-import { MapSkyBox } from "@_models/dream";
-import { ScreenService } from "@_services/screen.service";
-import { CubeTexture, CubeTextureLoader, DirectionalLight } from "three";
+import { MapSkyBox, SkyBoxLightTarget } from "@_models/dream";
+import { AmbientLight, CameraHelper, CubeTexture, CubeTextureLoader, DirectionalLight, Fog, Light } from "three";
 
 
 
@@ -14,33 +13,50 @@ export class SkyBoxService {
 
   private path: string = "../../assets/dream-map/skybox/";
   private sides: string[] = ["front", "back", "top", "bottom", "left", "right"];
-  private size: number = 10000;
 
 
-  constructor(
-    private screenService: ScreenService
-  ) { }
+
 
 
   // Объект для отрисовки
-  getObject(id: number): SkyBoxResult {
+  getObject(id: number, distance: number, size: number): SkyBoxResult {
     const skyBoxData: MapSkyBox = SkyBoxes.find(s => s.id === id) || SkyBoxes[0];
     const path: string = this.path + skyBoxData.name + "/";
+    const color: number = 0xA6C6DB;
+    const helpers: CameraHelper[] = [];
     // Освещение
-    const lights: DirectionalLight[] = [
-      new DirectionalLight(0xFFFFFF, 2),
-      new DirectionalLight(0xFFFFFF, 0.5),
-      new DirectionalLight(0xFFFFFF, 0.5),
-      new DirectionalLight(0xFFFFFF, 0.5)
-    ];
-    lights[0].position.set(0, this.size / 2, -this.size / 2);
-    lights[1].position.set(0, -this.size / 2, this.size / 2);
-    lights[2].position.set(-this.size / 2, 0, -this.size / 2);
-    lights[3].position.set(this.size / 2, 0, -this.size / 2);
+    const lights: LightExport[] = skyBoxData.lights.map(({ light, position, shadow, target }) => {
+      let helper: CameraHelper;
+      // Позиция
+      if (!!position) {
+        const { x, y, z } = position;
+        light.position.set(x, y, z);
+      }
+      // Тень
+      if (!!shadow && light instanceof DirectionalLight) {
+        light.castShadow = true;
+        light.shadow.needsUpdate = true;
+        // Свойства тени
+        light.shadow.camera.near = shadow.near;
+        light.shadow.camera.far = shadow.far;
+        light.shadow.camera.top = shadow.top;
+        light.shadow.camera.left = shadow.left;
+        light.shadow.camera.right = shadow.right;
+        light.shadow.camera.bottom = shadow.bottom;
+        light.shadow.mapSize.width = shadow.width;
+        light.shadow.mapSize.height = shadow.height;
+        light.shadow.radius = shadow.radius;
+        helper = new CameraHelper(light.shadow.camera);
+      }
+      // Результат
+      return { light, target, helper };
+    });
+    // Туман
+    const fog: Fog = new Fog(color, (distance * 0.7) * size, distance * size);
     // Объект неба
     const skyBox: CubeTexture = new CubeTextureLoader().setPath(path).load(this.sides.map(s => s + ".jpg"));
     // Вернуть небо
-    return { skyBox, light: lights };
+    return { fog, skyBox, light: lights };
   }
 }
 
@@ -48,15 +64,51 @@ export class SkyBoxService {
 
 
 
+// Размер карты
+const BoxSize: number = 100;
+
 // Интерфейс скайбокса
 export interface SkyBoxResult {
+  fog: Fog;
   skyBox: CubeTexture;
-  light: DirectionalLight[];
+  light: LightExport[];
+}
+
+// Объект освещений
+export interface LightExport {
+  light: Light;
+  target: SkyBoxLightTarget;
+  helper: CameraHelper;
 }
 
 // Список небес
 export const SkyBoxes: MapSkyBox[] = [{
   id: 1,
   name: "land",
-  title: "Зеленое поле в ясный день"
+  title: "Ясный день",
+  fogColor: 0xA6C6DB,
+  lights: [{
+    light: new DirectionalLight(0xFFFFFF, 1.1),
+    fixed: true,
+    target: SkyBoxLightTarget.Scene,
+    position: {
+      x: 0.1,
+      y: 1,
+      z: -1,
+    },
+    shadow: {
+      near: -BoxSize,
+      far: BoxSize,
+      top: BoxSize / 2,
+      left: -BoxSize / 2,
+      right: BoxSize / 2,
+      bottom: -BoxSize / 2,
+      width: BoxSize * 2000,
+      height: BoxSize * 2000,
+      radius: 1
+    }
+  }, {
+    light: new AmbientLight(0xA6C6DB, 0.7),
+    target: SkyBoxLightTarget.Scene
+  }]
 }];
