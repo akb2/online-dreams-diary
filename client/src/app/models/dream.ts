@@ -2,6 +2,7 @@ import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.c
 import { User } from "@_models/account";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
+import { Light } from "three";
 
 
 
@@ -74,7 +75,7 @@ export interface DreamMap {
 // Интерфейс ячейки сновидения
 export interface DreamMapCeil {
   place: Place | null;
-  terrain: MapTerrain | null;
+  terrain: number;
   object: MapObject | null;
   coord: Coord
 }
@@ -83,11 +84,46 @@ export interface DreamMapCeil {
 export interface MapTerrain {
   id: number;
   name: string;
+  title: string;
+  useDefaultSide: boolean;
+  colors: {
+    top: number;
+    side: number;
+  }
 }
 
 // Интерфейс типа неба
-export interface MapSkyBox extends MapTerrain {
+export interface MapSkyBox {
+  id: number;
+  name: string;
   title: string;
+  fogColor: number;
+  lights: MapSkyBoxLight[];
+}
+
+// Интерфейс освещения
+interface MapSkyBoxLight {
+  light: Light;
+  target: SkyBoxLightTarget;
+  position?: Coord;
+  fixed?: boolean;
+  shadow?: {
+    near: number;
+    far: number;
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+    radius: number;
+  };
+}
+
+// Перебор для назначения освещения
+export enum SkyBoxLightTarget {
+  Scene = "Scene",
+  Camera = "Camera"
 }
 
 // Интерфейс объекта карты
