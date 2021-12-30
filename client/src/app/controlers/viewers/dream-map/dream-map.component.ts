@@ -38,8 +38,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
   private delta: number = 0;
 
   private rotateSpeed: number = 1.4;
-  private moveSpeed: number = 1.8;
-  private zoomSpeed: number = 0.4;
+  private moveSpeed: number = 3.2;
+  private zoomSpeed: number = 0.8;
   private zoomMin: number = this.ceilSize;
   private zoomMax: number = this.ceilSize * 10;
   private minAngle: number = 0;
