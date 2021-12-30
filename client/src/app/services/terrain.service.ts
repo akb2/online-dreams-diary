@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { MapTerrain } from "@_models/dream";
-import { BoxGeometry, FrontSide, Mesh, MeshPhongMaterial, Texture, TextureLoader } from "three";
+import { BoxGeometry, FrontSide, Mesh, MeshPhongMaterial, RepeatWrapping, Texture, TextureLoader } from "three";
 
 
 
@@ -25,7 +25,7 @@ export class TerrainService {
     // Текстуры
     let textures: MeshPhongMaterial[] = [];
     // Из кэша
-    if (this.textureCache.some(t => t.terrain === terrain.id)) {
+    if (this.textureCache.some(t => t.terrain === terrain.id && t.height === height)) {
       textures = this.textureCache.find(t => t.terrain === terrain.id)!.textures;
     }
     // Загрузить
@@ -39,14 +39,20 @@ export class TerrainService {
         const color: number = side.length > 0 ? null : (terrain.colors[s] ? terrain.colors[s] : 0x999999);
         // Настройка текстуры
         if (map) {
+          map.offset.set(0, 0);
+          map.wrapS = RepeatWrapping;
+          map.wrapT = RepeatWrapping;
           if (side === "top") map.repeat.set(1, 1);
-          if (side === "side") map.repeat.set(1, 1 / 3);
+          if (side === "side") {
+            console.log(1, height / size, height, size);
+            map.repeat.set(1, height / size);
+          }
         }
         // Объект
         return new MeshPhongMaterial({ color, map, side: FrontSide });
       });
       // Сохранить в кэш
-      this.textureCache.push({ textures, terrain: terrain.id });
+      this.textureCache.push({ textures, height, terrain: terrain.id });
     }
     // Объект
     const boxGeometry: BoxGeometry = new BoxGeometry(size, height, size);
@@ -87,6 +93,7 @@ export const MapTerrains: MapTerrain[] = [{
 // Интерфейс кэша текстур
 interface TextureCache {
   terrain: number;
+  height: number;
   textures: MeshPhongMaterial[];
 }
 
