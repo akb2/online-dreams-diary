@@ -38,7 +38,7 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
   private delta: number = 0;
 
   private rotateSpeed: number = 1.4;
-  private moveSpeed: number = 3.2;
+  private moveSpeed: number = 14;
   private zoomSpeed: number = 0.8;
   private zoomMin: number = this.ceilSize;
   private zoomMax: number = this.ceilSize * 10;
@@ -92,6 +92,7 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
 
   // Изменение позиции камеры
   onCameraChange(event: OrbitControls): void {
+    this.control.panSpeed = this.moveSpeed / event.getDistance();
   }
 
 
