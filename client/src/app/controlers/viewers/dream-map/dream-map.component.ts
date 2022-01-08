@@ -44,7 +44,7 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
   private zoomMax: number = this.ceilSize * 10;
   private minAngle: number = 0;
   private maxAngle: number = 80;
-  private distance: number = 30;
+  private distance: number = 50;
   private fpsLimit: number = 60;
   private showHelpers: boolean = false;
 
@@ -153,7 +153,7 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
       const helperCamera: CameraHelper[] = this.showHelpers ?
         skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Camera && helper).map(({ helper }) => helper) :
         [];
-      // Объекты
+      // Цикл по объектам
       for (let y = 0; y < this.dreamMap.size.height; y++) {
         for (let x = 0; x < this.dreamMap.size.width; x++) {
           const heightPart: number = this.ceilSize / this.ceilHeightParts;
