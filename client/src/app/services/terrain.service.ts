@@ -45,10 +45,7 @@ export class TerrainService {
           map.wrapS = RepeatWrapping;
           map.wrapT = RepeatWrapping;
           if (side === "top") map.repeat.set(1, 1);
-          else if (side === "side") {
-            console.log(1, height / size, height, size);
-            map.repeat.set(1, height / size);
-          }
+          else if (side === "side") map.repeat.set(1, height / size);
         }
         // Текстура
         const texture = new MeshPhongMaterial({ color, map, side: FrontSide });
