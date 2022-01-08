@@ -24,16 +24,18 @@ export class TerrainService {
     const terrain: MapTerrain = MapTerrains.find(t => t.id === id) || MapTerrains[0];
     // Текстуры
     let textures: MeshPhongMaterial[] = [];
-    // Из кэша
-    if (this.textureCache.some(t => t.terrain === terrain.id && t.height === height)) {
-      textures = this.textureCache.find(t => t.terrain === terrain.id)!.textures;
-    }
-    // Загрузить
-    else {
-      textures = this.sides.map((s, k) => {
-        // Определить показывать текстуру или нет
-        let side: string = s;
-        // Имя текстуры
+    // Цикл по сторонам
+    textures = this.sides.map(s => {
+      // Определить показывать текстуру или нет
+      let side: string = s;
+      const h: number = side === "top" ? 0 : height;
+      const findCache: (t: TextureCache) => boolean = t => t.side === side && t.terrain === terrain.id && t.height === h;
+      // Материал из кэша
+      if (this.textureCache.some(findCache)) {
+        return this.textureCache.find(findCache).texture;
+      }
+      // Новый материал
+      else {
         const name: string = side === "top" ? terrain.name : (terrain.useDefaultSide ? "default" : terrain.name);
         const map: Texture | null = side.length > 0 ? new TextureLoader().load(this.path + side + "/" + name + ".jpg") : null;
         const color: number = side.length > 0 ? null : (terrain.colors[s] ? terrain.colors[s] : 0x999999);
@@ -43,17 +45,19 @@ export class TerrainService {
           map.wrapS = RepeatWrapping;
           map.wrapT = RepeatWrapping;
           if (side === "top") map.repeat.set(1, 1);
-          if (side === "side") {
+          else if (side === "side") {
             console.log(1, height / size, height, size);
             map.repeat.set(1, height / size);
           }
         }
-        // Объект
-        return new MeshPhongMaterial({ color, map, side: FrontSide });
-      });
-      // Сохранить в кэш
-      this.textureCache.push({ textures, height, terrain: terrain.id });
-    }
+        // Текстура
+        const texture = new MeshPhongMaterial({ color, map, side: FrontSide });
+        // Сохранить в кэш
+        this.textureCache.push({ texture, side, height: h, terrain: terrain.id });
+        // Вернуть текстуру
+        return texture;
+      }
+    });
     // Объект
     const boxGeometry: BoxGeometry = new BoxGeometry(size, height, size);
     const mesh: Mesh = new Mesh(boxGeometry, textures);
@@ -93,8 +97,9 @@ export const MapTerrains: MapTerrain[] = [{
 // Интерфейс кэша текстур
 interface TextureCache {
   terrain: number;
+  side: string;
   height: number;
-  textures: MeshPhongMaterial[];
+  texture: MeshPhongMaterial;
 }
 
 // Интерфейс соседних блоков
