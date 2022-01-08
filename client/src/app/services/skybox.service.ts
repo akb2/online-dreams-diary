@@ -23,7 +23,6 @@ export class SkyBoxService {
     const skyBoxData: MapSkyBox = SkyBoxes.find(s => s.id === id) || SkyBoxes[0];
     const path: string = this.path + skyBoxData.name + "/";
     const color: number = 0xA6C6DB;
-    const helpers: CameraHelper[] = [];
     // Освещение
     const lights: LightExport[] = skyBoxData.lights.map(({ light, position, shadow, target }) => {
       let helper: CameraHelper;
