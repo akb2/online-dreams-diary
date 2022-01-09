@@ -176,6 +176,52 @@ const Dreams: DreamDto[] = [{
     size: { width: 30, height: 30 },
     ceils: [
       {
+        coord: { x: 13, y: 13, z: 1 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 14, y: 13, z: 2 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 15, y: 13, z: 3 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 16, y: 13, z: 4 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 17, y: 13, z: 5 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 18, y: 13, z: 6 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 19, y: 13, z: 7 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 15, y: 14, z: 4 },
+        terrain: 1,
+        object: 1
+      },
+      {
+        coord: { x: 16, y: 14, z: 4 },
+        terrain: 1,
+        object: 1
+      },
+      // Ступеньки
+      {
         coord: { x: 25, y: 25, z: 20 },
         terrain: 1,
         object: 1
