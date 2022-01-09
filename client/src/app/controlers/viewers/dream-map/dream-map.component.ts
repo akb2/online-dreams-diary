@@ -179,13 +179,15 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
             this.ceilSize,
             heightPart * ceil.coord.z,
             Object.entries(closestCeilsCoords)
-              .map(([k, { x: cX, y: cY }]) => ([
-                k.toString(),
-                this.dreamMap.ceils.some(c => c.coord.y === y + cY && c.coord.x === x + cX) ?
-                  this.dreamMap.ceils.find(c => c.coord.y === y + cY && c.coord.x === x + cX).coord.z :
-                  DefaultCeil.coord.z
-              ]))
-              .map(([k, z]) => ([k, z !== null ? (z as number) * heightPart : z]))
+              .map(([k, { x: cX, y: cY }]) => {
+                let z: number =
+                  this.dreamMap.ceils.some(c => c.coord.y === y + cY && c.coord.x === x + cX) ?
+                    this.dreamMap.ceils.find(c => c.coord.y === y + cY && c.coord.x === x + cX).coord.z :
+                    DefaultCeil.coord.z;
+                z = z > this.maxCeilHeight ? this.maxCeilHeight : (z < this.minCeilHeight ? this.minCeilHeight : z);
+                // Результат
+                return [k.toString(), z * heightPart];
+              })
               .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights)
           );
           // Настройки объекта
