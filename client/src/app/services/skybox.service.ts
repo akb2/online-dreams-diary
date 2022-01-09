@@ -102,9 +102,9 @@ export const SkyBoxes: MapSkyBox[] = [{
       left: -BoxSize / 2,
       right: BoxSize / 2,
       bottom: -BoxSize / 2,
-      width: BoxSize * 2000,
-      height: BoxSize * 2000,
-      radius: 1
+      width: BoxSize * 5000,
+      height: BoxSize * 5000,
+      radius: 5
     }
   }, {
     light: new AmbientLight(0xA6C6DB, 0.7),
