@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { MapTerrain } from "@_models/dream";
-import { BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Vector3 } from "three";
 
 
 
@@ -21,7 +21,19 @@ export class TerrainService {
 
   // Объект для отрисовки
   getObject(id: number, size: number, height: number, closestHeights: ClosestHeights): Mesh {
-    const terrain: MapTerrain = MapTerrains.find(t => t.id === id) || MapTerrains[0];
+    const geometry: BufferGeometry = this.geometry(size, height, closestHeights);
+    const mesh: Mesh = new Mesh(geometry, new MeshPhongMaterial({ vertexColors: true, color: 0xaaaaaa, side: DoubleSide }));
+    // Расскрасить
+    this.materials(geometry, id, size, height);
+    // Настройки
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    // Вернуть объект
+    return mesh;
+  }
+
+  // Геометрия
+  private geometry(size: number, height: number, closestHeights: ClosestHeights): BufferGeometry {
     // Смещения
     const shiftH: number = size / 2;
     const heightL: number = this.heightSidePos(height, closestHeights.left);
@@ -66,7 +78,7 @@ export class TerrainService {
       t5, t8, t7,
       t5, t7, t4,
       t5, t4, t1,
-      // Верхняя грань
+      // Задняя грань
       t1, t2, b1,
       t2, t3, b2,
       t2, b1, b2,
@@ -74,7 +86,7 @@ export class TerrainService {
       t3, t6, b2,
       t6, t9, b4,
       t6, b2, b4,
-      // Нижняя грань
+      // Ближняя грань
       t7, t8, b3,
       t8, t9, b4,
       t8, b3, b4,
@@ -83,15 +95,43 @@ export class TerrainService {
       t4, t7, b3,
       t4, b1, b3,
     ];
-    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(points);
+    return new BufferGeometry().setFromPoints(points);
+  }
+
+  // Материалы
+  private materials(geometry: BufferGeometry, id: number, size: number, height: number): void {
+    const terrain: MapTerrain = MapTerrains.find(t => t.id === id) || MapTerrains[0];
+    // Текстуры
+    let colors = new Float32Array([
+      // Верхняя грань
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
+      // Задняя грань
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      // Правая грань
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      // Ближняя грань
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      // Левая грань
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+      0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
+    ]);
+    // Разукрасить
+    geometry.setAttribute("color", new BufferAttribute(colors, 3))
     geometry.computeVertexNormals();
-    // Фигура
-    const mesh: Mesh = new Mesh(geometry, new MeshPhongMaterial({ color: 0xaaaaaa, side: DoubleSide }));
-    // Настройки
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    // Вернуть объект
-    return mesh;
   }
 
   // Пересчитать разницу в высоте
