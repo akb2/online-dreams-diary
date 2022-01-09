@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from "@angular/core";
-import { CustomObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream";
 import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/terrain.service";
