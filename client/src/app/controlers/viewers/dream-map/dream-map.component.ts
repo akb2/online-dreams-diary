@@ -4,7 +4,7 @@ import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/terrain.service";
 import { timer } from "rxjs";
 import { takeWhile } from "rxjs/operators";
-import { CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import { CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -38,7 +38,7 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
   private delta: number = 0;
 
   private rotateSpeed: number = 1.4;
-  private moveSpeed: number = 14;
+  private moveSpeed: number = this.ceilSize * 14;
   private zoomSpeed: number = 0.8;
   private zoomMin: number = this.ceilSize;
   private zoomMax: number = this.ceilSize * 10;
@@ -93,6 +93,18 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
   // Изменение позиции камеры
   onCameraChange(event: OrbitControls): void {
     this.control.panSpeed = this.moveSpeed / event.getDistance();
+    // Настройка позиции камеры
+    let x: number = event.target.x;
+    let z: number = event.target.z;
+    const mapX: number = this.dreamMap.size.width / 2 * this.ceilSize;
+    const mapZ: number = this.dreamMap.size.height / 2 * this.ceilSize;
+    // Ограничить положение камеры
+    if (x > mapX || x < -mapX || z > mapZ || z < -mapZ) {
+      x = x > mapX ? mapX : x < -mapX ? -mapX : x;
+      z = z > mapZ ? mapZ : z < -mapZ ? -mapZ : z;
+      // Установить позицию
+      event.target = new Vector3(x, event.target.y, z);
+    }
   }
 
 
@@ -154,8 +166,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
         skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Camera && helper).map(({ helper }) => helper) :
         [];
       // Цикл по объектам
-      for (let y = 0; y < this.dreamMap.size.height; y++) {
-        for (let x = 0; x < this.dreamMap.size.width; x++) {
+      for (let y = -1; y < this.dreamMap.size.height + 1; y++) {
+        for (let x = -1; x < this.dreamMap.size.width + 1; x++) {
           const heightPart: number = this.ceilSize / this.ceilHeightParts;
           const ceil: DreamMapCeil = this.dreamMap.ceils.some(c => c.coord.y === y && c.coord.x === x) ?
             this.dreamMap.ceils.find(c => c.coord.y === y && c.coord.x === x) :
