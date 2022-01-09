@@ -1,7 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from "@angular/core";
+import { CustomObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream";
 import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
-import { TerrainService } from "@_services/terrain.service";
+import { ClosestHeights, TerrainService } from "@_services/terrain.service";
 import { timer } from "rxjs";
 import { takeWhile } from "rxjs/operators";
 import { CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
@@ -162,12 +163,36 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
             DefaultCeil;
           // Обработка
           ceil.coord.z = ceil.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (ceil.coord.z < this.minCeilHeight ? this.minCeilHeight : ceil.coord.z);
+          // Соседние блоки
+          const closestCeilsCoords: { [key in keyof ClosestHeights]: { x: -1 | 0 | 1, y: -1 | 0 | 1 } } = {
+            top: { x: 0, y: -1 },
+            left: { x: -1, y: 0 },
+            bottom: { x: 0, y: 1 },
+            right: { x: 1, y: 0 },
+            topLeft: { x: -1, y: -1 },
+            topRight: { x: 1, y: -1 },
+            bottomLeft: { x: -1, y: 1 },
+            bottomRight: { x: 1, y: 1 },
+          };
           // Местность
-          const terrain: Mesh = this.terrainService.getObject(ceil.terrain, this.ceilSize, heightPart * ceil.coord.z);
+          const terrain: Mesh = this.terrainService.getObject(
+            ceil.terrain,
+            this.ceilSize,
+            heightPart * ceil.coord.z,
+            Object.entries(closestCeilsCoords)
+              .map(([k, { x: cX, y: cY }]) => ([
+                k.toString(),
+                this.dreamMap.ceils.some(c => c.coord.y === y + cY && c.coord.x === x + cX) ?
+                  this.dreamMap.ceils.find(c => c.coord.y === y + cY && c.coord.x === x + cX).coord.z :
+                  DefaultCeil.coord.z
+              ]))
+              .map(([k, z]) => ([k, z !== null ? (z as number) * heightPart : z]))
+              .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights)
+          );
           // Настройки объекта
           terrain.position.set(
             (x - (this.dreamMap.size.width / 2)) * this.ceilSize,
-            -(heightPart * this.maxCeilHeight) + (heightPart * ceil.coord.z / 2),
+            -heightPart * this.maxCeilHeight,
             (y - (this.dreamMap.size.height / 2)) * this.ceilSize
           );
           // Добавить объект на карту
