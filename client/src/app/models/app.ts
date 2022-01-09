@@ -3,7 +3,7 @@ import { AuthRules } from "@_models/menu";
 
 // Тип базового одномерного объекта
 export type SimpleObject = { [key: string]: string };
-export type CustomObject<T> = { [key: string]: T };
+export type CustomObject<V> = { [key: string]: V };
 
 // Данные для Cookie
 export interface CookieInterface {
