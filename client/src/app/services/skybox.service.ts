@@ -45,6 +45,7 @@ export class SkyBoxService {
         light.shadow.mapSize.width = shadow.width;
         light.shadow.mapSize.height = shadow.height;
         light.shadow.radius = shadow.radius;
+        light.shadow.bias = -0.00025;
         helper = new CameraHelper(light.shadow.camera);
       }
       // Результат
@@ -102,8 +103,8 @@ export const SkyBoxes: MapSkyBox[] = [{
       left: -BoxSize / 2,
       right: BoxSize / 2,
       bottom: -BoxSize / 2,
-      width: BoxSize * 5000,
-      height: BoxSize * 5000,
+      width: 32768,
+      height: 32768,
       radius: 5
     }
   }, {
