@@ -1,0 +1,10 @@
+<div class="area">
+  <!-- Область просмотра -->
+  <div class="area__viewer">
+    <app-dream-map-viewer [dreamMap]="dreamMap"
+                          [debugInfo]="debugInfo"
+                          (objectHover)="onObjectHover($event)"></app-dream-map-viewer>
+  </div>
+  <!-- Область инструментов -->
+  <div class="area__control"></div>
+</div>
