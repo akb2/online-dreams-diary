@@ -1,9 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream";
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/terrain.service";
-import { timer } from "rxjs";
-import { takeWhile } from "rxjs/operators";
+import { fromEvent, Subject, timer } from "rxjs";
+import { takeWhile, takeUntil } from "rxjs/operators";
 import { BufferGeometry, CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -14,25 +14,28 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 @Component({
   selector: "app-dream-map-viewer",
-  templateUrl: "./dream-map.component.html",
-  styleUrls: ["./dream-map.component.scss"],
+  templateUrl: "./dream-map-viewer.component.html",
+  styleUrls: ["./dream-map-viewer.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
+export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   @Input() dreamMap: DreamMap;
   @Input() debugInfo: boolean = false;
 
+  @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>()
+
   @ViewChild("canvas") private canvas: ElementRef;
+  @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
   private width: number = 0;
   private height: number = 0;
   private sceneColor: number = 0x000000;
   private ceilSize: number = 1;
-  private ceilHeightParts: number = 8;
+  private ceilHeightParts: number = 32;
   private minCeilHeight: number = 1;
   private maxCeilHeight: number = this.ceilHeightParts * 6;
   private delta: number = 0;
@@ -57,6 +60,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
 
+  private destroy$: Subject<void> = new Subject<void>();
+
 
 
 
@@ -66,24 +71,33 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
     private terrainService: TerrainService
   ) { }
 
+  ngOnInit() {
+    fromEvent(window, "resize", () => this.onWindowResize()).pipe(takeUntil(this.destroy$)).subscribe();
+  }
+
   ngAfterViewInit() {
     // Создание сцены
-    timer(0, 100).pipe(takeWhile(() => !this.canvas && !(!this.debugInfo || this.statsBlock), true)).subscribe(() => {
-      if (this.canvas && (!this.debugInfo || this.statsBlock)) {
-        this.createCanvas();
-        this.createScene();
-        this.createObject();
-        // Рендер
-        this.animate();
-        // События
-        this.control.addEventListener("change", (event) => this.onCameraChange(event.target));
-        this.control.update();
-      }
-    });
+    timer(0, 100)
+      .pipe(takeWhile(() => !this.canvas && !(!this.debugInfo || this.statsBlock), true), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.canvas && (!this.debugInfo || this.statsBlock)) {
+          this.createCanvas();
+          this.createScene();
+          this.createObject();
+          // Рендер
+          this.animate();
+          // События
+          fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
+          this.control.update();
+        }
+      });
   }
 
   ngOnDestroy() {
     this.control.removeEventListener("change", (event) => this.onCameraChange(event.target));
+    // Отписки
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -108,14 +122,25 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  // Изменение размеров экрана
+  onWindowResize(): void {
+    this.createCanvas();
+    // Настройки
+    this.renderer.setSize(this.width, this.height);
+    this.camera.aspect = this.width / this.height;
+    // Рендер
+    this.camera.updateProjectionMatrix();
+    this.render();
+  }
+
 
 
 
 
   // Инициализация блока рендера
   private createCanvas(): void {
-    this.width = this.canvas.nativeElement.getBoundingClientRect().width || 0;
-    this.height = this.canvas.nativeElement.getBoundingClientRect().height || 0;
+    this.width = this.helper.nativeElement.getBoundingClientRect().width || 0;
+    this.height = this.helper.nativeElement.getBoundingClientRect().height || 0;
   }
 
   // Создание сцены
@@ -129,7 +154,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
     this.scene = new Scene();
     // Камера
     this.camera = new PerspectiveCamera(
-      45, this.width / this.height,
+      45,
+      this.width / this.height,
       this.ceilSize / 10,
       this.ceilSize * this.distance
     );
@@ -210,6 +236,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
             -heightPart * this.maxCeilHeight,
             (y - (this.dreamMap.size.height / 2)) * this.ceilSize
           );
+          // Подписка на событие наведения
+          fromEvent(terrain, "mouseenter", () => this.objectHover.emit({ x, y })).pipe(takeUntil(this.destroy$)).subscribe();
           // Добавить объект на карту
           this.scene.add(terrain);
         }
@@ -263,3 +291,9 @@ const DefaultCeil: DreamMapCeil = {
   object: null,
   coord: { x: 0, y: 0, z: 10 }
 };
+
+// Интерфейс выходных данных наведения курсора на объект
+export interface ObjectHoverEvent {
+  x: number;
+  y: number;
+}

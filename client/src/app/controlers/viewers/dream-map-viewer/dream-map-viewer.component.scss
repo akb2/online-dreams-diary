@@ -13,6 +13,7 @@
 .map-viewer {
   width: 100%;
   height: 100%;
+  position: relative;
   // Общие стили
   &,
   > canvas,
@@ -37,5 +38,12 @@
       left: 5px !important;
       top: 5px !important;
     }
+  }
+  // Помощник
+  &__helper {
+    @include mixins.inset;
+    // Свойства
+    z-index: -100;
+    position: absolute;
   }
 }

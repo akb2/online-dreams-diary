@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { DreamMapViewerComponent } from "@_controlers/dream-map/dream-map.component";
+import { DreamMapViewerComponent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 
 
 
