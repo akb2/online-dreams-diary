@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { MapTerrain } from "@_models/dream";
-import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Texture, TextureLoader, Vector3 } from "three";
 
 
 
@@ -14,18 +14,19 @@ export class TerrainService {
   private path: string = "../../assets/dream-map/terrain/";
   private sides: string[] = ["side", "side", "top", "", "side", "side"];
   private textureCache: TextureCache[] = [];
+  private materialCache: MaterialCache[] = [];
 
 
 
 
 
   // Объект для отрисовки
-  getObject(id: number, size: number, height: number, closestHeights: ClosestHeights): Mesh {
+  getObject(id: number, size: number, height: number, closestHeights: ClosestHeights, afterTextureLoad: AfterTextureLoad): Mesh {
     const geometry: BufferGeometry = this.geometry(size, height, closestHeights);
-    const mesh: Mesh = new Mesh(geometry, new MeshPhongMaterial({ vertexColors: true, color: 0xaaaaaa, side: DoubleSide }));
-    // Расскрасить
-    this.materials(geometry, id, size, height);
+    const material = this.getMaterial(id, geometry, afterTextureLoad);
+    const mesh: Mesh = new Mesh(geometry, material);
     // Настройки
+    geometry.computeVertexNormals();
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     // Вернуть объект
@@ -48,10 +49,10 @@ export class TerrainService {
     // 1 --- 2
     // |  \  |
     // 3 --- 4
-    const b1: Vector3 = new Vector3(-shiftH, 0, -shiftH);
-    const b2: Vector3 = new Vector3(shiftH, 0, -shiftH);
-    const b3: Vector3 = new Vector3(-shiftH, 0, shiftH);
-    const b4: Vector3 = new Vector3(shiftH, 0, shiftH);
+    // const b1: Vector3 = new Vector3(-shiftH, 0, -shiftH);
+    // const b2: Vector3 = new Vector3(shiftH, 0, -shiftH);
+    // const b3: Vector3 = new Vector3(-shiftH, 0, shiftH);
+    // const b4: Vector3 = new Vector3(shiftH, 0, shiftH);
     // Верхние точки
     // 1 - 2 - 3
     // | \ | / |
@@ -67,6 +68,16 @@ export class TerrainService {
     const t7: Vector3 = new Vector3(-shiftH, heightBL, shiftH);
     const t8: Vector3 = new Vector3(0, heightB, shiftH);
     const t9: Vector3 = new Vector3(shiftH, heightBR, shiftH);
+    // Точки текстурирования
+    const tt1: [number, number] = [0, 1];
+    const tt2: [number, number] = [0.5, 1];
+    const tt3: [number, number] = [1, 1];
+    const tt4: [number, number] = [0, 0.5];
+    const tt5: [number, number] = [0.5, 0.5];
+    const tt6: [number, number] = [1, 0.5];
+    const tt7: [number, number] = [0, 0];
+    const tt8: [number, number] = [0.5, 0];
+    const tt9: [number, number] = [1, 0];
     // Геометрия
     const points: Vector3[] = [
       // Верхняя грань
@@ -95,43 +106,69 @@ export class TerrainService {
       // t4, t7, b3,
       // t4, b1, b3,
     ];
-    return new BufferGeometry().setFromPoints(points);
+    // Геометрия текстур
+    const uvMap: Float32Array = new Float32Array([
+      // Верхняя грань
+      ...tt5, ...tt1, ...tt2,
+      ...tt5, ...tt2, ...tt3,
+      ...tt5, ...tt3, ...tt6,
+      ...tt5, ...tt6, ...tt9,
+      ...tt5, ...tt9, ...tt8,
+      ...tt5, ...tt8, ...tt7,
+      ...tt5, ...tt7, ...tt4,
+      ...tt5, ...tt4, ...tt1,
+    ]);
+    // Геометрия
+    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(points);
+    // Настройки
+    geometry.setAttribute("uv", new BufferAttribute(uvMap, 2));
+    // Вернуть геометрию
+    return geometry;
   }
 
   // Материалы
-  private materials(geometry: BufferGeometry, id: number, size: number, height: number): void {
-    const terrain: MapTerrain = MapTerrains.find(t => t.id === id) || MapTerrains[0];
-    // Текстуры
-    let colors = new Float32Array([
-      // Верхняя грань
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0, /**/ 0.0, 0.8, 0.0,
-      // Задняя грань
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // Правая грань
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // Ближняя грань
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // Левая грань
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-      // 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1, /**/ 0.8, 0.6, 0.1,
-    ]);
-    // Разукрасить
-    geometry.setAttribute("color", new BufferAttribute(colors, 3))
-    geometry.computeVertexNormals();
+  private getMaterial(terrainId: number, geometry: BufferGeometry, afterTextureLoad: AfterTextureLoad): MeshPhongMaterial {
+    const findCache: (m: MaterialCache) => boolean = m => m.terrain === terrainId;
+    // Материал из кэша
+    if (this.materialCache.some(findCache)) {
+      return this.materialCache.find(findCache).material;
+    }
+    // Новый материал
+    else {
+      const map: Texture = this.getTexture(
+        terrainId,
+        geometry,
+        (geometry: BufferGeometry, terrain: number, texture: Texture) => afterTextureLoad(geometry, terrain, texture)
+      );
+      const material: MeshPhongMaterial = new MeshPhongMaterial({ map, side: DoubleSide });
+      // Сохранить в кэш
+      this.materialCache.push({ material, terrain: terrainId });
+      // Вернуть материал
+      return material;
+    }
+  }
+
+  // Получение текстуры
+  private getTexture(terrainId: number, geometry: BufferGeometry, afterTextureLoad: AfterTextureLoad): Texture {
+    const findCache: (t: TextureCache) => boolean = t => t.terrain === terrainId;
+    // Текстура из кэша
+    if (this.textureCache.some(findCache)) {
+      const texture: Texture = this.textureCache.find(findCache).texture;
+      // Функция обратного вызова после загрузки текстуры
+      afterTextureLoad(geometry, terrainId, texture);
+      // Вернуть текстуру
+      return texture;
+    }
+    // Новая текстура
+    else {
+      const terrain: MapTerrain = MapTerrains.find(t => t.id === terrainId) || MapTerrains[0];
+      const textureFile: string = this.path + "top/" + terrain.name + ".jpg";
+      const texture: Texture = new TextureLoader().load(textureFile, t => afterTextureLoad(geometry, terrainId, t));
+      // Сохранить в кэш
+      this.textureCache.push({ texture, terrain: terrainId });
+      // Вернуть текстуру
+      return texture;
+    }
   }
 
   // Пересчитать разницу в высоте
@@ -143,53 +180,6 @@ export class TerrainService {
   private heightAnglePos(h1: number, h2: number | null, h3: number | null, h4: number | null): number {
     return h2 === null || h3 === null || h4 === null ? 0 : (h1 + h2 + h3 + h4) / 4;
   }
-
-  /*
-  getObject(id: number, size: number, height: number): Mesh {
-    const terrain: MapTerrain = MapTerrains.find(t => t.id === id) || MapTerrains[0];
-    // Текстуры
-    let textures: MeshPhongMaterial[] = [];
-    // Цикл по сторонам
-    textures = this.sides.map(s => {
-      // Определить показывать текстуру или нет
-      let side: string = s;
-      const h: number = side === "top" ? 0 : height;
-      const findCache: (t: TextureCache) => boolean = t => t.side === side && t.terrain === terrain.id && t.height === h;
-      // Материал из кэша
-      if (this.textureCache.some(findCache)) {
-        return this.textureCache.find(findCache).texture;
-      }
-      // Новый материал
-      else {
-        const name: string = side === "top" ? terrain.name : (terrain.useDefaultSide ? "default" : terrain.name);
-        const map: Texture | null = side.length > 0 ? new TextureLoader().load(this.path + side + "/" + name + ".jpg") : null;
-        const color: number = side.length > 0 ? null : (terrain.colors[s] ? terrain.colors[s] : 0x999999);
-        // Настройка текстуры
-        if (map) {
-          map.offset.set(0, 0);
-          map.wrapS = RepeatWrapping;
-          map.wrapT = RepeatWrapping;
-          if (side === "top") map.repeat.set(1, 1);
-          else if (side === "side") map.repeat.set(1, height / size);
-        }
-        // Текстура
-        const texture = new MeshPhongMaterial({ color, map, side: FrontSide });
-        // Сохранить в кэш
-        this.textureCache.push({ texture, side, height: h, terrain: terrain.id });
-        // Вернуть текстуру
-        return texture;
-      }
-    });
-    // Объект
-    const boxGeometry: BoxGeometry = new BoxGeometry(size, height, size);
-    const mesh: Mesh = new Mesh(boxGeometry, textures);
-    // Настройки
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    // Вернуть объект
-    return mesh;
-  }
-  */
 }
 
 
@@ -200,29 +190,23 @@ export class TerrainService {
 export const MapTerrains: MapTerrain[] = [{
   id: 1,
   name: "grass",
-  title: "Газон",
-  useDefaultSide: true,
-  colors: {
-    top: 0x677B2F,
-    side: 0x766B61
-  }
+  title: "Газон"
 }, {
   id: 2,
   name: "rock",
-  title: "Камень",
-  useDefaultSide: true,
-  colors: {
-    top: 0x766B61,
-    side: 0x766B61
-  }
+  title: "Камень"
 }];
 
 // Интерфейс кэша текстур
 interface TextureCache {
   terrain: number;
-  side: string;
-  height: number;
-  texture: MeshPhongMaterial;
+  texture: Texture;
+}
+
+// Интерфейс кэша материалов
+interface MaterialCache {
+  terrain: number;
+  material: MeshPhongMaterial;
 }
 
 // Интерфейс соседних блоков
@@ -236,3 +220,6 @@ export interface ClosestHeights {
   bottomLeft: number | null;
   bottomRight: number | null;
 }
+
+// Тип обратной функции после загрузки текстур
+export type AfterTextureLoad = (geometry: BufferGeometry, terrain: number, texture: Texture) => void;
