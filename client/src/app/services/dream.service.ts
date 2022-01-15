@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode } from "@_models/dream";
+import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode, DreamStatus } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { Observable, of, throwError } from "rxjs";
@@ -55,6 +55,7 @@ export class DreamService {
       members: [],
       map: null,
       mode: DreamMode.map,
+      status: DreamStatus.draft,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
     };
@@ -83,6 +84,7 @@ export class DreamService {
     dreamDto.headerBackgroundId = BackgroundImageDatas.some(b => b.id === dreamDto.headerBackgroundId) ? dreamDto.headerBackgroundId : 11;
     dreamDto.headerType = NavMenuType[dreamDto.headerType] ? dreamDto.headerType : NavMenuType.short;
     dreamDto.mode = DreamMode[dreamDto.mode] ? dreamDto.mode : DreamMode.mixed;
+    dreamDto.status = DreamStatus[dreamDto.status] ? dreamDto.status : DreamStatus.draft;
     // Итоговый массив
     const dream: Dream = {
       id: dreamDto.id,
@@ -92,6 +94,7 @@ export class DreamService {
       date: new Date(dreamDto.date),
       description: dreamDto.description,
       mode: dreamDto.mode as DreamMode,
+      status: dreamDto.status as DreamStatus,
       keywords: dreamDto.keywords.split(","),
       places: null,
       members: null,
@@ -164,6 +167,7 @@ const Dreams: DreamDto[] = [{
   userId: 1,
   createDate: "2021-09-27T13:10:21",
   title: "Полет по миру",
+  status: DreamStatus.draft,
   date: "2017-03-12",
   description: "Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.",
   mode: DreamMode.mixed,

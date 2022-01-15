@@ -22,6 +22,7 @@ export interface DreamDto {
   members: string;
   map: string;
   mode: DreamMode;
+  status: DreamStatus;
   headerType: NavMenuType;
   headerBackgroundId: number;
 }
@@ -35,6 +36,7 @@ export interface Dream {
   date: Date;
   description: string;
   mode: DreamMode;
+  status: DreamStatus;
   keywords: string[];
   places: Place[] | null;
   members: number[] | null;
@@ -170,6 +172,16 @@ export enum DreamMode {
   text,
   map,
   mixed
+}
+
+// Статус сновидения
+export enum DreamStatus {
+  draft, // Черновик
+  private, // Доступен только автору
+  hash, // Доступен по специальной ссылке
+  friends, // Доступен только друзьям
+  users, // Доступен только авторизованным пользователям
+  public, // Доступен всем в интернете
 }
 
 // Типы цветов пути
