@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { MapTerrain } from "@_models/dream";
+import { MapTerrain } from "@_models/dream-map";
 import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Texture, TextureLoader, Vector3 } from "three";
 
 

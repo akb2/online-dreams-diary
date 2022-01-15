@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { MapSkyBox, SkyBoxLightTarget } from "@_models/dream";
+import { MapSkyBox, SkyBoxLightTarget } from "@_models/dream-map";
 import { AmbientLight, CameraHelper, CubeTexture, CubeTextureLoader, DirectionalLight, Fog, Light } from "three";
 
 

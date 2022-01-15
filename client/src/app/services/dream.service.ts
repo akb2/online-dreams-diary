@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMap, DreamMapDto, DreamMode, DreamStatus } from "@_models/dream";
+import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
+import { DreamMap, DreamMapDto } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { Observable, of, throwError } from "rxjs";
@@ -248,22 +249,22 @@ const Dreams: DreamDto[] = [{
       // Углы
       {
         coord: { x: 0, y: 0, z: 30 },
-        terrain: 1,
+        terrain: 2,
         object: 1
       },
       {
         coord: { x: 29, y: 0, z: 30 },
-        terrain: 1,
+        terrain: 2,
         object: 1
       },
       {
         coord: { x: 0, y: 29, z: 30 },
-        terrain: 1,
+        terrain: 2,
         object: 1
       },
       {
         coord: { x: 29, y: 29, z: 30 },
-        terrain: 1,
+        terrain: 2,
         object: 1
       }
     ],
