@@ -4,7 +4,7 @@ import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/terrain.service";
 import { timer } from "rxjs";
 import { takeWhile } from "rxjs/operators";
-import { CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -103,7 +103,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
       x = x > mapX ? mapX : x < -mapX ? -mapX : x;
       z = z > mapZ ? mapZ : z < -mapZ ? -mapZ : z;
       // Установить позицию
-      event.target = new Vector3(x, event.target.y, z);
+      event.target.setX(x);
+      event.target.setZ(z);
     }
   }
 
@@ -200,7 +201,8 @@ export class DreamMapViewerComponent implements OnDestroy, AfterViewInit {
                 // Результат
                 return [k.toString(), z * heightPart];
               })
-              .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights)
+              .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights),
+            (geometry: BufferGeometry, terrain: number, texture: any) => { }
           );
           // Настройки объекта
           terrain.position.set(
