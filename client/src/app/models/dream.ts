@@ -87,11 +87,6 @@ export interface MapTerrain {
   id: number;
   name: string;
   title: string;
-  useDefaultSide: boolean;
-  colors: {
-    top: number;
-    side: number;
-  }
 }
 
 // Интерфейс типа неба
