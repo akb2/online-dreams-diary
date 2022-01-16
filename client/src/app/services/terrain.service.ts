@@ -34,7 +34,7 @@ export class TerrainService {
   }
 
   // Геометрия
-  private geometry(size: number, height: number, closestHeights: ClosestHeights): BufferGeometry {
+  geometry(size: number, height: number, closestHeights: ClosestHeights): BufferGeometry {
     // Смещения
     const shiftH: number = size / 2;
     const heightL: number = this.heightSidePos(height, closestHeights.left);
@@ -131,7 +131,7 @@ export class TerrainService {
     const findCache: (m: MaterialCache) => boolean = m => m.terrain === terrainId;
     // Материал из кэша
     if (this.materialCache.some(findCache)) {
-      return this.materialCache.find(findCache).material;
+      return new MeshPhongMaterial().copy(this.materialCache.find(findCache).material);
     }
     // Новый материал
     else {
