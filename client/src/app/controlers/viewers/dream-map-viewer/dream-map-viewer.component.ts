@@ -1,10 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
-import { ClosestHeights, TerrainService } from "@_services/terrain.service";
-import { fromEvent, Subject, timer } from "rxjs";
-import { takeWhile, takeUntil } from "rxjs/operators";
-import { BufferGeometry, CameraHelper, Clock, Light, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import { ClosestHeights, MapTerrains, TerrainService } from "@_services/terrain.service";
+import { forkJoin, fromEvent, Subject, timer } from "rxjs";
+import { takeUntil, takeWhile } from "rxjs/operators";
+import { BufferGeometry, CameraHelper, Clock, Intersection, Light, Mesh, MeshBasicMaterial, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -25,7 +25,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   @Input() dreamMap: DreamMap;
   @Input() debugInfo: boolean = false;
 
-  @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>()
+  @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>();
 
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
@@ -35,9 +35,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private height: number = 0;
   private sceneColor: number = 0x000000;
   private ceilSize: number = 1;
-  private ceilHeightParts: number = 32;
-  private minCeilHeight: number = 1;
-  private maxCeilHeight: number = this.ceilHeightParts * 6;
+  private ceilHeightParts: number = 64;
+  minCeilHeight: number = 1;
+  maxCeilHeight: number = this.ceilHeightParts * 20;
+  private defaultCeilHeight: number = this.ceilHeightParts * 10;
   private delta: number = 0;
 
   private rotateSpeed: number = 1.4;
@@ -56,11 +57,47 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private camera: PerspectiveCamera;
   private control: OrbitControls;
   private clock: Clock;
+  private hoverMeshes: Mesh[] = [];
   stats: Stats;
+
+  private terrainLights: MeshBasicMaterial = new MeshBasicMaterial({ color: 0xffffff });
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
 
   private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
+
+  // Ячейка по умолчанию
+  getDefaultCeil(x: number, y: number): DreamMapCeil {
+    return {
+      place: null,
+      terrain: MapTerrains[0].id,
+      object: null,
+      coord: { x, y, z: this.defaultCeilHeight }
+    };
+  }
+
+  // Объект по событию
+  private getEventObject(event: MouseEvent): Intersection<Object3D<Event>> | null {
+    if (event.target === this.canvas.nativeElement) {
+      const x: number = ((event.clientX - this.canvas.nativeElement.getBoundingClientRect().left) / this.width) * 2 - 1;
+      const y: number = -(((event.clientY - this.canvas.nativeElement.getBoundingClientRect().top) / this.height) * 2 - 1);
+      const raycaster: Raycaster = new Raycaster();
+      // Настройки
+      raycaster.setFromCamera({ x, y }, this.camera)
+      // Объекты в фокусе
+      const intersects: Intersection<Object3D<Event>>[] = raycaster.intersectObjects(this.hoverMeshes);
+      // Обработка объектов
+      if (intersects.length > 0) {
+        return intersects[0];
+      }
+    }
+    // Объект не найден
+    return null;
+  }
 
 
 
@@ -72,7 +109,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   ) { }
 
   ngOnInit() {
-    fromEvent(window, "resize", () => this.onWindowResize()).pipe(takeUntil(this.destroy$)).subscribe();
+    forkJoin([
+      fromEvent(window, "resize", () => this.onWindowResize()),
+      fromEvent(document, "mousemove", this.onMouseMove.bind(this)),
+      fromEvent(document, "mousedown", this.onMouseClick.bind(this))
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
   }
 
   ngAfterViewInit() {
@@ -88,6 +131,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.animate();
           // События
           fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
+          // Обновить
           this.control.update();
         }
       });
@@ -133,6 +177,26 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.render();
   }
 
+  // Движение мышки
+  private onMouseMove(event: MouseEvent): void {
+    const object: Intersection<Object3D<Event>> = this.getEventObject(event);
+    // Найден объект
+    if (object) {
+      const ceil: DreamMapCeil = object.object.userData as DreamMapCeil;
+      // Обратный вызов
+      if (ceil.coord.x >= 0 && ceil.coord.y >= 0) {
+        this.objectHover.emit({ ceil, object: object.object as unknown as Mesh });
+        // Завершить функцию
+        return;
+      }
+    }
+  }
+
+  // Клик мышкой
+  private onMouseClick(event: MouseEvent): void {
+    this.onMouseMove(event);
+  }
+
 
 
 
@@ -171,6 +235,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.control.maxDistance = this.zoomMax;
     this.control.minPolarAngle = this.getAngle(this.minAngle);
     this.control.maxPolarAngle = this.getAngle(this.maxAngle);
+    this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
     // Статистика
     this.stats = Stats();
     this.statsBlock.nativeElement.appendChild(this.stats.dom);
@@ -178,7 +243,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.clock = new Clock();
   }
 
-  // Объект
+  // Отрисовать объекты
   private createObject(): void {
     if (this.scene) {
       // Скайбокс
@@ -198,31 +263,22 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const heightPart: number = this.ceilSize / this.ceilHeightParts;
           const ceil: DreamMapCeil = this.dreamMap.ceils.some(c => c.coord.y === y && c.coord.x === x) ?
             this.dreamMap.ceils.find(c => c.coord.y === y && c.coord.x === x) :
-            DefaultCeil;
+            this.getDefaultCeil(x, y);
           // Обработка
+          ceil.coord.x = x;
+          ceil.coord.y = y;
           ceil.coord.z = ceil.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (ceil.coord.z < this.minCeilHeight ? this.minCeilHeight : ceil.coord.z);
-          // Соседние блоки
-          const closestCeilsCoords: { [key in keyof ClosestHeights]: { x: -1 | 0 | 1, y: -1 | 0 | 1 } } = {
-            top: { x: 0, y: -1 },
-            left: { x: -1, y: 0 },
-            bottom: { x: 0, y: 1 },
-            right: { x: 1, y: 0 },
-            topLeft: { x: -1, y: -1 },
-            topRight: { x: 1, y: -1 },
-            bottomLeft: { x: -1, y: 1 },
-            bottomRight: { x: 1, y: 1 },
-          };
           // Местность
           const terrain: Mesh = this.terrainService.getObject(
             ceil.terrain,
             this.ceilSize,
             heightPart * ceil.coord.z,
-            Object.entries(closestCeilsCoords)
+            Object.entries(ClosestCeilsCoords)
               .map(([k, { x: cX, y: cY }]) => {
                 let z: number =
                   this.dreamMap.ceils.some(c => c.coord.y === y + cY && c.coord.x === x + cX) ?
                     this.dreamMap.ceils.find(c => c.coord.y === y + cY && c.coord.x === x + cX).coord.z :
-                    DefaultCeil.coord.z;
+                    this.defaultCeilHeight;
                 z = z > this.maxCeilHeight ? this.maxCeilHeight : (z < this.minCeilHeight ? this.minCeilHeight : z);
                 // Результат
                 return [k.toString(), z * heightPart];
@@ -231,14 +287,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             (geometry: BufferGeometry, terrain: number, texture: any) => { }
           );
           // Настройки объекта
+          terrain.userData = ceil;
           terrain.position.set(
             (x - (this.dreamMap.size.width / 2)) * this.ceilSize,
             -heightPart * this.maxCeilHeight,
             (y - (this.dreamMap.size.height / 2)) * this.ceilSize
           );
-          // Подписка на событие наведения
-          fromEvent(terrain, "mouseenter", () => this.objectHover.emit({ x, y })).pipe(takeUntil(this.destroy$)).subscribe();
           // Добавить объект на карту
+          this.hoverMeshes.push(terrain);
           this.scene.add(terrain);
         }
       }
@@ -259,7 +315,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Рендер сцены
-  private render(): void {
+  render(): void {
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -278,22 +334,68 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.delta = this.delta % interval;
     }
   }
+
+
+
+
+
+  // Обновить статус свечения местности
+  setTerrainHoverStatus(ceil: DreamMapCeil): void {
+    let mesh: Mesh = this.hoverMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    // Объект найден
+    if (ceil && mesh) {
+      const material: MeshPhongMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as MeshPhongMaterial;
+      // Дополнить материал
+      material.setValues({ emissive: ceil.highlight ? 0x2f2f2f : 0x000000 });
+    }
+  }
+
+  // Обновить высоту местности
+  setTerrainHeight(ceil: DreamMapCeil): void {
+    let mesh: Mesh = this.hoverMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    // Объект найден
+    if (ceil && mesh) {
+      const heightPart: number = this.ceilSize / this.ceilHeightParts;
+      const geometry: BufferGeometry = this.terrainService.geometry(
+        this.ceilSize,
+        heightPart * ceil.coord.z,
+        Object.entries(ClosestCeilsCoords)
+          .map(([k, { x: cX, y: cY }]) => {
+            let z: number =
+              this.dreamMap.ceils.some(c => c.coord.y === ceil.coord.y + cY && c.coord.x === ceil.coord.x + cX) ?
+                this.dreamMap.ceils.find(c => c.coord.y === ceil.coord.y + cY && c.coord.x === ceil.coord.x + cX).coord.z :
+                this.defaultCeilHeight;
+            z = z > this.maxCeilHeight ? this.maxCeilHeight : (z < this.minCeilHeight ? this.minCeilHeight : z);
+            // Результат
+            return [k.toString(), z * heightPart];
+          })
+          .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights),
+      );
+      // Дополнить материал
+      geometry.computeVertexNormals();
+      mesh.geometry = geometry;
+    }
+  }
 }
 
 
 
 
-
-// Пустая ячейка
-const DefaultCeil: DreamMapCeil = {
-  place: null,
-  terrain: null,
-  object: null,
-  coord: { x: 0, y: 0, z: 10 }
-};
 
 // Интерфейс выходных данных наведения курсора на объект
 export interface ObjectHoverEvent {
-  x: number;
-  y: number;
+  ceil: DreamMapCeil;
+  object: Mesh;
 }
+
+// Координаты соседних блоков
+const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: -1 | 0 | 1, y: -1 | 0 | 1 } } = {
+  top: { x: 0, y: -1 },
+  left: { x: -1, y: 0 },
+  bottom: { x: 0, y: 1 },
+  right: { x: 1, y: 0 },
+  topLeft: { x: -1, y: -1 },
+  topRight: { x: 1, y: -1 },
+  bottomLeft: { x: -1, y: 1 },
+  bottomRight: { x: 1, y: 1 },
+};
