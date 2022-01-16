@@ -128,7 +128,7 @@ export class DreamService {
   }
 
   // Конвертер карты
-  private dreamMapConverter(dreamMapDto: DreamMapDto | null): DreamMap {
+  dreamMapConverter(dreamMapDto: DreamMapDto | null): DreamMap {
     // Преобразование карты
     if (dreamMapDto) {
       return {
@@ -152,7 +152,7 @@ export class DreamService {
         size: { width: this.dreamMapWidth, height: this.dreamMapHeight },
         ceils: [],
         dreamerWay: [],
-        skyBox: null
+        skyBox: 1
       };
     }
   }
@@ -179,95 +179,7 @@ const Dreams: DreamDto[] = [{
   map: JSON.stringify({
     dreamerWay: null,
     size: { width: 70, height: 70 },
-    ceils: [
-      {
-        coord: { x: 13, y: 13, z: 1 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 14, y: 13, z: 2 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 15, y: 13, z: 3 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 16, y: 13, z: 4 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 17, y: 13, z: 5 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 18, y: 13, z: 6 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 19, y: 13, z: 7 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 15, y: 14, z: 4 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 16, y: 14, z: 4 },
-        terrain: 1,
-        object: 1
-      },
-      // Ступеньки
-      {
-        coord: { x: 25, y: 25, z: 20 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 25, y: 26, z: 18 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 25, y: 27, z: 16 },
-        terrain: 1,
-        object: 1
-      },
-      {
-        coord: { x: 25, y: 28, z: 14 },
-        terrain: 1,
-        object: 1
-      },
-      // Углы
-      {
-        coord: { x: 0, y: 0, z: 30 },
-        terrain: 2,
-        object: 1
-      },
-      {
-        coord: { x: 29, y: 0, z: 30 },
-        terrain: 2,
-        object: 1
-      },
-      {
-        coord: { x: 0, y: 29, z: 30 },
-        terrain: 2,
-        object: 1
-      },
-      {
-        coord: { x: 29, y: 29, z: 30 },
-        terrain: 2,
-        object: 1
-      }
-    ],
+    ceils: [],
     skyBox: 1
   } as DreamMapDto),
   headerType: NavMenuType.collapse,
