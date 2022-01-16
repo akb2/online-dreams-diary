@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
@@ -32,7 +32,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   private tool: Tool = Tool.landscape;
   private landscapeTool: LandscapeTool = LandscapeTool.up;
-  toolSize: number = ToolSize[0];
+  toolSize: number = ToolSize[2];
   private toolActive: boolean = false;
   private currentObject: ObjectHoverEvent = null;
 
@@ -87,10 +87,6 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
 
 
-
-  constructor(
-    private changeDetectorRef: ChangeDetectorRef
-  ) { }
 
   ngOnInit() {
     fromEvent(document, "mouseup", this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
@@ -211,7 +207,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Изменение высоты
-  private ceilsHeight(direction: -1 | 0 | 1): void {
+  private ceilsHeight(direction: HeightDirection): void {
     const z: number = this.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
     // Цикл по прилегающим блокам
     for (let cY = -this.toolSize - 1; cY <= this.toolSize + 1; cY++) {
@@ -222,18 +218,24 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
         if (this.isEditableCeil(x, y)) {
           const ceil: DreamMapCeil = this.getCeil(x, y);
           const currentZ: number = ceil.coord.z;
+          let corrDirection: HeightDirection = 0;
           let zChange: number = Math.floor(
-            ((this.toolSize * this.terrainChangeStep) + 1 -
-              ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
+            ((this.toolSize * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
             this.terrainChangeStep
           );
-          // Изменение высоты
-          zChange = direction === 0 ?
-            (currentZ < z ? zChange : (currentZ > z ? -zChange : 0)) :
-            zChange * direction;
+          // Изменение высоты: выравнивание
+          if (direction === 0) {
+            corrDirection = currentZ < z ? 1 : currentZ > z ? -1 : 0;
+            zChange = currentZ < z ? zChange : currentZ > z ? -zChange : 0;
+          }
+          // Изменение высоты: вверх / вниз
+          else {
+            zChange *= direction;
+          }
           // Корректировка высоты
           if (zChange !== 0) {
             ceil.coord.z = Math.floor(ceil.coord.z + zChange);
+            ceil.coord.z = (corrDirection > 0 && ceil.coord.z > z) || (corrDirection < 0 && ceil.coord.z < z) ? z : ceil.coord.z;
             ceil.coord.z = ceil.coord.z > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.z;
             ceil.coord.z = ceil.coord.z < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.z;
             // Запомнить ячейку
@@ -284,6 +286,9 @@ enum LandscapeTool {
 
 // Типы размеров
 const ToolSize: number[] = [0, 1, 3, 5, 9, 13];
+
+// Направления высоты
+type HeightDirection = - 1 | 0 | 1;
 
 // Интерфейс списка инструментов: общее
 interface ToolListItem {
