@@ -7,7 +7,9 @@
                           (objectHover)="onObjectHover($event)"></app-dream-map-viewer>
   </div>
   <!-- Область инструментов -->
-  <div class="area__control">
+  <form class="area__control"
+        [formGroup]="form"
+        *ngIf="form">
     <!-- Инструмент -->
     <div class="tool-button">
       <mat-icon>{{getCurrentTool.icon}}</mat-icon>
@@ -50,6 +52,7 @@
         <div class="tool-button container">Размер кисти:</div>
         <div class="tool-button container">
           <mat-slider thumbLabel
+                      formControlName="toolSize"
                       [displayWith]="toolSizeFormat"
                       tickInterval="1000"
                       color="primary"
@@ -62,5 +65,5 @@
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </div>
