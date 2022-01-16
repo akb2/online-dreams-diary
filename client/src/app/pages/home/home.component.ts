@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DreamMap } from '@_models/dream-map';
 import { NavMenuType } from '@_models/nav-menu';
+import { DreamService } from '@_services/dream.service';
 
 
 
@@ -15,16 +17,16 @@ import { NavMenuType } from '@_models/nav-menu';
 export class HomeComponent {
 
 
-  public cycle: number[] = Array(70).fill(0);
-  public testText: string = "123";
-
   navMenuType: NavMenuType = NavMenuType.full;
+  dreamMap: DreamMap;
 
 
 
 
 
-  // Тест
-  public test(text: string): void {
+  constructor(
+    private dreamService: DreamService
+  ) {
+    this.dreamMap = this.dreamService.dreamMapConverter(null);
   }
 }

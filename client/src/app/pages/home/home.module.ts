@@ -5,6 +5,7 @@ import { HomeComponent } from './home.component';
 import { CoreModule } from '@_modules/core.module';
 
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
+import { DreamMapEditorModule } from '@_controlers/dream-map-editor/dream-map-editor.module';
 
 
 
@@ -17,7 +18,8 @@ import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
   imports: [
     CoreModule,
     HomeRoutingModule,
-    NavMenuModule
+    NavMenuModule,
+    DreamMapEditorModule
   ]
 })
 
