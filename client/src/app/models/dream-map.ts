@@ -18,6 +18,7 @@ export interface DreamMapCeil {
   place: Place | null;
   terrain: number;
   object: MapObject | null;
+  highlight?: boolean;
   coord: Coord
 }
 
