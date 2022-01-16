@@ -1,10 +1,66 @@
 <div class="area">
   <!-- Область просмотра -->
-  <div class="area__viewer">
+  <div class="area__viewer"
+       (mousedown)="onMouseDown($event)">
     <app-dream-map-viewer [dreamMap]="dreamMap"
                           [debugInfo]="debugInfo"
                           (objectHover)="onObjectHover($event)"></app-dream-map-viewer>
   </div>
   <!-- Область инструментов -->
-  <div class="area__control"></div>
+  <div class="area__control">
+    <!-- Инструмент -->
+    <div class="tool-button">
+      <mat-icon>{{getCurrentTool.icon}}</mat-icon>
+      <!-- Список инструментов -->
+      <div class="tool-button__items">
+        <div class="tool-button"
+             [ngClass]="{ active: tool.type === getCurrentTool.type }"
+             matTooltip="Инструмент: {{tool.name}}"
+             (click)="onToolChange(tool.type)"
+             *ngFor="let tool of toolList">
+          <mat-icon>{{tool.icon}}</mat-icon>
+        </div>
+      </div>
+    </div>
+    <!-- Под-инструмент: ландшафт -->
+    <div class="tool-button"
+         *ngIf="getCurrentTool.type===ToolType.landscape">
+      <mat-icon>{{getCurrentLandscapeTool.icon}}</mat-icon>
+      <!-- Список инструментов -->
+      <div class="tool-button__items">
+        <div class="tool-button"
+             [ngClass]="{ active: tool.type === getCurrentLandscapeTool.type }"
+             matTooltip="Ландшафт: {{tool.name}}"
+             (click)="onLandscapeToolChange(tool.type)"
+             *ngFor="let tool of landscapeToolList">
+          <mat-icon>{{tool.icon}}</mat-icon>
+        </div>
+      </div>
+    </div>
+    <!-- Под-инструмент: размер кисти -->
+    <div class="tool-button"
+         *ngIf="getCurrentTool.type===ToolType.landscape">
+      <div class="tool-button__point "
+           [ngStyle]="{
+             width: toolSizeFormat() + 'px',
+             height: toolSizeFormat() + 'px'
+           }"></div>
+      <!-- Настройка размера -->
+      <div class="tool-button__items">
+        <div class="tool-button container">Размер кисти:</div>
+        <div class="tool-button container">
+          <mat-slider thumbLabel
+                      [displayWith]="toolSizeFormat"
+                      tickInterval="1000"
+                      color="primary"
+                      step="1"
+                      min="0"
+                      [max]="toolSizeLength"
+                      aria-label="blocks"
+                      (input)="onToolSizeChange($event)"
+                      (change)="onToolSizeChange($event)"></mat-slider>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

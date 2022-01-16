@@ -1,3 +1,10 @@
+@use "sass:map";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+
+$controlOffset: 5px;
+$toolButtonBRadius: 3px;
+
 // Родительский блок
 :host {
   display: block;
@@ -17,5 +24,133 @@
   &__viewer {
     width: 100%;
     height: 100%;
+  }
+  // Блок настроек
+  &__control {
+    position: absolute;
+    top: $controlOffset;
+    right: $controlOffset;
+    gap: $controlOffset;
+    display: flex;
+    flex-flow: column nowrap;
+    pointer-events: none;
+  }
+}
+
+// Элемент управления
+.tool-button {
+  $_elm: &;
+  $size: 48px;
+  // Свойства
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  width: $size;
+  height: $size;
+  line-height: $size;
+  font-size: $size * 0.9;
+  color: colors.$title;
+  background-color: colors.$card;
+  border-radius: $toolButtonBRadius;
+  pointer-events: auto;
+  position: relative;
+  transition: background-color #{screens.$animation-time};
+  // Иконка
+  > mat-icon {
+    color: inherit;
+    transition: color #{screens.$animation-time};
+  }
+  // Размер кисти
+  &__point {
+    display: inline-block;
+    border-radius: 50%;
+    background-color: colors.$title;
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 0;
+  }
+  // Наведение
+  &:hover > &__items {
+    right: 100%;
+    opacity: 1;
+    visibility: visible;
+  }
+  // Список инструментов
+  &__items {
+    position: absolute;
+    top: 0;
+    right: 140%;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 0;
+    justify-content: center;
+    align-items: center;
+    padding-right: $controlOffset;
+    transition: opacity #{screens.$animation-time}, right #{screens.$animation-time},
+      visibility #{screens.$animation-time};
+    // Кнопки внутри
+    > #{$_elm} {
+      border-radius: 0;
+      overflow: hidden;
+      // Первый элемент
+      &:first-of-type {
+        border-radius: #{$toolButtonBRadius} 0 0 #{$toolButtonBRadius};
+      }
+      // Последний элемент
+      &:last-of-type {
+        border-radius: 0 #{$toolButtonBRadius} #{$toolButtonBRadius} 0;
+      }
+      // Первый и последний элемент
+      &:first-of-type:last-of-type {
+        border-radius: #{$toolButtonBRadius};
+      }
+      // Вспомогательный блок
+      &:before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background-color: #{map.get(colors.$mat-primary, 500)};
+        transition: opacity #{screens.$animation-time};
+        opacity: 0;
+      }
+      // Выделение
+      &:hover {
+        background-color: #{map.get(colors.$mat-primary, 500)};
+        color: #{map.get(colors.$mat-primary, contrast, 500)};
+      }
+      // Активный элемент
+      &.active {
+        background-color: colors.$card;
+        color: #{map.get(colors.$mat-primary, 500)};
+        // Вспомогательный блок
+        &:before {
+          opacity: 1;
+        }
+      }
+      // Контейнер
+      &.container {
+        width: auto;
+        line-height: 1;
+        padding: 0 20px;
+        overflow: visible;
+        background-color: colors.$card;
+        color: colors.$title;
+        font-size: 14px;
+        line-height: 1;
+        white-space: nowrap;
+        font-weight: 400;
+        // Последующие блоки
+        & + #{$_elm}.container {
+          padding-left: 0;
+        }
+      }
+    }
   }
 }
