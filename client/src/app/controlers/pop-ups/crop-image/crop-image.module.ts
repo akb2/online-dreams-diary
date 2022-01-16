@@ -9,7 +9,6 @@ import { CoreModule } from "@_modules/core.module";
 
 
 
-// Декоратор
 @NgModule({
   exports: [
     PopupCropImageComponent
@@ -25,5 +24,4 @@ import { CoreModule } from "@_modules/core.module";
   ]
 })
 
-// Класс
 export class PopupCropImageModule { }

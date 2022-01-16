@@ -1,6 +1,5 @@
-import { CdkFixedSizeVirtualScroll } from "@angular/cdk/scrolling";
 import { DatePipe } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 
@@ -13,6 +12,7 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
   templateUrl: "./text-input.component.html",
   styleUrls: ["./text-input.component.scss"]
 })
+
 export class TextInputComponent extends BaseInputDirective {
 
 

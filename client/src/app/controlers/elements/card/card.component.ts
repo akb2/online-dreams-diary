@@ -5,7 +5,6 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 
 
 
-// Декоратор
 @Component({
   selector: "app-card",
   templateUrl: "./card.component.html",
@@ -13,7 +12,6 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-// Класс
 export class CardComponent implements AfterViewInit, OnChanges {
 
 

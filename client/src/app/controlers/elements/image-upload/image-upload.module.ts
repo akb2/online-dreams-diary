@@ -10,7 +10,6 @@ import { ImageUploadComponent } from "./image-upload.component";
 
 
 
-// Декоратор
 @NgModule({
   exports: [
     ImageUploadComponent
@@ -28,5 +27,4 @@ import { ImageUploadComponent } from "./image-upload.component";
   ]
 })
 
-// Класс
 export class ImageUploadModule { }

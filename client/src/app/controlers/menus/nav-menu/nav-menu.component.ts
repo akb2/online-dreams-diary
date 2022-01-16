@@ -11,7 +11,6 @@ import { ScreenService } from "@_services/screen.service";
 
 
 
-// Декоратор
 @Component({
   selector: "app-main-menu",
   templateUrl: "./nav-menu.component.html",
@@ -19,7 +18,6 @@ import { ScreenService } from "@_services/screen.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-// Основной класс
 export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
 

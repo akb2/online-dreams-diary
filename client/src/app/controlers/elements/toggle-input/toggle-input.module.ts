@@ -1,12 +1,11 @@
-import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { MatFormFieldModule } from "@angular/material/form-field";
+import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { ToggleInputComponent } from "./toggle-input.component";
-
 import { CoreModule } from "@_modules/core.module";
+import { ToggleInputComponent } from "./toggle-input.component";
 
 
 
@@ -29,9 +28,5 @@ import { CoreModule } from "@_modules/core.module";
     MatSlideToggleModule
   ]
 })
-
-
-
-
 
 export class ToggleInputModule { }

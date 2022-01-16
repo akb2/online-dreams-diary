@@ -11,5 +11,4 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class PageLoaderComponent {
-}
+export class PageLoaderComponent { }

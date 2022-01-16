@@ -10,6 +10,7 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
   templateUrl: "./app-recaptcha.component.html",
   styleUrls: ["./app-recaptcha.component.scss"]
 })
+
 export class AppRecaptchaComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
 

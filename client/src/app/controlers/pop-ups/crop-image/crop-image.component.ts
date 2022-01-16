@@ -8,14 +8,12 @@ import { ScreenService } from "@_services/screen.service";
 
 
 
-// Декоратор
 @Component({
   selector: "app-popup-crop-image",
   templateUrl: "./crop-image.component.html",
   styleUrls: ["./crop-image.component.scss"]
 })
 
-// Класс
 export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 

@@ -1,6 +1,10 @@
 import { MatDialogConfig } from "@angular/material/dialog";
 import { AuthRules } from "@_models/menu";
 
+
+
+
+
 // Тип базового одномерного объекта
 export type SimpleObject = { [key: string]: string };
 export type CustomObject<V> = { [key: string]: V };

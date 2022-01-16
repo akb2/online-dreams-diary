@@ -8,9 +8,6 @@ import { CoreModule } from "@_modules/core.module";
 
 
 
-
-
-
 @NgModule({
   exports: [
     ContentMenuComponent,
@@ -24,4 +21,5 @@ import { CoreModule } from "@_modules/core.module";
     RouterModule
   ]
 })
+
 export class ContentMenuModule { }

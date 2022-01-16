@@ -1,6 +1,5 @@
-import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-
+import { NgModule } from "@angular/core";
 import { ScrollComponent } from "./scroll.component";
 
 
@@ -18,9 +17,5 @@ import { ScrollComponent } from "./scroll.component";
     CommonModule
   ]
 })
-
-
-
-
 
 export class ScrollModule { }

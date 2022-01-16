@@ -8,14 +8,12 @@ import { SnackbarService } from "@_services/snackbar.service";
 
 
 
-// Декоратор
 @Component({
   selector: "app-image-upload",
   templateUrl: "./image-upload.component.html",
   styleUrls: ["./image-upload.component.scss"]
 })
 
-// Класс
 export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 

@@ -6,18 +6,20 @@ import { AppMatDialogConfig } from "@_models/app";
 
 
 
-// Декоратор
 @Component({
   selector: "app-popup-confirm",
   templateUrl: "./confirm.component.html",
   styleUrls: ["./confirm.component.scss"]
 })
 
-// Класс
 export class PopupConfirmComponent {
 
 
-  public static popUpWidth: string = "420px";
+  static popUpWidth: string = "420px";
+
+
+
+
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PopupConfirmData,
@@ -32,7 +34,7 @@ export class PopupConfirmComponent {
 
 
   // Подтверждение
-  public onConfirm(): void {
+  onConfirm(): void {
     this.matDialogRef.close(true);
   }
 
@@ -41,7 +43,7 @@ export class PopupConfirmComponent {
 
 
   // Открыть текущее окно
-  public static open(matDialog: MatDialog, data: PopupConfirmData): MatDialogRef<PopupConfirmComponent> {
+  static open(matDialog: MatDialog, data: PopupConfirmData): MatDialogRef<PopupConfirmComponent> {
     const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
     matDialogConfig.width = PopupConfirmComponent.popUpWidth;
     matDialogConfig.data = data;

@@ -10,10 +10,6 @@ import { SnackbarService } from "@_services/snackbar.service";
 
 @Injectable({ providedIn: "root" })
 
-
-
-
-
 export class AuthGuard implements CanActivate {
 
 

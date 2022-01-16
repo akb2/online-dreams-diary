@@ -11,8 +11,6 @@ import { CardComponent } from "./card.component";
 
 
 
-
-// Декоратор
 @NgModule({
   declarations: [
     CardComponent
@@ -30,5 +28,4 @@ import { CardComponent } from "./card.component";
   ]
 })
 
-// Класс модуля
 export class CardModule { }

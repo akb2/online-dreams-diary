@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { CustomObject } from "@_models/app";
 
 
 

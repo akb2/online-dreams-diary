@@ -14,10 +14,6 @@ import { AccountService } from "@_services/account.service";
   styleUrls: ["./auth.component.scss"]
 })
 
-
-
-
-
 export class AuthComponent implements OnInit {
 
 

@@ -1,6 +1,5 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-
 import { MainBackgroundComponent } from "./main-background.component";
 
 
@@ -18,9 +17,5 @@ import { MainBackgroundComponent } from "./main-background.component";
     CommonModule
   ]
 })
-
-
-
-
 
 export class MainBackgroundModule { }
