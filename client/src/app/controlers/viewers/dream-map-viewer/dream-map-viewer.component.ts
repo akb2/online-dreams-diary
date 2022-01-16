@@ -355,6 +355,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     let mesh: Mesh = this.hoverMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
     // Объект найден
     if (ceil && mesh) {
+      mesh.geometry.dispose();
+      // Новая геометрия
       const heightPart: number = this.ceilSize / this.ceilHeightParts;
       const geometry: BufferGeometry = this.terrainService.geometry(
         this.ceilSize,
