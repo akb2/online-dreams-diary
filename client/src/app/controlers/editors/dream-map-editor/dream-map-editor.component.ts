@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
@@ -26,6 +27,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   toolList: ToolListItem[] = Tools;
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLength: number = ToolSize.length - 1;
+  form: FormGroup;
 
   ToolType: typeof Tool = Tool;
   LandscapeToolType: typeof LandscapeTool = LandscapeTool;
@@ -73,7 +75,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Ключ текущего размера кисти
-  get getCurrentToolSize(): number {
+  private get getCurrentToolSize(): number {
     return ToolSize.findIndex(t => t === this.toolSize);
   }
 
@@ -87,6 +89,14 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
 
 
+
+  constructor(
+    private formBuilder: FormBuilder
+  ) {
+    this.form = this.formBuilder.group({
+      toolSize: [this.getCurrentToolSize]
+    });
+  }
 
   ngOnInit() {
     fromEvent(document, "mouseup", this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
