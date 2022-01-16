@@ -45,7 +45,7 @@ export class SkyBoxService {
         light.shadow.mapSize.width = shadow.width;
         light.shadow.mapSize.height = shadow.height;
         light.shadow.radius = shadow.radius;
-        light.shadow.bias = -0.00025;
+        light.shadow.bias = 0.00000;
         helper = new CameraHelper(light.shadow.camera);
       }
       // Результат
