@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { MapTerrain } from "@_models/dream-map";
-import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, Texture, TextureLoader, Vector3 } from "three";
+import { BackSide, BufferAttribute, BufferGeometry, Mesh, MeshPhongMaterial, Texture, TextureLoader, Vector3 } from "three";
 
 
 
@@ -12,7 +12,6 @@ export class TerrainService {
 
 
   private path: string = "../../assets/dream-map/terrain/";
-  private sides: string[] = ["side", "side", "top", "", "side", "side"];
   private textureCache: TextureCache[] = [];
   private materialCache: MaterialCache[] = [];
 
@@ -45,14 +44,6 @@ export class TerrainService {
     const heightTR: number = this.heightAnglePos(height, closestHeights.top, closestHeights.right, closestHeights.topRight);
     const heightBL: number = this.heightAnglePos(height, closestHeights.bottom, closestHeights.left, closestHeights.bottomLeft);
     const heightBR: number = this.heightAnglePos(height, closestHeights.bottom, closestHeights.right, closestHeights.bottomRight);
-    // Нижние точки
-    // 1 --- 2
-    // |  \  |
-    // 3 --- 4
-    // const b1: Vector3 = new Vector3(-shiftH, 0, -shiftH);
-    // const b2: Vector3 = new Vector3(shiftH, 0, -shiftH);
-    // const b3: Vector3 = new Vector3(-shiftH, 0, shiftH);
-    // const b4: Vector3 = new Vector3(shiftH, 0, shiftH);
     // Верхние точки
     // 1 - 2 - 3
     // | \ | / |
@@ -89,22 +80,6 @@ export class TerrainService {
       t5, t8, t7,
       t5, t7, t4,
       t5, t4, t1,
-      // Задняя грань
-      // t1, t2, b1,
-      // t2, t3, b2,
-      // t2, b1, b2,
-      // Правая грань
-      // t3, t6, b2,
-      // t6, t9, b4,
-      // t6, b2, b4,
-      // Ближняя грань
-      // t7, t8, b3,
-      // t8, t9, b4,
-      // t8, b3, b4,
-      // Левая грань
-      // t1, t4, b1,
-      // t4, t7, b3,
-      // t4, b1, b3,
     ];
     // Геометрия текстур
     const uvMap: Float32Array = new Float32Array([
@@ -140,7 +115,7 @@ export class TerrainService {
         geometry,
         (geometry: BufferGeometry, terrain: number, texture: Texture) => afterTextureLoad(geometry, terrain, texture)
       );
-      const material: MeshPhongMaterial = new MeshPhongMaterial({ map, side: DoubleSide });
+      const material: MeshPhongMaterial = new MeshPhongMaterial({ map, side: BackSide });
       // Сохранить в кэш
       this.materialCache.push({ material, terrain: terrainId });
       // Вернуть материал
