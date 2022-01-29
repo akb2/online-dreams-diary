@@ -1,6 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
-import { RoadService } from "@_services/dream-map/road.service";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
 import { forkJoin, fromEvent, Subject, timer } from "rxjs";
@@ -114,8 +113,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   constructor(
     private skyBoxService: SkyBoxService,
-    private terrainService: TerrainService,
-    private roadService: RoadService
+    private terrainService: TerrainService
   ) { }
 
   ngOnInit() {
@@ -138,7 +136,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.createScene();
           this.createSky();
           this.createObject();
-          this.createRoads();
           // Рендер
           this.animate();
           // События
@@ -325,29 +322,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.scene.add(terrain);
         }
       }
-      // Рендер
-      this.render();
-    }
-  }
-
-  // Отрисовать дороги
-  private createRoads(): void {
-    if (this.scene) {
-      this.dreamMap.roads.forEach(r => {
-        const road: Group = this.roadService.getObject(r, this.ceilSize);
-        const heightPart: number = this.ceilSize / this.ceilHeightParts;
-        const z: number = this.getCeil(r.start.x, r.start.y).coord.z;
-        // Настройки объекта
-        road.position.set(
-          (r.start.x - (this.dreamMap.size.width / 2)) * this.ceilSize,
-          -(heightPart * this.maxCeilHeight) + (z * heightPart),
-          (r.start.y - (this.dreamMap.size.height / 2)) * this.ceilSize
-        );
-        // Добавить объект в массив объектов
-        this.roadGroups.push(road);
-        // Добавить объект на карту
-        this.scene.add(road);
-      });
       // Рендер
       this.render();
     }

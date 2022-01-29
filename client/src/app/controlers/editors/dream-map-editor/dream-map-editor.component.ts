@@ -29,6 +29,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
   form: FormGroup;
+  private startZ: number = 0;
 
   // Списки параметров
   ToolType: typeof Tool = Tool;
@@ -139,6 +140,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     if (event.button === 0) {
       if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
         this.toolActive = true;
+        this.onToolActionBeforeActive();
       }
       // Цикл по активности
       if (this.toolActive) {
@@ -151,7 +153,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   // Отпускание кнопки мыши
   private onMouseUp(): void {
-    this.onToolActionActive();
+    this.onToolActionAfterActive();
     // Окончить действие
     this.toolActive = false;
     this.currentObject = null;
@@ -169,7 +171,23 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Активное действие
-  private onToolActionActive(): void {
+  private onToolActionBeforeActive(): void {
+    if (this.currentObject && this.toolActive) {
+      switch (this.tool) {
+        // Работа с ландшафтом
+        case (Tool.landscape):
+          switch (this.landscapeTool) {
+            case (LandscapeTool.align):
+              this.startZ = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+              break;
+          }
+          break;
+      }
+    }
+  }
+
+  // Активное действие
+  private onToolActionAfterActive(): void {
     if (this.currentObject && this.toolActive) {
       switch (this.tool) {
       }
@@ -272,7 +290,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection): void {
-    const z: number = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+    const z: number = direction === 0 ? this.startZ : this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
     let change: boolean = false;
     // Цикл по прилегающим блокам
     for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
@@ -329,8 +347,6 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   // Изменение типа местности
   private ceilsTerrain(): void {
-    let change: boolean = false;
-    // Цикл по прилегающим блокам
     for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
       for (let cX = -this.toolSizeLand - 1; cX <= this.toolSizeLand + 1; cX++) {
         const x: number = this.currentObject.ceil.coord.x + cX;
@@ -341,7 +357,6 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
           // Изменить местность
           if (ceil.terrain !== this.currentTerrain) {
             ceil.terrain = this.currentTerrain;
-            change = true;
             // Запомнить ячейку
             this.saveCeil(ceil);
             // Обновить
@@ -349,20 +364,6 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
           }
         }
       }
-    }
-    // Обновить геометрию
-    if (change) {
-      for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
-        for (let cX = -this.toolSizeLand - 1; cX <= this.toolSizeLand + 1; cX++) {
-          const x: number = this.currentObject.ceil.coord.x + cX;
-          const y: number = this.currentObject.ceil.coord.y + cY;
-          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-          // Обновить
-          this.viewer.setTerrainHeight(ceil);
-        }
-      }
-      // Проверка геометрии дорог
-      this.viewer.setTerrainHeight(null);
     }
   }
 

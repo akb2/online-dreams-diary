@@ -1,5 +1,4 @@
 import { Place } from "@_models/dream";
-import { Road } from "@_services/dream-map/roads/basic";
 import { Light, MeshPhongMaterial, Side, Texture } from "three";
 
 
@@ -9,7 +8,6 @@ import { Light, MeshPhongMaterial, Side, Texture } from "three";
 // Интерфейс карты
 export interface DreamMap {
   ceils: (DreamMapCeil | null)[];
-  roads: (DreamMapRoad | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number;
@@ -24,25 +22,10 @@ export interface DreamMapCeil {
   coord: Coord;
 }
 
-// Интерфейс дорог
-export interface DreamMapRoad {
-  road: number;
-  start: XYCoord;
-  end: XYCoord;
-}
-
 // Интерфейс типа местности
 export interface MapTerrain {
   id: number;
   name: string;
-  title: string;
-  isAvail: boolean;
-}
-
-// Интерфейс типа местности
-export interface MapRoad {
-  id: number;
-  class: typeof Road;
   title: string;
   isAvail: boolean;
 }
@@ -90,7 +73,6 @@ export interface MapObject {
 // Интерфейс карты для сервера
 export interface DreamMapDto {
   ceils: (DreamMapCeilDto | null)[];
-  roads: (DreamMapRoadDto | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number | null;
@@ -102,13 +84,6 @@ export interface DreamMapCeilDto {
   terrain: number | null;
   object: number | null;
   coord: Coord;
-}
-
-// Интерфейс дорог
-export interface DreamMapRoadDto {
-  road: number;
-  start: XYCoord;
-  end: XYCoord;
 }
 
 
