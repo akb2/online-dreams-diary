@@ -106,7 +106,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     this.dream.keywords = this.dreamForm.get("keywords").value;
     this.dream.text = this.dreamForm.get("text").value;
     // Сохранить
-    console.log(this.dream);
+    console.log(JSON.stringify(this.dream.map.ceils.map(({ terrain, coord }) => ({ terrain, coord }))));
   }
 
   // Изменение типа сновидения

@@ -4,6 +4,10 @@
 
 $controlOffset: 5px;
 $toolButtonBRadius: 3px;
+$toolButtonNBorder: 1px;
+$toolButtonItemsCount: 10;
+$toolButtonSize: 48px;
+$separatorColor: #ccc;
 
 // Родительский блок
 :host {
@@ -40,16 +44,17 @@ $toolButtonBRadius: 3px;
 // Элемент управления
 .tool-button {
   $_elm: &;
-  $size: 48px;
   // Свойства
   display: flex;
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
-  width: $size;
-  height: $size;
-  line-height: $size;
-  font-size: $size * 0.9;
+  width: $toolButtonSize;
+  max-width: $toolButtonSize;
+  height: $toolButtonSize;
+  max-height: $toolButtonSize;
+  line-height: $toolButtonSize;
+  font-size: $toolButtonSize * 0.9;
   color: colors.$title;
   background-color: colors.$card;
   border-radius: $toolButtonBRadius;
@@ -60,6 +65,15 @@ $toolButtonBRadius: 3px;
   > mat-icon {
     color: inherit;
     transition: color #{screens.$animation-time};
+  }
+  // Картинка
+  > img {
+    $size: calc(100% - #{$toolButtonBRadius * 2});
+    // Свойства
+    width: $size;
+    height: $size;
+    object-fit: cover;
+    border-radius: inherit;
   }
   // Размер кисти
   &__point {
@@ -85,40 +99,29 @@ $toolButtonBRadius: 3px;
     visibility: hidden;
     display: flex;
     flex-flow: row nowrap;
-    gap: 0;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding-right: $controlOffset;
+    margin-right: $controlOffset;
     transition: opacity #{screens.$animation-time}, right #{screens.$animation-time},
       visibility #{screens.$animation-time};
     // Кнопки внутри
     > #{$_elm} {
       border-radius: 0;
       overflow: hidden;
-      // Первый элемент
-      &:first-of-type {
-        border-radius: #{$toolButtonBRadius} 0 0 #{$toolButtonBRadius};
-      }
-      // Последний элемент
-      &:last-of-type {
-        border-radius: 0 #{$toolButtonBRadius} #{$toolButtonBRadius} 0;
-      }
-      // Первый и последний элемент
-      &:first-of-type:last-of-type {
-        border-radius: #{$toolButtonBRadius};
-      }
-      // Вспомогательный блок
-      &:before {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background-color: #{map.get(colors.$mat-primary, 500)};
-        transition: opacity #{screens.$animation-time};
-        opacity: 0;
+      // Скругление углов
+      & {
+        // Первый и последний элемент
+        &:first-of-type:last-of-type {
+          border-radius: $toolButtonBRadius;
+        }
+        // Первый элемент: одна линия
+        &:first-of-type {
+          border-radius: #{$toolButtonBRadius} 0 0 #{$toolButtonBRadius};
+        }
+        // Последний элемент: одна линия
+        &:last-of-type {
+          border-radius: 0 #{$toolButtonBRadius} #{$toolButtonBRadius} 0;
+        }
       }
       // Выделение
       &:hover {
@@ -127,16 +130,13 @@ $toolButtonBRadius: 3px;
       }
       // Активный элемент
       &.active {
-        background-color: colors.$card;
-        color: #{map.get(colors.$mat-primary, 500)};
-        // Вспомогательный блок
-        &:before {
-          opacity: 1;
-        }
+        background-color: #{map.get(colors.$mat-disabled, 500)};
+        color: #{map.get(colors.$mat-disabled, contrast, 500)};
       }
       // Контейнер
       &.container {
         width: auto;
+        max-width: none;
         line-height: 1;
         padding: 0 20px;
         overflow: visible;
@@ -150,6 +150,19 @@ $toolButtonBRadius: 3px;
         & + #{$_elm}.container {
           padding-left: 0;
         }
+      }
+    }
+    // Скругление углов
+    &.border-radius {
+      overflow: hidden;
+      border-radius: $toolButtonBRadius;
+      background-color: colors.$card;
+      gap: $toolButtonNBorder;
+      max-width: ($toolButtonSize * $toolButtonItemsCount) + ($toolButtonNBorder * ($toolButtonItemsCount - 1));
+      // Кнопки внутри
+      > #{$_elm} {
+        border-radius: 0;
+        overflow: hidden;
       }
     }
   }
