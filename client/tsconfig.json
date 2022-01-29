@@ -45,6 +45,12 @@
       "@_helpers/*": [
         "src/app/helpers/*"
       ],
+      "@_dreamRoads/*": [
+        "src/app/controlers/dream-map/roads/*"
+      ],
+      "@_dreamObjects/*": [
+        "src/app/controlers/dream-map/objects/*"
+      ],
       "@_controlers/*": [
         "src/app/controlers/base/*",
         "src/app/controlers/editors/*",
