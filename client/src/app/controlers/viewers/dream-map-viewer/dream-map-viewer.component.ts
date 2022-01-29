@@ -1,10 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
-import { SkyBoxResult, SkyBoxService } from "@_services/skybox.service";
-import { ClosestHeights, MapTerrains, TerrainService } from "@_services/terrain.service";
+import { RoadService } from "@_services/dream-map/road.service";
+import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
+import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
 import { forkJoin, fromEvent, Subject, timer } from "rxjs";
 import { takeUntil, takeWhile } from "rxjs/operators";
-import { BufferGeometry, CameraHelper, Clock, Intersection, Light, Mesh, MeshBasicMaterial, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
+import { BufferGeometry, CameraHelper, Clock, Group, Intersection, Light, Mesh, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -38,14 +39,18 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private ceilHeightParts: number = 64;
   minCeilHeight: number = 1;
   maxCeilHeight: number = this.ceilHeightParts * 20;
-  private defaultCeilHeight: number = this.ceilHeightParts * 10;
+  private defaultCeilHeight: number = this.ceilHeightParts * 20;
+  evenlyMaxDiff: number = Math.round(this.ceilHeightParts * 1.5);
   private delta: number = 0;
+
+  private successHighlight: number = 0x2f2f2f;
+  private errorHighlight: number = 0xff0000;
 
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = this.ceilSize * 14;
-  private zoomSpeed: number = 0.8;
+  private zoomSpeed: number = 1.5;
   private zoomMin: number = this.ceilSize;
-  private zoomMax: number = this.ceilSize * 10;
+  private zoomMax: number = this.ceilSize * 20;
   private minAngle: number = 0;
   private maxAngle: number = 80;
   private distance: number = 50;
@@ -57,10 +62,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private camera: PerspectiveCamera;
   private control: OrbitControls;
   private clock: Clock;
-  private hoverMeshes: Mesh[] = [];
+  private terrainMeshes: Mesh[] = [];
+  private roadGroups: Group[] = [];
   stats: Stats;
-
-  private terrainLights: MeshBasicMaterial = new MeshBasicMaterial({ color: 0xffffff });
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
 
@@ -69,6 +73,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
+
+  // Получить ячейку
+  getCeil(x: number, y: number): DreamMapCeil {
+    return this.dreamMap.ceils.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
+  }
 
   // Ячейка по умолчанию
   getDefaultCeil(x: number, y: number): DreamMapCeil {
@@ -89,7 +98,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Настройки
       raycaster.setFromCamera({ x, y }, this.camera)
       // Объекты в фокусе
-      const intersects: Intersection<Object3D<Event>>[] = raycaster.intersectObjects(this.hoverMeshes);
+      const intersects: Intersection<Object3D<Event>>[] = raycaster.intersectObjects(this.terrainMeshes);
       // Обработка объектов
       if (intersects.length > 0) {
         return intersects[0];
@@ -105,7 +114,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   constructor(
     private skyBoxService: SkyBoxService,
-    private terrainService: TerrainService
+    private terrainService: TerrainService,
+    private roadService: RoadService
   ) { }
 
   ngOnInit() {
@@ -126,7 +136,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.canvas && (!this.debugInfo || this.statsBlock)) {
           this.createCanvas();
           this.createScene();
+          this.createSky();
           this.createObject();
+          this.createRoads();
           // Рендер
           this.animate();
           // События
@@ -243,8 +255,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.clock = new Clock();
   }
 
-  // Отрисовать объекты
-  private createObject(): void {
+  // Отрисовать небо
+  private createSky(): void {
     if (this.scene) {
       // Скайбокс
       const skyBox: SkyBoxResult = this.skyBoxService.getObject(this.dreamMap.skyBox, this.distance, this.ceilSize);
@@ -257,6 +269,25 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const helperCamera: CameraHelper[] = this.showHelpers ?
         skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Camera && helper).map(({ helper }) => helper) :
         [];
+      // Настройки
+      this.scene.background = skyBox.skyBox;
+      this.scene.fog = skyBox.fog;
+      // Добавить к сцене
+      if (lightScene?.length > 0 || helperScene?.length > 0) {
+        this.scene.add(...lightScene, ...helperScene);
+      }
+      // Добавить к камере
+      if (lightCamera?.length > 0) {
+        this.camera.add(...lightCamera, ...helperCamera);
+      }
+      // Рендер
+      this.render();
+    }
+  }
+
+  // Отрисовать объекты
+  private createObject(): void {
+    if (this.scene) {
       // Цикл по объектам
       for (let y = -1; y < this.dreamMap.size.height + 1; y++) {
         for (let x = -1; x < this.dreamMap.size.width + 1; x++) {
@@ -275,16 +306,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             heightPart * ceil.coord.z,
             Object.entries(ClosestCeilsCoords)
               .map(([k, { x: cX, y: cY }]) => {
-                let z: number =
-                  this.dreamMap.ceils.some(c => c.coord.y === y + cY && c.coord.x === x + cX) ?
-                    this.dreamMap.ceils.find(c => c.coord.y === y + cY && c.coord.x === x + cX).coord.z :
-                    this.defaultCeilHeight;
-                z = z > this.maxCeilHeight ? this.maxCeilHeight : (z < this.minCeilHeight ? this.minCeilHeight : z);
+                const c: DreamMapCeil = this.getCeil(x + cX, y + cY);
+                c.coord.z = c.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (c.coord.z < this.minCeilHeight ? this.minCeilHeight : c.coord.z);
                 // Результат
-                return [k.toString(), z * heightPart];
+                return [k.toString(), c.coord.z * heightPart, c.terrain];
               })
-              .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights),
-            (geometry: BufferGeometry, terrain: number, texture: any) => { }
+              .reduce((o, [k, height, terrain]) => ({ ...o, [k as keyof ClosestHeights]: { height, terrain } }), {} as ClosestHeights)
           );
           // Настройки объекта
           terrain.userData = ceil;
@@ -294,21 +321,33 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             (y - (this.dreamMap.size.height / 2)) * this.ceilSize
           );
           // Добавить объект на карту
-          this.hoverMeshes.push(terrain);
+          this.terrainMeshes.push(terrain);
           this.scene.add(terrain);
         }
       }
-      // Настройки
-      this.scene.background = skyBox.skyBox;
-      this.scene.fog = skyBox.fog;
-      // Добавить к сцене
-      if (lightScene?.length > 0 || helperScene?.length > 0) {
-        this.scene.add(...lightScene, ...helperScene);
-      }
-      // Добавить к камере
-      if (lightCamera?.length > 0) {
-        this.camera.add(...lightCamera, ...helperCamera);
-      }
+      // Рендер
+      this.render();
+    }
+  }
+
+  // Отрисовать дороги
+  private createRoads(): void {
+    if (this.scene) {
+      this.dreamMap.roads.forEach(r => {
+        const road: Group = this.roadService.getObject(r, this.ceilSize);
+        const heightPart: number = this.ceilSize / this.ceilHeightParts;
+        const z: number = this.getCeil(r.start.x, r.start.y).coord.z;
+        // Настройки объекта
+        road.position.set(
+          (r.start.x - (this.dreamMap.size.width / 2)) * this.ceilSize,
+          -(heightPart * this.maxCeilHeight) + (z * heightPart),
+          (r.start.y - (this.dreamMap.size.height / 2)) * this.ceilSize
+        );
+        // Добавить объект в массив объектов
+        this.roadGroups.push(road);
+        // Добавить объект на карту
+        this.scene.add(road);
+      });
       // Рендер
       this.render();
     }
@@ -341,41 +380,58 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновить статус свечения местности
   setTerrainHoverStatus(ceil: DreamMapCeil): void {
-    let mesh: Mesh = this.hoverMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    let mesh: Mesh = this.terrainMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
     // Объект найден
     if (ceil && mesh) {
       const material: MeshPhongMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as MeshPhongMaterial;
       // Дополнить материал
-      material.setValues({ emissive: ceil.highlight ? 0x2f2f2f : 0x000000 });
+      material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
     }
   }
 
   // Обновить высоту местности
   setTerrainHeight(ceil: DreamMapCeil): void {
-    let mesh: Mesh = this.hoverMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    let mesh: Mesh = ceil ?
+      this.terrainMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y) :
+      null;
     // Объект найден
     if (ceil && mesh) {
       mesh.geometry.dispose();
       // Новая геометрия
       const heightPart: number = this.ceilSize / this.ceilHeightParts;
-      const geometry: BufferGeometry = this.terrainService.geometry(
+      const geometry: BufferGeometry = this.terrainService.getGeometry(
         this.ceilSize,
         heightPart * ceil.coord.z,
         Object.entries(ClosestCeilsCoords)
           .map(([k, { x: cX, y: cY }]) => {
-            let z: number =
-              this.dreamMap.ceils.some(c => c.coord.y === ceil.coord.y + cY && c.coord.x === ceil.coord.x + cX) ?
-                this.dreamMap.ceils.find(c => c.coord.y === ceil.coord.y + cY && c.coord.x === ceil.coord.x + cX).coord.z :
-                this.defaultCeilHeight;
-            z = z > this.maxCeilHeight ? this.maxCeilHeight : (z < this.minCeilHeight ? this.minCeilHeight : z);
+            const c: DreamMapCeil = this.getCeil(ceil.coord.x + cX, ceil.coord.y + cY);
+            c.coord.z = c.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (c.coord.z < this.minCeilHeight ? this.minCeilHeight : c.coord.z);
             // Результат
-            return [k.toString(), z * heightPart];
+            return [k.toString(), c.coord.z * heightPart, c.terrain];
           })
-          .reduce((o, [k, z]) => ({ ...o, [k as keyof ClosestHeights]: z as number || null }), {} as ClosestHeights),
+          .reduce((o, [k, height, terrain]) => ({ ...o, [k as keyof ClosestHeights]: { height, terrain } }), {} as ClosestHeights)
       );
       // Дополнить материал
       geometry.computeVertexNormals();
       mesh.geometry = geometry;
+      // Обновить дороги
+      // this.roadGroups.forEach(r => this.scene.remove(r));
+      // this.createRoads();
+    }
+  }
+
+  // Обновить текстуру местности
+  setTerrain(ceil: DreamMapCeil): void {
+    let mesh: Mesh = this.terrainMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    // Объект найден
+    if (ceil && mesh) {
+      const oldMaterial: MeshPhongMaterial = mesh.material as MeshPhongMaterial;
+      const material: MeshPhongMaterial = this.terrainService.getMaterial(ceil.terrain);
+      // Дополнить материал
+      mesh.material = material;
+      material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
+      // Очистить старую геометрию
+      oldMaterial.dispose();
     }
   }
 }
