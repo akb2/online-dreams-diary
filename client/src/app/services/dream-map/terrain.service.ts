@@ -22,7 +22,7 @@ export class TerrainService {
   // Объект для отрисовки
   getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights): Mesh {
     const geometry: BufferGeometry = this.getGeometry(size, height, closestHeights);
-    const material = this.getMaterial(terrainId);
+    const material: MeshPhongMaterial = this.getMaterial(terrainId);
     const mesh: Mesh = new Mesh(geometry, material);
     // Настройки
     geometry.computeVertexNormals();
