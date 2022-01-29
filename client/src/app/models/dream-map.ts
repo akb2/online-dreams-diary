@@ -1,5 +1,6 @@
 import { Place } from "@_models/dream";
-import { Light } from "three";
+import { Road } from "@_services/dream-map/roads/basic";
+import { Light, MeshPhongMaterial, Side, Texture } from "three";
 
 
 
@@ -8,6 +9,7 @@ import { Light } from "three";
 // Интерфейс карты
 export interface DreamMap {
   ceils: (DreamMapCeil | null)[];
+  roads: (DreamMapRoad | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number;
@@ -19,7 +21,14 @@ export interface DreamMapCeil {
   terrain: number;
   object: MapObject | null;
   highlight?: boolean;
-  coord: Coord
+  coord: Coord;
+}
+
+// Интерфейс дорог
+export interface DreamMapRoad {
+  road: number;
+  start: XYCoord;
+  end: XYCoord;
 }
 
 // Интерфейс типа местности
@@ -27,6 +36,15 @@ export interface MapTerrain {
   id: number;
   name: string;
   title: string;
+  isAvail: boolean;
+}
+
+// Интерфейс типа местности
+export interface MapRoad {
+  id: number;
+  class: typeof Road;
+  title: string;
+  isAvail: boolean;
 }
 
 // Интерфейс типа неба
@@ -72,6 +90,7 @@ export interface MapObject {
 // Интерфейс карты для сервера
 export interface DreamMapDto {
   ceils: (DreamMapCeilDto | null)[];
+  roads: (DreamMapRoadDto | null)[];
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number | null;
@@ -82,7 +101,14 @@ export interface DreamMapCeilDto {
   place: number | null;
   terrain: number | null;
   object: number | null;
-  coord: Coord
+  coord: Coord;
+}
+
+// Интерфейс дорог
+export interface DreamMapRoadDto {
+  road: number;
+  start: XYCoord;
+  end: XYCoord;
 }
 
 
@@ -102,10 +128,14 @@ export interface MapSize {
   height: number;
 }
 
-// Интерфейс координат
-export interface Coord {
+// Интерфейс 2D координат
+export interface XYCoord {
   x: number;
   y: number;
+}
+
+// Интерфейс координат
+export interface Coord extends XYCoord {
   z: number;
 }
 
@@ -121,6 +151,23 @@ export interface WayLineType {
 
 // Тип CSS границы
 export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
+
+
+
+
+
+// Интерфейс кэша текстур
+export interface TerrainTextureCache {
+  terrain: number;
+  texture: Texture;
+}
+
+// Интерфейс кэша материалов
+export interface TerrainMaterialCache {
+  side: Side;
+  terrain: number;
+  material: MeshPhongMaterial;
+}
 
 
 
