@@ -65,7 +65,7 @@ export class Road {
     this.ceils = Math.floor(this.length / this.ceilSizeY);
     this.ceilSizeX = this.length / this.ceils;
     this.roadHeight = this.ceilSizeY / 20;
-    this.startY = this.ceilSizeY / 1000;
+    this.startY = this.ceilSizeY / 500;
   }
 
 

@@ -39,7 +39,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private ceilHeightParts: number = 64;
   minCeilHeight: number = 1;
   maxCeilHeight: number = this.ceilHeightParts * 20;
-  private defaultCeilHeight: number = this.ceilHeightParts * 20;
+  private defaultCeilHeight: number = this.ceilHeightParts * 10;
   evenlyMaxDiff: number = Math.round(this.ceilHeightParts * 1.5);
   private delta: number = 0;
 
