@@ -22,8 +22,8 @@ export class DreamService {
   private currentUser: User;
   private tempUsers: User[] = [];
 
-  private dreamMapWidth: number = 64;
-  private dreamMapHeight: number = 64;
+  private dreamMapWidth: number = 48;
+  private dreamMapHeight: number = 48;
 
 
 
@@ -142,6 +142,7 @@ export class DreamService {
           object: null,
           coord: c.coord
         })),
+        roads: dreamMapDto.roads,
         dreamerWay: dreamMapDto.dreamerWay,
         skyBox: dreamMapDto.skyBox || 1
       } as DreamMap;
@@ -151,6 +152,7 @@ export class DreamService {
       return {
         size: { width: this.dreamMapWidth, height: this.dreamMapHeight },
         ceils: [],
+        roads: [],
         dreamerWay: [],
         skyBox: 1
       };
@@ -178,8 +180,14 @@ const Dreams: DreamDto[] = [{
   text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
   map: JSON.stringify({
     dreamerWay: null,
-    size: { width: 64, height: 64 },
+    size: { width: 48, height: 48 },
     ceils: [],
+    roads: [{
+      // Тело дороги - клетки
+      road: 1,
+      start: { x: 0, y: 44 },
+      end: { x: 47, y: 5 }
+    }],
     skyBox: 1
   } as DreamMapDto),
   headerType: NavMenuType.collapse,
