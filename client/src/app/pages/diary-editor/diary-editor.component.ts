@@ -76,6 +76,18 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   ) {
     this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
+    // Форма сновидений
+    this.dreamForm = this.formBuilder.group({
+      title: [""],
+      description: [""],
+      mode: [DreamMode.text],
+      date: [new Date()],
+      keywords: [[]],
+      text: [""]
+    });
+    // Изменения формы
+    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeTitle(value || ""));
+    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeDate(value || new Date()));
   }
 
   ngDoCheck() {
@@ -157,11 +169,15 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private defineData(): void {
     // Редактирование сновидения
     if (this.dreamId > 0) {
-      this.dreamService.getDream(this.dreamId).subscribe(dream => {
-        this.dream = dream;
-        // Создать форму
-        this.createForm();
-      });
+      this.dreamService.getDream(this.dreamId).subscribe(
+        dream => {
+          this.dream = dream;
+          // Создать форму
+          this.createForm();
+        },
+        () => {
+        }
+      );
     }
     // Новое сновидение
     else {
@@ -178,20 +194,12 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Создать форму
   private createForm(): void {
-    this.changes$.next();
-    this.changes$.complete();
-    // Новая форма
-    this.dreamForm = this.formBuilder.group({
-      title: [this.dream.title],
-      description: [this.dream.description],
-      mode: [this.dream.mode.toString()],
-      date: [this.dream.date],
-      keywords: [this.dream.keywords],
-      text: [this.dream.text]
-    });
-    // Изменения формы
-    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeTitle(value || ""));
-    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeDate(value || new Date()));
+    this.dreamForm.get("title").setValue(this.dream.title);
+    this.dreamForm.get("description").setValue(this.dream.description);
+    this.dreamForm.get("mode").setValue(this.dream.mode.toString());
+    this.dreamForm.get("date").setValue(this.dream.date);
+    this.dreamForm.get("keywords").setValue(this.dream.keywords);
+    this.dreamForm.get("text").setValue(this.dream.text);
     // Отметить готовность
     this.ready = true;
   }
