@@ -43,7 +43,7 @@ export interface MapSkyBox {
 interface MapSkyBoxLight {
   light: Light;
   target: SkyBoxLightTarget;
-  position?: Coord;
+  position?: CoordDto;
   fixed?: boolean;
   shadow?: {
     near: number;
@@ -80,10 +80,10 @@ export interface DreamMapDto {
 
 // Интерфейс ячейки сновидения
 export interface DreamMapCeilDto {
-  place: number | null;
-  terrain: number | null;
-  object: number | null;
-  coord: Coord;
+  place?: number | null;
+  terrain?: number | null;
+  object?: number | null;
+  coord?: CoordDto;
 }
 
 
@@ -101,6 +101,7 @@ export interface DreamerWay {
 export interface MapSize {
   width: number;
   height: number;
+  zHeight: number;
 }
 
 // Интерфейс 2D координат
@@ -110,7 +111,12 @@ export interface XYCoord {
 }
 
 // Интерфейс координат
-export interface Coord extends XYCoord {
+export interface Coord extends CoordDto {
+  originalZ: number;
+}
+
+// Интерфейс координат для сервера
+export interface CoordDto extends XYCoord {
   z: number;
 }
 
