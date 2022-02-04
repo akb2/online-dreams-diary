@@ -5,6 +5,8 @@ import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamMap, DreamMapDto } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { SkyBoxes } from "@_services/dream-map/skybox.service";
+import { MapTerrains } from "@_services/dream-map/terrain.service";
 import { Observable, of, throwError } from "rxjs";
 import { map, mergeMap, switchMap } from "rxjs/operators";
 
@@ -21,9 +23,6 @@ export class DreamService {
 
   private currentUser: User;
   private tempUsers: User[] = [];
-
-  private dreamMapWidth: number = 48;
-  private dreamMapHeight: number = 48;
 
 
 
@@ -54,7 +53,7 @@ export class DreamService {
       text: "",
       places: [],
       members: [],
-      map: null,
+      map: this.dreamMapConverter(),
       mode: DreamMode.map,
       status: DreamStatus.draft,
       headerType: NavMenuType.short,
@@ -128,31 +127,38 @@ export class DreamService {
   }
 
   // Конвертер карты
-  dreamMapConverter(dreamMapDto: DreamMapDto | null): DreamMap {
+  dreamMapConverter(dreamMapDto: DreamMapDto | null = null): DreamMap {
     // Преобразование карты
     if (dreamMapDto) {
       return {
         size: {
-          width: dreamMapDto.size.width || this.dreamMapWidth,
-          height: dreamMapDto.size.height || this.dreamMapHeight
+          width: dreamMapDto.size.width || DreamMapSize,
+          height: dreamMapDto.size.height || DreamMapSize
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: c.terrain,
+          terrain: c.terrain || DreamTerrain,
           object: null,
-          coord: c.coord
+          coord: {
+            ...c.coord,
+            originalZ: c.coord.z
+          }
         })),
         dreamerWay: dreamMapDto.dreamerWay,
-        skyBox: dreamMapDto.skyBox || 1
+        skyBox: dreamMapDto.skyBox || DreamSkyBox
       } as DreamMap;
     }
     // Карта по умолчанию
     else {
       return {
-        size: { width: this.dreamMapWidth, height: this.dreamMapHeight },
+        size: {
+          width: DreamMapSize,
+          height: DreamMapSize,
+          zHeight: DreamDefHeight
+        },
         ceils: [],
         dreamerWay: [],
-        skyBox: 1
+        skyBox: DreamSkyBox
       };
     }
   }
@@ -161,6 +167,24 @@ export class DreamService {
 
 
 
+
+// Размер карты по умолчанию
+export const DreamMapSize: number = 50;
+
+// Размер ячейки по умолчанию
+export const DreamCeilSize: number = 1;
+
+// Количество секций по высоте в одной ячейке
+export const DreamCeilParts: number = 64;
+
+// Пределы высот
+export const DreamMinHeight: number = 1;
+export const DreamDefHeight: number = DreamCeilParts * 10;
+export const DreamMaxHeight: number = DreamCeilParts * 20;
+
+// Параметры по умолчанию
+export const DreamSkyBox: number = SkyBoxes[0].id;
+export const DreamTerrain: number = MapTerrains[0].id;
 
 // ! Временный массив сновидений
 const Dreams: DreamDto[] = [{
@@ -178,7 +202,7 @@ const Dreams: DreamDto[] = [{
   text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
   map: JSON.stringify({
     dreamerWay: null,
-    size: { width: 48, height: 48 },
+    size: { width: DreamMapSize, height: DreamMapSize },
     ceils: [{ coord: { x: 25, y: 18, z: 728 } }, { coord: { x: 24, y: 18, z: 728 } }, { coord: { x: 23, y: 18, z: 728 } }, { coord: { x: 23, y: 19, z: 728 } }, { coord: { x: 24, y: 19, z: 736 } }, { coord: { x: 25, y: 19, z: 728 } }, { coord: { x: 26, y: 19, z: 728 } }, { coord: { x: 27, y: 19, z: 720 } }, { coord: { x: 28, y: 20, z: 720 } }, { coord: { x: 26, y: 20, z: 728 } }, { coord: { x: 27, y: 20, z: 728 } }, { coord: { x: 28, y: 21, z: 728 } }, { coord: { x: 24, y: 20, z: 736 } }, { coord: { x: 25, y: 20, z: 736 } }, { coord: { x: 24, y: 21, z: 744 } }, { coord: { x: 25, y: 21, z: 736 } }, { coord: { x: 26, y: 21, z: 736 } }, { coord: { x: 27, y: 21, z: 728 } }, { coord: { x: 25, y: 22, z: 744 } }, { coord: { x: 26, y: 22, z: 736 } }, { coord: { x: 27, y: 22, z: 736 } }, { coord: { x: 28, y: 22, z: 728 } }, { coord: { x: 29, y: 22, z: 728 } }, { coord: { x: 27, y: 23, z: 736 } }, { coord: { x: 28, y: 23, z: 736 } }, { coord: { x: 29, y: 23, z: 728 } }, { coord: { x: 22, y: 19, z: 728 } }, { coord: { x: 23, y: 20, z: 736 } }, { coord: { x: 23, y: 21, z: 736 } }, { coord: { x: 24, y: 22, z: 744 } }, { coord: { x: 26, y: 23, z: 744 } }, { coord: { x: 21, y: 19, z: 720 } }, { coord: { x: 22, y: 20, z: 728 } }, { coord: { x: 22, y: 21, z: 736 } }, { coord: { x: 23, y: 22, z: 744 } }, { coord: { x: 25, y: 23, z: 744 } }, { coord: { x: 21, y: 20, z: 728 } }, { coord: { x: 21, y: 21, z: 728 } }, { coord: { x: 22, y: 22, z: 736 } }, { coord: { x: 24, y: 23, z: 752 } }, { coord: { x: 20, y: 20, z: 720 } }, { coord: { x: 20, y: 21, z: 728 } }, { coord: { x: 21, y: 22, z: 758 } }, { coord: { x: 23, y: 23, z: 797 } }, { coord: { x: 20, y: 22, z: 750 } }, { coord: { x: 22, y: 23, z: 799 } }, { coord: { x: 19, y: 22, z: 750 } }, { coord: { x: 17, y: 23, z: 660 } }, { coord: { x: 18, y: 23, z: 717 } }, { coord: { x: 19, y: 23, z: 827 } }, { coord: { x: 20, y: 23, z: 837 } }, { coord: { x: 21, y: 23, z: 813 } }, { coord: { x: 18, y: 24, z: 739 } }, { coord: { x: 19, y: 24, z: 864 } }, { coord: { x: 20, y: 24, z: 864 } }, { coord: { x: 21, y: 24, z: 870 } }, { coord: { x: 22, y: 24, z: 866 } }, { coord: { x: 23, y: 24, z: 819 } }, { coord: { x: 24, y: 24, z: 797 } }, { coord: { x: 25, y: 24, z: 774 } }, { coord: { x: 26, y: 24, z: 736 } }, { coord: { x: 27, y: 24, z: 736 } }, { coord: { x: 28, y: 24, z: 728 } }, { coord: { x: 29, y: 24, z: 728 } }, { coord: { x: 20, y: 25, z: 871 } }, { coord: { x: 21, y: 25, z: 867 } }, { coord: { x: 22, y: 25, z: 873 } }, { coord: { x: 23, y: 25, z: 866 } }, { coord: { x: 24, y: 25, z: 819 } }, { coord: { x: 25, y: 25, z: 769 } }, { coord: { x: 26, y: 25, z: 766 } }, { coord: { x: 27, y: 25, z: 728 } }, { coord: { x: 28, y: 25, z: 728 } }, { coord: { x: 20, y: 26, z: 868 } }, { coord: { x: 21, y: 26, z: 874 } }, { coord: { x: 22, y: 26, z: 870 } }, { coord: { x: 23, y: 26, z: 873 } }, { coord: { x: 24, y: 26, z: 816 } }, { coord: { x: 25, y: 26, z: 791 } }, { coord: { x: 26, y: 26, z: 761 } }, { coord: { x: 27, y: 26, z: 728 } }, { coord: { x: 28, y: 26, z: 720 } }, { coord: { x: 21, y: 27, z: 871 } }, { coord: { x: 22, y: 27, z: 877 } }, { coord: { x: 23, y: 27, z: 870 } }, { coord: { x: 24, y: 27, z: 873 } }, { coord: { x: 25, y: 27, z: 808 } }, { coord: { x: 26, y: 27, z: 761 } }, { coord: { x: 27, y: 27, z: 753 } }, { coord: { x: 23, y: 28, z: 875 } }, { coord: { x: 24, y: 28, z: 868 } }, { coord: { x: 25, y: 28, z: 808 } }, { coord: { x: 19, y: 25, z: 781 } }, { coord: { x: 20, y: 27, z: 795 } }, { coord: { x: 21, y: 28, z: 796 } }, { coord: { x: 22, y: 28, z: 792 } }, { coord: { x: 26, y: 28, z: 676 } }, { coord: { x: 27, y: 28, z: 673 } }, { coord: { x: 23, y: 29, z: 780 } }, { coord: { x: 24, y: 29, z: 775 } }, { coord: { x: 25, y: 29, z: 698 } }, { coord: { x: 19, y: 26, z: 788 } }, { coord: { x: 20, y: 28, z: 798 } }, { coord: { x: 21, y: 29, z: 789 } }, { coord: { x: 22, y: 29, z: 787 } }, { coord: { x: 26, y: 29, z: 673 } }, { coord: { x: 27, y: 29, z: 673 } }, { coord: { x: 23, y: 30, z: 775 } }, { coord: { x: 24, y: 30, z: 718 } }, { coord: { x: 25, y: 30, z: 673 } }, { coord: { x: 19, y: 27, z: 793 } }, { coord: { x: 20, y: 29, z: 793 } }, { coord: { x: 21, y: 30, z: 784 } }, { coord: { x: 22, y: 30, z: 780 } }, { coord: { x: 26, y: 30, z: 673 } }, { coord: { x: 23, y: 31, z: 768 } }, { coord: { x: 24, y: 31, z: 693 } }, { coord: { x: 25, y: 31, z: 673 } }, { coord: { x: 19, y: 28, z: 798 } }, { coord: { x: 19, y: 29, z: 791 } }, { coord: { x: 20, y: 30, z: 786 } }, { coord: { x: 20, y: 31, z: 781 } }, { coord: { x: 21, y: 31, z: 777 } }, { coord: { x: 22, y: 31, z: 775 } }, { coord: { x: 26, y: 31, z: 670 } }, { coord: { x: 21, y: 32, z: 772 } }, { coord: { x: 22, y: 32, z: 748 } }, { coord: { x: 23, y: 32, z: 693 } }, { coord: { x: 24, y: 32, z: 673 } }, { coord: { x: 25, y: 32, z: 670 } }, { coord: { x: 23, y: 33, z: 673 } }, { coord: { x: 16, y: 24, z: 710 } }, { coord: { x: 17, y: 24, z: 737 } }, { coord: { x: 15, y: 25, z: 690 } }, { coord: { x: 16, y: 25, z: 737 } }, { coord: { x: 17, y: 25, z: 739 } }, { coord: { x: 18, y: 25, z: 776 } }, { coord: { x: 15, y: 26, z: 717 } }, { coord: { x: 16, y: 26, z: 739 } }, { coord: { x: 17, y: 26, z: 746 } }, { coord: { x: 14, y: 27, z: 695 } }, { coord: { x: 15, y: 27, z: 739 } }, { coord: { x: 16, y: 27, z: 746 } }, { coord: { x: 14, y: 28, z: 695 } }, { coord: { x: 15, y: 28, z: 744 } }, { coord: { x: 17, y: 27, z: 781 } }, { coord: { x: 16, y: 28, z: 746 } }, { coord: { x: 14, y: 29, z: 695 } }, { coord: { x: 18, y: 26, z: 781 } }, { coord: { x: 18, y: 27, z: 788 } }, { coord: { x: 17, y: 28, z: 786 } }, { coord: { x: 18, y: 28, z: 791 } }, { coord: { x: 15, y: 29, z: 717 } }, { coord: { x: 16, y: 29, z: 744 } }, { coord: { x: 17, y: 29, z: 779 } }, { coord: { x: 18, y: 29, z: 786 } }, { coord: { x: 15, y: 30, z: 695 } }, { coord: { x: 16, y: 30, z: 737 } }, { coord: { x: 17, y: 30, z: 744 } }, { coord: { x: 18, y: 30, z: 779 } }, { coord: { x: 15, y: 31, z: 690 } }, { coord: { x: 16, y: 31, z: 715 } }, { coord: { x: 19, y: 30, z: 786 } }, { coord: { x: 17, y: 31, z: 737 } }, { coord: { x: 18, y: 31, z: 774 } }, { coord: { x: 19, y: 31, z: 779 } }, { coord: { x: 16, y: 32, z: 690 } }, { coord: { x: 17, y: 32, z: 715 } }, { coord: { x: 18, y: 32, z: 717 } }, { coord: { x: 19, y: 32, z: 774 } }, { coord: { x: 20, y: 32, z: 774 } }, { coord: { x: 22, y: 33, z: 673 } }, { coord: { x: 21, y: 33, z: 695 } }, { coord: { x: 18, y: 33, z: 695 } }, { coord: { x: 19, y: 33, z: 717 } }, { coord: { x: 20, y: 33, z: 717 } },],
     skyBox: 1
   } as DreamMapDto),
