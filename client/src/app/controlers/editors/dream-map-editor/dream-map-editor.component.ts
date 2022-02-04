@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { DreamMap, DreamMapCeil, MapTerrain } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, DreamMapDto, MapTerrain } from "@_models/dream-map";
 import { MapTerrains } from "@_services/dream-map/terrain.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -28,29 +28,40 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   toolList: ToolListItem[] = Tools;
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
+  toolSizeRoadLength: number = ToolSizeRoad.length - 1;
   form: FormGroup;
-  private startZ: number = 0;
+
+  private startX: number = -1;
+  private startY: number = -1;
+  private startZ: number = -1;
 
   // Списки параметров
-  ToolType: typeof Tool = Tool;
-  LandscapeToolType: typeof LandscapeTool = LandscapeTool;
+  toolType: typeof Tool = Tool;
+  landscapeToolType: typeof LandscapeTool = LandscapeTool;
+  roadTypeTool: typeof RoadTypeTool = RoadTypeTool;
   terrainList: MapTerrain[] = MapTerrains;
+  roadTypeList: RoadTypeToolListItem[] = RoadTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.landscape;
+  private tool: Tool = Tool.road;
   toolSizeLand: number = ToolSizeLand[2];
+  toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
 
   // * Инструменты: ландшафт
   private landscapeTool: LandscapeTool = LandscapeTool.up;
 
-  // * Инструменты: тип местности
+  // * Инструменты: местность
   currentTerrain: number = this.terrainList.find(t => t.id === 4).id;
+
+  // * Инструменты: дорога
+  roadType: RoadTypeTool = RoadTypeTool.road;
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
   private toolActionTimer: number = 30;
   private terrainChangeStep: number = 1;
+  private roadSquareMaxSize: number = 20;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -72,14 +83,19 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Текущий инструмент
+  // Текущий инструмент: общее
   get getCurrentTool(): ToolListItem {
     return this.toolList.find(t => t.type === this.tool) || this.toolList[0];
   }
 
-  // Текущий инструмент
+  // Текущий инструмент: ландшафт
   get getCurrentLandscapeTool(): LandscapeToolListItem {
     return this.landscapeToolList.find(t => t.type === this.landscapeTool) || this.landscapeToolList[0];
+  }
+
+  // Текущий инструмент: ландшафт
+  get getCurrentRoadTypeTool(): RoadTypeToolListItem {
+    return this.roadTypeList.find(t => t.type === this.roadType) || this.roadTypeList[0];
   }
 
   // Ключ текущего размера кисти
@@ -92,6 +108,18 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     const toolSizeLand: number = key >= 0 ? ToolSizeLand[key] : ToolSizeLand[this.getCurrentToolSizeLand];
     // Результат
     return 1 + (toolSizeLand * 2);
+  }
+
+  // Ключ текущего размера дороги
+  private get getCurrentToolSizeRoad(): number {
+    return ToolSizeRoad.findIndex(t => t === this.toolSizeRoad);
+  }
+
+  // Форматирование слайдера выбора размера дороги
+  toolSizeRoadFormat(key: number = -1): number {
+    const toolSizeRoad: number = key >= 0 ? ToolSizeRoad[key] : ToolSizeRoad[this.getCurrentToolSizeRoad];
+    // Результат
+    return toolSizeRoad;
   }
 
   // Сведения о текущем материале
@@ -110,6 +138,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     return "";
   }
 
+  // Данные карты
+  get getMap(): DreamMapDto {
+    return this.viewer.getMap || null;
+  }
+
 
 
 
@@ -118,7 +151,8 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder
   ) {
     this.form = this.formBuilder.group({
-      toolSizeLand: [this.getCurrentToolSizeLand]
+      toolSizeLand: [this.getCurrentToolSizeLand],
+      toolSizeRoad: [this.getCurrentToolSizeRoad],
     });
   }
 
@@ -138,7 +172,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   // Нажатие кнопки мыши
   onMouseDown(event: MouseEvent): void {
     if (event.button === 0) {
-      if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
+      if (this.tool === Tool.landscape || this.tool === Tool.terrain || this.tool === Tool.road) {
         this.toolActive = true;
         this.onToolActionBeforeActive();
       }
@@ -175,13 +209,18 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     if (this.currentObject && this.toolActive) {
       switch (this.tool) {
         // Работа с ландшафтом
-        case (Tool.landscape):
-          switch (this.landscapeTool) {
-            case (LandscapeTool.align):
-              this.startZ = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
-              break;
-          }
+        case (Tool.landscape): switch (this.landscapeTool) {
+          // Выравнивание
+          case (LandscapeTool.align):
+            this.startZ = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+            break;
+        }; break;
+        // Работа с дорогами
+        case (Tool.road): {
+          this.startX = this.currentObject.ceil.coord.x;
+          this.startY = this.currentObject.ceil.coord.y;
           break;
+        }
       }
     }
   }
@@ -190,6 +229,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   private onToolActionAfterActive(): void {
     if (this.currentObject && this.toolActive) {
       switch (this.tool) {
+        // Дорога
+        case (Tool.road):
+          this.startX = -1;
+          this.startY = -1;
+          break;
       }
     }
   }
@@ -218,7 +262,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   private onToolActionPassive(): void {
     if (this.currentObject) {
       // Работа с ландшафтом
-      if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
+      if (this.tool === Tool.landscape || this.tool === Tool.terrain || this.tool === Tool.road) {
         this.lightCeils();
       }
       // Очистить выделение
@@ -245,9 +289,19 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     this.toolSizeLand = ToolSizeLand[event.value] || ToolSizeLand[0];
   }
 
+  // Изменение размера кисти
+  onToolSizeRoadChange(event: MatSliderChange): void {
+    this.toolSizeRoad = ToolSizeRoad[event.value] || ToolSizeRoad[0];
+  }
+
   // Изменение инструмента типа местности
   onTerrainChange(id: number): void {
     this.currentTerrain = this.terrainList.find(t => t.id === id).id || this.terrainList[0].id;
+  }
+
+  // Изменение инструмента типа дороги
+  onRoadTypeChange(roadType: RoadTypeTool): void {
+    this.roadType = roadType;
   }
 
 
@@ -258,14 +312,88 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   private lightCeils(): void {
     // Убрать свечение
     this.unLightCeils();
-    // Добавить свечение
-    for (let cY = -this.toolSizeLand; cY <= this.toolSizeLand; cY++) {
-      for (let cX = -this.toolSizeLand; cX <= this.toolSizeLand; cX++) {
-        const x: number = this.currentObject.ceil.coord.x + cX;
-        const y: number = this.currentObject.ceil.coord.y + cY;
-        // Ячейка внутри области выделения
-        if (this.isEditableCeil(x, y)) {
-          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+    // Добавить свечение для инструментов ландшафта
+    if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
+      for (let cY = -this.toolSizeLand; cY <= this.toolSizeLand; cY++) {
+        for (let cX = -this.toolSizeLand; cX <= this.toolSizeLand; cX++) {
+          const x: number = this.currentObject.ceil.coord.x + cX;
+          const y: number = this.currentObject.ceil.coord.y + cY;
+          // Ячейка внутри области выделения
+          if (this.isEditableCeil(x, y)) {
+            const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+            // Настройки
+            ceil.highlight = true;
+            // Запомнить ячейку
+            this.saveCeil(ceil);
+            // Обновить
+            this.viewer.setTerrainHoverStatus(ceil);
+          }
+        }
+      }
+    }
+    // Добавить свечение для дорог
+    else if (this.tool === Tool.road) {
+      // Наметить область
+      if (this.startX >= 0 || this.startY >= 0) {
+        const toolSize: number = this.roadType === RoadTypeTool.square ? 1 : this.toolSizeRoad;
+        const isEven: boolean = Math.round(toolSize / 2) === toolSize / 2;
+        let endX: number = this.currentObject.ceil.coord.x;
+        let endY: number = this.currentObject.ceil.coord.y;
+        endX = Math.abs(this.startX - endX) >= this.roadSquareMaxSize && this.roadType === RoadTypeTool.square ?
+          this.startX > endX ?
+            this.startX - this.roadSquareMaxSize + 1 :
+            this.startX + this.roadSquareMaxSize - 1 :
+          endX;
+        endY = Math.abs(this.startY - endY) >= this.roadSquareMaxSize && this.roadType === RoadTypeTool.square ?
+          this.startY > endY ?
+            this.startY - this.roadSquareMaxSize + 1 :
+            this.startY + this.roadSquareMaxSize - 1 :
+          endY;
+        const dimension: "x" | "y" = Math.abs(this.startX - endX) > Math.abs(this.startY - endY) ? "x" : "y";
+        const start: number = isEven ? -Math.floor(toolSize / 2) + 1 : -Math.floor(toolSize / 2);
+        const end: number = Math.floor(toolSize / 2);
+        const fromX: number = (dimension === "x" || this.roadType === RoadTypeTool.square ? Math.min(this.startX, endX) : this.startX) + start;
+        const fromY: number = (dimension === "y" || this.roadType === RoadTypeTool.square ? Math.min(this.startY, endY) : this.startY) + start;
+        const toX: number = (dimension === "x" || this.roadType === RoadTypeTool.square ? Math.max(this.startX, endX) : this.startX) + end;
+        const toY: number = (dimension === "y" || this.roadType === RoadTypeTool.square ? Math.max(this.startY, endY) : this.startY) + end;
+        // Цикл по координатам
+        for (let y = fromY; y <= toY; y++) {
+          for (let x = fromX; x <= toX; x++) {
+            if (x >= 0 && y >= 0 && x < this.dreamMap.size.width && y < this.dreamMap.size.height) {
+              const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+              // Настройки
+              ceil.highlight = true;
+              // Запомнить ячейку
+              this.saveCeil(ceil);
+              // Обновить
+              this.viewer.setTerrainHoverStatus(ceil);
+            }
+          }
+        }
+      }
+      // Подсветить одну ячейку
+      else {
+        // Для дороги
+        if (this.roadType === RoadTypeTool.road) {
+          const isEven: boolean = Math.round(this.toolSizeRoad / 2) === this.toolSizeRoad / 2;
+          const start: number = isEven ? -Math.floor(this.toolSizeRoad / 2) + 1 : -Math.floor(this.toolSizeRoad / 2);
+          const end: number = Math.floor(this.toolSizeRoad / 2);
+          // Цикл по координатам
+          for (let cY = start; cY <= end; cY++) {
+            for (let cX = start; cX <= end; cX++) {
+              const ceil: DreamMapCeil = this.viewer.getCeil(this.currentObject.ceil.coord.x + cX, this.currentObject.ceil.coord.y + cY);
+              // Настройки
+              ceil.highlight = true;
+              // Запомнить ячейку
+              this.saveCeil(ceil);
+              // Обновить
+              this.viewer.setTerrainHoverStatus(ceil);
+            }
+          }
+        }
+        // Для площади
+        else if (this.roadType === RoadTypeTool.square) {
+          const ceil: DreamMapCeil = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y);
           // Настройки
           ceil.highlight = true;
           // Запомнить ячейку
@@ -279,8 +407,8 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   // Очистить свечение
   private unLightCeils(): void {
-    if (this.dreamMap.ceils.some(c => c.highlight)) {
-      this.dreamMap.ceils.filter(c => c.highlight).map(c => {
+    if (this.dreamMap?.ceils.some(c => c.highlight)) {
+      this.dreamMap?.ceils.filter(c => c.highlight).map(c => {
         c.highlight = false;
         // Обновить
         this.viewer.setTerrainHoverStatus(c);
@@ -319,10 +447,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
           if (zChange !== 0) {
             change = true;
             // Обновить
-            ceil.coord.z = Math.floor(ceil.coord.z + zChange);
-            ceil.coord.z = (corrDirection > 0 && ceil.coord.z > z) || (corrDirection < 0 && ceil.coord.z < z) ? z : ceil.coord.z;
-            ceil.coord.z = ceil.coord.z > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.z;
-            ceil.coord.z = ceil.coord.z < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.z;
+            ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
+            ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
+            ceil.coord.originalZ = ceil.coord.originalZ > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.originalZ;
+            ceil.coord.originalZ = ceil.coord.originalZ < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.originalZ;
+            ceil.coord.z = ceil.coord.originalZ;
             // Запомнить ячейку
             this.saveCeil(ceil);
           }
@@ -367,6 +496,10 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Добавление дороги
+  private addRoad(): void {
+  }
+
 
 
 
@@ -397,8 +530,18 @@ enum LandscapeTool {
   align
 };
 
+// Перечисление инструментов: дороги
+enum RoadTypeTool {
+  square,
+  road
+}
+
 // Направления высоты
 type HeightDirection = - 1 | 0 | 1;
+
+
+
+
 
 // Интерфейс списка инструментов: общее
 interface ToolListItem {
@@ -414,12 +557,20 @@ interface LandscapeToolListItem {
   icon: string;
 }
 
+// Интерфейс списка инструментов: дороги
+interface RoadTypeToolListItem {
+  type: RoadTypeTool;
+  title: string;
+  icon: string;
+}
+
 
 
 
 
 // Типы размеров
 const ToolSizeLand: number[] = [0, 1, 3, 5, 9, 13];
+const ToolSizeRoad: number[] = [1, 2, 3, 4, 5, 6];
 
 // Список инструментов: общее
 const Tools: ToolListItem[] = [
@@ -462,5 +613,21 @@ const LandscapeTools: LandscapeToolListItem[] = [
     type: LandscapeTool.align,
     name: "Равнина (выровнять рельеф)",
     icon: "vertical_align_center"
+  },
+];
+
+// Список инструментов: ландшафт
+const RoadTypeTools: RoadTypeToolListItem[] = [
+  // Дорога
+  {
+    type: RoadTypeTool.road,
+    title: "Дорога",
+    icon: "add_road"
+  },
+  // Площадь
+  {
+    type: RoadTypeTool.square,
+    title: "Дорога",
+    icon: "check_box_outline_blank"
   },
 ];

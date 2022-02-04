@@ -6,11 +6,12 @@ import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
 import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
+import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map-editor.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamMode, DreamModes } from "@_models/dream";
+import { Dream, DreamDto, DreamMode, DreamModes } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService } from "@_services/dream.service";
 import { Subject } from "rxjs";
@@ -30,6 +31,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
 
   @ViewChild(NavMenuComponent) mainMenu!: NavMenuComponent;
+  @ViewChild(DreamMapEditorComponent) mapEditor!: DreamMapEditorComponent;
 
   editor: any = ClassicEditor;
   config: CKEditor5.Config = { language: "ru" };
@@ -103,10 +105,28 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Сохранение
   onSave(): void {
+    /*const dream: DreamDto = {
+      id: this.dream.id,
+      userId: this.dream.id
+      createDate: string;
+      date: string;
+      title: string;
+      description: string;
+      keywords: string;
+      text: string;
+      places: string;
+      members: string;
+      map: string;
+      mode: DreamMode;
+      status: DreamStatus;
+      headerType: NavMenuType;
+      headerBackgroundId: number;
+    };*/
     this.dream.keywords = this.dreamForm.get("keywords").value;
     this.dream.text = this.dreamForm.get("text").value;
+    //this.dream.map = this.mapEditor.getMap;
     // Сохранить
-    console.log(JSON.stringify(this.dream.map.ceils.map(({ terrain, coord }) => ({ terrain, coord }))));
+    console.log(this.dream);
   }
 
   // Изменение типа сновидения

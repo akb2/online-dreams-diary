@@ -1,9 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, DreamMapCeilDto, DreamMapDto, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox } from "@_services/dream.service";
 import { forkJoin, fromEvent, Subject, timer } from "rxjs";
-import { takeUntil, takeWhile } from "rxjs/operators";
+import { takeUntil, takeWhile, skipWhile, tap } from "rxjs/operators";
 import { BufferGeometry, CameraHelper, Clock, Group, Intersection, Light, Mesh, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -34,11 +35,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private width: number = 0;
   private height: number = 0;
   private sceneColor: number = 0x000000;
-  private ceilSize: number = 1;
-  private ceilHeightParts: number = 64;
-  minCeilHeight: number = 1;
-  maxCeilHeight: number = this.ceilHeightParts * 20;
-  private defaultCeilHeight: number = this.ceilHeightParts * 10;
+  private ceilSize: number = DreamCeilSize;
+  private ceilHeightParts: number = DreamCeilParts;
+  minCeilHeight: number = DreamMinHeight;
+  maxCeilHeight: number = DreamMaxHeight;
+  private defaultCeilHeight: number = DreamDefHeight;
   evenlyMaxDiff: number = Math.round(this.ceilHeightParts * 1.5);
   private delta: number = 0;
 
@@ -75,7 +76,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Получить ячейку
   getCeil(x: number, y: number): DreamMapCeil {
-    return this.dreamMap.ceils.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
+    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
   }
 
   // Ячейка по умолчанию
@@ -84,7 +85,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       place: null,
       terrain: MapTerrains[0].id,
       object: null,
-      coord: { x, y, z: this.defaultCeilHeight }
+      coord: {
+        x,
+        y,
+        z: this.defaultCeilHeight,
+        originalZ: this.defaultCeilHeight
+      }
     };
   }
 
@@ -107,6 +113,39 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     return null;
   }
 
+  // Данные карты
+  get getMap(): DreamMapDto {
+    const ceils: DreamMapCeilDto[] = this.dreamMap.ceils
+      .filter(c =>
+        (!!c.terrain && c.terrain > 0 && c.terrain !== MapTerrains[0].id) ||
+        (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.defaultCeilHeight)
+      )
+      .map(c => {
+        const ceil: DreamMapCeilDto = {};
+        // Тип местности
+        if (!!c.terrain && c.terrain !== MapTerrains[0].id && c.terrain !== 0) {
+          ceil.terrain = c.terrain
+        };
+        // Высота
+        if (c.coord.originalZ && c.coord.originalZ !== this.defaultCeilHeight && c.coord.originalZ !== 0) {
+          ceil.coord = {
+            x: c.coord.x,
+            y: c.coord.y,
+            z: c.coord.originalZ
+          };
+        };
+        // Вернуть ячейку
+        return ceil;
+      });
+    // Вернуть карту
+    return {
+      ceils,
+      dreamerWay: [],
+      size: this.dreamMap.size,
+      skyBox: this.dreamMap.skyBox
+    };
+  }
+
 
 
 
@@ -127,22 +166,26 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngAfterViewInit() {
+    const testWhile: () => boolean = () => !this.canvas || !(!this.debugInfo || !!this.statsBlock) || !this.width || !this.height;
     // Создание сцены
     timer(0, 100)
-      .pipe(takeWhile(() => !this.canvas && !(!this.debugInfo || this.statsBlock), true), takeUntil(this.destroy$))
+      .pipe(
+        tap(() => this.canvas ? this.createCanvas() : null),
+        skipWhile(testWhile),
+        takeWhile(testWhile, true),
+        takeUntil(this.destroy$),
+      )
       .subscribe(() => {
-        if (this.canvas && (!this.debugInfo || this.statsBlock)) {
-          this.createCanvas();
-          this.createScene();
-          this.createSky();
-          this.createObject();
-          // Рендер
-          this.animate();
-          // События
-          fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
-          // Обновить
-          this.control.update();
-        }
+        console.log(this.width, this.height);
+        this.createScene();
+        this.createSky();
+        this.createObject();
+        // Рендер
+        this.animate();
+        // События
+        fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
+        // Обновить
+        this.control.update();
       });
   }
 
@@ -159,12 +202,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Изменение позиции камеры
   onCameraChange(event: OrbitControls): void {
-    this.control.panSpeed = this.moveSpeed / event.getDistance();
+    const width: number = this.dreamMap?.size?.width || DreamMapSize;
+    const height: number = this.dreamMap?.size?.height || DreamMapSize;
     // Настройка позиции камеры
+    this.control.panSpeed = this.moveSpeed / event.getDistance();
     let x: number = event.target.x;
     let z: number = event.target.z;
-    const mapX: number = this.dreamMap.size.width / 2 * this.ceilSize;
-    const mapZ: number = this.dreamMap.size.height / 2 * this.ceilSize;
+    const mapX: number = width / 2 * this.ceilSize;
+    const mapZ: number = height / 2 * this.ceilSize;
     // Ограничить положение камеры
     if (x > mapX || x < -mapX || z > mapZ || z < -mapZ) {
       x = x > mapX ? mapX : x < -mapX ? -mapX : x;
@@ -203,6 +248,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Клик мышкой
   private onMouseClick(event: MouseEvent): void {
+    if (event.button === 1 && event.target === this.canvas.nativeElement) {
+      event.preventDefault();
+    }
+    // Движение мышкой
     this.onMouseMove(event);
   }
 
@@ -256,7 +305,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private createSky(): void {
     if (this.scene) {
       // Скайбокс
-      const skyBox: SkyBoxResult = this.skyBoxService.getObject(this.dreamMap.skyBox, this.distance, this.ceilSize);
+      const skyBox: SkyBoxResult = this.skyBoxService.getObject(
+        this.dreamMap?.skyBox || DreamSkyBox,
+        this.distance,
+        this.ceilSize
+      );
       // Освещения
       const lightScene: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Scene).map(({ light }) => light);
       const lightCamera: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Camera).map(({ light }) => light);
@@ -285,13 +338,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Отрисовать объекты
   private createObject(): void {
     if (this.scene) {
+      const width: number = this.dreamMap?.size?.width || DreamMapSize;
+      const height: number = this.dreamMap?.size?.height || DreamMapSize;
       // Цикл по объектам
-      for (let y = -1; y < this.dreamMap.size.height + 1; y++) {
-        for (let x = -1; x < this.dreamMap.size.width + 1; x++) {
+      for (let y = -1; y < width + 1; y++) {
+        for (let x = -1; x < height + 1; x++) {
           const heightPart: number = this.ceilSize / this.ceilHeightParts;
-          const ceil: DreamMapCeil = this.dreamMap.ceils.some(c => c.coord.y === y && c.coord.x === x) ?
-            this.dreamMap.ceils.find(c => c.coord.y === y && c.coord.x === x) :
-            this.getDefaultCeil(x, y);
+          const ceil: DreamMapCeil = this.getCeil(x, y);
           // Обработка
           ceil.coord.x = x;
           ceil.coord.y = y;
@@ -313,9 +366,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Настройки объекта
           terrain.userData = ceil;
           terrain.position.set(
-            (x - (this.dreamMap.size.width / 2)) * this.ceilSize,
+            (x - (width / 2)) * this.ceilSize,
             -heightPart * this.maxCeilHeight,
-            (y - (this.dreamMap.size.height / 2)) * this.ceilSize
+            (y - (height / 2)) * this.ceilSize
           );
           // Добавить объект на карту
           this.terrainMeshes.push(terrain);

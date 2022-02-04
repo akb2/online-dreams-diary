@@ -26,7 +26,7 @@
     </div>
     <!-- Под-инструмент: ландшафт -->
     <div class="tool-button"
-         *ngIf="getCurrentTool.type === ToolType.landscape">
+         *ngIf="getCurrentTool.type === toolType.landscape">
       <mat-icon>{{getCurrentLandscapeTool.icon}}</mat-icon>
       <!-- Список инструментов -->
       <div class="tool-button__items border-radius">
@@ -41,7 +41,7 @@
     </div>
     <!-- Под-инструмент: тип местности -->
     <div class="tool-button"
-         *ngIf="getCurrentTool.type === ToolType.terrain">
+         *ngIf="getCurrentTool.type === toolType.terrain">
       <img [src]="getTerrainImage(currentTerrain)" />
       <!-- Список инструментов -->
       <div class="tool-button__items border-radius">
@@ -56,9 +56,25 @@
         </ng-container>
       </div>
     </div>
+    <!-- Под-инструмент: тип дороги -->
+    <div class="tool-button"
+         *ngIf="getCurrentTool.type === toolType.road">
+      <mat-icon>{{getCurrentRoadTypeTool.icon}}</mat-icon>
+      <!-- Список инструментов -->
+      <div class="tool-button__items border-radius">
+        <ng-container *ngFor="let type of roadTypeList">
+          <div class="tool-button"
+               [ngClass]="{ active: type.type === roadType }"
+               matTooltip="Тип дороги: {{type.title}}"
+               (click)="onRoadTypeChange(type.type)">
+            <mat-icon>{{type.icon}}</mat-icon>
+          </div>
+        </ng-container>
+      </div>
+    </div>
     <!-- Под-инструмент: размер кисти -->
     <div class="tool-button"
-         *ngIf="getCurrentTool.type === ToolType.landscape || getCurrentTool.type === ToolType.terrain">
+         *ngIf="getCurrentTool.type === toolType.landscape || getCurrentTool.type === toolType.terrain">
       <div class="tool-button__point "
            [ngStyle]="{
              width: toolSizeLandFormat() + 'px',
@@ -79,6 +95,33 @@
                       aria-label="blocks"
                       (input)="onToolSizeLandChange($event)"
                       (change)="onToolSizeLandChange($event)"></mat-slider>
+        </div>
+      </div>
+    </div>
+    <!-- Под-инструмент: размер дороги -->
+    <div class="tool-button"
+         *ngIf="this.getCurrentTool.type === toolType.road && this.roadType === roadTypeTool.road">
+      <div class="tool-button__point "
+           [ngStyle]="{
+             'border-radius': 0,
+             width: (toolSizeRoadFormat() * 3) + 'px',
+             height: (toolSizeRoadFormat() * 3) + 'px'
+           }"></div>
+      <!-- Настройка размера -->
+      <div class="tool-button__items">
+        <div class="tool-button container">Ширина дороги:</div>
+        <div class="tool-button container">
+          <mat-slider thumbLabel
+                      formControlName="toolSizeRoad"
+                      [displayWith]="toolSizeRoadFormat"
+                      tickInterval="1000"
+                      color="primary"
+                      step="1"
+                      min="0"
+                      [max]="toolSizeRoadLength"
+                      aria-label="blocks"
+                      (input)="onToolSizeRoadChange($event)"
+                      (change)="onToolSizeRoadChange($event)"></mat-slider>
         </div>
       </div>
     </div>
