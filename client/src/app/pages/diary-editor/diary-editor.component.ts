@@ -11,10 +11,10 @@ import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-sett
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMode, DreamModes } from "@_models/dream";
+import { Dream, DreamMode, DreamModes } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService } from "@_services/dream.service";
-import { Subject } from "rxjs";
+import { fromEvent, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -105,26 +105,9 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Сохранение
   onSave(): void {
-    /*const dream: DreamDto = {
-      id: this.dream.id,
-      userId: this.dream.id
-      createDate: string;
-      date: string;
-      title: string;
-      description: string;
-      keywords: string;
-      text: string;
-      places: string;
-      members: string;
-      map: string;
-      mode: DreamMode;
-      status: DreamStatus;
-      headerType: NavMenuType;
-      headerBackgroundId: number;
-    };*/
     this.dream.keywords = this.dreamForm.get("keywords").value;
     this.dream.text = this.dreamForm.get("text").value;
-    //this.dream.map = this.mapEditor.getMap;
+    this.dream.map = this.mapEditor.getMap;
     // Сохранить
     console.log(this.dream);
   }

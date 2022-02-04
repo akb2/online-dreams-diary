@@ -139,8 +139,8 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Данные карты
-  get getMap(): DreamMapDto {
-    return this.viewer.getMap || null;
+  get getMap(): DreamMap {
+    return this.viewer.getMap;
   }
 
 

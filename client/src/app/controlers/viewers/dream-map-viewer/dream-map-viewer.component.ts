@@ -1,10 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil, DreamMapCeilDto, DreamMapDto, SkyBoxLightTarget } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox } from "@_services/dream.service";
 import { forkJoin, fromEvent, Subject, timer } from "rxjs";
-import { takeUntil, takeWhile, skipWhile, tap } from "rxjs/operators";
+import { skipWhile, takeUntil, takeWhile, tap } from "rxjs/operators";
 import { BufferGeometry, CameraHelper, Clock, Group, Intersection, Light, Mesh, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -114,29 +114,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Данные карты
-  get getMap(): DreamMapDto {
-    const ceils: DreamMapCeilDto[] = this.dreamMap.ceils
-      .filter(c =>
-        (!!c.terrain && c.terrain > 0 && c.terrain !== MapTerrains[0].id) ||
-        (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.defaultCeilHeight)
-      )
-      .map(c => {
-        const ceil: DreamMapCeilDto = {};
-        // Тип местности
-        if (!!c.terrain && c.terrain !== MapTerrains[0].id && c.terrain !== 0) {
-          ceil.terrain = c.terrain
-        };
-        // Высота
-        if (c.coord.originalZ && c.coord.originalZ !== this.defaultCeilHeight && c.coord.originalZ !== 0) {
-          ceil.coord = {
-            x: c.coord.x,
-            y: c.coord.y,
-            z: c.coord.originalZ
-          };
-        };
-        // Вернуть ячейку
-        return ceil;
-      });
+  get getMap(): DreamMap {
+    const ceils: DreamMapCeil[] = this.dreamMap.ceils.filter(c =>
+      (!!c.terrain && c.terrain > 0 && c.terrain !== MapTerrains[0].id) ||
+      (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.defaultCeilHeight)
+    );
     // Вернуть карту
     return {
       ceils,
