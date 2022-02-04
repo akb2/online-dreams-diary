@@ -1,4 +1,5 @@
 @use "../../../../assets/styles/material";
+@use "../../../../assets/styles/mixins";
 
 // Обертка поля
 @include material.mat-form-field;
@@ -13,10 +14,32 @@ mat-chip-list {
   font-weight: 400;
 }
 
-// Кнопка удаления
-.mat-chip-remove > mat-icon {
-  width: 18px;
-  height: 18px;
-  line-height: 18px;
-  font-size: 18px;
+// Ключевое слово
+.mat-chip {
+  // Элемент
+  &-elm {
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-template-areas: "word remove";
+    grid-gap: 8px;
+    max-width: 100%;
+  }
+  // Слово
+  &-word {
+    @include mixins.line-clamp(1, 16px);
+    // Свойства
+    grid-area: "word";
+  }
+  // Кнопка удаления
+  &-remove {
+    margin-left: 0;
+    // Иконка
+    > mat-icon {
+      grid-area: "remove";
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      font-size: 18px;
+    }
+  }
 }

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, Input, OnInit, Optional, Self } from "@angular/core";
+import { CdkDragDrop, CdkDragEnter, moveItemInArray } from "@angular/cdk/drag-drop";
+import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, Input, OnInit, Optional, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
-import { MatChipInputEvent } from "@angular/material/chips";
+import { MatChipInput, MatChipInputEvent } from "@angular/material/chips";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 
@@ -18,9 +19,12 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
 export class ChipsInputComponent extends BaseInputDirective implements DoCheck, OnInit {
 
 
+  @ViewChild(MatChipInput) private input!: MatChipInput;
+
   @Input() placeholder: string = "Введите текст";
   @Input() appearance: MatFormFieldAppearance = "fill";
   @Input() separator: string = ",";
+  @Input() disableSymbols: string[] = DefaultDisabledChar;
 
   words: string[];
 
@@ -31,8 +35,7 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
 
 
   constructor(
-    @Optional() @Self() override controlDir: NgControl,
-    private changeDetectorRef: ChangeDetectorRef
+    @Optional() @Self() override controlDir: NgControl
   ) {
     super(controlDir);
   }
@@ -58,8 +61,11 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
 
   // Добавить слово
   onAddWord(event: MatChipInputEvent): void {
+    event.value = this.correctWord(event.value);
+    // Если слова нет в списке
     if (event.value.length > 0 && !this.words.some(v => v.toLowerCase() === event.value.toLowerCase())) {
       this.words.push(event.value);
+      // Очистить поле
       event.chipInput.clear();
       // Добавить в форму
       this.control.setValue(this.words);
@@ -74,6 +80,28 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
       this.words.splice(key, 1);
       // Добавить в форму
       this.control.setValue(this.words);
+    }
+  }
+
+  // Изменить порядок слов
+  onDrop(event: CdkDragDrop<string[]>): void {
+    moveItemInArray(this.words, event.previousIndex, event.currentIndex);
+    // Запомнить значение
+    this.control.setValue(this.words);
+  }
+
+  // Ввод текста с клавиатуры
+  onKeyUp(event: KeyboardEvent): void {
+    if (this.separator === event.key) {
+      const input: HTMLInputElement = this.input.inputElement;
+      const values: string[] = (event.target["value"] || "").split(this.separator).map(v => this.correctWord(v));
+      // Добавить слово
+      values.forEach(value => this.onAddWord({ value, input, chipInput: this.input }));
+    }
+    // Введен запрещенный символ
+    else if (this.disableSymbols.includes(event.key)) {
+      const value: string = this.correctWord(event.target["value"]);
+      event.target["value"] = value;
     }
   }
 
@@ -101,4 +129,50 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
       this.words = [];
     }
   }
+
+  // Скорректировать слово
+  private correctWord(value: string): string {
+    const regDis = new RegExp("([\\" + this.disableSymbols.join("\\") + "]+)", "i");
+    // Настройки слова
+    value = value || "";
+    value = value.replace(regDis, "");
+    value = value.trim();
+    // Вернуть слово
+    return value;
+  }
 }
+
+
+
+
+
+// Список запрещенных символов по умолчанию
+export const DefaultDisabledChar: string[] = [
+  "\`",
+  "\~",
+  "\!",
+  "\@",
+  "\"",
+  "\#",
+  "\№",
+  "\$",
+  "\;",
+  "\%",
+  "\^",
+  "\:",
+  "\&",
+  "\?",
+  "\*",
+  "\(",
+  "\)",
+  "\+",
+  "\=",
+  "\'",
+  "\\",
+  "\|",
+  "\/",
+  "\<",
+  "\>",
+  "\,",
+  "\."
+];

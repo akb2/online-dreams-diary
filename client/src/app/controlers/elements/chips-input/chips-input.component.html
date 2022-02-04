@@ -3,19 +3,26 @@
   <mat-chip-list #chipList
                  aria-label="label"
                  multiple
-                 [formControl]="control">
-    <mat-chip *ngFor="let word of words"
+                 cdkDropList
+                 [formControl]="control"
+                 (cdkDropListDropped)="onDrop($event)">
+    <mat-chip cdkDrag
               [selected]="word"
               [value]="word"
-              (removed)="onRemoveWord(word)">
-      {{word}}
-      <div matChipRemove>
-        <mat-icon>cancel</mat-icon>
+              (removed)="onRemoveWord(word)"
+              *ngFor="let word of words">
+      <div class="mat-chip-elm">
+        <div class="mat-chip-word">{{word}}</div>
+        <div matChipRemove>
+          <mat-icon>cancel</mat-icon>
+        </div>
       </div>
     </mat-chip>
-    <input [placeholder]="placeholder"
+    <input #chipInput
+           [placeholder]="placeholder"
            [matChipInputFor]="chipList"
            [matChipInputAddOnBlur]="true"
+           (keyup)="onKeyUp($event)"
            (matChipInputTokenEnd)="onAddWord($event)">
   </mat-chip-list>
   <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
