@@ -54,7 +54,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private minAngle: number = 0;
   private maxAngle: number = 80;
   private distance: number = 50;
-  private fpsLimit: number = 60;
+  private fpsLimit: number = 120;
   private showHelpers: boolean = false;
 
   private renderer: WebGLRenderer;
@@ -158,13 +158,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
-        console.log(this.width, this.height);
         this.createScene();
         this.createSky();
         this.createObject();
-        // Рендер
-        this.animate();
         // События
+        timer(0, 0).pipe(takeUntil(this.destroy$)).subscribe(this.animate.bind(this))
         fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
         // Обновить
         this.control.update();
@@ -172,10 +170,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngOnDestroy() {
-    this.control.removeEventListener("change", (event) => this.onCameraChange(event.target));
-    // Отписки
     this.destroy$.next();
     this.destroy$.complete();
+    // Очистить память
+    this.clearScene();
   }
 
 
@@ -369,18 +367,44 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновление сцены
   private animate(): void {
-    const interval: number = 1 / this.fpsLimit;
-    this.delta += this.clock.getDelta();
-    // Следующая отрисовка
-    window.requestAnimationFrame(this.animate.bind(this));
-    // Ограничение FPS
-    if (this.delta > interval) {
-      this.control.update();
-      this.render();
-      this.stats.update();
-      // Обновить дельту
-      this.delta = this.delta % interval;
+    if (this.scene) {
+      const interval: number = 1 / this.fpsLimit;
+      this.delta += this.clock.getDelta();
+      // Ограничение FPS
+      if (this.delta > interval) {
+        this.control.update();
+        this.render();
+        this.stats.update();
+        // Обновить дельту
+        this.delta = this.delta % interval;
+      }
     }
+  }
+
+  // Удалить все объекты
+  private clearScene(): void {
+    while (this.scene.children.length > 0) {
+      const node: any = this.scene.children[0];
+      // Удалить встроенные объекты
+      Object.values(node)
+        .filter((o: any) => !!o?.dispose)
+        .forEach((o: any) => o?.dispose());
+      // Удалить фигуру
+      this.scene.remove(node);
+    }
+    console.log(this.scene);
+    // Очистить сцену
+    this.clock.stop();
+    this.stats.end();
+    this.camera.clear();
+    this.scene.clear();
+    this.renderer.clear();
+    // Очистить переменные
+    this.clock = null;
+    this.stats = null;
+    this.camera = null;
+    this.scene = null;
+    this.renderer = null;
   }
 
 
