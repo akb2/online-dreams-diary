@@ -75,6 +75,11 @@ export class DreamService {
     );
   }
 
+  // Сохранить сновидение
+  saveDream(): Observable<boolean> {
+    return of(true);
+  }
+
 
 
 
