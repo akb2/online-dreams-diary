@@ -75,3 +75,34 @@
   margin-bottom: $bottom;
   margin-right: $right;
 }
+
+// Огранисение на количество линий
+@mixin line-clamp($lines: 1, $height: 1, $padding: 0, $height-important: false) {
+  $important: "";
+  // Обязательные поля
+  @if ($height-important == 1 or $height-important == true) {
+    $important: "!important";
+  }
+  // Свойства
+  overflow: hidden;
+  padding-top: $padding;
+  padding-bottom: $padding;
+  // Установка высоты
+  @if ($height > 0) {
+    line-height: #{$height} #{$important};
+    min-height: #{$height + ($padding * 2)} #{$important};
+    max-height: #{($height * $lines) + ($padding * 2)} #{$important};
+  }
+  // Две и более линий
+  @if ($lines > 1) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: $lines;
+    white-space: normal;
+  }
+  // Для одной линии
+  @else {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
