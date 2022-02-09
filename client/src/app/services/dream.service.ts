@@ -1,10 +1,15 @@
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
+import { ApiResponse } from "@_models/api";
+import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamMap, DreamMapDto } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { ApiService } from "@_services/api.service";
 import { SkyBoxes } from "@_services/dream-map/skybox.service";
 import { MapTerrains } from "@_services/dream-map/terrain.service";
 import { Observable, of, throwError } from "rxjs";
@@ -21,6 +26,9 @@ import { map, mergeMap, switchMap } from "rxjs/operators";
 export class DreamService {
 
 
+  private baseUrl: string = environment.baseUrl;
+  private httpHeader: SimpleObject = environment.httpHeader;
+
   private currentUser: User;
   private tempUsers: User[] = [];
 
@@ -29,7 +37,9 @@ export class DreamService {
 
 
   constructor(
-    private accountService: AccountService
+    private accountService: AccountService,
+    private httpClient: HttpClient,
+    private apiService: ApiService
   ) {
     this.currentUser = this.accountService.getCurrentUser();
     // Подписка на актуальные сведения о пользователе
@@ -54,7 +64,7 @@ export class DreamService {
       places: [],
       members: [],
       map: this.dreamMapConverter(),
-      mode: DreamMode.map,
+      mode: DreamMode.mixed,
       status: DreamStatus.draft,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
@@ -69,6 +79,7 @@ export class DreamService {
         if (dreams.some(d => d.id === id)) {
           return of(dreams.find(d => d.id === id));
         }
+        // Ошибка
         return throwError(() => "Сновидение не найдено");
       }),
       mergeMap(dream => this.dreamConverter(dream))
@@ -76,8 +87,24 @@ export class DreamService {
   }
 
   // Сохранить сновидение
-  saveDream(): Observable<boolean> {
-    return of(true);
+  saveDream(dream: Dream, codes: string[] = []): Observable<number> {
+    const formData: FormData = new FormData();
+    Object.entries(this.dreamConverterDto(dream)).map(([k, v]) => formData.append(k, v));
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "dream/saveDream", formData, this.httpHeader).pipe(
+      switchMap(
+        result => {
+          // Вернуть данные пользователя
+          if (result.result.code === "0001" || codes.some(code => code === result.result.code)) {
+            return of(result.result.data);
+          }
+          // Вернуть обработку кодов
+          else {
+            return this.apiService.checkResponse(result.result.code, codes);
+          }
+        }
+      )
+    );
   }
 
 
@@ -129,6 +156,27 @@ export class DreamService {
         user
       })));
     }
+  }
+
+  // Конвертер сновидений для сервера
+  private dreamConverterDto(dream: Dream): DreamDto {
+    return {
+      id: dream.id,
+      userId: dream.user.id,
+      createDate: new Date().toISOString(),
+      date: dream.date.toISOString(),
+      title: dream.title,
+      description: dream.description,
+      keywords: dream.keywords.join(","),
+      text: dream.text,
+      places: dream.places.join(","),
+      members: dream.members.join(","),
+      map: JSON.stringify(dream.map),
+      mode: dream.mode,
+      status: dream.status,
+      headerType: dream.headerType,
+      headerBackgroundId: dream.headerBackground.id
+    };
   }
 
   // Конвертер карты
