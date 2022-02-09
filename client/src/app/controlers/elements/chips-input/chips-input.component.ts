@@ -1,5 +1,5 @@
 import { CdkDragDrop, CdkDragEnter, moveItemInArray } from "@angular/cdk/drag-drop";
-import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, Input, OnInit, Optional, Self, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, EventEmitter, Input, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { MatChipInput, MatChipInputEvent } from "@angular/material/chips";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
@@ -22,13 +22,35 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
   @ViewChild(MatChipInput) private input!: MatChipInput;
 
   @Input() placeholder: string = "Введите текст";
+  @Input() placeholderLimit: string = "Введено максимум значений";
   @Input() appearance: MatFormFieldAppearance = "fill";
   @Input() separator: string = ",";
   @Input() disableSymbols: string[] = DefaultDisabledChar;
+  @Input() maxLength: number = 512;
+
+  @Output() keyDown: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();
+  @Output() keyUp: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();
 
   words: string[];
 
   private oldValues: string[];
+
+
+
+
+
+  // Максимальная длина ввода в ключевые слова
+  get inputMaxLength(): number {
+    const length: number = this.words.join(this.separator).length;
+    const maxLength: number = this.maxLength - length - (length > 0 ? this.separator.length : 0);
+    // Вернуть значение
+    return maxLength > 0 ? maxLength : 0;
+  }
+
+  // Заполнитель ввода
+  get inputPlaceholder(): string {
+    return this.inputMaxLength > 0 ? this.placeholder : this.placeholderLimit;
+  }
 
 
 
@@ -91,7 +113,14 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
   }
 
   // Ввод текста с клавиатуры
+  onKeyDown(event: KeyboardEvent): void {
+    this.keyDown.emit(event);
+  }
+
+  // Ввод текста с клавиатуры
   onKeyUp(event: KeyboardEvent): void {
+    this.keyUp.emit(event);
+    // Найден разделитель
     if (this.separator === event.key) {
       const input: HTMLInputElement = this.input.inputElement;
       const values: string[] = (event.target["value"] || "").split(this.separator).map(v => this.correctWord(v));
