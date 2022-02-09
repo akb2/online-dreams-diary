@@ -204,11 +204,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   onWindowResize(): void {
     this.createCanvas();
     // Настройки
-    this.renderer.setSize(this.width, this.height);
-    this.camera.aspect = this.width / this.height;
-    // Рендер
-    this.camera.updateProjectionMatrix();
-    this.render();
+    if (this.renderer) {
+      this.renderer.setSize(this.width, this.height);
+      this.camera.aspect = this.width / this.height;
+      // Рендер
+      this.camera.updateProjectionMatrix();
+      this.render();
+    }
   }
 
   // Движение мышки
@@ -383,28 +385,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Удалить все объекты
   private clearScene(): void {
-    while (this.scene.children.length > 0) {
-      const node: any = this.scene.children[0];
-      // Удалить встроенные объекты
-      Object.values(node)
-        .filter((o: any) => !!o?.dispose)
-        .forEach((o: any) => o?.dispose());
-      // Удалить фигуру
-      this.scene.remove(node);
+    if (this.scene) {
+      while (this.scene.children.length > 0) {
+        const node: any = this.scene.children[0];
+        // Удалить встроенные объекты
+        Object.values(node)
+          .filter((o: any) => !!o?.dispose)
+          .forEach((o: any) => o?.dispose());
+        // Удалить фигуру
+        this.scene.remove(node);
+      }
+      // Очистить сцену
+      this.clock.stop();
+      this.stats.end();
+      this.camera.clear();
+      this.scene.clear();
+      this.renderer.clear();
+      // Очистить переменные
+      this.clock = null;
+      this.stats = null;
+      this.camera = null;
+      this.scene = null;
+      this.renderer = null;
     }
-    console.log(this.scene);
-    // Очистить сцену
-    this.clock.stop();
-    this.stats.end();
-    this.camera.clear();
-    this.scene.clear();
-    this.renderer.clear();
-    // Очистить переменные
-    this.clock = null;
-    this.stats = null;
-    this.camera = null;
-    this.scene = null;
-    this.renderer = null;
   }
 
 
