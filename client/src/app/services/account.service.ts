@@ -83,7 +83,7 @@ export class AccountService {
   // Регистрация
   register(data: UserRegister, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
-    Object.entries(data).map(value => formData.append(value[0], value[1]));
+    Object.entries(data).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader).pipe(switchMap(
       result => this.apiService.checkResponse(result.result.code, codes)
