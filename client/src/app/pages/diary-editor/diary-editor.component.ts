@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
 import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -11,10 +11,11 @@ import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-sett
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { User } from "@_models/account";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamMode, DreamModes } from "@_models/dream";
+import { Dream, DreamMode, DreamModes, DreamStatus, DreamStatuses } from "@_models/dream";
+import { DreamErrorMessages, DreamValidatorData, ErrorMessagesType, FormData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService } from "@_services/dream.service";
-import { fromEvent, Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -47,19 +48,21 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   dreamForm: FormGroup;
   dreamId: number = 0;
   dream: Dream;
+  errors: ErrorMessagesType = DreamErrorMessages;
 
   oldUser: User;
   public get user(): User {
     return AppComponent.user;
   };
 
-  titleMinLength: number = 2;
-  titleMaxLength: number = 60;
-  descriptionMinLength: number = 2;
-  descriptionMaxLength: number = 400;
+  titleMinLength: number = FormData.dreamTitleMinLength;
+  titleMaxLength: number = FormData.dreamTitleMaxLength;
+  descriptionMaxLength: number = FormData.dreamDescriptionMaxLength;
+  keywordsMaxLength: number = 500;
   dateMin: Date = new Date();
   dateMax: Date = new Date();
   dreamModes: OptionData[] = DreamModes;
+  dreamStatuses: OptionData[] = DreamStatuses;
 
   private destroy$: Subject<void> = new Subject<void>();
   private changes$: Subject<void> = new Subject<void>();
@@ -72,15 +75,17 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     private activateRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private router: Router
   ) {
     this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
     // Форма сновидений
     this.dreamForm = this.formBuilder.group({
-      title: [""],
+      title: ["", DreamValidatorData.title],
       description: [""],
       mode: [DreamMode.text],
+      status: [DreamStatus.draft],
       date: [new Date()],
       keywords: [[]],
       text: [""]
@@ -117,11 +122,25 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Сохранение
   onSave(): void {
-    this.dream.keywords = this.dreamForm.get("keywords").value;
-    this.dream.text = this.dreamForm.get("text").value;
-    this.dream.map = this.mapEditor.getMap;
+    if (this.dreamForm.invalid) {
+      this.dreamForm.markAllAsTouched();
+    }
     // Сохранить
-    console.log(this.dream);
+    if (this.dream.id === 0 || (this.dream.id > 0 && this.dreamForm.valid)) {
+      const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : this.dreamForm.get("status").value as DreamStatus;
+      // Данные
+      this.dream.description = this.dreamForm.get("description").value as string;
+      this.dream.mode = this.dreamForm.get("mode").value as DreamMode;
+      this.dream.status = status;
+      this.dream.keywords = this.dreamForm.get("keywords").value as string[];
+      this.dream.text = this.dreamForm.get("text").value as string;
+      this.dream.map = this.mapEditor.getMap;
+      // Сохранение
+      this.dreamService.saveDream(this.dream).subscribe(
+        r => console.log(r),
+        e => console.log(e)
+      );
+    }
   }
 
   // Изменение типа сновидения
@@ -175,8 +194,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
           // Создать форму
           this.createForm();
         },
-        () => {
-        }
+        () => this.router.navigate(["404"])
       );
     }
     // Новое сновидение
@@ -197,6 +215,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     this.dreamForm.get("title").setValue(this.dream.title);
     this.dreamForm.get("description").setValue(this.dream.description);
     this.dreamForm.get("mode").setValue(this.dream.mode.toString());
+    this.dreamForm.get("status").setValue(this.dream.status.toString());
     this.dreamForm.get("date").setValue(this.dream.date);
     this.dreamForm.get("keywords").setValue(this.dream.keywords);
     this.dreamForm.get("text").setValue(this.dream.text);

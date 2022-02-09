@@ -10,6 +10,7 @@
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [title]="dream.title || defaultTitle"
                  subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                 backButtonLink="/diary/my"
                  floatButtonIcon="save"
                  (floatButtonCallback)="onSave()"></app-main-menu>
 
@@ -35,31 +36,24 @@
                     <form content
                           [formGroup]="dreamForm">
                       <!-- Название -->
-                      <app-text-input required
-                                      label="Название"
+                      <app-text-input label="Название"
                                       formControlName="title"
+                                      [errors]="errors.title"
                                       [maxLength]="titleMaxLength"></app-text-input>
                       <!-- Описание -->
-                      <app-text-input required
-                                      label="Краткое описание"
+                      <app-text-input label="Краткое описание"
                                       formControlName="description"
+                                      [errors]="errors.description"
                                       [multiLine]="true"
                                       [multiLineMinLines]="1"
                                       [multiLineMaxLines]="6"
                                       [maxLength]="descriptionMaxLength"></app-text-input>
                       <!-- Когда приснился сон -->
-                      <app-text-input required
-                                      type="date"
+                      <app-text-input type="date"
                                       label="Дата сновидения"
                                       formControlName="date"
                                       [minDate]="dateMin"
                                       [maxDate]="dateMax"></app-text-input>
-                      <!-- Тип данных -->
-                      <app-autocomplete-input required
-                                              label="Тип описания сновидения"
-                                              formControlName="mode"
-                                              [optionData]="dreamModes"
-                                              (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
                     </form>
                   </app-card>
                   <!-- Настройки -->
@@ -73,8 +67,21 @@
                           [formGroup]="dreamForm">
                       <!-- Ключевые слова -->
                       <app-chips-input label="Ключевые слова для поиска"
-                                       placeholder="Введите ключевое слово"
-                                       formControlName="keywords"></app-chips-input>
+                                       placeholder="Введите ключевую фразу"
+                                       placeholderLimit="Достигнута максимальное количество ключевых фраз"
+                                       formControlName="keywords"
+                                       [maxLength]="keywordsMaxLength"></app-chips-input>
+                      <!-- Тип данных -->
+                      <app-autocomplete-input required
+                                              label="Тип описания сновидения"
+                                              formControlName="mode"
+                                              [optionData]="dreamModes"
+                                              (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
+                      <!-- Статус сновидения -->
+                      <app-autocomplete-input required
+                                              label="Кому достпно сновидение"
+                                              formControlName="status"
+                                              [optionData]="dreamStatuses"></app-autocomplete-input>
                     </form>
                   </app-card>
                 </div>

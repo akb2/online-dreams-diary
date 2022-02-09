@@ -30,6 +30,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 11);
   menuAvatarImage: string = "";
   menuAvatarIcon: string = "";
+  floatButtonIcon: string;
+  floatButtonLink: string;
 
   user: User;
   currentUser: User;
@@ -84,6 +86,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
           this.backgroundImageData = user.settings.profileBackground;
           this.menuAvatarImage = user.avatars.middle;
           this.menuAvatarIcon = "person";
+          this.floatButtonIcon = "add";
+          this.floatButtonLink = "/diary/editor";
           // Отметить готовность
           this.ready = true;
         }
@@ -92,6 +96,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
     // Общий дневник
     else if (this.pageData.userId === -1) {
       this.ready = true;
+      this.floatButtonIcon = "";
+      this.floatButtonLink = "";
     }
   }
 }
