@@ -6,7 +6,7 @@ import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
-import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { AccountErrorMessages, ErrorMessagesType, FormData, FormDataType, AccountValidatorData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -27,7 +27,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   @ViewChild(AppRecaptchaComponent) appRecaptchaComponent!: AppRecaptchaComponent;
 
   form: FormGroup[];
-  errors: ErrorMessagesType = ErrorMessages;
+  errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   navMenuType: NavMenuType = NavMenuType.collapse;
 
@@ -59,9 +59,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       // Данные входа
       this.formBuilder.group({
         testLogin: [[], null],
-        login: [this.localStorage.getCookie("login"), ValidatorData.login],
-        password: [this.localStorage.getCookie("password"), ValidatorData.password],
-        confirmPassword: [this.localStorage.getCookie("confirmPassword"), ValidatorData.password]
+        login: [this.localStorage.getCookie("login"), AccountValidatorData.login],
+        password: [this.localStorage.getCookie("password"), AccountValidatorData.password],
+        confirmPassword: [this.localStorage.getCookie("confirmPassword"), AccountValidatorData.password]
       }, {
         validators: [
           CustomValidators.passwordMatchValidator,
@@ -70,15 +70,15 @@ export class RegisterComponent implements OnInit, OnDestroy {
       }),
       // Сведения
       this.formBuilder.group({
-        name: [this.localStorage.getCookie("name"), ValidatorData.name],
-        lastName: [this.localStorage.getCookie("lastName"), ValidatorData.name],
-        birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, ValidatorData.birthDate],
+        name: [this.localStorage.getCookie("name"), AccountValidatorData.name],
+        lastName: [this.localStorage.getCookie("lastName"), AccountValidatorData.name],
+        birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, AccountValidatorData.birthDate],
         sex: [this.localStorage.getCookie("sex") ? this.localStorage.getCookie("sex") === "true" : false]
       }),
       // Контакты
       this.formBuilder.group({
         testEmail: [[], null],
-        email: [this.localStorage.getCookie("email"), ValidatorData.email],
+        email: [this.localStorage.getCookie("email"), AccountValidatorData.email],
         captcha: ["", Validators.required]
       }, {
         validators: [

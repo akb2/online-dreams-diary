@@ -7,7 +7,7 @@ import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-i
 import { ImageUploadComponent } from "@_controlers/image-upload/image-upload.component";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserSave } from "@_models/account";
-import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
@@ -34,7 +34,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
   avatar: FormControl;
-  errors: ErrorMessagesType = ErrorMessages;
+  errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   user: User;
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -63,12 +63,12 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   ) {
     // Настройка формы
     this.form = this.formBuilder.group({
-      name: ["", ValidatorData.name],
-      lastName: ["", ValidatorData.name],
-      patronymic: ["", ValidatorData.name],
-      birthDate: ["", ValidatorData.birthDate],
+      name: ["", AccountValidatorData.name],
+      lastName: ["", AccountValidatorData.name],
+      patronymic: ["", AccountValidatorData.name],
+      birthDate: ["", AccountValidatorData.birthDate],
       sex: [false],
-      email: ["", ValidatorData.email],
+      email: ["", AccountValidatorData.email],
       testEmail: [[], null],
       avatar: null
     }, {

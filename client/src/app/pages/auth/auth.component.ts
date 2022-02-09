@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
-import { ErrorMessages, ErrorMessagesType, FormData, FormDataType, ValidatorData } from "@_models/form";
+import { AccountErrorMessages, ErrorMessagesType, FormData, FormDataType, AccountValidatorData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 
@@ -18,7 +18,7 @@ export class AuthComponent implements OnInit {
 
 
   form: FormGroup;
-  errors: ErrorMessagesType = ErrorMessages;
+  errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   navMenuType: NavMenuType = NavMenuType.collapse;
 
@@ -38,8 +38,8 @@ export class AuthComponent implements OnInit {
     private accountService: AccountService
   ) {
     this.form = new FormGroup({
-      login: new FormControl(null, ValidatorData.login),
-      password: new FormControl(null, ValidatorData.password)
+      login: new FormControl(null, AccountValidatorData.login),
+      password: new FormControl(null, AccountValidatorData.password)
     });
   }
 
