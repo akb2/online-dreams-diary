@@ -101,3 +101,48 @@ export const DreamModes: OptionData[] = [{
   iconColor: "primary",
   iconBackground: "fill"
 }];
+
+// Набор методов для статуса сновидения
+export const DreamStatuses: OptionData[] = [{
+  key: DreamStatus.draft.toString(),
+  title: "Черновик",
+  subTitle: "Доступно только для вас",
+  icon: "drive_file_rename_outline",
+  iconColor: "disabled",
+  iconBackground: "fill"
+}, {
+  key: DreamStatus.private.toString(),
+  title: "Личное сновидение",
+  subTitle: "Доступно только для вас",
+  icon: "lock",
+  iconColor: "warn",
+  iconBackground: "fill"
+}, {
+  key: DreamStatus.friends.toString(),
+  title: "Для друзей",
+  subTitle: "Доступно для вас и списка друзей",
+  icon: "group",
+  iconColor: "accent",
+  iconBackground: "fill"
+}, {
+  key: DreamStatus.users.toString(),
+  title: "Для сообщества",
+  subTitle: "Доступно только пользователям сервиса",
+  icon: "vpn_lock",
+  iconColor: "accent",
+  iconBackground: "fill"
+}, {
+  key: DreamStatus.hash.toString(),
+  title: "По ссылке",
+  subTitle: "Доступно для вас и всех по специальной ссылке",
+  icon: "link",
+  iconColor: "primary",
+  iconBackground: "fill"
+}, {
+  key: DreamStatus.public.toString(),
+  title: "Публичное сновидение",
+  subTitle: "Доступно для всех в интернете",
+  icon: "travel_explore",
+  iconColor: "primary",
+  iconBackground: "fill"
+}];
