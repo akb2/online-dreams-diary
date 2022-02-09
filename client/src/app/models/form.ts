@@ -36,6 +36,7 @@ export interface FormErrorsKeys {
 // Значения для данных
 export type FormDataType = { [key: string]: number };
 export const FormData: FormDataType = {
+  // Для аккаунтов
   loginMinLength: 4,
   loginMaxLength: 24,
   passwordMinLength: 6,
@@ -46,11 +47,24 @@ export const FormData: FormDataType = {
   nameMaxLength: 30,
   birthDateMinAge: 10,
   birthDateMaxAge: 120,
+  // Для сновидений
+  dreamTitleMinLength: 3,
+  dreamTitleMaxLength: 60,
+  dreamDescriptionMaxLength: 400,
 };
 
-// Валидаторы
+// Тип для валидаторов ошибок
 export type ValidatorDataType = { [key: string]: ValidatorFn | ValidatorFn[] | AbstractControlOptions };
-export const ValidatorData: ValidatorDataType = {
+
+// Тип для текстов ошибок
+export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
+
+
+
+
+
+// Валидаторыдля аккаунтов
+export const AccountValidatorData: ValidatorDataType = {
   // Логин
   login: [
     Validators.required,
@@ -84,9 +98,27 @@ export const ValidatorData: ValidatorDataType = {
   ]
 }
 
-// Тексты ошибок
-export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
-export const ErrorMessages: ErrorMessagesType = {
+// Валидаторы сновидений
+export const DreamValidatorData: ValidatorDataType = {
+  // Заголовок
+  title: [
+    Validators.required,
+    Validators.minLength(FormData.dreamTitleMinLength),
+    Validators.maxLength(FormData.dreamTitleMaxLength),
+    Validators.pattern(/^([^`~\^\+\=\[\]\{\}\\\/\<\>]+)$/i)
+  ],
+  // Описание
+  description: [
+    Validators.maxLength(FormData.dreamDescriptionMaxLength)
+  ]
+};
+
+
+
+
+
+// Тексты ошибок для аккаунтов
+export const AccountErrorMessages: ErrorMessagesType = {
   login: {
     required: "Введите логин",
     minlength: `Минимум ${FormData.loginMinLength} символа`,
@@ -135,5 +167,20 @@ export const ErrorMessages: ErrorMessagesType = {
   },
   captcha: {
     required: `Пройдите капчу`
+  }
+};
+
+// Тексты ошибок для сновидений
+export const DreamErrorMessages: ErrorMessagesType = {
+  // Заголовок
+  title: {
+    required: "Введите заголовок",
+    minlength: `Минимум ${FormData.dreamTitleMinLength} символа`,
+    maxlength: `Максимум ${FormData.dreamTitleMaxLength} символа`,
+    pattern: "Запрещено: `, ~, ^, +, =, [, ], {, }, \\, /, <, >"
+  },
+  // Описание
+  description: {
+    maxlength: `Максимум ${FormData.dreamDescriptionMaxLength} символа`
   }
 };
