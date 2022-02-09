@@ -5,8 +5,10 @@ namespace OnlineDreamsDiary\Controllers;
 include_once "services/database.php";
 include_once "services/user.php";
 include_once "services/token.php";
+include_once "services/dream.php";
 include_once "config/database.php";
 
+use OnlineDreamsDiary\Services\DreamService;
 use OnlineDreamsDiary\Services\UserService;
 use OnlineDreamsDiary\Services\TokenService;
 use PDO;
@@ -20,6 +22,7 @@ class App
 
   private UserService $userService;
   private TokenService $tokenService;
+  private DreamService $dreamService;
 
 
 
@@ -40,6 +43,7 @@ class App
   {
     $this->userService = new UserService($this->pdo, $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->dreamService = new DreamService($this->pdo, $this->config);
   }
 
 
@@ -54,10 +58,12 @@ class App
     );
     // Запросы на удаление таблиц
     $request["token"]["delete"] = $this->tokenService->deleteTableApi($data["password"]);
+    $request["dream"]["delete"] = $this->dreamService->deleteTableApi($data["password"]);
     $request["user"]["delete"] = $this->userService->deleteTableApi($data["password"]);
     // Запросы на создание таблиц
     $request["user"]["create"] = $this->userService->createTableApi($data["password"]);
     $request["token"]["create"] = $this->tokenService->createTableApi($data["password"]);
+    $request["dream"]["create"] = $this->dreamService->createTableApi($data["password"]);
     // Запросы на заполнение таблиц
     $request["user"]["fill"] = $this->userService->fillTableApi($data["password"]);
     // Результат

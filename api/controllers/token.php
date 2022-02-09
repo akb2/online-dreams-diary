@@ -71,7 +71,7 @@ class Token
     return $this->tokenService->getTokensApi($data);
   }
 
-  // Удалить токен
+  // Удалить токен по ID токена
   // * DELETE
   public function deleteTokenById($data): array
   {
@@ -103,7 +103,7 @@ class Token
     );
   }
 
-  // Удалить токен
+  // Удалить токен по ID пользователя
   // * DELETE
   public function deleteTokensByUser($data): array
   {
