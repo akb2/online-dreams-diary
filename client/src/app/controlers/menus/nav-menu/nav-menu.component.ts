@@ -37,7 +37,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   @Input() floatButtonIcon: string = "";
   @Input() floatButtonText: string = "";
-  @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
   @Input() floatButtonLink: string;
   @Input() floatButtonLinkParams: SimpleObject;
 
@@ -45,6 +44,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @Input() backButtonLinkParams: SimpleObject;
 
   @Input() hideToContentButton: boolean = false;
+
+  @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
 
   @ViewChild("contentLayerContainer") private contentLayerContainer: ElementRef;
   @ViewChild("contentLayerContainerLeft") private contentLayerContainerLeft: ElementRef;
