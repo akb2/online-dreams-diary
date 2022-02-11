@@ -142,6 +142,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
       this.dreamService.save(this.dream).subscribe(
         id => {
           this.dream.id = id;
+          // Добавить ID в URL
+          this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
           // Уведомление о сохранении
           this.snackbarService.open({
             message: "Сновидение успешно сохранено",
