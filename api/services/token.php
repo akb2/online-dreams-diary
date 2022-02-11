@@ -224,7 +224,7 @@ class TokenService
     );
   }
 
-  // Получить информацию о токенах
+  // Получить информацию о токене по ID
   public function deleteTokenByIdApi(int $id): array
   {
     $code = "0000";
