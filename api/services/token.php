@@ -281,9 +281,9 @@ class TokenService
 
 
   // Проверить токен
-  public function checkToken(string $id, string $token): bool
+  public function checkToken(string $userId, string $token): bool
   {
-    if (strlen($id) > 0 && strlen($token) > 0) {
+    if (strlen($userId) > 0 && strlen($token) > 0) {
       // Данные
       $sqlData = array($token);
       // Запрос проверки токена
@@ -294,7 +294,7 @@ class TokenService
           // Проверка времени жизни токена
           if (gmdate("U") - $this->tokenLifeTime < strtotime($auth[0]["last_action_date"])) {
             // Проверка привязки пользователя
-            if ($id === $auth[0]["user_id"]) {
+            if ($userId === $auth[0]["user_id"]) {
               return true;
             }
           }
