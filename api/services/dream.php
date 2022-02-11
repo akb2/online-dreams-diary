@@ -50,8 +50,29 @@ class DreamService
 
 
 
+  // Проверить доступность сновидения
+  public function checkAvail(string $id, string $userId): bool
+  {
+    $dream = $this->getById($id);
+    // Сновидение существует
+    if (isset($dream["id"]) && $dream["id"] > 0) {
+      if (
+        // Доступно владельцу
+        $dream["user_id"] == $userId ||
+        // Пользователь авторизован
+        ($userId > 0 && $dream["user_id"] != $userId && $dream["status"] == 4) ||
+        // Пользователь не авторизован
+        (!($userId > 0) && $dream["status"] == 5)
+      ) {
+        return true;
+      }
+    }
+    // Недоступно
+    return false;
+  }
+
   // Получить сновидение по ID
-  public function getById(string $id, string $userId): array
+  public function getById(string $id, string $userId = "0"): array
   {
     if ($id > 0) {
       $sqlData = array($id);
@@ -90,6 +111,32 @@ class DreamService
     // Попытка сохранения
     if ($this->dataBaseService->executeFromFile("dream/create.sql", $sqlData)) {
       return $this->pdo->lastInsertId();
+    }
+    // Сновидение не сохранено
+    return 0;
+  }
+
+  // Обновить сновидение
+  public function updateDream($data): string
+  {
+    $sqlData = array(
+      "id" => $data["id"],
+      "mode" => $data["mode"],
+      "status" => $data["status"],
+      "date" => date("Y-m-d", strtotime($data["date"])),
+      "title" => $data["title"],
+      "description" => $data["description"],
+      "keywords" => $data["keywords"],
+      "text" => $data["text"],
+      "places" => $data["places"],
+      "members" => $data["members"],
+      "map" => $data["map"],
+      "header_type" => $data["headerType"],
+      "header_background" => $data["headerBackgroundId"],
+    );
+    // Попытка сохранения
+    if ($this->dataBaseService->executeFromFile("dream/update.sql", $sqlData)) {
+      return intval($data["id"]);
     }
     // Сновидение не сохранено
     return 0;
