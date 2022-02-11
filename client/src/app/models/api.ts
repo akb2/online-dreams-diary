@@ -22,18 +22,13 @@ export interface ApiResponse {
   }
 }
 
-// Коды ответа
-export type ApiResponseCodes =
-  "0001" |
-  "0002" |
-  "9001"
-  ;
-
-// Сообщения об ошибках
-export const ApiResponseMessages: SimpleObject = {
+// Тип сообщений об ошибках
+export const ApiResponseMessages = {
   "0000": "Путой ответ сервера, состояние выполнения запроса неизвестно",
   "0001": "Успешное выполнение запроса",
   "0002": "Данные не найдены",
+
+  "7001": "Сновидение не сохранено",
 
   "8010": "Ошибка удаления файлов аватарок",
   "8011": "Ошибка загрузки файла аватарки",
@@ -56,4 +51,7 @@ export const ApiResponseMessages: SimpleObject = {
   "9030": "Ошибка входных данных",
   "9040": "У вас нет доступа к данной операции",
   "9999": "Неизвестная ошибка. Повторите позже"
-};
+} as const;
+
+// Коды ответа
+export type ApiResponseCodes = keyof typeof ApiResponseMessages;
