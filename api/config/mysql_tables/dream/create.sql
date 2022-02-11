@@ -1,0 +1,30 @@
+INSERT INTO `dreams` (
+  `user_id`,
+  `mode`,
+  `status`,
+  `date`,
+  `title`,
+  `description`,
+  `keywords`,
+  `text`,
+  `places`,
+  `members`,
+  `map`,
+  `header_type`,
+  `header_background`
+)
+VALUES (
+  :user_id,
+  :mode,
+  :status,
+  :date,
+  :title,
+  :description,
+  :keywords,
+  :text,
+  :places,
+  :members,
+  :map,
+  :header_type,
+  :header_background
+)
