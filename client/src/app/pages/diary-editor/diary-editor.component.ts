@@ -15,6 +15,7 @@ import { Dream, DreamMode, DreamModes, DreamStatus, DreamStatuses } from "@_mode
 import { DreamErrorMessages, DreamValidatorData, ErrorMessagesType, FormData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService } from "@_services/dream.service";
+import { SnackbarService } from "@_services/snackbar.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -39,6 +40,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
 
+  navMenuType: NavMenuType = NavMenuType.collapse;
   defaultTitle: string = "*** Новое сновидение ***";
   today: Date = new Date();
 
@@ -76,6 +78,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private formBuilder: FormBuilder,
+    private snackbarService: SnackbarService,
     private router: Router
   ) {
     this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
@@ -122,23 +125,29 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Сохранение
   onSave(): void {
+    const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : this.dreamForm.get("status").value as DreamStatus;
+    // Подсветить ошибки
     if (this.dreamForm.invalid) {
       this.dreamForm.markAllAsTouched();
     }
     // Сохранить
-    if (this.dream.id === 0 || (this.dream.id > 0 && this.dreamForm.valid)) {
-      const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : this.dreamForm.get("status").value as DreamStatus;
-      // Данные
+    if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
       this.dream.description = this.dreamForm.get("description").value as string;
-      this.dream.mode = this.dreamForm.get("mode").value as DreamMode;
+      this.dream.mode = parseInt(this.dreamForm.get("mode").value) as DreamMode || DreamMode.mixed;
       this.dream.status = status;
       this.dream.keywords = this.dreamForm.get("keywords").value as string[];
       this.dream.text = this.dreamForm.get("text").value as string;
-      this.dream.map = this.mapEditor.getMap;
+      this.dream.map = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
       // Сохранение
-      this.dreamService.saveDream(this.dream).subscribe(
-        r => console.log(r),
-        e => console.log(e)
+      this.dreamService.save(this.dream).subscribe(
+        id => {
+          this.dream.id = id;
+          // Уведомление о сохранении
+          this.snackbarService.open({
+            message: "Сновидение успешно сохранено",
+            mode: "success"
+          });
+        }
       );
     }
   }
@@ -160,7 +169,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
-  // Изменение названия сновидения
+  // Изменение даты сновидения
   private onChangeDate(date: Date): void {
     this.dream.date = date;
     // Обновить
@@ -171,8 +180,6 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   onChangeSettings(settings: NavMenuSettingData): void {
     this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === settings.backgroundId);
     this.dream.headerType = settings.navMenuType;
-    // Скролл в начало
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // Переключение вкладки
@@ -188,7 +195,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private defineData(): void {
     // Редактирование сновидения
     if (this.dreamId > 0) {
-      this.dreamService.getDream(this.dreamId).subscribe(
+      this.dreamService.getById(this.dreamId).subscribe(
         dream => {
           this.dream = dream;
           // Создать форму
@@ -199,7 +206,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     }
     // Новое сновидение
     else {
-      this.dream = this.dreamService.newDream();
+      this.dream = this.dreamService.newDream;
       // Создать форму
       this.createForm();
     }
