@@ -57,4 +57,27 @@ class DataBaseService
     // Запрос неудался
     return "";
   }
+
+  // Получить текст запроса для теста
+  public function interpolateQuery(string $fileName, $params)
+  {
+    $keys = array();
+    $values = $params;
+    $query = $this->getSqlFromFile($fileName);
+    // Цикл по данным
+    foreach ($params as $key => $value) {
+      $keys[] = is_string($key) ? "/:" . $key . "/" : "/[?]/";
+      // Параметры: строка
+      if (is_string($value))
+        $values[$key] = "'" . $value . "'";
+      // Параметры: массив
+      if (is_array($value))
+        $values[$key] = "'" . implode("','", $value) . "'";
+      // Параметры: NULL
+      if (is_null($value))
+        $values[$key] = 'NULL';
+    }
+    // Текст запроса
+    return preg_replace($keys, $values, $query);
+  }
 }
