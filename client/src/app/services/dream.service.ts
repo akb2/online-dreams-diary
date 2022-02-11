@@ -36,22 +36,8 @@ export class DreamService {
 
 
 
-  constructor(
-    private accountService: AccountService,
-    private httpClient: HttpClient,
-    private apiService: ApiService
-  ) {
-    this.currentUser = this.accountService.getCurrentUser();
-    // Подписка на актуальные сведения о пользователе
-    this.accountService.user$.subscribe(user => user ? this.currentUser = user : null);
-  }
-
-
-
-
-
   // Сформировать объект нового сновидения
-  newDream(): Dream {
+  get newDream(): Dream {
     return {
       id: 0,
       user: this.currentUser,
@@ -71,8 +57,26 @@ export class DreamService {
     };
   }
 
+
+
+
+
+  constructor(
+    private accountService: AccountService,
+    private httpClient: HttpClient,
+    private apiService: ApiService
+  ) {
+    this.currentUser = this.accountService.getCurrentUser();
+    // Подписка на актуальные сведения о пользователе
+    this.accountService.user$.subscribe(user => user ? this.currentUser = user : null);
+  }
+
+
+
+
+
   // Данные о сновидении
-  getDream(id: number): Observable<Dream> {
+  getById(id: number): Observable<Dream> {
     // Вернуть подписку
     return of(Dreams).pipe(
       switchMap(dreams => {
@@ -87,16 +91,17 @@ export class DreamService {
   }
 
   // Сохранить сновидение
-  saveDream(dream: Dream, codes: string[] = []): Observable<number> {
+  save(dream: Dream, codes: string[] = []): Observable<number> {
     const formData: FormData = new FormData();
     Object.entries(this.dreamConverterDto(dream)).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "dream/saveDream", formData, this.httpHeader).pipe(
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "dream/save", formData, this.httpHeader).pipe(
       switchMap(
         result => {
+          console.log(result);
           // Вернуть данные пользователя
           if (result.result.code === "0001" || codes.some(code => code === result.result.code)) {
-            return of(result.result.data);
+            return of(result.result.data?.id || 0);
           }
           // Вернуть обработку кодов
           else {
