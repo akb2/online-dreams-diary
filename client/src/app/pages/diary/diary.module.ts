@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+import { DreamListModule } from '@_controlers/dream-list/dream-list.module';
+import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { CoreModule } from '@_modules/core.module';
@@ -17,7 +19,9 @@ import { DiaryComponent } from '@_pages/diary/diary.component';
     CoreModule,
     DiaryRoutingModule,
     NavMenuModule,
-    PageLoaderModule
+    PageLoaderModule,
+    DreamListModule,
+    InformModule
   ]
 })
 
