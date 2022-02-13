@@ -1,18 +1,19 @@
-<ng-container *ngIf="user">
+<ng-container *ngIf="ready">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
-                 [type]="user.settings.profileHeaderType"
-                 [image]="imagePrefix + user.settings.profileBackground[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )]"
-                 [imagePositionX]="user.settings.profileBackground.positionX"
-                 [imagePositionY]="user.settings.profileBackground.positionY"
-                 [imageOverlay]="user.settings.profileBackground.imageOverlay"
-                 [title]="user.name + ' ' + user.lastName"
-                 [subTitle]="user.pageStatus"
-                 [avatarImage]="user.avatars.middle"
-                 avatarIcon="person"
-                 floatButtonIcon="settings"
-                 floatButtonLink="/profile/settings"></app-main-menu>
+                 [type]="navMenuType"
+                 [image]="imagePrefix + backgroundImageData[navMenuType === navMenuTypes.full? 'imageName': 'imageNameShort']"
+                 [imagePositionX]="backgroundImageData.positionX"
+                 [imagePositionY]="backgroundImageData.positionY"
+                 [imageOverlay]="backgroundImageData.imageOverlay"
+                 [title]="title"
+                 [subTitle]="subTitle"
+                 [avatarImage]="menuAvatarImage"
+                 [avatarIcon]="menuAvatarIcon"
+                 [floatButtonIcon]="floatButtonIcon"
+                 [floatButtonLink]="floatButtonLink"
+                 [backButtonLink]="backButtonLink"></app-main-menu>
 
   <!-- Контейнер с данными -->
   <div class="root-section">
@@ -22,4 +23,4 @@
 </ng-container>
 
 <!-- Лоадер страницы -->
-<app-page-loader *ngIf="!user"></app-page-loader>
+<app-page-loader *ngIf="!ready"></app-page-loader>
