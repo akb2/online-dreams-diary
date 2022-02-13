@@ -19,7 +19,6 @@
     <div class="container">
       <!-- Форма -->
       <div class="list">
-
         <!-- Аватарка -->
         <app-card [title]="fileLoading? '': 'Оригинальная аватарка'"
                   [fullHeight]="true"
@@ -42,7 +41,7 @@
           </ng-container>
           <!-- Меню -->
           <ng-container menus
-                        *ngIf="!fileLoading">
+                        *ngIf="!fileLoading && userHasAvatar">
             <!-- Обрезать фотографию -->
             <button mat-menu-item
                     (click)="onOpenCrop('crop')">
@@ -63,7 +62,6 @@
             </button>
           </ng-container>
         </app-card>
-
         <!-- Персональные данные -->
         <app-card [title]="dataLoading? '': 'Персональные данные'"
                   [fullHeight]="true">
@@ -105,7 +103,6 @@
                (click)="onSaveData()">Сохранить</a>
           </ng-container>
         </app-card>
-
         <!-- Контактные данные -->
         <app-card [title]="dataLoading? '': 'Контактные данные'"
                   [fullHeight]="true">
@@ -148,7 +145,6 @@
                (click)="onSaveData()">Сохранить</a>
           </ng-container>
         </app-card>
-
       </div>
       <!-- Кнопки -->
       <div class="buttons">

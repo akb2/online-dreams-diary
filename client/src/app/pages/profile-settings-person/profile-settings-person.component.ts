@@ -41,6 +41,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   dataLoading: boolean;
   fileLoading: boolean;
+  userHasAvatar: boolean = false;
 
   fileLoaderTitles: string[][] = [
     ["Отправка на сервер", "Пожалуйста подождите"],
@@ -82,6 +83,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscribeUser().subscribe(user => {
       this.user = user;
+      this.userHasAvatar = Object.entries(this.user.avatars).every(([, v]) => !!v);
       this.changeDetectorRef.detectChanges();
     });
   }
