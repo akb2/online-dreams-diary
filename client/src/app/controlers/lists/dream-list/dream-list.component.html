@@ -1,0 +1,30 @@
+<!-- Список сновидений -->
+<div class="list"
+     *ngIf="dreams?.length > 0">
+  <!-- Блок сновидения -->
+  <div class="list__item dream"
+       *ngFor="let dream of dreams">
+    <!-- Картинка -->
+    <div class="dream__image"
+         [attr.imageOverlay]="dream.headerBackground.imageOverlay"
+         [attr.positionX]="dream.headerBackground.positionX"
+         [attr.positionY]="dream.headerBackground.positionY"
+         [ngClass]="{ 'not-image': !isHasImage }">
+      <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
+           *ngIf="isHasImage" />
+    </div>
+    <!-- Основное описание -->
+    <div class="dream__text">
+      <!-- Название сновидения -->
+      <div class="dream__text-title"
+           [ngClass]="{ 'default-title': !dream.title?.length }">{{dream.title || defaultTitle}}</div>
+      <!-- Когда приснился -->
+      <div class="dream__text-subtitle">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+    </div>
+    <!-- Дополнительное описание -->
+    <div class="dream__text">
+      <!-- Название сновидения -->
+      <div class="dream__text-description">{{dream.description || defaultDescription}}</div>
+    </div>
+  </div>
+</div>

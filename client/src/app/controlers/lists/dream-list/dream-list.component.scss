@@ -1,0 +1,118 @@
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/colors";
+
+// Список
+.list {
+  $counts: (
+    xsmall: 1,
+    small: 1,
+    middle: 2,
+    large: 3,
+    xlarge: 4,
+  );
+  $gapX: 30px;
+  $gapY: 30px;
+  // Свойства
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: #{$gapY} #{$gapX};
+  // Адаптив сетки
+  @include screens.adaptiveFor($counts) using($count) {
+    // Элемент
+    &__item {
+      width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
+    }
+  }
+}
+
+// Элемент
+.dream {
+  $borderRadius: containers.$border-radius;
+  $spacingX: 25px;
+  $spacingY: 15px;
+  $descriptionCount: 2;
+  $descriptionLineHeight: 15px;
+  // Свойства
+  border-radius: $borderRadius;
+  background-color: colors.$card;
+  box-shadow: containers.$box-shadow;
+  // Обложка
+  &__image {
+    $positions-x: left center right;
+    $positions-y: top center bottom;
+    // Свойства
+    width: 100%;
+    height: 160px;
+    border-radius: #{$borderRadius} #{$borderRadius} 0 0;
+    overflow: hidden;
+    position: relative;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    // Затенение
+    &[imageOverlay="true"]:after {
+      @include mixins.inset;
+      // Свойства
+      position: absolute;
+      display: block;
+      content: "";
+      background-color: #000;
+      opacity: 0.4;
+    }
+    // Позиция по ширине
+    @each $position-x in $positions-x {
+      // Позиция по высоте
+      @each $position-y in $positions-y {
+        &[positionX="#{$position-x}"][positionY="#{$position-y}"] {
+          > img {
+            object-position: $position-x $position-y;
+          }
+        }
+      }
+    }
+  }
+  // Контейнер текста
+  &__text {
+    padding: #{$spacingY} #{$spacingX};
+    // Заголовок
+    &-title {
+      @include mixins.line-clamp(1, 18px);
+      // Свойства
+      font-size: 15px;
+      font-weight: 400;
+      color: colors.$title;
+      // Заголовок по умолчанию
+      &.default-title {
+        color: colors.$text;
+      }
+    }
+    // Подзаголовок
+    &-subtitle {
+      @include mixins.line-clamp(1, 14px);
+      // Свойства
+      font-size: 12px;
+      font-weight: 300;
+      color: colors.$subtitle;
+    }
+    // Описание
+    &-description {
+      @include mixins.line-clamp($descriptionCount, $descriptionLineHeight);
+      // Свойства
+      font-size: 13px;
+      font-weight: 300;
+      height: $descriptionCount * $descriptionLineHeight;
+      color: colors.$text;
+    }
+    // Последующие блоки
+    & + & {
+      border-top: 1px solid #{colors.$background};
+    }
+  }
+}
