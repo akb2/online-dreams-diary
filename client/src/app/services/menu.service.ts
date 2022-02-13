@@ -168,13 +168,13 @@ export class MenuService {
         {
           icon: "person",
           text: "Моя страница",
-          link: "/profile"
+          link: "/profile/" + this.tokenService.id
         },
         // Дневник
         {
           sort: 1,
           icon: "book",
-          text: "Дневник",
+          text: "Мой дневник",
           link: "/diary/" + this.tokenService.id
         },
         // Настройки
@@ -205,7 +205,7 @@ export class MenuService {
         {
           sort: 0,
           text: "Моя страница",
-          link: "/profile",
+          link: "/profile/" + this.tokenService.id,
           children: [
             // Настройки аккаунта
             {
@@ -241,7 +241,7 @@ export class MenuService {
         // Дневник
         {
           sort: 100,
-          text: "Дневник сновидений",
+          text: "Мой дневник",
           link: "/diary/" + this.tokenService.id
         }
       ];
