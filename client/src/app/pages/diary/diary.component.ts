@@ -182,8 +182,15 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     }
     // Общий дневник
     else {
-      this.floatButtonIcon = "";
-      this.floatButtonLink = "";
+      if (this.user) {
+        this.floatButtonIcon = "add";
+        this.floatButtonLink = "/diary/editor";
+      }
+      // Для неавторизованного пользователя
+      else {
+        this.floatButtonIcon = "";
+        this.floatButtonLink = "";
+      }
       // Готово
       this.ready = true;
     }
