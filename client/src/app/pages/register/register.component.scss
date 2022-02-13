@@ -45,8 +45,36 @@ $tab-padding: 15px;
   &-header {
     display: none;
   }
-
+  // Содержимое
   &-body-wrapper {
     margin: -$tab-padding;
+  }
+  //
+  &-body {
+    animation: fadeOut 0.5s;
+    // Активная вкладка
+    &.mat-tab-body-active {
+      animation: fadeIn 0.5s;
+    }
+  }
+}
+
+// Анимация прозрачности: появление
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+// Анимация прозрачности: исчезновение
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

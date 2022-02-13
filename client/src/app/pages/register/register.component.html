@@ -11,6 +11,7 @@
     <!-- Форма регистрации -->
     <mat-tab-group dynamicHeight
                    [(selectedIndex)]="step"
+                   [@.disabled]="true"
                    *ngIf="!loading && !registed">
 
       <!-- Данные входа -->
