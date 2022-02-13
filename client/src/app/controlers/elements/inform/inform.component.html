@@ -1,8 +1,7 @@
 <div class="loader__layout">
   <!-- Иконка -->
   <mat-icon class="loader__icon"
-            [svgIcon]="icon"
-            *ngIf="icon != 'loader'">{{icon}}</mat-icon>
+            *ngIf="icon !== 'loader'">{{icon}}</mat-icon>
   <!-- Заголовок -->
   <div class="loader__title"
        *ngIf="title">{{title}}</div>
