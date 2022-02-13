@@ -49,7 +49,10 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {
     this.validToken = false;
     // Подписка на пользователя
-    this.accountService.user$.subscribe(user => AppComponent.user = user);
+    this.accountService.user$.subscribe(
+      user => AppComponent.user = user,
+      () => AppComponent.user = null
+    );
     // События старта и окочания лоадера
     this.router.events.pipe(takeUntil(this.destroy$)).subscribe(event => {
       if (event instanceof NavigationStart) {
@@ -69,9 +72,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscribeUser().subscribe(user => {
-      AppComponent.user = user;
-    });
+    this.subscribeUser().subscribe(
+      user => AppComponent.user = user,
+      () => AppComponent.user = null
+    );
   }
 
   ngOnDestroy() {
