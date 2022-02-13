@@ -242,26 +242,7 @@ export class MenuService {
         {
           sort: 100,
           text: "Дневник сновидений",
-          link: "/diary",
-          children: [
-            // Мои сновидения
-            {
-              text: "Мои сновидения",
-              link: "/diary/" + this.tokenService.id
-            },
-            // Новое сновидение
-            {
-              text: "Новое сновидение",
-              link: "/diary/editor",
-            },
-            // Разделитель
-            this.separator,
-            // Общий дневник
-            {
-              text: "Общий дневник",
-              link: "/diary/all",
-            }
-          ]
+          link: "/diary/" + this.tokenService.id
         }
       ];
     }
