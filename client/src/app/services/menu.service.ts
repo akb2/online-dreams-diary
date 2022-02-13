@@ -175,7 +175,7 @@ export class MenuService {
           sort: 1,
           icon: "book",
           text: "Дневник",
-          link: "/diary/my"
+          link: "/diary/" + this.tokenService.id
         },
         // Настройки
         {
@@ -247,7 +247,7 @@ export class MenuService {
             // Мои сновидения
             {
               text: "Мои сновидения",
-              link: "/diary/my",
+              link: "/diary/" + this.tokenService.id
             },
             // Новое сновидение
             {
