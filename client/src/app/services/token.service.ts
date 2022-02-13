@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
+import { AppComponent } from "@app/app.component";
 import { environment } from '@_environments/environment';
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
@@ -42,7 +43,7 @@ export class TokenService {
   ) {
     this.configLocalStorage();
     this.token = this.localStorageService.getCookie("token");
-    this.id = this.localStorageService.getCookie("id");
+    this.id = this.localStorageService.getCookie("current_user");
   }
 
   // Проверить авторизацию
@@ -158,7 +159,7 @@ export class TokenService {
     this.token = token;
     this.configLocalStorage();
     this.localStorageService.setCookie("token", this.token);
-    this.localStorageService.setCookie("id", this.id);
+    this.localStorageService.setCookie("current_user", this.id);
   }
 
   // Сбросить авторизацию
@@ -170,8 +171,10 @@ export class TokenService {
       }
     )).subscribe(code => {
       this.token = "";
+      AppComponent.user = null;
       this.configLocalStorage();
       this.localStorageService.deleteCookie("token");
+      this.localStorageService.deleteCookie("current_user");
       this.router.navigate([""]);
     });
   }
