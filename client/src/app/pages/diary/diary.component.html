@@ -12,14 +12,38 @@
                  [avatarImage]="menuAvatarImage"
                  [avatarIcon]="menuAvatarIcon"
                  [floatButtonIcon]="floatButtonIcon"
-                 [floatButtonLink]="floatButtonLink"></app-main-menu>
+                 [floatButtonLink]="floatButtonLink"
+                 [backButtonLink]="backButtonLink"></app-main-menu>
 
   <!-- Контейнер с данными -->
   <div class="root-section">
     <div class="container">
+      <!-- Список сновидений -->
+      <ng-container *ngIf="!loading; else listLoader">
+        <!-- Список сновидений -->
+        <app-dream-list [dreams]="dreams"
+                        *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
+      </ng-container>
     </div>
   </div>
 </ng-container>
 
+
+
 <!-- Лоадер страницы -->
 <app-page-loader *ngIf="!ready"></app-page-loader>
+
+
+
+<!-- Загрузка -->
+<ng-template #listLoader>
+  <app-inform title="Загрузка сновидений"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Не найдено -->
+<ng-template #listNotFound>
+  <app-inform icon="close"
+              title="Ошибка поиска"
+              subTitle="Сновидения не найдены. Измените условия поиска или повторите позже"></app-inform>
+</ng-template>
