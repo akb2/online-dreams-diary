@@ -14,7 +14,7 @@ import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode, DreamModes, DreamStatus, DreamStatuses } from "@_models/dream";
 import { DreamErrorMessages, DreamValidatorData, ErrorMessagesType, FormData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
-import { DreamService } from "@_services/dream.service";
+import { DreamService, DreamTitle } from "@_services/dream.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -41,7 +41,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   ready: boolean = false;
 
   navMenuType: NavMenuType = NavMenuType.collapse;
-  defaultTitle: string = "*** Новое сновидение ***";
+  defaultTitle: string = DreamTitle;
   today: Date = new Date();
 
   _navMenuType: typeof NavMenuType = NavMenuType;
@@ -53,9 +53,6 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   errors: ErrorMessagesType = DreamErrorMessages;
 
   oldUser: User;
-  public get user(): User {
-    return AppComponent.user;
-  };
 
   titleMinLength: number = FormData.dreamTitleMinLength;
   titleMaxLength: number = FormData.dreamTitleMaxLength;
@@ -68,6 +65,15 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   private destroy$: Subject<void> = new Subject<void>();
   private changes$: Subject<void> = new Subject<void>();
+
+
+
+
+
+  // Текущий пользователя
+  get user(): User {
+    return AppComponent.user;
+  };
 
 
 
@@ -197,7 +203,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private defineData(): void {
     // Редактирование сновидения
     if (this.dreamId > 0) {
-      this.dreamService.getById(this.dreamId).subscribe(
+      this.dreamService.getById(this.dreamId, true).subscribe(
         dream => {
           this.dream = dream;
           // Создать форму
