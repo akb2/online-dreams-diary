@@ -78,6 +78,59 @@ class Dream
     );
   }
 
+  // Получить список
+  // * GET
+  public function getList($data): array
+  {
+    $code = "0002";
+    $userId = $_GET["user_id"];
+    $token = $_GET["token"];
+    $search = array(
+      "page" => $_GET["search_page"],
+      "user" => $_GET["search_user"],
+      "status" => $_GET["search_status"]
+    );
+    $testDreams = $this->dreamService->getList($search, $token, $userId);
+    $dreams = array();
+    // Сновидение найдено
+    if ($testDreams["count"] > 0) {
+      // Доступность для просмотра или редактирования
+      $code = "0001";
+      // Обработка списка
+      foreach ($testDreams["result"] as $dream) {
+        $dreams[] = array(
+          "id" => intval($dream["id"]),
+          "userId" => intval($dream["user_id"]),
+          "createDate" => $dream["create_date"],
+          "date" => $dream["date"],
+          "title" => $dream["title"],
+          "description" => $dream["description"],
+          "keywords" => $dream["keywords"],
+          "text" => $dream["text"],
+          "places" => $dream["places"],
+          "members" => $dream["members"],
+          "map" => $dream["map"],
+          "mode" => intval($dream["mode"]),
+          "status" => intval($dream["status"]),
+          "headerType" => $dream["header_type"],
+          "headerBackgroundId" => intval($dream["header_background"])
+        );
+      }
+    }
+    // Сновидение не найдено
+    else {
+      $code = "0002";
+    }
+    // Вернуть результат
+    return array(
+      "data" => array(
+        "count" => $testDreams["count"],
+        "dreams" => $dreams
+      ),
+      "code" => $code
+    );
+  }
+
   // Получить сновидение
   // * GET
   public function getById($data): array
@@ -85,14 +138,15 @@ class Dream
     $code = "0002";
     $userId = $_GET["user_id"];
     $token = $_GET["token"];
+    $edit = $_GET["edit"] === "true";
     $testDream = $this->dreamService->getById($data["id"]);
     $dream = array();
-    // Проверка доступности
+    // Проверка токена
     if ($this->tokenService->checkToken($userId, $token)) {
       // Сновидение найдено
       if (isset($testDream["id"]) && $testDream["id"] > 0) {
-        // Доступность для просмотра
-        if ($this->dreamService->checkAvail($testDream["id"], $userId)) {
+        // Доступность для просмотра или редактирования
+        if ($this->dreamService->checkAvail($testDream["id"], $userId, $edit)) {
           $code = "0001";
           $dream = array(
             "id" => intval($testDream["id"]),
