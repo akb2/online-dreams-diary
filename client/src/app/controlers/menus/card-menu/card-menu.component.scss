@@ -1,0 +1,75 @@
+@use "sass:math";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/colors";
+
+// Список меню
+.item {
+  $_elm: &;
+  $iconSize: 36px;
+  $titleSize: 16px;
+  $subTitleSize: math.min(15px, $iconSize - $titleSize);
+  $spacing: math.div($iconSize - ($titleSize + $subTitleSize), 2);
+  // Свойства
+  height: auto !important;
+  padding: 4px 12px;
+  // Содержимое
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: "title";
+    align-items: center;
+    grid-gap: 0 8px;
+    // С иконкой
+    &.icon {
+      grid-template-columns: #{$iconSize} 1fr;
+      grid-template-areas: "icon title";
+    }
+    // С подзаголовком
+    &.subtitle {
+      grid-template-rows: #{$titleSize} #{$subTitleSize};
+      grid-template-areas: "title" "subtitle";
+    }
+    // С иконкой и подзаголовком
+    &.icon.subtitle {
+      grid-template-columns: #{$iconSize} 1fr;
+      grid-template-rows: #{$titleSize + $spacing} #{$subTitleSize + $spacing};
+      grid-template-areas: "icon title" "icon subtitle";
+      // Отступы заголовка
+      > #{$_elm}__title {
+        margin-top: $spacing;
+      }
+      // Отступы подзаголовка
+      > #{$_elm}__subtitle {
+        margin-bottom: $spacing;
+      }
+    }
+  }
+  // Иконка
+  &__icon {
+    display: block;
+    text-align: center;
+    width: $iconSize;
+    height: $iconSize;
+    line-height: $iconSize;
+    font-size: $iconSize * 0.7;
+    margin-right: 0 !important;
+    grid-area: icon;
+  }
+  // Заголовок
+  &__title {
+    @include mixins.line-clamp(1, $titleSize);
+    // Свойства
+    font-size: 14px;
+    color: colors.$title;
+    grid-area: title;
+  }
+  // Подзаголовок
+  &__subtitle {
+    @include mixins.line-clamp(1, $subTitleSize);
+    // Свойства
+    font-size: 13px;
+    color: colors.$subtitle;
+    grid-area: subtitle;
+  }
+}

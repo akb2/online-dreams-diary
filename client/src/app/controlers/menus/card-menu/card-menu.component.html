@@ -1,0 +1,70 @@
+<ng-container *ngIf="menuItems?.length > 0">
+  <!-- Кнопка меню -->
+  <a mat-icon-button
+     color="basic"
+     [matMenuTriggerFor]="menuPanel">
+    <mat-icon>{{menuIcon}}</mat-icon>
+  </a>
+
+
+
+  <!-- Список пунктов -->
+  <mat-menu #menuPanel
+            xPosition="before">
+    <!-- Цикл по элементам -->
+    <ng-container *ngFor="let item of menuItems">
+      <!-- Пункт меню -->
+      <ng-container *ngIf="!item?.delimeter">
+        <!-- Ссылка -->
+        <a mat-menu-item
+           color="basic"
+           class="item"
+           [routerLink]="item.routerLink"
+           *ngIf="!!item?.routerLink">
+          <ng-container [ngTemplateOutlet]="itemContent"
+                        [ngTemplateOutletContext]="{ item }"></ng-container>
+        </a>
+        <!-- Функция -->
+        <div mat-menu-item
+             color="basic"
+             class="item"
+             (click)="item.callback()"
+             *ngIf="!item?.routerLink && !!item?.callback">
+          <ng-container [ngTemplateOutlet]="itemContent"
+                        [ngTemplateOutletContext]="{ item }"></ng-container>
+        </div>
+        <!-- Пустой пункт -->
+        <div mat-menu-item
+             color="basic"
+             class="item"
+             *ngIf="!item?.routerLink && !item?.callback">
+          <ng-container [ngTemplateOutlet]="itemContent"
+                        [ngTemplateOutletContext]="{ item }"></ng-container>
+        </div>
+      </ng-container>
+      <!-- Разделитель -->
+      <mat-divider *ngIf="item?.delimeter"></mat-divider>
+    </ng-container>
+  </mat-menu>
+
+
+
+  <!-- Содержимое пункта меню -->
+  <ng-template #itemContent
+               let-item="item">
+    <div class="item__content"
+         [ngClass]="{
+               icon: !!item?.icon,
+               subtitle: !!item?.subTitle
+             }">
+      <!-- Иконка -->
+      <mat-icon class="item__icon"
+                *ngIf="!!item?.icon">{{item.icon}}</mat-icon>
+      <!-- Заголовок -->
+      <div class="item__title">{{item.title || ''}}</div>
+      <!-- Подзаголовок -->
+      <div class="item__subtitle"
+           *ngIf="!!item?.subTitle">{{item.subTitle}}</div>
+    </div>
+  </ng-template>
+</ng-container>
