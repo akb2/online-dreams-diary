@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
-import { SimpleObject } from "@_models/app";
+import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamMap, DreamMapDto } from "@_models/dream-map";
@@ -13,8 +13,8 @@ import { ApiService } from "@_services/api.service";
 import { SkyBoxes } from "@_services/dream-map/skybox.service";
 import { MapTerrains } from "@_services/dream-map/terrain.service";
 import { TokenService } from "@_services/token.service";
-import { Observable, of } from "rxjs";
-import { map, mergeMap, switchMap } from "rxjs/operators";
+import { forkJoin, Observable, of } from "rxjs";
+import { map, mergeMap, switchMap, tap } from "rxjs/operators";
 
 
 
@@ -58,6 +58,20 @@ export class DreamService {
     };
   }
 
+  // Сформировать параметры URL
+  getHttpHeader(params?: any, paramsPreffix: string = ""): CustomObject<any> {
+    return {
+      ...this.httpHeader,
+      params: new HttpParams({
+        fromObject: {
+          ...(!!params ? Object.entries(params).reduce((o, [k, v]) => ({ ...o, [paramsPreffix + k]: v }), {}) : {}),
+          user_id: this.tokenService.id,
+          token: this.tokenService.token
+        }
+      })
+    };
+  }
+
 
 
 
@@ -77,11 +91,32 @@ export class DreamService {
 
 
 
-  // Данные о сновидении
-  getById(id: number, codes: string[] = []): Observable<Dream> {
-    const url: string = this.baseUrl + "dream/getById?id=" + id + "&user_id=" + this.tokenService.id + "&token=" + this.tokenService.token;
+  // Список сновидений
+  getList(search: SearchDream, codes: string[] = []): Observable<{ count: number, dreams: Dream[] }> {
+    const url: string = this.baseUrl + "dream/getList";
+    let count: number = 0;
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.httpHeader).pipe(
+    return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(search, "search_")).pipe(
+      switchMap(
+        result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
+          of(result.result.data) :
+          this.apiService.checkResponse(result.result.code, codes)
+      ),
+      tap(r => count = r.count),
+      mergeMap(r => r.dreams?.length > 0 ? forkJoin([...r.dreams.map(d => this.dreamConverter(d as DreamDto))]) : of([])),
+      mergeMap((dreams: Dream[]) => of({ count, dreams }))
+    );
+  }
+
+  // Данные о сновидении
+  getById(id: number, edit: boolean = true, codes: string[] = []): Observable<Dream> {
+    const url: string = this.baseUrl + "dream/getById";
+    const params: SimpleObject = {
+      id: id.toString(),
+      edit: edit ? "true" : "false"
+    };
+    // Вернуть подписку
+    return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(params)).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data) :
@@ -93,11 +128,11 @@ export class DreamService {
 
   // Сохранить сновидение
   save(dream: Dream, codes: string[] = []): Observable<number> {
-    const url: string = this.baseUrl + "dream/save?user_id=" + this.tokenService.id + "&token=" + this.tokenService.token;
+    const url: string = this.baseUrl + "dream/save";
     const formData: FormData = new FormData();
     Object.entries(this.dreamConverterDto(dream)).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(url, formData, this.httpHeader).pipe(
+    return this.httpClient.post<ApiResponse>(url, formData, this.getHttpHeader()).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data || 0) :
@@ -225,6 +260,17 @@ export class DreamService {
 
 
 
+// Интерфейс данных поиска по сновидениям
+export interface SearchDream {
+  page?: number;
+  user?: number;
+  status?: DreamStatus;
+}
+
+
+
+
+
 // Размер карты по умолчанию
 export const DreamMapSize: number = 50;
 
@@ -243,21 +289,6 @@ export const DreamMaxHeight: number = DreamCeilParts * 20;
 export const DreamSkyBox: number = SkyBoxes[0].id;
 export const DreamTerrain: number = MapTerrains[0].id;
 
-// ! Временный массив сновидений
-const Dreams: DreamDto[] = [{
-  id: 1,
-  userId: 1,
-  createDate: "2021-09-27T13:10:21",
-  title: "Полет по миру",
-  status: DreamStatus.draft,
-  date: "2017-03-12",
-  description: "Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.",
-  mode: DreamMode.mixed,
-  keywords: "полет,город,руины,море,поляна,лес,черти,ложное пробуждение,преисподняя",
-  places: "",
-  members: "",
-  text: "<p>Я ходил по заброшенному зданию. Это не был мой дом. В какой-то момент я понял что сплю.</p><p>После осознания я решил узнать насколько большим является мир сновидений. Я полетел его осматривать в одном из направлений.</p><p>Я пролетал над полями, лесами, все было достаточно ярко и реалистично. Но за лесами было место похожее на ад. Во мне появилось чувство страха из-за которого я потерял <a href=\"https://dreams.online-we.ru/all-dreams/7\">осознанность</a>.</p><p>Моя голова \"пробила потолок\" мира. Было пустое пространство небольшой комнаты. Я начал чувствовать приближение демона и еле слышал не отчетливые переговоры. Из-за страха проснулся.</p>",
-  map: "",
-  headerType: NavMenuType.collapse,
-  headerBackgroundId: 9
-}];
+// Заголовок по умолчанию
+export const DreamTitle: string = "*** Новое сновидение ***";
+export const DreamDescription: string = "*** Без описания ***";
