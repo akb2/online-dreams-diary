@@ -186,6 +186,7 @@
   </a>
   <!-- Кнопка без ссылки -->
   <button class="menu-list__item-link"
+          [ngClass]="{ active: item.active }"
           [ngStyle]="style"
           (click)="item.callback()"
           *ngIf="!item.isSeparate && !item.link && item.callback">
@@ -194,6 +195,7 @@
   </button>
   <!-- Кнопка без действия -->
   <div class="menu-list__item-link"
+       [ngClass]="{ active: item.active }"
        [ngStyle]="style"
        *ngIf="!item.isSeparate && !item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
