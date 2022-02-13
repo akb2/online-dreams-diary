@@ -8,7 +8,7 @@ export const environment = {
   httpHeader: {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "multipart/form-data",
-    "Authorization": "token"
+    Authorization: "token"
   }
 };
 
