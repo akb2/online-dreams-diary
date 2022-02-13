@@ -616,7 +616,7 @@ const LandscapeTools: LandscapeToolListItem[] = [
   },
 ];
 
-// Список инструментов: ландшафт
+// Список инструментов: дороги
 const RoadTypeTools: RoadTypeToolListItem[] = [
   // Дорога
   {
@@ -627,7 +627,7 @@ const RoadTypeTools: RoadTypeToolListItem[] = [
   // Площадь
   {
     type: RoadTypeTool.square,
-    title: "Дорога",
+    title: "Парковка (площадка)",
     icon: "check_box_outline_blank"
   },
 ];
