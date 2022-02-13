@@ -4,22 +4,31 @@
   <!-- Блок сновидения -->
   <div class="list__item dream"
        *ngFor="let dream of dreams">
-    <!-- Картинка -->
+    <!-- Обложка -->
     <div class="dream__image"
-         [attr.imageOverlay]="dream.headerBackground.imageOverlay"
+         [attr.imageOverlay]="isHasImage(dream) && dream.headerBackground.imageOverlay? 'true': 'false'"
          [attr.positionX]="dream.headerBackground.positionX"
          [attr.positionY]="dream.headerBackground.positionY"
-         [ngClass]="{ 'not-image': !isHasImage }">
+         [ngClass]="{ 'no-image': !isHasImage(dream) }">
+      <!-- Картинка -->
       <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
-           *ngIf="isHasImage" />
+           *ngIf="isHasImage(dream)" />
+      <!-- Иконка -->
+      <mat-icon *ngIf="!isHasImage(dream)">panorama_outline</mat-icon>
     </div>
     <!-- Основное описание -->
-    <div class="dream__text">
+    <div class="dream__text title"
+         [ngClass]="{ menu: dreamsMenuItems[dream.id]?.length > 0 }">
       <!-- Название сновидения -->
       <div class="dream__text-title"
            [ngClass]="{ 'default-title': !dream.title?.length }">{{dream.title || defaultTitle}}</div>
       <!-- Когда приснился -->
       <div class="dream__text-subtitle">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+      <!-- Меню -->
+      <app-card-menu class="dream__text-menu"
+                     menuIcon="more_vert"
+                     [menuItems]="dreamsMenuItems[dream.id]"
+                     *ngIf="dreamsMenuItems[dream.id]?.length > 0"></app-card-menu>
     </div>
     <!-- Дополнительное описание -->
     <div class="dream__text">

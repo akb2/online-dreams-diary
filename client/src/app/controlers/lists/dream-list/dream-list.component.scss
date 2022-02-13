@@ -17,6 +17,7 @@
   // Свойства
   width: 100%;
   display: flex;
+  flex-flow: row wrap;
   justify-content: flex-start;
   align-items: stretch;
   gap: #{$gapY} #{$gapX};
@@ -32,8 +33,8 @@
 // Элемент
 .dream {
   $borderRadius: containers.$border-radius;
-  $spacingX: 25px;
-  $spacingY: 15px;
+  $spacingX: 18px;
+  $spacingY: 10px;
   $descriptionCount: 2;
   $descriptionLineHeight: 15px;
   // Свойства
@@ -55,6 +56,27 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    // Иконка
+    > mat-icon {
+      $size: 80px;
+      // Свойства
+      display: block;
+      text-align: center;
+      width: $size;
+      height: $size;
+      line-height: $size;
+      font-size: $size;
+      text-align: center;
+      color: colors.$subtitle;
+    }
+    // Без картинки
+    &.no-image {
+      background-color: colors.$background;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      align-items: center;
     }
     // Затенение
     &[imageOverlay="true"]:after {
@@ -80,14 +102,19 @@
   }
   // Контейнер текста
   &__text {
+    $menuSize: 40px;
+    $titleSize: 22px;
+    $subTitleSize: $menuSize - $titleSize;
+    // Свойства
     padding: #{$spacingY} #{$spacingX};
     // Заголовок
     &-title {
-      @include mixins.line-clamp(1, 18px);
+      @include mixins.line-clamp(1, $titleSize);
       // Свойства
       font-size: 15px;
       font-weight: 400;
       color: colors.$title;
+      grid-area: title;
       // Заголовок по умолчанию
       &.default-title {
         color: colors.$text;
@@ -95,11 +122,16 @@
     }
     // Подзаголовок
     &-subtitle {
-      @include mixins.line-clamp(1, 14px);
+      @include mixins.line-clamp(1, $subTitleSize);
       // Свойства
       font-size: 12px;
       font-weight: 300;
       color: colors.$subtitle;
+      grid-area: subtitle;
+    }
+    // Меню
+    &-manu {
+      grid-area: menu;
     }
     // Описание
     &-description {
@@ -109,6 +141,13 @@
       font-weight: 300;
       height: $descriptionCount * $descriptionLineHeight;
       color: colors.$text;
+    }
+    // С меню
+    &.menu {
+      display: grid;
+      grid-template-columns: 1fr #{$menuSize};
+      grid-template-rows: #{$titleSize} #{$subTitleSize};
+      grid-template-areas: "title menu" "subtitle menu";
     }
     // Последующие блоки
     & + & {
