@@ -31,11 +31,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   // * Для авторизованных пользователей
-  // Моя страницы
+  // Профиль: моя страница
   {
     path: "profile",
     loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
-    data: { authRule: 1 },
+    data: { authRule: 1, userId: -1 },
     canActivate: [AuthGuard]
   },
   // Настройки
@@ -70,7 +70,7 @@ const routes: Routes = [
   {
     path: "diary/my",
     loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-    data: { title: "Мой дневник сновидений", userId: 0, authRule: 1 },
+    data: { title: "Мой дневник сновидений", userId: -1, authRule: 1 },
     canActivate: [AuthGuard]
   },
   // Дневник: Редактор
@@ -92,6 +92,13 @@ const routes: Routes = [
     },
     canActivate: [AuthGuard]
   },
+  // Профиль: другие пользователи
+  {
+    path: "profile/:user_id",
+    loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
+    data: { authRule: 0, userId: -2 },
+    canActivate: [AuthGuard]
+  },
   // Дневник
   {
     path: "diary",
@@ -107,7 +114,14 @@ const routes: Routes = [
   {
     path: "diary/all",
     loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-    data: { title: "Общий дневник сновидений", userId: -1, authRule: 0 },
+    data: { title: "Общий дневник сновидений", userId: 0, authRule: 0 },
+    canActivate: [AuthGuard]
+  },
+  // Дневник: Сновидения определенного пользователя
+  {
+    path: "diary/:user_id",
+    loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
+    data: { title: "Дневник сновидений пользователя", userId: -2, authRule: 0 },
     canActivate: [AuthGuard]
   },
   // Ошибка 404
