@@ -43,6 +43,34 @@ class DataBaseService
     return array();
   }
 
+  // Получить данные из файла совместно со строкой
+  public function getDatasFromFileString(string $fileName, string $endQuery, array $params = array())
+  {
+    $sqlText = $this->getSqlFromFile($fileName);
+    // Выполнять запрос
+    if (strlen($sqlText) > 0) {
+      $sql = $this->pdo->prepare($sqlText . " " . $endQuery);
+      $sql->execute($params);
+      return $sql->fetchAll(PDO::FETCH_ASSOC);
+    }
+    // Запрос неудался
+    return array();
+  }
+
+  // Подсчитать данные из файла совместно со строкой
+  public function getCountFromFileString(string $fileName, string $endQuery, array $params = array())
+  {
+    $sqlText = $this->getSqlFromFile($fileName);
+    // Выполнять запрос
+    if (strlen($sqlText) > 0) {
+      $sql = $this->pdo->prepare($sqlText . " " . $endQuery);
+      $sql->execute($params);
+      return $sql->fetchColumn();
+    }
+    // Запрос неудался
+    return array();
+  }
+
   // Получить содержимое запроса
   private function getSqlFromFile(string $fileName): string
   {
@@ -59,7 +87,7 @@ class DataBaseService
   }
 
   // Получить текст запроса для теста
-  public function interpolateQuery(string $fileName, $params)
+  public function interpolateQuery(string $fileName, string $endQuery, array $params = array())
   {
     $keys = array();
     $values = $params;
@@ -78,6 +106,6 @@ class DataBaseService
         $values[$key] = 'NULL';
     }
     // Текст запроса
-    return preg_replace($keys, $values, $query);
+    return preg_replace($keys, $values, $query . " " . $endQuery);
   }
 }
