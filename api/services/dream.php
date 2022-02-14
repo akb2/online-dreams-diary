@@ -200,4 +200,12 @@ class DreamService
     // Сновидение не сохранено
     return 0;
   }
+
+  // Удалить сновидение
+  public function delete(int $dreamId, int $userId): string
+  {
+    $sqlData = array($dreamId, $userId);
+    // Попытка удаления
+    return $this->dataBaseService->executeFromFile("dream/delete.sql", $sqlData);
+  }
 }

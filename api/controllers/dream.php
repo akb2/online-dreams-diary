@@ -186,6 +186,39 @@ class Dream
       "code" => $code
     );
   }
+
+  // Удалить сновидение
+  // * DELETE
+  public function delete($data): array
+  {
+    $code = "7004";
+    $isDelete = false;
+    $userId = $_GET["user_id"];
+    $token = $_GET["token"];
+    // Проверка доступности
+    if ($this->tokenService->checkToken($userId, $token)) {
+      // Проверка идентификатора
+      if (isset($data["id"]) && $data["id"] > 0) {
+        $isDelete = $this->dreamService->delete($data["id"], $userId);
+        $code = $isDelete ? "0001" : "7005";
+      }
+      // Сон не найден
+      else {
+        $code = "0002";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+    // Вернуть результат
+    return array(
+      "data" => array(
+        "isDelete" => $isDelete
+      ),
+      "code" => $code
+    );
+  }
 }
 
 
