@@ -8,6 +8,7 @@ import { DreamListComponent } from "@_controlers/dream-list/dream-list.component
 import { CoreModule } from "@_modules/core.module";
 import { MatDividerModule } from "@angular/material/divider";
 import { CardMenuModule } from "@_controlers/card-menu/card-menu.module";
+import { PopupConfirmModule } from "@_controlers/confirm/confirm.module";
 
 
 
@@ -28,7 +29,8 @@ import { CardMenuModule } from "@_controlers/card-menu/card-menu.module";
     MatMenuModule,
     RouterModule,
     MatDividerModule,
-    CardMenuModule
+    CardMenuModule,
+    PopupConfirmModule
   ]
 })
 
