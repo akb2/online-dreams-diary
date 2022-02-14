@@ -141,6 +141,20 @@ export class DreamService {
     );
   }
 
+  // Удалить сновидение
+  delete(dreamId: number, codes: string[] = []): Observable<boolean> {
+    const url: string = this.baseUrl + "dream/delete";
+    const params: SimpleObject = { id: dreamId.toString() };
+    // Вернуть подписку
+    return this.httpClient.delete<ApiResponse>(url, this.getHttpHeader(params)).pipe(
+      switchMap(
+        result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
+          of(!!result.result.data.isDelete) :
+          this.apiService.checkResponse(result.result.code, codes)
+      )
+    );
+  }
+
 
 
 
