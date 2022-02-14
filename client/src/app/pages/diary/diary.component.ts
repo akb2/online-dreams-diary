@@ -202,7 +202,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   // Загрузка списка сновидений
-  private loadDreams(): void {
+  loadDreams(): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Поиск по сновидениям
