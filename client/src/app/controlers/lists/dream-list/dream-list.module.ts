@@ -26,9 +26,7 @@ import { PopupConfirmModule } from "@_controlers/confirm/confirm.module";
     CoreModule,
     MatIconModule,
     MatButtonModule,
-    MatMenuModule,
     RouterModule,
-    MatDividerModule,
     CardMenuModule,
     PopupConfirmModule
   ]

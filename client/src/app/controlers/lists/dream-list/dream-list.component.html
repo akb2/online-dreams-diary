@@ -9,7 +9,8 @@
          [attr.imageOverlay]="isHasImage(dream) && dream.headerBackground.imageOverlay? 'true': 'false'"
          [attr.positionX]="dream.headerBackground.positionX"
          [attr.positionY]="dream.headerBackground.positionY"
-         [ngClass]="{ 'no-image': !isHasImage(dream) }">
+         [ngClass]="{ 'no-image': !isHasImage(dream) }"
+         routerLink="/diary/viewer/{{dream.id}}">
       <!-- Картинка -->
       <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
            *ngIf="isHasImage(dream)" />
@@ -21,19 +22,58 @@
          [ngClass]="{ menu: dreamsMenuItems[dream.id]?.length > 0 }">
       <!-- Название сновидения -->
       <div class="dream__text-title"
-           [ngClass]="{ 'default-title': !dream.title?.length }">{{dream.title || defaultTitle}}</div>
+           [ngClass]="{ 'default-title': !dream.title?.length }"
+           routerLink="/diary/viewer/{{dream.id}}">{{dream.title || defaultTitle}}</div>
       <!-- Когда приснился -->
-      <div class="dream__text-subtitle">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+      <div class="dream__text-subtitle"
+           routerLink="/diary/viewer/{{dream.id}}">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
       <!-- Меню -->
       <app-card-menu class="dream__text-menu"
                      menuIcon="more_vert"
                      [menuItems]="dreamsMenuItems[dream.id]"
                      *ngIf="dreamsMenuItems[dream.id]?.length > 0"></app-card-menu>
     </div>
+    <!-- Ключевые слова -->
+    <div class="dream__text"
+         [ngClass]="{ 'no-content': !dream.keywords.length }">
+      <div class="dream__text-keywords">
+        <ng-container *ngFor="let keyword of dream.keywords; let key = index">
+          <div class="keyword_comma"
+               *ngIf="key > 0">,</div>
+          <div class="keyword">{{keyword}}</div>
+        </ng-container>
+      </div>
+    </div>
     <!-- Дополнительное описание -->
-    <div class="dream__text">
+    <div class="dream__text"
+         [ngClass]="{ 'no-content': !dream.description }">
       <!-- Название сновидения -->
-      <div class="dream__text-description">{{dream.description || defaultDescription}}</div>
+      <div class="dream__text-description">{{dream.description}}</div>
+    </div>
+    <!-- Автор и действие -->
+    <div class="dream__text actions">
+      <!-- Автор -->
+      <a class="dream__author"
+         routerLink="/profile/{{dream.user.id}}"
+         [ngClass]="{ 'no-subtitle': dream.user.pageStatus.length === 0 }">
+        <!-- Аватарка -->
+        <div class="dream__author-icon">
+          <!-- Картинка -->
+          <img [src]="dream.user.avatars.small"
+               *ngIf="dream.user.avatars.small.length > 0" />
+          <!-- Иконка -->
+          <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
+        </div>
+        <!-- Имя -->
+        <div class="dream__author-title">{{dream.user.name}} {{dream.user.lastName}}</div>
+        <!-- Статус -->
+        <div class="dream__author-subtitle"
+             *ngIf="dream.user.pageStatus.length > 0">{{dream.user.pageStatus}}</div>
+      </a>
+      <!-- Кнопка просмотра -->
+      <a mat-flat-button
+         color="primary"
+         routerLink="/diary/viewer/{{dream.id}}">Просмотр</a>
     </div>
   </div>
 </div>
