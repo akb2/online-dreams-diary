@@ -79,7 +79,7 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     if (this.user?.id === this.dream.user.id) {
       data.icon = "edit";
       data.link = "/diary/editor/" + this.dream.id;
-      data.params.from = this.fromMark + "|diary-viewer";
+      data.params.from = this.fromMark + (this.fromMark.length > 0 ? "|" : "") + "diary-viewer";
     }
     // Вернуть данные
     return data;
