@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestr
 import { ActivatedRoute, ActivatedRouteSnapshot, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { User } from "@_models/account";
-import { RouteData } from "@_models/app";
+import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
@@ -56,6 +56,17 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   get user(): User {
     return AppComponent.user;
   };
+
+  // Плавающая кнопка
+  get floatButtonData(): SimpleObject {
+    const data: SimpleObject = {};
+    // Добавить сновидение
+    if (!this.visitedUser) {
+      data.from = "diary-all";
+    }
+    // Вернуть данные
+    return data;
+  }
 
 
 
