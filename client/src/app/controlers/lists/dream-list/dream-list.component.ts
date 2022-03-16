@@ -136,7 +136,8 @@ export class DreamListComponent implements DoCheck, OnChanges {
         menuItem.push({
           icon: "edit",
           title: "Редактировать",
-          routerLink: "/diary/editor/" + dream.id
+          routerLink: "/diary/editor/" + dream.id,
+          queryParams: this.viewerQueryParams(dream)
         });
         // Удаление
         menuItem.push({

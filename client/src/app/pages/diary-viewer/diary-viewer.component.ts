@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { User } from "@_models/account";
+import { SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService, DreamTitle } from "@_services/dream.service";
@@ -49,11 +50,39 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
 
   // Кнопка назад
   get backLink(): string {
-    if (this.fromMark === "diary-all") {
+    const fromArray: string[] = this.fromMark.split("|") || [];
+    const from: string = fromArray[fromArray.length - 1] || "";
+    // Список всех сновидений
+    if (from === "diary-all") {
       return "/diary/all";
     }
     // Мой дневник
     return "/diary/" + this.dream.user.id;
+  }
+
+  // Кнопка назад: параметры
+  get backLinkParams(): SimpleObject {
+    const fromArray: string[] = this.fromMark.split("|") || [];
+    const fromMark: string = fromArray.filter((v, k) => k < fromArray.length - 1).join("|");
+    // Вернуть значение
+    return fromMark ? { from: fromMark } : {};
+  }
+
+  // Плавающая кнопка
+  get floatButtonData(): FloatButtonData {
+    const data: FloatButtonData = {
+      icon: "person",
+      link: "/profile/" + this.dream.user.id,
+      params: {}
+    };
+    // Редакировать
+    if (this.user?.id === this.dream.user.id) {
+      data.icon = "edit";
+      data.link = "/diary/editor/" + this.dream.id;
+      data.params.from = this.fromMark + "|diary-viewer";
+    }
+    // Вернуть данные
+    return data;
   }
 
 
@@ -120,4 +149,15 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
       this.changeDetectorRef.detectChanges();
     }
   }
+}
+
+
+
+
+
+// Данные плавающей кнопки
+interface FloatButtonData {
+  icon: string;
+  link: string;
+  params?: SimpleObject;
 }

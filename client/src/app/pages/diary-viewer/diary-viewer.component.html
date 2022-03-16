@@ -11,8 +11,10 @@
                  [title]="dream.title || defaultTitle"
                  subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
                  [backButtonLink]="backLink"
-                 [floatButtonIcon]="user?.id !== dream.user.id? 'person': ''"
-                 [floatButtonLink]="user?.id !== dream.user.id? '/profile/' + dream.user.id: ''"></app-main-menu>
+                 [backButtonLinkParams]="backLinkParams"
+                 [floatButtonIcon]="floatButtonData.icon"
+                 [floatButtonLink]="floatButtonData.link"
+                 [floatButtonLinkParams]="floatButtonData.params"></app-main-menu>
 
   <!-- Контейнер с данными -->
   <div class="root-section">

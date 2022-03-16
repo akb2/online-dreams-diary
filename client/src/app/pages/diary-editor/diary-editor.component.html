@@ -10,7 +10,8 @@
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [title]="dream.title || defaultTitle"
                  subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
-                 backButtonLink="/diary/my"
+                 [backButtonLink]="backLink"
+                 [backButtonLinkParams]="backLinkParams"
                  floatButtonIcon="save"
                  (floatButtonCallback)="onSave()"></app-main-menu>
 

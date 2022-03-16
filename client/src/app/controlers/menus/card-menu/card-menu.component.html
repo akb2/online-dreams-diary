@@ -20,6 +20,7 @@
            color="basic"
            class="item"
            [routerLink]="item.routerLink"
+           [queryParams]="item.queryParams"
            *ngIf="!!item?.routerLink">
           <ng-container [ngTemplateOutlet]="itemContent"
                         [ngTemplateOutletContext]="{ item }"></ng-container>

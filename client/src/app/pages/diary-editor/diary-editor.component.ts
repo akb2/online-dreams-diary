@@ -10,6 +10,7 @@ import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { User } from "@_models/account";
+import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode, DreamModes, DreamStatus, DreamStatuses } from "@_models/dream";
 import { DreamErrorMessages, DreamValidatorData, ErrorMessagesType, FormData } from "@_models/form";
@@ -50,6 +51,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   dreamForm: FormGroup;
   dreamId: number = 0;
   dream: Dream;
+  private fromMark: string;
   errors: ErrorMessagesType = DreamErrorMessages;
 
   oldUser: User;
@@ -74,19 +76,43 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     return AppComponent.user;
   };
 
+  // Кнопка назад: URL
+  get backLink(): string {
+    const fromArray: string[] = this.fromMark.split("|") || [];
+    const from: string = fromArray[fromArray.length - 1] || "";
+    // Список всех сновидений
+    if (from === "diary-all") {
+      return "/diary/all";
+    }
+    // Просмотр сновидения
+    else if (from === "diary-viewer") {
+      return "/diary/viewer/" + this.dream.id;
+    }
+    // Мой дневник
+    return "/diary/" + this.dream.user.id;
+  }
+
+  // Кнопка назад: параметры
+  get backLinkParams(): SimpleObject {
+    const fromArray: string[] = this.fromMark.split("|") || [];
+    const fromMark: string = fromArray.filter((v, k) => k < fromArray.length - 1).join("|");
+    // Вернуть значение
+    return fromMark ? { from: fromMark } : {};
+  }
+
 
 
 
 
   constructor(
-    private activateRoute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
     private router: Router
   ) {
-    this.dreamId = parseInt(this.activateRoute.snapshot.params.dreamId);
+    this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
     // Форма сновидений
     this.dreamForm = this.formBuilder.group({
@@ -116,7 +142,12 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.defineData();
+    this.activatedRoute.queryParams.subscribe(params => {
+      // Метка источника перехода
+      this.fromMark = params.from?.toString() || "";
+      // Загрузка данных
+      this.defineData();
+    });
   }
 
   ngOnDestroy() {
