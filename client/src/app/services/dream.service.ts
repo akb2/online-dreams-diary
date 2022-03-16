@@ -51,7 +51,8 @@ export class DreamService {
       places: [],
       members: [],
       map: this.dreamMapConverter(),
-      mode: DreamMode.mixed,
+      // TODO: mode: DreamMode.mixed,
+      mode: DreamMode.text,
       status: DreamStatus.draft,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
@@ -167,6 +168,7 @@ export class DreamService {
     dreamDto.headerType = NavMenuType[dreamDto.headerType] ? dreamDto.headerType : NavMenuType.short;
     dreamDto.mode = DreamMode[dreamDto.mode] ? dreamDto.mode : DreamMode.mixed;
     dreamDto.status = DreamStatus[dreamDto.status] ? dreamDto.status : DreamStatus.draft;
+    dreamDto.keywords = dreamDto.keywords.trim()?.length > 0 ? dreamDto.keywords.trim() : "";
     // Попытка прочитать карту
     try { dreamMap = JSON.parse(dreamDto.map) as DreamMapDto; }
     catch (e) { }
@@ -178,9 +180,10 @@ export class DreamService {
       title: dreamDto.title,
       date: new Date(dreamDto.date),
       description: dreamDto.description,
-      mode: dreamDto.mode as DreamMode,
+      // TODO: mode: dreamDto.mode as DreamMode,
+      mode: DreamMode.text,
       status: dreamDto.status as DreamStatus,
-      keywords: dreamDto.keywords.split(","),
+      keywords: dreamDto.keywords?.length > 0 ? dreamDto.keywords.split(",") : [],
       places: null,
       members: null,
       text: dreamDto.text,
