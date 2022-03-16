@@ -124,6 +124,13 @@ const routes: Routes = [
     data: { title: "Дневник сновидений пользователя", userId: -2, authRule: 0 },
     canActivate: [AuthGuard]
   },
+  // Дневник: Просмотр
+  {
+    path: "diary/viewer",
+    loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
+    data: { title: "Просмотр сновидения", userId: 0, from: "", authRule: 1 },
+    canActivate: [AuthGuard]
+  },
   // Ошибка 404
   {
     path: "**",

@@ -4,7 +4,7 @@ import { AppComponent } from "@app/app.component";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { User } from "@_models/account";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -27,6 +27,7 @@ export class DreamListComponent implements DoCheck, OnChanges {
 
 
   @Input() dreams: Dream[];
+  @Input() sourcePlace: string = "";
 
   @Output() dreamDelete: EventEmitter<void> = new EventEmitter<void>();
 
@@ -50,6 +51,17 @@ export class DreamListComponent implements DoCheck, OnChanges {
   // Есть обложка
   isHasImage(dream: Dream): boolean {
     return dream.headerType === NavMenuType.full || dream.headerType === NavMenuType.short;
+  }
+
+  // Ссылка на просмотр
+  viewerQueryParams(dream: Dream): SimpleObject {
+    const data: SimpleObject = {};
+    // Метка посещения
+    if (this.sourcePlace.length > 0) {
+      data.from = this.sourcePlace;
+    }
+    // Вернуть объект
+    return data;
   }
 
 

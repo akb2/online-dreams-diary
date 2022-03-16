@@ -64,7 +64,6 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   dreamStatuses: OptionData[] = DreamStatuses;
 
   private destroy$: Subject<void> = new Subject<void>();
-  private changes$: Subject<void> = new Subject<void>();
 
 
 
@@ -100,8 +99,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
       text: [""]
     });
     // Изменения формы
-    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeTitle(value || ""));
-    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.changes$)).subscribe(value => this.onChangeDate(value || new Date()));
+    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeTitle(value || ""));
+    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeDate(value || new Date()));
   }
 
   ngDoCheck() {

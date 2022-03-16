@@ -10,7 +10,8 @@
          [attr.positionX]="dream.headerBackground.positionX"
          [attr.positionY]="dream.headerBackground.positionY"
          [ngClass]="{ 'no-image': !isHasImage(dream) }"
-         routerLink="/diary/viewer/{{dream.id}}">
+         routerLink="/diary/viewer/{{dream.id}}"
+         [queryParams]="viewerQueryParams(dream)">
       <!-- Картинка -->
       <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
            *ngIf="isHasImage(dream)" />
@@ -23,10 +24,12 @@
       <!-- Название сновидения -->
       <div class="dream__text-title"
            [ngClass]="{ 'default-title': !dream.title?.length }"
-           routerLink="/diary/viewer/{{dream.id}}">{{dream.title || defaultTitle}}</div>
+           routerLink="/diary/viewer/{{dream.id}}"
+           [queryParams]="viewerQueryParams(dream)">{{dream.title || defaultTitle}}</div>
       <!-- Когда приснился -->
       <div class="dream__text-subtitle"
-           routerLink="/diary/viewer/{{dream.id}}">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+           routerLink="/diary/viewer/{{dream.id}}"
+           [queryParams]="viewerQueryParams(dream)">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
       <!-- Меню -->
       <app-card-menu class="dream__text-menu"
                      menuIcon="more_vert"
@@ -73,7 +76,8 @@
       <!-- Кнопка просмотра -->
       <a mat-flat-button
          color="primary"
-         routerLink="/diary/viewer/{{dream.id}}">Просмотр</a>
+         routerLink="/diary/viewer/{{dream.id}}"
+         [queryParams]="viewerQueryParams(dream)">Просмотр</a>
     </div>
   </div>
 </div>

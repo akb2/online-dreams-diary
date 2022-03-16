@@ -22,6 +22,7 @@
       <ng-container *ngIf="!loading; else listLoader">
         <!-- Список сновидений -->
         <app-dream-list [dreams]="dreams"
+                        [sourcePlace]="!!visitedUser? '': 'diary-all'"
                         (dreamDelete)="loadDreams()"
                         *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
       </ng-container>

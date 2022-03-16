@@ -1,0 +1,25 @@
+<div class="section white"
+     *ngIf="ready && user && dream; else pageLoader">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 [imageFullShow]="true"
+                 [type]="dream.headerType"
+                 [image]="imagePrefix + dream.headerBackground[dream.headerType === _navMenuType.full? 'imageName': 'imageNameShort']"
+                 [imagePositionX]="dream.headerBackground.positionX"
+                 [imagePositionY]="dream.headerBackground.positionY"
+                 [imageOverlay]="dream.headerBackground.imageOverlay"
+                 [title]="dream.title || defaultTitle"
+                 subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                 [backButtonLink]="backLink"
+                 [floatButtonIcon]="user?.id !== dream.user.id? 'person': ''"
+                 [floatButtonLink]="user?.id !== dream.user.id? '/profile/' + dream.user.id: ''"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+  </div>
+</div>
+
+<!-- Лоадер страницы -->
+<ng-template #pageLoader>
+  <app-page-loader></app-page-loader>
+</ng-template>

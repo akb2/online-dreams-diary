@@ -119,7 +119,13 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     // Подписка
     return observable.pipe(
       takeUntil(this.destroy$),
-      tap(user => userId > 0 ? this.visitedUser = user : null)
+      tap(user => {
+        if (userId > 0) {
+          this.visitedUser = user;
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        }
+      })
     );
   }
 
@@ -166,6 +172,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       this.menuAvatarIcon = "person";
       this.floatButtonIcon = "add";
       this.floatButtonLink = "/diary/editor";
+      // Установить посещаемого пользователя из текущего
+      this.visitedUser = this.user;
       // Готово
       this.ready = true;
     }
