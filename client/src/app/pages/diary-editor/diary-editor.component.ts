@@ -169,7 +169,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     // Сохранить
     if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
       this.dream.description = this.dreamForm.get("description").value as string;
-      this.dream.mode = parseInt(this.dreamForm.get("mode").value) as DreamMode || DreamMode.mixed;
+      this.dream.mode = parseInt(this.dreamForm.get("mode").value) as DreamMode;
       this.dream.status = status;
       this.dream.keywords = this.dreamForm.get("keywords").value as string[];
       this.dream.text = this.dreamForm.get("text").value as string;
