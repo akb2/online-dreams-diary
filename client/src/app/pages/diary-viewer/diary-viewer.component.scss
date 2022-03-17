@@ -1,0 +1,65 @@
+@use "sass:map";
+@use "../../../assets/styles/colors";
+@use "../../../assets/styles/screens";
+
+// Данные сновидения
+.dream {
+  $fontSize: 20px;
+  $lineHeight: $fontSize * 1.2;
+  $textIndent: $fontSize * 1.5;
+  $tablePaddingY: $fontSize / 2;
+  $tablePaddingX: $fontSize;
+  // Текст
+  &__text {
+    // Общий стиль
+    &,
+    ::ng-deep * {
+      font-size: $fontSize;
+      font-weight: 300;
+      line-height: 1.2;
+      color: colors.$text;
+    }
+    // Абзацы
+    ::ng-deep p {
+      text-indent: $textIndent;
+    }
+    // Ссылки
+    ::ng-deep a {
+      color: map.get(colors.$mat-primary, 400);
+      text-decoration: none;
+      transition: color #{screens.$animation-time};
+      // Наведение машкой
+      &:hover {
+        color: colors.$text;
+      }
+    }
+    // Жирность
+    ::ng-deep b,
+    ::ng-deep strong {
+      font-weight: 500;
+    }
+    // Таблица
+    ::ng-deep .table {
+      margin: 0;
+      // Тело
+      table {
+        max-width: 100%;
+        border-collapse: collapse;
+        // Ячейки
+        td {
+          border: 1px solid #{colors.$border};
+          padding: #{$tablePaddingY} #{$tablePaddingX};
+        }
+      }
+    }
+
+    // Отступы
+    ::ng-deep p,
+    ::ng-deep .table {
+      & + ::ng-deep p,
+      & + ::ng-deep .table {
+        margin-top: $lineHeight;
+      }
+    }
+  }
+}

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit } from "@angular/core";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { Dream } from "@_models/dream";
+import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { DreamService, DreamTitle } from "@_services/dream.service";
 import { Subject } from "rxjs";
@@ -85,6 +86,11 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     return data;
   }
 
+  // Получить текст сновидения в формате HTML
+  get isTextAvail(): boolean {
+    return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.text) && this.dream.text.length > 0;
+  }
+
 
 
 
@@ -93,7 +99,8 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
-    private router: Router
+    private router: Router,
+    private domSanitizer: DomSanitizer
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;

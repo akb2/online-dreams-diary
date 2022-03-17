@@ -18,6 +18,11 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
+    <div class="container"
+         *ngIf="isTextAvail">
+      <div class="dream__text"
+           [innerHTML]="dream.text"></div>
+    </div>
   </div>
 </div>
 
