@@ -1,4 +1,4 @@
-<div class="section white"
+<div class="section light-gray"
      *ngIf="ready && user && dream; else pageLoader">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
@@ -17,7 +17,7 @@
                  [floatButtonLinkParams]="floatButtonData.params"></app-main-menu>
 
   <!-- Контейнер с данными -->
-  <div class="root-section">
+  <div class="root-section light-gray">
     <div class="container"
          *ngIf="isTextAvail">
       <div class="dream__text"
