@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 @use "../../../assets/styles/colors";
 @use "../../../assets/styles/screens";
 
@@ -7,7 +8,7 @@
   $fontSize: 20px;
   $lineHeight: $fontSize * 1.2;
   $textIndent: $fontSize * 1.5;
-  $tablePaddingY: $fontSize / 2;
+  $tablePaddingY: math.div($fontSize, 2);
   $tablePaddingX: $fontSize;
   // Текст
   &__text {
