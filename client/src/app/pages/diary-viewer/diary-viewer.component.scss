@@ -49,6 +49,7 @@
         td {
           border: 1px solid #{colors.$border};
           padding: #{$tablePaddingY} #{$tablePaddingX};
+          background-color: colors.$card;
         }
       }
     }
