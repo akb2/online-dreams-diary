@@ -126,6 +126,10 @@ html {
     &.white {
       background-color: colors.$card;
     }
+    // Серый контейнер
+    &.light-gray {
+      background-color: colors.$background;
+    }
   }
 }
 
