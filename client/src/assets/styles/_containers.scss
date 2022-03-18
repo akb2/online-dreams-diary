@@ -19,8 +19,10 @@ $paddings-y: (
 );
 $padding-x: 15px;
 
-$border-radius: 5px;
-$box-shadow: 1px 1px 15px 2px colors.$shadow;
+$cardBoxShadow: 1px 1px 10px 1px #{colors.$shadow};
+$cardBorderRadius: 5px;
+$cardPaddingY: 15px;
+$cardPaddingX: 22px;
 
 // Миксин
 @mixin container {
