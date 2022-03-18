@@ -114,6 +114,10 @@ html {
     > .#{$_elm}:last-child {
       flex-grow: 1;
     }
+    // По середине
+    &.center {
+      justify-content: center;
+    }
   }
   // Цвета
   &.#{$_elm},
