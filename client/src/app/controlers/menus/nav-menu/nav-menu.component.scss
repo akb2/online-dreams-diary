@@ -3,6 +3,7 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/containers";
 
 $breakpointMobile: small;
 
@@ -21,7 +22,7 @@ $breakpointMobile: small;
   top: 0;
   width: 100%;
   user-select: none;
-  box-shadow: screens.$card-shadow;
+  box-shadow: containers.$cardBoxShadow;
   // Полноразмерное меню
   &.type-full {
     height: 100vh;

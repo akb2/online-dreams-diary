@@ -1,6 +1,7 @@
 @use "sass:map";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
 
 // Список меню
 .menu {
@@ -37,8 +38,8 @@
     align-items: center;
     text-decoration: none;
     transition: background-color #{screens.$animation-time};
-    border-radius: screens.$card-border-radius;
-    box-shadow: screens.$card-shadow;
+    border-radius: containers.$cardBorderRadius;
+    box-shadow: containers.$cardBoxShadow;
     // Картинка
     &-image,
     &-more {

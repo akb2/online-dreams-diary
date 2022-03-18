@@ -2,6 +2,7 @@
 @use "sass:math";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
 
 $size: 15px;
 $spacing: 1px;
@@ -47,7 +48,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   cursor: pointer;
   background-color: map.get(colors.$mat-primary, 500);
   transition: background-color screens.$animation-time;
-  box-shadow: screens.$card-shadow;
+  box-shadow: containers.$cardBoxShadow;
   // Выделение
   &:hover {
     background-color: map.get(colors.$mat-primary, 500);
@@ -85,7 +86,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   transition: background-color screens.$animation-time;
   z-index: 1;
   cursor: pointer;
-  box-shadow: screens.$card-shadow;
+  box-shadow: containers.$cardBoxShadow;
   // Выделение
   &:hover,
   &.hover {

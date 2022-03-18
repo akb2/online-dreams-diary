@@ -64,8 +64,8 @@ $keys: full short collapse;
   &__element {
     $_elm: &;
     // Свойства
-    border-radius: containers.$border-radius;
-    box-shadow: containers.$box-shadow;
+    border-radius: containers.$cardBorderRadius;
+    box-shadow: containers.$cardBoxShadow;
     display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
@@ -79,7 +79,7 @@ $keys: full short collapse;
     // Картинка
     &-image {
       width: 100%;
-      border-radius: containers.$border-radius containers.$border-radius 0 0;
+      border-radius: containers.$cardBorderRadius containers.$cardBorderRadius 0 0;
       overflow: hidden;
       position: relative;
       // Позиция по ширине
@@ -136,7 +136,7 @@ $keys: full short collapse;
       display: none;
       position: absolute;
       background-color: colors.$overlay-color;
-      border-radius: containers.$border-radius;
+      border-radius: containers.$cardBorderRadius;
       // Общие правила
       &:before,
       &:after {

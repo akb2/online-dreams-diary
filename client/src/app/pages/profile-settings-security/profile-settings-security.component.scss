@@ -158,8 +158,8 @@
     large: 14px,
   );
   // Свойства
-  border-radius: containers.$border-radius;
-  box-shadow: containers.$box-shadow;
+  border-radius: containers.$cardBorderRadius;
+  box-shadow: containers.$cardBoxShadow;
   width: 100%;
   // Линии
   &__line {
@@ -181,11 +181,11 @@
       display: none;
       // Закругление первой ячейки
       &.create-date {
-        border-radius: containers.$border-radius 0 0 0;
+        border-radius: #{containers.$cardBorderRadius} 0 0 0;
       }
       // Закругление последней ячейки
       &.controls {
-        border-radius: 0 containers.$border-radius 0 0;
+        border-radius: 0 #{containers.$cardBorderRadius} 0 0;
       }
     }
     // Последующие блоки
@@ -205,11 +205,11 @@
     }
     // Первая линия
     &:first-child {
-      border-radius: containers.$border-radius containers.$border-radius 0 0;
+      border-radius: #{containers.$cardBorderRadius} #{containers.$cardBorderRadius} 0 0;
     }
     // Последняя линия
     &:last-child {
-      border-radius: 0 0 containers.$border-radius containers.$border-radius;
+      border-radius: 0 0 #{containers.$cardBorderRadius} #{containers.$cardBorderRadius};
     }
   }
   // Ячейки
@@ -265,7 +265,7 @@
     &__line {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      box-shadow: containers.$box-shadow;
+      box-shadow: containers.$cardBoxShadow;
       grid-template-areas:
         "title-create-date create-date"
         "title-last-action-date last-action-date"
@@ -283,7 +283,7 @@
       &,
       &:first-child,
       &:last-child {
-        border-radius: containers.$border-radius;
+        border-radius: containers.$cardBorderRadius;
       }
       // Заголовок
       &,
@@ -292,11 +292,11 @@
           display: flex;
           // Закругление первой ячейки
           &.create-date {
-            border-radius: containers.$border-radius 0 0 0;
+            border-radius: #{containers.$cardBorderRadius} 0 0 0;
           }
           // Закругление последней ячейки
           &.controls {
-            border-radius: 0 0 0 containers.$border-radius;
+            border-radius: 0 0 0 #{containers.$cardBorderRadius};
           }
         }
       }

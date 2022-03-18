@@ -26,7 +26,7 @@ mat-chip-list {
   }
   // Слово
   &-word {
-    @include mixins.line-clamp(1, 16px);
+    @include mixins.lineClamp(1, 16px);
     // Свойства
     grid-area: "word";
   }

@@ -33,7 +33,7 @@
 
 // Элемент
 .dream {
-  $borderRadius: containers.$border-radius;
+  $borderRadius: containers.$cardBorderRadius;
   $spacingX: 18px;
   $spacingY: 10px;
   $descriptionCount: 2;
@@ -41,7 +41,7 @@
   // Свойства
   border-radius: $borderRadius;
   background-color: colors.$card;
-  box-shadow: containers.$box-shadow;
+  box-shadow: containers.$cardBoxShadow;
   // Обложка
   &__image {
     $positions-x: left center right;
@@ -111,7 +111,7 @@
     padding: #{$spacingY} #{$spacingX};
     // Заголовок
     &-title {
-      @include mixins.line-clamp(1, $titleSize);
+      @include mixins.lineClamp(1, $titleSize);
       // Свойства
       font-size: 15px;
       font-weight: 400;
@@ -125,7 +125,7 @@
     }
     // Подзаголовок
     &-subtitle {
-      @include mixins.line-clamp(1, $subTitleSize);
+      @include mixins.lineClamp(1, $subTitleSize);
       // Свойства
       font-size: 12px;
       font-weight: 300;
@@ -139,7 +139,7 @@
     }
     // Описание
     &-description {
-      @include mixins.line-clamp($descriptionCount, $descriptionLineHeight);
+      @include mixins.lineClamp($descriptionCount, $descriptionLineHeight);
       // Свойства
       font-size: 13px;
       font-weight: 300;
@@ -150,7 +150,7 @@
     &-keywords {
       $spacing: 3px;
       // Миксины
-      @include mixins.line-clamp($descriptionCount, $descriptionLineHeight, $spacing);
+      @include mixins.lineClamp($descriptionCount, $descriptionLineHeight, $spacing);
       // Свойства
       height: ($descriptionCount * $descriptionLineHeight) + ($spacing * 2);
       margin: #{-$spacing} 0;
@@ -240,7 +240,7 @@
     }
     // Заголовок
     &-title {
-      @include mixins.line-clamp(1, $titleSize);
+      @include mixins.lineClamp(1, $titleSize);
       // Свойства
       font-size: 14px;
       font-weight: 400;
@@ -249,7 +249,7 @@
     }
     // Подзаголовок
     &-subtitle {
-      @include mixins.line-clamp(1, $subTitleSize);
+      @include mixins.lineClamp(1, $subTitleSize);
       // Свойства
       font-size: 13px;
       font-weight: 300;

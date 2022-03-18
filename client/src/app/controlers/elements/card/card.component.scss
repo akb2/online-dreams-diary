@@ -1,6 +1,7 @@
 @use "sass:map";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/mixins";
 
 $base_elm: ".mat-card";
@@ -42,8 +43,8 @@ $colors: (
   justify-content: space-between;
   box-shadow: colors.$shadow;
   background-color: colors.$card;
-  border-radius: screens.$card-border-radius;
-  box-shadow: screens.$card-shadow;
+  border-radius: containers.$cardBorderRadius;
+  box-shadow: containers.$cardBoxShadow;
 
   // Полная высота
   &.full-height {
@@ -108,7 +109,7 @@ $colors: (
     #{$base_elm}-avatar {
       width: $image-size;
       height: $image-size;
-      border-radius: screens.$card-border-radius;
+      border-radius: containers.$cardBorderRadius;
       overflow: hidden;
 
       // С картинкой
