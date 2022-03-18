@@ -1,0 +1,60 @@
+<div class="panel">
+  <!-- Описание -->
+  <div class="panel__description">
+    <!-- Заголовок -->
+    <div class="panel__description-title">{{title}}</div>
+    <!-- Подзаголовок -->
+    <div class="panel__description-subtitle"
+         *ngIf="subTitle?.length > 0">{{subTitle}}</div>
+  </div>
+  <!-- Управление пагинацией -->
+  <div class="panel__pagination"
+       *ngIf="count > 0">
+    <ng-container [ngTemplateOutlet]="pageMax > 5? pageButtons2: pageButtons1"></ng-container>
+  </div>
+  <!-- Дополнительный контент -->
+  <div #actionsPanel
+       class="panel__actions"
+       [hidden]="!showActionsPanel">
+    <ng-content></ng-content>
+  </div>
+</div>
+
+
+
+<!-- Шаблон с циклом по всем страницам -->
+<ng-template #pageButtons1>
+  <a mat-mini-fab
+     [color]="pageCurrent === page? 'primary': 'basic'"
+     (click)="pageCurrent === page? false: onPageSet(page)"
+     *ngFor="let page of pageIterator">{{page}}</a>
+</ng-template>
+
+<!-- Шаблон с пропуском страниц -->
+<ng-template #pageButtons2>
+  <!-- Первая страница -->
+  <a mat-mini-fab
+     [color]="pageCurrent === 1? 'primary': ''"
+     (click)="pageCurrent === 1? false: onPageSet(1)">1</a>
+  <!-- Пропуск -->
+  <a mat-mini-fab
+     disableRipple
+     class="no-pointer"
+     color="transparent"
+     *ngIf="this.pageMax > 7 && pageCurrent > 4">...</a>
+  <!-- Промежуточные страницы -->
+  <a mat-mini-fab
+     [color]="pageCurrent === page? 'primary': ''"
+     (click)="pageCurrent === page? false: onPageSet(page)"
+     *ngFor="let page of pageClosestCurrentIterator">{{page}}</a>
+  <!-- Пропуск -->
+  <a mat-mini-fab
+     disableRipple
+     class="no-pointer"
+     color="transparent"
+     *ngIf="this.pageMax > 7 && pageCurrent < pageMax - 3">...</a>
+  <!-- Последняя страница -->
+  <a mat-mini-fab
+     [color]="pageCurrent === pageMax? 'primary': 'basic'"
+     (click)="pageCurrent === pageMax? false: onPageSet(pageMax)">{{pageMax}}</a>
+</ng-template>

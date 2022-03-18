@@ -1,0 +1,50 @@
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
+
+// Панель
+.panel {
+  display: grid;
+  grid-template-areas: "description pagination actions";
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  box-shadow: containers.$cardBoxShadow;
+  padding: #{containers.$cardPaddingY} #{containers.$cardPaddingX};
+  border-radius: containers.$cardBorderRadius;
+  background-color: colors.$card;
+  grid-gap: 0 10px;
+  // Описание
+  &__description {
+    grid-area: description;
+    // Заголовок
+    &-title {
+      @include mixins.lineClamp(1, 20px);
+      // Свойства
+      font-size: 16px;
+      font-weight: 400;
+    }
+    // Подзаголовок
+    &-subtitle {
+      @include mixins.lineClamp(1, 18px);
+      // Свойства
+      font-size: 14px;
+      font-weight: 300;
+    }
+  }
+  // Управление пагинатором
+  &__pagination {
+    grid-area: pagination;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0 2px;
+    // Кнопки
+    ::ng-deep .mat-mini-fab {
+      box-shadow: none !important;
+    }
+  }
+  // Кнопки
+  &__actions {
+    grid-area: actions;
+  }
+}
