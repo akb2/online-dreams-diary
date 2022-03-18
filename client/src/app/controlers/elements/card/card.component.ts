@@ -15,25 +15,25 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 export class CardComponent implements AfterViewInit, OnChanges {
 
 
-  @Input() public title: string | null;
-  @Input() public subTitle: string | null;
-  @Input() public avatar: string | null;
-  @Input() public avatarIcon: string | null;
-  @Input() public avatarColor: IconColor = "primary";
-  @Input() public avatarBackground: IconBackground = "transparent";
-  @Input() public fullHeight: boolean = false;
-  @Input() public routerLink: string | null;
-  @Input() public queryParams: SimpleObject | null;
-  @Input() public changeDetection: boolean;
+  @Input() title: string | null;
+  @Input() subTitle: string | null;
+  @Input() avatar: string | null;
+  @Input() avatarIcon: string | null;
+  @Input() avatarColor: IconColor = "primary";
+  @Input() avatarBackground: IconBackground = "transparent";
+  @Input() fullHeight: boolean = false;
+  @Input() routerLink: string | null;
+  @Input() queryParams: SimpleObject | null;
+  @Input() changeDetection: boolean;
 
   @ViewChild('contentPanel') private contentPanel: ElementRef;
   @ViewChild('actionsPanel') private actionsPanel: ElementRef;
   @ViewChild('menuPanelHelper') private menuPanelHelper: ElementRef;
 
-  public showContentPanel: boolean = false;
-  public showActionsPanel: boolean = false;
-  public showMenuPanel: boolean = false;
-  public changeDetectionHelper: boolean;
+  showContentPanel: boolean = false;
+  showActionsPanel: boolean = false;
+  showMenuPanel: boolean = false;
+  changeDetectionHelper: boolean;
 
 
 
@@ -46,14 +46,14 @@ export class CardComponent implements AfterViewInit, OnChanges {
   }
 
   // Получены изменения
-  public ngOnChanges(): void {
+  ngOnChanges(): void {
     if (this.changeDetection != this.changeDetectionHelper) {
       this.changeDetectorRef.detectChanges();
     }
   }
 
   // После проверки элементов
-  public ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     this.showContentPanel = this.contentPanel?.nativeElement?.children.length > 0;
     this.showActionsPanel = this.actionsPanel?.nativeElement?.children.length > 0;
     this.showMenuPanel = this.menuPanelHelper?.nativeElement?.children.length > 0;
