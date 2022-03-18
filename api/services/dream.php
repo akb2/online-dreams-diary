@@ -101,7 +101,6 @@ class DreamService
     $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
     $limit = $this->config["dreams"]["limit"];
     $whereQuery = "";
-    $limitQuery = " LIMIT " . (($page * $limit) - $limit) . ", " . $limit . " ";
     $orderQuery = " ORDER BY `create_date` DESC ";
     // Данные поиска
     $sqlData = array();
@@ -138,11 +137,16 @@ class DreamService
     $count = $this->dataBaseService->getCountFromFileString("dream/getListCount.sql", $whereQuery, $sqlData);
     // Получение данных
     if ($count > 0) {
+      $maxPage = ceil($count / $limit);
+      $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
+      $limitQuery = " LIMIT " . (($page * $limit) - $limit) . ", " . $limit . " ";
+      // Список данных
       $result = $this->dataBaseService->getDatasFromFileString("dream/getList.sql", $whereQuery . $orderQuery . $limitQuery, $sqlData);
     }
     // Сон не найден
     return array(
       "count" => $count,
+      "limit" => $limit,
       "result" => $result
     );
   }

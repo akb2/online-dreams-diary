@@ -125,6 +125,7 @@ class Dream
     return array(
       "data" => array(
         "count" => $testDreams["count"],
+        "limit" => $testDreams["limit"],
         "dreams" => $dreams
       ),
       "code" => $code

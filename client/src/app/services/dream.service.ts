@@ -93,9 +93,10 @@ export class DreamService {
 
 
   // Список сновидений
-  getList(search: SearchDream, codes: string[] = []): Observable<{ count: number, dreams: Dream[] }> {
+  getList(search: SearchDream, codes: string[] = []): Observable<{ count: number, limit: number, dreams: Dream[] }> {
     const url: string = this.baseUrl + "dream/getList";
     let count: number = 0;
+    let limit: number = 0;
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(search, "search_")).pipe(
       switchMap(
@@ -103,9 +104,12 @@ export class DreamService {
           of(result.result.data) :
           this.apiService.checkResponse(result.result.code, codes)
       ),
-      tap(r => count = r.count),
+      tap(r => {
+        count = r.count;
+        limit = r.limit;
+      }),
       mergeMap(r => r.dreams?.length > 0 ? forkJoin([...r.dreams.map(d => this.dreamConverter(d as DreamDto))]) : of([])),
-      mergeMap((dreams: Dream[]) => of({ count, dreams }))
+      mergeMap((dreams: Dream[]) => of({ count, dreams, limit }))
     );
   }
 
@@ -192,7 +196,7 @@ export class DreamService {
       headerBackground: BackgroundImageDatas.find(b => b.id === dreamDto.headerBackgroundId)
     };
     // Текущий пользователь
-    if (dreamDto.userId === this.currentUser.id) {
+    if (dreamDto.userId === this.currentUser?.id) {
       return of({
         ...dream,
         user: this.currentUser
