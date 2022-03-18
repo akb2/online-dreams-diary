@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { ActivatedRoute, ActivatedRouteSnapshot, Params, Router } from "@angular/router";
+import { ActivatedRoute, ActivatedRouteSnapshot, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
@@ -10,7 +10,7 @@ import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
-import { forkJoin, Observable, of, Subject, timer } from "rxjs";
+import { Observable, of, Subject } from "rxjs";
 import { takeUntil, tap } from "rxjs/operators";
 
 
@@ -52,7 +52,6 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   pageLimit: number = 1;
   pageCount: number = 1;
 
-  private listLoadTimer: number = 0.5; // ? Минимальное время ожидания загрузки списка (сек.)
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
 
@@ -269,11 +268,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       status: -1
     };
     // Загрузка списка
-    forkJoin({
-      timer: timer(this.listLoadTimer * 1000).pipe(takeUntil(this.destroy$)),
-      dreams: this.dreamService.getList(search, ["0002"])
-    }).subscribe(
-      ({ dreams: { count, dreams, limit } }) => {
+    this.dreamService.getList(search, ["0002"]).subscribe(
+      ({ count, dreams, limit }) => {
         // Найдены сновидения
         if (count > 0) {
           this.dreamsCount = count;
