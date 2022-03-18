@@ -63,6 +63,10 @@ export const BackgroundImageDatas: BackgroundImageData[] = [
     title: "Кладезь познаний",
     imageOverlay: false,
     positionY: "bottom"
+  }, {
+    id: 12,
+    title: "Лагуна безмятежности",
+    imageOverlay: false
   }
 ].map(d => ({
   ...BackgroundImageDataDefault,
