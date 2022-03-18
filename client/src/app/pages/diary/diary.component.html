@@ -1,8 +1,9 @@
 <ng-container *ngIf="ready">
   <!-- Шапка -->
-  <app-main-menu [autoCollapse]="true"
+  <app-main-menu #mainMenu
+                 [autoCollapse]="true"
                  [imageFullShow]="true"
-                 [type]="navMenuType.short"
+                 [type]="navMenuType.collapse"
                  [image]="imagePrefix + backgroundImageData.imageNameShort"
                  [imagePositionX]="backgroundImageData.positionX"
                  [imagePositionY]="backgroundImageData.positionY"
@@ -17,15 +18,21 @@
                  [backButtonLink]="backButtonLink"></app-main-menu>
 
   <!-- Контейнер с данными -->
-  <div class="root-section">
+  <div class="root-section"
+       [ngClass]="{ center: loading }">
     <div class="container">
       <!-- Список сновидений -->
       <ng-container *ngIf="!loading; else listLoader">
+        <!-- Пагинатор -->
+        <ng-container [ngTemplateOutlet]="pagination"></ng-container>
         <!-- Список сновидений -->
         <app-dream-list [dreams]="dreams"
                         [sourcePlace]="!!visitedUser? '': 'diary-all'"
                         (dreamDelete)="loadDreams()"
                         *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
+        <!-- Пагинатор -->
+        <ng-container [ngTemplateOutlet]="pagination"
+                      *ngIf="pageCount > pageLimit / 2"></ng-container>
       </ng-container>
     </div>
   </div>
@@ -49,4 +56,15 @@
   <app-inform icon="close"
               title="Ошибка поиска"
               subTitle="Сновидения не найдены. Измените условия поиска или повторите позже"></app-inform>
+</ng-template>
+
+<!-- Пагинатор -->
+<ng-template #pagination>
+  <app-pagination title="Поиск по сновидениям"
+                  [subTitle]="dreamsCount > 0? (dreamsCount | i18nPlural: dreamPlural): ''"
+                  [pageCurrent]="pageCurrent"
+                  [pageLimit]="pageLimit"
+                  [count]="dreamsCount"
+                  (changePage)="onPageChange($event)">
+  </app-pagination>
 </ng-template>

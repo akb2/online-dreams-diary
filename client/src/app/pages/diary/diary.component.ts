@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, ActivatedRouteSnapshot, Router } from "@angular/router";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ActivatedRoute, ActivatedRouteSnapshot, Params, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
+import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
+import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
@@ -8,7 +10,7 @@ import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
-import { Observable, of, Subject } from "rxjs";
+import { forkJoin, Observable, of, Subject, timer } from "rxjs";
 import { takeUntil, tap } from "rxjs/operators";
 
 
@@ -24,6 +26,8 @@ import { takeUntil, tap } from "rxjs/operators";
 
 export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
 
+
+  @ViewChild("mainMenu") private mainMenu!: NavMenuComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   pageData: RouteData;
@@ -44,7 +48,20 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   dreams: Dream[];
   dreamsCount: number = 0;
 
+  pageCurrent: number = 1;
+  pageLimit: number = 1;
+  pageCount: number = 1;
+
+  private listLoadTimer: number = 0.5; // ? Минимальное время ожидания загрузки списка (сек.)
+  private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
+
+  dreamPlural: SimpleObject = {
+    "=0": "",
+    "=1": "# сновидение",
+    "few": "# сновидения",
+    "other": "# сновидений"
+  };
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -83,7 +100,6 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   ngDoCheck() {
     if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
       this.oldUser = this.user;
-      this.defineData();
     }
   }
 
@@ -91,10 +107,14 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     let snapshots: ActivatedRouteSnapshot = this.activatedRoute.snapshot;
     while (!!snapshots.firstChild) snapshots = snapshots.firstChild;
     this.pageData = snapshots.data;
-    // Пользователь не авторизован
-    if (!this.accountService.checkAuth) {
+    // Подписка на данные URL
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.queryParams = params as SimpleObject;
+      // Метка источника перехода
+      this.pageCurrent = parseInt(params.p) || 1;
+      // Загрузка данных
       this.defineData();
-    }
+    });
   }
 
   ngOnDestroy() {
@@ -120,6 +140,24 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Изменение страницы
+  onPageChange(event: PaginateEvent): void {
+    const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
+    // Настройки
+    this.pageCurrent = event.pageCurrent;
+    // Перейти к новой странице
+    this.router.navigate(path, {
+      queryParams: { ...this.queryParams, p: event.pageCurrent },
+      queryParamsHandling: "merge",
+      replaceUrl: true,
+      state: {
+        showPreLoader: false
+      }
+    });
+    // Обновить список
+    this.loadDreams();
+  }
+
 
 
 
@@ -143,17 +181,17 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   // Определить данные
   private defineData(): void {
     // Мой дневник
-    if (this.pageData.userId === -1 || (this.user && this.pageData.userId === this.user.id)) {
+    if (this.pageData.userId === -1 || (!!this.user && this.pageData.userId === this.user.id)) {
       if (this.pageData.userId === -1) {
         this.router.navigate(["diary", this.user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
       }
     }
     // Дневник другого пользователя
-    else if (this.pageData.userId === -2 || (this.user && this.pageData.userId > 0 && this.pageData.userId !== this.user.id)) {
+    else if (this.pageData.userId === -2 || (!!this.user && this.pageData.userId > 0 && this.pageData.userId !== this.user.id)) {
       this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
         this.pageData.userId = parseInt(params["user_id"]);
         // Подписка
-        if (!this.user || (this.user && this.pageData.userId !== this.user.id)) {
+        if (!this.user || (!!this.user && this.pageData.userId !== this.user.id)) {
           this.subscribeUser(this.pageData.userId).subscribe(
             () => this.setPageData(),
             () => this.onUserFail()
@@ -175,7 +213,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   // Установить параметры страницы
   private setPageData(): void {
     // Мой дневник
-    if (this.pageData.userId > 0 && this.user && this.pageData.userId === this.user.id) {
+    if (this.pageData.userId > 0 && !!this.user && this.pageData.userId === this.user.id) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = "Мой дневник сновидений";
       this.backgroundImageData = this.user.settings.profileBackground;
@@ -189,7 +227,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       this.ready = true;
     }
     // Дневник другого пользователя
-    else if (this.pageData.userId > 0 && ((this.user && this.pageData.userId !== this.user.id) || !this.user)) {
+    else if (this.pageData.userId > 0 && ((!!this.user && this.pageData.userId !== this.user.id) || !this.user)) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.subTitle = "Дневник сновидений пользователя";
       this.backgroundImageData = this.visitedUser.settings.profileBackground;
@@ -226,16 +264,21 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Поиск по сновидениям
     const search: SearchDream = {
-      page: 1,
+      page: this.pageCurrent > 0 ? this.pageCurrent : 1,
       user: this.pageData.userId || 0,
       status: -1
     };
     // Загрузка списка
-    this.dreamService.getList(search, ["0002"]).subscribe(
-      ({ count, dreams }) => {
+    forkJoin({
+      timer: timer(this.listLoadTimer * 1000).pipe(takeUntil(this.destroy$)),
+      dreams: this.dreamService.getList(search, ["0002"])
+    }).subscribe(
+      ({ dreams: { count, dreams, limit } }) => {
         // Найдены сновидения
         if (count > 0) {
           this.dreamsCount = count;
+          this.pageLimit = limit;
+          this.pageCount = dreams.length;
           this.dreams = dreams;
           this.loading = false;
           // Обновить
@@ -246,7 +289,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
           this.onNotDreamsFound();
         }
       },
-      e => this.onNotDreamsFound()
+      () => this.onNotDreamsFound()
     );
   }
 }
