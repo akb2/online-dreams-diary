@@ -30,6 +30,7 @@ $cardPaddingX: 22px;
   max-width: 100%;
   padding-left: $padding-x;
   padding-right: $padding-x;
+  background-color: inherit;
   // Цикл по размерам
   @include screens.adaptiveFor($widths, $paddings-y) using ($width, $padding-y) {
     width: $width;
