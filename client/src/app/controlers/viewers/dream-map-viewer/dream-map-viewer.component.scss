@@ -7,6 +7,7 @@
   height: 100%;
   position: relative;
   overflow: hidden;
+  background-color: inherit;
 }
 
 // Обертка
@@ -14,10 +15,12 @@
   width: 100%;
   height: 100%;
   position: relative;
+  background-color: inherit;
   // Общие стили
   &,
   > canvas,
-  &__stats {
+  &__stats,
+  &__loader {
     display: block;
     position: absolute;
   }
@@ -45,5 +48,15 @@
     // Свойства
     z-index: -100;
     position: absolute;
+  }
+  // Загрузка
+  &__loader {
+    @include mixins.inset;
+    // Свойства
+    z-index: 1;
+    background-color: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
