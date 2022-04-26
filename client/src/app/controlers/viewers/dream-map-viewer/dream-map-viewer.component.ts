@@ -1,10 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox } from "@_services/dream.service";
-import { forkJoin, fromEvent, Subject, timer } from "rxjs";
-import { skipWhile, takeUntil, takeWhile, tap } from "rxjs/operators";
+import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
+import { skipWhile, takeUntil, takeWhile, tap, switchMap } from "rxjs/operators";
 import { BufferGeometry, CameraHelper, Clock, Group, Intersection, Light, Mesh, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -42,6 +42,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private defaultCeilHeight: number = DreamDefHeight;
   evenlyMaxDiff: number = Math.round(this.ceilHeightParts * 1.5);
   private delta: number = 0;
+  private contextType: string = "webgl";
+  private waitContext: number = 30;
 
   private successHighlight: number = 0x2f2f2f;
   private errorHighlight: number = 0xff0000;
@@ -67,6 +69,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   stats: Stats;
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
+
+  loading: boolean = false;
+  ready: boolean = false;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -133,6 +138,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private skyBoxService: SkyBoxService,
     private terrainService: TerrainService
   ) { }
@@ -148,25 +154,58 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngAfterViewInit() {
-    const testWhile: () => boolean = () => !this.canvas || !(!this.debugInfo || !!this.statsBlock) || !this.width || !this.height;
-    // Создание сцены
-    timer(0, 100)
-      .pipe(
-        tap(() => this.canvas ? this.createCanvas() : null),
-        skipWhile(testWhile),
-        takeWhile(testWhile, true),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => {
-        this.createScene();
-        this.createSky();
-        this.createObject();
-        // События
-        timer(0, 0).pipe(takeUntil(this.destroy$)).subscribe(this.animate.bind(this))
-        fromEvent(this.control, "change", (event) => this.onCameraChange(event.target)).pipe(takeUntil(this.destroy$)).subscribe();
-        // Обновить
-        this.control.update();
-      });
+    if (!!window.WebGLRenderingContext) {
+      const testWhile: () => boolean = () => {
+        return (
+          !this.canvas ||
+          !this.canvas?.nativeElement?.getContext(this.contextType) ||
+          !(!this.debugInfo || !!this.statsBlock) ||
+          !(this.width && this.height)
+        );
+      };
+      // Начало загрузки
+      this.loading = true;
+      this.ready = false;
+      this.changeDetectorRef.detectChanges();
+      // Создание сцены
+      timer(0, 100)
+        .pipe(
+          switchMap(i => i < this.waitContext ? of(i) : throwError(false)),
+          tap(() => this.canvas ? this.createCanvas() : null),
+          skipWhile(testWhile),
+          takeWhile(testWhile, true),
+          takeUntil(this.destroy$),
+        )
+        .subscribe(
+          () => {
+            if (!testWhile()) {
+              this.loading = false;
+              this.ready = true;
+              this.changeDetectorRef.detectChanges();
+              // Создание сцены
+              this.createScene();
+              this.createSky();
+              this.createTerrains();
+              // События
+              timer(0, 0).pipe(takeUntil(this.destroy$)).subscribe(this.animate.bind(this))
+              fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
+                .pipe(takeUntil(this.destroy$))
+                .subscribe();
+              // Обновить
+              this.control.update();
+            }
+          },
+          () => {
+            this.loading = false;
+            this.ready = false;
+            this.changeDetectorRef.detectChanges();
+          }
+        );
+    }
+    // WebGL не поддерживается
+    else {
+      console.error("WebGL не поддерживается");
+    }
   }
 
   ngOnDestroy() {
@@ -215,15 +254,17 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Движение мышки
   private onMouseMove(event: MouseEvent): void {
-    const object: Intersection<Object3D<Event>> = this.getEventObject(event);
-    // Найден объект
-    if (object) {
-      const ceil: DreamMapCeil = object.object.userData as DreamMapCeil;
-      // Обратный вызов
-      if (ceil.coord.x >= 0 && ceil.coord.y >= 0) {
-        this.objectHover.emit({ ceil, object: object.object as unknown as Mesh });
-        // Завершить функцию
-        return;
+    if (this.renderer) {
+      const object: Intersection<Object3D<Event>> = this.getEventObject(event);
+      // Найден объект
+      if (object) {
+        const ceil: DreamMapCeil = object.object.userData as DreamMapCeil;
+        // Обратный вызов
+        if (ceil.coord.x >= 0 && ceil.coord.y >= 0) {
+          this.objectHover.emit({ ceil, object: object.object as unknown as Mesh });
+          // Завершить функцию
+          return;
+        }
       }
     }
   }
@@ -249,10 +290,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание сцены
   private createScene(): void {
-    this.renderer = new WebGLRenderer({ canvas: this.canvas.nativeElement, antialias: true });
+    this.renderer = new WebGLRenderer({
+      canvas: this.canvas.nativeElement,
+      antialias: false,
+      context: this.canvas.nativeElement.getContext(this.contextType)
+    });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 1);
-    this.renderer.shadowMap.enabled = true;
+    // this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     // Сцена
     this.scene = new Scene();
@@ -318,7 +363,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Отрисовать объекты
-  private createObject(): void {
+  private createTerrains(): void {
     if (this.scene) {
       const width: number = this.dreamMap?.size?.width || DreamMapSize;
       const height: number = this.dreamMap?.size?.height || DreamMapSize;
@@ -339,7 +384,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             Object.entries(ClosestCeilsCoords)
               .map(([k, { x: cX, y: cY }]) => {
                 const c: DreamMapCeil = this.getCeil(x + cX, y + cY);
-                c.coord.z = c.coord.z > this.maxCeilHeight ? this.maxCeilHeight : (c.coord.z < this.minCeilHeight ? this.minCeilHeight : c.coord.z);
+                c.coord.z = c.coord.z > this.maxCeilHeight ?
+                  this.maxCeilHeight :
+                  (c.coord.z < this.minCeilHeight ? this.minCeilHeight : c.coord.z);
                 // Результат
                 return [k.toString(), c.coord.z * heightPart, c.terrain];
               })
