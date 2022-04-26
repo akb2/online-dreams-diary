@@ -1,8 +1,26 @@
 <div class="map-viewer">
+  <!-- Данные карты -->
   <canvas #canvas></canvas>
   <div #statsBlock
        class="map-viewer__stats"
        *ngIf="debugInfo"></div>
   <div #helper
        class="map-viewer__helper"></div>
+  <!-- Состояния -->
+  <div class="map-viewer__loader"
+       *ngIf="loading || !ready">
+    <!-- Загрузка -->
+    <app-inform title="Загрузка 3D-просмотра"
+                subTitle="Пожалуйста подождите"
+                *ngIf="loading"></app-inform>
+    <!-- Ошибка WebGL -->
+    <app-inform icon="close"
+                title="Ошибка"
+                subTitle="WebGL не поддерживается"
+                *ngIf="!loading && !ready">
+      Похоже, что Ваш браузер не поддерживает WebGL.
+      <a href="http://get.webgl.org/troubleshooting"
+         target="_blank">Подробнее тут</a>
+    </app-inform>
+  </div>
 </div>
