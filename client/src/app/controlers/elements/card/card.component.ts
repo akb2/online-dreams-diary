@@ -26,9 +26,9 @@ export class CardComponent implements AfterViewInit, OnChanges {
   @Input() queryParams: SimpleObject | null;
   @Input() changeDetection: boolean;
 
-  @ViewChild('contentPanel') private contentPanel: ElementRef;
-  @ViewChild('actionsPanel') private actionsPanel: ElementRef;
-  @ViewChild('menuPanelHelper') private menuPanelHelper: ElementRef;
+  @ViewChild("contentPanel") private contentPanel: ElementRef;
+  @ViewChild("actionsPanel") private actionsPanel: ElementRef;
+  @ViewChild("menuPanelHelper") private menuPanelHelper: ElementRef;
 
   showContentPanel: boolean = false;
   showActionsPanel: boolean = false;
@@ -39,20 +39,16 @@ export class CardComponent implements AfterViewInit, OnChanges {
 
 
 
-  // Конструктор
   constructor(
     private changeDetectorRef: ChangeDetectorRef
-  ) {
-  }
+  ) { }
 
-  // Получены изменения
   ngOnChanges(): void {
     if (this.changeDetection != this.changeDetectionHelper) {
       this.changeDetectorRef.detectChanges();
     }
   }
 
-  // После проверки элементов
   ngAfterViewInit(): void {
     this.showContentPanel = this.contentPanel?.nativeElement?.children.length > 0;
     this.showActionsPanel = this.actionsPanel?.nativeElement?.children.length > 0;
