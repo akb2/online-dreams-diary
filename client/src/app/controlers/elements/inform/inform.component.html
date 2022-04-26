@@ -1,7 +1,4 @@
 <div class="loader__layout">
-  <!-- Иконка -->
-  <mat-icon class="loader__icon"
-            *ngIf="icon !== 'loader'">{{icon}}</mat-icon>
   <!-- Заголовок -->
   <div class="loader__title"
        *ngIf="title">{{title}}</div>
@@ -14,7 +11,14 @@
     <div class="loader__figure loader__figure-1"></div>
     <div class="loader__figure loader__figure-2"></div>
   </div>
+  <!-- Иконка -->
+  <mat-icon class="loader__icon"
+            *ngIf="icon !== 'loader'">{{icon}}</mat-icon>
   <!-- Текст -->
-  <div class="loader__description"
-       *ngIf="description">{{description}}</div>
+  <div #descriptionPanel
+       class="loader__description"
+       [hidden]="!showDescriptionPanel">
+    <span *ngIf="description">{{description}}</span>
+    <ng-content *ngIf="!description"></ng-content>
+  </div>
 </div>
