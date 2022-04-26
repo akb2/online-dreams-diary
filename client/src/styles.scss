@@ -75,9 +75,14 @@ html {
   }
   // Текст
   & {
+    // Жирность
     b,
     strong {
       font-weight: 900;
+    }
+    // Ссылка
+    a {
+      color: map.get(colors.$mat-primary, 500);
     }
   }
 }
@@ -110,6 +115,7 @@ html {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
+    background-color: colors.$background;
     // Последний элемент
     > .#{$_elm}:last-child {
       flex-grow: 1;
