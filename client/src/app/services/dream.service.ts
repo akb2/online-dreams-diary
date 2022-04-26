@@ -5,8 +5,8 @@ import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { DreamMap, DreamMapDto } from "@_models/dream-map";
+import { Dream, DreamDto, DreamMode, DreamStatus, Place } from "@_models/dream";
+import { CoordDto, DreamMap, DreamMapCeil, DreamMapCeilDto, DreamMapDto, MapObject } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -229,7 +229,7 @@ export class DreamService {
       text: dream.text,
       places: dream.places?.join(",") || "",
       members: dream.members?.join(",") || "",
-      map: JSON.stringify(dream.map),
+      map: JSON.stringify(this.cleanMap(dream.map)),
       mode: dream.mode,
       status: dream.status,
       headerType: dream.headerType,
@@ -272,6 +272,37 @@ export class DreamService {
         skyBox: DreamSkyBox
       };
     }
+  }
+
+  // Очистка карты от лишних данных
+  cleanMap(dreamMap: DreamMap): DreamMapDto {
+    const ceils: DreamMapCeilDto[] = dreamMap.ceils
+      .filter(c => !(
+        !c.object &&
+        (!c.terrain || c.terrain === DreamTerrain) &&
+        c.coord.originalZ === DreamDefHeight
+      ))
+      .map(c => {
+        const ceil: DreamMapCeilDto = {};
+        // Добавление данных
+        ceil.coord = {
+          x: c.coord.x,
+          y: c.coord.y,
+          z: c.coord.originalZ
+        };
+        if (!!c.place) ceil.place = c.place.id;
+        if (!!c.terrain && c.terrain !== DreamTerrain) ceil.terrain = c.terrain;
+        if (!!c.object) ceil.object = c.object.id;
+        // Ячейка
+        return ceil;
+      });
+    // Вернуть карту
+    return {
+      ceils,
+      size: dreamMap.size,
+      dreamerWay: dreamMap.dreamerWay,
+      skyBox: dreamMap.skyBox
+    };
   }
 }
 
