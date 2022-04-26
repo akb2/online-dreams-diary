@@ -16,6 +16,7 @@ $separatorColor: #ccc;
   height: 100%;
   position: relative;
   overflow: hidden;
+  background-color: inherit;
 }
 
 // Области редактора
@@ -24,10 +25,12 @@ $separatorColor: #ccc;
   width: 100%;
   height: 100%;
   position: relative;
+  background-color: inherit;
   // Блок просмотра
   &__viewer {
     width: 100%;
     height: 100%;
+    background-color: inherit;
   }
   // Блок настроек
   &__control {
