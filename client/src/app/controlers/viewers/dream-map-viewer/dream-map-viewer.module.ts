@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { DreamMapViewerComponent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
+import { InformModule } from "@_controlers/inform/inform.module";
 
 
 
@@ -14,7 +15,8 @@ import { DreamMapViewerComponent } from "@_controlers/dream-map-viewer/dream-map
     DreamMapViewerComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    InformModule
   ]
 })
 
