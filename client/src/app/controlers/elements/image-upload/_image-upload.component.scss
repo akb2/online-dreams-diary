@@ -2,7 +2,7 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/containers";
-@use "../card/card.component.scss" as card;
+@use "../card/card.component" as card;
 
 $padding: 10px;
 $height: 280px;

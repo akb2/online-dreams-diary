@@ -8,7 +8,7 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 @Component({
   selector: "app-card",
   templateUrl: "./card.component.html",
-  styleUrls: ["./card.component.scss"],
+  styleUrls: ["./_card.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 

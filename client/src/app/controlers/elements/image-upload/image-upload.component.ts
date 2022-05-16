@@ -11,7 +11,7 @@ import { SnackbarService } from "@_services/snackbar.service";
 @Component({
   selector: "app-image-upload",
   templateUrl: "./image-upload.component.html",
-  styleUrls: ["./image-upload.component.scss"]
+  styleUrls: ["./_image-upload.component.scss"]
 })
 
 export class ImageUploadComponent extends BaseInputDirective implements OnInit {
