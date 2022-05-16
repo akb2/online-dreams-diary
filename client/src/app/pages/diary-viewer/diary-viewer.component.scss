@@ -2,6 +2,7 @@
 @use "sass:math";
 @use "../../../assets/styles/colors";
 @use "../../../assets/styles/screens";
+@use "../../../assets/styles/containers";
 
 // Данные сновидения
 .dream {
@@ -54,7 +55,6 @@
         }
       }
     }
-
     // Отступы
     ::ng-deep p,
     ::ng-deep .table {
@@ -62,6 +62,14 @@
       & + ::ng-deep .table {
         margin-top: $lineHeight;
       }
+    }
+  }
+  // Карта
+  &__map {
+    width: 100%;
+    // Адаптив
+    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+      height: calc(100vh - #{60px + ($paddingY * 2)});
     }
   }
 }

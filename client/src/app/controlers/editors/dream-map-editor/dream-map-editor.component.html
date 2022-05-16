@@ -7,9 +7,8 @@
                           (objectHover)="onObjectHover($event)"></app-dream-map-viewer>
   </div>
   <!-- Область инструментов -->
-  <form class="area__control"
-        [formGroup]="form"
-        *ngIf="form">
+  <div class="area__control"
+       *ngIf="form">
     <!-- Инструмент -->
     <div class="tool-button">
       <mat-icon>{{getCurrentTool.icon}}</mat-icon>
@@ -25,105 +24,178 @@
       </div>
     </div>
     <!-- Под-инструмент: ландшафт -->
-    <div class="tool-button"
-         *ngIf="getCurrentTool.type === toolType.landscape">
-      <mat-icon>{{getCurrentLandscapeTool.icon}}</mat-icon>
-      <!-- Список инструментов -->
-      <div class="tool-button__items border-radius">
-        <div class="tool-button"
-             [ngClass]="{ active: tool.type === getCurrentLandscapeTool.type }"
-             matTooltip="Ландшафт: {{tool.name}}"
-             (click)="onLandscapeToolChange(tool.type)"
-             *ngFor="let tool of landscapeToolList">
-          <mat-icon>{{tool.icon}}</mat-icon>
-        </div>
-      </div>
-    </div>
+    <ng-container [ngTemplateOutlet]="landscapeTools"
+                  *ngIf="getCurrentTool.type === toolType.landscape"></ng-container>
     <!-- Под-инструмент: тип местности -->
-    <div class="tool-button"
-         *ngIf="getCurrentTool.type === toolType.terrain">
-      <img [src]="getTerrainImage(currentTerrain)" />
-      <!-- Список инструментов -->
-      <div class="tool-button__items border-radius">
-        <ng-container *ngFor="let terrain of terrainList">
-          <div class="tool-button"
-               [ngClass]="{ active: terrain.id === currentTerrain }"
-               matTooltip="Материал: {{terrain.title}}"
-               (click)="onTerrainChange(terrain.id)"
-               *ngIf="terrain.isAvail">
-            <img [src]="getTerrainImage(terrain.id)" />
-          </div>
-        </ng-container>
+    <ng-container [ngTemplateOutlet]="terrainTools"
+                  *ngIf="getCurrentTool.type === toolType.terrain"></ng-container>
+    <!-- Под-инструмент: дорога -->
+    <ng-container [ngTemplateOutlet]="roadTools"
+                  *ngIf="getCurrentTool.type === toolType.road"></ng-container>
+  </div>
+</div>
+
+
+
+
+
+<!-- Под-инструмент: ландшафт -->
+<ng-template #landscapeTools>
+  <!-- Направление изменения -->
+  <div class="tool-button">
+    <mat-icon>{{getCurrentLandscapeTool.icon}}</mat-icon>
+    <!-- Список инструментов -->
+    <div class="tool-button__items border-radius">
+      <div class="tool-button"
+           [ngClass]="{ active: tool.type === getCurrentLandscapeTool.type }"
+           matTooltip="Ландшафт: {{tool.name}}"
+           (click)="onLandscapeToolChange(tool.type)"
+           *ngFor="let tool of landscapeToolList">
+        <mat-icon>{{tool.icon}}</mat-icon>
       </div>
     </div>
-    <!-- Под-инструмент: тип дороги -->
-    <div class="tool-button"
-         *ngIf="getCurrentTool.type === toolType.road">
-      <mat-icon>{{getCurrentRoadTypeTool.icon}}</mat-icon>
-      <!-- Список инструментов -->
-      <div class="tool-button__items border-radius">
-        <ng-container *ngFor="let type of roadTypeList">
-          <div class="tool-button"
-               [ngClass]="{ active: type.type === roadType }"
-               matTooltip="Тип дороги: {{type.title}}"
-               (click)="onRoadTypeChange(type.type)">
-            <mat-icon>{{type.icon}}</mat-icon>
-          </div>
-        </ng-container>
-      </div>
-    </div>
-    <!-- Под-инструмент: размер кисти -->
-    <div class="tool-button"
-         *ngIf="getCurrentTool.type === toolType.landscape || getCurrentTool.type === toolType.terrain">
-      <div class="tool-button__point "
-           [ngStyle]="{
-             width: toolSizeLandFormat() + 'px',
-             height: toolSizeLandFormat() + 'px'
-           }"></div>
-      <!-- Настройка размера -->
-      <div class="tool-button__items">
-        <div class="tool-button container">Размер кисти:</div>
-        <div class="tool-button container">
-          <mat-slider thumbLabel
-                      formControlName="toolSizeLand"
-                      [displayWith]="toolSizeLandFormat"
-                      tickInterval="1000"
-                      color="primary"
-                      step="1"
-                      min="0"
-                      [max]="toolSizeLandLength"
-                      aria-label="blocks"
-                      (input)="onToolSizeLandChange($event)"
-                      (change)="onToolSizeLandChange($event)"></mat-slider>
+  </div>
+  <!-- Размер кисти -->
+  <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
+</ng-template>
+
+<!-- Под-инструмент: тип местности -->
+<ng-template #terrainTools>
+  <!-- Текстура -->
+  <div class="tool-button"
+       *ngIf="getCurrentTool.type === toolType.terrain">
+    <img [src]="getTerrainImage(currentTerrain)" />
+    <!-- Список инструментов -->
+    <div class="tool-button__items border-radius">
+      <ng-container *ngFor="let terrain of terrainList">
+        <div class="tool-button"
+             [ngClass]="{ active: terrain.id === currentTerrain }"
+             matTooltip="Материал: {{terrain.title}}"
+             (click)="onTerrainChange(terrain.id)"
+             *ngIf="terrain.isAvail">
+          <img [src]="getTerrainImage(terrain.id)" />
         </div>
-      </div>
+      </ng-container>
     </div>
-    <!-- Под-инструмент: размер дороги -->
-    <div class="tool-button"
-         *ngIf="this.getCurrentTool.type === toolType.road && this.roadType === roadTypeTool.road">
-      <div class="tool-button__point "
-           [ngStyle]="{
+  </div>
+  <!-- Размер кисти -->
+  <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
+  <!-- Настройки материала -->
+  <ng-container [ngTemplateOutlet]="terrainSettings"></ng-container>
+</ng-template>
+
+<!-- Под-инструмент: дорога -->
+<ng-template #roadTools>
+  <!-- Тип -->
+  <div class="tool-button"
+       *ngIf="getCurrentTool.type === toolType.road">
+    <mat-icon>{{getCurrentRoadTypeTool.icon}}</mat-icon>
+    <!-- Список инструментов -->
+    <div class="tool-button__items border-radius">
+      <ng-container *ngFor="let type of roadTypeList">
+        <div class="tool-button"
+             [ngClass]="{ active: type.type === roadType }"
+             matTooltip="Тип дороги: {{type.title}}"
+             (click)="onRoadTypeChange(type.type)">
+          <mat-icon>{{type.icon}}</mat-icon>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <!-- Размер -->
+  <div class="tool-button"
+       *ngIf="this.getCurrentTool.type === toolType.road && this.roadType === roadTypeTool.road">
+    <div class="tool-button__point "
+         [ngStyle]="{
              'border-radius': 0,
              width: (toolSizeRoadFormat() * 3) + 'px',
              height: (toolSizeRoadFormat() * 3) + 'px'
            }"></div>
-      <!-- Настройка размера -->
-      <div class="tool-button__items">
-        <div class="tool-button container">Ширина дороги:</div>
-        <div class="tool-button container">
-          <mat-slider thumbLabel
-                      formControlName="toolSizeRoad"
-                      [displayWith]="toolSizeRoadFormat"
-                      tickInterval="1000"
-                      color="primary"
-                      step="1"
-                      min="0"
-                      [max]="toolSizeRoadLength"
-                      aria-label="blocks"
-                      (input)="onToolSizeRoadChange($event)"
-                      (change)="onToolSizeRoadChange($event)"></mat-slider>
-        </div>
+    <!-- Настройка размера -->
+    <div class="tool-button__items">
+      <div class="tool-button container">Ширина дороги:</div>
+      <div class="tool-button container">
+        <mat-slider thumbLabel
+                    formControlName="toolSizeRoad"
+                    [displayWith]="toolSizeRoadFormat"
+                    tickInterval="1000"
+                    color="primary"
+                    step="1"
+                    min="0"
+                    [max]="toolSizeRoadLength"
+                    aria-label="blocks"
+                    (input)="onToolSizeRoadChange($event)"
+                    (change)="onToolSizeRoadChange($event)"></mat-slider>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+
+
+
+
+<!-- Под-инструмент: размер кисти -->
+<ng-template #toolsSizeForm>
+  <form class="tool-button"
+        [formGroup]="form">
+    <div class="tool-button__point "
+         [ngStyle]="toolSizeStyles"></div>
+    <!-- Настройка размера -->
+    <div class="tool-button__items">
+      <div class="tool-button container">Размер кисти:</div>
+      <div class="tool-button container">
+        <mat-slider thumbLabel
+                    formControlName="toolSizeLand"
+                    [displayWith]="toolSizeLandFormat"
+                    tickInterval="1000"
+                    color="primary"
+                    step="1"
+                    min="0"
+                    [max]="toolSizeLandLength"
+                    aria-label="blocks"
+                    (input)="onToolSizeLandChange($event)"
+                    (change)="onToolSizeLandChange($event)"></mat-slider>
       </div>
     </div>
   </form>
-</div>
+</ng-template>
+
+
+
+
+
+<!-- Под-инструмент: настройки материала -->
+<ng-template #terrainSettings>
+  <form class="tool-button">
+    <mat-icon>settings</mat-icon>
+    <!-- Настройки -->
+    <div class="tool-button__items settings">
+      <!-- Металличность -->
+      <ng-container [ngTemplateOutlet]="terrainSettingsField"
+                    [ngTemplateOutletContext]="setting"
+                    *ngFor="let setting of terrainsSettingsKeys"></ng-container>
+    </div>
+  </form>
+  <!-- Шаблон поля -->
+  <ng-template #terrainSettingsField
+               let-step="step"
+               let-min="min"
+               let-max="max"
+               let-key="key"
+               let-title="title">
+    <div class="tool-button container right">{{title}} ({{terrainInfo.settings[key]}}):</div>
+    <div class="tool-button container">
+      <mat-slider [value]="terrainInfo.settings[key]"
+                  thumbLabel
+                  tickInterval="1000"
+                  color="primary"
+                  [step]="step"
+                  [min]="min"
+                  [max]="max"
+                  aria-label="blocks"
+                  (input)="onTerrainSettingsChange(key, $event)"
+                  (change)="onTerrainSettingsChange(key, $event)"></mat-slider>
+    </div>
+  </ng-template>
+</ng-template>

@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
-import { MapTerrain, TerrainMaterialCache, TerrainTextureCache } from "@_models/dream-map";
-import { BackSide, BufferAttribute, BufferGeometry, Mesh, MeshPhongMaterial, Texture, TextureLoader, Vector3 } from "three";
+import { CustomObjectKey } from "@_models/app";
+import { MapTerrain, MapTerrainSettings, TerrainMaterialCache, TerrainTextureCache, TextureType } from "@_models/dream-map";
+import { ImageExtension } from "@_models/screen";
+import { BackSide, BufferAttribute, BufferGeometry, Color, Mesh, MeshStandardMaterial, Texture, TextureLoader, Vector2, Vector3 } from "three";
 
 
 
@@ -13,7 +15,9 @@ export class TerrainService {
 
   private path: string = "../../assets/dream-map/terrain/";
   private textureCache: TerrainTextureCache[] = [];
-  private materialCache: TerrainMaterialCache[] = [];
+  materialCache: TerrainMaterialCache[] = [];
+
+  private displacementQuality: number = 10;
 
 
 
@@ -22,7 +26,7 @@ export class TerrainService {
   // Объект для отрисовки
   getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights): Mesh {
     const geometry: BufferGeometry = this.getGeometry(size, height, closestHeights);
-    const material: MeshPhongMaterial = this.getMaterial(terrainId);
+    const material: MeshStandardMaterial = this.getMaterial(terrainId);
     const mesh: Mesh = new Mesh(geometry, material);
     // Настройки
     geometry.computeVertexNormals();
@@ -97,21 +101,44 @@ export class TerrainService {
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(points);
     // Настройки
     geometry.setAttribute("uv", new BufferAttribute(uvMap, 2));
+    geometry.setAttribute("uv2", new BufferAttribute(uvMap, 2));
     // Вернуть геометрию
     return geometry;
   }
 
   // Материалы
-  getMaterial(terrainId: number): MeshPhongMaterial {
+  getMaterial(terrainId: number): MeshStandardMaterial {
     const findCache: (m: TerrainMaterialCache) => boolean = m => m.terrain === terrainId;
+    const terrain: MapTerrain = this.getTerrain(terrainId);
     // Материал из кэша
     if (this.materialCache.some(findCache)) {
-      return new MeshPhongMaterial().copy(this.materialCache.find(findCache).material);
+      return new MeshStandardMaterial().copy(this.materialCache.find(findCache).material);
     }
     // Новый материал
     else {
       const map: Texture = this.getTexture(terrainId);
-      const material: MeshPhongMaterial = new MeshPhongMaterial({ map, side: BackSide });
+      const aoMap: Texture = this.getTexture(terrainId, "ao");
+      const normalMap: Texture = this.getTexture(terrainId, "normal");
+      const displacementMap: Texture = this.getTexture(terrainId, "disp");
+      const material: MeshStandardMaterial = new MeshStandardMaterial({
+        map,
+        aoMap,
+        normalMap,
+        displacementMap,
+        side: BackSide,
+        ...Object
+          .entries(terrain.settings)
+          .filter(([k]) => k !== "colorR" && k !== "colorG" && k !== "colorB")
+          .map(([k, v]) => k === "normalScale" ? [k, new Vector2(1, -1)] : [k, v])
+          .reduce((o, [k, v]) => ({ ...o, [k as string]: v }), {}),
+        color: new Color(
+          terrain.settings.colorR / 255,
+          terrain.settings.colorG / 255,
+          terrain.settings.colorB / 255
+        )
+      });
+      // Настройки
+      material.normalScale.set(1, - 1).multiplyScalar(terrain.settings.normalScale);
       // Сохранить в кэш
       this.materialCache.push({ side: BackSide, material, terrain: terrainId });
       // Вернуть материал
@@ -128,23 +155,50 @@ export class TerrainService {
   }
 
   // Получение текстуры
-  private getTexture(terrainId: number): Texture {
+  private getTexture(terrainId: number, type: TextureType = "face"): Texture {
     const findCache: (t: TerrainTextureCache) => boolean = t => t.terrain === terrainId;
+    let texture: Texture;
+    let aoTexture: Texture;
+    let dispTexture: Texture;
+    let normalTexture: Texture;
     // Текстура из кэша
     if (this.textureCache.some(findCache)) {
-      const texture: Texture = this.textureCache.find(findCache).texture;
-      // Вернуть текстуру
-      return texture;
+      const cache: TerrainTextureCache = this.textureCache.find(findCache)!;
+      texture = cache.texture;
+      aoTexture = cache.aoTexture;
+      dispTexture = cache.dispTexture;
+      normalTexture = cache.normalTexture;
     }
     // Новая текстура
     else {
-      const textureFile: string = this.path + "top/" + this.getTerrain(terrainId).name + ".jpg";
-      const texture: Texture = new TextureLoader().load(textureFile);
+      const terrain: MapTerrain = this.getTerrain(terrainId);
+      const textureFile: string = this.path + "top/face/" + terrain.name + "." + terrain.exts.face;
+      const aoTextureFile: string = this.path + "top/ao/" + terrain.name + "." + terrain.exts.ao;
+      const dispTextureFile: string = this.path + "top/displacement/" + terrain.name + "." + terrain.exts.disp;
+      const normalTextureFile: string = this.path + "top/normal/" + terrain.name + "." + terrain.exts.normal;
+      // Результаты
+      texture = new TextureLoader().load(textureFile);
+      aoTexture = new TextureLoader().load(aoTextureFile);
+      dispTexture = new TextureLoader().load(dispTextureFile);
+      normalTexture = new TextureLoader().load(normalTextureFile);
       // Сохранить в кэш
-      this.textureCache.push({ texture, terrain: terrainId });
-      // Вернуть текстуру
-      return texture;
+      this.textureCache.push({
+        texture,
+        aoTexture,
+        dispTexture,
+        normalTexture,
+        terrain: terrainId
+      });
     }
+    // Массив текстур
+    const textures: CustomObjectKey<TextureType, Texture> = {
+      normal: normalTexture,
+      disp: dispTexture,
+      face: texture,
+      ao: aoTexture
+    };
+    // Вернуть текстуру
+    return textures[type] ? textures[type] : textures.face;
   }
 
   // Пересчитать разницу в высоте: соседние точки
@@ -190,24 +244,102 @@ export interface ClosestHeightAligment {
 
 
 // Список типов местности
-export const MapTerrains: MapTerrain[] = [{
-  id: 1,
-  name: "grass",
-  title: "Газон",
-  isAvail: true
-}, {
-  id: 2,
-  name: "dirty",
-  title: "Земля",
-  isAvail: true
-}, {
-  id: 3,
-  name: "rock",
-  title: "Камень",
-  isAvail: true
-}, {
-  id: 4,
-  name: "sand",
-  title: "Песок",
-  isAvail: true
-}];
+export const MapTerrains: MapTerrain[] = [
+  // Газон
+  {
+    id: 1,
+    name: "grass",
+    title: "Газон",
+    settings: {
+      colorR: 54,
+      colorG: 158,
+      colorB: 54,
+      metalness: 0,
+      roughness: 0.76,
+      aoMapIntensity: 2.5,
+      normalScale: -0.2
+    }
+  },
+  // Земля
+  {
+    id: 2,
+    name: "dirt",
+    title: "Земля",
+    settings: {
+      colorR: 135,
+      colorG: 163,
+      colorB: 158,
+      metalness: 0.1,
+      roughness: 0.85,
+      aoMapIntensity: 5.5,
+      normalScale: -0.2
+    }
+  },
+  // Камень
+  {
+    id: 3,
+    name: "stone",
+    title: "Камень",
+    settings: {
+      colorR: 180,
+      colorG: 180,
+      colorB: 180,
+      metalness: 0.75,
+      roughness: 0.75,
+      aoMapIntensity: 2.5,
+      normalScale: -0.7
+    }
+  },
+  // Песок
+  {
+    id: 4,
+    name: "sand",
+    title: "Песок",
+    settings: {
+      colorR: 170,
+      colorG: 170,
+      colorB: 170,
+      metalness: 0.1,
+      roughness: 0.6,
+      aoMapIntensity: 3.5,
+      normalScale: -0.5
+    }
+  },
+  // Снег
+  {
+    id: 5,
+    name: "snow",
+    title: "Снег",
+    settings: {
+      colorR: 230,
+      colorG: 230,
+      colorB: 230,
+      metalness: 0,
+      roughness: 0.4,
+      aoMapIntensity: 1,
+      normalScale: 0.7
+    }
+  }
+]
+  .map(d => d as MapTerrain)
+  .map(d => ({
+    ...d,
+    isAvail: !!d?.isAvail || true,
+    exts: {
+      face: d?.exts?.face as ImageExtension || ImageExtension.png,
+      disp: d?.exts?.disp as ImageExtension || ImageExtension.png,
+      normal: d?.exts?.normal as ImageExtension || ImageExtension.png,
+      ao: d?.exts?.ao as ImageExtension || ImageExtension.png
+    },
+    settings: {
+      colorR: d?.settings?.colorR === undefined ? 100 : d.settings.colorR,
+      colorG: d?.settings?.colorG === undefined ? 100 : d.settings.colorG,
+      colorB: d?.settings?.colorB === undefined ? 100 : d.settings.colorB,
+      metalness: d?.settings?.metalness === undefined ? 0.5 : d.settings.metalness,
+      roughness: d?.settings?.roughness === undefined ? 0 : d.settings.roughness,
+      aoMapIntensity: d?.settings?.aoMapIntensity === undefined ? 1 : d.settings.aoMapIntensity,
+      displacementScale: d?.settings?.displacementScale === undefined ? 0 : d.settings.displacementScale,
+      envMapIntensity: d?.settings?.envMapIntensity === undefined ? 1 : d.settings.envMapIntensity,
+      normalScale: d?.settings?.normalScale === undefined ? 0 : d.settings.normalScale,
+    }
+  }));

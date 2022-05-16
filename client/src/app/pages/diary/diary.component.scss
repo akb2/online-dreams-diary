@@ -11,7 +11,7 @@
       // Отступы
       @each $elmNext in $elms {
         & + #{$elmNext} {
-          @include screens.adaptiveFor(containers.$paddings-y) using($paddingY) {
+          @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
             margin-top: $paddingY;
           }
         }

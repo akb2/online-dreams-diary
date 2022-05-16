@@ -86,9 +86,14 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     return data;
   }
 
-  // Получить текст сновидения в формате HTML
+  // Доступен ли просмотр текста
   get isTextAvail(): boolean {
     return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.text) && this.dream.text.length > 0;
+  }
+
+  // Доступен ли просмотр текста
+  get isMapAvail(): boolean {
+    return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.map) && !!this.dream.map;
   }
 
 

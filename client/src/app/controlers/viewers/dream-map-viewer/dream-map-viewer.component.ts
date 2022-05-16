@@ -1,11 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil, SkyBoxLightTarget } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, MapTerrain, SkyBoxLightTarget, TerrainMaterialCache } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamWater } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
-import { skipWhile, takeUntil, takeWhile, tap, switchMap } from "rxjs/operators";
-import { BufferGeometry, CameraHelper, Clock, Group, Intersection, Light, Mesh, MeshPhongMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, WebGLRenderer } from "three";
+import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
+import { BufferGeometry, CameraHelper, Clock, Color, Group, Intersection, Light, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -56,7 +56,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private minAngle: number = 0;
   private maxAngle: number = 80;
   private distance: number = 50;
-  private fpsLimit: number = 120;
+  private fpsLimit: number = 60;
   private showHelpers: boolean = false;
 
   private renderer: WebGLRenderer;
@@ -69,6 +69,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   stats: Stats;
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
+
+  private waterHightLight: Mesh = new Mesh(
+    new PlaneGeometry(this.ceilSize, this.ceilSize),
+    new MeshStandardMaterial({ color: this.successHighlight, opacity: 0.5 })
+  );
 
   loading: boolean = false;
   ready: boolean = false;
@@ -90,6 +95,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       place: null,
       terrain: MapTerrains[0].id,
       object: null,
+      water: DreamWater,
       coord: {
         x,
         y,
@@ -259,9 +265,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Найден объект
       if (object) {
         const ceil: DreamMapCeil = object.object.userData as DreamMapCeil;
+        const width: number = this.dreamMap?.size?.width || DreamMapSize;
+        const height: number = this.dreamMap?.size?.height || DreamMapSize;
+        const heightPart: number = this.ceilSize / this.ceilHeightParts;
+        const x: number = (object.point.x / this.ceilSize) + (width / 2);
+        const y: number = (object.point.z / this.ceilSize) + (height / 2);
         // Обратный вызов
         if (ceil.coord.x >= 0 && ceil.coord.y >= 0) {
-          this.objectHover.emit({ ceil, object: object.object as unknown as Mesh });
+          this.objectHover.emit({
+            ceil,
+            object: object.object as unknown as Mesh,
+            point: {
+              x: ceil.coord.x,
+              y: ceil.coord.y,
+              z: Math.round((object.point.y + (heightPart * this.maxCeilHeight)) / heightPart),
+              xDimen: x > ceil.coord.x ? 1 : x < ceil.coord.x ? -1 : 0,
+              yDimen: y > ceil.coord.y ? 1 : y < ceil.coord.y ? -1 : 0
+            }
+          });
           // Завершить функцию
           return;
         }
@@ -292,12 +313,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private createScene(): void {
     this.renderer = new WebGLRenderer({
       canvas: this.canvas.nativeElement,
-      antialias: false,
+      antialias: true,
       context: this.canvas.nativeElement.getContext(this.contextType)
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 1);
-    // this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.enabled = false;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     // Сцена
     this.scene = new Scene();
@@ -427,6 +448,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Обновить дельту
         this.delta = this.delta % interval;
       }
+      //
+      else {
+        this.renderer.getContext().flush();
+      }
     }
   }
 
@@ -463,12 +488,64 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновить статус свечения местности
   setTerrainHoverStatus(ceil: DreamMapCeil): void {
-    let mesh: Mesh = this.terrainMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    let mesh: Mesh = this.terrainMeshes.find(e =>
+      (e.userData as DreamMapCeil).coord.x === ceil.coord.x &&
+      (e.userData as DreamMapCeil).coord.y === ceil.coord.y
+    );
     // Объект найден
     if (ceil && mesh) {
       const material: MeshPhongMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as MeshPhongMaterial;
-      // Дополнить материал
-      material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
+      const color: number = material.emissive.getHex();
+      // Надо сменить подсветку с земли
+      if ((ceil.highlight && color !== this.successHighlight) || (!ceil.highlight && color === this.successHighlight)) {
+        material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
+      }
+      // Надо сменить подсветку воды
+      if (ceil?.waterHightlight !== mesh.userData.ceil?.waterHightlight) {
+        // Добавить подсветку воды
+        if (!!ceil?.waterHightlight) {
+          /*
+          const waterMeshID: string = mesh.userData?.waterHighlight as string;
+          const waterMesh: Mesh = !!waterMeshID ?
+            this.scene.getObjectByProperty("uuid", waterMeshID) as Mesh :
+            new Mesh().copy(this.waterHightLight);
+          const width: number = this.dreamMap?.size?.width || DreamMapSize;
+          const height: number = this.dreamMap?.size?.height || DreamMapSize;
+          const heightPart: number = this.ceilSize / this.ceilHeightParts;
+          const z: number = (-heightPart * this.maxCeilHeight) + (heightPart * ceil.waterHightlight);
+          // Настройки для нового объекта
+          if (!waterMeshID) {
+            waterMesh.rotateX(this.getAngle(-90));
+            waterMesh.position.set(
+              (ceil.coord.x - (width / 2)) * this.ceilSize,
+              z,
+              (ceil.coord.y - (height / 2)) * this.ceilSize
+            );
+          }
+          // Настройки для существующего объекта
+          else {
+            waterMesh.position.z = z;
+          }
+          // Добавить в сцену
+          this.scene.add(waterMesh);
+          mesh.userData.waterHighlight = waterMesh.uuid;
+          */
+        }
+        // Убрать подсветку воды
+        else if (!ceil?.waterHightlight && !!mesh.userData.ceil?.waterHightlight) {
+          /*
+          const waterMeshID: string = mesh.userData?.waterHighlight as string;
+          const waterMesh: Mesh = this.scene.getObjectByProperty("uuid", waterMeshID) as Mesh;
+          // Если уже существует объект
+          if (!!waterMesh) {
+            waterMesh.geometry.dispose();
+            (waterMesh.material as Material).dispose();
+            this.scene.remove(waterMesh);
+            mesh.userData.waterHighlight = undefined;
+          }
+          */
+        }
+      }
     }
   }
 
@@ -505,16 +582,51 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновить текстуру местности
   setTerrain(ceil: DreamMapCeil): void {
-    let mesh: Mesh = this.terrainMeshes.find(e => (e.userData as DreamMapCeil).coord.x === ceil.coord.x && (e.userData as DreamMapCeil).coord.y === ceil.coord.y);
+    const mesh: Mesh = this.terrainMeshes.find(e =>
+      (e.userData as DreamMapCeil).coord.x === ceil.coord.x &&
+      (e.userData as DreamMapCeil).coord.y === ceil.coord.y
+    );
     // Объект найден
     if (ceil && mesh) {
-      const oldMaterial: MeshPhongMaterial = mesh.material as MeshPhongMaterial;
-      const material: MeshPhongMaterial = this.terrainService.getMaterial(ceil.terrain);
+      const oldMaterial: MeshStandardMaterial = mesh.material as MeshStandardMaterial;
+      const material: MeshStandardMaterial = this.terrainService.getMaterial(ceil.terrain);
       // Дополнить материал
       mesh.material = material;
       material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
       // Очистить старую геометрию
       oldMaterial.dispose();
+    }
+  }
+
+  // Обновить текстуру местности
+  setTerrainSettings(terrainId: number): void {
+    const meshes: Mesh[] = this.terrainMeshes.filter(e => (e.userData as DreamMapCeil).terrain === terrainId);
+    // Найдены чейки
+    if (!!meshes?.length) {
+      meshes.forEach(mesh => {
+        const oldMaterial: MeshStandardMaterial = mesh.material as MeshStandardMaterial;
+        const material: MeshStandardMaterial = this.terrainService.getMaterial(terrainId);
+        const terrain: MapTerrain = this.terrainService.getTerrain(terrainId);
+        // Настройки материала
+        material.setValues({
+          emissive: 0x000000,
+          metalness: terrain.settings.metalness,
+          roughness: terrain.settings.roughness,
+          aoMapIntensity: terrain.settings.aoMapIntensity,
+          displacementScale: terrain.settings.displacementScale,
+          envMapIntensity: terrain.settings.envMapIntensity
+        });
+        material.normalScale.set(1, - 1).multiplyScalar(terrain.settings.normalScale);
+        material.color.setRGB(
+          terrain.settings.colorR / 255,
+          terrain.settings.colorG / 255,
+          terrain.settings.colorB / 255
+        );
+        // Дополнить материал
+        mesh.material = material;
+        // Очистить старую геометрию
+        oldMaterial.dispose();
+      });
     }
   }
 }
@@ -527,6 +639,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 export interface ObjectHoverEvent {
   ceil: DreamMapCeil;
   object: Mesh;
+  point: {
+    x: number;
+    y: number;
+    z: number;
+    xDimen: -1 | 0 | 1;
+    yDimen: -1 | 0 | 1;
+  };
 }
 
 // Координаты соседних блоков

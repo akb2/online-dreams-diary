@@ -152,6 +152,10 @@ $separatorColor: #ccc;
         & + #{$_elm}.container {
           padding-left: 0;
         }
+        // Выравнивание справа
+        &.right {
+          text-align: right;
+        }
       }
     }
     // Скругление углов
@@ -165,6 +169,43 @@ $separatorColor: #ccc;
       > #{$_elm} {
         border-radius: 0;
         overflow: hidden;
+      }
+    }
+    // Настройки
+    &.settings {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      justify-items: right;
+      background-color: colors.$card;
+      // Кнопки внутри
+      > #{$_elm} {
+        border-radius: 0;
+        margin: 0;
+        // Скругление углов
+        & {
+          // Первый элемент
+          &:first-of-type {
+            border-radius: #{$toolButtonBRadius} 0 0 0;
+          }
+          // Второй элемент
+          &:nth-of-type(2) {
+            border-radius: 0 #{$toolButtonBRadius} 0 0;
+          }
+          // Предпоследний элемент
+          &:nth-last-of-type(2) {
+            border-radius: 0 0 0 #{$toolButtonBRadius};
+          }
+          // Последний элемент
+          &:last-of-type {
+            border-radius: 0 0 #{$toolButtonBRadius} 0;
+          }
+        }
+        // Контейнер
+        &.container {
+          & + #{$_elm}.container {
+            padding-left: 20px;
+          }
+        }
       }
     }
   }

@@ -18,6 +18,15 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section light-gray">
+    <!-- Карта -->
+    <div class="container"
+         *ngIf="isMapAvail">
+      <div class="dream__map">
+        <app-dream-map-viewer [dreamMap]="dream.map"
+                              [debugInfo]="true"></app-dream-map-viewer>
+      </div>
+    </div>
+    <!-- Текст -->
     <div class="container"
          *ngIf="isTextAvail">
       <div class="dream__text"

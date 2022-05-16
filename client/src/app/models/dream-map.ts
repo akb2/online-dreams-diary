@@ -1,5 +1,6 @@
 import { Place } from "@_models/dream";
-import { Light, MeshPhongMaterial, Side, Texture } from "three";
+import { ImageExtension } from "@_models/screen";
+import { Light, MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -19,7 +20,9 @@ export interface DreamMapCeil {
   terrain: number;
   object: MapObject | null;
   highlight?: boolean;
+  waterHightlight?: number;
   coord: Coord;
+  water: Water;
 }
 
 // Интерфейс типа местности
@@ -28,6 +31,26 @@ export interface MapTerrain {
   name: string;
   title: string;
   isAvail: boolean;
+  exts: {
+    face: ImageExtension;
+    ao: ImageExtension;
+    disp: ImageExtension;
+    normal: ImageExtension;
+  };
+  settings: MapTerrainSettings;
+}
+
+// Интерфейс настроек типа местности
+export interface MapTerrainSettings {
+  colorR: number;
+  colorG: number;
+  colorB: number;
+  metalness: number;            // Металличность
+  roughness: number;            // Шероховатость
+  aoMapIntensity: number;       //
+  displacementScale: number;    //
+  envMapIntensity: number;      //
+  normalScale: number;          //
 }
 
 // Интерфейс типа неба
@@ -84,6 +107,7 @@ export interface DreamMapCeilDto {
   terrain?: number | null;
   object?: number | null;
   coord?: CoordDto;
+  water?: WaterDto;
 }
 
 
@@ -120,6 +144,26 @@ export interface CoordDto extends XYCoord {
   z: number;
 }
 
+// Интерфейс воды
+export interface Water {
+  z: number;
+  type: WaterType;
+  material: number;
+}
+
+// Интерфейс воды для сервера
+export interface WaterDto {
+  z: number | null;
+  type: WaterType | null;
+  material: number | null;
+}
+
+// Перечисления типа воды
+export enum WaterType {
+  pool,
+  stream
+}
+
 // Типы цветов пути
 export type WayColor = "red" | "green" | "blue" | "white" | "black" | "gray" | "orange" | "pink" | "pink" | "purple";
 
@@ -133,6 +177,9 @@ export interface WayLineType {
 // Тип CSS границы
 export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 
+// Типы текстур
+export type TextureType = "face" | "ao" | "normal" | "disp";
+
 
 
 
@@ -141,13 +188,16 @@ export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 export interface TerrainTextureCache {
   terrain: number;
   texture: Texture;
+  aoTexture: Texture;
+  dispTexture: Texture;
+  normalTexture: Texture;
 }
 
 // Интерфейс кэша материалов
 export interface TerrainMaterialCache {
   side: Side;
   terrain: number;
-  material: MeshPhongMaterial;
+  material: MeshStandardMaterial;
 }
 
 
