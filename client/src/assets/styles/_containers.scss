@@ -10,14 +10,14 @@ $widths: (
   xlarge: 1600px,
 );
 
-$paddings-y: (
+$paddingsY: (
   xsmall: 15px,
   small: 30px,
   middle: 45px,
   large: 60px,
   xlarge: 90px,
 );
-$padding-x: 15px;
+$paddingX: 15px;
 
 $cardBoxShadow: 1px 1px 10px 1px #{colors.$shadow};
 $cardBorderRadius: 5px;
@@ -28,18 +28,13 @@ $cardPaddingX: 22px;
 @mixin container {
   margin: 0 auto;
   max-width: 100%;
-  padding-left: $padding-x;
-  padding-right: $padding-x;
+  padding-left: $paddingX;
+  padding-right: $paddingX;
   background-color: inherit;
   // Цикл по размерам
-  @include screens.adaptiveFor($widths, $paddings-y) using ($width, $padding-y) {
+  @include screens.adaptiveFor($widths, $paddingsY) using ($width, $paddingY) {
     width: $width;
-    padding-top: $padding-y;
-    padding-bottom: $padding-y;
+    padding-top: $paddingY;
+    padding-bottom: $paddingY;
   }
-}
-
-// Контейнер
-.container {
-  @include container;
 }
