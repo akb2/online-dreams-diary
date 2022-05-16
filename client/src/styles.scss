@@ -143,6 +143,11 @@ html {
   }
 }
 
+// Контейнер
+.container {
+  @include containers.container;
+}
+
 // Материал иконки
 .material-icons,
 mat-icon {
