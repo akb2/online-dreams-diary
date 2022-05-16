@@ -118,7 +118,7 @@ $figure-time-2: $figure-time-1 * 2;
   }
 
   // Адаптив
-  @include screens.adaptiveFor(containers.$paddings-y) using($padding) {
+  @include screens.adaptiveFor(containers.$paddingsY) using($padding) {
     // Отступы
     &__title + &,
     &__subtitle + &,

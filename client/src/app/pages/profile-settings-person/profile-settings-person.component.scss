@@ -2,20 +2,20 @@
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/material";
 @use "../../../assets/styles/containers";
-@use "../../controlers/elements/image-upload/image-upload.component.scss" as imageUpload;
+@use "../../controlers/elements/image-upload/image-upload.component" as imageUpload;
 
 $properties: (
   xsmall: (
     count: 1,
-    gap: map.get(containers.$paddings-y, xsmall),
+    gap: map.get(containers.$paddingsY, xsmall),
   ),
   small: (
     count: 1,
-    gap: map.get(containers.$paddings-y, small),
+    gap: map.get(containers.$paddingsY, small),
   ),
   middle: (
     count: 2,
-    gap: map.get(containers.$paddings-y, middle),
+    gap: map.get(containers.$paddingsY, middle),
   ),
   large: (
     count: 3,
