@@ -114,7 +114,8 @@
     <!-- Настройка размера -->
     <div class="tool-button__items">
       <div class="tool-button container">Ширина дороги:</div>
-      <div class="tool-button container">
+      <form class="tool-button container"
+            [formGroup]="form">
         <mat-slider thumbLabel
                     formControlName="toolSizeRoad"
                     [displayWith]="toolSizeRoadFormat"
@@ -126,7 +127,7 @@
                     aria-label="blocks"
                     (input)="onToolSizeRoadChange($event)"
                     (change)="onToolSizeRoadChange($event)"></mat-slider>
-      </div>
+      </form>
     </div>
   </div>
 </ng-template>
