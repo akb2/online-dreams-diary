@@ -12,7 +12,7 @@ CREATE TABLE `dreams`
     `text` TEXT,
     `places` VARCHAR(2000) NOT NULL DEFAULT "",
     `members` VARCHAR(2000) NOT NULL DEFAULT "",
-    `map` TEXT,
+    `map` JSON,
     `header_type` VARCHAR(8) NOT NULL DEFAULT "short",
     `header_background` INT NOT NULL DEFAULT 1,
     PRIMARY KEY (`id`),
