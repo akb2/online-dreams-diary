@@ -19,3 +19,10 @@ export class LoadingImageData {
     public height: number,
   ) { }
 }
+
+// Перечисление расширения картинок
+export enum ImageExtension {
+  jpg = "jpg",
+  jpeg = "jpeg",
+  png = "png"
+}
