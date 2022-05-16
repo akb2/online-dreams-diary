@@ -5,8 +5,8 @@ import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamDto, DreamMode, DreamStatus, Place } from "@_models/dream";
-import { CoordDto, DreamMap, DreamMapCeil, DreamMapCeilDto, DreamMapDto, MapObject } from "@_models/dream-map";
+import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
+import { DreamMap, DreamMapCeilDto, DreamMapDto, Water, WaterType } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -250,6 +250,11 @@ export class DreamService {
           place: null,
           terrain: c.terrain || DreamTerrain,
           object: null,
+          water: {
+            z: c.water?.z > c.coord.z ? c.water.z : DreamWater.z,
+            material: c.water?.material || DreamWater.material,
+            type: c.water?.type || DreamWater.type
+          },
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -279,7 +284,7 @@ export class DreamService {
     const ceils: DreamMapCeilDto[] = dreamMap.ceils
       .filter(c => !(
         !c.object &&
-        (!c.terrain || c.terrain === DreamTerrain) &&
+        (!c.terrain || c.terrain === DreamTerrain || c.water === null || c.water.z <= c.coord.originalZ) &&
         c.coord.originalZ === DreamDefHeight
       ))
       .map(c => {
@@ -288,8 +293,9 @@ export class DreamService {
         ceil.coord = {
           x: c.coord.x,
           y: c.coord.y,
-          z: c.coord.originalZ
+          z: c.coord.z
         };
+        if (!!c.water && c.water.z > c.coord.originalZ) ceil.water = c.water;
         if (!!c.place) ceil.place = c.place.id;
         if (!!c.terrain && c.terrain !== DreamTerrain) ceil.terrain = c.terrain;
         if (!!c.object) ceil.object = c.object.id;
@@ -330,10 +336,20 @@ export const DreamCeilSize: number = 1;
 // Количество секций по высоте в одной ячейке
 export const DreamCeilParts: number = 64;
 
+// Количество секций по высоте воды в одной ячейке
+export const DreamCeilWaterParts: number = 4;
+
 // Пределы высот
 export const DreamMinHeight: number = 1;
 export const DreamDefHeight: number = DreamCeilParts * 10;
 export const DreamMaxHeight: number = DreamCeilParts * 20;
+
+// Вода по умолчанию
+export const DreamWater: Water = {
+  z: 0,
+  type: WaterType.pool,
+  material: 0
+};
 
 // Параметры по умолчанию
 export const DreamSkyBox: number = SkyBoxes[0].id;
