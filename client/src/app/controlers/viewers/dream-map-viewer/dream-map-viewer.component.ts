@@ -1,11 +1,12 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { DreamMap, DreamMapCeil, MapTerrain, SkyBoxLightTarget, TerrainMaterialCache } from "@_models/dream-map";
+import { CSG } from "@_helpers/csg-mesh";
+import { DreamMap, DreamMapCeil, MapTerrain, SkyBoxLightTarget } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, MapTerrains, TerrainService } from "@_services/dream-map/terrain.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamWater } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BufferGeometry, CameraHelper, Clock, Color, Group, Intersection, Light, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, WebGLRenderer } from "three";
+import { BoxGeometry, BufferGeometry, CameraHelper, CircleGeometry, Clock, DoubleSide, FrontSide, Group, Intersection, Light, Material, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
@@ -312,9 +313,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Создание сцены
   private createScene(): void {
     this.renderer = new WebGLRenderer({
+      context: this.canvas.nativeElement.getContext(this.contextType),
       canvas: this.canvas.nativeElement,
       antialias: true,
-      context: this.canvas.nativeElement.getContext(this.contextType)
+      precision: "highp",
+      powerPreference: "high-performance",
+      logarithmicDepthBuffer: true
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 1);
@@ -388,10 +392,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.scene) {
       const width: number = this.dreamMap?.size?.width || DreamMapSize;
       const height: number = this.dreamMap?.size?.height || DreamMapSize;
+      const heightPart: number = this.ceilSize / this.ceilHeightParts;
       // Цикл по объектам
       for (let y = -1; y < width + 1; y++) {
         for (let x = -1; x < height + 1; x++) {
-          const heightPart: number = this.ceilSize / this.ceilHeightParts;
           const ceil: DreamMapCeil = this.getCeil(x, y);
           // Обработка
           ceil.coord.x = x;
@@ -424,6 +428,34 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.terrainMeshes.push(terrain);
           this.scene.add(terrain);
         }
+      }
+      // Горизонт
+      {
+        const size: number = Math.max(width + 2, height + 2) * 2;
+        const circle: CircleGeometry = new CircleGeometry(size * this.ceilSize);
+        const square: BoxGeometry = new BoxGeometry(
+          (width + 2) * this.ceilSize,
+          (height + 2) * this.ceilSize,
+          this.maxCeilHeight * heightPart,
+        );
+        const z: number = (-this.maxCeilHeight + this.defaultCeilHeight) * heightPart;
+        // Материал
+        const material: MeshStandardMaterial = new MeshStandardMaterial().copy(this.terrainService.getMaterial(1));
+        material.map.wrapS = RepeatWrapping;
+        material.map.wrapT = RepeatWrapping;
+        material.map.repeat.set(size * 2, size * 2);
+        material.side = FrontSide;
+        // Объекты
+        const circleMesh: Mesh = new Mesh(circle);
+        const squareMesh: Mesh = new Mesh(square);
+        // Объект
+        const horizont: Mesh = CSG.toMesh(CSG.fromMesh(circleMesh).subtract(CSG.fromMesh(squareMesh)), new Matrix4(), material);
+        horizont.rotateX(this.getAngle(-90));
+        horizont.position.setY(z);
+        horizont.position.setX(-this.ceilSize / 2);
+        horizont.position.setZ(-this.ceilSize / 2);
+        // Добавить на сцену
+        this.scene.add(horizont);
       }
       // Рендер
       this.render();
@@ -601,29 +633,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Обновить текстуру местности
   setTerrainSettings(terrainId: number): void {
     const meshes: Mesh[] = this.terrainMeshes.filter(e => (e.userData as DreamMapCeil).terrain === terrainId);
+    const terrain: MapTerrain = this.terrainService.getTerrain(terrainId);
+    const material: MeshStandardMaterial = this.terrainService.getMaterial(terrainId);
+    // Настройки материала
+    material.setValues({
+      emissive: 0x000000,
+      metalness: terrain.settings.metalness,
+      roughness: terrain.settings.roughness,
+      aoMapIntensity: terrain.settings.aoMapIntensity,
+      displacementScale: terrain.settings.displacementScale,
+      envMapIntensity: terrain.settings.envMapIntensity
+    });
+    material.normalScale.set(1, - 1).multiplyScalar(terrain.settings.normalScale);
+    material.color.setRGB(
+      terrain.settings.colorR / 255,
+      terrain.settings.colorG / 255,
+      terrain.settings.colorB / 255
+    );
     // Найдены чейки
     if (!!meshes?.length) {
       meshes.forEach(mesh => {
         const oldMaterial: MeshStandardMaterial = mesh.material as MeshStandardMaterial;
-        const material: MeshStandardMaterial = this.terrainService.getMaterial(terrainId);
-        const terrain: MapTerrain = this.terrainService.getTerrain(terrainId);
-        // Настройки материала
-        material.setValues({
-          emissive: 0x000000,
-          metalness: terrain.settings.metalness,
-          roughness: terrain.settings.roughness,
-          aoMapIntensity: terrain.settings.aoMapIntensity,
-          displacementScale: terrain.settings.displacementScale,
-          envMapIntensity: terrain.settings.envMapIntensity
-        });
-        material.normalScale.set(1, - 1).multiplyScalar(terrain.settings.normalScale);
-        material.color.setRGB(
-          terrain.settings.colorR / 255,
-          terrain.settings.colorG / 255,
-          terrain.settings.colorB / 255
-        );
         // Дополнить материал
-        mesh.material = material;
+        (mesh.material as Material).copy(material);
         // Очистить старую геометрию
         oldMaterial.dispose();
       });
