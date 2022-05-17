@@ -251,9 +251,9 @@ export const MapTerrains: MapTerrain[] = [
     name: "grass",
     title: "Газон",
     settings: {
-      colorR: 54,
-      colorG: 158,
-      colorB: 54,
+      colorR: 115,
+      colorG: 201,
+      colorB: 44,
       metalness: 0,
       roughness: 0.76,
       aoMapIntensity: 2.5,
