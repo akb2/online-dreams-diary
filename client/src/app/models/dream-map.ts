@@ -9,9 +9,14 @@ import { Light, MeshStandardMaterial, Side, Texture } from "three";
 // Интерфейс карты
 export interface DreamMap {
   ceils: (DreamMapCeil | null)[];
+  camera: DreamMapCameraPosition;
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number;
+}
+
+// Интерфейс данных позиции камеры
+export interface DreamMapCameraPosition {
 }
 
 // Интерфейс ячейки сновидения
@@ -96,6 +101,7 @@ export interface MapObject {
 // Интерфейс карты для сервера
 export interface DreamMapDto {
   ceils: (DreamMapCeilDto | null)[];
+  camera?: DreamMapCameraPosition;
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number | null;
