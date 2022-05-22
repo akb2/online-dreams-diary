@@ -9,35 +9,40 @@
          [attr.imageOverlay]="isHasImage(dream) && dream.headerBackground.imageOverlay? 'true': 'false'"
          [attr.positionX]="dream.headerBackground.positionX"
          [attr.positionY]="dream.headerBackground.positionY"
-         [ngClass]="{ 'no-image': !isHasImage(dream) }"
-         routerLink="/diary/viewer/{{dream.id}}"
-         [queryParams]="viewerQueryParams(dream)">
+         [ngClass]="{ 'no-image': !isHasImage(dream), 'no-content': !dream.description && !dream.keywords.length }">
       <!-- Картинка -->
-      <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
-           *ngIf="isHasImage(dream)" />
-      <!-- Иконка -->
-      <mat-icon *ngIf="!isHasImage(dream)">panorama_outline</mat-icon>
-    </div>
-    <!-- Основное описание -->
-    <div class="dream__text title"
-         [ngClass]="{ menu: dreamsMenuItems[dream.id]?.length > 0 }">
-      <!-- Название сновидения -->
-      <div class="dream__text-title"
-           [ngClass]="{ 'default-title': !dream.title?.length }"
-           routerLink="/diary/viewer/{{dream.id}}"
-           [queryParams]="viewerQueryParams(dream)">{{dream.title || defaultTitle}}</div>
-      <!-- Когда приснился -->
-      <div class="dream__text-subtitle"
-           routerLink="/diary/viewer/{{dream.id}}"
-           [queryParams]="viewerQueryParams(dream)">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
-      <!-- Меню -->
-      <app-card-menu class="dream__text-menu"
-                     menuIcon="more_vert"
-                     [menuItems]="dreamsMenuItems[dream.id]"
-                     *ngIf="dreamsMenuItems[dream.id]?.length > 0"></app-card-menu>
+      <a routerLink="/diary/viewer/{{dream.id}}"
+         [queryParams]="viewerQueryParams(dream)"
+         *ngIf="isHasImage(dream)">
+        <img [src]="imagePrefix + dream.headerBackground.imageNameShort" />
+      </a>
+      <!-- Основное описание -->
+      <div class="dream__text title"
+           [ngClass]="{ menu: dreamsMenuItems[dream.id]?.length > 0, 'has-image': isHasImage(dream) }">
+        <!-- Название сновидения -->
+        <div class="dream__text-title"
+             [ngClass]="{ 'default-title': !dream.title?.length }"
+             routerLink="/diary/viewer/{{dream.id}}"
+             [queryParams]="viewerQueryParams(dream)">{{dream.title || defaultTitle}}</div>
+        <!-- Когда приснился -->
+        <div class="dream__text-subtitle"
+             routerLink="/diary/viewer/{{dream.id}}"
+             [queryParams]="viewerQueryParams(dream)">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+        <!-- Меню -->
+        <app-card-menu class="dream__text-menu"
+                       menuIcon="more_vert"
+                       [menuItems]="dreamsMenuItems[dream.id]"
+                       *ngIf="dreamsMenuItems[dream.id]?.length > 0"></app-card-menu>
+      </div>
+      <!-- Дополнительное описание -->
+      <div class="dream__text description"
+           [ngClass]="{ 'no-content': !dream.description, 'has-image': isHasImage(dream) }">
+        <!-- Название сновидения -->
+        <div class="dream__text-description">{{dream.description}}</div>
+      </div>
     </div>
     <!-- Ключевые слова -->
-    <div class="dream__text"
+    <div class="dream__text keywords"
          [ngClass]="{ 'no-content': !dream.keywords.length }">
       <div class="dream__text-keywords">
         <ng-container *ngFor="let keyword of dream.keywords; let key = index">
@@ -46,12 +51,6 @@
           <div class="keyword">{{keyword}}</div>
         </ng-container>
       </div>
-    </div>
-    <!-- Дополнительное описание -->
-    <div class="dream__text"
-         [ngClass]="{ 'no-content': !dream.description }">
-      <!-- Название сновидения -->
-      <div class="dream__text-description">{{dream.description}}</div>
     </div>
     <!-- Автор и действие -->
     <div class="dream__text actions">

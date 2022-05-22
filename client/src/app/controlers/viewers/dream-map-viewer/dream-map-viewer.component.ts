@@ -56,7 +56,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private zoomMax: number = this.ceilSize * 20;
   private minAngle: number = 0;
   private maxAngle: number = 80;
-  private distance: number = 50;
+  private distance: number = 65;
   private fpsLimit: number = 60;
   private showHelpers: boolean = false;
 
@@ -134,6 +134,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Вернуть карту
     return {
       ceils,
+      camera: {},
       dreamerWay: [],
       size: this.dreamMap.size,
       skyBox: this.dreamMap.skyBox

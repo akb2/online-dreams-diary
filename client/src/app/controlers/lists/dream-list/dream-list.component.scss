@@ -35,9 +35,16 @@
 .dream {
   $borderRadius: containers.$cardBorderRadius;
   $spacingX: 18px;
+  $spacingXMenu: 8px;
   $spacingY: 10px;
-  $descriptionCount: 2;
+  $descriptionCount: 4;
+  $keywordsCount: 2;
   $descriptionLineHeight: 15px;
+  $primaryColorKey: 500;
+  $menuSize: 40px;
+  $titleSize: 22px;
+  $subTitleSize: $menuSize - $titleSize;
+  $imageHeight: ($spacingY * 4) + $menuSize + ($descriptionCount * $descriptionLineHeight);
   // Свойства
   border-radius: $borderRadius;
   background-color: colors.$card;
@@ -48,37 +55,43 @@
     $positions-y: top center bottom;
     // Свойства
     width: 100%;
-    height: 160px;
+    height: $imageHeight;
     border-radius: #{$borderRadius} #{$borderRadius} 0 0;
     overflow: hidden;
     position: relative;
     cursor: pointer;
     // Картинка
-    > img {
+    > img,
+    > a > img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    // Иконка
-    > mat-icon {
-      $size: 80px;
-      // Свойства
-      display: block;
-      text-align: center;
-      width: $size;
-      height: $size;
-      line-height: $size;
-      font-size: $size;
-      text-align: center;
-      color: colors.$subtitle;
-    }
     // Без картинки
     &.no-image {
-      background-color: colors.$background;
       display: flex;
-      flex-flow: row nowrap;
-      justify-content: center;
-      align-items: center;
+      flex-flow: column nowrap;
+      justify-content: space-between;
+      align-items: stretch;
+    }
+    // С картинкой
+    &:not(.no-image) {
+      // Контент
+      > .title,
+      > .description {
+        position: absolute;
+        width: 100%;
+        left: 0;
+        z-index: 2;
+      }
+      // Заголовок
+      > .title {
+        top: 0;
+      }
+      // Описание
+      > .description {
+        bottom: 0;
+      }
     }
     // Затенение
     &[imageOverlay="true"]:after {
@@ -89,6 +102,7 @@
       content: "";
       background-color: #000;
       opacity: 0.4;
+      z-index: 1;
     }
     // Позиция по ширине
     @each $position-x in $positions-x {
@@ -104,10 +118,6 @@
   }
   // Контейнер текста
   &__text {
-    $menuSize: 40px;
-    $titleSize: 22px;
-    $subTitleSize: $menuSize - $titleSize;
-    // Свойства
     padding: #{$spacingY} #{$spacingX};
     // Заголовок
     &-title {
@@ -115,12 +125,16 @@
       // Свойства
       font-size: 15px;
       font-weight: 400;
-      color: colors.$title;
+      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
       grid-area: title;
       cursor: pointer;
       // Заголовок по умолчанию
       &.default-title {
-        color: colors.$text;
+        opacity: 0.9;
+      }
+      // С картинкой
+      .has-image > & {
+        color: colors.$title-dark;
       }
     }
     // Подзаголовок
@@ -129,13 +143,24 @@
       // Свойства
       font-size: 12px;
       font-weight: 300;
-      color: colors.$subtitle;
+      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
+      opacity: 0.9;
       grid-area: subtitle;
       cursor: pointer;
+      // С картинкой
+      .has-image > & {
+        color: colors.$subtitle-dark;
+        opacity: 1;
+      }
     }
     // Меню
-    &-manu {
+    &-menu {
       grid-area: menu;
+      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
+      // С картинкой
+      .has-image > & {
+        color: colors.$title-dark;
+      }
     }
     // Описание
     &-description {
@@ -144,15 +169,18 @@
       font-size: 13px;
       font-weight: 300;
       color: colors.$text;
-      height: $descriptionCount * $descriptionLineHeight;
+      // С картинкой
+      .has-image > & {
+        color: colors.$text-dark;
+      }
     }
     // Ключевые слова
     &-keywords {
       $spacing: 3px;
       // Миксины
-      @include mixins.lineClamp($descriptionCount, $descriptionLineHeight, $spacing);
+      @include mixins.lineClamp($keywordsCount, $descriptionLineHeight, $spacing);
       // Свойства
-      height: ($descriptionCount * $descriptionLineHeight) + ($spacing * 2);
+      height: ($keywordsCount * $descriptionLineHeight) + ($spacing * 2);
       margin: #{-$spacing} 0;
       // Ключевое слово
       > .keyword {
@@ -169,28 +197,40 @@
       }
     }
 
+    // Заголовок
+    &.title {
+      background-color: map.get(colors.$mat-primary, $primaryColorKey);
+      // С картинкой
+      &.has-image {
+        background-color: transparent;
+      }
+    }
     // С меню
     &.menu {
       display: grid;
       grid-template-columns: 1fr #{$menuSize};
       grid-template-rows: #{$titleSize} #{$subTitleSize};
       grid-template-areas: "title menu" "subtitle menu";
+      padding-right: $spacingXMenu;
     }
     // Действия
     &.actions {
-      background-color: colors.$background;
       display: grid;
       grid-template-columns: minmax(auto, 1fr) auto;
       align-items: center;
       grid-gap: 0 #{$spacingX};
       border-radius: 0 0 #{$borderRadius} #{$borderRadius};
+      // Разделитель сверху
+      *:not(.no-content) + & {
+        border-top: 1px solid #{colors.$border};
+      }
     }
-    // Последующие блоки
-    & + & {
-      border-top: 1px solid #{colors.$background};
-      // Без границы
+    // Для описания
+    &.description {
+      border-bottom: 1px solid #{colors.$background};
+      // Без контента
       &.no-content {
-        border-top-color: transparent;
+        border-bottom-color: transparent;
       }
     }
   }
@@ -211,7 +251,6 @@
     &.no-subtitle {
       grid-template-rows: #{$iconSize};
     }
-
     // Иконка
     &-icon {
       border-radius: 50%;
