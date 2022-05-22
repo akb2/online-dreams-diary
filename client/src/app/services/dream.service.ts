@@ -260,6 +260,8 @@ export class DreamService {
             originalZ: c.coord.z
           }
         })),
+        camera: {
+        },
         dreamerWay: dreamMapDto.dreamerWay,
         skyBox: dreamMapDto.skyBox || DreamSkyBox
       } as DreamMap;
@@ -271,6 +273,8 @@ export class DreamService {
           width: DreamMapSize,
           height: DreamMapSize,
           zHeight: DreamDefHeight
+        },
+        camera: {
         },
         ceils: [],
         dreamerWay: [],
@@ -305,6 +309,7 @@ export class DreamService {
     // Вернуть карту
     return {
       ceils,
+      camera: dreamMap.camera,
       size: dreamMap.size,
       dreamerWay: dreamMap.dreamerWay,
       skyBox: dreamMap.skyBox
