@@ -28,11 +28,11 @@ export class TokenService {
 
   private cookieKey: string = "token_service_";
   private cookieLifeTime: number = 604800;
-  public token: string = "";
-  public id: string = "";
+  token: string = "";
+  id: string = "";
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
-  public readonly user$: Observable<User> = this.user.asObservable();
+  readonly user$: Observable<User> = this.user.asObservable();
 
   // Конструктор
   constructor(
@@ -47,7 +47,7 @@ export class TokenService {
   }
 
   // Проверить авторизацию
-  public get checkAuth(): boolean {
+  get checkAuth(): boolean {
     return !!this.token && !!this.id;
   }
 
@@ -62,7 +62,7 @@ export class TokenService {
 
 
   // Проверить токен
-  public checkToken(codes: string[] = []): Observable<string> {
+  checkToken(codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
     formData.append("token", this.token);
     // Вернуть подписку
@@ -87,7 +87,7 @@ export class TokenService {
   }
 
   // Информация о текущем токене
-  public getToken(token: string = this.token, codes: string[] = []): Observable<TokenInfo> {
+  getToken(token: string = this.token, codes: string[] = []): Observable<TokenInfo> {
     return this.httpClient.get<ApiResponse>(this.baseUrl + "token/getToken?token=" + token, this.httpHeader).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
       map(result => this.convertToken(result.result.data.tokenData))
@@ -95,7 +95,7 @@ export class TokenService {
   }
 
   // Информация о всех токенах
-  public getTokens(hideCurrent: boolean = false, id: string = this.id, codes: string[] = []): Observable<TokenInfo[]> {
+  getTokens(hideCurrent: boolean = false, id: string = this.id, codes: string[] = []): Observable<TokenInfo[]> {
     const url: string = this.baseUrl + "token/getTokens?token=" + this.token + "&id=" + id + "&hideCurrent=" + (hideCurrent ? 1 : 0);
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(url, this.httpHeader).pipe(
@@ -113,7 +113,7 @@ export class TokenService {
   }
 
   // Удалить токен по ID
-  public deleteTokenById(id: number, codes: string[] = []): Observable<boolean> {
+  deleteTokenById(id: number, codes: string[] = []): Observable<boolean> {
     const url: string = this.baseUrl + "token/deleteTokenById?token=" + this.token + "&id=" + this.id + "&tokenId=" + id;
     // Вернуть подписку
     return this.httpClient.delete<ApiResponse>(url, this.httpHeader).pipe(
@@ -123,7 +123,7 @@ export class TokenService {
   }
 
   // Удалить все токены по ID пользователя
-  public deleteTokensByUser(hideCurrent: boolean = false, codes: string[] = []): Observable<boolean> {
+  deleteTokensByUser(hideCurrent: boolean = false, codes: string[] = []): Observable<boolean> {
     const url: string = this.baseUrl + "token/deleteTokensByUser?token=" + this.token + "&id=" + this.id + "&hideCurrent=" + (hideCurrent ? 1 : 0);
     // Вернуть подписку
     return this.httpClient.delete<ApiResponse>(url, this.httpHeader).pipe(
@@ -154,7 +154,7 @@ export class TokenService {
 
 
   // Запомнить авторизацию
-  public saveAuth(token: string, id: string): void {
+  saveAuth(token: string, id: string): void {
     this.id = id;
     this.token = token;
     this.configLocalStorage();
@@ -163,7 +163,7 @@ export class TokenService {
   }
 
   // Сбросить авторизацию
-  public deleteAuth(): void {
+  deleteAuth(): void {
     this.httpClient.delete<ApiResponse>(this.baseUrl + "token/deleteToken?token=" + this.token).pipe(switchMap(
       result => {
         this.deleteCurrentUser();
