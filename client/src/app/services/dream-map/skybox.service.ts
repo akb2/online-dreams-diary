@@ -52,7 +52,7 @@ export class SkyBoxService {
       return { light, target, helper };
     });
     // Туман
-    const fog: Fog = new Fog(color, (distance * 0.7) * size, distance * size);
+    const fog: Fog = new Fog(color, (distance * 0.5) * size, distance * size);
     // Объект неба
     const skyBox: CubeTexture = new CubeTextureLoader().setPath(path).load(this.sides.map(s => s + ".jpg"));
     // Вернуть небо
