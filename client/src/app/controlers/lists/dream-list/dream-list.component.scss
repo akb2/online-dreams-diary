@@ -172,6 +172,15 @@
       // С картинкой
       .has-image > & {
         color: colors.$text-dark;
+        min-height: 0;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height #{screens.$animation-time}, opacity #{screens.$animation-time};
+        // Выделение
+        .dream:hover & {
+          max-height: $descriptionCount * $descriptionLineHeight;
+          opacity: 1;
+        }
       }
     }
     // Ключевые слова
