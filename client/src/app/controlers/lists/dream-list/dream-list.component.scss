@@ -44,7 +44,8 @@
   $menuSize: 40px;
   $titleSize: 22px;
   $subTitleSize: $menuSize - $titleSize;
-  $imageHeight: ($spacingY * 4) + $menuSize + ($descriptionCount * $descriptionLineHeight);
+  $imageHeight: ($spacingY * 6) + $menuSize + ($descriptionCount * $descriptionLineHeight)+ ($keywordsCount *
+        $descriptionLineHeight);
   // Свойства
   border-radius: $borderRadius;
   background-color: colors.$card;
@@ -78,7 +79,8 @@
     &:not(.no-image) {
       // Контент
       > .title,
-      > .description {
+      > .description,
+      > .keywords {
         position: absolute;
         width: 100%;
         left: 0;
@@ -90,6 +92,14 @@
       }
       // Описание
       > .description {
+        bottom: ($keywordsCount * $descriptionLineHeight) + ($spacingY * 2);
+        // Без ключевых слов
+        &.no-keywords {
+          bottom: 0;
+        }
+      }
+      // Описание
+      > .keywords {
         bottom: 0;
       }
     }
@@ -169,12 +179,14 @@
       font-size: 13px;
       font-weight: 300;
       color: colors.$text;
+      height: $descriptionCount * $descriptionLineHeight;
       // С картинкой
       .has-image > & {
         color: colors.$text-dark;
         min-height: 0;
         max-height: 0;
         opacity: 0;
+        height: auto;
         transition: max-height #{screens.$animation-time}, opacity #{screens.$animation-time};
         // Выделение
         .dream:hover & {
@@ -191,11 +203,12 @@
       // Свойства
       height: ($keywordsCount * $descriptionLineHeight) + ($spacing * 2);
       margin: #{-$spacing} 0;
+      color: colors.$text;
       // Ключевое слово
       > .keyword {
         font-size: 13px;
         font-weight: 400;
-        color: colors.$text;
+        color: inherit;
         display: inline-block;
         vertical-align: top;
         // Запятая
@@ -203,6 +216,10 @@
           display: inline-block;
           margin-right: 8px;
         }
+      }
+      // С картинкой
+      .has-image > & {
+        color: colors.$text-dark;
       }
     }
 
@@ -230,16 +247,19 @@
       grid-gap: 0 #{$spacingX};
       border-radius: 0 0 #{$borderRadius} #{$borderRadius};
       // Разделитель сверху
-      *:not(.no-content) + & {
+      *:not(.no-content.no-image) + & {
         border-top: 1px solid #{colors.$border};
       }
     }
-    // Для описания
-    &.description {
-      border-bottom: 1px solid #{colors.$background};
+
+    // Последующие блоки
+    & + & {
+      border-top: 1px solid #{colors.$background};
       // Без контента
-      &.no-content {
-        border-bottom-color: transparent;
+      &.no-content,
+      .no-content + &,
+      &.has-image {
+        border-top-color: transparent;
       }
     }
   }

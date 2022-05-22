@@ -36,20 +36,23 @@
       </div>
       <!-- Дополнительное описание -->
       <div class="dream__text description"
-           [ngClass]="{ 'no-content': !dream.description, 'has-image': isHasImage(dream) }">
-        <!-- Название сновидения -->
+           [ngClass]="{
+             'no-content': !dream.description,
+             'has-image': isHasImage(dream),
+             'no-keywords': !dream.keywords.length
+           }">
         <div class="dream__text-description">{{dream.description}}</div>
       </div>
-    </div>
-    <!-- Ключевые слова -->
-    <div class="dream__text keywords"
-         [ngClass]="{ 'no-content': !dream.keywords.length }">
-      <div class="dream__text-keywords">
-        <ng-container *ngFor="let keyword of dream.keywords; let key = index">
-          <div class="keyword_comma"
-               *ngIf="key > 0">,</div>
-          <div class="keyword">{{keyword}}</div>
-        </ng-container>
+      <!-- Ключевые слова -->
+      <div class="dream__text keywords"
+           [ngClass]="{ 'no-content': !dream.keywords.length, 'has-image': isHasImage(dream) }">
+        <div class="dream__text-keywords">
+          <ng-container *ngFor="let keyword of dream.keywords; let key = index">
+            <div class="keyword_comma"
+                 *ngIf="key > 0">,</div>
+            <div class="keyword">{{keyword}}</div>
+          </ng-container>
+        </div>
       </div>
     </div>
     <!-- Автор и действие -->
