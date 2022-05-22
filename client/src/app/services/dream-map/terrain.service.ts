@@ -316,8 +316,8 @@ export const MapTerrains: MapTerrain[] = [
       colorB: 230,
       metalness: 0,
       roughness: 0.4,
-      aoMapIntensity: 1,
-      normalScale: 0.7
+      aoMapIntensity: 0.5,
+      normalScale: 0.1
     }
   }
 ]
