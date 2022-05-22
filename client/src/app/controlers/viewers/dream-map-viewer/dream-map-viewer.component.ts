@@ -432,12 +432,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       }
       // Горизонт
       {
-        const size: number = Math.max(width + 2, height + 2) * 2;
+        const size: number = Math.max(width + 2, height + 2) * 3;
         const circle: CircleGeometry = new CircleGeometry(size * this.ceilSize);
         const square: BoxGeometry = new BoxGeometry(
           (width + 2) * this.ceilSize,
           (height + 2) * this.ceilSize,
-          this.maxCeilHeight * heightPart,
+          this.maxCeilHeight * heightPart
         );
         const z: number = (-this.maxCeilHeight + this.defaultCeilHeight) * heightPart;
         // Материал
