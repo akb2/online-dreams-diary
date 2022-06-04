@@ -1,13 +1,16 @@
 {
-  "name": "online-derams-map",
-  "version": "0.0.0",
+  "name": "online-dreams-map",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --open",
     "build": "ng build --configuration production",
     "bundle-stats": "npm run build --stats-json && webpack-bundle-analyzer ../app/stats.json",
     "watch": "npm run build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "mysql": "C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqld.exe",
+    "php": "C:/Progra~1/php/php.exe",
+    "full-server": "concurrently --kill-others \"npm run mysql\"  \"npm run php\" \"npm run start\""
   },
   "private": true,
   "dependencies": {
@@ -37,6 +40,7 @@
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.20.37",
     "@types/three": "^0.135.0",
+    "concurrently": "^7.2.1",
     "jasmine-core": "~3.10.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",
