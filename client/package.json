@@ -10,7 +10,7 @@
     "test": "ng test",
     "mysql": "C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqld.exe",
     "php": "C:/Progra~1/php/php.exe",
-    "full-server": "concurrently --kill-others \"npm run mysql\"  \"npm run php\" \"npm run start\""
+    "full-server": "concurrently --kill-others \"npm run mysql\" \"npm run php\" \"npm run start\""
   },
   "private": true,
   "dependencies": {
