@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { MapTerrain, MapTerrainSettings, TerrainMaterialCache, TerrainTextureCache, TextureType } from "@_models/dream-map";
+import { MapTerrain, TerrainMaterialCache, TerrainTextureCache, TextureType } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
-import { BackSide, BufferAttribute, BufferGeometry, Color, Mesh, MeshStandardMaterial, Texture, TextureLoader, Vector2, Vector3 } from "three";
+import { BackSide, BufferAttribute, BufferGeometry, Color, DoubleSide, FrontSide, Mesh, MeshStandardMaterial, PlaneGeometry, Texture, TextureLoader, Vector2, Vector3 } from "three";
 
 
 
@@ -17,23 +17,50 @@ export class TerrainService {
   private textureCache: TerrainTextureCache[] = [];
   materialCache: TerrainMaterialCache[] = [];
 
-  private displacementQuality: number = 10;
+  private water: Mesh;
+
+
+
+
+
+  // Получить воду
+  getWater(size: number): Mesh {
+    if (!this.water) {
+      const geometry: PlaneGeometry = new PlaneGeometry(size, size);
+      const material: MeshStandardMaterial = new MeshStandardMaterial({
+        color: 0x004CB7,
+        side: FrontSide,
+        transparent: true,
+        opacity: 0.7
+      });
+      // Настройки
+      geometry.rotateX(this.getAngle(-90));
+      // Запомнить
+      this.water = new Mesh(geometry, material);
+    }
+    // Вернуть воду
+    return new Mesh().copy(this.water);
+  }
+
+  // Углы в радианы
+  private getAngle(angle: number): number {
+    return angle * Math.PI / 180;
+  }
 
 
 
 
 
   // Объект для отрисовки
-  getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights): Mesh {
-    const geometry: BufferGeometry = this.getGeometry(size, height, closestHeights);
-    const material: MeshStandardMaterial = this.getMaterial(terrainId);
-    const mesh: Mesh = new Mesh(geometry, material);
+  getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights): TerrainDrawData {
+    const land: Mesh = new Mesh(this.getGeometry(size, height, closestHeights), this.getMaterial(terrainId));
+    const water: Mesh = this.getWater(size);
     // Настройки
-    geometry.computeVertexNormals();
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    land.geometry.computeVertexNormals();
+    land.castShadow = true;
+    land.receiveShadow = true;
     // Вернуть объект
-    return mesh;
+    return { land, water };
   }
 
   // Геометрия
@@ -237,6 +264,12 @@ export interface ClosestHeight {
 // Интерфейс для соседних блоков
 export interface ClosestHeightAligment {
   height: number;
+}
+
+// Интерфейс выходных данных
+export interface TerrainDrawData {
+  land: Mesh;
+  water: Mesh;
 }
 
 

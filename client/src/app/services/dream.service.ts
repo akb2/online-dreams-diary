@@ -342,7 +342,7 @@ export const DreamCeilSize: number = 1;
 export const DreamCeilParts: number = 64;
 
 // Количество секций по высоте воды в одной ячейке
-export const DreamCeilWaterParts: number = 4;
+export const DreamCeilWaterParts: number = 1;
 
 // Пределы высот
 export const DreamMinHeight: number = 1;

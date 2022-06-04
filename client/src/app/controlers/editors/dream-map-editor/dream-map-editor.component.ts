@@ -45,7 +45,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   roadTypeList: RoadTypeToolListItem[] = RoadTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.terrain;
+  private tool: Tool = Tool.water;
   toolSizeLand: number = ToolSizeLand[0];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
@@ -169,12 +169,12 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Сканирование ячеек для воды
-  private getWaterCeils(object: ObjectHoverEvent): WaterArea {
+  private getWaterCeils(object: ObjectHoverEvent, waterZ: number = 0): WaterArea {
     const width: number = this.dreamMap?.size?.width || DreamMapSize;
     const height: number = this.dreamMap?.size?.height || DreamMapSize;
     const partSize: number = DreamCeilSize / DreamCeilWaterParts;
     const ceils: XYCoord[] = [];
-    const z: number = Math.round(object.point.z / partSize) * partSize;
+    const z: number = waterZ > 0 ? waterZ : Math.round(object.point.z / partSize) * partSize;
     let { x, y, z: maxZ } = object.ceil.coord;
     // Функция поиска ячеек
     const findCeils: (x: number, y: number) => void = (x: number, y: number) => {
@@ -281,13 +281,17 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     if (this.viewer) {
       const noChangeCoords: Set<Tool> = new Set([Tool.water]);
       const partSize: number = DreamCeilSize / DreamCeilWaterParts;
-      const prevZ: number = Math.round(this.currentObject?.point.z || 0 / partSize) * partSize;
-      const currZ: number = Math.round(event.point.z || 0 / partSize) * partSize;
+      const prevZ: number = Math.round((this.currentObject?.point.z || 0) / partSize) * partSize;
+      const currZ: number = Math.round((event.point.z || 0) / partSize) * partSize;
       // Проверка пересечения
       if (
-        !this.currentObject ||
-        this.currentObject.ceil.coord.x !== event.ceil.coord.x ||
-        this.currentObject.ceil.coord.y !== event.ceil.coord.y ||
+        (
+          !noChangeCoords.has(this.tool) && (
+            !this.currentObject ||
+            this.currentObject.ceil.coord.x !== event.ceil.coord.x ||
+            this.currentObject.ceil.coord.y !== event.ceil.coord.y
+          )
+        ) ||
         (noChangeCoords.has(this.tool) && prevZ !== currZ)
       ) {
         this.currentObject = event;
@@ -423,12 +427,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   // Свечение ячеек
   private lightCeils(): void {
     const circleSize: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    // Убрать свечение
-    this.unLightCeils();
     // Добавить свечение для инструментов ландшафта
     if (circleSize.has(this.tool)) {
       const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
       const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
+      const oldArea: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => c.highlight);
       // Размерный цикл
       for (let cY = -size; cY <= size; cY++) {
         for (let cX = -size; cX <= size; cX++) {
@@ -437,6 +440,9 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
           // Ячейка внутри области выделения
           if (this.isEditableCeil(x, y)) {
             const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+            const deleteIndex: number = oldArea.findIndex(({ coord: { x: fX, y: fY } }) => fX === x && fY === y);
+            // Удалить из массива предыдущей воды
+            deleteIndex >= 0 ? oldArea.splice(deleteIndex, 1) : null;
             // Настройки
             ceil.highlight = true;
             // Запомнить ячейку
@@ -446,12 +452,17 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
           }
         }
       }
+      // Убрать свечение
+      this.unLightCeils(oldArea, "terrain");
     }
     // Свечение воды
     else if (this.tool === Tool.water) {
       const area: WaterArea = this.getWaterCeils(this.currentObject);
+      const oldArea: DreamMapCeil[] = this.dreamMap?.ceils
+        .filter(({ coord: { x, y } }) => !area.ceils.some(({ x: aX, y: aY }) => aX === x && aY === y))
+        .filter(({ waterHightlight }) => waterHightlight > 0);
       // Подсветка
-      area.ceils.map(({ x, y }) => {
+      area.ceils.forEach(({ x, y }) => {
         const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
         // Настройки
         ceil.waterHightlight = area.z;
@@ -460,6 +471,8 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
         // Обновить
         this.viewer.setTerrainHoverStatus(ceil);
       });
+      // Убрать свечение
+      this.unLightCeils(oldArea, "water");
     }
     // Добавить свечение для дорог
     else if (this.tool === Tool.road) {
@@ -536,19 +549,23 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   }
 
   // Очистить свечение
-  private unLightCeils(): void {
+  private unLightCeils(ceils: DreamMapCeil[] = null, type: "terrain" | "water" = "terrain"): void {
+    const tHighLight: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => c.highlight);
+    const wHighLight: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => (c?.waterHightlight || 0) > 0);
     // Убрать свечение ячеек
-    if (this.dreamMap?.ceils.some(c => c.highlight)) {
-      this.dreamMap?.ceils.filter(c => c.highlight).map(c => {
+    if ((!!ceils && type === "terrain") || tHighLight.length > 0) {
+      (!!ceils ? ceils : tHighLight).map(c => {
         c.highlight = false;
         // Обновить
         this.viewer.setTerrainHoverStatus(c);
       });
     }
     // Убрать свечение воды
-    if (this.dreamMap?.ceils.some(c => !!c?.waterHightlight)) {
-      this.dreamMap?.ceils.filter(c => !!c?.waterHightlight).map(c => {
+    if ((!!ceils && type === "water") || wHighLight.length > 0) {
+      (!!ceils ? ceils : wHighLight).map(c => {
         c.waterHightlight = 0;
+        // Запомнить ячейку
+        this.saveCeil(c);
         // Обновить
         this.viewer.setTerrainHoverStatus(c);
       });
@@ -557,7 +574,9 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection): void {
-    const z: number = direction === 0 ? this.startZ : this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+    const z: number = direction === 0 ?
+      this.startZ :
+      this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
     let change: boolean = false;
     // Цикл по прилегающим блокам
     for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
