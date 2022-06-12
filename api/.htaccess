@@ -1,14 +1,18 @@
 Options All -ExecCGI -Indexes -Includes +FollowSymLinks
 AddDefaultCharset UTF-8
 
-php_value display_errors 1
-php_value display_startup_errors 1
-php_value error_reporting -1
+<IfModule php7_module.c>
+  php_value display_errors 1
+  php_value display_startup_errors 1
+  php_value error_reporting -1
 
-php_value upload_max_filesize 15M
-php_value post_max_size 15M
-php_value max_execution_time 300
-php_value max_input_time 300
+  php_value upload_max_filesize 15M
+  php_value post_max_size 15M
+  php_value max_execution_time 300
+  php_value max_input_time 300
+
+  php_value short_open_tag On
+</IfModule>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
@@ -20,7 +24,7 @@ php_value max_input_time 300
 <IfModule mod_headers.c>
   Header add Access-Control-Allow-Origin "*"
   Header set Cache-Control "no-transform"
-  Header set Content-Type "multipart/form-data; charset=utf-8"
+  Header set Content-Type "application/json; charset=utf-8"
   Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE"
   Header set Access-Control-Allow-Headers "X-Requested-With, content-type, Authorization"
 </IfModule>
