@@ -3,7 +3,7 @@ export const environment = {
   baseUrl: "http://api.dreams-diary.ru/",
   httpHeader: {
     "Access-Control-Allow-Origin": "*",
-    "Content-Type": "multipart/form-data",
+    "Content-Type": "application/json",
     Authorization: "token"
   }
 };

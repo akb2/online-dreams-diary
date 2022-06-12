@@ -4,10 +4,10 @@
 
 export const environment = {
   production: false,
-  baseUrl: "http://api.dreams-diary.ru/",
+  baseUrl: "http://localhost:4201/",
   httpHeader: {
     "Access-Control-Allow-Origin": "*",
-    "Content-Type": "multipart/form-data",
+    "Content-Type": "application/json",
     Authorization: "token"
   }
 };
