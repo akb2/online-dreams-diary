@@ -53,19 +53,25 @@ class App
   public function createTable($data): array
   {
     $request = array(
+      "code"=>"9040",
       "user" => array(),
       "token" => array(),
     );
-    // Запросы на удаление таблиц
-    $request["token"]["delete"] = $this->tokenService->deleteTableApi($data["password"]);
-    $request["dream"]["delete"] = $this->dreamService->deleteTableApi($data["password"]);
-    $request["user"]["delete"] = $this->userService->deleteTableApi($data["password"]);
-    // Запросы на создание таблиц
-    $request["user"]["create"] = $this->userService->createTableApi($data["password"]);
-    $request["token"]["create"] = $this->tokenService->createTableApi($data["password"]);
-    $request["dream"]["create"] = $this->dreamService->createTableApi($data["password"]);
-    // Запросы на заполнение таблиц
-    $request["user"]["fill"] = $this->userService->fillTableApi($data["password"]);
+    // Проверка доступа
+    if($data["password"] === $this->config["appPassword"]){
+      // Запросы на удаление таблиц
+      $request["token"]["delete"] = $this->tokenService->deleteTableApi($data["password"]);
+      $request["dream"]["delete"] = $this->dreamService->deleteTableApi($data["password"]);
+      $request["user"]["delete"] = $this->userService->deleteTableApi($data["password"]);
+      // Запросы на создание таблиц
+      $request["user"]["create"] = $this->userService->createTableApi($data["password"]);
+      $request["token"]["create"] = $this->tokenService->createTableApi($data["password"]);
+      $request["dream"]["create"] = $this->dreamService->createTableApi($data["password"]);
+      // Запросы на заполнение таблиц
+      $request["user"]["fill"] = $this->userService->fillTableApi($data["password"]);
+      // Код
+      $request["code"] = "0001";
+    }
     // Результат
     return $request;
   }
