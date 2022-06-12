@@ -89,23 +89,23 @@ class DataBaseService
   // Получить текст запроса для теста
   public function interpolateQuery(string $fileName, string $endQuery, array $params = array())
   {
-    $keys = array();
-    $values = $params;
     $query = $this->getSqlFromFile($fileName);
     // Цикл по данным
     foreach ($params as $key => $value) {
-      $keys[] = is_string($key) ? "/:" . $key . "/" : "/[?]/";
+      $key = is_string($key) ? "/:" . $key . "/" : "/[\?]+/";
       // Параметры: строка
       if (is_string($value))
-        $values[$key] = "'" . $value . "'";
+        $value = "'" . $value . "'";
       // Параметры: массив
       if (is_array($value))
-        $values[$key] = "'" . implode("','", $value) . "'";
+        $value = "'" . implode("','", $value) . "'";
       // Параметры: NULL
       if (is_null($value))
-        $values[$key] = 'NULL';
+        $value = "NULL";
+      // Заменить данные
+      $query = preg_replace($key, $value, $query, 1);
     }
     // Текст запроса
-    return preg_replace($keys, $values, $query . " " . $endQuery);
+    return $query . " " . $endQuery;
   }
 }
