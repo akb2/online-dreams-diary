@@ -12,7 +12,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "full-server"
+        "dev-start"
+      ]
+    },
+    {
+      "name": "Выключить сервер",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}/client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "stop-server"
       ]
     }
   ]
