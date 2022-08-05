@@ -74,22 +74,28 @@ class DataBaseService
   // Получить содержимое запроса
   private function getSqlFromFile(string $fileName): string
   {
+    $sqlText = "";
     $file = "config/mysql_tables/" . $fileName;
-    // Выполнять запрос
-    if (file_exists($file)) {
-      $sqlText = file_get_contents($file);
-      if (strlen($sqlText) > 0) {
-        return $sqlText;
+    $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+    // Файл существует
+    if(file_exists($file)) {
+      // Текст запроса из файла с выполнением кода PHP
+      if($ext === "php"){
+        $sqlText = include $file;
+      }
+      // Текст запроса из файла
+      else{
+        $sqlText = file_get_contents($file);
       }
     }
     // Запрос неудался
-    return "";
+    return $sqlText;
   }
 
   // Получить текст запроса для теста
   public function interpolateQuery(string $fileName, string $endQuery, array $params = array())
   {
-    $query = $this->getSqlFromFile($fileName);
+    $query = $this->getSqlFromFile($fileName, $endQuery, $params);
     // Цикл по данным
     foreach ($params as $key => $value) {
       $key = is_string($key) ? "/:" . $key . "/" : "/[\?]+/";
