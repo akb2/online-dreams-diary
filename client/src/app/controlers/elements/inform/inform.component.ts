@@ -13,10 +13,11 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnInit,
 export class InformComponent implements OnInit, AfterViewInit {
 
 
-  @Input() public icon: string = "loader";
-  @Input() public title: string;
-  @Input() public subTitle: string;
-  @Input() public description: string;
+  @Input() icon: string = "loader";
+  @Input() aboveIcon: boolean = false;
+  @Input() title: string;
+  @Input() subTitle: string;
+  @Input() description: string;
 
   @ViewChild("descriptionPanel") private descriptionPanel: ElementRef;
 
