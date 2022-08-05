@@ -6,7 +6,10 @@
 @use "../../../../assets/styles/mixins";
 
 // Переменные
-$size: 400px;
+$sizes: (
+  default: 400px,
+  xsmall: 256px,
+);
 $elm: &;
 // Размеры фигуры
 $figure-size: 140px;
@@ -76,9 +79,12 @@ $figure-time-2: $figure-time-1 * 2;
   &__title,
   &__subtitle,
   &__description {
-    width: $size;
     max-width: 100%;
     text-align: center;
+    // Адаптив
+    @include screens.adaptiveFor($sizes) using($size) {
+      width: $size;
+    }
   }
 
   // Заголовок
@@ -86,10 +92,6 @@ $figure-time-2: $figure-time-1 * 2;
     font-size: 24px;
     font-weight: 500;
     text-transform: uppercase;
-    // Отступ после иконки
-    #{$elm}__icon + & {
-      margin-top: 15px;
-    }
   }
 
   // Подзаголовок
