@@ -53,7 +53,8 @@
 
 <!-- Не найдено -->
 <ng-template #listNotFound>
-  <app-inform icon="close"
+  <app-inform [aboveIcon]="true"
+              icon="close"
               title="Ошибка поиска"
               subTitle="Сновидения не найдены. Измените условия поиска или повторите позже"></app-inform>
 </ng-template>
