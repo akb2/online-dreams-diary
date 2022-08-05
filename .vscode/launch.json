@@ -5,14 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Разработка",
+      "name": "Разработка фронтенда",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceRoot}/client",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "dev-start"
+        "start"
       ]
     },
     {
