@@ -3,7 +3,7 @@
 
 // Пагинатор и список
 ::ng-deep {
-  $elms: "app-pagination" "app-dream-list";
+  $elms: "app-pagination" "app-dream-list" "app-inform";
   // Цикл по элементам
   @each $elm in $elms {
     #{$elm} {
