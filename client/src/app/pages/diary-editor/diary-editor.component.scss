@@ -117,8 +117,15 @@ $tabs-height: 48px;
 }
 
 // Секция внутри таба
-.root-section.tabs {
-  min-height: calc(100vh - #{$header-height + $tabs-height});
+.root-section {
+  // Содержимое редактора
+  &__helper {
+    max-width: 100%;
+  }
+  // Секция внутри таба
+  &.tabs {
+    min-height: calc(100vh - #{$header-height + $tabs-height});
+  }
 }
 
 // Занять все пространство

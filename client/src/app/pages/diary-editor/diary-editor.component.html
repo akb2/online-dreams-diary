@@ -17,7 +17,8 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <div [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
+    <div class="root-section__helper"
+         [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
                      [selectedIndex]="2"
