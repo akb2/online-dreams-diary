@@ -98,10 +98,9 @@ export class DreamService {
     let limit: number = 0;
     // Вернуть подписку
     return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(search, "search_")).pipe(
-      switchMap(
-        result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
-          of(result.result.data) :
-          this.apiService.checkResponse(result.result.code, codes)
+      switchMap(result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)
       ),
       tap(r => {
         count = r.count;
