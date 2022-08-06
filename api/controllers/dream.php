@@ -1,14 +1,9 @@
 <?
 
-namespace OnlineDreamsDiary\Controllers;
+namespace Controllers;
 
-include_once "services/database.php";
-include_once "services/dream.php";
-include_once "services/token.php";
-include_once "config/database.php";
-
-use OnlineDreamsDiary\Services\DreamService;
-use OnlineDreamsDiary\Services\TokenService;
+use Services\DreamService;
+use Services\TokenService;
 use PDO;
 
 
@@ -125,6 +120,7 @@ class Dream
     return array(
       "data" => array(
         "count" => $testDreams["count"],
+        "sql" => $testDreams["sql"], // Test: удалить
         "limit" => $testDreams["limit"],
         "dreams" => $dreams
       ),

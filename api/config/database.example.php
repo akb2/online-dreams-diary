@@ -1,6 +1,5 @@
 <?
-
-namespace OnlineDreamsDiary\Config;
+namespace Config;
 
 use PDO;
 use PDOException;

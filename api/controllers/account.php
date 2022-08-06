@@ -1,15 +1,9 @@
 <?
 
-namespace OnlineDreamsDiary\Controllers;
+namespace Controllers;
 
-include_once "services/recaptcha.php";
-include_once "services/database.php";
-include_once "services/user.php";
-include_once "services/token.php";
-include_once "config/database.php";
-
-use OnlineDreamsDiary\Services\UserService;
-use OnlineDreamsDiary\Services\TokenService;
+use Services\UserService;
+use Services\TokenService;
 use PDO;
 
 

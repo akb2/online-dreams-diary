@@ -1,6 +1,6 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
+namespace Services;
 
 
 

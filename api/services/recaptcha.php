@@ -1,6 +1,6 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
+namespace Services;
 
 
 
@@ -10,7 +10,7 @@ class ReCaptchaService
   private string $captcha;
   private array $config;
 
-  function __construct(string $captcha, array $config)
+  public function __construct(string $captcha, array $config)
   {
     $this->captcha = $captcha;
     $this->config = $config;

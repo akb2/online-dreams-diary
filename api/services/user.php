@@ -1,13 +1,10 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
-
-include_once "./libs/thumbs.php";
-include_once "./services/recaptcha.php";
+namespace Services;
 
 use PDO;
-use OnlineDreamsDiary\Libs\Thumbs;
-use OnlineDreamsDiary\Services\ReCaptchaService;
+use Libs\Thumbs;
+use Services\ReCaptchaService;
 
 
 
@@ -26,7 +23,7 @@ class UserService
   private array $avatarKeysCrop = array("crop" => "full", "middle" => "crop");
   private array $avatarKeysCropPos = array("startX", "width", "startY", "height");
 
-  function __construct(PDO $pdo, array $config)
+  public function __construct(PDO $pdo, array $config)
   {
     $this->pdo = $pdo;
     $this->config = $config;

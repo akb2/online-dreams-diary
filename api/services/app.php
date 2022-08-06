@@ -1,10 +1,8 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
+namespace Services;
 
-include_once "config/database.php";
-
-use OnlineDreamsDiary\Config\DataBase;
+use Config\DataBase;
 use PDO;
 
 
@@ -29,7 +27,7 @@ class App
   // Получить настройки
   public function getSecretDatas(): array
   {
-    $src = "config/secretDatas.json";
+    $src = "Config/secretDatas.json";
     // Проверить настройки
     if (file_exists($src)) {
       $fileData = file_get_contents($src);
@@ -47,7 +45,7 @@ class App
   // Подключение к контроллеру
   public function controllerConnect(string $controllerName, string $methodName)
   {
-    $file = "controllers/" . $controllerName . ".php";
+    $file = "Controllers/" . ucfirst($controllerName) . ".php";
     // Подключение контроллера
     if (file_exists($file)) {
       $controller = include $file;

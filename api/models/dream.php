@@ -1,6 +1,6 @@
 <?
 
-namespace OnlineDreamsDiary\Models;
+namespace Models;
 
 
 

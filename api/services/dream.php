@@ -1,6 +1,6 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
+namespace Services;
 
 use PDO;
 
@@ -14,7 +14,7 @@ class DreamService
   private DataBaseService $dataBaseService;
   private TokenService $tokenService;
 
-  function __construct(PDO $pdo, array $config)
+  public function __construct(PDO $pdo, array $config)
   {
     $this->pdo = $pdo;
     $this->config = $config;
@@ -97,15 +97,26 @@ class DreamService
   {
     $count = 0;
     $result = array();
-    $checkToken = $this->tokenService->checkToken($userId, $token);
-    $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
     $limit = $this->config["dreams"]["limit"];
-    $whereQuery = "";
-    $orderQuery = " ORDER BY `create_date` DESC ";
+    $checkToken = $this->tokenService->checkToken($userId, $token);
+    // Данные для поиска
+    $sqlData = array(
+      // Значения полей
+      "checkToken" => $checkToken,
+      "currentUser" => strval($userId),
+      // Параметры
+      "status" => strval($search["status"]),
+      "user" => strval($search["user"])
+    );
+    // Запрос
+    $sql = $this->dataBaseService->interpolateQuery("dream/searchDreams.php", "", $sqlData);
+    // $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
+    // $whereQuery = "";
+    // $orderQuery = " ORDER BY `create_date` DESC ";
     // Данные поиска
-    $sqlData = array();
+    // $sqlData = array();
     // Уточнение данных
-    if (count($search) > 0) {
+    /*if (count($search) > 0) {
       // Поиск по пользователю
       if (isset($search["user"]) && $search["user"] > 0) {
         $whereQuery .= " AND `user_id` = :user_id ";
@@ -132,22 +143,23 @@ class DreamService
           $whereQuery .= " AND ( `status` = 5 " . ($checkToken ? " OR `status` = 4 " : "") . ")";
         }
       }
-    }
+    }*/
     // Запрос подсчета
-    $count = $this->dataBaseService->getCountFromFileString("dream/getListCount.sql", $whereQuery, $sqlData);
+    // $count = $this->dataBaseService->getCountFromFileString("dream/getListCount.sql", $whereQuery, $sqlData);
     // Получение данных
-    if ($count > 0) {
+    /*if ($count > 0) {
       $maxPage = ceil($count / $limit);
       $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
       $limitQuery = " LIMIT " . (($page * $limit) - $limit) . ", " . $limit . " ";
       // Список данных
       $result = $this->dataBaseService->getDatasFromFileString("dream/getList.sql", $whereQuery . $orderQuery . $limitQuery, $sqlData);
-    }
+    }*/
     // Сон не найден
     return array(
       "count" => $count,
       "limit" => $limit,
-      "result" => $result
+      "result" => $result,
+      "sql" => $sql // Test: удалить
     );
   }
 
