@@ -1,10 +1,20 @@
 <?
+spl_autoload_register(function ($name) {
+  $name = preg_replace('/^(.*?)(Service)$/i', '$1', $name);
+  $file = $_SERVER['DOCUMENT_ROOT'] . '/' . $name . '.php';
+  $file = preg_replace('/([\/\\\]+)/i', '/', $file);
+  // Подключить файл
+  if(file_exists($file)) {
+    include_once $file;
+  }
+});
 
-namespace OnlineDreamsDiary;
+use Services\App;
 
-include_once "services/app.php";
 
-use OnlineDreamsDiary\Services\App;
+
+ob_end_clean();
+ob_start();
 
 
 
@@ -24,7 +34,8 @@ $result = array(
     "post" => $_POST,
     "get" => $_GET,
   ),
-  "result" => $controller
+  "result" => $controller,
+  "echo" => ob_get_contents()
 );
 
 
@@ -36,4 +47,6 @@ if (!$controller) {
 }
 
 
+
+ob_end_clean();
 echo json_encode($result);
