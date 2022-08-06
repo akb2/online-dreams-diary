@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "progress": false,
+            "progress": true,
             "outputPath": "../app",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -52,9 +52,9 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "namedChunks": false,
+              "namedChunks": true,
               "extractLicenses": true,
-              "vendorChunk": false,
+              "vendorChunk": true,
               "buildOptimizer": true
             }
           },
