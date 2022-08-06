@@ -99,67 +99,34 @@ class DreamService
     $result = array();
     $limit = $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
+    $sql="";
     // Данные для поиска
     $sqlData = array(
       // Значения полей
-      "checkToken" => $checkToken,
-      "currentUser" => strval($userId),
+      "status" => intval($search["status"]),
+      "user_id" => intval($search["user"]),
       // Параметры
-      "status" => strval($search["status"]),
-      "user" => strval($search["user"])
+      "check_token" => $checkToken,
+      "current_user" => intval($userId),
     );
     // Запрос
-    $sql = $this->dataBaseService->interpolateQuery("dream/searchDreams.php", "", $sqlData);
-    // $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
-    // $whereQuery = "";
-    // $orderQuery = " ORDER BY `create_date` DESC ";
-    // Данные поиска
-    // $sqlData = array();
-    // Уточнение данных
-    /*if (count($search) > 0) {
-      // Поиск по пользователю
-      if (isset($search["user"]) && $search["user"] > 0) {
-        $whereQuery .= " AND `user_id` = :user_id ";
-        $sqlData["user_id"] = strval($search["user"]);
-      }
-      // Поиск по статусам
-      {
-        // Собственные сновидения
-        // ? draft(0), private(1), hash(2), friends(3), users(4), public(5)
-        if (isset($search["user"]) && $checkToken && $search["user"] === $userId) {
-        }
-        // Сновидения определенного пользователя
-        // ? !friends(3)!, *users(4)*, public(5)
-        else if (isset($search["user"]) && $search["user"] !== $userId) {
-          $whereQuery .=
-            " AND ( " .
-            " `status` = 5 " .
-            ($checkToken ? " OR `status` = 4 " : "") .
-            ")";
-        }
-        // Общий дневник
-        // ? *users(4)*, public(5)
-        else {
-          $whereQuery .= " AND ( `status` = 5 " . ($checkToken ? " OR `status` = 4 " : "") . ")";
-        }
-      }
-    }*/
-    // Запрос подсчета
-    // $count = $this->dataBaseService->getCountFromFileString("dream/getListCount.sql", $whereQuery, $sqlData);
-    // Получение данных
-    /*if ($count > 0) {
+    $count = $this->dataBaseService->getCountFromFile("dream/searchDreamsCount.php", $sqlData);
+    $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
+    // Сновидения найдены
+    if ($count > 0) {
       $maxPage = ceil($count / $limit);
       $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
-      $limitQuery = " LIMIT " . (($page * $limit) - $limit) . ", " . $limit . " ";
+      // Настройки ограничения данных
+      $sqlData['limit_start'] = intval(($page * $limit) - $limit);
+      $sqlData['limit_length'] = intval($limit);
       // Список данных
-      $result = $this->dataBaseService->getDatasFromFileString("dream/getList.sql", $whereQuery . $orderQuery . $limitQuery, $sqlData);
-    }*/
+      $result = $this->dataBaseService->getDatasFromFile("dream/searchDreams.php", $sqlData);
+    }
     // Сон не найден
     return array(
       "count" => $count,
       "limit" => $limit,
-      "result" => $result,
-      "sql" => $sql // Test: удалить
+      "result" => $result
     );
   }
 
