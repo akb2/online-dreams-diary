@@ -1,3 +1,4 @@
 /config/database.php
 /config/secretDatas.json
 /config/mysql_tables/account/createAdmin.sql
+/config/mysql_tables/account/createAdmin.php
