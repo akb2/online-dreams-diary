@@ -1,8 +1,9 @@
 <?
 
-namespace OnlineDreamsDiary\Services;
+namespace Services;
 
 use PDO;
+use Models\File;
 
 
 
@@ -10,7 +11,7 @@ class DataBaseService
 {
   private PDO $pdo;
 
-  function __construct(PDO $pdo)
+  public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
   }
@@ -20,7 +21,7 @@ class DataBaseService
   // Выполнить запрос SQL из файла
   public function executeFromFile(string $fileName, array $params = array()): bool
   {
-    $sqlText = $this->getSqlFromFile($fileName);
+    $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
       return $this->pdo->prepare($sqlText)->execute($params);
@@ -32,7 +33,7 @@ class DataBaseService
   // Получить данные из файла
   public function getDatasFromFile(string $fileName, array $params = array())
   {
-    $sqlText = $this->getSqlFromFile($fileName);
+    $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
       $sql = $this->pdo->prepare($sqlText);
@@ -46,10 +47,10 @@ class DataBaseService
   // Получить данные из файла совместно со строкой
   public function getDatasFromFileString(string $fileName, string $endQuery, array $params = array())
   {
-    $sqlText = $this->getSqlFromFile($fileName);
+    $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
-      $sql = $this->pdo->prepare($sqlText . " " . $endQuery);
+      $sql = $this->pdo->prepare($sqlText . ' ' . $endQuery);
       $sql->execute($params);
       return $sql->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -60,10 +61,10 @@ class DataBaseService
   // Подсчитать данные из файла совместно со строкой
   public function getCountFromFileString(string $fileName, string $endQuery, array $params = array())
   {
-    $sqlText = $this->getSqlFromFile($fileName);
+    $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
-      $sql = $this->pdo->prepare($sqlText . " " . $endQuery);
+      $sql = $this->pdo->prepare($sqlText . ' ' . $endQuery);
       $sql->execute($params);
       return $sql->fetchColumn();
     }
@@ -72,20 +73,19 @@ class DataBaseService
   }
 
   // Получить содержимое запроса
-  private function getSqlFromFile(string $fileName): string
+  private function getSqlFromFile(string $fileName, array $params = array()): string
   {
-    $sqlText = "";
-    $file = "config/mysql_tables/" . $fileName;
-    $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+    $sqlText = '';
+    $file = new File('Config/mysql_tables/' . $fileName);
     // Файл существует
-    if(file_exists($file)) {
+    if($file->exists()) {
       // Текст запроса из файла с выполнением кода PHP
-      if($ext === "php"){
-        $sqlText = include $file;
+      if($file->extension() === 'php') {
+        $sqlText = $file->eval($params);
       }
       // Текст запроса из файла
       else{
-        $sqlText = file_get_contents($file);
+        $sqlText = $file->content();
       }
     }
     // Запрос неудался
@@ -95,23 +95,23 @@ class DataBaseService
   // Получить текст запроса для теста
   public function interpolateQuery(string $fileName, string $endQuery, array $params = array())
   {
-    $query = $this->getSqlFromFile($fileName, $endQuery, $params);
+    $query = $this->getSqlFromFile($fileName, $params);
     // Цикл по данным
     foreach ($params as $key => $value) {
-      $key = is_string($key) ? "/:" . $key . "/" : "/[\?]+/";
+      $key = is_string($key) ? '/:' . $key . '/' : '/[\?]+/';
       // Параметры: строка
       if (is_string($value))
-        $value = "'" . $value . "'";
+        $value = '"' . $value . '"';
       // Параметры: массив
       if (is_array($value))
-        $value = "'" . implode("','", $value) . "'";
+        $value = '"' . implode('","', $value) . '"';
       // Параметры: NULL
       if (is_null($value))
-        $value = "NULL";
+        $value = 'NULL';
       // Заменить данные
       $query = preg_replace($key, $value, $query, 1);
     }
     // Текст запроса
-    return $query . " " . $endQuery;
+    return $query . ' ' . $endQuery;
   }
 }
