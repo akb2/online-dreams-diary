@@ -24,7 +24,7 @@ class DataBaseService
     $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
-      return $this->pdo->prepare($sqlText)->execute($params);
+      return $this->pdo->prepare($sqlText)->execute($this->checkInputParams($sqlText, $params));
     }
     // Запрос неудался
     return false;
@@ -37,21 +37,7 @@ class DataBaseService
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
       $sql = $this->pdo->prepare($sqlText);
-      $sql->execute($params);
-      return $sql->fetchAll(PDO::FETCH_ASSOC);
-    }
-    // Запрос неудался
-    return array();
-  }
-
-  // Получить данные из файла совместно со строкой
-  public function getDatasFromFileString(string $fileName, string $endQuery, array $params = array())
-  {
-    $sqlText = $this->getSqlFromFile($fileName, $params);
-    // Выполнять запрос
-    if (strlen($sqlText) > 0) {
-      $sql = $this->pdo->prepare($sqlText . ' ' . $endQuery);
-      $sql->execute($params);
+      $sql->execute($this->checkInputParams($sqlText, $params));
       return $sql->fetchAll(PDO::FETCH_ASSOC);
     }
     // Запрос неудался
@@ -59,17 +45,17 @@ class DataBaseService
   }
 
   // Подсчитать данные из файла совместно со строкой
-  public function getCountFromFileString(string $fileName, string $endQuery, array $params = array())
+  public function getCountFromFile(string $fileName, array $params = array()): int
   {
     $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
-      $sql = $this->pdo->prepare($sqlText . ' ' . $endQuery);
-      $sql->execute($params);
-      return $sql->fetchColumn();
+      $sql = $this->pdo->prepare($sqlText);
+      $sql->execute($this->checkInputParams($sqlText, $params));
+      return intval(reset($sql->fetch(PDO::FETCH_NUM)));
     }
     // Запрос неудался
-    return array();
+    return 0;
   }
 
   // Получить содержимое запроса
@@ -92,8 +78,35 @@ class DataBaseService
     return $sqlText;
   }
 
+  // Скорректировать массив данных согласно тексту запроса
+  private function checkInputParams(string $query, array $params): array
+  {
+    preg_match_all('/(\?)/ui', $query, $findAsArray, PREG_PATTERN_ORDER);
+    preg_match_all('/:([a-z0-9\-_]+)/ui', $query, $findAsObject, PREG_PATTERN_ORDER);
+    // Настройки
+    $findAsArrayCount = count($findAsArray[1]);
+    $newParams = array();
+    // Корректировка для порядкого перечисления
+    for($k = 0; $k < $findAsArrayCount; $k++) {
+      $newParams[$k] = isset($params[$k])? $params[$k]: "";
+    }
+    // Корректировка для параметров с ключами
+    foreach($findAsObject[1] as $k) {
+      $newParams[$k] = isset($params[$k])? $params[$k]: "";
+    }
+    // Корректировать тип данных
+    foreach($newParams as $k => $v) {
+      $types = array('boolean', 'integer', 'double', 'string');
+      if(!in_array(gettype($v), $types)) {
+        $newParams[$k] = strval($v);
+      }
+    }
+    // Вернуть корректный массив данных
+    return $newParams;
+  }
+
   // Получить текст запроса для теста
-  public function interpolateQuery(string $fileName, string $endQuery, array $params = array())
+  public function interpolateQuery(string $fileName, array $params = array())
   {
     $query = $this->getSqlFromFile($fileName, $params);
     // Цикл по данным
@@ -112,6 +125,6 @@ class DataBaseService
       $query = preg_replace($key, $value, $query, 1);
     }
     // Текст запроса
-    return $query . ' ' . $endQuery;
+    return $query;
   }
 }
