@@ -19,7 +19,8 @@ export interface ApiResponse {
     code?: ApiResponseCodes;
     message?: string;
     data?: any;
-  }
+  },
+  echo: string;
 }
 
 // Тип сообщений об ошибках
