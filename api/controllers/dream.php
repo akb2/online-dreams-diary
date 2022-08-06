@@ -120,7 +120,6 @@ class Dream
     return array(
       "data" => array(
         "count" => $testDreams["count"],
-        "sql" => $testDreams["sql"], // Test: удалить
         "limit" => $testDreams["limit"],
         "dreams" => $dreams
       ),
