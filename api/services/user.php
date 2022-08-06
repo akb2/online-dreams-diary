@@ -65,7 +65,7 @@ class UserService
     // Проверить секретный пароль
     if ($password == $this->config["appPassword"]) {
       // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("account/createAdmin.sql");
+      return $this->dataBaseService->executeFromFile("account/createAdmin.php");
     }
     // Результат работы функции
     return false;
