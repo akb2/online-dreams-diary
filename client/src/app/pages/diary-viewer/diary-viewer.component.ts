@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit } from "@angular/core";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
@@ -26,6 +26,7 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
+  private pageTitle: string = "Просмотр сновидения";
 
   defaultTitle: string = DreamTitle;
   today: Date = new Date();
@@ -105,7 +106,7 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private router: Router,
-    private domSanitizer: DomSanitizer
+    private titleService: Title
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -144,8 +145,8 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
       this.dreamService.getById(this.dreamId, false).subscribe(
         dream => {
           this.dream = dream;
-          // Отметить готовность
           this.ready = true;
+          this.titleService.setTitle(AppComponent.createTitle([dream.title, this.pageTitle]));
           // Обновить
           this.changeDetectorRef.detectChanges();
         },

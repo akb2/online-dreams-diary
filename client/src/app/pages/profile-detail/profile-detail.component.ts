@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
@@ -28,6 +29,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
 
   title: string = "Общий дневник";
   subTitle: string = "Все публичные сновидения";
+  private pageTitle: string;
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 1);
   navMenuType: NavMenuType = NavMenuType.short;
   menuAvatarImage: string = "";
@@ -60,7 +62,8 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     private changeDetectorRef: ChangeDetectorRef,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private titleService: Title,
   ) { }
 
   ngDoCheck() {
@@ -68,12 +71,14 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
       this.oldUser = this.user;
       this.defineData();
     }
+    // Проверить заголовок
+    if (this.titleService.getTitle() !== this.pageTitle) {
+      this.titleService.setTitle(this.pageTitle);
+    }
   }
 
   ngOnInit() {
-    let snapshots: ActivatedRouteSnapshot = this.activatedRoute.snapshot;
-    while (!!snapshots.firstChild) snapshots = snapshots.firstChild;
-    this.pageData = snapshots.data;
+    this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
     // Пользователь не авторизован
     if (!this.accountService.checkAuth) {
       this.defineData();
@@ -141,6 +146,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     if (this.pageData.userId > 0 && this.user && this.pageData.userId === this.user.id) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = this.user.pageStatus;
+      this.pageTitle = AppComponent.createTitle("Моя страница");
       this.backgroundImageData = this.user.settings.profileBackground;
       this.menuAvatarImage = this.user.avatars.middle;
       this.navMenuType = this.user.settings.profileHeaderType;
@@ -154,6 +160,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     else if (this.pageData.userId > 0 && ((this.user && this.pageData.userId !== this.user.id) || !this.user)) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.subTitle = this.visitedUser.pageStatus;
+      this.pageTitle = AppComponent.createTitle(this.title);
       this.backgroundImageData = this.visitedUser.settings.profileBackground;
       this.navMenuType = this.visitedUser.settings.profileHeaderType;
       this.menuAvatarImage = this.visitedUser.avatars.middle;
@@ -163,6 +170,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     }
     // Готово к загрузке
     if (this.ready) {
+      this.titleService.setTitle(this.pageTitle);
       this.changeDetectorRef.detectChanges();
     }
   }

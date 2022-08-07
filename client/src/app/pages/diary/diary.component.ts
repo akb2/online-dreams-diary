@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { ActivatedRoute, ActivatedRouteSnapshot, Router } from "@angular/router";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
@@ -36,6 +37,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
 
   title: string = "Общий дневник";
   subTitle: string = "Все публичные сновидения";
+  private pageTitle: string;
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 11);
   menuAvatarImage: string = "";
   menuAvatarIcon: string = "";
@@ -93,6 +95,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
+    private titleService: Title,
     private router: Router
   ) { }
 
@@ -103,15 +106,11 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   ngOnInit() {
-    let snapshots: ActivatedRouteSnapshot = this.activatedRoute.snapshot;
-    while (!!snapshots.firstChild) snapshots = snapshots.firstChild;
-    this.pageData = snapshots.data;
-    // Подписка на данные URL
     this.activatedRoute.queryParams.subscribe(params => {
+      this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
       this.queryParams = params as SimpleObject;
-      // Метка источника перехода
       this.pageCurrent = parseInt(params.p) || 1;
-      // Загрузка данных
+      // Функция обработчик
       this.defineData();
     });
   }
@@ -135,6 +134,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     this.dreamsCount = 0;
     this.dreams = [];
     this.loading = false;
+    this.titleService.setTitle(this.pageTitle);
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -150,6 +150,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       queryParamsHandling: "merge",
       replaceUrl: true,
       state: {
+        changeTitle: false,
         showPreLoader: false
       }
     });
@@ -215,6 +216,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     if (this.pageData.userId > 0 && !!this.user && this.pageData.userId === this.user.id) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = "Мой дневник сновидений";
+      this.pageTitle = AppComponent.createTitle(this.subTitle);
       this.backgroundImageData = this.user.settings.profileBackground;
       this.menuAvatarImage = this.user.avatars.middle;
       this.menuAvatarIcon = "person";
@@ -228,7 +230,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     // Дневник другого пользователя
     else if (this.pageData.userId > 0 && ((!!this.user && this.pageData.userId !== this.user.id) || !this.user)) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
-      this.subTitle = "Дневник сновидений пользователя";
+      this.subTitle = "Дневник сновидений";
+      this.pageTitle = AppComponent.createTitle([this.subTitle, this.title]);
       this.backgroundImageData = this.visitedUser.settings.profileBackground;
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.menuAvatarIcon = "person";
@@ -247,6 +250,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
         this.floatButtonIcon = "";
         this.floatButtonLink = "";
       }
+      // Название страницы
+      this.pageTitle = AppComponent.createTitle(this.title);
       // Готово
       this.ready = true;
     }
@@ -261,6 +266,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   loadDreams(): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
+    this.titleService.setTitle(this.pageTitle);
     // Поиск по сновидениям
     const search: SearchDream = {
       page: this.pageCurrent > 0 ? this.pageCurrent : 1,
@@ -277,6 +283,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
           this.pageCount = dreams.length;
           this.dreams = dreams;
           this.loading = false;
+          this.titleService.setTitle(this.pageTitle);
           // Обновить
           this.changeDetectorRef.detectChanges();
         }

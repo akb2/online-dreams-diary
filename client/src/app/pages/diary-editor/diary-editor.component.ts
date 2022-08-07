@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
+import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
@@ -40,6 +41,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   config: CKEditor5.Config = { language: "ru" };
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
+  private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
   defaultTitle: string = DreamTitle;
@@ -110,7 +112,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     private dreamService: DreamService,
     private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
-    private router: Router
+    private router: Router,
+    private titleService: Title
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -203,6 +206,8 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   // Изменение названия сновидения
   private onChangeTitle(title: string): void {
     this.dream.title = title;
+    // Обновить название страницы
+    this.setTitle();
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -238,6 +243,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
           this.dream = dream;
           // Создать форму
           this.createForm();
+          this.setTitle();
         },
         () => this.router.navigate(["404"])
       );
@@ -247,6 +253,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
       this.dream = this.dreamService.newDream;
       // Создать форму
       this.createForm();
+      this.setTitle();
     }
   }
 
@@ -266,5 +273,13 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     this.dreamForm.get("text").setValue(this.dream.text);
     // Отметить готовность
     this.ready = true;
+  }
+
+  // Установить название страницы
+  private setTitle(): void {
+    this.titleService.setTitle(AppComponent.createTitle([
+      this.dream.title,
+      this.pageTitle[!!this.dream.id ? 1 : 0]
+    ]));
   }
 }
