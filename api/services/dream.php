@@ -49,6 +49,18 @@ class DreamService
     return false;
   }
 
+  // Заполнить таблицы БД
+  public function fillTableApi(string $password): bool
+  {
+    // Проверить секретный пароль
+    if ($password == $this->config["appPassword"]) {
+      // Настройка таблиц
+      return $this->dataBaseService->executeFromFile("dream/createDreams.php");
+    }
+    // Результат работы функции
+    return false;
+  }
+
 
 
   // Проверить доступность сновидения
