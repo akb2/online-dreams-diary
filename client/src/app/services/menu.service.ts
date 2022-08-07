@@ -127,6 +127,16 @@ export class MenuService {
           icon: "help_outline",
           text: "Поиск",
           children: [
+            // Люди
+            {
+              icon: "book",
+              text: "Люди",
+              link: "/people"
+            },
+            // Разделитель
+            {
+              isSeparate: true
+            },
             // Дневники
             {
               icon: "book",
