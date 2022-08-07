@@ -49,8 +49,10 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
           this.pageCurrent <= 4 ? "start" :
             this.pageCurrent >= this.pageMax - 3 ? "end" :
               "none";
-    const length: number = type === "center" ? 3 : type === "none" ? 5 : 4;
+    let length: number = type === "center" ? 3 : type === "none" ? 5 : 4;
     const start: number = type === "center" ? this.pageCurrent - 1 : type === "end" ? this.pageMax - 4 : 2;
+    // Корректировка
+    length = length === 5 && start - 1 + length === this.pageMax ? this.pageMax - 2 : length;
     // Результат
     return Array.from({ length }, (v, k) => start + k);
   }
