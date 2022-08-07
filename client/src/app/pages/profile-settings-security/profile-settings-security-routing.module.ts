@@ -7,7 +7,7 @@ import { ProfileSettingsSecurityComponent } from "@_pages/profile-settings-secur
 
 
 const routes: Routes = [{
-  path: '',
+  path: "",
   component: ProfileSettingsSecurityComponent,
   data: { title: "Настройки безопасности" }
 }];
@@ -24,4 +24,5 @@ const routes: Routes = [{
     RouterModule
   ]
 })
+
 export class ProfileSettingsSecurityRoutingModule { }

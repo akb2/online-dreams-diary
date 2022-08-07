@@ -7,7 +7,7 @@ import { ProfileSettingsPersonComponent } from "@_pages/profile-settings-person/
 
 
 const routes: Routes = [{
-  path: '',
+  path: "",
   component: ProfileSettingsPersonComponent,
   data: { title: "Настройки персональных данных" }
 }];
@@ -24,4 +24,5 @@ const routes: Routes = [{
     RouterModule
   ]
 })
+
 export class ProfileSettingsPersonRoutingModule { }

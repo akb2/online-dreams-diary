@@ -1,14 +1,24 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { DiaryViewerComponent } from '@_pages/diary-viewer/diary-viewer.component';
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { DiaryViewerComponent } from "@_pages/diary-viewer/diary-viewer.component";
 
 
 
 
 
 const routes: Routes = [
-  { path: '', component: DiaryViewerComponent },
-  { path: ':dreamId', component: DiaryViewerComponent }
+  // Просмотр сновидения
+  {
+    path: "",
+    component: DiaryViewerComponent,
+    data: { title: "Просмотр сновидения" }
+  },
+  // Просмотр сновидения
+  {
+    path: ":dreamId",
+    component: DiaryViewerComponent,
+    data: { title: "Просмотр сновидения" }
+  }
 ];
 
 

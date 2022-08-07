@@ -7,7 +7,7 @@ import { ProfileSettingsAppearanceComponent } from "@_pages/profile-settings-app
 
 
 const routes: Routes = [{
-  path: '',
+  path: "",
   component: ProfileSettingsAppearanceComponent,
   data: { title: "Персонализация" }
 }];
@@ -24,4 +24,5 @@ const routes: Routes = [{
     RouterModule
   ]
 })
+
 export class ProfileSettingsAppearanceRoutingModule { }

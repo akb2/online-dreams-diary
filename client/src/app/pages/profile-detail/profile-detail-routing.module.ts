@@ -7,9 +7,9 @@ import { ProfileDetailComponent } from "@_pages/profile-detail/profile-detail.co
 
 
 const routes: Routes = [{
-  path: '',
+  path: "",
   component: ProfileDetailComponent,
-  data: { title: "Моя страница" }
+  data: { title: "Страница пользователя" }
 }];
 
 
@@ -24,4 +24,5 @@ const routes: Routes = [{
     RouterModule
   ]
 })
+
 export class ProfileDetailRoutingModule { }

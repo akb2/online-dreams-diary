@@ -6,7 +6,11 @@ import { Page404Component } from "./404.component";
 
 
 
-const routes: Routes = [{ path: "", component: Page404Component }];
+const routes: Routes = [{
+  path: "",
+  component: Page404Component,
+  data: { title: "Страница не найдена" }
+}];
 
 
 
@@ -14,15 +18,11 @@ const routes: Routes = [{ path: "", component: Page404Component }];
 
 @NgModule({
   imports: [
-    RouterModule.forChild( routes )
+    RouterModule.forChild(routes)
   ],
   exports: [
     RouterModule
   ]
 })
-
-
-
-
 
 export class Page404RoutingModule { }

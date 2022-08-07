@@ -22,14 +22,14 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "auth",
         loadChildren: () => import("@_pages/auth/auth.module").then(m => m.AuthModule),
-        data: { title: "Авторизация", authRule: -1 },
+        data: { authRule: -1 },
         canActivate: [AuthGuard]
       },
       // Регистрация
       {
         path: "register",
         loadChildren: () => import("@_pages/register/register.module").then(m => m.RegisterModule),
-        data: { title: "Регистрация", authRule: -1 },
+        data: { authRule: -1 },
         canActivate: [AuthGuard]
       },
       // * Для авторизованных пользователей
@@ -72,14 +72,14 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "diary/my",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { title: "Мой дневник сновидений", userId: -1, authRule: 1 },
+        data: { userId: -1, authRule: 1 },
         canActivate: [AuthGuard]
       },
       // Дневник: Редактор
       {
         path: "diary/editor",
         loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
-        data: { title: "Редактор сновидения", userId: 0, authRule: 1 },
+        data: { userId: 0, authRule: 1 },
         canActivate: [AuthGuard]
       },
       // * Страницы, не имеющие значения авторизации
@@ -116,28 +116,35 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "diary/all",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { title: "Общий дневник сновидений", userId: 0, authRule: 0 },
+        data: { userId: 0, authRule: 0 },
         canActivate: [AuthGuard]
       },
       // Дневник: Сновидения определенного пользователя
       {
         path: "diary/:user_id",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { title: "Дневник сновидений пользователя", userId: -2, authRule: 0 },
+        data: { userId: -2, authRule: 0 },
         canActivate: [AuthGuard]
       },
       // Дневник: Просмотр
       {
         path: "diary/viewer",
         loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
-        data: { title: "Просмотр сновидения", userId: 0, from: "", authRule: 1 },
+        data: { userId: 0, from: "", authRule: 1 },
+        canActivate: [AuthGuard]
+      },
+      // Поиск: пользователи
+      {
+        path: "people",
+        loadChildren: () => import("@_pages/people/people.module").then(m => m.PeopleModule),
+        data: { authRule: 0 },
         canActivate: [AuthGuard]
       },
       // Ошибка 404
       {
         path: "**",
         loadChildren: () => import("@_pages/404/404.module").then(m => m.Page404Module),
-        data: { title: "Ошибка 404", authRule: 0 },
+        data: { authRule: 0 },
         canActivate: [AuthGuard]
       },
     ],

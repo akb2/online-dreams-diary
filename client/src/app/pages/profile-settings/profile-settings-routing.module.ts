@@ -7,7 +7,7 @@ import { ProfileSettingsComponent } from "@_pages/profile-settings/profile-setti
 
 
 const routes: Routes = [{
-  path: '',
+  path: "",
   component: ProfileSettingsComponent,
   data: { title: "Настройки" }
 }];
@@ -24,4 +24,5 @@ const routes: Routes = [{
     RouterModule
   ]
 })
+
 export class ProfileSettingsRoutingModule { }
