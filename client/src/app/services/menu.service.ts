@@ -91,10 +91,10 @@ export class MenuService {
     // Меню для телефона
     if (this.isMobile()) {
       this.menuItemsOther = [
-        // Материалы
+        // Поиск
         {
           sort: 100,
-          text: "Материалы",
+          text: "Поиск",
           children: [
             // Дневники
             {
@@ -121,11 +121,11 @@ export class MenuService {
     // Для десктопа
     else {
       this.menuItemsOther = [
-        // Материалы
+        // Поиск
         {
           sort: 100,
           icon: "help_outline",
-          text: "Материалы",
+          text: "Поиск",
           children: [
             // Дневники
             {
