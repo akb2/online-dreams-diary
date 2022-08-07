@@ -46,6 +46,8 @@ class App
   // * GET
   public function createTable($data): array
   {
+    ini_set('max_execution_time', 600);
+    // ПРедварительные ответы
     $request = array(
       "code"=>"9040",
       "user" => array(),
@@ -63,6 +65,7 @@ class App
       $request["dream"]["create"] = $this->dreamService->createTableApi($data["password"]);
       // Запросы на заполнение таблиц
       $request["user"]["fill"] = $this->userService->fillTableApi($data["password"]);
+      $request["dream"]["fill"] = $this->dreamService->fillTableApi($data["password"]);
       // Код
       $request["code"] = "0001";
     }
