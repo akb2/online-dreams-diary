@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
@@ -34,17 +34,9 @@ export class TokenService {
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   readonly user$: Observable<User> = this.user.asObservable();
 
-  // Конструктор
-  constructor(
-    private httpClient: HttpClient,
-    private apiService: ApiService,
-    private router: Router,
-    private localStorageService: LocalStorageService
-  ) {
-    this.configLocalStorage();
-    this.token = this.localStorageService.getCookie("token");
-    this.id = this.localStorageService.getCookie("current_user");
-  }
+
+
+
 
   // Проверить авторизацию
   get checkAuth(): boolean {
@@ -55,6 +47,35 @@ export class TokenService {
   private configLocalStorage(): void {
     this.localStorageService.cookieKey = this.cookieKey;
     this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+  }
+
+  // Сформировать параметры URL
+  getHttpHeader(params?: any, paramsPreffix: string = ""): CustomObject<any> {
+    return {
+      ...this.httpHeader,
+      params: new HttpParams({
+        fromObject: {
+          ...(!!params ? Object.entries(params).reduce((o, [k, v]) => ({ ...o, [paramsPreffix + k]: v }), {}) : {}),
+          user_id: this.id,
+          token: this.token
+        }
+      })
+    };
+  }
+
+
+
+
+
+  constructor(
+    private httpClient: HttpClient,
+    private apiService: ApiService,
+    private router: Router,
+    private localStorageService: LocalStorageService
+  ) {
+    this.configLocalStorage();
+    this.token = this.localStorageService.getCookie("token");
+    this.id = this.localStorageService.getCookie("current_user");
   }
 
 
@@ -132,6 +153,27 @@ export class TokenService {
     );
   }
 
+  // Сбросить авторизацию
+  deleteAuth(): void {
+    this.httpClient.delete<ApiResponse>(this.baseUrl + "token/deleteToken?token=" + this.token).pipe(switchMap(
+      result => {
+        this.deleteCurrentUser();
+        return this.apiService.checkResponse(result.result.code);
+      }
+    )).subscribe(code => {
+      this.token = "";
+      AppComponent.user = null;
+      this.configLocalStorage();
+      this.localStorageService.deleteCookie("token");
+      this.localStorageService.deleteCookie("current_user");
+      this.router.navigate([""]);
+    });
+  }
+
+
+
+
+
   // Преобразование информации о токене
   private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
     return {
@@ -149,10 +191,6 @@ export class TokenService {
     };
   }
 
-
-
-
-
   // Запомнить авторизацию
   saveAuth(token: string, id: string): void {
     this.id = id;
@@ -160,23 +198,6 @@ export class TokenService {
     this.configLocalStorage();
     this.localStorageService.setCookie("token", this.token);
     this.localStorageService.setCookie("current_user", this.id);
-  }
-
-  // Сбросить авторизацию
-  deleteAuth(): void {
-    this.httpClient.delete<ApiResponse>(this.baseUrl + "token/deleteToken?token=" + this.token).pipe(switchMap(
-      result => {
-        this.deleteCurrentUser();
-        return this.apiService.checkResponse(result.result.code);
-      }
-    )).subscribe(code => {
-      this.token = "";
-      AppComponent.user = null;
-      this.configLocalStorage();
-      this.localStorageService.deleteCookie("token");
-      this.localStorageService.deleteCookie("current_user");
-      this.router.navigate([""]);
-    });
   }
 
   // Удалить сведения о текущем пользователе
