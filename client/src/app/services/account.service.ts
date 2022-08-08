@@ -251,7 +251,7 @@ export class AccountService {
   }
 
   // Преобразовать данные с сервера
-  private userConverter(data: any): User {
+  userConverter(data: any): User {
     const background: number = parseInt(data.settings?.profileBackground as unknown as string);
     const headerType: NavMenuType = data.settings.profileHeaderType as NavMenuType;
     // Данные пользователя
