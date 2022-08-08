@@ -28,7 +28,7 @@
         <!-- Список сновидений -->
         <app-dream-list [dreams]="dreams"
                         [sourcePlace]="!!visitedUser? '': 'diary-all'"
-                        (dreamDelete)="loadDreams()"
+                        (dreamDelete)="search()"
                         *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"

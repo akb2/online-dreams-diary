@@ -155,7 +155,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       }
     });
     // Обновить список
-    this.loadDreams();
+    this.search();
   }
 
 
@@ -258,12 +258,12 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     // Готово к загрузке
     if (this.ready) {
       this.changeDetectorRef.detectChanges();
-      this.loadDreams();
+      this.search();
     }
   }
 
   // Загрузка списка сновидений
-  loadDreams(): void {
+  search(): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     this.titleService.setTitle(this.pageTitle);
@@ -274,8 +274,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       status: -1
     };
     // Загрузка списка
-    this.dreamService.getList(search, ["0002"]).subscribe(
-      ({ count, dreams, limit }) => {
+    this.dreamService.search(search, ["0002"]).subscribe(
+      ({ count, result: dreams, limit }) => {
         // Найдены сновидения
         if (count > 0) {
           this.dreamsCount = count;
