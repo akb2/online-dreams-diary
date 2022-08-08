@@ -1,0 +1,43 @@
+<!-- Шапка -->
+<app-main-menu [autoCollapse]="true"
+               [imageFullShow]="true"
+               [type]="navMenuType"
+               [image]="imagePrefix + backgroundImageData.imageName"
+               [imagePositionX]="backgroundImageData.positionX"
+               [imagePositionY]="backgroundImageData.positionY"
+               [imageOverlay]="backgroundImageData.imageOverlay"
+               title="Поиск людей"></app-main-menu>
+
+<!-- Контейнер с данными -->
+<div class="root-section"
+     [ngClass]="{ center: loading }">
+  <div class="container">
+    <!-- Список сновидений -->
+    <ng-container *ngIf="!loading; else listLoader">
+      <!-- Пагинатор -->
+      <ng-container [ngTemplateOutlet]="pagination"></ng-container>
+      <!-- Список сновидений -->
+      <!-- Пагинатор -->
+      <ng-container [ngTemplateOutlet]="pagination"
+                    *ngIf="pageCount > pageLimit / 2"></ng-container>
+    </ng-container>
+  </div>
+</div>
+
+
+
+<!-- Загрузка -->
+<ng-template #listLoader>
+  <app-inform title="Загрузка списка людей"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Пагинатор -->
+<ng-template #pagination>
+  <app-pagination title="Поиск людей"
+                  [subTitle]="peopleCount > 0? (peopleCount | i18nPlural: peoplePlural): ''"
+                  [pageCurrent]="pageCurrent"
+                  [pageLimit]="pageLimit"
+                  [count]="peopleCount"
+                  (changePage)="onPageChange($event)"></app-pagination>
+</ng-template>
