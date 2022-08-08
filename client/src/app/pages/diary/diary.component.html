@@ -32,7 +32,7 @@
                         *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"
-                      *ngIf="pageCount > pageLimit / 2"></ng-container>
+                      *ngIf="dreamsCount > 0 && pageCount > pageLimit / 2"></ng-container>
       </ng-container>
     </div>
   </div>
@@ -66,6 +66,5 @@
                   [pageCurrent]="pageCurrent"
                   [pageLimit]="pageLimit"
                   [count]="dreamsCount"
-                  (changePage)="onPageChange($event)">
-  </app-pagination>
+                  (changePage)="onPageChange($event)"></app-pagination>
 </ng-template>
