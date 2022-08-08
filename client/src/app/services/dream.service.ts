@@ -1,9 +1,9 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
-import { ApiResponse } from "@_models/api";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { ApiResponse, Search } from "@_models/api";
+import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamMap, DreamMapCeilDto, DreamMapDto, Water, WaterType } from "@_models/dream-map";
@@ -28,7 +28,6 @@ export class DreamService {
 
 
   private baseUrl: string = environment.baseUrl;
-  private httpHeader: SimpleObject = environment.httpHeader;
 
   private currentUser: User;
   private tempUsers: User[] = [];
@@ -58,20 +57,6 @@ export class DreamService {
     };
   }
 
-  // Сформировать параметры URL
-  getHttpHeader(params?: any, paramsPreffix: string = ""): CustomObject<any> {
-    return {
-      ...this.httpHeader,
-      params: new HttpParams({
-        fromObject: {
-          ...(!!params ? Object.entries(params).reduce((o, [k, v]) => ({ ...o, [paramsPreffix + k]: v }), {}) : {}),
-          user_id: this.tokenService.id,
-          token: this.tokenService.token
-        }
-      })
-    };
-  }
-
 
 
 
@@ -92,22 +77,22 @@ export class DreamService {
 
 
   // Список сновидений
-  getList(search: SearchDream, codes: string[] = []): Observable<{ count: number, limit: number, dreams: Dream[] }> {
+  search(search: SearchDream, codes: string[] = []): Observable<Search<Dream>> {
     const url: string = this.baseUrl + "dream/getList";
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(search, "search_")).pipe(
+    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(search, "search_")).pipe(
       switchMap(result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
         of(result.result.data) :
         this.apiService.checkResponse(result.result.code, codes)
       ),
       tap(r => {
-        count = r.count;
-        limit = r.limit;
+        count = r.count ?? 0;
+        limit = r.limit ?? 0;
       }),
       mergeMap(r => r.dreams?.length > 0 ? forkJoin([...r.dreams.map(d => this.dreamConverter(d as DreamDto))]) : of([])),
-      mergeMap((dreams: Dream[]) => of({ count, dreams, limit }))
+      mergeMap((result: Dream[]) => of({ count, result, limit }))
     );
   }
 
@@ -119,7 +104,7 @@ export class DreamService {
       edit: edit ? "true" : "false"
     };
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.getHttpHeader(params)).pipe(
+    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(params)).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data) :
@@ -135,7 +120,7 @@ export class DreamService {
     const formData: FormData = new FormData();
     Object.entries(this.dreamConverterDto(dream)).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(url, formData, this.getHttpHeader()).pipe(
+    return this.httpClient.post<ApiResponse>(url, formData, this.tokenService.getHttpHeader()).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data || 0) :
@@ -149,7 +134,7 @@ export class DreamService {
     const url: string = this.baseUrl + "dream/delete";
     const params: SimpleObject = { id: dreamId.toString() };
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(url, this.getHttpHeader(params)).pipe(
+    return this.httpClient.delete<ApiResponse>(url, this.tokenService.getHttpHeader(params)).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :
@@ -320,7 +305,7 @@ export class DreamService {
 
 
 
-// Интерфейс данных поиска по сновидениям
+// Поиск: входящие данные
 export interface SearchDream {
   page?: number;
   user?: number;
