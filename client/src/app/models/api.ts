@@ -23,6 +23,17 @@ export interface ApiResponse {
   echo: string;
 }
 
+// Поиск: ответ
+export interface Search<T> {
+  count: number;
+  limit: number;
+  result: T[];
+}
+
+
+
+
+
 // Тип сообщений об ошибках
 export const ApiResponseMessages = {
   "0000": "Путой ответ сервера, состояние выполнения запроса неизвестно",
