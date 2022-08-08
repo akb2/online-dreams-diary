@@ -12,14 +12,15 @@
 <div class="root-section"
      [ngClass]="{ center: loading }">
   <div class="container">
-    <!-- Список сновидений -->
+    <!-- Список пользователей -->
     <ng-container *ngIf="!loading; else listLoader">
       <!-- Пагинатор -->
       <ng-container [ngTemplateOutlet]="pagination"></ng-container>
-      <!-- Список сновидений -->
+      <!-- Список пользователей -->
+      <pre *ngIf="peopleCount > 0; else listNotFound">{{people}}</pre>
       <!-- Пагинатор -->
       <ng-container [ngTemplateOutlet]="pagination"
-                    *ngIf="pageCount > pageLimit / 2"></ng-container>
+                    *ngIf="peopleCount > 0 && pageCount > pageLimit / 2"></ng-container>
     </ng-container>
   </div>
 </div>
@@ -30,6 +31,14 @@
 <ng-template #listLoader>
   <app-inform title="Загрузка списка людей"
               subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Не найдено -->
+<ng-template #listNotFound>
+  <app-inform [aboveIcon]="true"
+              icon="close"
+              title="Ошибка поиска"
+              subTitle="Мы не нашли людей. Измените условия поиска или повторите позже"></app-inform>
 </ng-template>
 
 <!-- Пагинатор -->
