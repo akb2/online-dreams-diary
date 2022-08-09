@@ -54,11 +54,67 @@ class Account
     return $this->userService->registerUserApi($data);
   }
 
+  // Поиск
+  // * GET
+  public function search($data):array{
+    $code = "0002";
+    $userId = $_GET["user_id"];
+    $token = $_GET["token"];
+    $search = array(
+      "page" => $_GET["search_page"]
+    );
+    $testUsers = $this->userService->getList($search, $token, $userId);
+    $people = array();
+    // Сновидение найдено
+    if ($testUsers["count"] > 0) {
+      // Доступность для просмотра или редактирования
+      $code = "0001";
+      // Список пользователей
+      $people = $testUsers["result"];
+    }
+    // Сновидение не найдено
+    else {
+      $code = "0002";
+    }
+    // Вернуть результат
+    return array(
+      "data" => array(
+        "count" => $testUsers["count"],
+        "limit" => $testUsers["limit"],
+        "people" => $people
+      ),
+      "code" => $code
+    );
+  }
+
   // Получить данные о пользователе
   // * GET
   public function getUser($data): array
   {
-    return $this->userService->getUserApi($data["id"]);
+    $code = "0000";
+    $user = array();
+
+    // Проверка ID
+    if (strlen($data["id"]) > 0) {
+      $code = "9013";
+      // Запрос данных о пользователе
+      $user = $this->userService->getUser($data["id"]);
+      // Проверить авторизацию
+      if ($user) {
+        $code = "0001";
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = "9030";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => $user
+    );
   }
 
   // Сохранить данные пользователя
