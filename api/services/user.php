@@ -200,35 +200,6 @@ class UserService
 
 
 
-  // Сведения о пользователе
-  public function getUserApi(string $id): array
-  {
-    $code = "0000";
-    $user = array();
-
-    // Проверка ID
-    if (strlen($id) > 0) {
-      $code = "9013";
-      // Запрос данных о пользователе
-      $user = $this->getUser($id);
-      // Проверить авторизацию
-      if ($user) {
-        $code = "0001";
-      }
-    }
-    // Получены пустые данные
-    else {
-      $code = "9030";
-    }
-
-    // Вернуть массив
-    return array(
-      "code" => $code,
-      "message" => "",
-      "data" => $user
-    );
-  }
-
   // Сохранить данные
   public function saveUserDataApi(string $id, array $data): array
   {
@@ -513,6 +484,44 @@ class UserService
     }
     // Пользователь не найден
     return null;
+  }
+
+  // Получить список сновидений
+  public function getList(array $search, string $token, string $userId): array
+  {
+    $count = 0;
+    $result = array();
+    $limit = $this->config["user"]["limit"];
+    $checkToken = $this->tokenService->checkToken($userId, $token);
+    $sql="";
+    // Данные для поиска
+    $sqlData = array(
+      // Параметры
+      "check_token" => $checkToken,
+      "current_user" => intval($userId),
+    );
+    // Запрос
+    $count = $this->dataBaseService->getCountFromFile("account/searchUsersCount.php", $sqlData);
+    $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
+    // Сновидения найдены
+    if ($count > 0) {
+      $maxPage = ceil($count / $limit);
+      $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
+      // Настройки ограничения данных
+      $sqlData['limit_start'] = intval(($page * $limit) - $limit);
+      $sqlData['limit_length'] = intval($limit);
+      $queryResult = $this->dataBaseService->getDatasFromFile("account/searchUsers.php", $sqlData);
+      // Список данных
+      foreach($queryResult as $user) {
+        $result[] = $this->getUserData($user);
+      }
+    }
+    // Сон не найден
+    return array(
+      "count" => $count,
+      "limit" => $limit,
+      "result" => $result
+    );
   }
 
 
