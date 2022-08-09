@@ -23,16 +23,17 @@
     <div class="container">
       <!-- Список сновидений -->
       <ng-container *ngIf="!loading; else listLoader">
-        <!-- Пагинатор -->
-        <ng-container [ngTemplateOutlet]="pagination"></ng-container>
-        <!-- Список сновидений -->
-        <app-dream-list [dreams]="dreams"
-                        [sourcePlace]="!!visitedUser? '': 'diary-all'"
-                        (dreamDelete)="search()"
-                        *ngIf="dreamsCount > 0; else listNotFound"></app-dream-list>
-        <!-- Пагинатор -->
-        <ng-container [ngTemplateOutlet]="pagination"
-                      *ngIf="dreamsCount > 0 && pageCount > pageLimit / 2"></ng-container>
+        <ng-container *ngIf="dreamsCount > 0; else listNotFound">
+          <!-- Пагинатор -->
+          <ng-container [ngTemplateOutlet]="pagination"></ng-container>
+          <!-- Список сновидений -->
+          <app-dream-list [dreams]="dreams"
+                          [sourcePlace]="!!visitedUser? '': 'diary-all'"
+                          (dreamDelete)="search()"></app-dream-list>
+          <!-- Пагинатор -->
+          <ng-container [ngTemplateOutlet]="pagination"
+                        *ngIf="pageCount > pageLimit / 2"></ng-container>
+        </ng-container>
       </ng-container>
     </div>
   </div>
@@ -56,7 +57,12 @@
   <app-inform [aboveIcon]="true"
               icon="close"
               title="Ошибка поиска"
-              subTitle="Сновидения не найдены. Измените условия поиска или повторите позже"></app-inform>
+              subTitle="Сновидения не найдены. Измените условия поиска или повторите позже">
+    <a mat-flat-button
+       color="primary">
+      <mat-icon>search</mat-icon>Открыть поиск
+    </a>
+  </app-inform>
 </ng-template>
 
 <!-- Пагинатор -->
@@ -66,5 +72,10 @@
                   [pageCurrent]="pageCurrent"
                   [pageLimit]="pageLimit"
                   [count]="dreamsCount"
-                  (changePage)="onPageChange($event)"></app-pagination>
+                  (changePage)="onPageChange($event)">
+    <a mat-flat-button
+       color="primary">
+      <mat-icon>search</mat-icon>Поиск
+    </a>
+  </app-pagination>
 </ng-template>
