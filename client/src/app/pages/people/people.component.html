@@ -14,13 +14,15 @@
   <div class="container">
     <!-- Список пользователей -->
     <ng-container *ngIf="!loading; else listLoader">
-      <!-- Пагинатор -->
-      <ng-container [ngTemplateOutlet]="pagination"></ng-container>
-      <!-- Список пользователей -->
-      <pre *ngIf="peopleCount > 0; else listNotFound">{{people}}</pre>
-      <!-- Пагинатор -->
-      <ng-container [ngTemplateOutlet]="pagination"
-                    *ngIf="peopleCount > 0 && pageCount > pageLimit / 2"></ng-container>
+      <ng-container *ngIf="peopleCount > 0; else listNotFound">
+        <!-- Пагинатор -->
+        <ng-container [ngTemplateOutlet]="pagination"></ng-container>
+        <!-- Список пользователей -->
+        <pre>{{people}}</pre>
+        <!-- Пагинатор -->
+        <ng-container [ngTemplateOutlet]="pagination"
+                      *ngIf="pageCount > pageLimit / 2"></ng-container>
+      </ng-container>
     </ng-container>
   </div>
 </div>
@@ -38,7 +40,13 @@
   <app-inform [aboveIcon]="true"
               icon="close"
               title="Ошибка поиска"
-              subTitle="Мы не нашли людей. Измените условия поиска или повторите позже"></app-inform>
+              subTitle="Мы не нашли людей. Измените условия поиска или повторите попытку позже">
+    <a mat-flat-button
+       color="primary">
+      <mat-icon>search</mat-icon>
+      Открыть поиск
+    </a>
+  </app-inform>
 </ng-template>
 
 <!-- Пагинатор -->
@@ -48,5 +56,11 @@
                   [pageCurrent]="pageCurrent"
                   [pageLimit]="pageLimit"
                   [count]="peopleCount"
-                  (changePage)="onPageChange($event)"></app-pagination>
+                  (changePage)="onPageChange($event)">
+    <a mat-flat-button
+       color="primary">
+      <mat-icon>search</mat-icon>
+      Поиск
+    </a>
+  </app-pagination>
 </ng-template>
