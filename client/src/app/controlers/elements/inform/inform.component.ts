@@ -36,7 +36,7 @@ export class InformComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.showDescriptionPanel = this.descriptionPanel?.nativeElement?.children.length > 0;
+    this.showDescriptionPanel = !!this.descriptionPanel?.nativeElement?.children?.length;
     this.changeDetectorRef.detectChanges();
   }
 }
