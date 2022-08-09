@@ -18,7 +18,7 @@
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"></ng-container>
         <!-- Список пользователей -->
-        <pre>{{people}}</pre>
+        <pre>{{people|json}}</pre>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"
                       *ngIf="pageCount > pageLimit / 2"></ng-container>
@@ -43,8 +43,7 @@
               subTitle="Мы не нашли людей. Измените условия поиска или повторите попытку позже">
     <a mat-flat-button
        color="primary">
-      <mat-icon>search</mat-icon>
-      Открыть поиск
+      <mat-icon>search</mat-icon>Открыть поиск
     </a>
   </app-inform>
 </ng-template>
@@ -59,8 +58,7 @@
                   (changePage)="onPageChange($event)">
     <a mat-flat-button
        color="primary">
-      <mat-icon>search</mat-icon>
-      Поиск
+      <mat-icon>search</mat-icon>Поиск
     </a>
   </app-pagination>
 </ng-template>
