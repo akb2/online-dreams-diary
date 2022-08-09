@@ -38,7 +38,7 @@ export class UserService {
 
   // Поиск пользоватлей
   search(search: SearchUser, codes: string[] = []): Observable<Search<User>> {
-    const url: string = this.baseUrl + "user/search";
+    const url: string = this.baseUrl + "account/search";
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку
