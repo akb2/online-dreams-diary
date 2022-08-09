@@ -24,7 +24,7 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
   @Output() changePage: EventEmitter<PaginateEvent> = new EventEmitter<PaginateEvent>();
   @Output() initPage: EventEmitter<PaginateEvent> = new EventEmitter<PaginateEvent>();
 
-  @ViewChild("showActionsPanel") private actionsPanel: ElementRef;
+  @ViewChild("actionsPanel") private actionsPanel: ElementRef;
 
   pageMax: number = 0;
   pagePrev: number = 0;
@@ -132,7 +132,8 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
 
   // Проверить наличие панелей
   private checkPanels(): void {
-    this.showActionsPanel = this.actionsPanel?.nativeElement?.children.length > 0;
+    this.showActionsPanel = !!this.actionsPanel?.nativeElement?.children?.length;
+    this.changeDetectorRef.detectChanges();
   }
 }
 
