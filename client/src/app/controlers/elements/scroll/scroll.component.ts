@@ -1,4 +1,4 @@
-import { OnInit, Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewChecked, OnChanges, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { SimpleObject } from "@_models/app";
 import { ScreenService } from "@_services/screen.service";
 import { Subject, timer } from "rxjs";
@@ -19,7 +19,6 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
 
   @Input() styles: SimpleObject;
-  @Input() breakpointMobile: string = "small";
   @Input() headerHeight: number = 0;
 
   @ViewChild("layout") layout: ElementRef;
@@ -36,7 +35,13 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   sliderMousePress: boolean = false;
   buttonMousePress: boolean = false;
 
+  isMobile: boolean = false;
+
   private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
 
   // Высота документа для скролла
   get scrollHeight(): number {
@@ -45,11 +50,6 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
       document.body.offsetHeight, document.documentElement.offsetHeight,
       document.body.clientHeight, document.documentElement.clientHeight
     ) - this.headerHeight;
-  }
-
-  // Проверить мобильный ли экран
-  get isMobile(): boolean {
-    return this.screenService.getMax(this.breakpointMobile) >= window.innerWidth;
   }
 
 
@@ -74,6 +74,13 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
     window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
     // Проверка изменений скролла
     timer(0, this.checkInterval).pipe(takeUntil(this.destroy$)).subscribe(() => this.onWindowScroll());
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewChecked() {

@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { MenuItem, MenuItems, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
-import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { TokenService } from "@_services/token.service";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -14,21 +14,14 @@ import { TokenService } from "@_services/token.service";
   providedIn: "root"
 })
 
-export class MenuService {
+export class MenuService implements OnDestroy {
 
 
   menuItems: MenuItem[] = [];
 
-  private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
+  isMobile: boolean = false;
 
-
-
-
-
-  // Проверить мобильное меню или нет
-  private get isMobile(): boolean {
-    return this.mobileBreakpoints.includes(this.screenService.getBreakpoint());
-  }
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -39,7 +32,15 @@ export class MenuService {
     private tokenService: TokenService,
     private router: Router,
     private screenService: ScreenService
-  ) { }
+  ) {
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => this.isMobile = isMobile);
+  }
+
+  ngOnDestroy(): void {
+  }
 
 
 

@@ -55,7 +55,7 @@
         <!-- Вызов главного меню -->
         <div class="menu-button"
              [ngStyle]="css.backButton"
-             *ngIf="isMobile() && !backButtonLink"
+             *ngIf="isMobile && !backButtonLink"
              (click)="toggleMobileMenu(1)"
              unselectable="on">
           <mat-icon>menu</mat-icon>
@@ -81,7 +81,7 @@
       <div class="main-menu__layer-container_center">
         <!-- Пункты главного меню -->
         <ng-container [ngTemplateOutlet]="mainMenu"
-                      *ngIf="!isMobile()"></ng-container>
+                      *ngIf="!isMobile"></ng-container>
       </div>
       <!-- Слой справа -->
       <div class="main-menu__layer-container_right"
@@ -123,7 +123,7 @@
   <div class="main-menu__layer front">
     <!-- Пункты главного меню -->
     <ng-container [ngTemplateOutlet]="mobileMenu"
-                  *ngIf="isMobile()"></ng-container>
+                  *ngIf="isMobile"></ng-container>
   </div>
 </div>
 
@@ -134,7 +134,6 @@
 
 <!-- Скролл страницы -->
 <app-scroll [styles]="css.scroll"
-            [breakpointMobile]="breakpointMobile"
             [headerHeight]="headerHeight"></app-scroll>
 
 
@@ -222,7 +221,7 @@
 <!-- Мобильное меню -->
 <ng-template #mobileMenu>
   <div class="mobile-menu {{showMobileMenu?'show':''}}"
-       *ngIf="isMobile()">
+       *ngIf="isMobile">
     <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
          (click)="toggleMobileMenu(-1)"></div>
     <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">

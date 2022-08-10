@@ -6,6 +6,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
+import { forkJoin, fromEvent, Subject, takeUntil } from "rxjs";
 
 
 
@@ -59,9 +60,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
   private breakpoint: ScreenKeys = "default";
-  breakpointMobile: ScreenKeys = "small";
   headerHeight: number = DrawDatas.minHeight;
 
+  isMobile: boolean = false;
   showMobileMenu: boolean = false;
   menuItems: MenuItem[] = [];
   minHeight: number = 0;
@@ -101,6 +102,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     toContentButton: "toContentButton"
   };
 
+  private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
+
   // Шаг для смещения шапки
   private get mouseSwipeStep(): number {
     return Math.max(this.maxHeight / 10, 50);
@@ -115,15 +122,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     {
       this.cssNamesVar.title = "title";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+      if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.title = "titleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile()) && !(this.avatarImage || this.avatarIcon)) {
+      else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.title = "titleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+      if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.title = "titleWithAvatar";
       }
     }
@@ -131,15 +138,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     {
       this.cssNamesVar.subtitle = "subtitle";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+      if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile()) && !(this.avatarImage || this.avatarIcon)) {
+      else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.subtitle = "subtitleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile()) && (this.avatarImage || this.avatarIcon)) {
+      if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
         this.cssNamesVar.subtitle = "subtitleWithAvatar";
       }
     }
@@ -147,7 +154,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     {
       this.cssNamesVar.avatar = "avatar";
       // С кнопкой и аватаркой
-      if (this.backButtonLink || this.isMobile()) {
+      if (this.backButtonLink || this.isMobile) {
         this.cssNamesVar.avatar = "avatarWithBackButton";
       }
     }
@@ -184,12 +191,21 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Отрисовка
     this.onResize();
     // Объявление событий
-    window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.addEventListener("resize", this.onResize.bind(this), true);
-    window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
-    window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
+    forkJoin([
+      fromEvent(window, "scroll", e => this.onWindowScroll(e)),
+      fromEvent(window, "resize", e => this.onResize(e)),
+      fromEvent(window, "mousemove", e => this.onMouseMove(e as MouseEvent)),
+      fromEvent(window, "mouseup", e => this.onMouseUp(e as MouseEvent))
+    ]).subscribe();
     // Скролл
     window.scroll({ top: 0 });
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -231,10 +247,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   ngOnDestroy() {
-    window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.removeEventListener("resize", this.onResize.bind(this), true);
-    window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
-    window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -306,7 +320,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.dataCalculate();
     // Разрешить / запретить скролл
     document.querySelectorAll("body, html").forEach(elm => {
-      if (this.showMobileMenu && this.isMobile()) {
+      if (this.showMobileMenu && this.isMobile) {
         elm.classList.add("no-scroll");
       }
       else {
@@ -503,11 +517,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     }
     // Для схлопнутого меню
     return value.collapse;
-  }
-
-  // Проверить мобильный ли экран
-  isMobile(): boolean {
-    return this.screenService.getMax(this.breakpointMobile) >= DrawDatas.screenWidth;
   }
 
 
