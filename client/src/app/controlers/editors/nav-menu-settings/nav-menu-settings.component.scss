@@ -77,7 +77,7 @@ $keys: full short collapse;
     transition: transform #{screens.$animation-time};
 
     // Картинка
-    &-image {
+    &-avatar {
       width: 100%;
       border-radius: containers.$cardBorderRadius containers.$cardBorderRadius 0 0;
       overflow: hidden;
@@ -189,7 +189,7 @@ $keys: full short collapse;
       // Прочие блоки
       #{$_elm} {
         // Картинка
-        &-image > img {
+        &-avatar > img {
           filter: grayscale(0%);
         }
       }
@@ -201,7 +201,7 @@ $keys: full short collapse;
       // Прочие блоки
       #{$_elm} {
         // Картинка
-        &-image > img {
+        &-avatar > img {
           filter: grayscale(0%);
         }
       }
@@ -246,7 +246,7 @@ $keys: full short collapse;
           display: block;
         }
         // Картинка
-        &-image > img {
+        &-avatar > img {
           filter: $filter;
         }
       }
@@ -264,7 +264,7 @@ $keys: full short collapse;
         height: map.get($height, full);
       }
       // Картинка
-      &-image {
+      &-avatar {
         height: map.get($height, full);
       }
     }
@@ -361,13 +361,13 @@ $keys: full short collapse;
   &__data {
     position: absolute;
     display: grid;
-    grid-template-areas: "image title" "image subtitle";
+    grid-template-areas: "avatar title" "avatar subtitle";
     align-items: center;
     // Картинка
-    &-image {
+    &-avatar {
       border-radius: 50%;
       overflow: hidden;
-      grid-area: image;
+      grid-area: avatar;
       // Картинка
       > img {
         width: 100%;
@@ -405,13 +405,27 @@ $keys: full short collapse;
 
     // Схлопнутое меню
     &.type-collapse {
-      grid-template-areas: "image title menu" "image subtitle menu";
+      grid-template-areas: "avatar title menu" "avatar subtitle menu";
     }
     // Меню без аватарки
     &.no-avatar {
       grid-template-areas: "title" "subtitle";
       &.type-collapse {
         grid-template-areas: "title menu" "subtitle menu";
+      }
+    }
+    // Меню без подзаголовка
+    &.no-subtitle {
+      grid-template-areas: "avatar title" "avatar title";
+      &.type-collapse {
+        grid-template-areas: "avatar title menu" "avatar title menu";
+      }
+    }
+    // Меню без аватарки и подзаголовка
+    &.no-avatar.no-subtitle {
+      grid-template-areas: "title" "title";
+      &.type-collapse {
+        grid-template-areas: "title menu" "title menu";
       }
     }
   }
@@ -459,26 +473,7 @@ $keys: full short collapse;
   }
 
   // Адаптив
-  @include screens.adaptiveFor(
-      $heights,
-      $data-image-sizes,
-      $data-button-sizes,
-      $data-gaps-y,
-      $data-paddings-y,
-      $data-paddings-x,
-      $data-menu-sizes,
-      $data-menu-spacings
-    )
-    using(
-      $height-list,
-      $data-image-size,
-      $data-button-size,
-      $data-gap-y,
-      $data-padding-y,
-      $data-padding-x,
-      $data-menu-size,
-      $data-menu-spacing
-    ) {
+  @include screens.adaptiveFor($heights, $data-image-sizes, $data-button-sizes, $data-gaps-y, $data-paddings-y, $data-paddings-x, $data-menu-sizes, $data-menu-spacings) using($height-list, $data-image-size, $data-button-size, $data-gap-y, $data-padding-y, $data-padding-x, $data-menu-size, $data-menu-spacing) {
     $_elm: &;
     // По типам
     @each $key in $keys {
@@ -506,7 +501,7 @@ $keys: full short collapse;
             grid-template-rows: #{$title-height + $padding-y} #{$subtitle-height + $padding-y};
             grid-gap: #{$gap-y} 10px;
             // Картинка
-            &-image {
+            &-avatar {
               width: $image-size;
               height: $image-size;
               line-height: $image-size;
@@ -585,12 +580,7 @@ $keys: full short collapse;
             $base-height: math.div($header-height, 2);
             $base-image: math.div($image-size, 2);
             // Свойства
-            @include mixins.inset(
-              $base-height - $base-image,
-              $data-padding-x,
-              auto,
-              $data-padding-x + $button-size + 10px
-            );
+            @include mixins.inset($base-height - $base-image, $data-padding-x, auto, $data-padding-x + $button-size + 10px);
             grid-template-columns: #{$image-size} 1fr auto;
 
             // Меню без аватарки

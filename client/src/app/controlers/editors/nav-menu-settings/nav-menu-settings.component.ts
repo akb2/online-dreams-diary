@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
 import { NavMenuType } from "@_models/nav-menu";
@@ -15,7 +15,7 @@ import { MenuService } from "@_services/menu.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class NavMenuSettingsComponent {
+export class NavMenuSettingsComponent implements OnInit {
 
 
   @Input() backgroundId: number = 1;
@@ -49,10 +49,13 @@ export class NavMenuSettingsComponent {
   constructor(
     private menuService: MenuService
   ) {
-    // Пункты меню
-    this.menuItems = this.menuService.menuItems;
     // Фоновые картинки
     this.backgroundImageDatas = BackgroundImageDatas.sort((b1, b2) => b1.id < b2.id ? 1 : b1.id > b2.id ? -1 : 0);
+  }
+
+  ngOnInit(): void {
+    this.menuService.createMenuItems();
+    [this.menuItems] = [this.menuService.menuItems];
   }
 
 

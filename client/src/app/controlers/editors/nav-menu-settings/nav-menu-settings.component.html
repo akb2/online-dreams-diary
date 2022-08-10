@@ -56,7 +56,7 @@
                             positionY: data.positionY,
                             imageOverlay: data.imageOverlay,
                             checked: data.id === backgroundId,
-                            status: data.title
+                            status: subTitle
                           }"></ng-container>
           <!-- Обозначение дальнейшего содержимого -->
           <div class="any-content"
@@ -90,15 +90,19 @@
       <img [src]="imagePrefix + image" />
     </div>
     <div class="main-block__data type-{{type}}"
-         [ngClass]="{ 'no-avatar': !useAvatar }">
-      <div class="main-block__data-image"
+         [ngClass]="{ 'no-avatar': !useAvatar, 'no-subtitle': !status }">
+      <!-- Аватар -->
+      <div class="main-block__data-avatar"
            *ngIf="useAvatar">
         <img [src]="avatar"
              *ngIf="!!avatar" />
         <mat-icon *ngIf="!avatar">person</mat-icon>
       </div>
+      <!-- Заголовок -->
       <div class="main-block__data-title">{{title}}</div>
-      <div class="main-block__data-subtitle">{{status}}</div>
+      <!-- Подзаголовок -->
+      <div class="main-block__data-subtitle"
+           *ngIf="!!status">{{status}}</div>
       <ng-container [ngTemplateOutlet]="mainMenuItems"
                     [ngTemplateOutletContext]="{ type }"
                     *ngIf="type === _navMenuType.collapse"></ng-container>
