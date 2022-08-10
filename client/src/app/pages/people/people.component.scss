@@ -1,0 +1,21 @@
+@use "../../../assets/styles/containers";
+@use "../../../assets/styles/screens";
+
+// Пагинатор и список
+::ng-deep {
+  $elms: "app-pagination" "app-people-list" "app-inform";
+  // Цикл по элементам
+  @each $elm in $elms {
+    #{$elm} {
+      display: block;
+      // Отступы
+      @each $elmNext in $elms {
+        & + #{$elmNext} {
+          @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+            margin-top: $paddingY;
+          }
+        }
+      }
+    }
+  }
+}
