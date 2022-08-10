@@ -11,6 +11,7 @@ import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
+import { ScreenService } from "@_services/screen.service";
 import { Observable, of, Subject } from "rxjs";
 import { takeUntil, tap } from "rxjs/operators";
 
@@ -54,6 +55,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   pageLimit: number = 1;
   pageCount: number = 1;
 
+  isMobile: boolean = false;
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
 
@@ -96,7 +98,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private titleService: Title,
-    private router: Router
+    private router: Router,
+    private screenService: ScreenService
   ) { }
 
   ngDoCheck() {
@@ -113,6 +116,13 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       // Функция обработчик
       this.defineData();
     });
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy() {

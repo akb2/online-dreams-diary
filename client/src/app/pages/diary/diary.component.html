@@ -73,9 +73,17 @@
                   [pageLimit]="pageLimit"
                   [count]="dreamsCount"
                   (changePage)="onPageChange($event)">
+    <!-- Поиск для большого экрана -->
     <a mat-flat-button
-       color="primary">
+       color="primary"
+       *ngIf="!isMobile">
       <mat-icon>search</mat-icon>Поиск
+    </a>
+    <!-- Поиск для телефона -->
+    <a mat-mini-fab
+       color="primary"
+       *ngIf="isMobile">
+      <mat-icon>search</mat-icon>
     </a>
   </app-pagination>
 </ng-template>
