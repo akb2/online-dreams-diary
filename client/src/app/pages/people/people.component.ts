@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { User } from '@_models/account';
 import { SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
+import { ScreenService } from '@_services/screen.service';
 import { SearchUser, UserService } from '@_services/user.service';
+import { Subject, takeUntil } from 'rxjs';
 
 
 
@@ -18,7 +20,7 @@ import { SearchUser, UserService } from '@_services/user.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class PeopleComponent implements OnInit {
+export class PeopleComponent implements OnInit, OnDestroy {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -27,6 +29,7 @@ export class PeopleComponent implements OnInit {
   navMenuType: NavMenuType = NavMenuType.collapse;
 
   loading: boolean = true;
+  isMobile: boolean = false;
 
   people: User[];
   peopleCount: number = 0;
@@ -44,6 +47,8 @@ export class PeopleComponent implements OnInit {
 
   private queryParams: SimpleObject = {};
 
+  private destroy$: Subject<void> = new Subject<void>();
+
 
 
 
@@ -53,12 +58,28 @@ export class PeopleComponent implements OnInit {
     private router: Router,
     private changeDetectorRef: ChangeDetectorRef,
     private userService: UserService,
+    private screenService: ScreenService
   ) { }
 
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(params => this.queryParams = params as SimpleObject);
-    // Поиск пользователей
-    this.search();
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.queryParams = params as SimpleObject;
+      this.pageCurrent = parseInt(params.p) || 1;
+      // Поиск пользователей
+      this.search();
+    });
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
