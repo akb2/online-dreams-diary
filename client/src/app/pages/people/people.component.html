@@ -21,7 +21,7 @@
         <pre>{{people|json}}</pre>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"
-                      *ngIf="pageCount > pageLimit / 2"></ng-container>
+                      *ngIf="bottomPaginationIsAvail"></ng-container>
       </ng-container>
     </ng-container>
   </div>

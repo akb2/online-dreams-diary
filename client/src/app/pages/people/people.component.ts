@@ -53,6 +53,15 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
 
 
+  // Показывать ли нижний пагинатор
+  get bottomPaginationIsAvail(): boolean {
+    return this.pageCount > this.pageLimit / 2;
+  }
+
+
+
+
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,

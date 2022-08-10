@@ -32,7 +32,7 @@
                           (dreamDelete)="search()"></app-dream-list>
           <!-- Пагинатор -->
           <ng-container [ngTemplateOutlet]="pagination"
-                        *ngIf="pageCount > pageLimit / 2"></ng-container>
+                        *ngIf="bottomPaginationIsAvail"></ng-container>
         </ng-container>
       </ng-container>
     </div>

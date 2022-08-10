@@ -88,6 +88,11 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     return data;
   }
 
+  // Показывать ли нижний пагинатор
+  get bottomPaginationIsAvail(): boolean {
+    return this.pageCount > this.pageLimit / 2;
+  }
+
 
 
 
