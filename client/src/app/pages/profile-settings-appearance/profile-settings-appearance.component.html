@@ -18,6 +18,9 @@
                          [navMenuType]="user.settings.profileHeaderType"
                          [loader]="backgroundImageLoader"
                          [useAvatar]="true"
+                         [avatar]="user.avatars.middle"
+                         [title]="user.name + ' ' + user.lastName"
+                         [subTitle]="user.pageStatus"
                          floatIcon="message"
                          (changeSettings)="changeSettings($event)"></app-nav-menu-settings>
 </ng-container>
