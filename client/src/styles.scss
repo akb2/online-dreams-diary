@@ -174,3 +174,9 @@ mat-icon {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "liga";
 }
+
+// Для вывода JSON
+pre {
+  max-width: 100%;
+  white-space: pre-wrap;
+}
