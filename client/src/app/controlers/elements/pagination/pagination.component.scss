@@ -6,7 +6,7 @@
 .panel {
   display: grid;
   grid-template-areas: "description pagination actions";
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   box-shadow: containers.$cardBoxShadow;
   padding: #{containers.$cardPaddingY} #{containers.$cardPaddingX};

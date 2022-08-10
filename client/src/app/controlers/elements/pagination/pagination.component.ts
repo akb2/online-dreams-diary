@@ -1,4 +1,6 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { ScreenService } from "@_services/screen.service";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -11,7 +13,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class PaginationComponent implements OnChanges, AfterViewChecked {
+export class PaginationComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
 
 
   @Input() title: string = "Заголовок";
@@ -30,7 +32,10 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
   pagePrev: number = 0;
   pageNext: number = 0;
 
+  isMobile: boolean = false;
   showActionsPanel: boolean = false;
+
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -57,13 +62,34 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
     return Array.from({ length }, (v, k) => start + k);
   }
 
+  // Доступно ли переключение назад
+  get isPrevAvail(): boolean {
+    return this.pageCurrent > 1;
+  }
+
+  // Доступно ли переключение вперед
+  get isNextAvail(): boolean {
+    return this.pageCurrent < this.pageMax;
+  }
+
 
 
 
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private screenService: ScreenService
   ) { }
+
+  ngOnInit(): void {
+    // Подписка на тип устройства
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!!changes.pageLimit || !!changes.count) {
@@ -82,6 +108,11 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
     this.checkPanels();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 
 
 
@@ -97,6 +128,20 @@ export class PaginationComponent implements OnChanges, AfterViewChecked {
     }
     // Пересчитать данные
     this.calculateData(emitEvent);
+  }
+
+  // Предыдущая страница
+  onPagePrev(): void {
+    if (this.pageCurrent > 1) {
+      this.onPageSet(this.pageCurrent - 1);
+    }
+  }
+
+  // Следующая страница
+  onPageNext(): void {
+    if (this.pageCurrent < this.pageMax) {
+      this.onPageSet(this.pageCurrent + 1);
+    }
   }
 
 

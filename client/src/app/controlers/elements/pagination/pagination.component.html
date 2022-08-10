@@ -10,7 +10,7 @@
   <!-- Управление пагинацией -->
   <div class="panel__pagination"
        *ngIf="count > 0">
-    <ng-container [ngTemplateOutlet]="pageMax > 5? pageButtons2: pageButtons1"></ng-container>
+    <ng-container [ngTemplateOutlet]="isMobile? pageMobile: (pageMax > 5? pageButtons2: pageButtons1)"></ng-container>
   </div>
   <!-- Дополнительный контент -->
   <div #actionsPanel
@@ -21,6 +21,28 @@
 </div>
 
 
+
+<!-- Шаблон для телефонов -->
+<ng-template #pageMobile>
+  <!-- Предыдущая страница -->
+  <a mat-mini-fab
+     [disableRipple]="!isPrevAvail"
+     [ngClass]="{ 'no-pointer': !isPrevAvail }"
+     [color]="isPrevAvail? 'basic': 'transparent'"
+     (click)="onPagePrev()">
+    <mat-icon *ngIf="isPrevAvail">chevron_left</mat-icon>
+  </a>
+  <!-- Текущая страница -->
+  {{pageCurrent}}
+  <!-- Следующая страница -->
+  <a mat-mini-fab
+     [disableRipple]="!isNextAvail"
+     [ngClass]="{ 'no-pointer': !isNextAvail }"
+     [color]="isNextAvail? 'basic': 'transparent'"
+     (click)="onPageNext()">
+    <mat-icon *ngIf="isNextAvail">chevron_right</mat-icon>
+  </a>
+</ng-template>
 
 <!-- Шаблон с циклом по всем страницам -->
 <ng-template #pageButtons1>
@@ -34,7 +56,7 @@
 <ng-template #pageButtons2>
   <!-- Первая страница -->
   <a mat-mini-fab
-     [color]="pageCurrent === 1? 'primary': ''"
+     [color]="pageCurrent === 1? 'primary': 'basic'"
      (click)="pageCurrent === 1? false: onPageSet(1)">1</a>
   <!-- Пропуск -->
   <a mat-mini-fab
@@ -44,7 +66,7 @@
      *ngIf="this.pageMax > 7 && pageCurrent > 4">...</a>
   <!-- Промежуточные страницы -->
   <a mat-mini-fab
-     [color]="pageCurrent === page? 'primary': ''"
+     [color]="pageCurrent === page? 'primary': 'basic'"
      (click)="pageCurrent === page? false: onPageSet(page)"
      *ngFor="let page of pageClosestCurrentIterator">{{page}}</a>
   <!-- Пропуск -->
