@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
@@ -21,7 +21,7 @@ import { map, mergeMap, switchMap } from "rxjs/operators";
   providedIn: "root"
 })
 
-export class AccountService {
+export class AccountService implements OnDestroy {
 
 
   private baseUrl: string = environment.baseUrl;
@@ -37,6 +37,21 @@ export class AccountService {
 
 
 
+  // Проверить авторизацию
+  get checkAuth(): boolean {
+    return this.tokenService.checkAuth;
+  }
+
+  // Инициализация Local Storage
+  private configLocalStorage(): void {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+  }
+
+
+
+
+
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
@@ -47,15 +62,8 @@ export class AccountService {
     this.configLocalStorage();
   }
 
-  // Проверить авторизацию
-  get checkAuth(): boolean {
-    return this.tokenService.checkAuth;
-  }
-
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+  ngOnDestroy(): void {
+    this.user.complete();
   }
 
 
