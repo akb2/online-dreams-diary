@@ -1,18 +1,16 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
-import { Observable, Subject } from "rxjs";
+import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
 
 
 
-// Декоратор
 @Injectable({
   providedIn: "root"
 })
 
-// Основной класс
 export class ScreenService implements OnDestroy {
 
 
@@ -25,13 +23,24 @@ export class ScreenService implements OnDestroy {
     xlarge: 10000
   };
 
+  private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
+
   private destroy$: Subject<void> = new Subject<void>();
+  private isMobile: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  readonly isMobile$: Observable<boolean> = this.isMobile.asObservable();
 
 
 
 
+
+  constructor() {
+    this.updateIsMobile();
+    // Обновить метку о типе интерфейса
+    fromEvent(window, "resize", () => this.updateIsMobile()).pipe(takeUntil(this.destroy$)).subscribe();
+  }
 
   ngOnDestroy(): void {
+    this.isMobile.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -45,7 +54,7 @@ export class ScreenService implements OnDestroy {
     let breakpoint: ScreenKeys = "default";
     // Цикл по брейкпоинтам
     for (let key in this.breakpoints) {
-      breakpoint = this.getMin(key) < resolution && resolution <= this.getMax(key) ? key as ScreenKeys : breakpoint;
+      breakpoint = this.getMin(key) <= resolution && resolution <= this.getMax(key) ? key as ScreenKeys : breakpoint;
     }
     // Вернуть имя брейкпоинта
     return breakpoint;
@@ -85,5 +94,19 @@ export class ScreenService implements OnDestroy {
     });
     // Вернуть подписчик
     return observable.pipe(takeUntil(this.destroy$));
+  }
+
+
+
+
+
+  // Обновить мобильный интерфейс
+  private updateIsMobile(): void {
+    const oldValue: boolean = this.isMobile.getValue();
+    const newValue: boolean = this.mobileBreakpoints.includes(this.getBreakpoint());
+    // Если брейкпоинт изменился
+    if (oldValue !== newValue) {
+      this.isMobile.next(newValue);
+    }
   }
 }
