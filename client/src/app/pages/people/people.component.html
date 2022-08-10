@@ -18,7 +18,7 @@
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"></ng-container>
         <!-- Список пользователей -->
-        <pre>{{people|json}}</pre>
+        <app-people-list [people]="people"></app-people-list>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"
                       *ngIf="bottomPaginationIsAvail"></ng-container>
