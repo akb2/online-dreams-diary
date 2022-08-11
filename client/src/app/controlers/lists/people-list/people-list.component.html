@@ -19,14 +19,6 @@
     </a>
     <!-- Действия -->
     <div class="user__action">
-      <!-- Добавить в друзья -->
-      <button mat-mini-fab
-              color="primary"
-              class="user__action-button user__action-button_main"
-              matTooltip="Добавить в друзья"
-              (click)="onAddToFriendList($event)">
-        <mat-icon>add</mat-icon>
-      </button>
       <!-- Сообщения -->
       <button mat-mini-fab
               color="basic"
@@ -36,8 +28,16 @@
         <mat-icon>chat</mat-icon>
       </button>
       <!-- Добавить в друзья -->
+      <button mat-mini-fab
+              color="basic"
+              class="user__action-button user__action-button_main"
+              matTooltip="Добавить в друзья"
+              (click)="onAddToFriendList($event)">
+        <mat-icon>add</mat-icon>
+      </button>
+      <!-- Добавить в друзья -->
       <a mat-mini-fab
-         color="basic"
+         color="primary"
          class="user__action-button user__action-button_advance"
          matTooltip="Открыть страницу"
          [routerLink]="baseLink + user.id">
