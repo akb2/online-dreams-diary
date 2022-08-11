@@ -118,7 +118,9 @@
     flex-flow: row wrap;
     justify-content: flex-start;
     align-items: center;
-    padding: 0 #{$spacingX} #{$spacingY} #{$spacingX};
+    padding-bottom: $spacingY;
+    padding-left: $spacingX;
+    padding-right: $spacingX;
     // Кнопки
     ::ng-deep &-button {
       box-shadow: none !important;
@@ -126,6 +128,11 @@
       &_advance {
         margin-left: auto !important;
       }
+    }
+    // Адаптив
+    @include screens.adaptive(xsmall, xsmall) {
+      padding-left: 8px;
+      padding-right: 8px;
     }
   }
 
