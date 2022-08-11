@@ -13,20 +13,25 @@
     large: 6,
     xlarge: 8,
   );
-  $gapX: 30px;
-  $gapY: 30px;
+  $gaps: (
+    xsmall: 15px,
+    small: 15px,
+    middle: 30px,
+    large: 30px,
+    xlarge: 30px,
+  );
   // Свойства
   width: 100%;
   display: flex;
   flex-flow: row wrap;
   justify-content: flex-start;
   align-items: stretch;
-  gap: #{$gapY} #{$gapX};
   // Адаптив сетки
-  @include screens.adaptiveFor($counts) using($count) {
+  @include screens.adaptiveFor($counts, $gaps) using($count, $gap) {
+    gap: $gap;
     // Элемент
     &__item {
-      width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
+      width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
     }
   }
 }
