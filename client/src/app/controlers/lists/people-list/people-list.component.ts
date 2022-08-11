@@ -17,5 +17,21 @@ export class PeopleListComponent {
 
   @Input() people: User[];
 
+  baseLink: string = "/profile/";
 
+
+
+
+
+  // Добавить в друзья
+  onAddToFriendList(event: MouseEvent | PointerEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  // Переписка
+  onDialogOpen(event: MouseEvent | PointerEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 }
