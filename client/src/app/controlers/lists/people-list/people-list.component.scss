@@ -1,4 +1,8 @@
+@use "sass:map";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/colors";
 
 // Список пользователей
 .list {
@@ -23,6 +27,109 @@
     // Элемент
     &__item {
       width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
+    }
+  }
+}
+
+// Элемент
+.user {
+  $__elm: &;
+  $borderRadius: containers.$cardBorderRadius;
+  $spacingX: 18px;
+  $spacingY: 14px;
+  // Свойства
+  border-radius: $borderRadius;
+  background-color: colors.$card;
+  box-shadow: containers.$cardBoxShadow;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: #{$spacingY} 0;
+  transition: background-color #{screens.$animation-time};
+  text-decoration: none;
+  // Аватарка
+  &__image {
+    display: block;
+    width: 100%;
+    padding-bottom: 100%;
+    position: relative;
+    border-radius: #{$borderRadius} #{$borderRadius} 0 0;
+    overflow: hidden;
+    transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
+    background-color: map.get(colors.$mat-disabled, 600);
+    color: map.get(colors.$mat-disabled, contrast, 600);
+    // Дочерние элементы
+    > img,
+    > mat-icon {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+    // Картинка
+    > img {
+      object-fit: cover;
+    }
+    // Иконка
+    > mat-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 100px;
+      color: inherit;
+    }
+  }
+  // Название
+  &__text {
+    padding: 0 #{$spacingX};
+    text-decoration: none;
+    // Имя
+    &-title {
+      @include mixins.lineClamp(1, 22px);
+      // Свойства
+      font-size: 15px;
+      font-weight: 400;
+      color: colors.$title;
+      transition: color #{screens.$animation-time};
+      text-decoration: none;
+    }
+    // Фамилия
+    &-subtitle {
+      @include mixins.lineClamp(1, 18px);
+      // Свойства
+      font-size: 12px;
+      font-weight: 300;
+      color: colors.$subtitle;
+      transition: color #{screens.$animation-time};
+      text-decoration: none;
+    }
+  }
+  // Действия
+  &__action {
+    $iconSize: 40px;
+    // Свойтсва
+    display: flex;
+    height: $iconSize + $spacingY;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 #{$spacingX} #{$spacingY} #{$spacingX};
+    // Кнопки
+    ::ng-deep &-button {
+      box-shadow: none !important;
+      // Дополнительные кнопки
+      &_advance {
+        margin-left: auto !important;
+      }
+    }
+  }
+
+  // Выделенный элемент
+  &:hover #{$__elm} {
+    // Аватарка
+    &__image {
+      background-color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$mat-primary, contrast, 500);
     }
   }
 }

@@ -4,5 +4,52 @@
   <!-- Блок сновидения -->
   <div class="list__item user"
        *ngFor="let user of people">
+    <!-- Аватарка -->
+    <a class="user__image"
+       [routerLink]="baseLink + user.id">
+      <!-- Картинка -->
+      <img [src]="user.avatars.middle"
+           *ngIf="!!user.avatars.middle.length; else noUserAvatar" />
+    </a>
+    <!-- Имя пользователя -->
+    <a class="user__text"
+       [routerLink]="baseLink + user.id">
+      <div class="user__text-title">{{user.name}}</div>
+      <div class="user__text-subtitle">{{user.lastName}}</div>
+    </a>
+    <!-- Действия -->
+    <div class="user__action">
+      <!-- Добавить в друзья -->
+      <button mat-mini-fab
+              color="primary"
+              class="user__action-button user__action-button_main"
+              matTooltip="Добавить в друзья"
+              (click)="onAddToFriendList($event)">
+        <mat-icon>add</mat-icon>
+      </button>
+      <!-- Сообщения -->
+      <button mat-mini-fab
+              color="basic"
+              class="user__action-button user__action-button_main"
+              matTooltip="Написать сообщение"
+              (click)="onDialogOpen($event)">
+        <mat-icon>chat</mat-icon>
+      </button>
+      <!-- Добавить в друзья -->
+      <a mat-mini-fab
+         color="basic"
+         class="user__action-button user__action-button_advance"
+         matTooltip="Открыть страницу"
+         [routerLink]="baseLink + user.id">
+        <mat-icon>chevron_right</mat-icon>
+      </a>
+    </div>
   </div>
 </div>
+
+
+
+<!-- Нет аватарки -->
+<ng-template #noUserAvatar>
+  <mat-icon>person</mat-icon>
+</ng-template>
