@@ -27,6 +27,10 @@
   </div>
 </div>
 
+<!-- Фильтры для поиска -->
+<app-search-panel #searchPanel
+                  *ngIf="!loading"></app-search-panel>
+
 
 
 <!-- Загрузка -->
@@ -42,7 +46,8 @@
               title="Ошибка поиска"
               subTitle="Мы не нашли людей. Измените условия поиска или повторите попытку позже">
     <a mat-flat-button
-       color="primary">
+       color="primary"
+       (click)="openSearch()">
       <mat-icon>search</mat-icon>Открыть поиск
     </a>
   </app-inform>
@@ -59,12 +64,14 @@
     <!-- Поиск для большого экрана -->
     <a mat-flat-button
        color="primary"
+       (click)="openSearch()"
        *ngIf="!isMobile">
       <mat-icon>search</mat-icon>Поиск
     </a>
     <!-- Поиск для телефона -->
     <a mat-mini-fab
        color="primary"
+       (click)="openSearch()"
        *ngIf="isMobile">
       <mat-icon>search</mat-icon>
     </a>

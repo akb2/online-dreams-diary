@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
+import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
 import { User } from '@_models/account';
 import { SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
@@ -21,6 +22,9 @@ import { Subject, takeUntil } from 'rxjs';
 })
 
 export class PeopleComponent implements OnInit, OnDestroy {
+
+
+  @ViewChild("searchPanel") searchPanel!: SearchPanelComponent;
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -155,5 +159,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
       },
       () => this.onNotPeopleFound()
     );
+  }
+
+  // Показать фильтры
+  openSearch(): void {
+    this.searchPanel?.openPanel();
   }
 }
