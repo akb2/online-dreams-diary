@@ -1,0 +1,27 @@
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/colors";
+
+// Панель просмотра
+.search-panel {
+  @include mixins.inset;
+  // Свойтсва
+  position: fixed;
+  user-select: none;
+  pointer-events: none;
+  z-index: 10;
+  // Затенение
+  &__overlay {
+    @include mixins.inset;
+    // Свойтсва
+    position: absolute;
+    background-color: colors.$overlay-color;
+    transition: opacity screens.$animation-time;
+    opacity: 0;
+    // Статус: открыто
+    &.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
