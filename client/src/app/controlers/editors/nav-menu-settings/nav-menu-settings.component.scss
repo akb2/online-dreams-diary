@@ -322,6 +322,7 @@ $keys: full short collapse;
   // Фон
   &__image {
     @include mixins.inset();
+    // Свойства
     position: absolute;
     // Позиция по ширине
     @each $position-x in $positions-x {
