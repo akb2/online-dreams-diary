@@ -61,6 +61,7 @@ class Account
     $userId = $_GET["user_id"];
     $token = $_GET["token"];
     $search = array(
+      "q" => $_GET["search_q"],
       "page" => $_GET["search_page"]
     );
     $testUsers = $this->userService->getList($search, $token, $userId);
