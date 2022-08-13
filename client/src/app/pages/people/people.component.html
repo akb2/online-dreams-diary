@@ -35,7 +35,22 @@
                   headerTitle="Настройки фильтров"
                   headerSubTitle="Поиска людей"
                   avatarIcon="person_search"
-                  *ngIf="!loading"></app-search-panel>
+                  [formGroup]="searchForm"
+                  (clear)="onClear()"
+                  (submit)="onSearch()"
+                  *ngIf="!loading">
+  <!-- Базовый поиск -->
+  <search-group>
+    <!-- Поиск по ФИО -->
+    <app-text-input formControlName="q"
+                    label="Имя"
+                    (submit)="onSearch()"></app-text-input>
+  </search-group>
+  <!--  -->
+  <search-group>
+    456
+  </search-group>
+</app-search-panel>
 
 
 
