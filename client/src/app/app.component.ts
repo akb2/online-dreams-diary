@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { User } from "@_models/account";
@@ -59,7 +59,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private snackBar: SnackbarService,
     private apiService: ApiService,
     private titleService: Title,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.validToken = false;
   }
@@ -107,7 +108,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.tokenService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
         if (code == "0001") {
-          this.accountService.syncCurrentUser().subscribe(() => this.validToken = true);
+          this.accountService.syncCurrentUser().subscribe(() => {
+            this.validToken = true;
+            this.changeDetectorRef.detectChanges();
+          });
         }
         // Токен не валидный
         else {
@@ -124,10 +128,12 @@ export class AppComponent implements OnInit, OnDestroy {
     // Пользователь неавторизован
     else {
       this.validToken = true;
+      this.changeDetectorRef.detectChanges();
     }
     // Запуск прелоадера
     if (showPreLoader) {
       this.showPreLoader = true;
+      this.changeDetectorRef.detectChanges();
       document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
     }
   }
@@ -147,6 +153,7 @@ export class AppComponent implements OnInit, OnDestroy {
     ).subscribe(t => {
       if (t) {
         this.showPreLoader = false;
+        this.changeDetectorRef.detectChanges();
         document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
       }
     });
