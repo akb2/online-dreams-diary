@@ -90,9 +90,8 @@
     text-decoration: none;
     // Имя
     &-title {
-      @include mixins.lineClamp(1, 22px);
+      @include mixins.lineClamp(1, 22px, 15px);
       // Свойства
-      font-size: 15px;
       font-weight: 400;
       color: colors.$title;
       transition: color #{screens.$animation-time};
@@ -100,9 +99,8 @@
     }
     // Фамилия
     &-subtitle {
-      @include mixins.lineClamp(1, 18px);
+      @include mixins.lineClamp(1, 18px, 12px);
       // Свойства
-      font-size: 12px;
       font-weight: 300;
       color: colors.$subtitle;
       transition: color #{screens.$animation-time};

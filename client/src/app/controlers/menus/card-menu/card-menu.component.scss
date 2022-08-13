@@ -58,17 +58,15 @@
   }
   // Заголовок
   &__title {
-    @include mixins.lineClamp(1, $titleSize);
+    @include mixins.lineClamp(1, $titleSize, 14px);
     // Свойства
-    font-size: 14px;
     color: colors.$title;
     grid-area: title;
   }
   // Подзаголовок
   &__subtitle {
-    @include mixins.lineClamp(1, $subTitleSize);
+    @include mixins.lineClamp(1, $subTitleSize, 13px);
     // Свойства
-    font-size: 13px;
     color: colors.$subtitle;
     grid-area: subtitle;
   }

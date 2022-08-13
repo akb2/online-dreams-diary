@@ -44,8 +44,7 @@
   $menuSize: 40px;
   $titleSize: 22px;
   $subTitleSize: $menuSize - $titleSize;
-  $imageHeight: ($spacingY * 6) + $menuSize + ($descriptionCount * $descriptionLineHeight)+ ($keywordsCount *
-        $descriptionLineHeight);
+  $imageHeight: ($spacingY * 6) + $menuSize + ($descriptionCount * $descriptionLineHeight)+ ($keywordsCount * $descriptionLineHeight);
   // Свойства
   border-radius: $borderRadius;
   background-color: colors.$card;
@@ -131,9 +130,8 @@
     padding: #{$spacingY} #{$spacingX};
     // Заголовок
     &-title {
-      @include mixins.lineClamp(1, $titleSize);
+      @include mixins.lineClamp(1, $titleSize, 15px);
       // Свойства
-      font-size: 15px;
       font-weight: 400;
       color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
       grid-area: title;
@@ -149,9 +147,8 @@
     }
     // Подзаголовок
     &-subtitle {
-      @include mixins.lineClamp(1, $subTitleSize);
+      @include mixins.lineClamp(1, $subTitleSize, 12px);
       // Свойства
-      font-size: 12px;
       font-weight: 300;
       color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
       opacity: 0.9;
@@ -174,9 +171,8 @@
     }
     // Описание
     &-description {
-      @include mixins.lineClamp($descriptionCount, $descriptionLineHeight);
+      @include mixins.lineClamp($descriptionCount, $descriptionLineHeight, 13px);
       // Свойства
-      font-size: 13px;
       font-weight: 300;
       color: colors.$text;
       height: $descriptionCount * $descriptionLineHeight;
@@ -199,7 +195,7 @@
     &-keywords {
       $spacing: 3px;
       // Миксины
-      @include mixins.lineClamp($keywordsCount, $descriptionLineHeight, $spacing);
+      @include mixins.lineClamp($keywordsCount, $descriptionLineHeight, 13px, $spacing);
       // Свойства
       height: ($keywordsCount * $descriptionLineHeight) + ($spacing * 2);
       margin: #{-$spacing} 0;
@@ -308,18 +304,16 @@
     }
     // Заголовок
     &-title {
-      @include mixins.lineClamp(1, $titleSize);
+      @include mixins.lineClamp(1, $titleSize, 14px);
       // Свойства
-      font-size: 14px;
       font-weight: 400;
       color: colors.$title;
       grid-area: title;
     }
     // Подзаголовок
     &-subtitle {
-      @include mixins.lineClamp(1, $subTitleSize);
+      @include mixins.lineClamp(1, $subTitleSize, 13px);
       // Свойства
-      font-size: 13px;
       font-weight: 300;
       color: colors.$subtitle;
       grid-area: subtitle;
