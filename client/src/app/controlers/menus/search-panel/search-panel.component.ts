@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { BackgroundImageDatas } from "@_models/appearance";
 
 
@@ -21,7 +21,10 @@ export class SearchPanelComponent {
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";
 
-  isShow: boolean = false;
+  @Output() submit: EventEmitter<void> = new EventEmitter<void>();
+  @Output() clear: EventEmitter<void> = new EventEmitter<void>();
+
+  isShow: boolean = true;
 
 
 
@@ -30,6 +33,20 @@ export class SearchPanelComponent {
   constructor(
     private changeDetectorRef: ChangeDetectorRef
   ) { }
+
+
+
+
+
+  // Поиск
+  onSubmit(): void {
+    this.submit.emit();
+  }
+
+  // Очистить
+  onClear(): void {
+    this.clear.emit();
+  }
 
 
 

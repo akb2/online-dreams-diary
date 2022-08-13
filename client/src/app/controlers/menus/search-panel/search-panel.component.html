@@ -15,6 +15,22 @@
                        (closeClick)="closePanel()"></app-panels-header>
     <!-- Элементы управления -->
     <div class="search-panel__content">
+      <ng-content></ng-content>
+    </div>
+    <!-- Действия -->
+    <div class="search-panel__actions">
+      <!-- Сбросить форму -->
+      <a mat-stroked-button
+         color="basic"
+         (click)="onClear()">
+        <mat-icon>close</mat-icon>Сбросить
+      </a>
+      <!-- Поиск -->
+      <a mat-flat-button
+         color="primary"
+         (click)="onSubmit()">
+        <mat-icon>search</mat-icon>Поиск
+      </a>
     </div>
   </div>
 </div>
