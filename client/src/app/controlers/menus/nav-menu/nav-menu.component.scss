@@ -232,8 +232,8 @@ $breakpointMobile: small;
 
 // Мобильное меню
 .mobile-menu {
-  $layout-width: 280px;
-  $info-height: 240px;
+  $layout-width: containers.$mobileMenuWidth;
+  $info-height: containers.$mobileMenuHeight;
   // Свойства
   position: fixed;
   z-index: 20;
@@ -280,7 +280,7 @@ $breakpointMobile: small;
     width: $layout-width;
     margin-left: -$layout-width;
     height: 100%;
-    background-color: #fff;
+    background-color: colors.$card;
     position: relative;
     z-index: 1;
     transition: margin-left screens.$animation-time;
@@ -290,123 +290,6 @@ $breakpointMobile: small;
     // Открытое меню
     &.show {
       margin-left: 0;
-    }
-  }
-
-  // Информация о странице
-  &__info {
-    $_elm: &;
-    $padding: 15px;
-    $title-size: 16px;
-    $subtitle-size: 13px;
-    $line-height: 1.2;
-    $avatar-size: 48px;
-    // Свойства
-    width: 100%;
-    height: $info-height;
-    position: relative;
-    padding: $padding;
-    display: block;
-    // Содержимое
-    &-content {
-      @include mixins.inset(auto, 0, 0, 0);
-      position: absolute;
-      display: grid;
-      grid-template-areas: "title" "subtitle";
-      gap: 0 12px;
-      padding: 15px;
-      align-items: center;
-      // С аватаркой
-      &.avatar {
-        grid-template-columns: #{$avatar-size} 1fr;
-        grid-template-areas: "avatar title" "avatar subtitle";
-      }
-    }
-    // Картинка
-    &-image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: colors.$color_2;
-
-      > img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      &:after {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: colors.$overlay-color;
-      }
-    }
-    // Аватарка
-    &-avatar {
-      grid-area: avatar;
-      width: $avatar-size;
-      height: $avatar-size;
-      // Картинка
-      > img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-      }
-    }
-    // Заголовок
-    &-title {
-      color: colors.$title-dark;
-      font-size: $title-size;
-      grid-area: title;
-      height: $title-size * $line-height;
-      #{$_elm}-content.avatar & {
-        margin-top: math.div($avatar-size, 2) - ($title-size * $line-height);
-      }
-    }
-    // Подзаголовок
-    &-subtitle {
-      color: colors.$subtitle-dark;
-      font-size: $subtitle-size;
-      grid-area: subtitle;
-      height: $subtitle-size * $line-height;
-      #{$_elm}-content.avatar & {
-        margin-bottom: math.div($avatar-size, 2) - ($subtitle-size * $line-height);
-      }
-    }
-    // Заголовок, gодзаголовок
-    &-title,
-    &-subtitle {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      position: relative;
-      z-index: 1;
-      line-height: $line-height;
-      font-weight: 300;
-    }
-    // Закрытие окна
-    &-close {
-      position: absolute;
-      top: 0;
-      left: 0;
-      color: colors.$title-dark;
-      text-align: center;
-
-      &,
-      > mat-icon {
-        width: 60px;
-        height: 60px;
-        line-height: 60px;
-        font-size: 24px;
-      }
     }
   }
 

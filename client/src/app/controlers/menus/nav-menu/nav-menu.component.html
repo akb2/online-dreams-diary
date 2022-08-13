@@ -227,36 +227,15 @@
     <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">
 
       <!-- Информация о странице -->
-      <div class="mobile-menu__info">
-        <!-- Картинка -->
-        <div class="mobile-menu__info-image type-{{ type }}"
-             *ngIf="image">
-          <img [src]="image" />
-        </div>
-        <!-- Закрытие меню -->
-        <div class="mobile-menu__info-close"
-             (click)="toggleMobileMenu(-1)"
-             unselectable="on">
-          <mat-icon>close</mat-icon>
-        </div>
-        <!-- Данные -->
-        <div class="mobile-menu__info-content"
-             [ngClass]="{ avatar: avatarImage || avatarIcon }">
-          <!-- Аватарка -->
-          <div class="mobile-menu__info-avatar"
-               *ngIf="avatarImage || avatarIcon">
-            <img [src]="avatarImage"
-                 *ngIf="avatarImage" />
-            <mat-icon *ngIf="!avatarImage && avatarIcon">{{avatarIcon}}</mat-icon>
-          </div>
-          <!-- Заголовок -->
-          <div class="mobile-menu__info-title"
-               *ngIf="title">{{title}}</div>
-          <!-- Подзаголовок -->
-          <div class="mobile-menu__info-subtitle"
-               *ngIf="subTitle">{{subTitle}}</div>
-        </div>
-      </div>
+      <app-panels-header [imageSrc]="image"
+                         [imageOverlay]="imageOverlay"
+                         [positionX]="imagePositionX"
+                         [positionY]="imagePositionY"
+                         [title]="title"
+                         [subTitle]="subTitle"
+                         [avatarImage]="avatarImage"
+                         [avatarIcon]="avatarIcon"
+                         (closeClick)="toggleMobileMenu(-1)"></app-panels-header>
 
       <!-- Пункты главного меню -->
       <nav class="mobile-menu__list">

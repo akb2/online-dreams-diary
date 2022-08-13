@@ -1,6 +1,7 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { CustomObject, SimpleObject } from "@_models/app";
+import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
 import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
@@ -26,8 +27,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @Input() image: string = "";
   @Input() class: string = "";
   @Input() autoCollapse: boolean = false;
-  @Input() imagePositionX: string = "center";
-  @Input() imagePositionY: string = "center";
+  @Input() imagePositionX: BackgroundHorizontalPosition = "center";
+  @Input() imagePositionY: BackgroundVerticalPosition = "center";
   @Input() imageOverlay: boolean = true;
   @Input() imageFullShow: boolean = false;
 
@@ -209,6 +210,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    const arrayChanges: SimpleChange[] = Object.values(changes) ?? [];
     // Установить новую картинку
     if (changes.image && !changes.image.firstChange && changes.image.previousValue !== changes.image.currentValue) {
       // Старые значения
@@ -231,8 +233,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     else {
       this.tempImage = "";
     }
-    // Изменился тип шапки
-    if (changes.type && !changes.type.firstChange && changes.type.previousValue !== changes.type.currentValue) {
+    // Пересчитать размеры
+    if (!!arrayChanges?.length && arrayChanges.some(c => !c.isFirstChange() && c.currentValue !== c.previousValue)) {
       this.onResize();
     }
   }
