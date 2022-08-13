@@ -36,6 +36,9 @@
     right: -#{containers.$mobileMenuWidth};
     transition: right screens.$animation-time;
     pointer-events: auto;
+    display: grid;
+    grid-template-rows: #{containers.$mobileMenuHeight} minmax(0, 1fr) auto;
+    grid-template-areas: "header" "content" "actions";
     // Статус: открыто
     &.open {
       right: 0;
@@ -45,6 +48,7 @@
   &__title {
     height: containers.$mobileMenuHeight;
     position: relative;
+    grid-area: header;
     // Изображение
     &-image {
       @include mixins.inset;
@@ -57,5 +61,18 @@
         object-fit: cover;
       }
     }
+  }
+  // Содержимое
+  &__content {
+    grid-area: content;
+  }
+  // Действия
+  &__actions {
+    grid-area: actions;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: containers.$cardPaddingY;
   }
 }
