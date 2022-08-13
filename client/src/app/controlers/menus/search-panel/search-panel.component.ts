@@ -21,7 +21,7 @@ export class SearchPanelComponent {
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";
 
-  isShow: boolean = true;
+  isShow: boolean = false;
 
 
 
