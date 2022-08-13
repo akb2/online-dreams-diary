@@ -13,8 +13,8 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
-import { Observable, of, Subject } from "rxjs";
-import { takeUntil, tap } from "rxjs/operators";
+import { Observable, of, Subject, timer } from "rxjs";
+import { skipWhile, takeUntil, takeWhile, tap } from "rxjs/operators";
 
 
 
@@ -111,7 +111,6 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   ngDoCheck() {
     if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
       this.oldUser = this.user;
-      this.setPageData();
     }
   }
 
@@ -121,7 +120,13 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       this.queryParams = params as SimpleObject;
       this.pageCurrent = parseInt(params.p) || 1;
       // Функция обработчик
-      this.defineData();
+      timer(0, 500)
+        .pipe(
+          takeUntil(this.destroy$),
+          takeWhile(() => !!this.user?.id && !this.user, true),
+          skipWhile(() => !!this.user?.id && !this.user)
+        )
+        .subscribe(() => this.defineData());
     });
     // Подписка на тип устройства
     this.screenService.isMobile$
