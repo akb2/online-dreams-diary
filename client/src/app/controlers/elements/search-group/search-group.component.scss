@@ -1,0 +1,11 @@
+@use "../../../../assets/styles/colors";
+
+// Стиль обертки
+:host {
+  display: block;
+  padding: 15px;
+  // Последующие элементы
+  :host-context + & {
+    border-top: 1px solid #{colors.$border};
+  }
+}
