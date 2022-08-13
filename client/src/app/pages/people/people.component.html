@@ -6,7 +6,9 @@
                [imagePositionX]="backgroundImageData.positionX"
                [imagePositionY]="backgroundImageData.positionY"
                [imageOverlay]="backgroundImageData.imageOverlay"
-               title="Поиск людей"></app-main-menu>
+               avatarIcon="person_search"
+               title="Поиск"
+               subTitle="Людей"></app-main-menu>
 
 <!-- Контейнер с данными -->
 <div class="root-section"
@@ -29,6 +31,10 @@
 
 <!-- Фильтры для поиска -->
 <app-search-panel #searchPanel
+                  [backgroundImageId]="backgroundImageData.id"
+                  headerTitle="Настройки фильтров"
+                  headerSubTitle="Поиска людей"
+                  avatarIcon="person_search"
                   *ngIf="!loading"></app-search-panel>
 
 
