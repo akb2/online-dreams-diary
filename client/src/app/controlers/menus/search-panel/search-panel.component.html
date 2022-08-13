@@ -1,5 +1,20 @@
 <div class="search-panel">
+  <!-- Затенение страницы -->
   <div class="search-panel__overlay"
        [ngClass]="{ open: isShow }"
        (click)="closePanel()"></div>
+  <!-- Панель поиска -->
+  <div class="search-panel__container"
+       [ngClass]="{ open: isShow }">
+    <!-- Шапка меню и т.д. -->
+    <app-panels-header [backgroundImageId]="backgroundImageId"
+                       [title]="headerTitle"
+                       [subTitle]="headerSubTitle"
+                       [avatarImage]="avatarImage"
+                       [avatarIcon]="avatarIcon"
+                       (closeClick)="closePanel()"></app-panels-header>
+    <!-- Элементы управления -->
+    <div class="search-panel__content">
+    </div>
+  </div>
 </div>

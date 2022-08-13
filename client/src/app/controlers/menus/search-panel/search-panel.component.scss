@@ -1,6 +1,7 @@
 @use "../../../../assets/styles/mixins";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
 
 // Панель просмотра
 .search-panel {
@@ -22,6 +23,39 @@
     &.open {
       opacity: 1;
       pointer-events: auto;
+    }
+  }
+  // Контейнер меню
+  &__container {
+    @include mixins.inset;
+    // Свойтсва
+    left: auto;
+    position: absolute;
+    width: containers.$mobileMenuWidth;
+    background-color: colors.$card;
+    right: -#{containers.$mobileMenuWidth};
+    transition: right screens.$animation-time;
+    pointer-events: auto;
+    // Статус: открыто
+    &.open {
+      right: 0;
+    }
+  }
+  // Заголовок
+  &__title {
+    height: containers.$mobileMenuHeight;
+    position: relative;
+    // Изображение
+    &-image {
+      @include mixins.inset;
+      // Свойства
+      position: absolute;
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
   }
 }
