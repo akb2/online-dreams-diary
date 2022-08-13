@@ -37,6 +37,14 @@
       </ng-container>
     </div>
   </div>
+
+  <!-- Фильтры для поиска -->
+  <app-search-panel #searchPanel
+                    [backgroundImageId]="backgroundImageData.id"
+                    headerTitle="Настройки фильтров"
+                    headerSubTitle="Поиска сновидений"
+                    avatarIcon="content_paste_search"
+                    *ngIf="!loading"></app-search-panel>
 </ng-container>
 
 
@@ -59,7 +67,8 @@
               title="Ошибка поиска"
               subTitle="Сновидения не найдены. Измените условия поиска или повторите позже">
     <a mat-flat-button
-       color="primary">
+       color="primary"
+       (click)="openSearch()">
       <mat-icon>search</mat-icon>Открыть поиск
     </a>
   </app-inform>
@@ -76,12 +85,14 @@
     <!-- Поиск для большого экрана -->
     <a mat-flat-button
        color="primary"
+       (click)="openSearch()"
        *ngIf="!isMobile">
       <mat-icon>search</mat-icon>Поиск
     </a>
     <!-- Поиск для телефона -->
     <a mat-mini-fab
        color="primary"
+       (click)="openSearch()"
        *ngIf="isMobile">
       <mat-icon>search</mat-icon>
     </a>

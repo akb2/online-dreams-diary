@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
+import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
@@ -29,7 +30,7 @@ import { takeUntil, tap } from "rxjs/operators";
 export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
 
 
-  @ViewChild("mainMenu") private mainMenu!: NavMenuComponent;
+  @ViewChild("searchPanel") private searchPanel!: SearchPanelComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   pageData: RouteData;
@@ -110,6 +111,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   ngDoCheck() {
     if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
       this.oldUser = this.user;
+      this.setPageData();
     }
   }
 
@@ -256,7 +258,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     }
     // Общий дневник
     else {
-      if (this.user) {
+      if (!!this.user) {
         this.floatButtonIcon = "add";
         this.floatButtonLink = "/diary/editor";
       }
@@ -267,6 +269,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       }
       // Название страницы
       this.pageTitle = AppComponent.createTitle(this.title);
+      this.menuAvatarIcon = "content_paste_search";
       // Готово
       this.ready = true;
     }
@@ -309,5 +312,10 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       },
       () => this.onNotDreamsFound()
     );
+  }
+
+  // Показать фильтры
+  openSearch(): void {
+    this.searchPanel?.openPanel();
   }
 }
