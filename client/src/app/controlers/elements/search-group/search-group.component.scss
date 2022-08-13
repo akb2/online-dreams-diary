@@ -1,9 +1,10 @@
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
 
 // Стиль обертки
 :host {
   display: block;
-  padding: 15px;
+  padding: containers.$cardPaddingY;
   // Последующие элементы
   :host-context + & {
     border-top: 1px solid #{colors.$border};
