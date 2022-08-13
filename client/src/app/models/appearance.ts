@@ -4,10 +4,16 @@ export interface BackgroundImageData {
   title: string;
   imageName: string;
   imageNameShort: string;
-  positionX: "left" | "center" | "right";
-  positionY: "top" | "center" | "bottom";
+  positionX: BackgroundHorizontalPosition;
+  positionY: BackgroundVerticalPosition;
   imageOverlay: boolean;
 }
+
+// Тип горизонтального позиционирования картинки
+export type BackgroundHorizontalPosition = "left" | "center" | "right";
+
+// Тип горизонтального вертикального картинки
+export type BackgroundVerticalPosition = "top" | "center" | "bottom";
 
 // Поля по умолчанию
 const BackgroundImageDataDefault: BackgroundImageData = {
