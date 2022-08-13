@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 
 // Повторить строку
 @function str-repeat($string, $count: 1, $implementer: "") {
@@ -77,16 +78,21 @@
 }
 
 // Огранисение на количество линий
-@mixin lineClamp($lines: 1, $height: 1, $padding: 0, $height-important: false) {
+@mixin lineClamp($lines: 1, $height: 1.2, $fontSize: 14px, $padding: 0, $heightImportant: false) {
   $important: "";
   // Обязательные поля
-  @if ($height-important == 1 or $height-important == true) {
+  @if ($heightImportant == 1 or $heightImportant == true) {
     $important: "!important";
+  }
+  // Не указана единица измерения для высоты
+  @if (math.is-unitless($height)) {
+    $height: $height * $fontSize;
   }
   // Свойства
   overflow: hidden;
   padding-top: $padding;
   padding-bottom: $padding;
+  font-size: $fontSize;
   // Установка высоты
   @if ($height > 0) {
     line-height: #{$height} #{$important};
