@@ -24,11 +24,11 @@ import { Subject, takeUntil } from 'rxjs';
 export class PeopleComponent implements OnInit, OnDestroy {
 
 
-  @ViewChild("searchPanel") searchPanel!: SearchPanelComponent;
+  @ViewChild("searchPanel") private searchPanel!: SearchPanelComponent;
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
-  backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 8);
+  backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 10);
 
   navMenuType: NavMenuType = NavMenuType.collapse;
 
