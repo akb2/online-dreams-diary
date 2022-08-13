@@ -1,0 +1,30 @@
+<!-- Картинка -->
+<img [src]="getBackgroundImageData.src"
+     [attr.positionX]="getBackgroundImageData.positionX"
+     [attr.positionY]="getBackgroundImageData.positionY" />
+<!-- Затенение -->
+<div class="overlay"
+     [attr.imageOverlay]="getBackgroundImageData.imageOverlay"></div>
+<!-- Данные -->
+<div class="data"
+     [ngClass]="{ hasAvatar }">
+  <!-- Аватарка -->
+  <div class="data__avatar"
+       *ngIf="hasAvatar">
+    <img [src]="avatarImage"
+         *ngIf="!!avatarImage" />
+    <mat-icon *ngIf="!avatarImage && !!avatarIcon">{{avatarIcon}}</mat-icon>
+  </div>
+  <!-- Текст -->
+  <div class="data__text">
+    <div class="data__text-title">{{title}}</div>
+    <div class="data__text-subtitle"
+         *ngIf="!!subTitle">{{subTitle}}</div>
+  </div>
+</div>
+<!-- Закрытие меню -->
+<div class="close"
+     (click)="onCloseClick()"
+     unselectable="on">
+  <mat-icon>close</mat-icon>
+</div>
