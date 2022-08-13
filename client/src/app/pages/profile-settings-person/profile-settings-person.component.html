@@ -74,19 +74,19 @@
                               formControlName="name"
                               [errors]="errors.name"
                               [maxLength]="formData.nameMaxLength"
-                              (submitCallback)="onSaveData()"></app-text-input>
+                              (submit)="onSaveData()"></app-text-input>
               <!-- Фамилия -->
               <app-text-input label="Фамилия"
                               formControlName="lastName"
                               [errors]="errors.lastName"
                               [maxLength]="formData.nameMaxLength"
-                              (submitCallback)="onSaveData()"></app-text-input>
+                              (submit)="onSaveData()"></app-text-input>
               <!-- Отчество -->
               <app-text-input label="Отчество"
                               formControlName="patronymic"
                               [errors]="errors.patronymic"
                               [maxLength]="formData.nameMaxLength"
-                              (submitCallback)="onSaveData()"></app-text-input>
+                              (submit)="onSaveData()"></app-text-input>
             </form>
             <!-- Загрузка сохранения -->
             <div class="loader"
@@ -118,7 +118,7 @@
                               [errors]="errors.birthDate"
                               [minDate]="ageToDate(formData.birthDateMaxAge)"
                               [maxDate]="ageToDate(formData.birthDateMinAge)"
-                              (submitCallback)="onSaveData()"></app-text-input>
+                              (submit)="onSaveData()"></app-text-input>
               <!-- Пол -->
               <app-toggle-input label="Ваш пол"
                                 [values]="['Мужской','Женский']"
@@ -128,7 +128,7 @@
                               formControlName="email"
                               [errors]="errors.email"
                               [maxLength]="formData.emailMaxLength"
-                              (submitCallback)="onSaveData()"></app-text-input>
+                              (submit)="onSaveData()"></app-text-input>
             </form>
             <!-- Загрузка сохранения -->
             <div class="loader"

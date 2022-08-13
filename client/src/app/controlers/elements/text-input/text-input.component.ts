@@ -25,7 +25,7 @@ export class TextInputComponent extends BaseInputDirective {
   @Input() multiLineMaxLines: number = 10;
   @Input() maxDate: Date;
 
-  @Output() submitCallback: EventEmitter<void> = new EventEmitter<void>();
+  @Output() submit: EventEmitter<void> = new EventEmitter<void>();
 
   @ViewChild("input") input: ElementRef;
 
@@ -67,7 +67,7 @@ export class TextInputComponent extends BaseInputDirective {
     }
     // Остальные
     else if (this.type !== "date") {
-      this.submitCallback.emit();
+      this.submit.emit();
     }
   }
 

@@ -23,14 +23,14 @@
                           formControlName="login"
                           [errors]="errors.login"
                           [maxLength]="formData.loginMaxLength"
-                          (submitCallback)="tryLogin()"></app-text-input>
+                          (submit)="tryLogin()"></app-text-input>
           <!-- Пароль -->
           <app-text-input label="Пароль"
                           formControlName="password"
                           [errors]="errors.password"
                           [maxLength]="formData.passwordMaxLength"
                           type="password"
-                          (submitCallback)="tryLogin()"></app-text-input>
+                          (submit)="tryLogin()"></app-text-input>
           <!-- Восстановление пароля -->
           <div class="restore">
             <a routerLink="/restore">Забыли пароль?</a>
