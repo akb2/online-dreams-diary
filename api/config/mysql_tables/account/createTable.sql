@@ -17,7 +17,8 @@ CREATE TABLE `users`
     `settings` JSON NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE `login` (`login`),
-    UNIQUE `email` (`email`)
+    UNIQUE `email` (`email`),
+    FULLTEXT (`name`, `last_name`, `patronymic`)
   )
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
