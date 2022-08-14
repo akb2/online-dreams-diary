@@ -1,11 +1,11 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
-import { FormControl } from "@angular/forms";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, Self, SimpleChanges, ViewChild } from "@angular/core";
+import { FormControl, NgControl } from "@angular/forms";
 import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { IconBackground, IconColor } from "@_models/app";
-import { Subject } from "rxjs";
+import { fromEvent, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -15,23 +15,28 @@ import { takeUntil } from "rxjs/operators";
 @Component({
   selector: "app-autocomplete-input",
   templateUrl: "./autocomplete-input.component.html",
-  styleUrls: ["./autocomplete-input.component.scss"]
+  styleUrls: ["./autocomplete-input.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class AutocompleteInputComponent extends BaseInputDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
 
-  @Input() type: AutocompleteType = "autocomplete";
+  @Input() type: AutocompleteType = "select";
   @Input() textDelimiter: string = " | ";
   @Input() appearance: MatFormFieldAppearance = "fill";
   @Input() optionData: OptionData[] = [];
-  @Input() panelWidth: string | number = "";
+  @Input() panelWidth: string | number;
   @Input() buttonIcon: string;
+  @Input() defaultIcon: string;
+  @Input() defaultIconColor: IconColor = "disabled";
+  @Input() defaultIconBackground: IconBackground = "fill";
   @Input() notNull: boolean = true;
 
   @Output() buttonCallback: EventEmitter<void> = new EventEmitter<void>();
   @Output() selectItemEvent: EventEmitter<FormControl> = new EventEmitter<FormControl>();
 
+  @ViewChild("layoutElement") layoutElement: ElementRef;
   @ViewChild("inputElement") inputElement: ElementRef;
   @ViewChild("autocompleteElement") autocompleteElement: ElementRef;
   @ViewChild("inputElement", { read: MatAutocompleteTrigger }) autoComplete: MatAutocompleteTrigger;
@@ -41,37 +46,49 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   optionDataSelected: OptionData | null;
 
   image: string = "";
-  icon: string = "";
-  iconColor: IconColor = "primary";
-  iconBackground: IconBackground = "fill";
+  icon: string;
+  iconColor: IconColor;
+  iconBackground: IconBackground;
   imagePosition: AutocompleteImageSize = "cover";
 
   private focusTempValue: string;
 
   private destroy$: Subject<void> = new Subject<void>();
-  private changes$: Subject<void> = new Subject<void>();
 
 
 
 
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // Отключить старый вызов подписчика
-    this.changes$.next();
-    this.changes$.complete();
-    // Поджписка на изменения
-    this.control.valueChanges.pipe(takeUntil(this.destroy$), takeUntil(this.changes$)).subscribe(value => {
-      this.setValue(value);
-      this.optionDataFilter();
-    });
-    // Обработка значений
+  // Текущая ширина всплывающего списка
+  get getPanelWidth(): string | number {
+    return this.panelWidth ?? this.layoutElement?.nativeElement.getBoundingClientRect().width ?? null;
+  }
+
+
+
+
+
+  constructor(
+    @Optional() @Self() override controlDir: NgControl,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
+    super(controlDir);
+  }
+
+  ngOnChanges(): void {
     this.optionDataFilter();
     this.setValue(this.control.value);
   }
 
   ngOnInit(): void {
+    this.control.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.setValue(value);
+        this.optionDataFilter();
+      });
     // События
-    window.addEventListener("scroll", this.onScroll.bind(this), true);
+    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onScroll(e));
   }
 
   ngAfterViewInit(): void {
@@ -81,8 +98,6 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // События
-    window.removeEventListener("scroll", this.onScroll.bind(this), true);
   }
 
 
@@ -128,7 +143,10 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   // Поле в фокусе
   onFocus(event: FocusEvent): void {
     this.focusTempValue = this.inputElement.nativeElement.value;
-    this.inputElement.nativeElement.value = "";
+    // Очистить для автокомплита
+    if (this.type === "autocomplete") {
+      this.inputElement.nativeElement.value = "";
+    }
     // Убрать фильтрацию
     this.optionDataFiltered = this.optionData;
   }
@@ -188,16 +206,16 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     if (optionData) {
       this.image = optionData.image ? optionData.image : "";
       this.imagePosition = optionData.imagePosition ? optionData.imagePosition : "cover";
-      this.icon = optionData.icon ? optionData.icon : "";
-      this.iconColor = optionData.iconColor ? optionData.iconColor : "primary";
-      this.iconBackground = optionData.iconBackground ? optionData.iconBackground : "fill";
+      this.icon = optionData.icon ? optionData.icon : this.defaultIcon;
+      this.iconColor = optionData.iconColor ? optionData.iconColor : this.defaultIconColor;
+      this.iconBackground = optionData.iconBackground ? optionData.iconBackground : this.defaultIconBackground;
     }
     // Нет значения
     else {
       this.image = "";
-      this.icon = "close";
-      this.iconColor = "disabled";
-      this.iconBackground = "fill";
+      this.icon = this.defaultIcon;
+      this.iconColor = this.defaultIconColor;
+      this.iconBackground = this.defaultIconBackground;
     }
 
     // Установить значение
@@ -210,6 +228,9 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     if (emitEvent) {
       this.selectItemEvent.emit(this.control);
     }
+
+    // Оновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Отображение в текстовом поле
@@ -275,6 +296,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   private optionDataFilter(): void {
     this.optionData = this.optionDataFill();
     this.optionDataFiltered = this.optionData;
+    // Оновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Дополнить массив данных
@@ -290,8 +313,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         subTitle: option.subTitle?.length ? option.subTitle : "",
         image: option.image?.length ? option.image : "",
         icon: option.icon?.length ? option.icon : "",
-        iconColor: option.iconColor?.length ? option.iconColor : "primary",
-        iconBackground: option.iconBackground?.length ? option.iconBackground : "fill",
+        iconColor: option.iconColor?.length ? option.iconColor : this.defaultIconColor,
+        iconBackground: option.iconBackground?.length ? option.iconBackground : this.defaultIconBackground,
         imagePosition: option.imagePosition?.length ? option.imagePosition : "cover"
       };
     });

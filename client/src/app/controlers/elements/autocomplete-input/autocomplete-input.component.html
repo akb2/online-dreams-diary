@@ -1,8 +1,9 @@
-<div class="layout"
+<div #layoutElement
+     class="layout"
      (click)="autoComplete.openPanel()">
   <!-- Поле ввода -->
   <mat-form-field [appearance]="appearance"
-                  [class]="hasValidators? '': 'disabled-validators'">
+                  [ngClass]="{ hasImage: image || icon, 'disabled-validators': !hasValidators }">
     <!-- Заголовок -->
     <mat-label>{{label}}</mat-label>
 
@@ -26,7 +27,7 @@
     <!-- Список -->
     <mat-autocomplete #autocompleteElement="matAutocomplete"
                       [displayWith]="displayWith.bind(this)"
-                      [panelWidth]="panelWidth"
+                      [panelWidth]="getPanelWidth"
                       (optionSelected)="setValue($event.option?.value, true, true)">
       <mat-option [value]="optionData"
                   *ngFor="let optionData of optionDataFiltered">

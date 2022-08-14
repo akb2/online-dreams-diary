@@ -88,6 +88,10 @@ $image-size: 49px;
 // Поле ввода
 .mat-input-element {
   font-weight: 400;
+  // Для поля без ввода
+  &:read-only {
+    cursor: pointer;
+  }
 }
 
 // Элемент списка
@@ -160,11 +164,16 @@ $image-size: 49px;
   display: flex;
   flex-flow: row-reverse nowrap;
   align-items: flex-start;
+  cursor: pointer;
 }
 
 // Поле
 .mat-form-field {
   @include mat-form-field;
+  // Поле с картинкой
+  &.hasImage {
+    width: calc(100% - #{$image-size});
+  }
 }
 
 // Картинка
