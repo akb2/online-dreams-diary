@@ -43,12 +43,32 @@
   <search-group>
     <!-- Поиск по ФИО -->
     <app-text-input formControlName="q"
-                    label="Имя"
+                    label="Имя, фамилия"
                     (submit)="onSearch()"></app-text-input>
   </search-group>
-  <!--  -->
-  <search-group>
-    456
+  <!-- Дата рождения -->
+  <search-group title="День рождения">
+    <!-- Год рождения -->
+    <app-autocomplete-input formControlName="birthYear"
+                            label="Год"
+                            defaultIcon="cake"
+                            defaultIconColor="disabled"
+                            [optionData]="birthYears"
+                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+    <!-- Месяц рождения -->
+    <app-autocomplete-input formControlName="birthMonth"
+                            label="Месяц"
+                            defaultIcon="cake"
+                            defaultIconColor="disabled"
+                            [optionData]="birthMonths"
+                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+    <!-- День рождения -->
+    <app-autocomplete-input formControlName="birthDay"
+                            label="День"
+                            defaultIcon="cake"
+                            defaultIconColor="disabled"
+                            [optionData]="birthDays"
+                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
   </search-group>
 </app-search-panel>
 
