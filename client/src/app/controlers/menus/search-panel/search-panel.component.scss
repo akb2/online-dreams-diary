@@ -65,6 +65,7 @@
   // Содержимое
   &__content {
     grid-area: content;
+    width: containers.$mobileMenuWidth;
   }
   // Действия
   &__actions {
