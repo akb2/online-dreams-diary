@@ -204,13 +204,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
 
 
-interface ExtraDatas {
+// Интерфейс дополнительных данных страницы
+export interface ExtraDatas {
   checkToken: boolean;
   showPreLoader: boolean;
   changeTitle: boolean;
 }
 
-const DefaultExtraDatas: ExtraDatas = {
+// Дополнительные данные страницы по умолчанию
+export const DefaultExtraDatas: ExtraDatas = {
   checkToken: true,
   showPreLoader: true,
   changeTitle: true
