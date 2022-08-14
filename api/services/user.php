@@ -509,6 +509,9 @@ class UserService
     // Данные для поиска
     $sqlData = array(
       'q' => $search['q'],
+      'birth_year' => $search['birth_year'],
+      'birth_month' => $search['birth_month'],
+      'birth_day' => $search['birth_day'],
       // Параметры
       'check_token' => $checkToken,
       'current_user' => intval($userId),

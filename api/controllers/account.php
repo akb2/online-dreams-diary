@@ -62,7 +62,10 @@ class Account
     $token = $_GET["token"];
     $search = array(
       "q" => $_GET["search_q"],
-      "page" => $_GET["search_page"]
+      "page" => $_GET["search_page"],
+      "birth_year" => $_GET["search_birthYear"],
+      "birth_month" => $_GET["search_birthMonth"],
+      "birth_day" => $_GET["search_birthDay"]
     );
     $testUsers = $this->userService->getList($search, $token, $userId);
     $people = array();
