@@ -65,5 +65,8 @@ export class UserService {
 // Поиск: входящие данные
 export interface SearchUser {
   q?: string;
+  birthDay?: string;
+  birthMonth?: string;
+  birthYear?: string;
   page?: number;
 }
