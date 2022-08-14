@@ -6,7 +6,7 @@ import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
-import { AccountErrorMessages, ErrorMessagesType, FormData, FormDataType, AccountValidatorData } from "@_models/form";
+import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
