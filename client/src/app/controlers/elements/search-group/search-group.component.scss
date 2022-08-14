@@ -1,5 +1,6 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
 
 // Стиль обертки
 :host {
@@ -9,4 +10,13 @@
   :host-context + & {
     border-top: 1px solid #{colors.$border};
   }
+}
+
+// Заголовок
+.title {
+  @include mixins.lineClamp(1, 1.2, 14px);
+  // Свойтсва
+  color: colors.$text;
+  font-weight: 400;
+  margin-bottom: containers.$cardPaddingY;
 }
