@@ -34,7 +34,7 @@ export interface FormErrorsKeys {
 }
 
 // Значения для данных
-export type FormDataType = { [key: string]: number };
+export type FormDataType = CustomObject<number>;
 export const FormData: FormDataType = {
   // Для аккаунтов
   loginMinLength: 4,
@@ -47,6 +47,7 @@ export const FormData: FormDataType = {
   nameMaxLength: 30,
   birthDateMinAge: 10,
   birthDateMaxAge: 120,
+  birthDateProjectYear: 2022,
   // Для сновидений
   dreamTitleMinLength: 3,
   dreamTitleMaxLength: 60,
