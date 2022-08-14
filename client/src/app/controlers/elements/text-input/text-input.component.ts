@@ -1,7 +1,8 @@
 import { DatePipe } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
+import { filter, map, Subject, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -13,7 +14,7 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
   styleUrls: ["./text-input.component.scss"]
 })
 
-export class TextInputComponent extends BaseInputDirective {
+export class TextInputComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
 
   @Input() type: TextInputType = "text";
@@ -24,6 +25,8 @@ export class TextInputComponent extends BaseInputDirective {
   @Input() multiLineMinLines: number = 1;
   @Input() multiLineMaxLines: number = 10;
   @Input() maxDate: Date;
+  @Input() submitAfterActivity: boolean = false;
+  @Input() activityTimer: number = 500;
 
   @Output() submit: EventEmitter<void> = new EventEmitter<void>();
 
@@ -32,14 +35,60 @@ export class TextInputComponent extends BaseInputDirective {
   showPassword: boolean = false;
   datePipe: DatePipe = new DatePipe('ru-RU');
 
+  private lastActivity: number = +new Date();
+  private activityInterval: number = 100;
+  private oldValue: string | null = "";
+
+  private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
+
+  ngOnInit(): void {
+    this.oldValue = this.value.toString() ?? "";
+    // Таймер проверки активности
+    timer(this.activityInterval, this.activityInterval)
+      .pipe(
+        takeUntil(this.destroy$),
+        map(() => +new Date()),
+        filter(t => t - this.lastActivity > this.activityTimer && this.submitAfterActivity),
+        map(() => this.input.nativeElement.value),
+        filter(value => value !== this.oldValue),
+      )
+      .subscribe(value => {
+        this.lastActivity = +new Date();
+        this.oldValue = value;
+        // Сабмит
+        this.onSubmit();
+      })
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 
 
 
 
   // Нажатие на кнопки клавиатуры
-  onKeyup(event: KeyboardEvent): void {
+  onKeyDown(event: KeyboardEvent): void {
+    this.lastActivity = +new Date();
+  }
+
+  // Нажатие на кнопки клавиатуры
+  onKeyPress(event: KeyboardEvent): void {
+    this.lastActivity = +new Date();
+  }
+
+  // Нажатие на кнопки клавиатуры
+  onKeyUp(event: KeyboardEvent): void {
     const sep: string = "\\" + DateSeparators.join("|\\");
     const value: string | null = this.input.nativeElement.value;
+    // Записать активность
+    this.lastActivity = +new Date();
     // Отправка формы
     if (event.key === "Enter" || event.key === "NumpadEnter") {
       // Нажатый Ctrl

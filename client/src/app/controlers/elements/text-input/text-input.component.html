@@ -8,7 +8,9 @@
            [type]="type=='password'?(showPassword?'text':'password'):type"
            [formControl]="control"
            [maxlength]="maxLength"
-           (keyup)="onKeyup($event)"
+           (keydown)="onKeyDown($event)"
+           (keypress)="onKeyPress($event)"
+           (keyup)="onKeyUp($event)"
            *ngIf="!multiLine" />
     <textarea #input
               matInput
@@ -17,7 +19,9 @@
               [cdkAutosizeMaxRows]="multiLineMaxLines"
               [formControl]="control"
               [maxlength]="maxLength"
-              (keyup)="onKeyup($event)"
+              (keydown)="onKeyDown($event)"
+              (keypress)="onKeyPress($event)"
+              (keyup)="onKeyUp($event)"
               *ngIf="multiLine"></textarea>
     <mat-icon class="showPassword"
               matSuffix
@@ -32,7 +36,9 @@
            [min]="minDate"
            [max]="maxDate"
            [matDatepicker]="datePicker"
-           (keyup)="onKeyup($event)"
+           (keydown)="onKeyDown($event)"
+           (keypress)="onKeyPress($event)"
+           (keyup)="onKeyUp($event)"
            (click)="datePicker.open()" />
     <mat-icon class="showPassword"
               matSuffix="matSuffix"

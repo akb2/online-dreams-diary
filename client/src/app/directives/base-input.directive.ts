@@ -8,10 +8,6 @@ import { FormErrorsKeys } from "@_models/form";
 
 @Directive()
 
-
-
-
-
 export abstract class BaseInputDirective implements ControlValueAccessor, DoCheck {
 
 
@@ -23,6 +19,14 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
   disabled: boolean = false;
   required: boolean = false;
 
+  onChange: Function = (_: any) => { };
+  onTouched: Function = () => { };
+
+
+
+
+
+  // Контроллер
   get control(): FormControl {
     return this.controlDir.control as FormControl;
   }
@@ -41,14 +45,10 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
     return false;
   }
 
-  onChange: Function = (_: any) => { };
-  onTouched: Function = () => { };
 
 
 
 
-
-  // Конструктор
   constructor(
     @Optional() @Self() public controlDir: NgControl
   ) {
