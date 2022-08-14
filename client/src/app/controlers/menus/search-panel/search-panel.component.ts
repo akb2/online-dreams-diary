@@ -24,7 +24,7 @@ export class SearchPanelComponent {
   @Output() submit: EventEmitter<void> = new EventEmitter<void>();
   @Output() clear: EventEmitter<void> = new EventEmitter<void>();
 
-  isShow: boolean = true;
+  isShow: boolean = false;
 
 
 
