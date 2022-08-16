@@ -28,6 +28,11 @@ WHERE
     AND MATCH (`name`, `last_name`, `patronymic`) AGAINST (:q IN BOOLEAN MODE)
   <? endif;?>
 
+  <?/* Поиск по полу пользователя */?>
+  <? if (strlen($input["sex"]) > 0 && (strval($input["sex"]) === "0" || strval($input["sex"]) === "1")): ?>
+    AND `sex` = :sex
+  <? endif;?>
+
   <?/* Поиск по году рождения */?>
   <? if (strlen($input["birth_year"]) > 0): ?>
     AND EXTRACT(year FROM `birth_date`) = :birth_year

@@ -63,6 +63,7 @@ class Account
     $search = array(
       "q" => $_GET["search_q"],
       "page" => $_GET["search_page"],
+      "sex" => $_GET["search_sex"],
       "birth_year" => $_GET["search_birthYear"],
       "birth_month" => $_GET["search_birthMonth"],
       "birth_day" => $_GET["search_birthDay"]
