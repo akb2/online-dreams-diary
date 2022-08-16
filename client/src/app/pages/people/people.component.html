@@ -50,6 +50,7 @@
   <search-group title="День рождения">
     <!-- Год рождения -->
     <app-autocomplete-input formControlName="birthYear"
+                            type="autocomplete"
                             label="Год"
                             defaultIcon="cake"
                             defaultIconColor="disabled"
@@ -64,6 +65,7 @@
                             (selectItemEvent)="onSearch()"></app-autocomplete-input>
     <!-- День рождения -->
     <app-autocomplete-input formControlName="birthDay"
+                            type="autocomplete"
                             label="День"
                             defaultIcon="cake"
                             defaultIconColor="disabled"
