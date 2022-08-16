@@ -45,6 +45,11 @@
     <app-text-input formControlName="q"
                     label="Имя, фамилия"
                     (submit)="onSearch()"></app-text-input>
+    <!-- Пол пользователя -->
+    <app-autocomplete-input formControlName="sex"
+                            label="Пол"
+                            [optionData]="sexes"
+                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
   </search-group>
   <!-- Дата рождения -->
   <search-group title="День рождения">

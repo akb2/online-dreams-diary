@@ -5,7 +5,7 @@ import { DefaultExtraDatas, ExtraDatas as ExtraDatasApp } from '@app/app.compone
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
-import { User } from '@_models/account';
+import { User, UserSex } from '@_models/account';
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
 import { FormData } from '@_models/form';
@@ -50,6 +50,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   birthYears: OptionData[] = [];
   birthMonths: OptionData[] = [];
   birthDays: OptionData[] = [];
+  sexes: OptionData[] = Sexes;
 
   peoplePlural: SimpleObject = {
     "=0": "",
@@ -116,6 +117,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   private get getDefaultSearch(): SearchUser {
     return {
       q: "",
+      sex: "",
       birthDay: "",
       birthMonth: "",
       birthYear: "",
@@ -342,3 +344,32 @@ export class PeopleComponent implements OnInit, OnDestroy {
 interface ExtraDatas extends ExtraDatasApp {
   noUpdateSearch: boolean;
 }
+
+
+
+
+
+// Массив полов пользователей для поиска
+const Sexes: OptionData[] = [
+  // Любой пол
+  {
+    key: "",
+    title: "Любой пол",
+    icon: "wc",
+    iconColor: "disabled"
+  },
+  // Мужской пол
+  {
+    key: UserSex.Male.toString(),
+    title: "Мужской",
+    icon: "man",
+    iconColor: "primary"
+  },
+  // Женский пол
+  {
+    key: UserSex.Female.toString(),
+    title: "Женский",
+    icon: "woman",
+    iconColor: "warn"
+  }
+];
