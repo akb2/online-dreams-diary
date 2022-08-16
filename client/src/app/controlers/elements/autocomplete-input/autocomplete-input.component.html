@@ -15,8 +15,8 @@
            [matAutocomplete]="autocompleteElement"
            [readonly]="type == 'select'"
            (keyup)="onKeyUp($event,inputElement.value)"
-           (focus)="onFocus($event)"
-           (blur)="onBlur($event)">
+           (focus)="onFocus()"
+           (blur)="onBlur()">
     <!-- Дополнительная кнопка -->
     <div matSuffix
          class="iconButton"
