@@ -64,6 +64,41 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     return this.panelWidth ?? this.layoutElement?.nativeElement.getBoundingClientRect().width ?? null;
   }
 
+  // Отображение в текстовом поле
+  displayWith(value: OptionData | string | null): string {
+    let optionData: OptionData | null = null;
+    let returnValue: string = "";
+    // Получена строка
+    if (value && typeof value === "string") {
+      // Найти по ключу
+      optionData = this.findByKey(value);
+      returnValue = optionData ? this.getOptionText(optionData) : value;
+    }
+    // Получен объект
+    else if (value && typeof value === "object" && this.optionData.some(option => option.key === value.key)) {
+      optionData = value;
+      returnValue = optionData ? this.getOptionText(optionData) : "";
+    }
+    // Ничего не получено
+    else {
+      optionData = null;
+      returnValue = typeof value === "string" ? value : "";
+    }
+    // Установить значение
+    if (optionData) {
+      this.setValue(optionData);
+    }
+    // Вернуть само значение
+    return returnValue;
+  }
+
+  // Текстовое представление
+  getOptionText(optionData: OptionData | null): string {
+    return !!optionData ?
+      optionData.title + (optionData.subTitle?.length ? this.textDelimiter + optionData.subTitle : "") :
+      "";
+  }
+
 
 
 
@@ -112,12 +147,13 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
     // Поиск значения через Enter
     if (this.optionDataFiltered.length > 0 && (event.key === "Enter" || event.key === "NumpadEnter")) {
-      if (this.optionDataFiltered.filter(option => this.getOptionText(option).toLowerCase().includes(value))) {
-        const optionData: OptionData = this.optionDataFiltered.find(option => this.getOptionText(option).toLowerCase().includes(value)) as OptionData;
-        // Закончить поиск
-        this.setValue(optionData.key);
-        this.autoComplete.closePanel();
-      }
+      const optionDataFiltered: OptionData[] = this.optionDataFiltered.filter(o => this.getOptionText(o).toLowerCase().includes(value));
+      // Установить значение
+      optionDataFiltered.length > 0 ?
+        this.setValue(optionDataFiltered[0].key, false, true) :
+        this.setValue(null, false, true);
+      // Закрыть панель
+      this.autoComplete.closePanel();
     }
     // Выбор при нажатии стрелок
     else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
@@ -128,20 +164,18 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         this.setValue(optionData.key);
       }
     }
-    // Установить значение при полном совпадении текста
-    else if (this.optionDataFiltered.some(option => this.getOptionText(option).toLowerCase() === value)) {
-      const optionData: OptionData = this.optionDataFiltered.find(option => this.getOptionText(option).toLowerCase() === value) as OptionData;
-      this.setValue(optionData.key);
-    }
     // Фильтрация массива значений
     else {
       this.optionDataFiltered = this.optionData.filter(option => this.getOptionText(option).toLowerCase().includes(value));
-      this.setValue(null, false);
+      // Установить значение
+      this.optionDataFiltered.length === 1 ?
+        this.setValue(this.optionDataFiltered[0].key) :
+        this.setValue(null, false);
     }
   }
 
   // Поле в фокусе
-  onFocus(event: FocusEvent): void {
+  onFocus(): void {
     this.focusTempValue = this.inputElement.nativeElement.value;
     // Очистить для автокомплита
     if (this.type === "autocomplete") {
@@ -152,7 +186,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Поле теряет фокус
-  onBlur(event: FocusEvent): void {
+  onBlur(): void {
     // Если временное значение не пусто
     if (this.focusTempValue.length) {
       this.inputElement.nativeElement.value = this.focusTempValue;
@@ -231,47 +265,6 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
     // Оновить
     this.changeDetectorRef.detectChanges();
-  }
-
-  // Отображение в текстовом поле
-  displayWith(value: OptionData | string | null): string {
-    let optionData: OptionData | null = null;
-    let returnValue: string = "";
-    // Получена строка
-    if (value && typeof value === "string") {
-      // Найти по ключу
-      optionData = this.findByKey(value);
-      returnValue = optionData ? this.getOptionText(optionData) : value;
-    }
-    // Получен объект
-    else if (value && typeof value === "object" && this.optionData.some(option => option.key === value.key)) {
-      optionData = value;
-      returnValue = optionData ? this.getOptionText(optionData) : "";
-    }
-    // Ничего не получено
-    else {
-      optionData = null;
-      returnValue = typeof value === "string" ? value : "";
-    }
-    // Установить значение
-    if (optionData) {
-      this.setValue(optionData);
-    }
-    // Вернуть само значение
-    return returnValue;
-  }
-
-
-
-
-
-  // Текстовое представление
-  getOptionText(optionData: OptionData | null): string {
-    if (optionData) {
-      return optionData.title + (optionData.subTitle?.length ? this.textDelimiter + optionData.subTitle : "");
-    }
-    // Ошибка
-    return "";
   }
 
   // Найти по ключу
