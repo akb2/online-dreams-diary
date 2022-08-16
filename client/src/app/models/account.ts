@@ -15,7 +15,7 @@ export interface User {
   patronymic: string;
   birthDate: Date;
   registerDate: Date;
-  sex: number;
+  sex: UserSex;
   email: string;
   roles: UserRoles[];
   avatars: UserAvatars;
@@ -41,11 +41,6 @@ interface UserAvatars {
   small: string;
 }
 
-// Интерфейс прав доступа
-export enum UserRoles {
-  admin = "admin"
-}
-
 // Интерфейс массива аватарок
 interface UserAvatarCropData {
   crop: UserAvatarCropDataElement;
@@ -59,9 +54,6 @@ export interface UserAvatarCropDataElement {
   startY: number;
   height: number;
 }
-
-// Типы аватарок для обрезки
-export type UserAvatarCropDataKeys = "crop" | "middle";
 
 // Интерфейс данных для регистрации
 export interface UserRegister {
@@ -84,3 +76,25 @@ export interface UserSave {
   sex: number;
   email: string;
 }
+
+
+
+
+
+// Перечисление прав доступа
+export enum UserRoles {
+  admin = "admin"
+}
+
+
+
+
+
+// Типы аватарок для обрезки
+export type UserAvatarCropDataKeys = "crop" | "middle";
+
+// Типы пола пользователей
+export enum UserSex {
+  Male,
+  Female
+};
