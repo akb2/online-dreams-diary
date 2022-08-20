@@ -63,9 +63,9 @@
 
     $__elms: app-text-input app-autocomplete-input app-toggle-input app-chips-input;
     @each $__elm in $__elms {
-      #{$__elm} + :host > &,
-      #{$__elm} + :host > .layout > &,
-      #{$__elm} + :host > .layout > & + .image {
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > &:not(.no-margin),
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > &:not(.no-margin),
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > &:not(.no-margin) + .image:not(.no-margin) {
         margin-top: 15px;
       }
     }
