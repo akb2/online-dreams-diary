@@ -124,8 +124,12 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
     );
   }
 
+
+
+
+
   // Удалить токен
-  deleteToken(tokenId: number): void {
+  onDeleteToken(tokenId: number): void {
     const tokenInfo: LoadingTokenInfo = this.tokensInfo.find(t => t.id === tokenId)
     // Найден объект
     if (tokenInfo) {
@@ -165,7 +169,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   }
 
   // Удалить все токены
-  deleteTokens(): void {
+  onDeleteTokens(): void {
     this.loadingTokensInfo = true;
     // Запрос
     this.tokenService.deleteTokensByUser(true)
@@ -198,6 +202,10 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
         },
         () => this.loadingTokensInfo = false
       );
+  }
+
+  // Сменить пароль
+  onChangePassword(): void {
   }
 }
 
