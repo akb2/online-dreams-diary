@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { AppComponent } from "@app/app.component";
+import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
 import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
+import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
 import { SnackbarService } from "@_services/snackbar.service";
@@ -29,10 +32,21 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   browserNames: SimpleObject = BrowserNames;
   navMenuType: NavMenuType = NavMenuType.collapse;
 
+  formData: FormDataType = FormData;
+  passForm: FormGroup;
+  passErrors: ErrorMessagesType = AccountErrorMessages;
+
   loadingTokenInfo: boolean = true;
   loadingTokensInfo: boolean = true;
+  loadingChangePassword: boolean = true;
 
   oldUser: User;
+
+
+
+
+
+  // Сведения о текущем пользователе
   get user(): User {
     return AppComponent.user;
   };
@@ -44,8 +58,20 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   constructor(
     private tokenService: TokenService,
     private snackbarService: SnackbarService,
+    private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef
-  ) { }
+  ) {
+    this.passForm = this.formBuilder.group({
+      testPasswords: [[]],
+      currentPassword: ["", AccountValidatorData.password],
+      password: ["", AccountValidatorData.password],
+      confirmPassword: ["", AccountValidatorData.password]
+    }, {
+      validators: [
+        CustomValidators.currentPasswordCheck
+      ]
+    });
+  }
 
   ngOnInit() {
     this.getToken();

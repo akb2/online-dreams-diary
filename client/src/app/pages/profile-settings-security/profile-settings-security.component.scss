@@ -99,8 +99,7 @@
     }
 
     // Адаптив
-    @include screens.adaptiveFor($counts, $gaps-x, $image-sizes, $text-spacings, $title-heights)
-      using($count, $gap-x, $image-size, $text-spacing, $title-height) {
+    @include screens.adaptiveFor($counts, $gaps-x, $image-sizes, $text-spacings, $title-heights) using($count, $gap-x, $image-size, $text-spacing, $title-height) {
       grid-template-columns: #{$image-size} 1fr;
       // Один элемент на строке
       @if ($count == auto) {
@@ -432,6 +431,14 @@
       text-align: right;
     }
   }
+}
+
+// Форма смены пароля
+.pass-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  align-items: flex-start;
+  gap: 15px;
 }
 
 // Правила анимации

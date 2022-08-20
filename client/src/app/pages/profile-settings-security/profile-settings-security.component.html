@@ -14,10 +14,60 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
+    <!-- Сменить пароль -->
+    <div class="section white">
+      <div class="container">
+        <app-title [type]="1"
+                   title="Изменение пароля"></app-title>
+        <!-- Форма смены пароля -->
+        <form class="pass-form"
+              [formGroup]="passForm"
+              autocomplete="off">
+          <!-- Хак от ввода логина и пароля -->
+          <input hidden
+                 type="text"
+                 name="login">
+          <input hidden
+                 type="password"
+                 name="password">
+          <!-- Текущий пароль -->
+          <app-text-input required
+                          type="password"
+                          class="no-margin"
+                          autocomplete="off"
+                          label="Текущий пароль"
+                          formControlName="currentPassword"
+                          [errors]="passErrors.currentPassword"
+                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+          <!-- Новый пароль -->
+          <app-text-input required
+                          type="password"
+                          class="no-margin"
+                          autocomplete="off"
+                          label="Новый пароль"
+                          formControlName="password"
+                          [errors]="passErrors.password"
+                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+          <!-- Подтверждение пароля -->
+          <app-text-input required
+                          type="password"
+                          class="no-margin"
+                          autocomplete="off"
+                          label="Подтвердите пароль"
+                          formControlName="confirmPassword"
+                          [errors]="passErrors.confirmPassword"
+                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+          <!-- Кнопка смены пароля -->
+          <a mat-flat-button
+             color="primary">Изменить пароль</a>
+        </form>
+      </div>
+    </div>
+
     <!-- Данные текущей авторизации -->
     <div class="section">
       <div class="container">
-        <app-title [type]="1"
+        <app-title [type]="2"
                    title="Текущая авторизация"></app-title>
         <!-- Сведения о текущем токене -->
         <div class="token"
@@ -87,7 +137,7 @@
       <div class="container">
         <div class="control">
           <!-- Заголовок -->
-          <app-title [type]="2"
+          <app-title [type]="3"
                      title="Вход с других устройств"></app-title>
           <!-- Управление -->
           <div class="control__buttons"
