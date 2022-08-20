@@ -17,6 +17,7 @@ import { filter, map, Subject, takeUntil, tap, timer } from "rxjs";
 export class TextInputComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
 
+  @Input() autocomplete: string = "off";
   @Input() type: TextInputType = "text";
   @Input() maxLength: number = 100;
   @Input() appearance: MatFormFieldAppearance = "fill";

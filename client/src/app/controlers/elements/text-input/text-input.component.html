@@ -7,6 +7,7 @@
            matInput
            [type]="type=='password'?(showPassword?'text':'password'):type"
            [formControl]="control"
+           [autocomplete]="autocomplete"
            [maxlength]="maxLength"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
@@ -15,6 +16,7 @@
     <textarea #input
               matInput
               cdkTextareaAutosize
+              [autocomplete]="autocomplete"
               [cdkAutosizeMinRows]="multiLineMinLines"
               [cdkAutosizeMaxRows]="multiLineMaxLines"
               [formControl]="control"
@@ -35,6 +37,7 @@
            [formControl]="control"
            [min]="minDate"
            [max]="maxDate"
+           [autocomplete]="autocomplete"
            [matDatepicker]="datePicker"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
