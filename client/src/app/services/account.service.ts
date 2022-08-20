@@ -93,9 +93,21 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     Object.entries(data).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader).pipe(switchMap(
-      result => this.apiService.checkResponse(result.result.code, codes)
-    ));
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader).pipe(
+      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+    );
+  }
+
+  // Сменить пароль
+  changePassword(currentPassword: string, newPassword: string, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    // Заполнить данные
+    formData.append("current_password", currentPassword);
+    formData.append("new_password", newPassword);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/change_password", formData, this.httpHeader).pipe(
+      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+    );
   }
 
 

@@ -7,10 +7,11 @@ import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
 import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
+import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
 import { of } from "rxjs";
-import { switchMap } from "rxjs/operators";
+import { switchMap, takeUntil } from "rxjs/operators";
 
 
 
@@ -57,6 +58,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
 
   constructor(
     private tokenService: TokenService,
+    private accountService: AccountService,
     private snackbarService: SnackbarService,
     private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef
@@ -68,7 +70,9 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
       confirmPassword: ["", AccountValidatorData.password]
     }, {
       validators: [
-        CustomValidators.currentPasswordCheck
+        CustomValidators.currentPasswordCheck,
+        CustomValidators.passwordMatchValidator,
+        CustomValidators.newPasswordMatchWithOld
       ]
     });
   }
@@ -206,6 +210,36 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
 
   // Сменить пароль
   onChangePassword(): void {
+    // Если форма валидна
+    if (this.passForm.valid) {
+      const currentPassword: string = this.passForm.get("currentPassword")?.value?.toString() ?? "";
+      const password: string = this.passForm.get("password")?.value?.toString() ?? "";
+      let testPasswords: string[] = this.passForm.get("testPasswords").value ?? [];
+      // Проверка
+      this.accountService.changePassword(currentPassword, password, ["0002"]).subscribe(code => {
+        // Пароль изменен
+        if (code === "0001") {
+          testPasswords = testPasswords.filter(p => p !== password);
+          // Обновить данные формы
+          this.passForm.get("currentPassword").setValue("");
+          this.passForm.get("password").setValue("");
+          this.passForm.get("confirmPassword").setValue("");
+        }
+        // Пароль не изменен
+        else if (code === "0002") {
+          testPasswords.push(currentPassword);
+        }
+        // Обновить форму
+        this.passForm.get("testPasswords").setValue(testPasswords);
+        this.passForm.markAllAsTouched();
+        this.passForm.updateValueAndValidity();
+        this.changeDetectorRef.detectChanges();
+      });
+    }
+    // Есть ошибки
+    else {
+      this.passForm.markAllAsTouched();
+    }
   }
 }
 
