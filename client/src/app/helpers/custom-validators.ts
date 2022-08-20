@@ -8,7 +8,7 @@ export class CustomValidators {
 
   // Проверка совпадения пароля
   // * noPassswordMatch
-  public static passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  static passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password: string = control.get("password").value;
     const confirmPassword: string = control.get("confirmPassword").value;
     let errors: ValidationErrors | null = control.get("confirmPassword").errors ? control.get("confirmPassword").errors : {};
@@ -40,7 +40,7 @@ export class CustomValidators {
 
   // Проверка уникального логина или пароля
   // * noUniqueLogin
-  public static uniqueLoginData(control: AbstractControl): ValidationErrors | null {
+  static uniqueLoginData(control: AbstractControl): ValidationErrors | null {
     const login: string = control.get("login").value || "";
     const testLogin: string[] = control.get("testLogin").value || [];
     let errors: ValidationErrors | null = control.get("login").errors ? control.get("login").errors : {};
@@ -72,7 +72,7 @@ export class CustomValidators {
 
   // Проверка уникального логина или пароля
   // * noUniqueEmail
-  public static uniqueEmailData(control: AbstractControl): ValidationErrors | null {
+  static uniqueEmailData(control: AbstractControl): ValidationErrors | null {
     const email: string = control.get("email").value || "";
     const testEmail: string[] = control.get("testEmail").value || [];
     let errors: ValidationErrors | null = control.get("email").errors ? control.get("email").errors : {};
@@ -98,6 +98,33 @@ export class CustomValidators {
 
     // Установить ошибки
     control.get("email").setErrors(errors);
+    // Вернуть ошибки
+    return errors;
+  }
+
+  // Проверка правильности ввода пароля
+  // * wrongPassword
+  static currentPasswordCheck(control: AbstractControl): ValidationErrors | null {
+    const currentPassword: string = control.get("currentPassword").value || "";
+    const testPasswords: string[] = control.get("testPasswords").value || [];
+    let errors: ValidationErrors | null = control.get("currentPassword").errors ? control.get("currentPassword").errors : {};
+
+    // Найдены похожие адреса почты
+    if (currentPassword && testPasswords.some(value => value === currentPassword)) {
+      errors.wrongPassword = true;
+    }
+    // Совпадений нет
+    else {
+      delete errors.wrongPassword;
+    }
+
+    // Проверка ошибок
+    let i: number = Object.keys(errors).length;
+    // Ошибок нет
+    errors = Object.keys(errors).length > 0 ? errors : null;
+
+    // Установить ошибки
+    control.get("currentPassword").setErrors(errors);
     // Вернуть ошибки
     return errors;
   }
