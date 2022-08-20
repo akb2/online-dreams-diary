@@ -486,7 +486,7 @@ class UserService
     return null;
   }
 
-  // Получить список сновидений
+  // Получить список пользователей
   public function getList(array $search, string $token, string $userId): array
   {
     $count = 0;
