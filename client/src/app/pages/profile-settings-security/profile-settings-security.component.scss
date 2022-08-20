@@ -435,10 +435,35 @@
 
 // Форма смены пароля
 .pass-form {
+  $templates: (
+    xsmall: 1fr,
+    small: 1fr 1fr,
+    default: repeat(3, 1fr) auto,
+  );
+  $actionsAlignX: (
+    xsmall: center,
+    small: flex-end,
+    default: flex-end,
+  );
+  // Свойства
   display: grid;
-  grid-template-columns: repeat(3, 1fr) auto;
-  align-items: flex-start;
+  align-items: center;
   gap: 15px;
+  // Действия
+  &__actions {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    padding-bottom: 1.34375em;
+  }
+  // Адаптив
+  @include screens.adaptiveFor($templates, $actionsAlignX) using($template, $actionAlignX) {
+    grid-template-columns: $template;
+    // Действия
+    &__actions {
+      justify-content: $actionAlignX;
+    }
+  }
 }
 
 // Правила анимации

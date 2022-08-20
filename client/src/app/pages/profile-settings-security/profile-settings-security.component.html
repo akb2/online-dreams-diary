@@ -58,8 +58,11 @@
                           [errors]="passErrors.confirmPassword"
                           [maxLength]="formData.passwordMaxLength"></app-text-input>
           <!-- Кнопка смены пароля -->
-          <a mat-flat-button
-             color="primary">Изменить пароль</a>
+          <div class="pass-form__actions">
+            <a mat-flat-button
+               color="primary"
+               (click)="onChangePassword()">Изменить пароль</a>
+          </div>
         </form>
       </div>
     </div>
@@ -146,7 +149,7 @@
             <a mat-flat-button
                color="warn"
                [disabled]="loadingTokensInfo"
-               (click)="loadingTokensInfo? false: deleteTokens()">Удалить все</a>
+               (click)="loadingTokensInfo? false: onDeleteTokens()">Удалить все</a>
           </div>
         </div>
         <!-- Список авторизаций -->
@@ -249,14 +252,14 @@
         <a mat-icon-button
            color="warn"
            class="desktop"
-           (click)="deleteToken(tokenInfo.id)">
+           (click)="onDeleteToken(tokenInfo.id)">
           <mat-icon>close</mat-icon>
         </a>
         <!-- Удалить -->
         <a mat-stroked-button
            color="warn"
            class="mobile"
-           (click)="deleteToken(tokenInfo.id)">
+           (click)="onDeleteToken(tokenInfo.id)">
           <mat-icon>close</mat-icon>
           Удалить
         </a>
