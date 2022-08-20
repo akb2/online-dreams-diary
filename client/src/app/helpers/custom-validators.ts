@@ -109,7 +109,7 @@ export class CustomValidators {
     const testPasswords: string[] = control.get("testPasswords").value || [];
     let errors: ValidationErrors | null = control.get("currentPassword").errors ? control.get("currentPassword").errors : {};
 
-    // Найдены похожие адреса почты
+    // Найдены похожие пароли
     if (currentPassword && testPasswords.some(value => value === currentPassword)) {
       errors.wrongPassword = true;
     }
@@ -118,13 +118,36 @@ export class CustomValidators {
       delete errors.wrongPassword;
     }
 
-    // Проверка ошибок
-    let i: number = Object.keys(errors).length;
     // Ошибок нет
     errors = Object.keys(errors).length > 0 ? errors : null;
 
     // Установить ошибки
     control.get("currentPassword").setErrors(errors);
+    // Вернуть ошибки
+    return errors;
+  }
+
+  // Проверка нового пароля, чтобы не совпадал с текущим
+  // * newPasswordIsMatchWithOld
+  static newPasswordMatchWithOld(control: AbstractControl): ValidationErrors | null {
+    const currentPassword: string = control.get("currentPassword").value || "";
+    const password: string = control.get("password").value || "";
+    let errors: ValidationErrors | null = control.get("password").errors ? control.get("password").errors : {};
+
+    // Новый пароль повторяет старый
+    if (currentPassword && password && currentPassword === password) {
+      errors.newPasswordIsMatchWithOld = true;
+    }
+    // Совпадений нет
+    else {
+      delete errors.newPasswordIsMatchWithOld;
+    }
+
+    // Ошибок нет
+    errors = Object.keys(errors).length > 0 ? errors : null;
+
+    // Установить ошибки
+    control.get("password").setErrors(errors);
     // Вернуть ошибки
     return errors;
   }
