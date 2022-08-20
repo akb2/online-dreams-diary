@@ -27,6 +27,7 @@ export interface FormErrorsKeys {
   minlength?: string;
   maxlength?: string;
   noPassswordMatch?: string;
+  wrongPassword?: string;
   noUniqueLogin?: string;
   noUniqueEmail?: string;
   agevalidator?: string;
@@ -55,7 +56,7 @@ export const FormData: FormDataType = {
 };
 
 // Тип для валидаторов ошибок
-export type ValidatorDataType = { [key: string]: ValidatorFn | ValidatorFn[] | AbstractControlOptions };
+export type ValidatorDataType = CustomObject<ValidatorFn | ValidatorFn[] | AbstractControlOptions>;
 
 // Тип для текстов ошибок
 export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
@@ -64,7 +65,7 @@ export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
 
 
 
-// Валидаторыдля аккаунтов
+// Валидаторы для аккаунтов
 export const AccountValidatorData: ValidatorDataType = {
   // Логин
   login: [
@@ -135,6 +136,12 @@ export const AccountErrorMessages: ErrorMessagesType = {
   confirmPassword: {
     required: "Подтвердите пароль",
     noPassswordMatch: "Пароли должны совпадать",
+    minlength: `Минимум ${FormData.passwordMinLength} символа`,
+    maxlength: `Максимум ${FormData.passwordMaxLength} символа`
+  },
+  currentPassword: {
+    required: "Введите текущий проль",
+    wrongPassword: "Неверный пароль",
     minlength: `Минимум ${FormData.passwordMinLength} символа`,
     maxlength: `Максимум ${FormData.passwordMaxLength} символа`
   },
