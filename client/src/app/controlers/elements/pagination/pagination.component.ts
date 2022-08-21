@@ -171,10 +171,6 @@ export class PaginationComponent implements OnInit, OnChanges, AfterViewChecked,
     }
   }
 
-
-
-
-
   // Проверить наличие панелей
   private checkPanels(): void {
     this.showActionsPanel = !!this.actionsPanel?.nativeElement?.children?.length;
