@@ -112,9 +112,9 @@ export const MenuItems: MenuItemsListDevices = {
           },
           // Разделитель
           Separator,
-          // Настройки аккаунта
+          // Персональные данные
           {
-            text: "Настройки аккаунта",
+            text: "Мои данные",
             link: "/profile/settings/person",
           },
           // Настройки внешнего вида
@@ -230,10 +230,10 @@ export const MenuItems: MenuItemsListDevices = {
         sort: 500,
         text: "Настройки",
         children: [
-          // Настройки аккаунта
+          // Персональные данные
           {
             icon: "settings",
-            text: "Настройки",
+            text: "Мои данные",
             link: "/profile/settings",
           },
           // Выход
