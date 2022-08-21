@@ -27,6 +27,7 @@ export interface FormErrorsKeys {
   minlength?: string;
   maxlength?: string;
   noPassswordMatch?: string;
+  newPasswordIsMatchWithOld?: string;
   wrongPassword?: string;
   noUniqueLogin?: string;
   noUniqueEmail?: string;
@@ -130,6 +131,7 @@ export const AccountErrorMessages: ErrorMessagesType = {
   },
   password: {
     required: "Введите пароль",
+    newPasswordIsMatchWithOld: "Новый пароль не должен повторять текущий",
     minlength: `Минимум ${FormData.passwordMinLength} символа`,
     maxlength: `Максимум ${FormData.passwordMaxLength} символа`
   },
