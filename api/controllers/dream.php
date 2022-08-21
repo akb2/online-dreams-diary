@@ -81,9 +81,10 @@ class Dream
     $userId = $_GET["user_id"];
     $token = $_GET["token"];
     $search = array(
-      "page" => $_GET["search_page"],
-      "user" => $_GET["search_user"],
-      "status" => $_GET["search_status"]
+      "page" => $data["search_page"],
+      "user" => $data["search_user"],
+      "limit" => $data["search_limit"],
+      "status" => $data["search_status"]
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();

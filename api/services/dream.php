@@ -109,7 +109,7 @@ class DreamService
   {
     $count = 0;
     $result = array();
-    $limit = $this->config["dreams"]["limit"];
+    $limit = $search['limit'] > 0 & $search['limit'] <= 100? $search['limit']: $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     $sql="";
     // Данные для поиска
