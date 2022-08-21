@@ -49,7 +49,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
 
 
   ngOnInit(): void {
-    this.oldValue = this.value.toString() ?? "";
+    this.oldValue = this.value?.toString() ?? "";
     // Таймер проверки активности
     timer(this.activityInterval, this.activityInterval)
       .pipe(
