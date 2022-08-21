@@ -54,6 +54,58 @@ class Account
     return $this->userService->registerUserApi($data);
   }
 
+  // Изменение пароля
+  // * POST
+  public function changePassword($data): array {
+    $code = "0000";
+    $message = "";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверка входящих данных
+    if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
+      // Проверка токена
+      if ($this->tokenService->checkToken($id, $token)) {
+        // Проверка доступа
+        if ($id == $this->tokenService->getUserIdFromToken($token)) {
+          $sqlData = array(
+            'id' => $id,
+            'password' => $data['current_password']
+          );
+          // Проверка совпадения пароля
+          if ($this->userService->checkUserPassword($sqlData)) {
+            $sqlData['password'] = $data['new_password'];
+            // Сохранение пароля
+            return $this->userService->changePasswordApi($sqlData);
+          }
+          // Пароль неверный
+          else {
+            $code = '0002';
+          }
+        }
+        // Ошибка доступа
+        else {
+          $code = "9040";
+        }
+      }
+      // Неверный токен
+      else {
+        $code = "9015";
+      }
+    }
+    // Переданы пустые/неполные данные
+    else {
+      $code = "1000";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array()
+    );
+  }
+
   // Поиск
   // * GET
   public function search($data):array{
