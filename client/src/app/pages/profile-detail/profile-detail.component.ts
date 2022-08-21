@@ -3,11 +3,13 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
-import { RouteData } from '@_models/app';
+import { RouteData, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
+import { Dream, DreamPlural, DreamStatus } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
-import { Observable, of, Subject, takeUntil, tap } from 'rxjs';
+import { DreamService } from '@_services/dream.service';
+import { Observable, of, Subject, switchMap, takeUntil, tap, throwError } from 'rxjs';
 
 
 
@@ -25,7 +27,10 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   pageData: RouteData;
+
+  itsMyPage: boolean = false;
   ready: boolean = false;
+  dreamsLoading: boolean = false;
 
   title: string = "Общий дневник";
   subTitle: string = "Все публичные сновидения";
@@ -40,8 +45,13 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
 
   oldUser: User;
   visitedUser: User;
+  dreams: Dream[];
+
+  dreamsCount: number = 0;
 
   navMenuTypes: typeof NavMenuType = NavMenuType;
+
+  dreamPlural: SimpleObject = DreamPlural;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -64,6 +74,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
     private titleService: Title,
+    private dreamService: DreamService
   ) { }
 
   ngDoCheck() {
@@ -92,6 +103,12 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
   // Ошибка подписки на пользователя
   private onUserFail(): void {
     this.router.navigate(["404"]);
+  }
+
+  // После успешной загрузки сведений о пользователе
+  private onUserLoaded(): void {
+    // Загрузить сновидения
+    this.loadDreams();
   }
 
 
@@ -144,6 +161,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
   private setPageData(): void {
     // Мой профиль
     if (this.pageData.userId > 0 && this.user && this.pageData.userId === this.user.id) {
+      this.visitedUser = this.user;
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = this.user.pageStatus;
       this.pageTitle = AppComponent.createTitle("Моя страница");
@@ -155,6 +173,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
       this.floatButtonLink = "/profile/settings";
       // Готово
       this.ready = true;
+      this.itsMyPage = true;
     }
     // Профиль другого пользователя
     else if (this.pageData.userId > 0 && ((this.user && this.pageData.userId !== this.user.id) || !this.user)) {
@@ -167,11 +186,42 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
       this.menuAvatarIcon = "person";
       // Готово
       this.ready = true;
+      this.itsMyPage = false;
     }
     // Готово к загрузке
     if (this.ready) {
       this.titleService.setTitle(this.pageTitle);
       this.changeDetectorRef.detectChanges();
+      // Прочие действия
+      this.onUserLoaded();
     }
+  }
+
+  // Загрузить список сновидний
+  private loadDreams(): void {
+    const user: number = this.visitedUser.id;
+    const limit: number = 4;
+    // Настройки
+    this.dreamsLoading = true;
+    // Поиск сновидений
+    this.dreamService.search({ user, limit })
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(r => r.count > 0 ? of(r) : throwError("Сновидения не найдены"))
+      )
+      .subscribe(
+        ({ result: dreams, count }) => {
+          this.dreams = dreams;
+          this.dreamsCount = count;
+          this.dreamsLoading = false;
+          this.changeDetectorRef.detectChanges();
+        },
+        () => {
+          this.dreams = [];
+          this.dreamsCount = 0;
+          this.dreamsLoading = false;
+          this.changeDetectorRef.detectChanges();
+        }
+      );
   }
 }

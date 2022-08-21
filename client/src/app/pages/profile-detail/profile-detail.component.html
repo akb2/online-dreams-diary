@@ -17,10 +17,48 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section">
-    <div class="container">
+    <!-- Сновидения -->
+    <div class="section">
+      <div class="container">
+        <!-- Список сновидений -->
+        <ng-container *ngIf="!dreamsLoading">
+          <ng-container *ngIf="!!dreamsCount">
+            <!-- Заголовок -->
+            <app-title [type]="1"
+                       [title]="itsMyPage? 'Мои сновидения': 'Сновидения пользователя'"
+                       [subTitle]="dreamsCount | i18nPlural: dreamPlural">
+              <!-- Все сновидения -->
+              <a mat-stroked-button
+                 color="basic"
+                 routerLink="/diary/{{visitedUser.id}}">Все сны</a>
+              <!-- Новое сновидение -->
+              <a mat-flat-button
+                 color="primary"
+                 routerLink="/diary/editor"
+                 *ngIf="itsMyPage">Новый сон</a>
+            </app-title>
+            <!-- Список сновидений -->
+            <app-dream-list [dreams]="dreams"
+                            sourcePlace="profile"
+                            [oneLine]="true"></app-dream-list>
+          </ng-container>
+          <!-- Нет сновидений -->
+          <app-inform icon="close"
+                      [aboveIcon]="true"
+                      title="Нет сновидений"
+                      [subTitle]="itsMyPage? 'Вы еще не записали ни одного сновидения': 'ПОльзователь еще не записал ни одного сновидения'"
+                      *ngIf="!dreamsCount"></app-inform>
+        </ng-container>
+        <!-- Лоадер сновидений -->
+        <app-inform title="Загрузка сновидений"
+                    subTitle="Пожалуйста подождите"
+                    *ngIf="dreamsLoading"></app-inform>
+      </div>
     </div>
   </div>
 </ng-container>
+
+
 
 <!-- Лоадер страницы -->
 <app-page-loader *ngIf="!ready"></app-page-loader>
