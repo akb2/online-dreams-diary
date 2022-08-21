@@ -130,7 +130,7 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "diary/viewer",
         loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
-        data: { userId: 0, from: "", authRule: 1 },
+        data: { userId: 0, from: "", authRule: 0 },
         canActivate: [AuthGuard]
       },
       // Поиск: пользователи
