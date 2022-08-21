@@ -101,11 +101,14 @@ export class AccountService implements OnDestroy {
   // Сменить пароль
   changePassword(currentPassword: string, newPassword: string, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
-    // Заполнить данные
     formData.append("current_password", currentPassword);
     formData.append("new_password", newPassword);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/change_password", formData, this.httpHeader).pipe(
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/changePassword?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(
       switchMap(r => this.apiService.checkResponse(r.result.code, codes))
     );
   }
