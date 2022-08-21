@@ -27,6 +27,10 @@
     // Элемент
     &__item {
       width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
+      // Скрыть в режиме одной линии
+      .oneLine > &:nth-child(#{$count}) ~ & {
+        display: none;
+      }
     }
   }
 }

@@ -28,6 +28,7 @@ export class DreamListComponent implements DoCheck, OnChanges {
 
   @Input() dreams: Dream[];
   @Input() sourcePlace: string = "";
+  @Input() oneLine: boolean = false;
 
   @Output() dreamDelete: EventEmitter<void> = new EventEmitter<void>();
 
