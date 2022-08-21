@@ -23,40 +23,36 @@
         <form class="pass-form"
               [formGroup]="passForm"
               autocomplete="off">
-          <!-- Хак от ввода логина и пароля -->
-          <input hidden
-                 type="text"
-                 name="login">
-          <input hidden
-                 type="password"
-                 name="password">
           <!-- Текущий пароль -->
           <app-text-input required
                           type="password"
                           class="no-margin"
-                          autocomplete="off"
+                          autocomplete="current-password"
                           label="Текущий пароль"
                           formControlName="currentPassword"
                           [errors]="passErrors.currentPassword"
-                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+                          [maxLength]="formData.passwordMaxLength"
+                          (submit)="onChangePassword()"></app-text-input>
           <!-- Новый пароль -->
           <app-text-input required
                           type="password"
                           class="no-margin"
-                          autocomplete="off"
+                          autocomplete="new-password"
                           label="Новый пароль"
                           formControlName="password"
                           [errors]="passErrors.password"
-                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+                          [maxLength]="formData.passwordMaxLength"
+                          (submit)="onChangePassword()"></app-text-input>
           <!-- Подтверждение пароля -->
           <app-text-input required
                           type="password"
                           class="no-margin"
-                          autocomplete="off"
+                          autocomplete="confirm-password"
                           label="Подтвердите пароль"
                           formControlName="confirmPassword"
                           [errors]="passErrors.confirmPassword"
-                          [maxLength]="formData.passwordMaxLength"></app-text-input>
+                          [maxLength]="formData.passwordMaxLength"
+                          (submit)="onChangePassword()"></app-text-input>
           <!-- Кнопка смены пароля -->
           <div class="pass-form__actions">
             <a mat-flat-button
