@@ -73,6 +73,23 @@
     @content;
   }
 
+  // Поле
+  .mat-input-element {
+    background-image: none !important;
+  }
+
+  // Last Pass icons
+  ::ng-deep *[id*="__lpform"] {
+    display: none !important;
+    position: fixed !important;
+    top: auto !important;
+    left: auto !important;
+    right: -1000px !important;
+    bottom: -1000px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
   // Сообщение об ошибке
   .mat-error {
     font-size: 10px;
