@@ -309,6 +309,7 @@ export class DreamService {
 export interface SearchDream {
   page?: number;
   user?: number;
+  limit?: number;
   status?: DreamStatus;
 }
 
