@@ -52,7 +52,8 @@ class DataBaseService
     if (strlen($sqlText) > 0) {
       $sql = $this->pdo->prepare($sqlText);
       $sql->execute($this->checkInputParams($sqlText, $params));
-      return intval(reset($sql->fetch(PDO::FETCH_NUM)));
+      $count = $sql->fetch(PDO::FETCH_NUM);
+      return intval(reset($count));
     }
     // Запрос неудался
     return 0;
