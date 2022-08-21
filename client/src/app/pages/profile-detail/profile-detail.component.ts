@@ -78,7 +78,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
   ) { }
 
   ngDoCheck() {
-    if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
+    if (this.oldUser?.id !== this.user?.id) {
       this.oldUser = this.user;
       this.defineData();
     }
