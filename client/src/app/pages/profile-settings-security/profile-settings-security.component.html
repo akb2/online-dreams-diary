@@ -18,6 +18,7 @@
     <div class="section white">
       <div class="container">
         <app-title [type]="1"
+                   icon="lock_reset"
                    title="Изменение пароля"></app-title>
         <!-- Форма смены пароля -->
         <form class="pass-form"
@@ -67,6 +68,7 @@
     <div class="section">
       <div class="container">
         <app-title [type]="2"
+                   icon="lock_clock"
                    title="Текущая авторизация"></app-title>
         <!-- Сведения о текущем токене -->
         <div class="token"
@@ -134,20 +136,17 @@
     <!-- Контейнер со списками авторизаций -->
     <div class="section white">
       <div class="container">
-        <div class="control">
-          <!-- Заголовок -->
-          <app-title [type]="3"
-                     title="Вход с других устройств"></app-title>
-          <!-- Управление -->
-          <div class="control__buttons"
-               *ngIf="tokensInfo?.length">
-            <!-- Удалить все токены кроме текущего -->
-            <a mat-flat-button
-               color="warn"
-               [disabled]="loadingTokensInfo"
-               (click)="loadingTokensInfo? false: onDeleteTokens()">Удалить все</a>
-          </div>
-        </div>
+        <!-- Заголовок -->
+        <app-title [type]="3"
+                   icon="devices"
+                   title="Вход с других устройств">
+          <!-- Удалить все токены кроме текущего -->
+          <a mat-flat-button
+             color="warn"
+             [disabled]="loadingTokensInfo"
+             (click)="loadingTokensInfo? false: onDeleteTokens()"
+             *ngIf="tokensInfo?.length">Удалить все</a>
+        </app-title>
         <!-- Список авторизаций -->
         <div class="table"
              *ngIf="!loadingTokensInfo && tokensInfo.length">
