@@ -17,6 +17,8 @@ import { filter, map, Subject, takeUntil, tap, timer } from "rxjs";
 export class TextInputComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
 
+  @Input() id: string;
+  @Input() name: string;
   @Input() autocomplete: string = "off";
   @Input() type: TextInputType = "text";
   @Input() maxLength: number = 100;

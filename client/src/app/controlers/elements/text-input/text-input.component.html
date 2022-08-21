@@ -5,9 +5,11 @@
   <ng-container *ngIf="type == 'text' || type == 'password' || type == 'email'">
     <input #input
            matInput
-           [type]="type=='password'?(showPassword?'text':'password'):type"
+           [type]="type === 'password'? (showPassword? 'text': 'password'): type"
            [formControl]="control"
            [autocomplete]="autocomplete"
+           [name]="name ?? autocomplete"
+           [id]="id ?? name ?? autocomplete"
            [maxlength]="maxLength"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
@@ -17,6 +19,8 @@
               matInput
               cdkTextareaAutosize
               [autocomplete]="autocomplete"
+              [name]="name ?? autocomplete"
+              [id]="id ?? name ?? autocomplete"
               [cdkAutosizeMinRows]="multiLineMinLines"
               [cdkAutosizeMaxRows]="multiLineMaxLines"
               [formControl]="control"
@@ -38,6 +42,8 @@
            [min]="minDate"
            [max]="maxDate"
            [autocomplete]="autocomplete"
+           [name]="name ?? autocomplete"
+           [id]="id ?? name ?? autocomplete"
            [matDatepicker]="datePicker"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
