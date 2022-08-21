@@ -4,7 +4,7 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/containers";
 
-$font-sizes: (
+$fontSizes: (
   default: 32px,
   large: 28px,
   middle: 24px,
@@ -12,16 +12,22 @@ $font-sizes: (
   xsmall: 20px,
 );
 
+$breaksActions: (
+  default: false,
+  small: true,
+  xsmall: true,
+);
+
 $spacings: containers.$paddingsY;
-$image-koof: 1;
-$subtitle-koof: 0.7;
-$line-height: 1.3;
-$gap-koof: 0.3;
+$imageKoof: 1;
+$subtitleKoof: 0.7;
+$lineHeight: 1.3;
+$gapKoof: 0.3;
 
 // Свойства
 @for $i from 1 to 5 {
   h#{$i} {
-    line-height: #{$line-height} !important;
+    line-height: #{$lineHeight} !important;
     display: grid;
     width: 100%;
     grid-template-areas: "title";
@@ -39,7 +45,7 @@ $gap-koof: 0.3;
       &.subtitle {
         grid-template-areas: "title" "subtitle";
       }
-      // Действия
+      // Панель
       &.actions {
         grid-template-areas: "title actions";
       }
@@ -51,13 +57,33 @@ $gap-koof: 0.3;
       &.image.actions {
         grid-template-areas: "image title actions";
       }
-      // Картинка и панель
+      // Подзаголовок и панель
       &.subtitle.actions {
         grid-template-areas: "title actions" "subtitle actions";
       }
       // Картинка, подзаголовок и панель
-      &.subtitle.actions {
+      &.image.subtitle.actions {
         grid-template-areas: "image title actions" "image subtitle actions";
+      }
+
+      // Адаптив
+      @include screens.adaptive(xsmall, small) {
+        // Панель
+        &.actions {
+          grid-template-areas: "title" "actions";
+        }
+        // Картинка и панель
+        &.image.actions {
+          grid-template-areas: "image title" "actions actions";
+        }
+        // Подзаголовок и панель
+        &.subtitle.actions {
+          grid-template-areas: "title" "subtitle" "actions";
+        }
+        // Картинка, подзаголовок и панель
+        &.image.subtitle.actions {
+          grid-template-areas: "image title" "image subtitle" "actions actions";
+        }
       }
     }
 
@@ -72,7 +98,7 @@ $gap-koof: 0.3;
     // Подзаголовок
     > sub {
       display: block;
-      font-size: #{$subtitle-koof}em;
+      font-size: #{$subtitleKoof}em;
       font-weight: 300;
       color: colors.$subtitle;
       grid-area: subtitle;
@@ -95,15 +121,26 @@ $gap-koof: 0.3;
     // Панель действий
     > .actions {
       grid-area: actions;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 5px;
+
+      // Адаптив
+      @include screens.adaptive(xsmall, small) {
+        justify-content: space-between;
+        margin-top: 5px;
+      }
     }
 
     // Адаптив
-    @include screens.adaptiveFor($font-sizes, $spacings) using($font-size, $spacing) {
-      $image-size: $font-size * (1 + $subtitle-koof) * $line-height * $image-koof;
+    @include screens.adaptiveFor($fontSizes, $spacings, $breaksActions) using($fontSize, $spacing, $breakActions) {
+      $image-size: $fontSize * (1 + $subtitleKoof) * $lineHeight * $imageKoof;
       // Свойства
-      font-size: #{$font-size} !important;
+      font-size: #{$fontSize} !important;
       margin-bottom: #{$spacing} !important;
-      gap: 0 #{$gap-koof * $font-size};
+      gap: 0 #{$gapKoof * $fontSize};
       // Варианты
       & {
         // Картинка
@@ -112,17 +149,35 @@ $gap-koof: 0.3;
         &.image.subtitle {
           grid-template-columns: #{$image-size} 1fr;
         }
-        // Действия
-        // Картинка и панель
-        &.actions,
-        &.subtitle.actions {
-          grid-template-columns: 1fr auto;
+        // Перенести панель действий
+        @if ($breakActions == true) {
+          // Панель
+          // Подзаголовок и панель
+          &.actions,
+          &.subtitle.actions {
+            grid-template-columns: 1fr;
+          }
+          // Картинка и панель
+          // Картинка, подзаголовок и панель
+          &.image.actions,
+          &.image.subtitle.actions {
+            grid-template-columns: #{$image-size} 1fr;
+          }
         }
-        // Картинка и панель
-        // Картинка, подзаголовок и панель
-        &.image.actions,
-        &.subtitle.actions {
-          grid-template-columns: #{$image-size} 1fr auto;
+        // Обычное расположение панели действий
+        @else {
+          // Панель
+          // Подзаголовок и панель
+          &.actions,
+          &.subtitle.actions {
+            grid-template-columns: 1fr auto;
+          }
+          // Картинка и панель
+          // Картинка, подзаголовок и панель
+          &.image.actions,
+          &.image.subtitle.actions {
+            grid-template-columns: #{$image-size} 1fr auto;
+          }
         }
       }
       // Картинка
