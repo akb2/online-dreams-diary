@@ -1,25 +1,25 @@
 <h1 *ngIf="type == 1"
-    [ngClass]="class">
+    [ngClass]="getClass">
   <ng-container [ngTemplateOutlet]="content"></ng-container>
 </h1>
 
 <h2 *ngIf="type == 2"
-    [ngClass]="class">
+    [ngClass]="getClass">
   <ng-container [ngTemplateOutlet]="content"></ng-container>
 </h2>
 
 <h3 *ngIf="type == 3"
-    [ngClass]="class">
+    [ngClass]="getClass">
   <ng-container [ngTemplateOutlet]="content"></ng-container>
 </h3>
 
 <h4 *ngIf="type == 4"
-    [ngClass]="class">
+    [ngClass]="getClass">
   <ng-container [ngTemplateOutlet]="content"></ng-container>
 </h4>
 
 <h5 *ngIf="type == 5"
-    [ngClass]="class">
+    [ngClass]="getClass">
   <ng-container [ngTemplateOutlet]="content"></ng-container>
 </h5>
 
@@ -30,4 +30,10 @@
   <mat-icon *ngIf="icon">{{icon}}</mat-icon>
   <sup>{{title}}</sup>
   <sub *ngIf="subTitle">{{subTitle}}</sub>
+  <!-- Контент -->
+  <div #actionsPanel
+       class="actions"
+       [hidden]="!showActionsPanel">
+    <ng-content></ng-content>
+  </div>
 </ng-template>

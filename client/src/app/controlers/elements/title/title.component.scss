@@ -21,12 +21,14 @@ $gap-koof: 0.3;
 // Свойства
 @for $i from 1 to 5 {
   h#{$i} {
-    line-height: $line-height;
+    line-height: #{$line-height} !important;
     display: grid;
     width: 100%;
     grid-template-areas: "title";
+    grid-template-columns: 1fr;
     align-items: center;
     position: relative;
+
     // Варианты
     & {
       // Картинка
@@ -37,60 +39,28 @@ $gap-koof: 0.3;
       &.subtitle {
         grid-template-areas: "title" "subtitle";
       }
+      // Действия
+      &.actions {
+        grid-template-areas: "title actions";
+      }
       // Картинка и подзаголовок
       &.image.subtitle {
         grid-template-areas: "image title" "image subtitle";
       }
-    }
-    // Адаптив
-    @include screens.adaptiveFor($font-sizes, $spacings) using($font-size, $spacing) {
-      $image-size: $font-size * (1 + $subtitle-koof) * $line-height * $image-koof;
-      // Свойства
-      font-size: $font-size;
-      padding-bottom: math.div($spacing, 4);
-      margin-bottom: math.div($spacing, 4) * 3;
-      gap: 0 #{$gap-koof * $font-size};
-      grid-template-columns: 1fr;
-      // Варианты
-      & {
-        // Картинка и подзаголовок
-        &.image,
-        &.image.subtitle {
-          grid-template-columns: #{$image-size} 1fr;
-        }
+      // Картинка и панель
+      &.image.actions {
+        grid-template-areas: "image title actions";
       }
-      // Картинка
-      > .image,
-      mat-icon {
-        width: $image-size;
-        height: $image-size;
+      // Картинка и панель
+      &.subtitle.actions {
+        grid-template-areas: "title actions" "subtitle actions";
       }
-      // Иконка
-      mat-icon {
-        line-height: $image-size;
-        font-size: $image-size;
+      // Картинка, подзаголовок и панель
+      &.subtitle.actions {
+        grid-template-areas: "image title actions" "image subtitle actions";
       }
     }
 
-    // Линия в конце
-    & {
-      $height: 2px;
-      $width: 480px;
-      $color: map.get(colors.$mat-primary, 700);
-      // Общие правила
-      &:after {
-        content: "";
-        display: block;
-        position: absolute;
-        height: $height;
-        border-radius: math.div($height, 2);
-        width: $width;
-        max-width: 100%;
-        bottom: 0;
-        left: 0;
-        background-image: linear-gradient(to right, transparent 0, $color 10px, $color 50%, transparent 100%);
-      }
-    }
     // Заголовок
     > sup {
       display: block;
@@ -121,6 +91,51 @@ $gap-koof: 0.3;
     mat-icon {
       grid-area: image;
       text-align: center;
+    }
+    // Панель действий
+    > .actions {
+      grid-area: actions;
+    }
+
+    // Адаптив
+    @include screens.adaptiveFor($font-sizes, $spacings) using($font-size, $spacing) {
+      $image-size: $font-size * (1 + $subtitle-koof) * $line-height * $image-koof;
+      // Свойства
+      font-size: #{$font-size} !important;
+      margin-bottom: #{$spacing} !important;
+      gap: 0 #{$gap-koof * $font-size};
+      // Варианты
+      & {
+        // Картинка
+        // Картинка и подзаголовок
+        &.image,
+        &.image.subtitle {
+          grid-template-columns: #{$image-size} 1fr;
+        }
+        // Действия
+        // Картинка и панель
+        &.actions,
+        &.subtitle.actions {
+          grid-template-columns: 1fr auto;
+        }
+        // Картинка и панель
+        // Картинка, подзаголовок и панель
+        &.image.actions,
+        &.subtitle.actions {
+          grid-template-columns: #{$image-size} 1fr auto;
+        }
+      }
+      // Картинка
+      > .image,
+      mat-icon {
+        width: $image-size;
+        height: $image-size;
+      }
+      // Иконка
+      mat-icon {
+        line-height: $image-size;
+        font-size: $image-size;
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from "@angular/core";
 import { CustomObject } from "@_models/app";
 
 
@@ -12,19 +12,49 @@ import { CustomObject } from "@_models/app";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class TitleComponent implements OnInit {
+export class TitleComponent implements AfterViewChecked {
   @Input() type: TitleType = 1;
   @Input() icon: string;
   @Input() title: string = "Заголовок";
   @Input() subTitle: string;
 
-  class: CustomObject<boolean>;
+  @ViewChild("actionsPanel") private actionsPanel: ElementRef;
 
-  ngOnInit() {
-    this.class = {
+  showActionsPanel: boolean = false;
+
+
+
+
+
+  // Класс поля
+  get getClass(): CustomObject<boolean> {
+    return {
       image: !!this.icon,
-      subtitle: !!this.subTitle
+      subtitle: !!this.subTitle,
+      actions: this.showActionsPanel
     };
+  }
+
+
+
+
+
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef
+  ) { }
+
+  ngAfterViewChecked(): void {
+    this.checkPanels();
+  }
+
+
+
+
+
+  // Проверить наличие панелей
+  private checkPanels(): void {
+    this.showActionsPanel = !!this.actionsPanel?.nativeElement?.children?.length;
+    this.changeDetectorRef.detectChanges();
   }
 }
 
