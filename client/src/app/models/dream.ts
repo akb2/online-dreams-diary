@@ -1,5 +1,6 @@
 import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
 import { User } from "@_models/account";
+import { SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { DreamMap } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
@@ -146,3 +147,11 @@ export const DreamStatuses: OptionData[] = [{
   iconColor: "primary",
   iconBackground: "fill"
 }];
+
+// Склонение количества сновидений
+export const DreamPlural: SimpleObject = {
+  "=0": "",
+  "=1": "# сновидение",
+  "few": "# сновидения",
+  "other": "# сновидений"
+};

@@ -8,7 +8,7 @@ import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.com
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
-import { Dream } from "@_models/dream";
+import { Dream, DreamPlural } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
@@ -60,12 +60,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
 
-  dreamPlural: SimpleObject = {
-    "=0": "",
-    "=1": "# сновидение",
-    "few": "# сновидения",
-    "other": "# сновидений"
-  };
+  dreamPlural: SimpleObject = DreamPlural;
 
   private destroy$: Subject<void> = new Subject<void>();
 
