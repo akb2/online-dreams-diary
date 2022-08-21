@@ -139,7 +139,7 @@ class Dream
     $testDream = $this->dreamService->getById($data["id"]);
     $dream = array();
     // Проверка токена
-    if ($this->tokenService->checkToken($userId, $token)) {
+    if (($this->tokenService->checkToken($userId, $token) && !!$userId && !!$token) || !$userId || !$token) {
       // Сновидение найдено
       if (isset($testDream["id"]) && $testDream["id"] > 0) {
         // Доступность для просмотра или редактирования
