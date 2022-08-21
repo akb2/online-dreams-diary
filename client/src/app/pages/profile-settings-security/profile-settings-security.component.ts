@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { AppComponent } from "@app/app.component";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
@@ -220,18 +220,30 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
         // Пароль изменен
         if (code === "0001") {
           testPasswords = testPasswords.filter(p => p !== password);
+          const fields: FormControl[] = [
+            this.passForm.get("currentPassword") as FormControl,
+            this.passForm.get("password") as FormControl,
+            this.passForm.get("confirmPassword") as FormControl
+          ];
           // Обновить данные формы
-          this.passForm.get("currentPassword").setValue("");
-          this.passForm.get("password").setValue("");
-          this.passForm.get("confirmPassword").setValue("");
+          fields.forEach(f => {
+            f.reset();
+            f.markAsPristine();
+            f.markAsUntouched();
+          });
+          // Уведомление
+          this.snackbarService.open({
+            mode: "success",
+            message: "Ваш пароль был успешно изменен"
+          });
         }
         // Пароль не изменен
         else if (code === "0002") {
           testPasswords.push(currentPassword);
+          this.passForm.markAllAsTouched();
         }
         // Обновить форму
         this.passForm.get("testPasswords").setValue(testPasswords);
-        this.passForm.markAllAsTouched();
         this.passForm.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
       });
