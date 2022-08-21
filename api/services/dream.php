@@ -73,12 +73,15 @@ class DreamService
         // Доступно владельцу
         $dream["user_id"] == $userId ||
         // Прочие пользователи
-        (!$edit && $dream["user_id"] != $userId && (
+        (!$edit && $dream["user_id"] != $userId && $userId > 0 && (
           // ? public(5)
           $dream["status"] == 5 ||
           // ? users(4)
-          ($userId > 0 && ($dream["status"] == 4))
-        ))
+          $dream["status"] == 4
+        )) ||
+        // Без авторизации
+        // ? public(5)
+        (!$edit && $userId <= 0 && $dream["status"] == 5)
       ) {
         return true;
       }
