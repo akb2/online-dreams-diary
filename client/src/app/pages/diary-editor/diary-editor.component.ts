@@ -90,6 +90,10 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
     else if (from === "diary-viewer") {
       return "/diary/viewer/" + this.dream.id;
     }
+    // Из профиля
+    else if (from === "profile") {
+      return "/profile/" + this.dream.user.id;
+    }
     // Мой дневник
     return "/diary/" + this.dream.user.id;
   }
