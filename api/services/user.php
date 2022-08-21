@@ -88,7 +88,7 @@ class UserService
       // Данные
       $sqlData = array(
         $data['login'],
-        hash('sha512', $this->config['hashSecret'] . $data['password'])
+        $this->hashPassword($data['password'])
       );
       // Запрос авторизации
       $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
@@ -135,7 +135,7 @@ class UserService
       // Данные
       $sqlData = array(
         $data['login'],
-        hash('sha512', $this->config['hashSecret'] . $data['password']),
+        $this->hashPassword($data['password']),
         $data['name'],
         $data['lastName'],
         date('Y-m-d', strtotime($data['birthDate'])),
@@ -196,6 +196,31 @@ class UserService
         'result' => $code == '0001'
       )
     );
+  }
+
+  // Проверка пароля
+  public function checkUserPassword(array $data): bool
+  {
+    // Если получены данные
+    if (strlen($data['id']) > 0 & strlen($data['password']) > 0) {
+      // Данные
+      $sqlData = array(
+        'id' => $data['id'],
+        'password' => $this->hashPassword($data['password'])
+      );
+      // Проверить авторизацию
+      if ($this->dataBaseService->getCountFromFile('account/checkPassword.sql', $sqlData) > 0) {
+        return true;
+      }
+    }
+
+    // Не удалось проверить или пароль неверный
+    return false;
+  }
+
+  // Преобразовать пароль
+  private function hashPassword(string $password): string {
+    return hash('sha512', $this->config['hashSecret'] . $password);
   }
 
 
@@ -468,6 +493,36 @@ class UserService
     );
   }
 
+  // Изменить пароль
+  public function changePasswordApi(array $data): array
+  {
+    $code = '0000';
+
+    // Проверка ID
+    if (strlen($data['id']) > 0 & strlen($data['password']) > 0) {
+      $data['password'] = $this->hashPassword($data['password']);
+      // Сохранение данных
+      if ($this->dataBaseService->executeFromFile('account/changePassword.sql', $data)) {
+        $code = '0001';
+      }
+      // Пароль не обновился
+      else {
+        $code = '9021';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => '',
+      'data' => array()
+    );
+  }
+
 
 
   // Данные о пользователе
@@ -493,7 +548,7 @@ class UserService
     $result = array();
     $limit = $this->config['user']['limit'];
     $checkToken = $this->tokenService->checkToken($userId, $token);
-    $sql='';
+    $sql = '';
     // Отфильтровать поиск по ФИО
     if(strlen($search['q']) > 0){
       $q = array();
