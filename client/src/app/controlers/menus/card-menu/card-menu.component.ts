@@ -18,6 +18,15 @@ export class CardMenuComponent {
   @Input() menuItems: CardMenuItem[];
 
 
+
+
+
+  // Убрать лишнее из пунктов
+  get getMenuItems(): CardMenuItem[] {
+    return this.menuItems.filter(item => !!item);
+  }
+
+
 }
 
 

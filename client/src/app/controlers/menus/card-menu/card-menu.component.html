@@ -12,7 +12,7 @@
   <mat-menu #menuPanel
             xPosition="before">
     <!-- Цикл по элементам -->
-    <ng-container *ngFor="let item of menuItems">
+    <ng-container *ngFor="let item of getMenuItems">
       <!-- Пункт меню -->
       <ng-container *ngIf="!item?.delimeter">
         <!-- Ссылка -->
