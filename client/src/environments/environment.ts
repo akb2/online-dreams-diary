@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  baseUrl: "http://api.dreams-diary.ru/",
+  baseUrl: "https://api.dreams-diary.ru/",
   httpHeader: {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
