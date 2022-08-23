@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
-import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { User } from "@_models/account";
@@ -13,8 +12,8 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
-import { Observable, of, Subject, timer } from "rxjs";
-import { skipWhile, takeUntil, takeWhile, tap } from "rxjs/operators";
+import { of, Subject, throwError } from "rxjs";
+import { filter, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
 
 
@@ -27,7 +26,7 @@ import { skipWhile, takeUntil, takeWhile, tap } from "rxjs/operators";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
+export class DiaryComponent implements OnInit, OnDestroy {
 
 
   @ViewChild("searchPanel") private searchPanel!: SearchPanelComponent;
@@ -47,7 +46,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
   floatButtonLink: string;
   backButtonLink: string;
 
-  oldUser: User;
+  user: User;
   visitedUser: User;
   dreams: Dream[];
   dreamsCount: number = 0;
@@ -67,11 +66,6 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
 
 
 
-
-  // Текущий пользователь
-  get user(): User {
-    return AppComponent.user;
-  };
 
   // Плавающая кнопка
   get floatButtonData(): SimpleObject {
@@ -103,33 +97,31 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     private screenService: ScreenService
   ) { }
 
-  ngDoCheck() {
-    if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
-      this.oldUser = this.user;
-    }
-  }
-
   ngOnInit() {
+    this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
+    // Текущий пользователь и параметры URL
+    this.defineData();
+    /*
     this.activatedRoute.queryParams.subscribe(params => {
       this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
       this.queryParams = params as SimpleObject;
       this.pageCurrent = parseInt(params.p) || 1;
-      // Функция обработчик
-      timer(0, 500)
-        .pipe(
-          takeUntil(this.destroy$),
-          takeWhile(() => !!this.user?.id && !this.user, true),
-          skipWhile(() => !!this.user?.id && !this.user)
-        )
-        .subscribe(() => this.defineData());
+      // Текущий пользователь
+      this.accountService.user$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(user => {
+          this.user = user;
+          this.defineData();
+        });
+      // Подписка на тип устройства
+      this.screenService.isMobile$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(isMobile => {
+          this.isMobile = isMobile;
+          this.changeDetectorRef.detectChanges();
+        });
     });
-    // Подписка на тип устройства
-    this.screenService.isMobile$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isMobile => {
-        this.isMobile = isMobile;
-        this.changeDetectorRef.detectChanges();
-      });
+    */
   }
 
   ngOnDestroy() {
@@ -179,58 +171,42 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
 
 
 
-  // Подписка на пользователя
-  private subscribeUser(userId: number = this.user.id): Observable<User> {
-    const observable: Observable<User> = !!userId ? this.accountService.getUser(userId) : of(null);
-    // Подписка
-    return observable.pipe(
-      takeUntil(this.destroy$),
-      tap(user => {
-        if (userId > 0) {
-          this.visitedUser = user;
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        }
-      })
-    );
-  }
-
   // Определить данные
   private defineData(): void {
-    // Мой дневник
-    if (this.pageData.userId === -1 || (!!this.user && this.pageData.userId === this.user.id)) {
-      if (this.pageData.userId === -1) {
-        this.router.navigate(["diary", this.user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
-      }
-    }
-    // Дневник другого пользователя
-    else if (this.pageData.userId === -2 || (!!this.user && this.pageData.userId > 0 && this.pageData.userId !== this.user.id)) {
-      this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-        this.pageData.userId = parseInt(params["user_id"]);
-        // Подписка
-        if (!this.user || (!!this.user && this.pageData.userId !== this.user.id)) {
-          this.subscribeUser(this.pageData.userId).subscribe(
-            () => this.setPageData(),
-            () => this.onUserFail()
-          );
-        }
-        // Текущий пользователь
-        else {
+    this.accountService.user$.pipe(
+      takeUntil(this.destroy$),
+      switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
+      mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
+      filter(({ params }) => !!params),
+      switchMap(r => (parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id)) || this.pageData.userId === 0 ?
+        of(r) :
+        throwError(r)
+      ),
+      mergeMap(({ params, user }) =>
+        (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
+          this.pageData.userId === 0 ?
+            of(null) :
+            this.accountService.getUser(parseInt(params.user_id)) :
+          of(user),
+        (o, visitedUser) => ({ ...o, visitedUser })
+      )
+    )
+      .subscribe(
+        ({ user, visitedUser }) => {
+          this.user = user;
+          this.visitedUser = visitedUser;
           this.setPageData();
-        }
-      });
-    }
-    // Общий дневник
-    else {
-      this.pageData.userId = 0;
-      this.setPageData();
-    }
+        },
+        ({ user }) => !!user && this.pageData.userId === -1 ?
+          this.router.navigate(["profile", user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true }) :
+          this.onUserFail()
+      );
   }
 
   // Установить параметры страницы
   private setPageData(): void {
     // Мой дневник
-    if (this.pageData.userId > 0 && !!this.user && this.pageData.userId === this.user.id) {
+    if (!!this.user && !!this.visitedUser && this.user.id === this.visitedUser.id) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = "Мой дневник сновидений";
       this.pageTitle = AppComponent.createTitle(this.subTitle);
@@ -245,7 +221,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       this.ready = true;
     }
     // Дневник другого пользователя
-    else if (this.pageData.userId > 0 && ((!!this.user && this.pageData.userId !== this.user.id) || !this.user)) {
+    else if (!!this.visitedUser && this.user?.id !== this.visitedUser.id) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.subTitle = "Дневник сновидений";
       this.pageTitle = AppComponent.createTitle([this.subTitle, this.title]);
@@ -274,10 +250,8 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
       this.ready = true;
     }
     // Готово к загрузке
-    if (this.ready) {
-      this.changeDetectorRef.detectChanges();
-      this.search();
-    }
+    this.changeDetectorRef.detectChanges();
+    this.search();
   }
 
   // Загрузка списка сновидений
@@ -288,7 +262,7 @@ export class DiaryComponent implements OnInit, DoCheck, OnDestroy {
     // Поиск по сновидениям
     const search: SearchDream = {
       page: this.pageCurrent > 0 ? this.pageCurrent : 1,
-      user: this.pageData.userId || 0,
+      user: this.visitedUser?.id ?? 0,
       status: -1
     };
     // Загрузка списка

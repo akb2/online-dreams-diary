@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, DoCheck } from '@angular/core';
-import { AppComponent } from '@app/app.component';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@_models/account';
 import { MenuItem } from '@_models/menu';
 import { NavMenuType } from '@_models/nav-menu';
+import { AccountService } from '@_services/account.service';
+import { Subject, takeUntil } from 'rxjs';
 
 
 
@@ -14,49 +15,67 @@ import { NavMenuType } from '@_models/nav-menu';
   styleUrls: ['./profile-settings.component.scss']
 })
 
-export class ProfileSettingsComponent implements DoCheck {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
-  menuItems: MenuItem[];
+  menuItems: MenuItem[] = MenuItems;
   navMenuType: NavMenuType = NavMenuType.short;
 
-  oldUser: User;
-  get user(): User {
-    return AppComponent.user;
-  };
+  user: User;
+
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
 
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
-    // Настройки пунктов меню
-    this.menuItems = [{
-      icon: "assignment_ind",
-      text: "Персональные данные",
-      desc: "Настройки всех личных персональных данных вашего аккаунта",
-      link: "person"
-    }, {
-      icon: "color_lens",
-      text: "Персонализация",
-      desc: "Настройка внешнего вида приложения",
-      link: "appearance"
-    }, {
-      icon: "security",
-      text: "Безопасность аккаунта",
-      desc: "Просмотр всех активных сессий, изменение пароля",
-      link: "security"
-    }];
+    private changeDetectorRef: ChangeDetectorRef,
+    private accountService: AccountService
+  ) { }
+
+  ngOnInit(): void {
+    this.accountService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
-  ngDoCheck() {
-    if (this.oldUser != this.user) {
-      this.oldUser = this.user;
-      this.changeDetectorRef.detectChanges();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
+
+
+
+
+
+// Пункты меню
+const MenuItems: MenuItem[] = [
+  // Персональные данные
+  {
+    icon: "assignment_ind",
+    text: "Персональные данные",
+    desc: "Настройки всех личных персональных данных вашего аккаунта",
+    link: "person"
+  },
+  // Персонализация
+  {
+    icon: "color_lens",
+    text: "Персонализация",
+    desc: "Настройка внешнего вида приложения",
+    link: "appearance"
+  },
+  //Безопасность аккаунта
+  {
+    icon: "security",
+    text: "Безопасность аккаунта",
+    desc: "Просмотр всех активных сессий, изменение пароля",
+    link: "security"
+  }
+]

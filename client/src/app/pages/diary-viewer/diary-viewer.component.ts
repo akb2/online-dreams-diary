@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppComponent } from "@app/app.component";
@@ -7,8 +7,9 @@ import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
+import { AccountService } from "@_services/account.service";
 import { DreamService, DreamTitle } from "@_services/dream.service";
-import { Subject } from "rxjs";
+import { mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -21,7 +22,7 @@ import { Subject } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
+export class DiaryViewerComponent implements OnInit, OnDestroy {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -37,18 +38,13 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
   private fromMark: string;
   dream: Dream;
 
-  oldUser: User;
+  user: User;
 
   private destroy$: Subject<void> = new Subject<void>();
 
 
 
 
-
-  // Текущий пользователя
-  get user(): User {
-    return AppComponent.user;
-  };
 
   // Кнопка назад
   get backLink(): string {
@@ -107,6 +103,7 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private router: Router,
@@ -116,21 +113,8 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
   }
 
-  ngDoCheck() {
-    if (this.oldUser != this.user) {
-      this.oldUser = this.user;
-      // Обновить
-      this.changeDetectorRef.detectChanges();
-    }
-  }
-
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(params => {
-      // Метка источника перехода
-      this.fromMark = params.from?.toString() || "";
-      // Загрузка данных
-      this.defineData();
-    });
+    this.defineData();
   }
 
   ngOnDestroy() {
@@ -144,27 +128,40 @@ export class DiaryViewerComponent implements OnInit, DoCheck, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    // Редактирование сновидения
-    if (this.dreamId > 0) {
-      this.dreamService.getById(this.dreamId, false).subscribe(
-        dream => {
+    this.accountService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        mergeMap(
+          () => this.activatedRoute.queryParams,
+          (user, params) => ({ user, params })
+        ),
+        mergeMap(
+          () => this.dreamId > 0 ? this.dreamService.getById(this.dreamId, false) : throwError(null),
+          (o, dream) => ({ ...o, dream })
+        ),
+        switchMap(r => !!r.dream ? of(r) : throwError(null))
+      )
+      .subscribe(
+        ({ user, params, dream }) => {
+          this.user = user;
+          this.fromMark = params.from?.toString() || "";
           this.dream = dream;
           this.ready = true;
-          this.titleService.setTitle(AppComponent.createTitle([dream.title, this.pageTitle]));
+          // Заголовок
+          this.setTitle();
           // Обновить
           this.changeDetectorRef.detectChanges();
         },
         () => this.router.navigate(["404"])
       );
-    }
-    // Новое сновидение
-    else {
-      this.dream = this.dreamService.newDream;
-      // Отметить готовность
-      this.ready = true;
-      // Обновить
-      this.changeDetectorRef.detectChanges();
-    }
+  }
+
+  // Установить название страницы
+  private setTitle(): void {
+    this.titleService.setTitle(AppComponent.createTitle([
+      this.dream.title,
+      this.pageTitle
+    ]));
   }
 }
 

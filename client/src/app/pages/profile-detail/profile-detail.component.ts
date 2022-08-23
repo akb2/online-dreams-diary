@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppComponent } from '@app/app.component';
 import { User } from '@_models/account';
 import { RouteData, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
-import { Dream, DreamPlural, DreamStatus } from '@_models/dream';
+import { Dream, DreamPlural } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
-import { Observable, of, Subject, switchMap, takeUntil, tap, throwError } from 'rxjs';
+import { filter, mergeMap, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
 
 
 
@@ -22,7 +22,7 @@ import { Observable, of, Subject, switchMap, takeUntil, tap, throwError } from '
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileDetailComponent implements DoCheck, OnInit {
+export class ProfileDetailComponent implements OnInit, OnDestroy {
 
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -43,7 +43,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
   floatButtonLink: string;
   backButtonLink: string;
 
-  oldUser: User;
+  user: User;
   visitedUser: User;
   dreams: Dream[];
 
@@ -59,15 +59,6 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
 
 
 
-  // Текущий пользователь
-  get user(): User {
-    return AppComponent.user;
-  };
-
-
-
-
-
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private router: Router,
@@ -77,23 +68,15 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
     private dreamService: DreamService
   ) { }
 
-  ngDoCheck() {
-    if (this.oldUser?.id !== this.user?.id) {
-      this.oldUser = this.user;
-      this.defineData();
-    }
-    // Проверить заголовок
-    if (this.titleService.getTitle() !== this.pageTitle) {
-      this.titleService.setTitle(this.pageTitle);
-    }
-  }
-
   ngOnInit() {
     this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
-    // Пользователь не авторизован
-    if (!this.accountService.checkAuth) {
-      this.defineData();
-    }
+    // Текущий пользователь и параметры URL
+    this.defineData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -115,52 +98,36 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
 
 
 
-  // Подписка на пользователя
-  private subscribeUser(userId: number = this.user.id): Observable<User> {
-    const observable: Observable<User> = !!userId ? this.accountService.getUser(userId) : of(null);
-    // Подписка
-    return observable.pipe(
-      takeUntil(this.destroy$),
-      tap(user => userId > 0 ? this.visitedUser = user : null)
-    );
-  }
-
   // Определить данные
   private defineData(): void {
-    // Мой профиль
-    if (this.pageData.userId === -1 || (this.user && this.pageData.userId === this.user.id)) {
-      if (this.pageData.userId === -1) {
-        this.router.navigate(["profile", this.user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
-      }
-    }
-    // Профиль другого пользователя
-    else if (this.pageData.userId === -2 || (this.user && this.pageData.userId > 0 && this.pageData.userId !== this.user.id)) {
-      this.activatedRoute.params.subscribe(params => {
-        this.pageData.userId = parseInt(params["user_id"]);
-        // Подписка
-        if (!this.user || (this.user && this.pageData.userId !== this.user.id)) {
-          this.subscribeUser(this.pageData.userId).subscribe(
-            () => this.setPageData(),
-            () => this.onUserFail()
-          );
-        }
-        // Текущий пользователь
-        else {
+    this.accountService.user$.pipe(
+      takeUntil(this.destroy$),
+      switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
+      mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
+      filter(({ params }) => !!params),
+      switchMap(r => parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id) ? of(r) : throwError(r)),
+      mergeMap(({ params, user }) => (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
+        this.accountService.getUser(parseInt(params.user_id)) :
+        of(user),
+        (o, visitedUser) => ({ ...o, visitedUser })
+      )
+    )
+      .subscribe(
+        ({ user, visitedUser }) => {
+          this.user = user;
+          this.visitedUser = visitedUser;
           this.setPageData();
-        }
-      });
-    }
-    // Другое
-    else {
-      this.pageData.userId = 0;
-      this.onUserFail();
-    }
+        },
+        ({ user }) => !!user && this.pageData.userId === -1 ?
+          this.router.navigate(["profile", user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true }) :
+          this.onUserFail()
+      );
   }
 
   // Установить параметры страницы
   private setPageData(): void {
     // Мой профиль
-    if (this.pageData.userId > 0 && this.user && this.pageData.userId === this.user.id) {
+    if (this.user?.id === this.visitedUser.id) {
       this.visitedUser = this.user;
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = this.user.pageStatus;
@@ -176,7 +143,7 @@ export class ProfileDetailComponent implements DoCheck, OnInit {
       this.itsMyPage = true;
     }
     // Профиль другого пользователя
-    else if (this.pageData.userId > 0 && ((this.user && this.pageData.userId !== this.user.id) || !this.user)) {
+    else {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.subTitle = this.visitedUser.pageStatus;
       this.pageTitle = AppComponent.createTitle(this.title);

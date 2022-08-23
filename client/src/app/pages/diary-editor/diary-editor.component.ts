@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DoCheck, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -16,10 +16,11 @@ import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode, DreamModes, DreamStatus, DreamStatuses } from "@_models/dream";
 import { DreamErrorMessages, DreamValidatorData, ErrorMessagesType, FormData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
+import { AccountService } from "@_services/account.service";
 import { DreamService, DreamTitle } from "@_services/dream.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { of, Subject, throwError } from "rxjs";
+import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
 
 
@@ -31,7 +32,7 @@ import { takeUntil } from "rxjs/operators";
   styleUrls: ["./diary-editor.component.scss"]
 })
 
-export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
+export class DiaryEditorComponent implements OnInit, OnDestroy {
 
 
   @ViewChild(NavMenuComponent) mainMenu!: NavMenuComponent;
@@ -56,7 +57,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
   private fromMark: string;
   errors: ErrorMessagesType = DreamErrorMessages;
 
-  oldUser: User;
+  user: User;
 
   titleMinLength: number = FormData.dreamTitleMinLength;
   titleMaxLength: number = FormData.dreamTitleMaxLength;
@@ -72,11 +73,6 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
 
 
-
-  // Текущий пользователя
-  get user(): User {
-    return AppComponent.user;
-  };
 
   // Кнопка назад: URL
   get backLink(): string {
@@ -112,6 +108,7 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private formBuilder: FormBuilder,
@@ -132,29 +129,12 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
       text: [""]
     });
     // Изменения формы
-    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeTitle(value || ""));
-    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeDate(value || new Date()));
-  }
-
-  ngDoCheck() {
-    if (this.oldUser != this.user) {
-      this.oldUser = this.user;
-      // Проверка пользователя
-      if (this.user) {
-        this.dateMin = new Date(this.user.birthDate);
-      }
-      // Обновить
-      this.changeDetectorRef.detectChanges();
-    }
+    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeTitle(value ?? ""));
+    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeDate(value ?? new Date()));
   }
 
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(params => {
-      // Метка источника перехода
-      this.fromMark = params.from?.toString() || "";
-      // Загрузка данных
-      this.defineData();
-    });
+    this.defineData();
   }
 
   ngOnDestroy() {
@@ -240,25 +220,34 @@ export class DiaryEditorComponent implements DoCheck, OnInit, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    // Редактирование сновидения
-    if (this.dreamId > 0) {
-      this.dreamService.getById(this.dreamId, true).subscribe(
-        dream => {
+    this.accountService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(user => !!user ? of(user) : throwError(null)),
+        mergeMap(
+          () => this.activatedRoute.queryParams,
+          (user, params) => ({ user, params })
+        ),
+        mergeMap(
+          () => this.dreamId > 0 ? this.dreamService.getById(this.dreamId, true) : of(this.dreamService.newDream),
+          (o, dream) => ({ ...o, dream })
+        ),
+        switchMap(r => !!r.dream ? of(r) : throwError(null))
+      )
+      .subscribe(
+        ({ user, params, dream }) => {
+          this.user = user;
+          this.dateMin = new Date(this.user.birthDate);
+          this.fromMark = params.from?.toString() || "";
           this.dream = dream;
           // Создать форму
           this.createForm();
           this.setTitle();
+          // Обновить
+          this.changeDetectorRef.detectChanges();
         },
         () => this.router.navigate(["404"])
       );
-    }
-    // Новое сновидение
-    else {
-      this.dream = this.dreamService.newDream;
-      // Создать форму
-      this.createForm();
-      this.setTitle();
-    }
   }
 
   // Года в дату

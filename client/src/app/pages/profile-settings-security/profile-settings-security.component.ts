@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
-import { AppComponent } from "@app/app.component";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
 import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
@@ -10,7 +9,7 @@ import { TokenInfo } from "@_models/token";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
-import { of } from "rxjs";
+import { of, Subject } from "rxjs";
 import { switchMap, takeUntil } from "rxjs/operators";
 
 
@@ -24,7 +23,7 @@ import { switchMap, takeUntil } from "rxjs/operators";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
+export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
 
 
   tokenInfo: TokenInfo;
@@ -41,16 +40,9 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   loadingTokensInfo: boolean = true;
   loadingChangePassword: boolean = true;
 
-  oldUser: User;
+  user: User;
 
-
-
-
-
-  // Сведения о текущем пользователе
-  get user(): User {
-    return AppComponent.user;
-  };
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -78,15 +70,19 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
   }
 
   ngOnInit() {
-    this.getToken();
-    this.getTokens();
+    this.accountService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        // Сведения о токенах
+        this.getToken();
+        this.getTokens();
+      });
   }
 
-  ngDoCheck() {
-    if (this.oldUser != this.user) {
-      this.oldUser = this.user;
-      this.changeDetectorRef.detectChanges();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -104,7 +100,11 @@ export class ProfileSettingsSecurityComponent implements OnInit, DoCheck {
         // Обновить
         this.changeDetectorRef.detectChanges();
       },
-      () => this.loadingTokenInfo = false
+      () => {
+        this.loadingTokenInfo = false;
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      }
     );
   }
 

@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnDestroy } from '@angular/core';
-import { AppComponent } from '@app/app.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { NavMenuSettingData } from '@_controlers/nav-menu-settings/nav-menu-settings.component';
 import { User, UserSettings } from '@_models/account';
 import { BackgroundImageDatas } from '@_models/appearance';
@@ -8,7 +7,7 @@ import { AccountService } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
 import { SnackbarService } from '@_services/snackbar.service';
 import { forkJoin, of, Subject } from 'rxjs';
-import { delay, mergeMap } from 'rxjs/operators';
+import { delay, mergeMap, takeUntil } from 'rxjs/operators';
 
 
 
@@ -21,7 +20,7 @@ import { delay, mergeMap } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
+export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
 
 
   backgroundImageLoader: boolean = false;
@@ -30,12 +29,9 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
-  private destroy$: Subject<void> = new Subject<void>();
+  user: User;
 
-  oldUser: User;
-  public get user(): User {
-    return AppComponent.user;
-  };
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -46,19 +42,20 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
     private snackbarService: SnackbarService
-  ) {
+  ) { }
+
+  ngOnInit(): void {
+    this.accountService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.changeDetectorRef.detectChanges();
+      })
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  ngDoCheck() {
-    if (this.oldUser != this.user) {
-      this.oldUser = this.user;
-      this.changeDetectorRef.detectChanges();
-    }
   }
 
 
@@ -68,7 +65,10 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
   // Изменить настройки
   changeSettings(settings: NavMenuSettingData): void {
     if (!this.backgroundImageLoader) {
-      if (this.user.settings.profileBackground.id !== settings.backgroundId || this.user.settings.profileHeaderType !== settings.navMenuType) {
+      if (
+        this.user.settings.profileBackground.id !== settings.backgroundId ||
+        this.user.settings.profileHeaderType !== settings.navMenuType
+      ) {
         this.saveUserSettings({
           profileBackground: BackgroundImageDatas.find(b => b.id === settings.backgroundId),
           profileHeaderType: settings.navMenuType
@@ -93,7 +93,13 @@ export class ProfileSettingsAppearanceComponent implements OnDestroy, DoCheck {
     this.backgroundImageLoader = true;
     // Запрос
     forkJoin([this.accountService.saveUserSettings(userSettings), of(true).pipe(delay(this.saveSettingDelay))])
-      .pipe(mergeMap(() => this.screenService.loadImage(this.imagePrefix + userSettings.profileBackground.imageName), data => data))
+      .pipe(
+        takeUntil(this.destroy$),
+        mergeMap(
+          () => this.screenService.loadImage(this.imagePrefix + userSettings.profileBackground.imageName),
+          data => data
+        )
+      )
       .subscribe(
         ([code]) => {
           if (code === "0001") {

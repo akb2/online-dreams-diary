@@ -55,6 +55,39 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
 
 
+  // Возраст до даты
+  ageToDate(age: number): Date {
+    return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
+  }
+
+  // Подписка на пользователя
+  private get subscribeUser(): Observable<User> {
+    return this.accountService.user$.pipe(
+      takeUntil(this.destroy$),
+      map(user => {
+        if (user) {
+          this.form.get("name").setValue(user.name);
+          this.form.get("lastName").setValue(user.lastName);
+          this.form.get("patronymic").setValue(user.patronymic);
+          this.form.get("birthDate").setValue(new Date(user.birthDate));
+          this.form.get("sex").setValue(user.sex == 1);
+          this.form.get("email").setValue(user.email);
+          this.avatar.setValue(user.avatars.full);
+        }
+        // Работа с аватаркой
+        if (this.appImageUpload) {
+          this.appImageUpload.clearInput(user.avatars.full);
+        }
+        // Вернуть юзера
+        return user;
+      })
+    );
+  }
+
+
+
+
+
   constructor(
     private accountService: AccountService,
     private formBuilder: FormBuilder,
@@ -81,7 +114,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscribeUser().subscribe(user => {
+    this.subscribeUser.subscribe(user => {
       this.user = user;
       this.userHasAvatar = Object.entries(this.user.avatars).every(([, v]) => !!v);
       this.changeDetectorRef.detectChanges();
@@ -97,6 +130,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
 
 
+  // Сохранение данных
   onSaveData(): void {
     // Форма без ошибок
     if (this.form.valid) {
@@ -124,6 +158,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
           // Ошибка почты
           else if (code == "9012") {
             const testEmail: string[] = this.form.get("testEmail").value;
+            // Добавить в список используемых адресов
             if (testEmail.every(email => email !== userSave.email)) {
               testEmail.push(userSave.email);
             }
@@ -276,38 +311,5 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
         );
       }
     });
-  }
-
-
-
-
-
-  // Возраст до даты
-  ageToDate(age: number): Date {
-    return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
-  }
-
-  // Подписка на пользователя
-  private subscribeUser(): Observable<User> {
-    return this.accountService.user$.pipe(
-      takeUntil(this.destroy$),
-      map(user => {
-        if (user) {
-          this.form.get("name").setValue(user.name);
-          this.form.get("lastName").setValue(user.lastName);
-          this.form.get("patronymic").setValue(user.patronymic);
-          this.form.get("birthDate").setValue(new Date(user.birthDate));
-          this.form.get("sex").setValue(user.sex == 1);
-          this.form.get("email").setValue(user.email);
-          this.avatar.setValue(user.avatars.full);
-        }
-        // Работа с аватаркой
-        if (this.appImageUpload) {
-          this.appImageUpload.clearInput(user.avatars.full);
-        }
-        // Вернуть юзера
-        return user;
-      })
-    );
   }
 }
