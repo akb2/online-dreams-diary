@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { AppComponent } from "@app/app.component";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { User } from "@_models/account";
@@ -10,7 +9,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamDescription, DreamService, DreamTitle } from "@_services/dream.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { filter } from "rxjs";
+import { filter, Subject, takeUntil } from "rxjs";
 
 
 
@@ -23,12 +22,13 @@ import { filter } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DreamListComponent implements DoCheck, OnChanges {
+export class DreamListComponent implements OnInit, OnChanges {
 
 
   @Input() dreams: Dream[];
   @Input() sourcePlace: string = "";
   @Input() oneLine: boolean = false;
+  @Input() showProfile: boolean = true;
 
   @Output() dreamDelete: EventEmitter<void> = new EventEmitter<void>();
 
@@ -37,17 +37,14 @@ export class DreamListComponent implements DoCheck, OnChanges {
   today: Date = new Date();
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
-  oldUser: User;
+  user: User;
   dreamsMenuItems: CustomObjectKey<number, CardMenuItem[]> = {};
 
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
 
-  // Текущий пользователь
-  get user(): User {
-    return AppComponent.user;
-  };
 
   // Есть обложка
   isHasImage(dream: Dream): boolean {
@@ -77,11 +74,14 @@ export class DreamListComponent implements DoCheck, OnChanges {
     private matDialog: MatDialog
   ) { }
 
-  ngDoCheck() {
-    if (this.accountService.checkAuth && this.oldUser?.id !== this.user?.id) {
-      this.oldUser = this.user;
-      this.changeDetectorRef.detectChanges();
-    }
+  ngOnInit(): void {
+    // Текущий пользователь
+    this.accountService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.createMenu();
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -121,27 +121,26 @@ export class DreamListComponent implements DoCheck, OnChanges {
     this.dreamsMenuItems = {};
     // Заполнить список меню
     this.dreams.forEach(dream => {
-      const menuItem: CardMenuItem[] = [];
+      const menuItemMain: CardMenuItem[] = [];
+      const menuItemAdvance: CardMenuItem[] = [];
       const divider: CardMenuItem = { delimeter: true };
       // Просмотр сновидения
-      menuItem.push({
+      menuItemMain.push({
         icon: "visibility",
         title: "Просмотр",
         routerLink: "/diary/viewer/" + dream.id
       });
-      // Разделитель
-      menuItem.push(divider);
       // Для собственных сновидений
       if (dream.user.id === this.user?.id) {
         // Редактирование
-        menuItem.push({
+        menuItemAdvance.push({
           icon: "edit",
           title: "Редактировать",
           routerLink: "/diary/editor/" + dream.id,
           queryParams: this.viewerQueryParams(dream)
         });
         // Удаление
-        menuItem.push({
+        menuItemAdvance.push({
           icon: "delete",
           title: "Удалить",
           callback: this.onDreamDelete.bind(this, dream)
@@ -150,15 +149,24 @@ export class DreamListComponent implements DoCheck, OnChanges {
       // Для сновидений других пользователей
       else {
         // Профиль
-        menuItem.push({
-          icon: "account_circle",
-          title: "Профиль автора",
-          subTitle: dream.user.name + " " + dream.user.lastName,
-          routerLink: "/profile/" + dream.user.id
-        });
+        if (this.showProfile) {
+          menuItemAdvance.push({
+            icon: "account_circle",
+            title: "Профиль автора",
+            subTitle: dream.user.name + " " + dream.user.lastName,
+            routerLink: "/profile/" + dream.user.id
+          });
+        }
       }
+      // Объединить список пунктов
+      const menuItem: CardMenuItem[] = [
+        ...menuItemMain,
+        ...(!!menuItemMain?.length && !!menuItemAdvance?.length ? [divider] : []),
+        ...menuItemAdvance
+      ];
       // Вернуть список пунктов
-      this.dreamsMenuItems[dream.id] = menuItem;
+      this.dreamsMenuItems[dream.id] = menuItem?.length > 1 ? menuItem : [];
+      this.changeDetectorRef.detectChanges();
     });
   }
 }
