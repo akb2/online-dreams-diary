@@ -162,7 +162,6 @@ export class TokenService {
       }
     )).subscribe(code => {
       this.token = "";
-      AppComponent.user = null;
       this.configLocalStorage();
       this.localStorageService.deleteCookie("token");
       this.localStorageService.deleteCookie("current_user");
