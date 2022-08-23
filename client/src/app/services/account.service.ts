@@ -10,8 +10,8 @@ import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { BehaviorSubject, Observable, of } from "rxjs";
-import { map, mergeMap, switchMap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of, Subject } from "rxjs";
+import { filter, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
 
 
@@ -31,7 +31,8 @@ export class AccountService implements OnDestroy {
   private cookieLifeTime: number = 604800;
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
-  readonly user$: Observable<User> = this.user.asObservable();
+  readonly user$: Observable<User>;
+  readonly destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -60,10 +61,17 @@ export class AccountService implements OnDestroy {
     private tokenService: TokenService
   ) {
     this.configLocalStorage();
+    // Подписка на текущего пользователя, изменения только когда значение соответсвует текущей авторизации
+    this.user$ = this.user.asObservable().pipe(
+      takeUntil(this.destroy$),
+      filter(user => (!this.checkAuth && !user) || (this.checkAuth && !!user))
+    );
   }
 
   ngOnDestroy(): void {
     this.user.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -98,19 +106,11 @@ export class AccountService implements OnDestroy {
     );
   }
 
-  // Сменить пароль
-  changePassword(currentPassword: string, newPassword: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("current_password", currentPassword);
-    formData.append("new_password", newPassword);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/changePassword?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
-      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
-    );
+  // Выйти из аккаунта
+  quit(): void {
+    this.user.next(null);
+    this.saveCurrentUser(null);
+    this.tokenService.deleteAuth();
   }
 
 
@@ -149,6 +149,40 @@ export class AccountService implements OnDestroy {
     );
   }
 
+  // Получить возраст пользователя
+  getAge(mixedDate: Date | string): number {
+    const today: Date = new Date();
+    const date: Date = mixedDate ? typeof mixedDate === "string" ? new Date(mixedDate) : mixedDate : new Date();
+    let age: number = today.getFullYear() - date.getFullYear();
+    const m: number = today.getMonth() - date.getMonth();
+    // Вычисление ДР
+    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    // Вернуть возраст
+    return age;
+  }
+
+
+
+
+
+  // Сменить пароль
+  changePassword(currentPassword: string, newPassword: string, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("current_password", currentPassword);
+    formData.append("new_password", newPassword);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/changePassword?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), r => r),
+      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+    );
+  }
+
   // Сохранить данные аккаунта
   saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
@@ -159,7 +193,7 @@ export class AccountService implements OnDestroy {
       formData,
       this.httpHeader
     ).pipe(
-      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -182,20 +216,6 @@ export class AccountService implements OnDestroy {
       mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
-  }
-
-  // Получить возраст пользователя
-  getAge(mixedDate: Date | string): number {
-    const today: Date = new Date();
-    const date: Date = mixedDate ? typeof mixedDate === "string" ? new Date(mixedDate) : mixedDate : new Date();
-    let age: number = today.getFullYear() - date.getFullYear();
-    const m: number = today.getMonth() - date.getMonth();
-    // Вычисление ДР
-    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
-      age--;
-    }
-    // Вернуть возраст
-    return age;
   }
 
 
@@ -267,10 +287,8 @@ export class AccountService implements OnDestroy {
 
   // Сведения о текущем пользователе
   private saveCurrentUser(user: User): void {
-    if (this.checkAuth) {
-      this.configLocalStorage();
-      this.localStorageService.setCookie("current_user", JSON.stringify(user));
-    }
+    this.configLocalStorage();
+    this.localStorageService.setCookie("current_user", !!user ? JSON.stringify(user) : "");
   }
 
   // Преобразовать данные с сервера
