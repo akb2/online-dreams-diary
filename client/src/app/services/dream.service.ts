@@ -29,8 +29,7 @@ export class DreamService {
 
   private baseUrl: string = environment.baseUrl;
 
-  private currentUser: User;
-  private tempUsers: User[] = [];
+  private user: User;
 
 
 
@@ -40,7 +39,7 @@ export class DreamService {
   get newDream(): Dream {
     return {
       id: 0,
-      user: this.currentUser,
+      user: this.user,
       createDate: null,
       date: new Date(),
       title: "",
@@ -67,9 +66,9 @@ export class DreamService {
     private apiService: ApiService,
     private tokenService: TokenService
   ) {
-    this.currentUser = this.accountService.getCurrentUser();
+    this.user = this.accountService.getCurrentUser();
     // Подписка на актуальные сведения о пользователе
-    this.accountService.user$.subscribe(user => user ? this.currentUser = user : null);
+    this.accountService.user$.subscribe(user => this.user = user);
   }
 
 
@@ -91,7 +90,22 @@ export class DreamService {
         count = r.count ?? 0;
         limit = r.limit ?? 0;
       }),
-      mergeMap(r => r.dreams?.length > 0 ? forkJoin([...r.dreams.map(d => this.dreamConverter(d as DreamDto))]) : of([])),
+      mergeMap(
+        ({ dreams }: any) => {
+          if (dreams?.length > 0) {
+            const users: number[] = Array.from(new Set(dreams.map((dream: DreamDto) => dream.userId)));
+            // Найдены уникальные ID пользователей
+            return forkJoin(users.map(u => !!this.user && u === this.user.id ? of(this.user) : this.accountService.getUser(u)));
+          }
+          // Не искать пользователей
+          return of([]);
+        },
+        ({ dreams }: any, users: User[]) => ({ dreams: dreams as DreamDto[], users })
+      ),
+      map(({ dreams, users }) => dreams?.length > 0 ? dreams.map(d => ({
+        ...this.dreamConverter(d as DreamDto),
+        user: users.find(u => u.id === d.userId)!
+      })) : []),
       mergeMap((result: Dream[]) => of({ count, result, limit }))
     );
   }
@@ -110,7 +124,11 @@ export class DreamService {
           of(result.result.data) :
           this.apiService.checkResponse(result.result.code, codes)
       ),
-      mergeMap(dreamDto => this.dreamConverter(dreamDto))
+      mergeMap(
+        (d: DreamDto) => !!this.user && d.userId === this.user.id ? of(this.user) : this.accountService.getUser(d.userId),
+        (dreamDto, user) => ({ dreamDto, user })
+      ),
+      map(({ dreamDto, user }) => ({ ...this.dreamConverter(dreamDto), user }))
     );
   }
 
@@ -148,7 +166,7 @@ export class DreamService {
 
 
   // Конвертер сновидений
-  private dreamConverter(dreamDto: DreamDto): Observable<Dream> {
+  private dreamConverter(dreamDto: DreamDto): Dream {
     let dreamMap: DreamMapDto;
     // Обработка параметров
     dreamDto.headerBackgroundId = BackgroundImageDatas.some(b => b.id === dreamDto.headerBackgroundId) ? dreamDto.headerBackgroundId : 11;
@@ -169,7 +187,7 @@ export class DreamService {
       description: dreamDto.description,
       mode: dreamDto.mode as DreamMode,
       status: dreamDto.status as DreamStatus,
-      keywords: dreamDto.keywords?.length > 0 ? dreamDto.keywords.split(",") : [],
+      keywords: dreamDto.keywords?.length > 0 ? dreamDto.keywords.split(",").filter(k => !!k.trim()) : [],
       places: null,
       members: null,
       text: dreamDto.text,
@@ -178,26 +196,7 @@ export class DreamService {
       headerBackground: BackgroundImageDatas.find(b => b.id === dreamDto.headerBackgroundId)
     };
     // Текущий пользователь
-    if (dreamDto.userId === this.currentUser?.id) {
-      return of({
-        ...dream,
-        user: this.currentUser
-      });
-    }
-    // Пользователь есть во временном массиве
-    else if (this.tempUsers.some(u => u.id === dreamDto.userId)) {
-      return of({
-        ...dream,
-        user: this.tempUsers.find(u => u.id === dreamDto.userId)
-      });
-    }
-    // Загрузка данных с сервера
-    else {
-      return this.accountService.getUser(dreamDto.userId).pipe(map(user => ({
-        ...dream,
-        user
-      })));
-    }
+    return dream;
   }
 
   // Конвертер сновидений для сервера
