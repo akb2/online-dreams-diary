@@ -48,7 +48,7 @@ export class MenuService implements OnDestroy {
 
   // Выход из системы
   private onLogOut(): void {
-    this.tokenService.deleteAuth();
+    this.accountService.quit();
   }
 
 
