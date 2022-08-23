@@ -7,7 +7,7 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
-import { Observable, of, Subject, timer } from "rxjs";
+import { of, Subject, timer } from "rxjs";
 import { delay, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 
 
@@ -23,7 +23,7 @@ import { delay, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 export class AppComponent implements OnInit, OnDestroy {
 
 
-  static user: User;
+  private user: User;
 
   private static mainTitle: string = "Online Dreams Diary";
   private static titleSeparator: string = "|";
@@ -66,15 +66,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscribeUser().subscribe(
-      user => AppComponent.user = user,
-      () => AppComponent.user = null
-    );
-    // Подписка на пользователя
-    this.accountService.user$.subscribe(
-      user => AppComponent.user = user,
-      () => AppComponent.user = null
-    );
     // События старта и окочания лоадера
     this.router.events
       .pipe(takeUntil(this.destroy$))
@@ -103,7 +94,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // Действия перед загрузкой страницы
   private beforeLoadPage(): void {
     const { checkToken, showPreLoader }: ExtraDatas = this.getExtraDatas;
-    // ПРоверить токен
+    // Проверить токен
     if (this.accountService.checkAuth && checkToken) {
       this.tokenService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
         // Если токен валидный
@@ -116,7 +107,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // Токен не валидный
         else {
           this.router.navigate([""]);
-          this.tokenService.deleteAuth();
+          this.accountService.quit();
           // Сообщение с ошибкой
           this.snackBar.open({
             "mode": "error",
@@ -157,11 +148,6 @@ export class AppComponent implements OnInit, OnDestroy {
         document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
       }
     });
-  }
-
-  // Подписка на пользователя
-  private subscribeUser(): Observable<User> {
-    return this.accountService.user$.pipe(takeUntil(this.destroy$));
   }
 
 
