@@ -21,7 +21,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   imagePrefix: string = "../../../../assets/images/backgrounds/";
 
   menuItems: MenuItem[] = MenuItems;
-  navMenuType: NavMenuType = NavMenuType.short;
+  navMenuType: NavMenuType = NavMenuType.collapse;
 
   user: User;
 
@@ -63,6 +63,13 @@ const MenuItems: MenuItem[] = [
     text: "Персональные данные",
     desc: "Настройки всех личных персональных данных вашего аккаунта",
     link: "person"
+  },
+  // Приватность
+  {
+    icon: "vpn_lock",
+    text: "Приватность",
+    desc: "Настройка безопасности ваших персональных данных",
+    link: "private"
   },
   // Персонализация
   {
