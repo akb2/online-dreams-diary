@@ -15,6 +15,7 @@ CREATE TABLE `users`
     `roles` JSON NOT NULL,
     `avatar_crop_data` JSON NOT NULL,
     `settings` JSON NOT NULL,
+    `private` JSON NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE `login` (`login`),
     UNIQUE `email` (`email`),

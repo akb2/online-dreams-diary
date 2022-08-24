@@ -633,6 +633,11 @@ class UserService
       $settings['profileBackground'] = isset($settings['profileBackground']) ? $settings['profileBackground'] : 0;
     }
 
+    // Натсройки приватности
+    $private = array();
+    if ($private = @json_decode($user['private'], true)) {
+    }
+
     // Вернуть данные
     return array(
       'id' => $user['id'],
@@ -646,6 +651,7 @@ class UserService
       'email' => $user['email'],
       'roles' => json_decode($user['roles']),
       'avatarCropData' => $avatarCropData,
+      'private' => $private,
       'settings' => $settings,
       'avatars' => $avatars
     );

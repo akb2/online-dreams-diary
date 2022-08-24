@@ -2,6 +2,7 @@ SELECT
   `id`,
   `page_status`,
   `settings`,
+  `private`,
   `status`,
   `login`,
   `name`,
