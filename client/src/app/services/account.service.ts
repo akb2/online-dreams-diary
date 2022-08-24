@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
-import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
+import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
@@ -47,6 +47,17 @@ export class AccountService implements OnDestroy {
   private configLocalStorage(): void {
     this.localStorageService.cookieKey = this.cookieKey;
     this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+  }
+
+  // Настройки приватности по умолчанию
+  private get getDefaultUserPrivate(): UserPrivate {
+    return {
+      myPage: {
+        type: PrivateType.public,
+        blackList: [],
+        whiteList: []
+      }
+    };
   }
 
 
@@ -302,7 +313,8 @@ export class AccountService implements OnDestroy {
       settings: {
         profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
         profileHeaderType: headerType ? headerType : NavMenuType.short
-      }
+      },
+      private: data.private ?? this.getDefaultUserPrivate
     } as User;
     // Вернуть данные
     return user;

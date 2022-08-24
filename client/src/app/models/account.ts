@@ -1,3 +1,4 @@
+import { CustomObjectKey } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
@@ -10,6 +11,7 @@ export interface User {
   id: number;
   pageStatus: string;
   settings: UserSettings;
+  private: UserPrivate;
   name: string;
   lastName: string;
   patronymic: string;
@@ -28,9 +30,22 @@ export interface UserSettings {
   profileHeaderType: NavMenuType;
 }
 
+// Интерфейс настроек пользователя для API
 export interface UserSettingsDto {
   profileBackground: number;
   profileHeaderType: string;
+}
+
+// Интерфейс настроек приватности
+export interface UserPrivate {
+  myPage: UserPrivateItem;
+}
+
+// Интерфейс элемента настроек приватности
+export interface UserPrivateItem {
+  type: PrivateType;
+  blackList: number[];
+  whiteList: number[];
 }
 
 // Интерфейс массива аватарок
@@ -86,6 +101,14 @@ export enum UserRoles {
   admin = "admin"
 }
 
+// Перечисление типа приватности
+export enum PrivateType {
+  private,
+  friends,
+  users,
+  public,
+}
+
 
 
 
@@ -97,4 +120,16 @@ export type UserAvatarCropDataKeys = "crop" | "middle";
 export enum UserSex {
   Male,
   Female
+};
+
+
+
+
+
+// Массив названий настроек приватности
+export const UserPrivateNames: CustomObjectKey<keyof UserPrivate, { name: string, desc: string }> = {
+  myPage: {
+    name: "Моя страница",
+    desc: "Кто может видеть информацию на вашей странице"
+  }
 };
