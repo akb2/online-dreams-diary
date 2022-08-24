@@ -54,6 +54,13 @@ import { AuthGuard } from "@_helpers/auth-guard";
         data: { authRule: 1 },
         canActivate: [AuthGuard]
       },
+      // Настройки: Приватность
+      {
+        path: "profile/settings/private",
+        loadChildren: () => import("@_pages/profile-settings-private/profile-settings-private.module").then(m => m.ProfileSettingsPrivateModule),
+        data: { authRule: 1 },
+        canActivate: [AuthGuard]
+      },
       // Настройки: Персонализация
       {
         path: "profile/settings/appearance",
