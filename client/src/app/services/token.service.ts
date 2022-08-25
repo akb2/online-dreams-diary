@@ -55,7 +55,9 @@ export class TokenService {
       ...this.httpHeader,
       params: new HttpParams({
         fromObject: {
-          ...(!!params ? Object.entries(params).reduce((o, [k, v]) => ({ ...o, [paramsPreffix + k]: v }), {}) : {}),
+          ...(!!params ? Object.entries(params)
+            .map(([k, v]) => ([k, Array.isArray(v) ? v.join(",") : v]))
+            .reduce((o, [k, v]) => ({ ...o, [paramsPreffix + k]: v }), {}) : {}),
           user_id: this.id,
           token: this.token
         }
