@@ -1,3 +1,4 @@
+import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
 import { CustomObjectKey } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
@@ -46,6 +47,14 @@ export interface UserPrivateItem {
   type: PrivateType;
   blackList: number[];
   whiteList: number[];
+}
+
+// Интерфейс описание настройки приватности
+export interface UserPrivateNameItem {
+  rule: keyof UserPrivate;
+  icon: string;
+  name: string;
+  desc: string;
 }
 
 // Интерфейс массива аватарок
@@ -116,7 +125,7 @@ export enum PrivateType {
 // Типы аватарок для обрезки
 export type UserAvatarCropDataKeys = "crop" | "middle";
 
-// Типы пола пользователей
+// Перечисления пола пользователей
 export enum UserSex {
   Male,
   Female
@@ -127,9 +136,44 @@ export enum UserSex {
 
 
 // Массив названий настроек приватности
-export const UserPrivateNames: CustomObjectKey<keyof UserPrivate, { name: string, desc: string }> = {
-  myPage: {
+export const UserPrivateNames: UserPrivateNameItem[] = [
+  // Моя страница
+  {
+    rule: "myPage",
+    icon: "contacts",
     name: "Моя страница",
     desc: "Кто может видеть информацию на вашей странице"
   }
-};
+];
+
+// Названия состояния права доступа
+export const PrivateTypes: OptionData[] = [
+  // Только я
+  {
+    key: PrivateType.private.toString(),
+    title: "Только я",
+    icon: "person",
+    iconColor: "warn"
+  },
+  // Только друзья
+  {
+    key: PrivateType.friends.toString(),
+    title: "Только друзья",
+    icon: "group",
+    iconColor: "accent"
+  },
+  // Только пользователи
+  {
+    key: PrivateType.users.toString(),
+    title: "Только пользователи сайта",
+    icon: "groups",
+    iconColor: "accent"
+  },
+  // Все
+  {
+    key: PrivateType.public.toString(),
+    title: "Весь интернет",
+    icon: "public",
+    iconColor: "primary"
+  }
+];
