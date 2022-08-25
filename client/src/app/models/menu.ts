@@ -117,6 +117,11 @@ export const MenuItems: MenuItemsListDevices = {
             text: "Мои данные",
             link: "/profile/settings/person",
           },
+          // Приватность
+          {
+            text: "Приватность",
+            link: "/profile/settings/private",
+          },
           // Настройки внешнего вида
           {
             text: "Персонализация",
