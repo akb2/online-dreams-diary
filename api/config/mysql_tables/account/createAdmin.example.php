@@ -62,6 +62,7 @@
     // Роль администратора
     'roles' => array('admin'),
     'avatar_crop_data' => array(),
+    'private' => array(),
     'settings' => array(
       "profileBackground" => 3,
       "profileHeaderType" => 'full'
@@ -102,6 +103,7 @@
       'email' => 'akb2-online-' . $k . '@ya.ru',
       'roles' => array(),
       'avatar_crop_data' => array(),
+      'private' => array(),
       'settings' => array(
         "profileBackground" => $profileBackground,
         "profileHeaderType" => $profileHeaderType
