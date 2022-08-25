@@ -113,12 +113,14 @@ class Account
     $userId = $_GET["user_id"];
     $token = $_GET["token"];
     $search = array(
-      "q" => $_GET["search_q"],
-      "page" => $_GET["search_page"],
-      "sex" => $_GET["search_sex"],
-      "birth_year" => $_GET["search_birthYear"],
-      "birth_month" => $_GET["search_birthMonth"],
-      "birth_day" => $_GET["search_birthDay"]
+      "q" => $data["search_q"] ?? null,
+      "sex" => $data["search_sex"] ?? null,
+      "birth_year" => $data["search_birthYear"] ?? null,
+      "birth_month" => $data["search_birthMonth"] ?? null,
+      "birth_day" => $data["search_birthDay"] ?? null,
+      "ids" => strlen($data["search_ids"]) > 0? explode(",", $data["search_ids"]): array(),
+      "page" => $data["search_page"] ?? 1,
+      "limit" => $data["search_limit"] ?? null
     );
     $testUsers = $this->userService->getList($search, $token, $userId);
     $people = array();

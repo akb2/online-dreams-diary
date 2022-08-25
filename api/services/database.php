@@ -53,7 +53,7 @@ class DataBaseService
       $sql = $this->pdo->prepare($sqlText);
       $sql->execute($this->checkInputParams($sqlText, $params));
       $count = $sql->fetch(PDO::FETCH_NUM);
-      return intval(reset($count));
+      return intval(!!$count? reset($count): 0);
     }
     // Запрос неудался
     return 0;

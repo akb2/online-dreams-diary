@@ -546,7 +546,7 @@ class UserService
   {
     $count = 0;
     $result = array();
-    $limit = $this->config['user']['limit'];
+    $limit = $search['limit'] > 0 & $search['limit'] <= 500? $search['limit']: $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     $sql = '';
     // Отфильтровать поиск по ФИО
@@ -564,6 +564,7 @@ class UserService
     // Данные для поиска
     $sqlData = array(
       'q' => $search['q'],
+      'ids' => $search['ids'],
       'sex' => $search['sex'],
       'birth_year' => $search['birth_year'],
       'birth_month' => $search['birth_month'],

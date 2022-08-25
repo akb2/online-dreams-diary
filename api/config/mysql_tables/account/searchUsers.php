@@ -23,6 +23,18 @@ FROM `users`
 WHERE
   `id` > 0
 
+  <?/* Поиск по списку IDs */?>
+  <? if(count($input["ids"]) > 0): ?>
+    <? $i = 0; ?>
+    AND (
+      <? foreach($input["ids"] as $id): ?>
+        <? if($i > 0): ?> OR <? endif; ?>
+          `id` = "<?=intval($id); ?>"
+        <? $i += 1; ?>
+      <? endforeach; ?>
+    )
+  <? endif; ?>
+
   <?/* Поиск по поисковому запросу */?>
   <? if(strlen($input["q"]) > 0): ?>
     AND MATCH (`name`, `last_name`, `patronymic`) AGAINST (:q IN BOOLEAN MODE)
