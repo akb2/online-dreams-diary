@@ -10,8 +10,8 @@ import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
 import { FormData } from '@_models/form';
 import { NavMenuType } from '@_models/nav-menu';
+import { AccountService, SearchUser } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
-import { SearchUser, UserService } from '@_services/user.service';
 import { merge, Subject, takeUntil } from 'rxjs';
 
 
@@ -142,7 +142,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private changeDetectorRef: ChangeDetectorRef,
-    private userService: UserService,
+    private accountService: AccountService,
     private screenService: ScreenService,
     private formBuilder: FormBuilder
   ) {
@@ -290,7 +290,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Загрузка списка
-    this.userService.search(this.getSearch, ["0002"]).subscribe(
+    this.accountService.search(this.getSearch, ["0002"]).subscribe(
       ({ count, result: people, limit }) => {
         // Найдены сновидения
         if (count > 0) {
@@ -321,7 +321,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
     const queryParams: CustomObject<string | number | null> = Object.entries({ ...this.queryParams, ...datas })
       .map(([k, v]) => ([k, !!v ? v : null]))
-      .reduce((o, [k, v]) => ({ ...o, [k]: v }), {});
+      .reduce((o, [k, v]) => ({ ...o, [k as string]: v }), {});
     // Перейти к новой странице
     this.router.navigate(path, {
       queryParams,
