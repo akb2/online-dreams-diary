@@ -2,8 +2,8 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
-import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
-import { ApiResponse } from "@_models/api";
+import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserPrivateNames, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
+import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
@@ -11,7 +11,7 @@ import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { filter, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
+import { filter, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -52,11 +52,16 @@ export class AccountService implements OnDestroy {
   // Настройки приватности по умолчанию
   private get getDefaultUserPrivate(): UserPrivate {
     return {
-      myPage: {
-        type: PrivateType.public,
-        blackList: [],
-        whiteList: []
-      }
+      myPage: this.getDefaultUserPrivateItem
+    };
+  }
+
+  // Настройки правила приватности по умолчанию
+  get getDefaultUserPrivateItem(): UserPrivateItem {
+    return {
+      type: PrivateType.public,
+      blackList: [],
+      whiteList: []
     };
   }
 
@@ -157,6 +162,27 @@ export class AccountService implements OnDestroy {
         }
       ),
       map(user => this.userConverter(user))
+    );
+  }
+
+  // Поиск пользоватлей
+  search(search: SearchUser, codes: string[] = []): Observable<Search<User>> {
+    const url: string = this.baseUrl + "account/search";
+    let count: number = 0;
+    let limit: number = 0;
+    // Вернуть подписку
+    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(search, "search_")).pipe(
+      switchMap(
+        result => result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
+          of(result.result.data) :
+          this.apiService.checkResponse(result.result.code, codes)
+      ),
+      tap(r => {
+        count = r.count ?? 0;
+        limit = r.limit ?? 0;
+      }),
+      mergeMap(r => of(!!r?.people?.length ? r.people.map(u => this.userConverter(u)) : [])),
+      mergeMap((result: User[]) => of({ count, result, limit }))
     );
   }
 
@@ -306,6 +332,8 @@ export class AccountService implements OnDestroy {
   userConverter(data: any): User {
     const background: number = parseInt(data.settings?.profileBackground as unknown as string);
     const headerType: NavMenuType = data.settings.profileHeaderType as NavMenuType;
+    // Права доступа
+    const privateRules: UserPrivate = this.userPrivateConverter(data?.private);
     // Данные пользователя
     const user: User = {
       ...data,
@@ -314,9 +342,35 @@ export class AccountService implements OnDestroy {
         profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
         profileHeaderType: headerType ? headerType : NavMenuType.short
       },
-      private: data.private ?? this.getDefaultUserPrivate
+      private: privateRules
     } as User;
     // Вернуть данные
     return user;
   }
+
+  // Правила приватности пользователя
+  userPrivateConverter(data: any): UserPrivate {
+    data = !!data ? data : this.getDefaultUserPrivate;
+    // Вернуть данные
+    return UserPrivateNames
+      .map(({ rule }) => rule)
+      .map(rule => ({ rule, data: data[rule] ?? this.getDefaultUserPrivateItem }))
+      .reduce((o, { rule: k, data: v }) => ({ ...o, [k as keyof UserPrivate]: v }), {} as UserPrivate);
+  }
+}
+
+
+
+
+
+// Поиск: входящие данные
+export interface SearchUser {
+  q?: string;
+  sex?: string;
+  birthDay?: string;
+  birthMonth?: string;
+  birthYear?: string;
+  page?: number;
+  limit?: number;
+  ids?: number[];
 }
