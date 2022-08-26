@@ -36,12 +36,16 @@ $colors: (
   disabled: colors.$mat-disabled,
 );
 
+// Родительский блок
+:host {
+  display: block;
+}
+
 // Стиль карточки
 #{$base_elm} {
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-between;
-  box-shadow: colors.$shadow;
   background-color: colors.$card;
   border-radius: containers.$cardBorderRadius;
   box-shadow: containers.$cardBoxShadow;
