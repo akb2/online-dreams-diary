@@ -19,10 +19,15 @@
     middle: 1fr 1fr,
     default: 1fr,
   );
+  $containerSpacings: (
+    default: 30px,
+    small: 15px,
+    xsmall: 15px,
+  );
   // Свойства
   display: grid;
   align-items: flex-start;
-  grid-gap: 15px;
+  grid-gap: 30px;
   // Значение правила
   &__type {
     grid-area: type;
@@ -31,11 +36,19 @@
   &__list {
     // Заголовок
     &-title {
-      font-size: 14px;
-      line-height: 20px;
-      font-weight: 400;
-      color: colors.$title;
-      margin-bottom: 10px;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      // Текст
+      &-text {
+        @include mixins.lineClamp(1, 14px, 1.2);
+        // Свойства
+        flex-grow: 1;
+        font-weight: 400;
+        color: colors.$title;
+      }
     }
     // Белый список
     &-white {
@@ -48,9 +61,15 @@
   }
 
   // Адаптив
-  @include screens.adaptiveFor($gridAreas, $gridColumns) using($gridArea, $gridColumn) {
+  @include screens.adaptiveFor($gridAreas, $gridColumns, $containerSpacings) using($gridArea, $gridColumn, $containerSpacing) {
     grid-template-areas: $gridArea;
     grid-template-columns: $gridColumn;
+    // Следующий блок
+    &__container {
+      & + & {
+        margin-top: $containerSpacing;
+      }
+    }
   }
 }
 

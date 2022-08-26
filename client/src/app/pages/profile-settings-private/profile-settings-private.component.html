@@ -22,6 +22,7 @@
                 [avatarIcon]="rule.icon"
                 avatarColor="primary"
                 avatarBackground="fill"
+                class="setting__container"
                 *ngFor="let rule of ruleNames">
         <div content
              class="setting"
@@ -34,10 +35,17 @@
           </div>
           <!-- Белый список -->
           <div class="setting__list setting__list-white">
-            <div class="setting__list-title">Белый список</div>
+            <div class="setting__list-title">
+              <!-- Название -->
+              <div class="setting__list-title-text">Белый список</div>
+              <!-- Добавить пользователя -->
+              <a mat-stroked-button
+                 color="basic"
+                 class="setting__list-title-add">Добавить</a>
+            </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!user.private[rule.rule].whiteList?.length">
+                 *ngIf="!!user.private[rule.rule].whiteList?.length; else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'whiteList' }"
                             *ngFor="let userId of user.private[rule.rule].whiteList"></ng-container>
@@ -45,10 +53,17 @@
           </div>
           <!-- Черный список -->
           <div class="setting__list setting__list-black">
-            <div class="setting__list-title">Черный список</div>
+            <div class="setting__list-title">
+              <!-- Название -->
+              <div class="setting__list-title-text">Черный список</div>
+              <!-- Добавить пользователя -->
+              <a mat-stroked-button
+                 color="basic"
+                 class="setting__list-title-add">Добавить</a>
+            </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!user.private[rule.rule].blackList?.length">
+                 *ngIf="!!user.private[rule.rule].blackList?.length; else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'blackList' }"
                             *ngFor="let userId of user.private[rule.rule].blackList"></ng-container>
@@ -89,6 +104,11 @@
 <!-- Нет аватарки -->
 <ng-template #noUserAvatar>
   <mat-icon>person</mat-icon>
+</ng-template>
+
+<!-- Список пользователей пуст -->
+<ng-template #usersEmpty>
+  <div class="user__empty">Список пуст</div>
 </ng-template>
 
 
