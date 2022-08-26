@@ -1,0 +1,142 @@
+@use "sass:math";
+@use "sass:map";
+@use "../../../assets/styles/screens";
+@use "../../../assets/styles/colors";
+@use "../../../assets/styles/mixins";
+
+// Настройки правила доступа
+.setting {
+  $gridAreas: (
+    default: "type whiteList blackList",
+    large: "type whiteList blackList",
+    middle: "type type" "whiteList blackList",
+    small: "type" "whiteList" "blackList",
+    xsmall: "type" "whiteList" "blackList",
+  );
+  $gridColumns: (
+    xlarge: 1fr 2fr 2fr,
+    large: 1fr 1fr 1fr,
+    middle: 1fr 1fr,
+    default: 1fr,
+  );
+  // Свойства
+  display: grid;
+  align-items: flex-start;
+  grid-gap: 15px;
+  // Значение правила
+  &__type {
+    grid-area: type;
+  }
+  // Списки пользователей
+  &__list {
+    // Заголовок
+    &-title {
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 400;
+      color: colors.$title;
+      margin-bottom: 10px;
+    }
+    // Белый список
+    &-white {
+      grid-area: whiteList;
+    }
+    // Черный список
+    &-black {
+      grid-area: blackList;
+    }
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($gridAreas, $gridColumns) using($gridArea, $gridColumn) {
+    grid-template-areas: $gridArea;
+    grid-template-columns: $gridColumn;
+  }
+}
+
+// Пользователи
+.user {
+  $itemCounts: (
+    xlarge: 3,
+    large: 2,
+    middle: 2,
+    small: 3,
+    xsmall: 2,
+  );
+  $iconSize: 40px;
+  $textSpacing: math.div($iconSize, 8);
+  // Свойства
+  display: grid;
+  overflow: hidden;
+  border-radius: math.div($iconSize, 2);
+  grid-template-columns: #{$iconSize} 1fr 40px;
+  grid-gap: 0 8px;
+  grid-template-areas: "avatar title delete" "avatar subtitle delete";
+  background-color: colors.$background;
+  // Список пользователей
+  &__list {
+    display: grid;
+    align-items: flex-start;
+    grid-gap: 7px;
+  }
+  // Аватарка
+  &__avatar {
+    grid-area: avatar;
+    width: $iconSize;
+    height: $iconSize;
+    border-radius: 50%;
+    overflow: hidden;
+    // Картинка и иконка
+    > img,
+    > mat-icon {
+      display: block;
+      width: inherit;
+      height: inherit;
+    }
+    // Кратинка
+    > img {
+      object-fit: cover;
+    }
+    // Иконка
+    > mat-icon {
+      line-height: $iconSize;
+      text-align: center;
+      font-size: $iconSize * 0.6;
+      background-color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$mat-primary, contrast, 500);
+    }
+  }
+  // Заголовок
+  &__title {
+    @include mixins.lineClamp(1, (math.div($iconSize, 2) - $textSpacing), 13px, math.div($textSpacing, 2));
+    // Свойства
+    grid-area: title;
+    font-weight: 400;
+    color: colors.$title;
+    padding-top: $textSpacing;
+    padding-bottom: 0;
+  }
+  // Подзаголовок
+  &__sub-title {
+    @include mixins.lineClamp(1, (math.div($iconSize, 2) - $textSpacing), 12px, math.div($textSpacing, 2));
+    // Свойства
+    grid-area: subtitle;
+    font-weight: 300;
+    color: colors.$subtitle;
+    padding-top: 0;
+    padding-bottom: $textSpacing;
+  }
+  // Кнопка удаления
+  &__delete {
+    grid-area: delete;
+    box-shadow: none !important;
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($itemCounts) using ($itemCount) {
+    // Список пользователей
+    &__list {
+      grid-template-columns: repeat(#{$itemCount}, 1fr);
+    }
+  }
+}

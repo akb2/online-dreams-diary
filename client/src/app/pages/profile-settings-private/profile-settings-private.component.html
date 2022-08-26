@@ -11,7 +11,87 @@
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
                  backButtonLink="/profile/settings"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <form class="container"
+          [formGroup]="form">
+      <!-- Цикл по правилам приватности -->
+      <app-card [title]="rule.name"
+                [subTitle]="rule.desc"
+                [avatarIcon]="rule.icon"
+                avatarColor="primary"
+                avatarBackground="fill"
+                *ngFor="let rule of ruleNames">
+        <div content
+             class="setting"
+             [formGroupName]="rule.rule">
+          <!-- Выбор типа прав доступа -->
+          <div class="setting__type">
+            <app-autocomplete-input formControlName="type"
+                                    label="Кому доступно"
+                                    [optionData]="privateTypes"></app-autocomplete-input>
+          </div>
+          <!-- Белый список -->
+          <div class="setting__list setting__list-white">
+            <div class="setting__list-title">Белый список</div>
+            <!-- Список пользователей -->
+            <div class="setting__list-items user__list"
+                 *ngIf="!!user.private[rule.rule].whiteList?.length">
+              <ng-container [ngTemplateOutlet]="userBlock"
+                            [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'whiteList' }"
+                            *ngFor="let userId of user.private[rule.rule].whiteList"></ng-container>
+            </div>
+          </div>
+          <!-- Черный список -->
+          <div class="setting__list setting__list-black">
+            <div class="setting__list-title">Черный список</div>
+            <!-- Список пользователей -->
+            <div class="setting__list-items user__list"
+                 *ngIf="!!user.private[rule.rule].blackList?.length">
+              <ng-container [ngTemplateOutlet]="userBlock"
+                            [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'blackList' }"
+                            *ngFor="let userId of user.private[rule.rule].blackList"></ng-container>
+            </div>
+          </div>
+        </div>
+      </app-card>
+    </form>
+  </div>
 </ng-container>
+
+
+
+<!-- Пользователь -->
+<ng-template #userBlock
+             let-listUser="user"
+             let-listType="listType">
+  <div class="user"
+       *ngIf="!!listUser">
+    <!-- Аватарка -->
+    <div class="user__avatar">
+      <img [src]="listUser.avatars.middle"
+           *ngIf="!!listUser.avatars.middle.length; else noUserAvatar" />
+    </div>
+    <!-- Имя -->
+    <div class="user__title">{{listUser.name}}</div>
+    <!-- Фамилия -->
+    <div class="user__sub-title">{{listUser.lastName}}</div>
+    <!-- Удаление -->
+    <a class="user__delete"
+       mat-icon-button
+       color="warn">
+      <mat-icon>close</mat-icon>
+    </a>
+  </div>
+</ng-template>
+
+<!-- Нет аватарки -->
+<ng-template #noUserAvatar>
+  <mat-icon>person</mat-icon>
+</ng-template>
+
+
 
 <!-- Лоадер страницы -->
 <app-page-loader *ngIf="!user"></app-page-loader>
