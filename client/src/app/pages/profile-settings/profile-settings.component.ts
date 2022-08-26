@@ -1,3 +1,4 @@
+import { ChangeDetectionStrategy } from '@angular/compiler';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@_models/account';
 import { MenuItem } from '@_models/menu';
@@ -12,7 +13,8 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-profile-settings',
   templateUrl: './profile-settings.component.html',
-  styleUrls: ['./profile-settings.component.scss']
+  styleUrls: ['./profile-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ProfileSettingsComponent implements OnInit, OnDestroy {
