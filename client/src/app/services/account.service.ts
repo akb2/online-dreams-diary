@@ -52,7 +52,8 @@ export class AccountService implements OnDestroy {
   // Настройки приватности по умолчанию
   private get getDefaultUserPrivate(): UserPrivate {
     return {
-      myPage: this.getDefaultUserPrivateItem
+      myPage: this.getDefaultUserPrivateItem,
+      myDreamList: this.getDefaultUserPrivateItem
     };
   }
 
