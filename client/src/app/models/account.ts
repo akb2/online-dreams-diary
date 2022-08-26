@@ -40,6 +40,7 @@ export interface UserSettingsDto {
 // Интерфейс настроек приватности
 export interface UserPrivate {
   myPage: UserPrivateItem;
+  myDreamList: UserPrivateItem;
 }
 
 // Интерфейс элемента настроек приватности
@@ -143,6 +144,13 @@ export const UserPrivateNames: UserPrivateNameItem[] = [
     icon: "contacts",
     name: "Моя страница",
     desc: "Кто может видеть информацию на вашей странице"
+  },
+  // Страница моих сновидений
+  {
+    rule: "myDreamList",
+    icon: "collections_bookmark",
+    name: "Мои дневник снов",
+    desc: "Кто может просматривать ваш список сновидений (это не влияет на публичные сновидения в общем дневнике)"
   }
 ];
 
