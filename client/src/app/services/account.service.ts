@@ -139,6 +139,12 @@ export class AccountService implements OnDestroy {
     return this.getUser(this.tokenService.id, codes);
   }
 
+  // Обновить анонимного пользователя
+  syncAnonymousUser(): void {
+    this.saveCurrentUser(null);
+    this.user.next(null);
+  }
+
   // Информация о пользователе
   getUser(id: string | number, codes: string[] = []): Observable<User> {
     // Вернуть подписку
@@ -146,7 +152,7 @@ export class AccountService implements OnDestroy {
       switchMap(
         result => {
           // Сохранить данные текущего пользователя
-          if (result.result.code === "0001" && result.result.data?.id === this.tokenService.id) {
+          if (result.result.code === "0001" && result.result.data?.id.toString() === this.tokenService.id.toString()) {
             const user: User = this.userConverter(result.result.data);
             // Сохранить данные
             this.saveCurrentUser(user);
