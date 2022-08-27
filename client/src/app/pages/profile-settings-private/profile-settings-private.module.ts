@@ -9,6 +9,7 @@ import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocom
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { InformModule } from '@_controlers/inform/inform.module';
 
 
 
@@ -28,7 +29,8 @@ import { MatButtonModule } from '@angular/material/button';
     ReactiveFormsModule,
     FormsModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    InformModule
   ]
 })
 

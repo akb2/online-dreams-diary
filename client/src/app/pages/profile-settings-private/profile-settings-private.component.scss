@@ -28,6 +28,7 @@
   display: grid;
   align-items: flex-start;
   grid-gap: 30px;
+  position: relative;
   // Значение правила
   &__type {
     grid-area: type;
@@ -58,6 +59,17 @@
     &-black {
       grid-area: blackList;
     }
+  }
+  // Лоадер
+  &__loader {
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: transparentize(colors.$card, 0.3);
   }
 
   // Адаптив

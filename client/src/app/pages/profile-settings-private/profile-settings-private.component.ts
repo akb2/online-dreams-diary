@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 
 
 
@@ -20,10 +20,13 @@ import { Subject, takeUntil } from 'rxjs';
 export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
 
+  settingsLoader: boolean = false;
+
   form: FormGroup;
   user: User;
   users: User[];
 
+  listTypes: typeof ListType = ListType;
   navMenuType: NavMenuType = NavMenuType.collapse;
   ruleNames: UserPrivateNameItem[] = UserPrivateNames;
 
@@ -38,6 +41,14 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   // Данные о пользователе
   getUser(userId: number): User {
     return this.users.find(({ id }) => id === userId)! ?? null;
+  }
+
+  // Список пользователей
+  getUsers(rule: keyof UserPrivate, listType: ListType): User[] {
+    const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
+    // Вернуть массив
+    return ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+      .map(userId => this.getUser(userId));
   }
 
 
@@ -66,6 +77,37 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+
+
+
+
+  // Удалить пользователя из списка
+  onUserDelete(id: number, rule: keyof UserPrivate, listType: ListType): void {
+    if (!this.settingsLoader) {
+      const userListIndex: number = this.getUsers(rule, listType).map(({ id }) => id).findIndex(userId => userId === id);
+      const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
+      // Удалить пользователя из списка
+      (this.form?.get(rule)?.get(listTypeName) as FormArray).removeAt(userListIndex);
+      // Сохранить настройки
+      this.onSave();
+    }
+  }
+
+  // Сохранить настройки приватности
+  private onSave(): void {
+    if (!this.settingsLoader) {
+      this.settingsLoader = true;
+      this.changeDetectorRef.detectChanges();
+      // Подписчик
+      timer(600)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.settingsLoader = false;
+          this.changeDetectorRef.detectChanges();
+        });
+    }
   }
 
 
@@ -116,4 +158,13 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       this.users = [];
     }
   }
+}
+
+
+
+
+// Тип списка
+enum ListType {
+  white,
+  black
 }

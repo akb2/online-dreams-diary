@@ -47,8 +47,8 @@
             <div class="setting__list-items user__list"
                  *ngIf="!!user.private[rule.rule].whiteList?.length; else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
-                            [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'whiteList' }"
-                            *ngFor="let userId of user.private[rule.rule].whiteList"></ng-container>
+                            [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.white }"
+                            *ngFor="let user of getUsers(rule.rule, listTypes.white)"></ng-container>
             </div>
           </div>
           <!-- Черный список -->
@@ -65,9 +65,14 @@
             <div class="setting__list-items user__list"
                  *ngIf="!!user.private[rule.rule].blackList?.length; else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
-                            [ngTemplateOutletContext]="{ user: getUser(userId), listType: 'blackList' }"
-                            *ngFor="let userId of user.private[rule.rule].blackList"></ng-container>
+                            [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.black }"
+                            *ngFor="let user of getUsers(rule.rule, listTypes.black)"></ng-container>
             </div>
+          </div>
+          <!-- Блок лоадера -->
+          <div class="setting__loader"
+               *ngIf="settingsLoader">
+            <app-inform></app-inform>
           </div>
         </div>
       </app-card>
@@ -80,6 +85,7 @@
 <!-- Пользователь -->
 <ng-template #userBlock
              let-listUser="user"
+             let-rule="rule"
              let-listType="listType">
   <div class="user"
        *ngIf="!!listUser">
@@ -95,7 +101,8 @@
     <!-- Удаление -->
     <a class="user__delete"
        mat-icon-button
-       color="warn">
+       color="warn"
+       (click)="onUserDelete(listUser.id, rule, listType)">
       <mat-icon>close</mat-icon>
     </a>
   </div>
