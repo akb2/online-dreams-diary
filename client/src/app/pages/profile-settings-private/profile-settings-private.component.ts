@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
-import { PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
+import { PrivateType, PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { Subject, takeUntil, timer } from 'rxjs';
@@ -21,6 +21,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
 
   settingsLoader: boolean = false;
+  private firstFormUpdate: boolean = true;
 
   form: FormGroup;
   user: User;
@@ -60,7 +61,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private formBuilder: FormBuilder
   ) {
-    this.defineData();
+    this.defineData(true);
   }
 
   ngOnInit() {
@@ -68,9 +69,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;
-        this.defineData();
-        // Обновить
-        this.changeDetectorRef.detectChanges();
+        this.defineData(false);
       });
   }
 
@@ -96,17 +95,35 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   }
 
   // Сохранить настройки приватности
-  private onSave(): void {
+  onSave(): void {
     if (!this.settingsLoader) {
       this.settingsLoader = true;
       this.changeDetectorRef.detectChanges();
+      // Новые настройки приватности
+      const privateDatas: UserPrivate = this.ruleNames
+        .map(({ rule }) => rule)
+        .reduce((o, rule) => {
+          const formGroup: FormGroup = this.form?.get(rule) as FormGroup;
+          // Вернуть модель
+          return {
+            ...o,
+            [rule as keyof UserPrivate]: {
+              type: formGroup?.get("type")?.value ?? PrivateType.public,
+              whiteList: formGroup?.get("whiteList")?.value ?? [],
+              blackList: formGroup?.get("blackList")?.value ?? []
+            } as UserPrivateItem
+          };
+        }, {} as UserPrivate);
       // Подписчик
-      timer(600)
+      this.accountService.saveUserPrivateSettings(privateDatas)
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          this.settingsLoader = false;
-          this.changeDetectorRef.detectChanges();
-        });
+        .subscribe(
+          () => {
+            this.settingsLoader = false;
+            this.changeDetectorRef.detectChanges();
+          },
+          () => this.settingsLoader = false
+        );
     }
   }
 
@@ -115,23 +132,43 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
 
   // Создание формы
-  private defineData(): void {
-    const formDatas = this.ruleNames.reduce((o, r) => {
-      const ruleItem: UserPrivateItem = this.user?.private[r.rule] ?? this.accountService.getDefaultUserPrivateItem;
-      // Вернуть модель
-      return {
-        ...o,
-        [r.rule as string]: this.formBuilder.group({
-          type: ruleItem.type,
-          whiteList: this.formBuilder.array(ruleItem.whiteList),
-          blackList: this.formBuilder.array(ruleItem.blackList)
-        })
-      };
-    }, {});
+  private defineData(create: boolean = false): void {
+    // Новая форма
+    if (create) {
+      const formDatas = this.ruleNames.reduce((o, r) => {
+        const ruleItem: UserPrivateItem = this.user?.private[r.rule] ?? this.accountService.getDefaultUserPrivateItem;
+        // Вернуть модель
+        return {
+          ...o,
+          [r.rule as string]: this.formBuilder.group({
+            type: ruleItem.type,
+            whiteList: this.formBuilder.array(ruleItem.whiteList),
+            blackList: this.formBuilder.array(ruleItem.blackList)
+          })
+        };
+      }, {});
+      // Заполнить форму
+      this.form = this.formBuilder.group(formDatas);
+    }
+    // Обновить
+    else {
+      this.ruleNames
+        .map(({ rule }) => ({ formGroup: this.form?.get(rule) as FormGroup, privateItem: this.user.private[rule] }))
+        .forEach(({ formGroup, privateItem }) => {
+          formGroup?.get("type")?.setValue(privateItem.type);
+          // Обновить списки
+          (["whiteList", "blackList"] as (keyof UserPrivateItem)[])
+            .forEach(key => {
+              const control: FormArray = (formGroup?.get(key) as FormArray);
+              control.clear();
+              (privateItem[key] as number[]).forEach(u => control.push(this.formBuilder.control(u)));
+            });
+        });
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
     // Список пользователей
     this.defineUsers();
-    // Заполнить форму
-    this.form = this.formBuilder.group(formDatas);
   }
 
   // Заполнить список задействованных пользователей

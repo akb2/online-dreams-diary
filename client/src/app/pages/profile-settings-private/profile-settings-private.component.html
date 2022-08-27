@@ -31,7 +31,8 @@
           <div class="setting__type">
             <app-autocomplete-input formControlName="type"
                                     label="Кому доступно"
-                                    [optionData]="privateTypes"></app-autocomplete-input>
+                                    [optionData]="privateTypes"
+                                    (selectItemEvent)="onSave()"></app-autocomplete-input>
           </div>
           <!-- Белый список -->
           <div class="setting__list setting__list-white">
@@ -45,7 +46,7 @@
             </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!user.private[rule.rule].whiteList?.length; else usersEmpty">
+                 *ngIf="!!getUsers(rule.rule, listTypes.white).length; else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.white }"
                             *ngFor="let user of getUsers(rule.rule, listTypes.white)"></ng-container>
@@ -63,7 +64,7 @@
             </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!user.private[rule.rule].blackList?.length; else usersEmpty">
+                 *ngIf="!!getUsers(rule.rule, listTypes.black); else usersEmpty">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.black }"
                             *ngFor="let user of getUsers(rule.rule, listTypes.black)"></ng-container>
