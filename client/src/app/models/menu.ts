@@ -235,10 +235,10 @@ export const MenuItems: MenuItemsListDevices = {
         sort: 500,
         text: "Настройки",
         children: [
-          // Персональные данные
+          // Настройки
           {
             icon: "settings",
-            text: "Мои данные",
+            text: "Настройки",
             link: "/profile/settings",
           },
           // Выход
