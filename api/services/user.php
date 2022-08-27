@@ -272,7 +272,7 @@ class UserService
     );
   }
 
-  // Сохранить данные
+  // Сохранить настройки
   public function saveUserSettingsApi(string $id, array $data): array
   {
     $code = '0000';
@@ -285,6 +285,36 @@ class UserService
       );
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile('account/saveUserSettings.sql', array(json_encode($sqlData), $id))) {
+        $code = '0001';
+      }
+      // Регистрация неудалась
+      else {
+        $code = '9021';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => '',
+      'data' => array()
+    );
+  }
+
+  // Сохранить настройки приватности
+  public function saveUserPrivateApi(string $id, string $data): array
+  {
+    $code = '0000';
+
+    // Проверка ID
+    if (strlen($id) > 0) {
+      $sqlData = $data;
+      // Сохранение данных
+      if ($this->dataBaseService->executeFromFile('account/saveUserPrivate.sql', array($sqlData, $id))) {
         $code = '0001';
       }
       // Регистрация неудалась

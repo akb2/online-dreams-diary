@@ -257,7 +257,23 @@ export class AccountService implements OnDestroy {
       formData,
       this.httpHeader
     ).pipe(
-      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      mergeMap(() => this.syncCurrentUser(), r => r),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
+  }
+
+  // Сохранить настройки приватности
+  saveUserPrivateSettings(privateDatas: UserPrivate, codes: string[] = []): Observable<string> {
+    // Тело запроса
+    const formData: FormData = new FormData();
+    formData.append("private", JSON.stringify(privateDatas));
+    // Запрос
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/saveUserPrivate?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }

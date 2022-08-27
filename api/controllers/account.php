@@ -240,6 +240,38 @@ class Account
     );
   }
 
+  // Сохранить настройки приватности пользователя
+  // * POST
+  public function saveUserPrivate($data): array
+  {
+    $code = "0000";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверить токен
+    if ($this->tokenService->checkToken($id, $token)) {
+      // Проверка доступа
+      if ($id == $this->tokenService->getUserIdFromToken($token)) {
+        return $this->userService->saveUserPrivateApi($id, $data["private"]);
+      }
+      // Ошибка доступа
+      else {
+        $code = "9040";
+      }
+    }
+    // Неверный токен
+    else {
+      $code = "9015";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => "",
+      "data" => array()
+    );
+  }
+
   // Загрузить аватарку
   // * POST
   public function uploadAvatar($data): array
