@@ -94,30 +94,41 @@ export class AppComponent implements OnInit, OnDestroy {
   // Действия перед загрузкой страницы
   private beforeLoadPage(): void {
     const { checkToken, showPreLoader }: ExtraDatas = this.getExtraDatas;
+    // Обновить состояние
+    this.tokenService.updateState();
     // Проверить токен
     if (this.accountService.checkAuth && checkToken) {
-      this.tokenService.checkToken(["9014", "9015", "9016"]).subscribe(code => {
-        // Если токен валидный
-        if (code == "0001") {
-          this.accountService.syncCurrentUser().subscribe(() => {
-            this.validToken = true;
-            this.changeDetectorRef.detectChanges();
-          });
-        }
-        // Токен не валидный
-        else {
-          this.router.navigate([""]);
-          this.accountService.quit();
-          // Сообщение с ошибкой
-          this.snackBar.open({
-            "mode": "error",
-            "message": this.apiService.getMessageByCode(code)
-          });
-        }
-      });
+      this.tokenService.checkToken(["9014", "9015", "9016"])
+        .subscribe(
+          code => {
+            // Если токен валидный
+            if (code == "0001") {
+              this.accountService.syncCurrentUser()
+                .subscribe(
+                  () => {
+                    this.validToken = true;
+                    this.changeDetectorRef.detectChanges();
+                  },
+                  () => this.accountService.syncAnonymousUser()
+                );
+            }
+            // Токен не валидный
+            else {
+              this.router.navigate([""]);
+              this.accountService.quit();
+              // Сообщение с ошибкой
+              this.snackBar.open({
+                "mode": "error",
+                "message": this.apiService.getMessageByCode(code)
+              });
+            }
+          },
+          () => this.accountService.syncAnonymousUser()
+        );
     }
     // Пользователь неавторизован
     else {
+      this.accountService.syncAnonymousUser();
       this.validToken = true;
       this.changeDetectorRef.detectChanges();
     }
