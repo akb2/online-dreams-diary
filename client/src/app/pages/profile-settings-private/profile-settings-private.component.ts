@@ -2,9 +2,12 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PrivateType, PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
+import { CustomObjectKey } from '@_models/app';
 import { NavMenuType } from '@_models/nav-menu';
+import { ScreenBreakpoints, ScreenKeys } from '@_models/screen';
 import { AccountService } from '@_services/account.service';
-import { Subject, takeUntil, timer } from 'rxjs';
+import { ScreenService } from '@_services/screen.service';
+import { Subject, takeUntil } from 'rxjs';
 
 
 
@@ -26,6 +29,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   form: FormGroup;
   user: User;
   users: User[];
+  private breakpoint: ScreenKeys = "default";
 
   listTypes: typeof ListType = ListType;
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -52,12 +56,18 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       .map(userId => this.getUser(userId));
   }
 
+  // Количество пользователей в одной строке списка
+  get getUserInListCount(): number {
+    return UserInListCount[this.breakpoint];
+  }
+
 
 
 
 
   constructor(
     private accountService: AccountService,
+    private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef,
     private formBuilder: FormBuilder
   ) {
@@ -70,6 +80,13 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       .subscribe(user => {
         this.user = user;
         this.defineData(false);
+      });
+    // Подписка на смену брейкпоинта
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.changeDetectorRef.detectChanges();
       });
   }
 
@@ -205,3 +222,13 @@ enum ListType {
   white,
   black
 }
+
+// Количество пользователей в одной строке
+const UserInListCount: CustomObjectKey<keyof ScreenBreakpoints, number> = {
+  default: 2,
+  xlarge: 3,
+  large: 2,
+  middle: 2,
+  small: 3,
+  xsmall: 2,
+};
