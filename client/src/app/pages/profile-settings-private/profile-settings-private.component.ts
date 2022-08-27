@@ -29,7 +29,9 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   form: FormGroup;
   user: User;
   users: User[];
+
   private breakpoint: ScreenKeys = "default";
+  private showAll: CustomObjectKey<keyof UserPrivate, CustomObjectKey<keyof UserPrivateItem, boolean>>;
 
   listTypes: typeof ListType = ListType;
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -53,12 +55,29 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
     // Вернуть массив
     return ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
-      .map(userId => this.getUser(userId));
+      .map(userId => this.getUser(userId))
+      .filter((user, i) => i < this.getUserInListCount || this.getUserMoreState(rule, listType));
   }
 
   // Количество пользователей в одной строке списка
-  get getUserInListCount(): number {
+  private get getUserInListCount(): number {
     return UserInListCount[this.breakpoint];
+  }
+
+  // Оставшееся количество пользователей в списке
+  getUsersMoreCount(rule: keyof UserPrivate, listType: ListType): number {
+    const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
+    const count: number = ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+      .map(userId => this.getUser(userId))
+      .length;
+    const moreCount: number = count - this.getUserInListCount > 0 ? count - this.getUserInListCount : 0;
+    // Вернуть количество
+    return moreCount;
+  }
+
+  // Состояние просмотра полного списка
+  getUserMoreState(rule: keyof UserPrivate, listType: ListType): boolean {
+    return this.showAll[rule][listType] ?? false;
   }
 
 
@@ -102,8 +121,9 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   // Удалить пользователя из списка
   onUserDelete(id: number, rule: keyof UserPrivate, listType: ListType): void {
     if (!this.settingsLoader) {
-      const userListIndex: number = this.getUsers(rule, listType).map(({ id }) => id).findIndex(userId => userId === id);
       const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
+      const userListIndex: number = ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+        .findIndex(userId => userId === id);
       // Удалить пользователя из списка
       (this.form?.get(rule)?.get(listTypeName) as FormArray).removeAt(userListIndex);
       // Сохранить настройки
@@ -144,6 +164,13 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Изменить статус показа полного списка пользователей
+  onShowMoreUsersChange(rule: keyof UserPrivate, listType: ListType): void {
+    this.showAll[rule][listType] = !this.showAll[rule][listType];
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+  }
+
 
 
 
@@ -166,6 +193,10 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       }, {});
       // Заполнить форму
       this.form = this.formBuilder.group(formDatas);
+      // Заполнить массив просмотра всех пользователей в списке
+      this.showAll = this.ruleNames
+        .map(({ rule }) => rule)
+        .reduce((o, rule) => ({ ...o, [rule]: { [ListType.black]: false, [ListType.white]: false } }), {});
     }
     // Обновить
     else {
