@@ -75,6 +75,15 @@ export class TokenService {
     private router: Router,
     private localStorageService: LocalStorageService
   ) {
+    this.updateState();
+  }
+
+
+
+
+
+  // Получить данные из Local Storage
+  updateState(): void {
     this.configLocalStorage();
     this.token = this.localStorageService.getCookie("token");
     this.id = this.localStorageService.getCookie("current_user");
@@ -163,6 +172,7 @@ export class TokenService {
         return this.apiService.checkResponse(result.result.code);
       }
     )).subscribe(code => {
+      this.id = "";
       this.token = "";
       this.configLocalStorage();
       this.localStorageService.deleteCookie("token");
