@@ -25,9 +25,13 @@ export class ScreenService implements OnDestroy {
 
   private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
 
-  private destroy$: Subject<void> = new Subject<void>();
   private isMobile: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   readonly isMobile$: Observable<boolean> = this.isMobile.asObservable();
+
+  private breakpoint: BehaviorSubject<ScreenKeys> = new BehaviorSubject<ScreenKeys>("default");
+  readonly breakpoint$: Observable<ScreenKeys> = this.breakpoint.asObservable();
+
+  private destroy$: Subject<void> = new Subject<void>();
 
 
 
@@ -102,11 +106,18 @@ export class ScreenService implements OnDestroy {
 
   // Обновить мобильный интерфейс
   private updateIsMobile(): void {
-    const oldValue: boolean = this.isMobile.getValue();
-    const newValue: boolean = this.mobileBreakpoints.includes(this.getBreakpoint());
+    const oldBreakpoint: ScreenKeys = this.breakpoint.getValue();
+    const newBreakpoint: ScreenKeys = this.getBreakpoint();
     // Если брейкпоинт изменился
-    if (oldValue !== newValue) {
-      this.isMobile.next(newValue);
+    if (oldBreakpoint !== newBreakpoint) {
+      const oldIsMobile: boolean = this.isMobile.getValue();
+      const newIsMobile: boolean = this.mobileBreakpoints.includes(newBreakpoint);
+      // Обновить брейкпоинт
+      this.breakpoint.next(newBreakpoint);
+      // Если тип устройства сменился
+      if (oldIsMobile !== newIsMobile) {
+        this.isMobile.next(newIsMobile);
+      }
     }
   }
 }
