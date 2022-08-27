@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
 import { NavMenuType } from "@_models/nav-menu";
 import { MenuService } from "@_services/menu.service";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -15,7 +16,7 @@ import { MenuService } from "@_services/menu.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class NavMenuSettingsComponent implements OnInit {
+export class NavMenuSettingsComponent implements OnInit, OnDestroy {
 
 
   @Input() backgroundId: number = 1;
@@ -38,6 +39,13 @@ export class NavMenuSettingsComponent implements OnInit {
   _navMenuType: typeof NavMenuType = NavMenuType;
   backgroundImageDatas;
 
+  private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
+
+  // Текущий фон
   get currentBackground(): BackgroundImageData {
     return this.backgroundImageDatas.find(b => b.id === this.backgroundId);
   }
@@ -47,15 +55,26 @@ export class NavMenuSettingsComponent implements OnInit {
 
 
   constructor(
-    private menuService: MenuService
+    private menuService: MenuService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // Фоновые картинки
     this.backgroundImageDatas = BackgroundImageDatas.sort((b1, b2) => b1.id < b2.id ? 1 : b1.id > b2.id ? -1 : 0);
   }
 
   ngOnInit(): void {
-    this.menuService.createMenuItems();
-    [this.menuItems] = [this.menuService.menuItems];
+    // Подписка на изменение меню
+    this.menuService.menuItems$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(menuItems => {
+        this.menuItems = menuItems;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
