@@ -7,7 +7,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, Subject, takeUntil } from "rxjs";
+import { fromEvent, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -73,8 +73,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollMouseStartY: number = 0;
   private swipeScrollDistance: number = 0;
   private swipeScrollPress: boolean = false;
-  private lastScrollTime: number = new Date().getTime();
-  private scrollTimeWait: number = 150;
+  private scrollSmoothSpeed: number = 150;
+  private scrollSmoothTimeStep: number = 15;
 
   css: CustomObject<SimpleObject> = {};
 
@@ -172,6 +172,25 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     ) - this.headerHeight;
   }
 
+  // Состояние шапки
+  private get getHeaderStatus(): HeaderStatus {
+    return this.scroll === 0 ?
+      HeaderStatus.expanded :
+      this.scroll >= this.getHeaderMaxHeight ?
+        HeaderStatus.collapsed :
+        HeaderStatus.inProccess;
+  }
+
+  // Максимальная высота шапки
+  private get getHeaderMaxHeight(): number {
+    return Math.round(DrawDatas.maxHeight - DrawDatas.minHeight);
+  }
+
+  // Текущий скролл
+  private get getCurrentScroll(): number {
+    return Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+  }
+
 
 
 
@@ -182,24 +201,25 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     private menuService: MenuService
   ) {
     DrawDatas.dataRender();
-    // Пункты меню
-    this.menuItems = this.menuService.menuItems;
+    // Запретить скролл к предыдущему месту
+    history.scrollRestoration = "manual";
   }
 
   ngOnInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
-    // Отрисовка
-    this.onResize();
-    // Объявление событий
-    forkJoin([
-      fromEvent(window, "scroll", e => this.onWindowScroll(e)),
-      fromEvent(window, "resize", e => this.onResize(e)),
-      fromEvent(window, "mousemove", e => this.onMouseMove(e as MouseEvent)),
-      fromEvent(window, "mouseup", e => this.onMouseUp(e as MouseEvent))
-    ]).subscribe();
-    // Скролл
-    window.scroll({ top: 0 });
+    // События
+    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e as Event));
+    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(e => this.onResize());
+    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
+    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
+    // Пункты меню
+    this.menuService.menuItems$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(menuItems => {
+        this.menuItems = menuItems;
+        this.changeDetectorRef.detectChanges();
+      });
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
@@ -207,6 +227,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
+    // Скролл
+    this.scroll = this.getCurrentScroll;
+    this.scrollTo(0);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -224,10 +247,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       this.imagePositionX = changes.imagePositionX?.currentValue || this.imagePositionX;
       this.imageOverlay = changes.imageOverlay?.currentValue || this.imageOverlay;
       // Очистить временную картинку
-      setTimeout(() => {
-        this.tempImage = "";
-        this.changeDetectorRef.detectChanges();
-      }, this.clearTempImageTimeout);
+      timer(this.clearTempImageTimeout)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.tempImage = "";
+          this.changeDetectorRef.detectChanges();
+        });
     }
     // Очистить старую картинку
     else {
@@ -257,84 +282,62 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
 
 
-  // Скролл страницы
-  private onWindowScroll(event: Event): boolean {
-    let scroll: number = document?.scrollingElement?.scrollTop || 0;
-    // Окончание прокрутки
-    this.lastScrollTime = new Date().getTime();
-    setTimeout(() => this.onWindowScrollEnd(), this.scrollTimeWait);
-    // Автоколапс
-    if (this.autoCollapse) {
-      // Отменить блокировку скролла
-      if (this.autoCollapsed) {
-        //Отметиь, что коллапс сейчас не происходит
-        if (scroll == 0 || scroll >= DrawDatas.maxHeight - DrawDatas.minHeight) {
-          this.autoCollapsed = false;
-          document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+  // Событие скролла
+  private onWindowScroll(event: Event): void {
+    let scroll: number = this.getCurrentScroll;
+    // Скролл
+    if (!this.swipeScrollPress) {
+      // Автоколапс (если уже не происходит)
+      if (this.autoCollapse) {
+        if (!this.autoCollapsed) {
+          const headerMaxHeight: number = this.getHeaderMaxHeight;
+          const headerStatus = this.getHeaderStatus;
+          // Схлопнуть меню
+          if (headerStatus !== HeaderStatus.collapsed && scroll > this.scroll && this.scroll < headerMaxHeight) {
+            this.collapseMenu();
+          }
+          // Развернуть меню
+          else if (headerStatus !== HeaderStatus.expanded && scroll < this.scroll && scroll < headerMaxHeight) {
+            this.expandMenu();
+          }
         }
-      }
-      // Схлопнуть меню
-      else if (scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
-        // Схлопнуть меню
-        if (this.scroll < scroll) {
-          this.collapseMenu();
-        }
-        // Развернуть меню
+        // Отменить скролл
         else {
-          this.expandMenu();
-        }
-        // Установить флажок что коллапс в процессе
-        if (scroll > 0) {
-          this.autoCollapsed = true;
+          this.stopScroll();
         }
       }
-      // Оменить действие по умолчанию
-      event.stopPropagation();
-    }
-    // Разрешить скролл
-    else {
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+      // Обычный скролл
+      else if (!this.autoCollapse) {
+      }
     }
     // Расчитать данные
     this.scroll = scroll;
     this.dataCalculate();
-    // Вернуть TRUE или FALSE
-    return !this.autoCollapsed;
   }
 
   // Скролл закончился
   private onWindowScrollEnd(): void {
-    if (this.lastScrollTime + this.scrollTimeWait <= new Date().getTime()) {
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
-    }
+    this.autoCollapsed = false;
+    // Разрешить скролл
+    this.startScroll();
   }
 
   // Изменение размеров экрана
-  onResize(event?: Event): void {
+  private onResize(): void {
+    const collapse: boolean = DrawDatas.screenHeight < window.innerHeight;
+    // Запомнить настройки
     DrawDatas.type = this.type;
     DrawDatas.screenWidth = window.innerWidth;
     DrawDatas.screenHeight = window.innerHeight;
     DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth || 0;
     DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth || 0;
-    // Расчет и отрисовка
-    const breakpoint: ScreenKeys = this.breakpoint;
     DrawDatas.dataRender();
-    this.dataCalculate();
-    // Разрешить / запретить скролл
-    document.querySelectorAll("body, html").forEach(elm => {
-      if (this.showMobileMenu && this.isMobile) {
-        elm.classList.add("no-scroll");
-      }
-      else {
-        elm.classList.remove("no-scroll");
-      }
-    });
-    // Пункты меню
-    if (this.breakpoint != breakpoint) {
-      this.menuService.createMenuItems();
-      [this.menuItems] = [this.menuService.menuItems];
-      this.changeDetectorRef.detectChanges();
+    // Схлопнуть меню
+    if (collapse && this.getHeaderStatus === HeaderStatus.inProccess && this.autoCollapse) {
+      this.collapseMenu();
     }
+    // Расчет и отрисовка
+    this.dataCalculate();
   }
 
   // Фокус для скролла смахиванием
@@ -343,14 +346,18 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.scrollMouseStartY = window.scrollY;
     // Включить обнаружение движения мышкой
     this.swipeScrollPress = true;
+    // Запретить скролл
+    this.stopScroll();
   }
 
   // Движение мышкой
   onMouseMove(event: MouseEvent): void {
     if (this.swipeScrollPress) {
       this.swipeScrollDistance = event.y - this.scrollMousePosY;
+      // Запретить скролл
+      this.stopScroll();
       // Установить скролл
-      window.scroll(0, this.scrollMouseStartY - this.swipeScrollDistance);
+      this.scrollTo(this.scrollMouseStartY - this.swipeScrollDistance);
     }
   }
 
@@ -386,7 +393,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     }
     // Разблокировать скролл
     else {
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+      this.startScroll();
     }
     // Остановить слушателя
     this.swipeScrollDistance = 0;
@@ -450,9 +457,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Формула расчета параметров
-  private dataCalculateFormula(max: number | number[], min: number | number[], unit: string | string[] = "", separator: string = ""): string {
+  private dataCalculateFormula(
+    max: number | number[],
+    min: number | number[],
+    unit: string | string[] = "",
+    separator: string = ""
+  ): string {
+    const headerMaxHeight: number = this.getHeaderMaxHeight;
     // Расчет
-    if (this.scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
+    if (this.scroll < headerMaxHeight) {
       // Для массивов
       if (Array.isArray(min) || Array.isArray(max)) {
         let value: string = "";
@@ -464,7 +477,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           const tempMin: number = Array.isArray(min) ? min[i] || 0 : min;
           const tempMax: number = Array.isArray(max) ? max[i] || 0 : max;
           const tempUnit: string = Array.isArray(unit) ? unit[i] || "" : unit;
-          const koof: number = (tempMin - tempMax) / (DrawDatas.maxHeight - DrawDatas.minHeight);
+          const koof: number = (tempMin - tempMax) / headerMaxHeight;
           // Присвоение значения
           value += (i > 0 ? separator : "") + ((koof * this.scroll) + tempMax) + tempUnit;
         }
@@ -475,7 +488,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       else {
         unit = Array.isArray(unit) ? unit[0] : unit;
         // Расчитать значение
-        const koof: number = (min - max) / (DrawDatas.maxHeight - DrawDatas.minHeight);
+        const koof: number = (min - max) / headerMaxHeight;
         return ((koof * this.scroll) + max) + unit;
       }
     }
@@ -507,7 +520,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Выбрать значение из списка
   private dataChoiceValue(value: DrawDataValue): string {
-    if (this.scroll < DrawDatas.maxHeight - DrawDatas.minHeight) {
+    if (this.scroll < this.getHeaderMaxHeight) {
       // Для промежуточного состояния
       if (this.scroll > 0) {
         return value.process;
@@ -530,33 +543,93 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Открыть меню
     if (action === 1) {
       this.showMobileMenu = true;
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
+      // Запретить скролл
+      this.stopScroll();
     }
     // Закрыть меню
     if (action === -1) {
       this.showMobileMenu = false;
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+      // Разрешить скролл
+      this.startScroll();
     }
   }
 
   // Схлопнуть меню
   collapseMenu(): void {
-    this.scrollTo(DrawDatas.maxHeight - DrawDatas.minHeight);
+    this.autoCollapsed = true;
+    // Скролл
+    this.scrollTo(this.getHeaderMaxHeight, "smooth");
   }
 
   // Развернуть меню
   expandMenu(): void {
-    this.scrollTo(0);
+    this.autoCollapsed = true;
+    // Скролл
+    this.scrollTo(0, "smooth");
   }
 
   // Скролл
-  private scrollTo(scroll: number): void {
-    if (window.scrollY > scroll || window.scrollY < scroll) {
-      document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
-      window.scrollTo({
-        behavior: "smooth",
-        top: scroll
-      });
+  private scrollTo(top: number, behavior: ScrollBehavior = "auto"): void {
+    if (this.getCurrentScroll !== top) {
+      if (behavior === "auto") {
+        window.scrollTo({ behavior, top });
+        // Окончить скролл
+        this.onWindowScrollEnd();
+      }
+      // Плавный скролл
+      else {
+        const startScroll: number = this.getCurrentScroll;
+        const scrollDiff: number = Math.abs(top - startScroll);
+        const scrollDelta: -1 | 1 = ((top - startScroll) / scrollDiff) > 0 ? 1 : -1;
+        const scrollSmoothStep: number = Math.ceil((scrollDiff * this.scrollSmoothTimeStep) / this.scrollSmoothSpeed);
+        const scrollLastStep: number = Math.ceil(scrollDiff / scrollSmoothStep);
+        // Запретить скролл
+        this.stopScroll();
+        // Плавный скролл
+        timer(0, this.scrollSmoothTimeStep)
+          .pipe(
+            takeUntil(this.destroy$),
+            takeWhile(step => step <= scrollLastStep, true),
+            tap(step => {
+              let scrollTo: number = step * scrollSmoothStep;
+              scrollTo = scrollTo > scrollDiff ? scrollDiff : scrollTo;
+              top = startScroll + (scrollTo * scrollDelta);
+              // Запретить скролл
+              this.stopScroll();
+              // Запомнить новый скролл
+              this.scroll = top;
+              // Скролл
+              window.scrollTo({ behavior: "auto", top });
+            }),
+            skipWhile(step => step <= scrollLastStep)
+          )
+          .subscribe(() => this.onWindowScrollEnd());
+      }
+    }
+    // Окончание скролла
+    else {
+      this.onWindowScrollEnd();
     }
   }
+
+  // Запретить скролл
+  private stopScroll(): void {
+    document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
+  }
+
+  // Разрешить скролл
+  private startScroll(): void {
+    document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+  }
 }
+
+
+
+
+
+// Состояние шапки
+enum HeaderStatus {
+  expanded,
+  inProccess,
+  collapsed
+};
