@@ -66,6 +66,22 @@ export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
 
 
 
+// Список месяцев
+export const MonthPlural: string[] = [
+  "Январь",
+  "Февраль",
+  "Март",
+  "Апрель",
+  "Май",
+  "Июнь",
+  "Июль",
+  "Август",
+  "Сентябрь",
+  "Октябрь",
+  "Ноябрь",
+  "Декабрь",
+];
+
 // Валидаторы для аккаунтов
 export const AccountValidatorData: ValidatorDataType = {
   // Логин
@@ -115,10 +131,6 @@ export const DreamValidatorData: ValidatorDataType = {
     Validators.maxLength(FormData.dreamDescriptionMaxLength)
   ]
 };
-
-
-
-
 
 // Тексты ошибок для аккаунтов
 export const AccountErrorMessages: ErrorMessagesType = {

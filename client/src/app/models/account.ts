@@ -1,5 +1,5 @@
 import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
-import { CustomObjectKey } from "@_models/app";
+import { SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
@@ -135,6 +135,14 @@ export enum UserSex {
 
 
 
+
+// Склонение слова: человек
+export const PeoplePlural: SimpleObject = {
+  "=0": "",
+  "=1": "# человек",
+  "few": "# человека",
+  "other": "# человек"
+};
 
 // Массив названий настроек приватности
 export const UserPrivateNames: UserPrivateNameItem[] = [

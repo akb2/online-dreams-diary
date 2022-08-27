@@ -5,10 +5,10 @@ import { DefaultExtraDatas, ExtraDatas as ExtraDatasApp } from '@app/app.compone
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
-import { User, UserSex } from '@_models/account';
+import { PeoplePlural, User, UserSex } from '@_models/account';
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
-import { FormData } from '@_models/form';
+import { FormData, MonthPlural } from '@_models/form';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService, SearchUser } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
@@ -52,27 +52,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
   birthDays: OptionData[] = [];
   sexes: OptionData[] = Sexes;
 
-  peoplePlural: SimpleObject = {
-    "=0": "",
-    "=1": "# человек",
-    "few": "# человека",
-    "other": "# человек"
-  };
+  peoplePlural: SimpleObject = PeoplePlural;
 
-  private monthPlural: string[] = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
+  private monthPlural: string[] = MonthPlural;
 
   private queryParams: SimpleObject = {};
 
