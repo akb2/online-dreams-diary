@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { SimpleObject } from "@_models/app";
 import { ScreenService } from "@_services/screen.service";
-import { Subject, timer } from "rxjs";
+import { fromEvent, Subject, timer } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -52,6 +52,11 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
     ) - this.headerHeight;
   }
 
+  // Текущий скролл
+  private get getCurrentScroll(): number {
+    return document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0;
+  }
+
 
 
 
@@ -68,12 +73,14 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   ngOnInit() {
     this.onWindowScroll();
     // События
-    window.addEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.addEventListener("resize", this.onWindowScroll.bind(this), true);
-    window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
-    window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
+    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e));
+    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e));
+    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
+    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
     // Проверка изменений скролла
-    timer(0, this.checkInterval).pipe(takeUntil(this.destroy$)).subscribe(() => this.onWindowScroll());
+    timer(0, this.checkInterval)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onWindowScroll());
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
@@ -91,11 +98,6 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    // События
-    window.removeEventListener("scroll", this.onWindowScroll.bind(this), true);
-    window.removeEventListener("resize", this.onWindowScroll.bind(this), true);
-    window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
-    window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
   }
 
 
@@ -110,7 +112,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
       const trackHeight: number = this.track?.nativeElement.getBoundingClientRect().height || 0;
       const screenHeight: number = this.layout?.nativeElement.getBoundingClientRect().height || 0;
       this.sliderHeight = (screenHeight / this.scrollHeight) * trackHeight;
-      this.sliderPosition = (window.scrollY / this.scrollHeight) * trackHeight;
+      this.sliderPosition = (this.getCurrentScroll / this.scrollHeight) * trackHeight;
     }
     // Обновить
     this.changeDetectorRef.detectChanges();
@@ -134,14 +136,17 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
   // Фокус внутри кнопки
   onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
-    if (window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height || (window.scrollY == 0 && direction > 0)) {
+    if (
+      window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height ||
+      (this.getCurrentScroll == 0 && direction > 0)
+    ) {
       // Установить индикатор нажатия
       if (setIndicator) {
         this.buttonMousePress = true;
       }
       // Прокрутить
       if (this.buttonMousePress) {
-        window.scroll(0, window.scrollY + (this.scrollStep * direction));
+        window.scroll(0, this.getCurrentScroll + (this.scrollStep * direction));
         setTimeout(() => this.onButtonMouseDown(direction), 80);
       }
     }
