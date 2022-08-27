@@ -1,10 +1,10 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
+import { User } from "@_models/account";
 import { MenuItem, MenuItems, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { TokenService } from "@_services/token.service";
-import { Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
 
 
 
@@ -17,7 +17,10 @@ import { Subject, takeUntil } from "rxjs";
 export class MenuService implements OnDestroy {
 
 
-  menuItems: MenuItem[] = [];
+  private user: User;
+
+  private menuItems: BehaviorSubject<MenuItem[]> = new BehaviorSubject<MenuItem[]>([]);
+  readonly menuItems$: Observable<MenuItem[]>;
 
   isMobile: boolean = false;
 
@@ -29,17 +32,32 @@ export class MenuService implements OnDestroy {
 
   constructor(
     private accountService: AccountService,
-    private tokenService: TokenService,
     private router: Router,
     private screenService: ScreenService
   ) {
+    // Подписка на пункты меню
+    this.menuItems$ = this.menuItems.asObservable()
+      .pipe(takeUntil(this.destroy$));
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(isMobile => this.isMobile = isMobile);
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.createMenuItems();
+      });
+    // Подписка на текущего пользователя
+    this.accountService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.createMenuItems();
+      });
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.menuItems.complete();
   }
 
 
@@ -59,19 +77,23 @@ export class MenuService implements OnDestroy {
   createMenuItems(): void {
     const deviceKey: keyof MenuItemsListDevices = this.isMobile ? "mobile" : "desktop";
     const authKeys: keyof MenuItemsListAuth = this.accountService.checkAuth ? "auth" : "notAuth";
-    // Заполнить список меню
-    this.menuItems = [...MenuItems[deviceKey].any, ...MenuItems[deviceKey][authKeys]];
+    const menuItems: MenuItem[] = [
+      ...this.arrayClone(MenuItems[deviceKey].any),
+      ...this.arrayClone(MenuItems[deviceKey][authKeys])
+    ];
     // Отсортировать меню
-    this.menuItems.sort((itemA, itemB) => this.sortMenu(itemA, itemB));
-    this.menuItems.forEach(item => item?.children?.sort((itemA, itemB) => this.sortMenu(itemA, itemB)));
+    menuItems.sort((itemA, itemB) => this.sortMenu(itemA, itemB));
+    menuItems.map(item => item?.children?.sort((itemA, itemB) => this.sortMenu(itemA, itemB)));
     // Установить методы и значения
-    this.menuItems.forEach(item => this.setValues(item));
-    this.menuItems.forEach(item => item?.children?.forEach(subItem => this.setValues(subItem)));
+    menuItems.forEach(item => this.setValues(item));
+    menuItems.forEach(item => item?.children?.forEach(subItem => this.setValues(subItem)));
     // Активные элементы
-    this.menuItems.forEach(item => {
+    menuItems.forEach(item => {
       item.children?.forEach(subItem => subItem.active = this.checkActive(subItem));
       item.active = this.checkActive(item);
     });
+    // Запомнить пункты меню
+    this.menuItems.next(menuItems);
   }
 
   // Отсортировать массив меню
@@ -105,11 +127,27 @@ export class MenuService implements OnDestroy {
     const currentUserIDRegExp: RegExp = new RegExp("(:currentUserID)", "gm");
     // Выставить текущий URL
     if (currentUserIDRegExp.test(item.link)) {
-      item.link = item.link.replace(currentUserIDRegExp, this.tokenService.id);
+      item.link = item.link.replace(currentUserIDRegExp, this.user?.id.toString() ?? "0");
     }
     // Выход
     else if (item.id === "quit") {
       item.callback = this.onLogOut.bind(this);
+    }
+  }
+
+  // Клонирование массива
+  private arrayClone(mixedValue: any): any {
+    // Массив
+    if (Array.isArray(mixedValue)) {
+      return mixedValue.slice(0).map(v => this.arrayClone(v));
+    }
+    // Объект
+    else if (typeof mixedValue === "object") {
+      return JSON.parse(JSON.stringify(mixedValue));
+    }
+    // Простые
+    else {
+      return mixedValue;
     }
   }
 }
