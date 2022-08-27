@@ -268,9 +268,13 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
     // Отрисовка
-    this.onResize();
-    // Обновить
-    this.changeDetectorRef.markForCheck();
+    timer(0)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.onResize();
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy() {
@@ -329,8 +333,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     DrawDatas.type = this.type;
     DrawDatas.screenWidth = window.innerWidth;
     DrawDatas.screenHeight = window.innerHeight;
-    DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth || 0;
-    DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth || 0;
+    DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth ?? 0;
+    DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth ?? 0;
     DrawDatas.dataRender();
     // Схлопнуть меню
     if (collapse && this.getHeaderStatus === HeaderStatus.inProccess && this.autoCollapse) {
