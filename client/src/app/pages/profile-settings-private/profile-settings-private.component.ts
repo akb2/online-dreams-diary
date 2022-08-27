@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
-import { PrivateType, PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
-import { CustomObjectKey } from '@_models/app';
+import { PeoplePlural, PrivateType, PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
+import { CustomObjectKey, SimpleObject } from '@_models/app';
 import { NavMenuType } from '@_models/nav-menu';
 import { ScreenBreakpoints, ScreenKeys } from '@_models/screen';
 import { AccountService } from '@_services/account.service';
@@ -38,6 +38,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   ruleNames: UserPrivateNameItem[] = UserPrivateNames;
 
   privateTypes: OptionData[] = PrivateTypes;
+  peoplePlural: SimpleObject = PeoplePlural;
 
   private destroy$: Subject<void> = new Subject<void>();
 

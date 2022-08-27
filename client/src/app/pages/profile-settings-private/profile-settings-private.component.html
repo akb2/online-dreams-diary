@@ -124,10 +124,13 @@
 <ng-template #moreUsersButton
              let-rule="rule"
              let-listType="listType">
-  <div *ngIf="!!getUsersMoreCount(rule, listType)">
+  <div class="user__more"
+       *ngIf="!!getUsersMoreCount(rule, listType)">
     <!-- Показать еще / Скрыть -->
     <a (click)="onShowMoreUsersChange(rule, listType)">
-      <ng-container *ngIf="!getUserMoreState(rule, listType)">Еще {{getUsersMoreCount(rule, listType)}}</ng-container>
+      <ng-container *ngIf="!getUserMoreState(rule, listType)">
+        Еще {{getUsersMoreCount(rule, listType)|i18nPlural:peoplePlural}}
+      </ng-container>
       <ng-container *ngIf="getUserMoreState(rule, listType)">Скрыть</ng-container>
     </a>
   </div>

@@ -1,5 +1,5 @@
-@use "sass:math";
 @use "sass:map";
+@use "sass:math";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/colors";
 @use "../../../assets/styles/mixins";
@@ -161,6 +161,22 @@
   &__delete {
     grid-area: delete;
     box-shadow: none !important;
+  }
+  // Кнопка еще
+  &__more {
+    margin-top: 15px;
+    text-align: center;
+    cursor: pointer;
+    // Ссылка
+    > a {
+      font-weight: 400;
+      color: colors.$text;
+      transition: color #{screens.$animation-time};
+    }
+    // Выделение
+    &:hover > a {
+      color: map.get(colors.$mat-primary, 500);
+    }
   }
 
   // Адаптив
