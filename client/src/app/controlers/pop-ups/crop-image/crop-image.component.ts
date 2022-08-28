@@ -1,8 +1,9 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { UserAvatarCropDataElement } from "@_models/account";
 import { AppMatDialogConfig } from "@_models/app";
 import { ScreenService } from "@_services/screen.service";
+import { fromEvent, Subject, takeUntil } from "rxjs";
 
 
 
@@ -11,27 +12,35 @@ import { ScreenService } from "@_services/screen.service";
 @Component({
   selector: "app-popup-crop-image",
   templateUrl: "./crop-image.component.html",
-  styleUrls: ["./crop-image.component.scss"]
+  styleUrls: ["./crop-image.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 
-  @ViewChild("scaledImage") public scaledImage: ElementRef;
-  @ViewChild("previewElement") public previewElement: ElementRef;
+  static popUpWidth: string = "800px";
 
-  public static popUpWidth: string = "800px";
+  @ViewChild("scaledImage") scaledImage: ElementRef;
+  @ViewChild("previewElement") previewElement: ElementRef;
 
-  public imageWidth: number = 0;
-  public imageHeight: number = 0;
-  public sizeKoof: number = 0;
+  loading: boolean = false;
+  imageWidth: number = 0;
+  imageHeight: number = 0;
+  sizeKoof: number = 0;
 
   private mouseListener: boolean;
   private mouseMoveStart: [number, number] = [0, 0];
   private moveDirection: MoveDirection[] = [];
 
-  public position: Coords;
-  public previewPosition: PreviewCoords;
+  position: Coords;
+  previewPosition: PreviewCoords;
+
+  private destroy$: Subject<void> = new Subject<void>()
+
+
+
+
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PopupCropImageData,
@@ -40,35 +49,32 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     private matDialogRef: MatDialogRef<PopupCropImageComponent, UserAvatarCropDataElement | null>
   ) {
     this.data.title = this.data.title ? this.data.title : "Обрезка фотографии";
+  }
+
+  ngOnInit(): void {
+    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
+    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
     // Данные фотки
-    this.screenService.loadImage(this.data.image).subscribe(
-      image => {
-        this.imageWidth = image.width;
-        this.imageHeight = image.height;
-        // Проверка данных
-        const startX: number = this.data.coords?.startX || 0;
-        const startY: number = this.data.coords?.startY || 0;
-        const width: number = this.data.coords?.width || this.imageWidth;
-        const height: number = this.data.coords?.height || this.imageHeight;
-        this.data.coords = { startX, startY, width, height };
-        // Сохранить координаты
-        this.cropSizesToCoords();
-      }
-    );
+    this.screenService.loadImage(this.data.image)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        image => {
+          this.loading = false;
+          this.imageWidth = image.width;
+          this.imageHeight = image.height;
+          // Проверка данных
+          const startX: number = this.data.coords?.startX || 0;
+          const startY: number = this.data.coords?.startY || 0;
+          const width: number = this.data.coords?.width || this.imageWidth;
+          const height: number = this.data.coords?.height || this.imageHeight;
+          this.data.coords = { startX, startY, width, height };
+          // Сохранить координаты
+          this.cropSizesToCoords();
+        }
+      );
   }
 
-
-
-
-
-  // Элементы проинициализированны
-  public ngOnInit(): void {
-    window.addEventListener("mousemove", this.onMouseMove.bind(this), true);
-    window.addEventListener("mouseup", this.onMouseUp.bind(this), true);
-  }
-
-  // Элементы определены
-  public ngAfterViewChecked(): void {
+  ngAfterViewChecked(): void {
     if (this.scaledImage) {
       const width: number = this.scaledImage.nativeElement.getBoundingClientRect().width;
       const height: number = this.scaledImage.nativeElement.getBoundingClientRect().height;
@@ -81,14 +87,17 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     this.changeDetectorRef.detectChanges();
   }
 
-  // Конец класса
-  public ngOnDestroy(): void {
-    window.removeEventListener("mousemove", this.onMouseMove.bind(this), true);
-    window.removeEventListener("mouseup", this.onMouseUp.bind(this), true);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+
+
+
+
   // Начало удержания мышкой
-  public onMouseDown(event: MouseEvent, direction: MoveDirection[]): void {
+  onMouseDown(event: MouseEvent, direction: MoveDirection[]): void {
     this.mouseListener = true;
     this.moveDirection = direction;
     this.mouseMoveStart = [event.pageX, event.pageY];
@@ -97,7 +106,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   }
 
   // Передвижение мышкой
-  public onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent): void {
     if (this.mouseListener) {
       this.drawCrop(event.pageX, event.pageY);
       // Отрисовка позиций
@@ -106,14 +115,14 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   }
 
   // Конец удержания мышкой
-  public onMouseUp(event: MouseEvent): void {
+  onMouseUp(event: MouseEvent): void {
     this.mouseListener = false;
     // Переписать значения
     this.cropCoordsToSizes();
   }
 
   // Закрытие окна
-  public onSaveCrop(): void {
+  onSaveCrop(): void {
     this.matDialogRef.close(this.data.coords);
   }
 
@@ -245,6 +254,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     const y2: number = y1 + (this.data.coords?.height || this.imageHeight);
     // Сохранить координаты
     this.position = { x1, x2, y1, y2 };
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Преобразовать локальные данные в исходящие
@@ -279,7 +290,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
 
   // Открыть текущее окно
-  public static open(matDialog: MatDialog, data: PopupCropImageData): MatDialogRef<PopupCropImageComponent> {
+  static open(matDialog: MatDialog, data: PopupCropImageData): MatDialogRef<PopupCropImageComponent> {
     const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
     matDialogConfig.width = PopupCropImageComponent.popUpWidth;
     matDialogConfig.data = data;

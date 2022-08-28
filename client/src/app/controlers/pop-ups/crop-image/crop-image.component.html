@@ -11,8 +11,8 @@
 <!-- Содержимое -->
 <ng-container mat-dialog-content>
   <div class="images"
-       *ngIf="position">
-    <!-- Оригинальная картинка -->
+       *ngIf="!loading && !!position; else loader">
+    <!-- Интерфейс обрезки -->
     <div class="images__original">
       <div class="image">
         <img #scaledImage
@@ -76,10 +76,19 @@
     <!-- Сохранить изменения -->
     <a mat-flat-button
        color="primary"
-       (click)="onSaveCrop()">Сохранить</a>
+       (click)="onSaveCrop()"
+       *ngIf="!loading && !!position">Сохранить</a>
     <!-- Закрыть окно -->
     <a mat-stroked-button
        color="basic"
        mat-dialog-close>Отмена</a>
   </div>
 </div>
+
+
+
+<!-- Загрузка -->
+<ng-template #loader>
+  <app-inform title="Загрузка аватарки"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
