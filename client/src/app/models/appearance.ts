@@ -34,8 +34,7 @@ export const BackgroundImageDatas: BackgroundImageData[] = [
   }, {
     id: 2,
     title: "По ту сторону иллюминатора",
-    positionY: "top",
-    imageOverlay: false
+    positionY: "top"
   }, {
     id: 3,
     title: "Побег от НЛО",
@@ -71,8 +70,7 @@ export const BackgroundImageDatas: BackgroundImageData[] = [
     positionY: "bottom"
   }, {
     id: 12,
-    title: "Лагуна безмятежности",
-    imageOverlay: false
+    title: "Лагуна безмятежности"
   }, {
     id: 13,
     title: "Разумный муравейник",
