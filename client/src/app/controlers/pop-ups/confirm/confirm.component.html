@@ -1,9 +1,10 @@
 <!-- Шапка окна -->
 <div mat-dialog-title
-     class="title">
+     class="title"
+     [ngClass]="{ hasSubTitle: !!data.subTitle }">
   <div class="title__title">{{data.title}}</div>
   <div class="title__subTitle"
-       *ngIf="data.subTitle">{{data.subTitle}}</div>
+       *ngIf="!!data.subTitle">{{data.subTitle}}</div>
   <mat-icon class="title__button"
             mat-dialog-close>close</mat-icon>
 </div>
