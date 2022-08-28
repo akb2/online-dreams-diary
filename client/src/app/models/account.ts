@@ -157,7 +157,7 @@ export const UserPrivateNames: UserPrivateNameItem[] = [
   {
     rule: "myDreamList",
     icon: "collections_bookmark",
-    name: "Мои дневник снов",
+    name: "Мой дневник снов",
     desc: "Кто может просматривать ваш список сновидений (это не влияет на публичные сновидения в общем дневнике)"
   }
 ];
