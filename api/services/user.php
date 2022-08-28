@@ -595,6 +595,7 @@ class UserService
     $sqlData = array(
       'q' => $search['q'],
       'ids' => $search['ids'],
+      'exclude_ids' => $search['exclude_ids'],
       'sex' => $search['sex'],
       'birth_year' => $search['birth_year'],
       'birth_month' => $search['birth_month'],

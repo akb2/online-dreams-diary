@@ -9,10 +9,17 @@ WHERE
     AND (
       <? foreach($input["ids"] as $id): ?>
         <? if($i > 0): ?> OR <? endif; ?>
-          `id` = "<?=intval($id); ?>"
+        `id` = "<?=intval($id); ?>"
         <? $i += 1; ?>
       <? endforeach; ?>
     )
+  <? endif; ?>
+
+  <?/* Исключение IDs из поиска */?>
+  <? if(count($input["exclude_ids"]) > 0): ?>
+    <? foreach($input["exclude_ids"] as $id): ?>
+      AND `id` != "<?=intval($id); ?>"
+    <? endforeach; ?>
   <? endif; ?>
 
   <?/* Поиск по поисковому запросу */?>

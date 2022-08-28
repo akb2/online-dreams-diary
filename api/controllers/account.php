@@ -119,6 +119,7 @@ class Account
       "birth_month" => $data["search_birthMonth"] ?? null,
       "birth_day" => $data["search_birthDay"] ?? null,
       "ids" => strlen($data["search_ids"]) > 0? explode(",", $data["search_ids"]): array(),
+      "exclude_ids" => strlen($data["search_excludeIds"]) > 0? explode(",", $data["search_excludeIds"]): array(),
       "page" => $data["search_page"] ?? 1,
       "limit" => $data["search_limit"] ?? null
     );

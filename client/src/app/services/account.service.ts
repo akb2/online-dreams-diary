@@ -396,4 +396,5 @@ export interface SearchUser {
   page?: number;
   limit?: number;
   ids?: number[];
+  excludeIds?: number[];
 }
