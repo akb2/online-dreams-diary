@@ -42,11 +42,12 @@
               <!-- Добавить пользователя -->
               <a mat-stroked-button
                  color="basic"
-                 class="setting__list-title-add">Добавить</a>
+                 class="setting__list-title-add"
+                 (click)="onSearchOpen(rule.rule, listTypes.white)">Добавить</a>
             </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!getUsers(rule.rule, listTypes.white).length; else usersEmpty">
+                 *ngIf="!!getUsers(rule.rule, listTypes.white).length">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.white }"
                             *ngFor="let user of getUsers(rule.rule, listTypes.white)"></ng-container>
@@ -63,11 +64,12 @@
               <!-- Добавить пользователя -->
               <a mat-stroked-button
                  color="basic"
-                 class="setting__list-title-add">Добавить</a>
+                 class="setting__list-title-add"
+                 (click)="onSearchOpen(rule.rule, listTypes.black)">Добавить</a>
             </div>
             <!-- Список пользователей -->
             <div class="setting__list-items user__list"
-                 *ngIf="!!getUsers(rule.rule, listTypes.black); else usersEmpty">
+                 *ngIf="!!getUsers(rule.rule, listTypes.black)">
               <ng-container [ngTemplateOutlet]="userBlock"
                             [ngTemplateOutletContext]="{ user, rule: rule.rule, listType: listTypes.black }"
                             *ngFor="let user of getUsers(rule.rule, listTypes.black)"></ng-container>
@@ -134,11 +136,6 @@
       <ng-container *ngIf="getUserMoreState(rule, listType)">Скрыть</ng-container>
     </a>
   </div>
-</ng-template>
-
-<!-- Список пользователей пуст -->
-<ng-template #usersEmpty>
-  <div class="user__empty">Список пуст</div>
 </ng-template>
 
 

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
+import { PopupSearchUsersComponent } from '@_controlers/search-users/search-users.component';
 import { PeoplePlural, PrivateType, PrivateTypes, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, UserPrivateNames } from '@_models/account';
 import { CustomObjectKey, SimpleObject } from '@_models/app';
 import { NavMenuType } from '@_models/nav-menu';
@@ -89,7 +91,8 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private matDialog: MatDialog
   ) {
     this.defineData(true);
   }
@@ -170,6 +173,24 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     this.showAll[rule][listType] = !this.showAll[rule][listType];
     // Обновить
     this.changeDetectorRef.detectChanges();
+  }
+
+  // Открыть окно поиска пользователей
+  onSearchOpen(rule: keyof UserPrivate, listType: ListType): void {
+    const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
+    const subTitle: string = listType === ListType.white ?
+      "Белый список" :
+      "Черный список";
+    // Открытие диалога
+    PopupSearchUsersComponent.open(this.matDialog, { subTitle, rule, listTypeName }).afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userId => {
+        if (!!userId) {
+          (this.form?.get(rule)?.get(listTypeName) as FormArray).push(this.formBuilder.control(userId));
+          // Сохранить настройки
+          this.onSave();
+        }
+      });
   }
 
 

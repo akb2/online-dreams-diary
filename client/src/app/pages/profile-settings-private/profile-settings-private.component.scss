@@ -41,7 +41,6 @@
       flex-flow: row nowrap;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
       // Текст
       &-text {
         @include mixins.lineClamp(1, 14px, 1.2);
@@ -50,6 +49,10 @@
         font-weight: 400;
         color: colors.$title;
       }
+    }
+    // Список
+    &-items {
+      margin-top: 15px;
     }
     // Белый список
     &-white {

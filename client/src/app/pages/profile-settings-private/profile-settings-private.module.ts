@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocomplete-input.module';
+import { CardModule } from '@_controlers/card/card.module';
+import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from '@_controlers/nav-menu/nav-menu.module';
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
-import { ProfileSettingsPrivateComponent } from '@_pages/profile-settings-private/profile-settings-private.component';
+import { PopupSearchUsersModule } from '@_controlers/search-users/search-users.module';
 import { ProfileSettingsPrivateRoutingModule } from '@_pages/profile-settings-private/profile-settings-private-routing.module';
-import { CardModule } from '@_controlers/card/card.module';
-import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocomplete-input.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { InformModule } from '@_controlers/inform/inform.module';
+import { ProfileSettingsPrivateComponent } from '@_pages/profile-settings-private/profile-settings-private.component';
 
 
 
@@ -30,7 +31,8 @@ import { InformModule } from '@_controlers/inform/inform.module';
     FormsModule,
     MatIconModule,
     MatButtonModule,
-    InformModule
+    InformModule,
+    PopupSearchUsersModule
   ]
 })
 
