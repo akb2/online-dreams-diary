@@ -131,11 +131,17 @@
     // Свойства
     display: grid;
     grid-template-columns: 1fr #{$title-size};
-    grid-template-rows: #{math.div($title-size, 2)} #{math.div($title-size, 2)};
-    grid-template-areas: "title button" "subtitle button";
+    grid-template-rows: $title-size;
+    grid-template-areas: "title button";
     grid-gap: 0 15px;
     align-items: center;
     line-height: math.div($title-size, 2);
+    // Подзаголовок
+    &.hasSubTitle {
+      grid-template-areas: "title button" "subtitle button";
+      grid-template-rows: #{math.div($title-size, 2)} #{math.div($title-size, 2)};
+    }
+
     // Заголовок
     &__title {
       grid-area: title;
@@ -173,7 +179,7 @@
       line-height: 1;
       max-height: calc(100vh - #{($win-padding * 2) + ($title-size + 20px) + (52px + (16px * 2) - $win-padding)});
     }
-    // Содержимое
+    // Действия
     &-actions {
       width: 100%;
       padding: 16px 0;
