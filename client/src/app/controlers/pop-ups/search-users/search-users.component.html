@@ -1,0 +1,94 @@
+<!-- Шапка окна -->
+<div mat-dialog-title
+     class="title"
+     [ngClass]="{ hasSubTitle: !!data.subTitle }">
+  <div class="title__title">Поиск пользователей</div>
+  <div class="title__subTitle"
+       *ngIf="!!data.subTitle">{{data.subTitle}}</div>
+  <mat-icon class="title__button"
+            mat-dialog-close>close</mat-icon>
+</div>
+
+<!-- Содержимое -->
+<div mat-dialog-content>
+  <ng-container *ngIf="ready; else loader">
+    <ng-container *ngIf="!loading; else loadingList">
+      <!-- Список пользователей -->
+      <div class="user__list"
+           *ngIf="!!usersCount">
+        <div class="user"
+             [ngClass]="{ hasSubTitle: !!user.pageStatus }"
+             *ngFor="let user of users">
+          <!-- Аватарка -->
+          <div class="user__avatar">
+            <img [src]="user.avatars.middle"
+                 *ngIf="!!user.avatars.middle.length; else noUserAvatar" />
+          </div>
+          <!-- Имя -->
+          <div class="user__title">{{user.name}} {{user.lastName}}</div>
+          <!-- Фамилия -->
+          <div class="user__sub-title"
+               *ngIf="!!user.pageStatus">{{user.pageStatus}}</div>
+          <!-- Кнопка добавить -->
+          <div class="user__action">
+            <!-- Общая кнопка -->
+            <a mat-stroked-button
+               color="basic"
+               (click)="onUserChoice(user.id)"
+               *ngIf="breakpoint !== 'xsmall'">Выбрать</a>
+            <!-- Для телефона -->
+            <a mat-icon-button
+               color="basic"
+               (click)="onUserChoice(user.id)"
+               *ngIf="breakpoint === 'xsmall'">
+              <mat-icon>add</mat-icon>
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- Ничего не найдено -->
+      <ng-container [ngTemplateOutlet]="searchError"
+                    [ngTemplateOutletContext]="{ q: form.get('q')?.value ?? '' }"
+                    *ngIf="!usersCount"></ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- Панель действия -->
+<div mat-dialog-actions
+     [formGroup]="form">
+  <!-- Поле поиска -->
+  <app-text-input label="Имя пользователя или ID"
+                  formControlName="q"
+                  [submitAfterActivity]="true"
+                  [disabled]="!ready || loading"
+                  class="search-field"
+                  (submit)="onSearch()"></app-text-input>
+</div>
+
+
+
+<!-- Загрузчик общих данных -->
+<ng-template #loader>
+  <app-inform title="Загрузка данных"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Загрузчик -->
+<ng-template #loadingList>
+  <app-inform title="Поиск пользователей"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Ошибка поиска -->
+<ng-template #searchError
+             let-q="q">
+  <app-inform [icon]="!q? 'search': 'close'"
+              [title]="!q? 'Начните поиск': 'Ничего не найдено'"
+              [subTitle]="!q? 'Воспользуйтесь полем поиска, чтобы найти нужного пользователя': 'Попробуйте ввести запрос иначе'"></app-inform>
+</ng-template>
+
+<!-- Нет аватарки -->
+<ng-template #noUserAvatar>
+  <mat-icon>person</mat-icon>
+</ng-template>

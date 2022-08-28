@@ -1,0 +1,109 @@
+@use "sass:map";
+@use "sass:math";
+@use "../../../../assets/styles/material";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/mixins";
+
+// Базовый стиль окна
+@include material.mat-dialog;
+
+// Поле поиска
+.search-field {
+  width: 100%;
+}
+
+// Список пользователей
+.user {
+  $counts: (
+    default: 2,
+    small: 1,
+    xsmall: 1,
+  );
+  $minHeightLines: (
+    default: 4,
+  );
+  $gapY: 15px;
+  $gapX: 25px;
+  $iconSize: 48px;
+  $textSpacing: 5px;
+  // Свойства
+  display: grid;
+  grid-template-columns: #{$iconSize} 1fr auto;
+  grid-template-areas: "avatar title action";
+  align-items: center;
+  gap: 0 8px;
+  // Список
+  &__list {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: #{$gapY} #{$gapX};
+  }
+  // Аватарка
+  &__avatar {
+    grid-area: avatar;
+    width: $iconSize;
+    height: $iconSize;
+    border-radius: 50%;
+    overflow: hidden;
+    // Картинка и иконка
+    > img,
+    > mat-icon {
+      display: block;
+      width: inherit;
+      height: inherit;
+    }
+    // Кратинка
+    > img {
+      object-fit: cover;
+    }
+    // Иконка
+    > mat-icon {
+      line-height: $iconSize;
+      text-align: center;
+      font-size: $iconSize * 0.6;
+      background-color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$mat-primary, contrast, 500);
+    }
+  }
+  // Заголовок
+  &__title {
+    @include mixins.lineClamp(1, (math.div($iconSize, 2) - $textSpacing), 14px, math.div($textSpacing, 2));
+    // Свойства
+    grid-area: title;
+    font-weight: 400;
+    color: colors.$title;
+    padding-top: $textSpacing;
+    padding-bottom: 0;
+  }
+  // Подзаголовок
+  &__sub-title {
+    @include mixins.lineClamp(1, (math.div($iconSize, 2) - $textSpacing), 13px, math.div($textSpacing, 2));
+    // Свойства
+    grid-area: subtitle;
+    font-weight: 300;
+    color: colors.$subtitle;
+    padding-top: 0;
+    padding-bottom: $textSpacing;
+  }
+  // Кнопка удаления
+  &__action {
+    grid-area: action;
+  }
+
+  // Показать подзаголовок
+  &.hasSubTitle {
+    grid-template-areas: "avatar title action" "avatar subtitle action";
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($counts, $minHeightLines) using($count, $minHeightLine) {
+    width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
+    // Список
+    &__list {
+      min-height: ($iconSize * $minHeightLine) + ($gapY * ($minHeightLine - 1));
+    }
+  }
+}
