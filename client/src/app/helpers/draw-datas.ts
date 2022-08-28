@@ -44,6 +44,11 @@ export class DrawDatas {
   public static backButton: DrawInterface[];
   public static toContentButton: DrawInterface[];
 
+
+
+
+
+  // Высота короткой шапки
   private static get shortHeight(): number {
     if (DrawDatas.screenWidth < 900) {
       return 240;
@@ -54,6 +59,32 @@ export class DrawDatas {
     }
     // По умолчанию
     return 440;
+  }
+
+  // Допустимая максимальная высота шапки
+  static get maxHeight(): number {
+    if (DrawDatas.type === "full") {
+      return DrawDatas.screenHeight;
+    }
+
+    else if (DrawDatas.type === "short") {
+      return DrawDatas.screenHeight > DrawDatas.shortHeight ? DrawDatas.shortHeight : DrawDatas.screenHeight;
+    }
+
+    return DrawDatas.minHeight;
+  }
+
+  // Количество линий для подзаголовка
+  static get getSubTitleLines(): number {
+    if (DrawDatas.type === "full") {
+      return 6;
+    }
+
+    else if (DrawDatas.type === "short") {
+      return 3;
+    }
+
+    return 1;
   }
 
 
@@ -319,25 +350,52 @@ export class DrawDatas {
     });
 
     // Подзаголовок
-    DrawDatas.subtitle = [{
-      property: "font-size",
-      data: {
-        default: { min: 13, max: 40, unit: "px" },
-        xsmall: { min: 13, max: 16, unit: "px" },
-        small: { min: 13, max: 20, unit: "px" },
-        middle: { min: 13, max: 24, unit: "px" },
-        large: { min: 13, max: 32, unit: "px" }
+    DrawDatas.subtitle = [
+      // Размер шрифта
+      {
+        property: "font-size",
+        data: {
+          default: { min: 13, max: 40, unit: "px" },
+          xsmall: { min: 13, max: 16, unit: "px" },
+          small: { min: 13, max: 20, unit: "px" },
+          middle: { min: 13, max: 24, unit: "px" },
+          large: { min: 13, max: 32, unit: "px" }
+        }
+      },
+      // Высота строки
+      {
+        property: "line-height",
+        data: {
+          default: { min: 18, max: 52, unit: "px" },
+          xsmall: { min: 18, max: 22, unit: "px" },
+          small: { min: 18, max: 30, unit: "px" },
+          middle: { min: 18, max: 32, unit: "px" },
+          large: { min: 18, max: 40, unit: "px" }
+        }
+      },
+      // Высота
+      {
+        property: "max-height",
+        data: {
+          default: { min: 18, max: 52 * DrawDatas.getSubTitleLines, unit: "px" },
+          xsmall: { min: 18, max: 22 * DrawDatas.getSubTitleLines, unit: "px" },
+          small: { min: 18, max: 30 * DrawDatas.getSubTitleLines, unit: "px" },
+          middle: { min: 18, max: 32 * DrawDatas.getSubTitleLines, unit: "px" },
+          large: { min: 18, max: 40 * DrawDatas.getSubTitleLines, unit: "px" }
+        }
+      },
+      // Количество линий
+      {
+        property: "-webkit-line-clamp",
+        data: {
+          default: { min: 1, max: DrawDatas.getSubTitleLines },
+          xsmall: { min: 1, max: DrawDatas.getSubTitleLines },
+          small: { min: 1, max: DrawDatas.getSubTitleLines },
+          middle: { min: 1, max: DrawDatas.getSubTitleLines },
+          large: { min: 1, max: DrawDatas.getSubTitleLines }
+        }
       }
-    }, {
-      property: "line-height",
-      data: {
-        default: { min: 18, max: 52, unit: "px" },
-        xsmall: { min: 18, max: 22, unit: "px" },
-        small: { min: 18, max: 30, unit: "px" },
-        middle: { min: 18, max: 32, unit: "px" },
-        large: { min: 18, max: 40, unit: "px" }
-      }
-    }];
+    ];
     // Подзаголовок с кнопкой меню или назад
     DrawDatas.subtitleWithBackButton = [];
     Object.assign(DrawDatas.subtitleWithBackButton, DrawDatas.subtitle);
@@ -556,18 +614,5 @@ export class DrawDatas {
         default: { min: 0, max: 1, unit: "px" }
       }
     }];
-  }
-
-  // Допустимая максимальная высота шапки
-  static get maxHeight(): number {
-    if (DrawDatas.type == "full") {
-      return DrawDatas.screenHeight;
-    }
-
-    else if (DrawDatas.type == "short") {
-      return DrawDatas.screenHeight > DrawDatas.shortHeight ? DrawDatas.shortHeight : DrawDatas.screenHeight;
-    }
-
-    return DrawDatas.minHeight;
   }
 }

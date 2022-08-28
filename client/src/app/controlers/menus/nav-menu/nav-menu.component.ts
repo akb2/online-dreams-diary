@@ -7,7 +7,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { fromEvent, interval, map, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -73,8 +73,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollMouseStartY: number = 0;
   private swipeScrollDistance: number = 0;
   private swipeScrollPress: boolean = false;
-  private scrollSmoothSpeed: number = 150;
-  private scrollSmoothTimeStep: number = 15;
+  private scrollSmoothSpeed: number = 210;
+  private scrollSmoothTimeStep: number = 30;
 
   css: CustomObject<SimpleObject> = {};
 
@@ -590,24 +590,27 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         // Запретить скролл
         this.stopScroll();
         // Плавный скролл
-        timer(0, this.scrollSmoothTimeStep)
+        interval(this.scrollSmoothTimeStep)
           .pipe(
             takeUntil(this.destroy$),
-            takeWhile(step => step <= scrollLastStep, true),
-            tap(step => {
-              let scrollTo: number = step * scrollSmoothStep;
-              scrollTo = scrollTo > scrollDiff ? scrollDiff : scrollTo;
-              top = startScroll + (scrollTo * scrollDelta);
-              // Запретить скролл
-              this.stopScroll();
-              // Запомнить новый скролл
-              this.scroll = top;
-              // Скролл
-              window.scrollTo({ behavior: "auto", top });
-            }),
-            skipWhile(step => step <= scrollLastStep)
+            map(step => step + 1),
+            takeWhile(step => step < scrollLastStep, true),
           )
-          .subscribe(() => this.onWindowScrollEnd());
+          .subscribe(step => {
+            let scrollTo: number = step * scrollSmoothStep;
+            scrollTo = scrollTo > scrollDiff ? scrollDiff : scrollTo;
+            top = startScroll + (scrollTo * scrollDelta);
+            // Запретить скролл
+            this.stopScroll();
+            // Запомнить новый скролл
+            this.scroll = top;
+            // Скролл
+            window.scroll(0, top);
+            // Закончить скролл
+            if (step === scrollLastStep) {
+              this.onWindowScrollEnd();
+            }
+          });
       }
     }
     // Окончание скролла

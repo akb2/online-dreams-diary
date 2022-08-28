@@ -186,6 +186,9 @@ $breakpointMobile: small;
   }
   // Заголовок
   &__title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.2;
     color: colors.$title-dark;
     font-weight: 400;
@@ -196,13 +199,10 @@ $breakpointMobile: small;
     color: colors.$subtitle-dark;
     font-weight: 300;
     letter-spacing: 0;
-  }
-  // Заголовок, gодзаголовок
-  &__title,
-  &__subtitle {
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    white-space: normal;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
   // Аватарка
   &__avatar {
