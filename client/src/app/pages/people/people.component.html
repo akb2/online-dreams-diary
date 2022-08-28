@@ -8,7 +8,9 @@
                [imageOverlay]="backgroundImageData.imageOverlay"
                avatarIcon="person_search"
                title="Поиск"
-               subTitle="Людей"></app-main-menu>
+               subTitle="Людей"
+               floatButtonIcon="search"
+               (floatButtonCallback)="openSearch()"></app-main-menu>
 
 <!-- Контейнер с данными -->
 <div class="root-section"
