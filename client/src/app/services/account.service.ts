@@ -11,7 +11,7 @@ import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { filter, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, filter, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -64,6 +64,20 @@ export class AccountService implements OnDestroy {
       blackList: [],
       whiteList: []
     };
+  }
+
+  // Получить возраст пользователя
+  getAge(mixedDate: Date | string): number {
+    const today: Date = new Date();
+    const date: Date = mixedDate ? typeof mixedDate === "string" ? new Date(mixedDate) : mixedDate : new Date();
+    let age: number = today.getFullYear() - date.getFullYear();
+    const m: number = today.getMonth() - date.getMonth();
+    // Вычисление ДР
+    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    // Вернуть возраст
+    return age;
   }
 
 
@@ -130,6 +144,19 @@ export class AccountService implements OnDestroy {
     this.tokenService.deleteAuth();
   }
 
+  // Проверка настроек приватности
+  checkPrivate(rule: keyof UserPrivate, user: number, codes: string[] = []): Observable<boolean> {
+    const url: string = this.baseUrl + "account/checkPrivate";
+    // Вернуть запрос
+    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader({ rule, user })).pipe(
+      switchMap(r => r.result.code === "0001" || codes.some(testCode => testCode === r.result.code) ?
+        of(r.result.code) :
+        this.apiService.checkResponse(r.result.code, codes)
+      ),
+      catchError(code => of(code === "0001")),
+    );
+  }
+
 
 
 
@@ -191,20 +218,6 @@ export class AccountService implements OnDestroy {
       mergeMap(r => of(!!r?.people?.length ? r.people.map(u => this.userConverter(u)) : [])),
       mergeMap((result: User[]) => of({ count, result, limit }))
     );
-  }
-
-  // Получить возраст пользователя
-  getAge(mixedDate: Date | string): number {
-    const today: Date = new Date();
-    const date: Date = mixedDate ? typeof mixedDate === "string" ? new Date(mixedDate) : mixedDate : new Date();
-    let age: number = today.getFullYear() - date.getFullYear();
-    const m: number = today.getMonth() - date.getMonth();
-    // Вычисление ДР
-    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
-      age--;
-    }
-    // Вернуть возраст
-    return age;
   }
 
 

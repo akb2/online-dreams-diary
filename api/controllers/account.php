@@ -54,38 +54,27 @@ class Account
     return $this->userService->registerUserApi($data);
   }
 
-  // Изменение пароля
+  // Проверить настройку приватности
   // * POST
-  public function changePassword($data): array {
+  public function checkPrivate(array $dataIn): array
+  {
     $code = "0000";
-    $message = "";
-    $id = $_GET["id"];
+    $id = $_GET["user_id"];
     $token = $_GET["token"];
+    $dataOut = false;
 
     // Проверка входящих данных
-    if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
+    if (strlen($dataIn['rule']) > 0 & strlen($dataIn['user']) > 0) {
       // Проверка токена
-      if ($this->tokenService->checkToken($id, $token)) {
-        // Проверка доступа
-        if ($id == $this->tokenService->getUserIdFromToken($token)) {
-          $sqlData = array(
-            'id' => $id,
-            'password' => $data['current_password']
-          );
-          // Проверка совпадения пароля
-          if ($this->userService->checkUserPassword($sqlData)) {
-            $sqlData['password'] = $data['new_password'];
-            // Сохранение пароля
-            return $this->userService->changePasswordApi($sqlData);
-          }
-          // Пароль неверный
-          else {
-            $code = '0002';
-          }
+      if ($this->tokenService->checkToken($id, $token) || (!strlen($id) && !strlen($token))) {
+        $dataOut = $this->userService->checkPrivate($dataIn['rule'], $dataIn['user'], intval($id) ?? 0);
+        // Доступ разрешен
+        if ($dataOut) {
+          $code = '0001';
         }
-        // Ошибка доступа
-        else {
-          $code = "9040";
+        // Доступ не разрешен
+        else{
+          $code = '8100';
         }
       }
       // Неверный токен
@@ -101,14 +90,17 @@ class Account
     // Вернуть массив
     return array(
       "code" => $code,
-      "message" => $message,
-      "data" => array()
+      "message" => "",
+      "data" => $dataOut
     );
   }
 
+
+
   // Поиск
   // * GET
-  public function search($data):array{
+  public function search($data): array
+  {
     $code = "0002";
     $userId = $_GET["user_id"];
     $token = $_GET["token"];
@@ -174,6 +166,60 @@ class Account
       "code" => $code,
       "message" => "",
       "data" => $user
+    );
+  }
+
+
+
+  // Изменение пароля
+  // * POST
+  public function changePassword($data): array {
+    $code = "0000";
+    $message = "";
+    $id = $_GET["id"];
+    $token = $_GET["token"];
+
+    // Проверка входящих данных
+    if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
+      // Проверка токена
+      if ($this->tokenService->checkToken($id, $token)) {
+        // Проверка доступа
+        if ($id == $this->tokenService->getUserIdFromToken($token)) {
+          $sqlData = array(
+            'id' => $id,
+            'password' => $data['current_password']
+          );
+          // Проверка совпадения пароля
+          if ($this->userService->checkUserPassword($sqlData)) {
+            $sqlData['password'] = $data['new_password'];
+            // Сохранение пароля
+            return $this->userService->changePasswordApi($sqlData);
+          }
+          // Пароль неверный
+          else {
+            $code = '0002';
+          }
+        }
+        // Ошибка доступа
+        else {
+          $code = "9040";
+        }
+      }
+      // Неверный токен
+      else {
+        $code = "9015";
+      }
+    }
+    // Переданы пустые/неполные данные
+    else {
+      $code = "1000";
+    }
+
+    // Вернуть массив
+    return array(
+      "code" => $code,
+      "message" => $message,
+      "data" => array()
     );
   }
 
@@ -272,6 +318,8 @@ class Account
       "data" => array()
     );
   }
+
+
 
   // Загрузить аватарку
   // * POST

@@ -9,7 +9,7 @@ import { Dream, DreamPlural } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
-import { filter, mergeMap, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
+import { filter, map, mergeMap, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
 
 
 
@@ -29,6 +29,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   pageData: RouteData;
 
   itsMyPage: boolean = false;
+  userHasAccess: boolean = false;
   ready: boolean = false;
   dreamsLoading: boolean = false;
 
@@ -106,14 +107,20 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
       filter(({ params }) => !!params),
       switchMap(r => parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id) ? of(r) : throwError(r)),
-      mergeMap(({ params, user }) => (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
-        this.accountService.getUser(parseInt(params.user_id)) :
-        of(user),
+      map(o => ({ ...o, userId: parseInt(o.params.user_id) })),
+      map(o => ({ ...o, isCurrentUser: !((!!o.user && o.user.id !== o.userId) || (!o.user && this.pageData.userId === -2)) })),
+      mergeMap(
+        ({ userId, isCurrentUser }) => isCurrentUser ? of(true) : this.accountService.checkPrivate("myPage", userId),
+        (o, hasAccess) => ({ ...o, hasAccess })
+      ),
+      mergeMap(
+        ({ user, userId, isCurrentUser }) => isCurrentUser ? of(user) : this.accountService.getUser(userId, ["8101"]),
         (o, visitedUser) => ({ ...o, visitedUser })
       )
     )
       .subscribe(
-        ({ user, visitedUser }) => {
+        ({ user, visitedUser, hasAccess }) => {
+          this.userHasAccess = hasAccess;
           this.user = user;
           this.visitedUser = visitedUser;
           this.setPageData();
@@ -144,11 +151,21 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     }
     // Профиль другого пользователя
     else {
+      // Страница доступна
+      if (this.userHasAccess) {
+        this.subTitle = this.visitedUser.pageStatus;
+        this.backgroundImageData = this.visitedUser.settings.profileBackground;
+        this.navMenuType = this.visitedUser.settings.profileHeaderType;
+      }
+      // Скрыто настройками приватности
+      else {
+        this.subTitle = "";
+        this.backgroundImageData = BackgroundImageDatas.find(({ id }) => id === 1);
+        this.navMenuType = NavMenuType.collapse;
+      }
+      // Общие настройки
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
-      this.subTitle = this.visitedUser.pageStatus;
       this.pageTitle = AppComponent.createTitle(this.title);
-      this.backgroundImageData = this.visitedUser.settings.profileBackground;
-      this.navMenuType = this.visitedUser.settings.profileHeaderType;
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.menuAvatarIcon = "person";
       // Готово

@@ -50,7 +50,7 @@ export class TokenService {
   }
 
   // Сформировать параметры URL
-  getHttpHeader(params?: any, paramsPreffix: string = ""): CustomObject<any> {
+  getHttpHeader(params: any = null, paramsPreffix: string = ""): CustomObject<any> {
     return {
       ...this.httpHeader,
       params: new HttpParams({

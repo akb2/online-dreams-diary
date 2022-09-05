@@ -223,6 +223,41 @@ class UserService
     return hash('sha512', $this->config['hashSecret'] . $password);
   }
 
+  // Проверить настройку приватности
+  public function checkPrivate(string $rule, int $userId, int $currentUser): bool
+  {
+    $user = $this->getUser($userId);
+    $ruleData = $user['private'][$rule];
+    // Правило существует
+    if (!!$ruleData) {
+      // Привести к типам
+      $ruleData['type'] = intval($ruleData['type']);
+      // Пользователь в белом списке
+      if (array_search($currentUser, $ruleData['whiteList'])) {
+        return true;
+      }
+      // Пользователя нет в черном списке
+      elseif (array_search($currentUser, $ruleData['blackList']) === false) {
+        // Публичное правило
+        // ? 3
+        if ($ruleData['type'] === 3) {
+          return true;
+        }
+        // Публичное правило в пределах участников сайта
+        // ? 2
+        elseif ($ruleData['type'] === 2 && $currentUser > 0) {
+          return true;
+        }
+        // Пользователя являются друзьями
+        // ? 1
+        elseif ($ruleData['type'] === 1) {
+        }
+      }
+    }
+    // Нет доступа
+    return false;
+  }
+
 
 
   // Сохранить данные
