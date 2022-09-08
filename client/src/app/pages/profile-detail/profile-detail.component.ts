@@ -30,6 +30,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
+  userHasDiaryAccess: boolean = false;
   ready: boolean = false;
   dreamsLoading: boolean = false;
 
@@ -188,19 +189,25 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     // Настройки
     this.dreamsLoading = true;
     // Поиск сновидений
-    this.dreamService.search({ user, limit })
+    (!!this.user?.id && this.user.id === user ? of(true) : this.accountService.checkPrivate("myDreamList", user))
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(r => r.count > 0 ? of(r) : throwError("Сновидения не найдены"))
+        mergeMap(
+          hasAccess => hasAccess ? this.dreamService.search({ user, limit }) : of({ count: 0, result: [], limit: 1 }),
+          (hasAccess, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
+        ),
+        switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
       )
       .subscribe(
-        ({ result: dreams, count }) => {
+        ({ hasAccess, dreams, count }) => {
+          this.userHasDiaryAccess = hasAccess;
           this.dreams = dreams;
           this.dreamsCount = count;
           this.dreamsLoading = false;
           this.changeDetectorRef.detectChanges();
         },
-        () => {
+        hasAccess => {
+          this.userHasDiaryAccess = hasAccess;
           this.dreams = [];
           this.dreamsCount = 0;
           this.dreamsLoading = false;
