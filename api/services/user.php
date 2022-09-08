@@ -35,6 +35,27 @@ class UserService
 
 
 
+  // Настройки приватности по умолчанию
+  private function getDefaultUserPrivate(): array
+  {
+    return array(
+      'myPage' => $this->getDefaultUserPrivateItem(),
+      'myDreamList' => $this->getDefaultUserPrivateItem()
+    );
+  }
+
+  // Настройки правила приватности по умолчанию
+  private function getDefaultUserPrivateItem(): array
+  {
+    return array(
+      'type' => 3,
+      'blackList' => array(),
+      'whiteList' => array()
+    );
+  }
+
+
+
   // Пересобрать таблицы БД
   public function createTableApi(string $password): bool
   {
@@ -227,7 +248,8 @@ class UserService
   public function checkPrivate(string $rule, int $userId, int $currentUser): bool
   {
     $user = $this->getUser($userId);
-    $ruleData = $user['private'][$rule];
+    $rules = is_array($user['private']) && count($user['private']) > 0? $user['private']: $this->getDefaultUserPrivate();
+    $ruleData = is_array($rules[$rule]) && count($rules[$rule]) > 0? $rules[$rule]: $this->getDefaultUserPrivateItem();
     // Правило существует
     if (!!$ruleData) {
       // Привести к типам
