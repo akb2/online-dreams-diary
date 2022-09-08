@@ -19,20 +19,23 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section"
-       [ngClass]="{ center: loading }">
+       [ngClass]="{ center: loading || !userHasAccess }">
+    <!-- Дневник сновидений -->
     <div class="container">
       <!-- Список сновидений -->
       <ng-container *ngIf="!loading; else listLoader">
-        <ng-container *ngIf="dreamsCount > 0; else listNotFound">
-          <!-- Пагинатор -->
-          <ng-container [ngTemplateOutlet]="pagination"></ng-container>
-          <!-- Список сновидений -->
-          <app-dream-list [dreams]="dreams"
-                          [sourcePlace]="!!visitedUser? '': 'diary-all'"
-                          (dreamDelete)="search()"></app-dream-list>
-          <!-- Пагинатор -->
-          <ng-container [ngTemplateOutlet]="pagination"
-                        *ngIf="bottomPaginationIsAvail"></ng-container>
+        <ng-container *ngIf="userHasAccess; else AccessDeniedByPrivate">
+          <ng-container *ngIf="dreamsCount > 0; else listNotFound">
+            <!-- Пагинатор -->
+            <ng-container [ngTemplateOutlet]="pagination"></ng-container>
+            <!-- Список сновидений -->
+            <app-dream-list [dreams]="dreams"
+                            [sourcePlace]="!!visitedUser? '': 'diary-all'"
+                            (dreamDelete)="search()"></app-dream-list>
+            <!-- Пагинатор -->
+            <ng-container [ngTemplateOutlet]="pagination"
+                          *ngIf="bottomPaginationIsAvail"></ng-container>
+          </ng-container>
         </ng-container>
       </ng-container>
     </div>
@@ -58,6 +61,14 @@
 <ng-template #listLoader>
   <app-inform title="Загрузка сновидений"
               subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Недоступно настройками приватности -->
+<ng-template #AccessDeniedByPrivate>
+  <app-inform [aboveIcon]="true"
+              icon="policy"
+              title="Дневник недоступен"
+              subTitle="Пользователь предпочел скрыть свой дневник сновидений настройками приватности"></app-inform>
 </ng-template>
 
 <!-- Не найдено -->

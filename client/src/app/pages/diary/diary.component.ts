@@ -56,8 +56,10 @@ export class DiaryComponent implements OnInit, OnDestroy {
   pageCount: number = 1;
 
   isMobile: boolean = false;
+  userHasAccess: boolean = false;
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
+  private diaryTypeByUser: DiaryTypeByUser;
 
   dreamPlural: SimpleObject = DreamPlural;
 
@@ -101,27 +103,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
     // Текущий пользователь и параметры URL
     this.defineData();
-    /*
-    this.activatedRoute.queryParams.subscribe(params => {
-      this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
-      this.queryParams = params as SimpleObject;
-      this.pageCurrent = parseInt(params.p) || 1;
-      // Текущий пользователь
-      this.accountService.user$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(user => {
-          this.user = user;
-          this.defineData();
-        });
-      // Подписка на тип устройства
-      this.screenService.isMobile$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(isMobile => {
-          this.isMobile = isMobile;
-          this.changeDetectorRef.detectChanges();
-        });
-    });
-    */
   }
 
   ngOnDestroy() {
@@ -215,6 +196,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.menuAvatarIcon = "person";
       this.floatButtonIcon = "add";
       this.floatButtonLink = "/diary/editor";
+      this.diaryTypeByUser = DiaryTypeByUser.my;
       // Установить посещаемого пользователя из текущего
       this.visitedUser = this.user;
       // Готово
@@ -229,6 +211,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.menuAvatarIcon = "person";
       this.backButtonLink = "/profile/" + this.visitedUser.id;
+      this.diaryTypeByUser = DiaryTypeByUser.user;
       // Готово
       this.ready = true;
     }
@@ -246,6 +229,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       // Название страницы
       this.pageTitle = AppComponent.createTitle(this.title);
       this.menuAvatarIcon = "content_paste_search";
+      this.diaryTypeByUser = DiaryTypeByUser.all;
       // Готово
       this.ready = true;
     }
@@ -266,30 +250,52 @@ export class DiaryComponent implements OnInit, OnDestroy {
       status: -1
     };
     // Загрузка списка
-    this.dreamService.search(search, ["0002"]).subscribe(
-      ({ count, result: dreams, limit }) => {
-        // Найдены сновидения
-        if (count > 0) {
-          this.dreamsCount = count;
-          this.pageLimit = limit;
-          this.pageCount = dreams.length;
-          this.dreams = dreams;
-          this.loading = false;
-          this.titleService.setTitle(this.pageTitle);
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        }
-        // Сновидения не найдены
-        else {
-          this.onNotDreamsFound();
-        }
-      },
-      () => this.onNotDreamsFound()
-    );
+    (this.diaryTypeByUser === DiaryTypeByUser.user ?
+      this.accountService.checkPrivate("myDreamList", this.visitedUser.id) :
+      of(true))
+      .pipe(
+        takeUntil(this.destroy$),
+        mergeMap(
+          hasAccess => hasAccess ? this.dreamService.search(search, ["0002"]) : of({ count: 0, result: [], limit: 1 }),
+          (hasAccess, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
+        )
+      )
+      .subscribe(
+        ({ hasAccess, count, dreams, limit }) => {
+          this.userHasAccess = hasAccess;
+          // Найдены сновидения
+          if (count > 0) {
+            this.dreamsCount = count;
+            this.pageLimit = limit;
+            this.pageCount = dreams.length;
+            this.dreams = dreams;
+            this.loading = false;
+            this.titleService.setTitle(this.pageTitle);
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          }
+          // Сновидения не найдены
+          else {
+            this.onNotDreamsFound();
+          }
+        },
+        () => this.onNotDreamsFound()
+      );
   }
 
   // Показать фильтры
   openSearch(): void {
     this.searchPanel?.openPanel();
   }
+}
+
+
+
+
+
+// Тип дневника
+enum DiaryTypeByUser {
+  my,
+  user,
+  all
 }
