@@ -17,50 +17,19 @@ export class TerrainService {
   private textureCache: TerrainTextureCache[] = [];
   materialCache: TerrainMaterialCache[] = [];
 
-  private water: Mesh;
-
-
-
-
-
-  // Получить воду
-  getWater(size: number): Mesh {
-    if (!this.water) {
-      const geometry: PlaneGeometry = new PlaneGeometry(size, size);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({
-        color: 0x004CB7,
-        side: FrontSide,
-        transparent: true,
-        opacity: 0.7
-      });
-      // Настройки
-      geometry.rotateX(this.getAngle(-90));
-      // Запомнить
-      this.water = new Mesh(geometry, material);
-    }
-    // Вернуть воду
-    return new Mesh().copy(this.water);
-  }
-
-  // Углы в радианы
-  private getAngle(angle: number): number {
-    return angle * Math.PI / 180;
-  }
-
 
 
 
 
   // Объект для отрисовки
-  getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights): TerrainDrawData {
-    const land: Mesh = new Mesh(this.getGeometry(size, height, closestHeights), this.getMaterial(terrainId));
-    const water: Mesh = this.getWater(size);
+  getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights, afterTextureLoad: (texture: Texture) => void = () => { }): TerrainDrawData {
+    const land: Mesh = new Mesh(this.getGeometry(size, height, closestHeights), this.getMaterial(terrainId, true, afterTextureLoad));
     // Настройки
     land.geometry.computeVertexNormals();
     land.castShadow = true;
     land.receiveShadow = true;
     // Вернуть объект
-    return { land, water };
+    return { land };
   }
 
   // Геометрия
@@ -134,25 +103,20 @@ export class TerrainService {
   }
 
   // Материалы
-  getMaterial(terrainId: number): MeshStandardMaterial {
+  getMaterial(terrainId: number, useCache: boolean = true, afterTextureLoad: (texture: Texture) => void = () => { }): MeshStandardMaterial {
     const findCache: (m: TerrainMaterialCache) => boolean = m => m.terrain === terrainId;
     const terrain: MapTerrain = this.getTerrain(terrainId);
     // Материал из кэша
-    if (this.materialCache.some(findCache)) {
+    if (this.materialCache.some(findCache) && useCache) {
       return new MeshStandardMaterial().copy(this.materialCache.find(findCache).material);
     }
     // Новый материал
     else {
-      const map: Texture = this.getTexture(terrainId);
-      const aoMap: Texture = this.getTexture(terrainId, "ao");
-      const normalMap: Texture = this.getTexture(terrainId, "normal");
-      const displacementMap: Texture = this.getTexture(terrainId, "disp");
+      const map: Texture = this.getTexture(terrainId, "face", useCache, afterTextureLoad);
+      const aoMap: Texture = this.getTexture(terrainId, "ao", useCache, afterTextureLoad);
+      const normalMap: Texture = this.getTexture(terrainId, "normal", useCache, afterTextureLoad);
+      const displacementMap: Texture = this.getTexture(terrainId, "disp", useCache, afterTextureLoad);
       const material: MeshStandardMaterial = new MeshStandardMaterial({
-        map,
-        aoMap,
-        normalMap,
-        displacementMap,
-        side: BackSide,
         ...Object
           .entries(terrain.settings)
           .filter(([k]) => k !== "colorR" && k !== "colorG" && k !== "colorB")
@@ -162,12 +126,19 @@ export class TerrainService {
           terrain.settings.colorR / 255,
           terrain.settings.colorG / 255,
           terrain.settings.colorB / 255
-        )
+        ),
+        side: BackSide,
+        map,
+        aoMap,
+        normalMap,
+        displacementMap,
       });
       // Настройки
       material.normalScale.set(1, - 1).multiplyScalar(terrain.settings.normalScale);
       // Сохранить в кэш
-      this.materialCache.push({ side: BackSide, material, terrain: terrainId });
+      if (useCache) {
+        this.materialCache.push({ side: BackSide, material, terrain: terrainId });
+      }
       // Вернуть материал
       return material;
     }
@@ -178,18 +149,18 @@ export class TerrainService {
 
   // Получить данные о типе местности
   getTerrain(terrainId: number): MapTerrain {
-    return MapTerrains.find(t => t.id === terrainId) || MapTerrains[0];
+    return MapTerrains.find(t => t.id === terrainId) ?? MapTerrains[0];
   }
 
   // Получение текстуры
-  private getTexture(terrainId: number, type: TextureType = "face"): Texture {
+  private getTexture(terrainId: number, type: TextureType = "face", useCache: boolean = true, afterTextureLoad: (texture: Texture) => void = () => { }): Texture {
     const findCache: (t: TerrainTextureCache) => boolean = t => t.terrain === terrainId;
     let texture: Texture;
     let aoTexture: Texture;
     let dispTexture: Texture;
     let normalTexture: Texture;
     // Текстура из кэша
-    if (this.textureCache.some(findCache)) {
+    if (this.textureCache.some(findCache) && useCache) {
       const cache: TerrainTextureCache = this.textureCache.find(findCache)!;
       texture = cache.texture;
       aoTexture = cache.aoTexture;
@@ -204,18 +175,20 @@ export class TerrainService {
       const dispTextureFile: string = this.path + "top/displacement/" + terrain.name + "." + terrain.exts.disp;
       const normalTextureFile: string = this.path + "top/normal/" + terrain.name + "." + terrain.exts.normal;
       // Результаты
-      texture = new TextureLoader().load(textureFile);
-      aoTexture = new TextureLoader().load(aoTextureFile);
-      dispTexture = new TextureLoader().load(dispTextureFile);
-      normalTexture = new TextureLoader().load(normalTextureFile);
+      texture = new TextureLoader().load(textureFile, afterTextureLoad);
+      aoTexture = new TextureLoader().load(aoTextureFile, afterTextureLoad);
+      dispTexture = new TextureLoader().load(dispTextureFile, afterTextureLoad);
+      normalTexture = new TextureLoader().load(normalTextureFile, afterTextureLoad);
       // Сохранить в кэш
-      this.textureCache.push({
-        texture,
-        aoTexture,
-        dispTexture,
-        normalTexture,
-        terrain: terrainId
-      });
+      if (useCache) {
+        this.textureCache.push({
+          texture,
+          aoTexture,
+          dispTexture,
+          normalTexture,
+          terrain: terrainId
+        });
+      }
     }
     // Массив текстур
     const textures: CustomObjectKey<TextureType, Texture> = {
@@ -269,7 +242,6 @@ export interface ClosestHeightAligment {
 // Интерфейс выходных данных
 export interface TerrainDrawData {
   land: Mesh;
-  water: Mesh;
 }
 
 
@@ -359,10 +331,10 @@ export const MapTerrains: MapTerrain[] = [
     ...d,
     isAvail: !!d?.isAvail || true,
     exts: {
-      face: d?.exts?.face as ImageExtension || ImageExtension.png,
-      disp: d?.exts?.disp as ImageExtension || ImageExtension.png,
-      normal: d?.exts?.normal as ImageExtension || ImageExtension.png,
-      ao: d?.exts?.ao as ImageExtension || ImageExtension.png
+      face: d?.exts?.face as ImageExtension ?? ImageExtension.png,
+      disp: d?.exts?.disp as ImageExtension ?? ImageExtension.png,
+      normal: d?.exts?.normal as ImageExtension ?? ImageExtension.png,
+      ao: d?.exts?.ao as ImageExtension ?? ImageExtension.png
     },
     settings: {
       colorR: d?.settings?.colorR === undefined ? 100 : d.settings.colorR,
