@@ -43,6 +43,7 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   roadTypeTool: typeof RoadTypeTool = RoadTypeTool;
   terrainList: MapTerrain[] = MapTerrains;
   roadTypeList: RoadTypeToolListItem[] = RoadTypeTools;
+  waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
   private tool: Tool = Tool.water;
@@ -59,11 +60,15 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   // * Инструменты: дорога
   roadType: RoadTypeTool = RoadTypeTool.road;
 
+  // * Инструменты: вода
+  waterType: WaterTypeTool = WaterTypeTool.sea;
+
   // ? Настройки работы редактора
   private toolActive: boolean = false;
   private toolActionTimer: number = 30;
   private terrainChangeStep: number = 1;
   private roadSquareMaxSize: number = 20;
+  private waterMaxCeils: number = 1000;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -105,7 +110,12 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     return this.landscapeToolList.find(t => t.type === this.landscapeTool) || this.landscapeToolList[0];
   }
 
-  // Текущий инструмент: ландшафт
+  // Текущий инструмент: вода
+  get getCurrentWaterTypeTool(): WaterTypeToolListItem {
+    return this.waterTypeList.find(t => t.type === this.waterType) || this.waterTypeList[0];
+  }
+
+  // Текущий инструмент: дорога
   get getCurrentRoadTypeTool(): RoadTypeToolListItem {
     return this.roadTypeList.find(t => t.type === this.roadType) || this.roadTypeList[0];
   }
@@ -188,7 +198,8 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
               xN >= 0 && xN < width &&
               yN >= 0 && yN < height &&
               !ceils.some(c => c.x === xN && c.y === yN) &&
-              this.viewer.getCeil(xN, yN).coord.z < z
+              this.viewer.getCeil(xN, yN).coord.z < z &&
+              ceils.length < this.waterMaxCeils
             ) {
               findCeils(xN, yN);
             }
@@ -223,7 +234,10 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     // Поиск соседних ячеек
     findCeils(x, y);
     // Вернуть объект
-    return { ceils, z };
+    return {
+      ceils: ceils.length < this.waterMaxCeils ? ceils : [],
+      z
+    };
   }
 
 
@@ -420,6 +434,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     this.roadType = roadType;
   }
 
+  // Изменение инструмента типа воды
+  onWaterTypeChange(waterType: WaterTypeTool): void {
+    this.waterType = waterType;
+  }
+
 
 
 
@@ -457,22 +476,6 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     }
     // Свечение воды
     else if (this.tool === Tool.water) {
-      const area: WaterArea = this.getWaterCeils(this.currentObject);
-      const oldArea: DreamMapCeil[] = this.dreamMap?.ceils
-        .filter(({ coord: { x, y } }) => !area.ceils.some(({ x: aX, y: aY }) => aX === x && aY === y))
-        .filter(({ waterHightlight }) => waterHightlight > 0);
-      // Подсветка
-      area.ceils.forEach(({ x, y }) => {
-        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-        // Настройки
-        ceil.waterHightlight = area.z;
-        // Запомнить ячейку
-        this.saveCeil(ceil);
-        // Обновить
-        this.viewer.setTerrainHoverStatus(ceil);
-      });
-      // Убрать свечение
-      this.unLightCeils(oldArea, "water");
     }
     // Добавить свечение для дорог
     else if (this.tool === Tool.road) {
@@ -705,6 +708,11 @@ enum RoadTypeTool {
   road
 }
 
+// Перечисление инструментов: вода
+enum WaterTypeTool {
+  sea
+}
+
 // Направления высоты
 type HeightDirection = - 1 | 0 | 1;
 
@@ -712,25 +720,30 @@ type HeightDirection = - 1 | 0 | 1;
 
 
 
-// Интерфейс списка инструментов: общее
-interface ToolListItem {
-  type: Tool;
+// Интерфейс списка инструментов: базовый интерфейс
+interface ToolListItemBase {
   name: string;
   icon: string;
+}
+
+// Интерфейс списка инструментов: общее
+interface ToolListItem extends ToolListItemBase {
+  type: Tool;
 }
 
 // Интерфейс списка инструментов: ландшафт
-interface LandscapeToolListItem {
+interface LandscapeToolListItem extends ToolListItemBase {
   type: LandscapeTool;
-  name: string;
-  icon: string;
 }
 
 // Интерфейс списка инструментов: дороги
-interface RoadTypeToolListItem {
+interface RoadTypeToolListItem extends ToolListItemBase {
   type: RoadTypeTool;
-  title: string;
-  icon: string;
+}
+
+// Интерфейс списка инструментов: вода
+interface WaterTypeToolListItem extends ToolListItemBase {
+  type: WaterTypeTool;
 }
 
 // Интерфейс данных настроек материалов
@@ -805,13 +818,24 @@ const RoadTypeTools: RoadTypeToolListItem[] = [
   // Дорога
   {
     type: RoadTypeTool.road,
-    title: "Дорога",
+    name: "Дорога",
     icon: "add_road"
   },
   // Площадь
   {
     type: RoadTypeTool.square,
-    title: "Парковка (площадка)",
+    name: "Парковка (площадка)",
     icon: "check_box_outline_blank"
+  },
+];
+
+
+// Список инструментов: вода
+const WaterTypeTools: WaterTypeToolListItem[] = [
+  // Дорога
+  {
+    type: WaterTypeTool.sea,
+    name: "Море (для всей карты)",
+    icon: "zoom_out_map"
   },
 ];
