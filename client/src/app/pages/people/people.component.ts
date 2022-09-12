@@ -43,7 +43,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   peopleCount: number = 0;
 
   pageCurrent: number = 1;
-  pageLimit: number = 1;
+  pageLimit: number = 24;
   pageCount: number = 1;
 
   searchForm: FormGroup;
@@ -78,7 +78,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     // Вернуть данные
     return {
       ...fromForm,
-      page
+      page,
+      limit: this.pageLimit
     };
   }
 
