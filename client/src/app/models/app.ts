@@ -95,8 +95,11 @@ export const BrowserNames: SimpleObject = {
   "Default Browser": "Неопределен",
 };
 
+// Градусы в радианы
+export const AngleToRad: (angle: number) => number = (angle: number) => (Math.PI * angle) / 180;
+
 // Синус угла
-export const Sin: (angle: number) => number = (angle: number) => parseFloat(Math.sin((Math.PI * angle) / 180).toFixed(10))
+export const Sin: (angle: number) => number = (angle: number) => parseFloat(Math.sin(AngleToRad(angle)).toFixed(10))
 
 // Косинус угла
-export const Cos: (angle: number) => number = (angle: number) => parseFloat(Math.cos((Math.PI * angle) / 180).toFixed(10));
+export const Cos: (angle: number) => number = (angle: number) => parseFloat(Math.cos(AngleToRad(angle)).toFixed(10));
