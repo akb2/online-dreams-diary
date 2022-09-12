@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrainSettings, XYCoord } from "@_models/dream-map";
 import { MapTerrains } from "@_services/dream-map/terrain.service";
-import { DreamCeilSize, DreamCeilWaterParts, DreamMapSize } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
@@ -19,7 +19,7 @@ import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DreamMapEditorComponent implements OnInit, OnDestroy {
+export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @Input() dreamMap: DreamMap;
@@ -36,6 +36,10 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   private startX: number = -1;
   private startY: number = -1;
   private startZ: number = -1;
+
+  oceanMinZ: number = DreamMinHeight;
+  oceanMaxZ: number = DreamMaxHeight;
+  oceanStepZ: number = DreamCeilSize / DreamCeilParts;
 
   // Списки параметров
   toolType: typeof Tool = Tool;
@@ -130,6 +134,17 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
     const toolSizeLand: number = key >= 0 ? ToolSizeLand[key] : ToolSizeLand[this.getCurrentToolSizeLand];
     // Результат
     return 1 + (toolSizeLand * 2);
+  }
+
+  // Форматирование слайдера выбора высоты мирового океана
+  get oceanHeightFormat(): number {
+    let key: number = this.dreamMap.ocean.z ?? this.form.get("worldOceanHeight")?.value ?? DreamWaterDefHeight;
+    key = key > this.oceanMaxZ ? this.oceanMaxZ : key;
+    key = key < this.oceanMinZ ? this.oceanMinZ : key;
+    // В процентах
+    const value: number = Math.round(key / this.oceanMaxZ * 100);
+    // Результат
+    return value;
   }
 
   // Ключ текущего размера дороги
@@ -245,16 +260,22 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.form = this.formBuilder.group({
       toolSizeLand: [this.getCurrentToolSizeLand],
       toolSizeRoad: [this.getCurrentToolSizeRoad],
+      worldOceanHeight: [0]
     });
   }
 
   ngOnInit() {
     fromEvent(document, "mouseup", this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
+  }
+
+  ngOnChanges(): void {
+    this.form.get("worldOceanHeight").setValue(this.dreamMap.ocean.z ?? DreamWaterDefHeight);
   }
 
   ngOnDestroy() {
@@ -404,6 +425,15 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
   // Изменение размера кисти
   onToolSizeLandChange(event: MatSliderChange): void {
     this.toolSizeLand = ToolSizeLand[event.value] || ToolSizeLand[0];
+  }
+
+  // Изменение высоты мирового океана
+  onOceanHeightChange(event: MatSliderChange): void {
+    this.dreamMap.ocean.z = event.value ?? DreamWaterDefHeight;
+    // Установить высоту
+    this.setOceanHeight();
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Изменение размера кисти
@@ -655,6 +685,11 @@ export class DreamMapEditorComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  // Изменение высоты мирового океана
+  private setOceanHeight(): void {
+    this.viewer.setOceanHeight(this.dreamMap.ocean.z);
   }
 
   // Добавление дороги

@@ -153,6 +153,34 @@
       </ng-container>
     </div>
   </div>
+  <!-- Высота мирового океана -->
+  <form class="tool-button"
+        [formGroup]="form">
+    <div class="tool-button__point water">
+      <div class="tool-button__point water__height back">{{oceanHeightFormat}}%</div>
+      <div class="tool-button__point water__height fill"
+           [ngStyle]="{ height: oceanHeightFormat + '%' }">
+        <span>{{oceanHeightFormat}}%</span>
+      </div>
+    </div>
+    <!-- Настройка размера -->
+    <div class="tool-button__items">
+      <div class="tool-button container">Высота мирового океана:</div>
+      <div class="tool-button container">
+        <mat-slider thumbLabel
+                    formControlName="worldOceanHeight"
+                    [thumbLabel]="false"
+                    tickInterval="1000"
+                    color="primary"
+                    step="1"
+                    [min]="oceanMinZ"
+                    [max]="oceanMaxZ"
+                    aria-label="blocks"
+                    (input)="onOceanHeightChange($event)"
+                    (change)="onOceanHeightChange($event)"></mat-slider>
+      </div>
+    </div>
+  </form>
 </ng-template>
 
 
@@ -171,7 +199,7 @@
       <div class="tool-button container">
         <mat-slider thumbLabel
                     formControlName="toolSizeLand"
-                    [displayWith]="toolSizeLandFormat"
+                    [displayWith]="toolSizeLandFormat.bind(this)"
                     tickInterval="1000"
                     color="primary"
                     step="1"

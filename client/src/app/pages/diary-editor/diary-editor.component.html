@@ -1,5 +1,5 @@
 <div class="section white"
-     *ngIf="ready && user; else pageLoader">
+     *ngIf="ready && !!user; else pageLoader">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
