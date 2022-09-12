@@ -128,7 +128,7 @@ export class DreamService {
         (d: DreamDto) => !!this.user && d.userId === this.user.id ? of(this.user) : this.accountService.getUser(d.userId),
         (dreamDto, user) => ({ dreamDto, user })
       ),
-      map(({ dreamDto, user }) => ({ ...this.dreamConverter(dreamDto), user }))
+      map(({ dreamDto, user }) => ({ ...this.dreamConverter(dreamDto), user })),
     );
   }
 
@@ -224,20 +224,27 @@ export class DreamService {
   dreamMapConverter(dreamMapDto: DreamMapDto | null = null): DreamMap {
     // Преобразование карты
     if (dreamMapDto) {
+      const ocean: Water = {
+        type: dreamMapDto?.ocean?.type ?? WaterType.pool,
+        z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
+        material: dreamMapDto?.ocean?.material ?? 1
+      };
+      // Вернуть объект
       return {
         size: {
-          width: dreamMapDto.size.width || DreamMapSize,
-          height: dreamMapDto.size.height || DreamMapSize
+          width: dreamMapDto.size.width ?? DreamMapSize,
+          height: dreamMapDto.size.height ?? DreamMapSize,
+          zHeight: dreamMapDto.size.zHeight ?? DreamDefHeight
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: c.terrain || DreamTerrain,
+          terrain: c.terrain ?? DreamTerrain,
           object: null,
-          water: {
+          /* water: {
             z: c.water?.z > c.coord.z ? c.water.z : DreamWater.z,
-            material: c.water?.material || DreamWater.material,
-            type: c.water?.type || DreamWater.type
-          },
+            material: c.water?.material ?? DreamWater.material,
+            type: c.water?.type ?? DreamWater.type
+          }, */
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -246,7 +253,8 @@ export class DreamService {
         camera: {
         },
         dreamerWay: dreamMapDto.dreamerWay,
-        skyBox: dreamMapDto.skyBox || DreamSkyBox
+        skyBox: dreamMapDto.skyBox ?? DreamSkyBox,
+        ocean
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -261,7 +269,12 @@ export class DreamService {
         },
         ceils: [],
         dreamerWay: [],
-        skyBox: DreamSkyBox
+        skyBox: DreamSkyBox,
+        ocean: {
+          type: WaterType.pool,
+          z: DreamWaterDefHeight,
+          material: 1
+        }
       };
     }
   }
@@ -271,7 +284,7 @@ export class DreamService {
     const ceils: DreamMapCeilDto[] = dreamMap.ceils
       .filter(c => !(
         !c.object &&
-        (!c.terrain || c.terrain === DreamTerrain || c.water === null || c.water.z <= c.coord.originalZ) &&
+        (!c.terrain || c.terrain === DreamTerrain /* || c.water === null || c.water.z <= c.coord.originalZ */) &&
         c.coord.originalZ === DreamDefHeight
       ))
       .map(c => {
@@ -282,7 +295,7 @@ export class DreamService {
           y: c.coord.y,
           z: c.coord.z
         };
-        if (!!c.water && c.water.z > c.coord.originalZ) ceil.water = c.water;
+        // if (!!c.water && c.water.z > c.coord.originalZ) ceil.water = c.water;
         if (!!c.place) ceil.place = c.place.id;
         if (!!c.terrain && c.terrain !== DreamTerrain) ceil.terrain = c.terrain;
         if (!!c.object) ceil.object = c.object.id;
@@ -295,7 +308,8 @@ export class DreamService {
       camera: dreamMap.camera,
       size: dreamMap.size,
       dreamerWay: dreamMap.dreamerWay,
-      skyBox: dreamMap.skyBox
+      skyBox: dreamMap.skyBox,
+      ocean: dreamMap.ocean
     };
   }
 }
@@ -332,6 +346,7 @@ export const DreamCeilWaterParts: number = 1;
 export const DreamMinHeight: number = 1;
 export const DreamDefHeight: number = DreamCeilParts * 10;
 export const DreamMaxHeight: number = DreamCeilParts * 20;
+export const DreamWaterDefHeight: number = DreamDefHeight;
 
 // Вода по умолчанию
 export const DreamWater: Water = {

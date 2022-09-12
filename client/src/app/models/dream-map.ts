@@ -13,6 +13,7 @@ export interface DreamMap {
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number;
+  ocean: Water;
 }
 
 // Интерфейс данных позиции камеры
@@ -27,7 +28,6 @@ export interface DreamMapCeil {
   highlight?: boolean;
   waterHightlight?: number;
   coord: Coord;
-  water: Water;
 }
 
 // Интерфейс типа местности
@@ -105,6 +105,7 @@ export interface DreamMapDto {
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   skyBox: number | null;
+  ocean: WaterDto;
 }
 
 // Интерфейс ячейки сновидения
@@ -113,7 +114,6 @@ export interface DreamMapCeilDto {
   terrain?: number | null;
   object?: number | null;
   coord?: CoordDto;
-  water?: WaterDto;
 }
 
 
