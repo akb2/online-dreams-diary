@@ -6,7 +6,7 @@ import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { DreamMap, DreamMapCeilDto, DreamMapDto, Water, WaterType } from "@_models/dream-map";
+import { DreamMap, DreamMapCeilDto, DreamMapDto, Water, WaterType, WorldLand } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -229,6 +229,10 @@ export class DreamService {
         z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
         material: dreamMapDto?.ocean?.material ?? 1
       };
+      const land: WorldLand = {
+        type: dreamMapDto?.land?.type ?? DreamTerrain,
+        z: dreamMapDto?.land?.z ?? DreamDefHeight
+      };
       // Вернуть объект
       return {
         size: {
@@ -254,7 +258,8 @@ export class DreamService {
         },
         dreamerWay: dreamMapDto.dreamerWay,
         skyBox: dreamMapDto.skyBox ?? DreamSkyBox,
-        ocean
+        ocean,
+        land
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -274,6 +279,10 @@ export class DreamService {
           type: WaterType.pool,
           z: DreamWaterDefHeight,
           material: 1
+        },
+        land: {
+          type: DreamTerrain,
+          z: DreamDefHeight
         }
       };
     }
@@ -309,7 +318,8 @@ export class DreamService {
       size: dreamMap.size,
       dreamerWay: dreamMap.dreamerWay,
       skyBox: dreamMap.skyBox,
-      ocean: dreamMap.ocean
+      ocean: dreamMap.ocean,
+      land: dreamMap.land
     };
   }
 }

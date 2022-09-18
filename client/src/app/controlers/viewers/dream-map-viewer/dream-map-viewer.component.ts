@@ -1,13 +1,12 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { CSG } from "@_helpers/csg-mesh";
 import { AngleToRad } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, SkyBoxLightTarget, WaterType } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
-import { ClosestHeights, MapTerrains, TerrainDrawData, TerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamWaterDefHeight } from "@_services/dream.service";
+import { ClosestHeights, TerrainDrawData, TerrainService } from "@_services/dream-map/terrain.service";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, BufferGeometry, CameraHelper, CircleGeometry, Clock, FrontSide, Group, Intersection, Light, Material, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, CameraHelper, Clock, FrontSide, Intersection, Light, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -42,14 +41,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private ceilHeightParts: number = DreamCeilParts;
   minCeilHeight: number = DreamMinHeight;
   maxCeilHeight: number = DreamMaxHeight;
-  private defaultCeilHeight: number = DreamDefHeight;
   evenlyMaxDiff: number = Math.round(this.ceilHeightParts * 1.5);
-  private delta: number = 0;
   private contextType: string = "webgl";
   private waitContext: number = 30;
 
   private successHighlight: number = 0x2f2f2f;
-  private errorHighlight: number = 0xff0000;
 
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = this.ceilSize * 14;
@@ -59,7 +55,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private minAngle: number = 0;
   private maxAngle: number = 80;
   private distance: number = 65;
-  private fpsLimit: number = 60;
   private showHelpers: boolean = false;
   private drawShadows: boolean = false;
 
@@ -69,13 +64,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private control: OrbitControls;
   private clock: Clock;
   private terrainMeshes: Mesh[] = [];
-  private roadGroups: Group[] = [];
+  private borderMeshes: Mesh[] = [];
   private ocean: Water;
   stats: Stats;
 
   private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
-
-  private waterOpacity: number = 0.5;
 
   loading: boolean = false;
   ready: boolean = false;
@@ -88,6 +81,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Получить ячейку
   getCeil(x: number, y: number): DreamMapCeil {
+    if (this.isBorder(x, y)) {
+      return this.getBorderCeil(x, y);
+    }
+    // Обычная ячейка
     return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
   }
 
@@ -95,13 +92,27 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   getDefaultCeil(x: number, y: number): DreamMapCeil {
     return {
       place: null,
-      terrain: MapTerrains[0].id,
+      terrain: DreamTerrain,
       object: null,
       coord: {
         x,
         y,
-        z: this.defaultCeilHeight,
-        originalZ: this.defaultCeilHeight
+        z: DreamDefHeight,
+        originalZ: DreamDefHeight
+      }
+    };
+  }
+
+  // Приграничная яейка
+  private getBorderCeil(x: number, y: number): DreamMapCeil {
+    const ceil: DreamMapCeil = this.getDefaultCeil(x, y);
+    // Данные ячейки
+    return {
+      ...ceil,
+      terrain: this.dreamMap.land.type,
+      coord: {
+        ...ceil.coord,
+        z: this.dreamMap.land.z
       }
     };
   }
@@ -128,8 +139,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Данные карты
   get getMap(): DreamMap {
     const ceils: DreamMapCeil[] = this.dreamMap.ceils.filter(c =>
-      (!!c.terrain && c.terrain > 0 && c.terrain !== MapTerrains[0].id) ||
-      (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.defaultCeilHeight)
+      (!!c.terrain && c.terrain > 0 && c.terrain !== DreamTerrain) ||
+      (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
     );
     // Вернуть карту
     return {
@@ -142,6 +153,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         type: this.dreamMap?.ocean?.type ?? WaterType.pool,
         material: this.dreamMap?.ocean?.material ?? 1,
         z: this.dreamMap?.ocean?.z ?? DreamWaterDefHeight
+      },
+      land: {
+        type: this.dreamMap?.land?.type ?? DreamTerrain,
+        z: this.dreamMap?.land?.z ?? DreamDefHeight
       }
     };
   }
@@ -160,6 +175,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         return [k.toString(), c.coord.z * heightPart, c.terrain];
       })
       .reduce((o, [k, height, terrain]) => ({ ...o, [k as keyof ClosestHeights]: { height, terrain } }), {} as ClosestHeights);
+  }
+
+  // Приграничная ячейка
+  private isBorder(x: number, y: number): boolean {
+    const width: number = this.dreamMap?.size?.width || DreamMapSize;
+    const height: number = this.dreamMap?.size?.height || DreamMapSize;
+    // Проверка
+    return x < 0 || y < 0 || x >= width || y >= height;
   }
 
 
@@ -450,37 +473,52 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  // Отрисовать объекты
+  // Отрисовать границы
   private createBorder(): void {
     if (this.scene) {
-      const width: number = this.dreamMap?.size?.width || DreamMapSize;
-      const height: number = this.dreamMap?.size?.height || DreamMapSize;
+      const oWidth: number = (this.dreamMap?.size?.width || DreamMapSize) + 2;
+      const oHeight: number = (this.dreamMap?.size?.height || DreamMapSize) + 2;
+      const oSize: number = Math.max(oWidth * 2, oHeight * 2) * this.ceilSize;
+      const width: number = oWidth * this.ceilSize;
+      const height: number = oHeight * this.ceilSize;
+      const size: number = oSize * this.ceilSize;
       const heightPart: number = this.ceilSize / this.ceilHeightParts;
-      const size: number = Math.max(width + 2, height + 2) * 3;
-      const circle: CircleGeometry = new CircleGeometry(size * this.ceilSize);
-      const square: BoxGeometry = new BoxGeometry(
-        (width + 2) * this.ceilSize,
-        (height + 2) * this.ceilSize,
-        this.maxCeilHeight * heightPart
-      );
-      const z: number = (-this.maxCeilHeight + this.defaultCeilHeight) * heightPart;
+      const z: number = (-this.maxCeilHeight + this.dreamMap.land.z) * heightPart;
+      const posCorr: number = this.ceilSize / 2;
+      const posX: number = (width / 2) + (size / 2);
+      const posY: number = (height / 2) + (size / 2);
       // Материал
-      const material: MeshStandardMaterial = this.terrainService.getMaterial(1, false);
-      material.map.wrapS = RepeatWrapping;
-      material.map.wrapT = RepeatWrapping;
-      material.map.repeat.set(size * 2, size * 2);
-      material.side = FrontSide;
+      const horMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false);
+      horMaterial.map.repeat.set(oSize, oHeight);
+      const verMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false);
+      verMaterial.map.repeat.set(oWidth + (oSize * 2), oSize);
+      [horMaterial, verMaterial].forEach(m => {
+        m.map.wrapS = RepeatWrapping;
+        m.map.wrapT = RepeatWrapping;
+        m.side = FrontSide;
+      });
+      // Геометрии
+      const horGeometries: PlaneGeometry = new PlaneGeometry(size, height);
+      const verGeometries: PlaneGeometry = new PlaneGeometry(width + (size * 2), size);
       // Объекты
-      const circleMesh: Mesh = new Mesh(circle);
-      const squareMesh: Mesh = new Mesh(square);
-      // Объект
-      const horizont: Mesh = CSG.toMesh(CSG.fromMesh(circleMesh).subtract(CSG.fromMesh(squareMesh)), new Matrix4(), material);
-      horizont.rotateX(this.getAngle(-90));
-      horizont.position.setY(z);
-      horizont.position.setX(-this.ceilSize / 2);
-      horizont.position.setZ(-this.ceilSize / 2);
+      const leftMesh: Mesh = new Mesh(horGeometries, horMaterial);
+      const rightMesh: Mesh = new Mesh().copy(leftMesh);
+      const topMesh: Mesh = new Mesh(verGeometries, verMaterial);
+      const bottomMesh: Mesh = new Mesh().copy(topMesh);
+      const meshes: Mesh[] = [leftMesh, rightMesh, topMesh, bottomMesh];
+      // Свойства
+      meshes.forEach(m => {
+        m.rotateX(AngleToRad(-90));
+        m.receiveShadow = true;
+      });
+      leftMesh.position.set(-posX - posCorr, z, -posCorr);
+      rightMesh.position.set(posX - posCorr, z, -posCorr);
+      topMesh.position.set(-posCorr, z, -posY - posCorr);
+      bottomMesh.position.set(-posCorr, z, posY - posCorr);
+      // Добавить в кэш
+      this.borderMeshes = meshes;
       // Добавить на сцену
-      this.scene.add(horizont);
+      this.scene.add(...meshes);
       // Рендер
       this.render();
     }
@@ -512,6 +550,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.ocean.position.set(0, z, 0);
       this.ocean.rotation.x = AngleToRad(-90);
       this.ocean.material.uniforms.size.value = this.ceilSize * 10;
+      this.ocean.receiveShadow = true;
       // Добавить в сцену
       this.scene.add(this.ocean);
       this.render();
@@ -669,7 +708,26 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const heightPart: number = this.ceilSize / this.ceilHeightParts;
     const z: number = (heightPart * this.dreamMap.ocean.z) - (heightPart * this.maxCeilHeight) - heightPart;
     // Свойства
-    this.ocean.position.set(0, z, 0);
+    this.ocean.position.setY(z);
+  }
+
+  // Обновить уровень окружающего ландшафта
+  setLandHeight(landHeight: number): void {
+    const width: number = this.dreamMap?.size?.width || DreamMapSize;
+    const height: number = this.dreamMap?.size?.height || DreamMapSize;
+    const ceils: DreamMapCeil[] = this.terrainMeshes.map(r => r.userData as MeshUserData).map(d => d.ceil);
+    const borderCeils: DreamMapCeil[] = ceils
+      .filter(({ coord: { x, y } }) => this.isBorder(x, y))
+      .map(ceil => ({ ...ceil, coord: { ...ceil.coord, z: landHeight } }));
+    const closestHeights: DreamMapCeil[] = ceils
+      .filter(({ coord: { x, y } }) => (x === 0 || y === 0 || x === width - 1 || y === height - 1) && !this.isBorder(x, y));
+    const heightPart: number = this.ceilSize / this.ceilHeightParts;
+    const z: number = (heightPart * landHeight) - (heightPart * this.maxCeilHeight);
+    // Обновить параметры
+    this.dreamMap.land.z = landHeight;
+    // Обновить высоты
+    [...borderCeils, ...closestHeights].forEach(ceil => this.setTerrainHeight(ceil));
+    this.borderMeshes.forEach(b => b.position.setY(z));
   }
 }
 

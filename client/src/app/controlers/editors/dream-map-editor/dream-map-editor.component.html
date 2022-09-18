@@ -60,6 +60,34 @@
   </div>
   <!-- Размер кисти -->
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
+  <!-- Высота окружающего ландшафта -->
+  <form class="tool-button"
+        [formGroup]="form">
+    <div class="tool-button__point progress">
+      <div class="tool-button__point progress__height back">{{landHeightFormat}}%</div>
+      <div class="tool-button__point progress__height fill"
+           [ngStyle]="{ height: landHeightFormat + '%' }">
+        <span>{{landHeightFormat}}%</span>
+      </div>
+    </div>
+    <!-- Настройка размера -->
+    <div class="tool-button__items">
+      <div class="tool-button container">Общая высота ландшафта:</div>
+      <div class="tool-button container">
+        <mat-slider thumbLabel
+                    formControlName="worldLandHeight"
+                    [thumbLabel]="false"
+                    tickInterval="1000"
+                    color="primary"
+                    [step]="landStepZ"
+                    [min]="landMinZ"
+                    [max]="landMaxZ"
+                    aria-label="blocks"
+                    (input)="onLandHeightChange($event)"
+                    (change)="onLandHeightChange($event)"></mat-slider>
+      </div>
+    </div>
+  </form>
 </ng-template>
 
 <!-- Под-инструмент: тип местности -->
@@ -156,9 +184,9 @@
   <!-- Высота мирового океана -->
   <form class="tool-button"
         [formGroup]="form">
-    <div class="tool-button__point water">
-      <div class="tool-button__point water__height back">{{oceanHeightFormat}}%</div>
-      <div class="tool-button__point water__height fill"
+    <div class="tool-button__point progress">
+      <div class="tool-button__point progress__height back">{{oceanHeightFormat}}%</div>
+      <div class="tool-button__point progress__height fill"
            [ngStyle]="{ height: oceanHeightFormat + '%' }">
         <span>{{oceanHeightFormat}}%</span>
       </div>
@@ -172,7 +200,7 @@
                     [thumbLabel]="false"
                     tickInterval="1000"
                     color="primary"
-                    step="1"
+                    [step]="oceanStepZ"
                     [min]="oceanMinZ"
                     [max]="oceanMaxZ"
                     aria-label="blocks"

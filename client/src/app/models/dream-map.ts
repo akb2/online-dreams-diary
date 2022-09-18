@@ -14,6 +14,7 @@ export interface DreamMap {
   dreamerWay: DreamerWay[] | null;
   skyBox: number;
   ocean: Water;
+  land: WorldLand;
 }
 
 // Интерфейс данных позиции камеры
@@ -106,6 +107,7 @@ export interface DreamMapDto {
   dreamerWay: DreamerWay[] | null;
   skyBox: number | null;
   ocean: WaterDto;
+  land: WorldLandDto;
 }
 
 // Интерфейс ячейки сновидения
@@ -162,6 +164,18 @@ export interface WaterDto {
   z: number | null;
   type: WaterType | null;
   material: number | null;
+}
+
+// Интерфейс воды
+export interface WorldLand {
+  z: number;
+  type: number;
+}
+
+// Интерфейс воды для сервера
+export interface WorldLandDto {
+  z: number | null;
+  type: number | null;
 }
 
 // Перечисления типа воды

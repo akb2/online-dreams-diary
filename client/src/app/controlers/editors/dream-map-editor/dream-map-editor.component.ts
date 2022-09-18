@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrainSettings, XYCoord } from "@_models/dream-map";
 import { MapTerrains } from "@_services/dream-map/terrain.service";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
@@ -40,6 +40,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   oceanMinZ: number = DreamMinHeight;
   oceanMaxZ: number = DreamMaxHeight;
   oceanStepZ: number = DreamCeilSize / DreamCeilParts;
+  landMinZ: number = DreamMinHeight;
+  landMaxZ: number = DreamMaxHeight;
+  landStepZ: number = DreamCeilSize / DreamCeilParts;
 
   // Списки параметров
   toolType: typeof Tool = Tool;
@@ -50,7 +53,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.water;
+  private tool: Tool = Tool.landscape;
   toolSizeLand: number = ToolSizeLand[0];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
@@ -143,6 +146,17 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     key = key < this.oceanMinZ ? this.oceanMinZ : key;
     // В процентах
     const value: number = Math.round(key / this.oceanMaxZ * 100);
+    // Результат
+    return value;
+  }
+
+  // Форматирование слайдера выбора высоты ландшафта
+  get landHeightFormat(): number {
+    let key: number = this.dreamMap.land.z ?? this.form.get("worldLandHeight")?.value ?? DreamDefHeight;
+    key = key > this.landMaxZ ? this.landMaxZ : key;
+    key = key < this.landMinZ ? this.landMinZ : key;
+    // В процентах
+    const value: number = Math.round(key / this.landMaxZ * 100);
     // Результат
     return value;
   }
@@ -266,7 +280,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.form = this.formBuilder.group({
       toolSizeLand: [this.getCurrentToolSizeLand],
       toolSizeRoad: [this.getCurrentToolSizeRoad],
-      worldOceanHeight: [0]
+      worldOceanHeight: [0],
+      worldLandHeight: [0]
     });
   }
 
@@ -276,6 +291,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(): void {
     this.form.get("worldOceanHeight").setValue(this.dreamMap.ocean.z ?? DreamWaterDefHeight);
+    this.form.get("worldLandHeight").setValue(this.dreamMap.land.z ?? DreamDefHeight);
   }
 
   ngOnDestroy() {
@@ -432,6 +448,15 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.dreamMap.ocean.z = event.value ?? DreamWaterDefHeight;
     // Установить высоту
     this.setOceanHeight();
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Изменение высоты окружающего ландшафта
+  onLandHeightChange(event: MatSliderChange): void {
+    this.dreamMap.land.z = event.value ?? DreamDefHeight;
+    // Установить высоту
+    this.setLandHeight();
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -690,6 +715,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменение высоты мирового океана
   private setOceanHeight(): void {
     this.viewer.setOceanHeight(this.dreamMap.ocean.z);
+  }
+
+  // Изменение высоты мирового океана
+  private setLandHeight(): void {
+    this.viewer.setLandHeight(this.dreamMap.land.z);
   }
 
   // Добавление дороги
