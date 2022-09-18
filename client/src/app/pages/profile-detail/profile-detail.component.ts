@@ -144,8 +144,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       this.menuAvatarImage = this.user.avatars.middle;
       this.navMenuType = this.user.settings.profileHeaderType;
       this.menuAvatarIcon = "person";
-      this.floatButtonIcon = "settings";
-      this.floatButtonLink = "/profile/settings";
+      this.floatButtonIcon = "book";
+      this.floatButtonLink = "/diary/" + this.user.id;
       // Готово
       this.ready = true;
       this.itsMyPage = true;
