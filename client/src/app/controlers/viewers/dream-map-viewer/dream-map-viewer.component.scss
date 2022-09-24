@@ -1,5 +1,8 @@
 @use "../../../../assets/styles/mixins";
 
+$controlOffset: 5px;
+$toolButtonBRadius: 3px;
+
 // Родительский блок
 :host {
   display: block;
@@ -38,8 +41,8 @@
     // Данные
     ::ng-deep > div {
       position: absolute !important;
-      left: 5px !important;
-      top: 5px !important;
+      left: #{$controlOffset} !important;
+      top: #{$controlOffset} !important;
     }
   }
   // Помощник
@@ -58,5 +61,25 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  // Мини карта
+  &__mini-map {
+    $mapSize: 510px;
+    // Свойства
+    position: absolute;
+    right: $controlOffset;
+    bottom: $controlOffset;
+    background-color: #fff;
+    border-radius: $toolButtonBRadius;
+    padding: 5px;
+    width: $mapSize;
+    height: $mapSize;
+    // Картинка
+    > canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
   }
 }

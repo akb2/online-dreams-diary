@@ -2,11 +2,11 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { AngleToRad } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, SkyBoxLightTarget, WaterType } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
-import { ClosestHeights, TerrainDrawData, TerrainService } from "@_services/dream-map/terrain.service";
+import { ClosestHeights, MapTerrains, TerrainDrawData, TerrainService } from "@_services/dream-map/terrain.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BufferGeometry, CameraHelper, Clock, FrontSide, Intersection, Light, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, CameraHelper, Clock, Color, FrontSide, Intersection, Light, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -31,6 +31,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>();
 
   @ViewChild("canvas") private canvas: ElementRef;
+  @ViewChild("miniMap") private miniMap: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
@@ -47,6 +48,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   private successHighlight: number = 0x2f2f2f;
 
+  private miniMapCeilSize: number = 5;
+  private miniMapCeilBlur: number = 1;
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = this.ceilSize * 14;
   private zoomSpeed: number = 1.5;
@@ -57,7 +60,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private distance: number = 65;
   private showHelpers: boolean = false;
   private drawShadows: boolean = false;
+  showMiniMap: boolean = true;
 
+  private imageData: ImageData;
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
@@ -211,6 +216,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         return (
           !this.canvas ||
           !this.canvas?.nativeElement?.getContext(this.contextType) ||
+          !((this.showMiniMap && this.miniMap) || this.showMiniMap) ||
           !(!this.debugInfo || !!this.statsBlock) ||
           !(this.width && this.height)
         );
@@ -235,6 +241,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               this.ready = true;
               this.changeDetectorRef.detectChanges();
               // Создание сцены
+              this.drawMiniMap();
               this.createScene();
               this.createSky();
               this.createTerrains();
@@ -351,6 +358,61 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
+  // Отрисовать миникарту
+  private drawMiniMap(x: number = -1, y: number = -1, bluring: boolean = true): void {
+    if (this.showMiniMap && this.miniMap) {
+      const canvas: HTMLCanvasElement = this.miniMap.nativeElement as HTMLCanvasElement;
+      const context: CanvasRenderingContext2D = canvas.getContext("2d");
+      const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+      const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+      const width: number = oWidth * this.miniMapCeilSize;
+      const height: number = oHeight * this.miniMapCeilSize;
+      const cYs: number[] = Array.from(Array(oHeight).keys());
+      const cXs: number[] = Array.from(Array(oWidth).keys());
+      const blurs: number[] = Array.from(Array((this.miniMapCeilBlur * 2) + 1).keys()).map(v => v - this.miniMapCeilBlur);
+      // Отрисовка одной ячейки
+      if (x >= 0 && y >= 0) {
+        this.drawMiniMapCeil(x, y);
+        // Запомнить карту
+        this.imageData = context.getImageData(0, 0, width, height);
+      }
+      // Обход ячеек
+      else {
+        canvas.width = width;
+        canvas.height = height;
+        context.imageSmoothingEnabled = false;
+        // Обход ячеек
+        cYs.forEach(cY => cXs.forEach(cX => this.drawMiniMapCeil(cX, cY)));
+        // Запомнить карту
+        this.imageData = context.getImageData(0, 0, width, height);
+      }
+      // Размытие карты
+      if (bluring) {
+        context.globalAlpha = 0.5;
+        blurs.forEach(y => blurs.forEach(x => context.drawImage(canvas, x, y)));
+        context.globalAlpha = 1;
+      }
+    }
+  }
+
+  // Отрисовать одну ячейку миникарты
+  private drawMiniMapCeil(x: number, y: number): void {
+    const canvas: HTMLCanvasElement = this.miniMap.nativeElement as HTMLCanvasElement;
+    const context: CanvasRenderingContext2D = canvas.getContext("2d");
+    const ceil: DreamMapCeil = this.getCeil(x, y);
+    const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
+    const color: Color = terrain.color;
+    const sX: number = x * this.miniMapCeilSize;
+    const sY: number = y * this.miniMapCeilSize;
+    // Вставить карту
+    if (this.imageData) {
+      context.putImageData(this.imageData, 0, 0);
+    }
+    // Нарисовать квадрат
+    context.fillStyle = "#" + color.getHexString();
+    context.fillRect(sX, sY, this.miniMapCeilSize, this.miniMapCeilSize);
+  }
+
   // Инициализация блока рендера
   private createCanvas(): void {
     this.width = this.helper.nativeElement.getBoundingClientRect().width || 0;
@@ -454,7 +516,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             ceil.terrain,
             this.ceilSize,
             heightPart * ceil.coord.z,
-            closestHeights
+            closestHeights,
+            this.renderer,
           );
           // Позиция элементов
           const posX: number = (x - (width / 2)) * this.ceilSize;
@@ -488,9 +551,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const posX: number = (width / 2) + (size / 2);
       const posY: number = (height / 2) + (size / 2);
       // Материал
-      const horMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false);
+      const horMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false, this.renderer);
       horMaterial.map.repeat.set(oSize, oHeight);
-      const verMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false);
+      const verMaterial: MeshStandardMaterial = this.terrainService.getMaterial(this.dreamMap.land.type, false, this.renderer);
       verMaterial.map.repeat.set(oWidth + (oSize * 2), oSize);
       [horMaterial, verMaterial].forEach(m => {
         m.map.wrapS = RepeatWrapping;
@@ -652,7 +715,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Обновить текстуру местности
-  setTerrain(ceil: DreamMapCeil): void {
+  setTerrain(ceil: DreamMapCeil, isLastCeils: boolean = false): void {
     const mesh: Mesh = this.terrainMeshes.find(e =>
       (e.userData as MeshUserData).ceil.coord.x === ceil.coord.x &&
       (e.userData as MeshUserData).ceil.coord.y === ceil.coord.y
@@ -660,12 +723,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Объект найден
     if (ceil && mesh) {
       const oldMaterial: MeshStandardMaterial = mesh.material as MeshStandardMaterial;
-      const material: MeshStandardMaterial = this.terrainService.getMaterial(ceil.terrain);
+      const material: MeshStandardMaterial = this.terrainService.getMaterial(ceil.terrain, true, this.renderer);
       // Дополнить материал
       mesh.material = material;
       material.setValues({ emissive: ceil.highlight ? this.successHighlight : 0x000000 });
       // Очистить старую геометрию
       oldMaterial.dispose();
+      // Перерисовать миникарту
+      this.drawMiniMap(ceil.coord.x, ceil.coord.y, isLastCeils);
     }
   }
 
@@ -673,7 +738,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   setTerrainSettings(terrainId: number): void {
     const meshes: Mesh[] = this.terrainMeshes.filter(e => (e.userData as MeshUserData).ceil.terrain === terrainId);
     const terrain: MapTerrain = this.terrainService.getTerrain(terrainId);
-    const material: MeshStandardMaterial = this.terrainService.getMaterial(terrainId);
+    const material: MeshStandardMaterial = this.terrainService.getMaterial(terrainId, true, this.renderer);
     // Настройки материала
     material.setValues({
       emissive: 0x000000,

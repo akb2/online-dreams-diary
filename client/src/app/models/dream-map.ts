@@ -1,6 +1,6 @@
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
-import { Light, MeshStandardMaterial, Side, Texture } from "three";
+import { Color, Light, MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -37,6 +37,7 @@ export interface MapTerrain {
   name: string;
   title: string;
   isAvail: boolean;
+  color: Color;
   exts: {
     face: ImageExtension;
     ao: ImageExtension;
