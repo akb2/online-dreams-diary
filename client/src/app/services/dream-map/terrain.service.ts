@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
 import { MapTerrain, TerrainMaterialCache, TerrainTextureCache, TextureType } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
-import { BackSide, BufferAttribute, BufferGeometry, Color, DoubleSide, FrontSide, Mesh, MeshStandardMaterial, PlaneGeometry, Texture, TextureLoader, Vector2, Vector3 } from "three";
+import { BackSide, BufferAttribute, BufferGeometry, Color, DoubleSide, FrontSide, Mesh, MeshStandardMaterial, PlaneGeometry, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
 
 
 
@@ -22,8 +22,17 @@ export class TerrainService {
 
 
   // Объект для отрисовки
-  getObject(terrainId: number, size: number, height: number, closestHeights: ClosestHeights, afterTextureLoad: (texture: Texture) => void = () => { }): TerrainDrawData {
-    const land: Mesh = new Mesh(this.getGeometry(size, height, closestHeights), this.getMaterial(terrainId, true, afterTextureLoad));
+  getObject(
+    terrainId: number,
+    size: number,
+    height: number,
+    closestHeights: ClosestHeights,
+    renderer: WebGLRenderer,
+    afterTextureLoad: (texture: Texture) => void = () => { }
+  ): TerrainDrawData {
+    const geometry: BufferGeometry = this.getGeometry(size, height, closestHeights);
+    const material: MeshStandardMaterial = this.getMaterial(terrainId, true, renderer, afterTextureLoad);
+    const land: Mesh = new Mesh(geometry, material);
     // Настройки
     land.geometry.computeVertexNormals();
     land.castShadow = true;
@@ -34,7 +43,6 @@ export class TerrainService {
 
   // Геометрия
   getGeometry(size: number, height: number, closestHeights: ClosestHeights): BufferGeometry {
-    // Смещения
     const shiftH: number = size / 2;
     const heightL: number = this.getHeightSidePos(height, closestHeights.left);
     const heightR: number = this.getHeightSidePos(height, closestHeights.right);
@@ -44,7 +52,7 @@ export class TerrainService {
     const heightTR: number = this.getHeightAnglePos(height, closestHeights.top, closestHeights.right, closestHeights.topRight);
     const heightBL: number = this.getHeightAnglePos(height, closestHeights.bottom, closestHeights.left, closestHeights.bottomLeft);
     const heightBR: number = this.getHeightAnglePos(height, closestHeights.bottom, closestHeights.right, closestHeights.bottomRight);
-    // Верхние точки
+    // Точки
     // 1 - 2 - 3
     // | \ | / |
     // 4 - 5 - 6
@@ -71,7 +79,6 @@ export class TerrainService {
     const tt9: [number, number] = [1, 0];
     // Геометрия
     const points: Vector3[] = [
-      // Верхняя грань
       t5, t1, t2,
       t5, t2, t3,
       t5, t3, t6,
@@ -83,7 +90,6 @@ export class TerrainService {
     ];
     // Геометрия текстур
     const uvMap: Float32Array = new Float32Array([
-      // Верхняя грань
       ...tt5, ...tt1, ...tt2,
       ...tt5, ...tt2, ...tt3,
       ...tt5, ...tt3, ...tt6,
@@ -103,7 +109,7 @@ export class TerrainService {
   }
 
   // Материалы
-  getMaterial(terrainId: number, useCache: boolean = true, afterTextureLoad: (texture: Texture) => void = () => { }): MeshStandardMaterial {
+  getMaterial(terrainId: number, useCache: boolean = true, renderer: WebGLRenderer, afterTextureLoad: (texture: Texture) => void = () => { }): MeshStandardMaterial {
     const findCache: (m: TerrainMaterialCache) => boolean = m => m.terrain === terrainId;
     const terrain: MapTerrain = this.getTerrain(terrainId);
     // Материал из кэша
@@ -112,10 +118,10 @@ export class TerrainService {
     }
     // Новый материал
     else {
-      const map: Texture = this.getTexture(terrainId, "face", useCache, afterTextureLoad);
-      const aoMap: Texture = this.getTexture(terrainId, "ao", useCache, afterTextureLoad);
-      const normalMap: Texture = this.getTexture(terrainId, "normal", useCache, afterTextureLoad);
-      const displacementMap: Texture = this.getTexture(terrainId, "disp", useCache, afterTextureLoad);
+      const map: Texture = this.getTexture(terrainId, "face", useCache, renderer, afterTextureLoad);
+      const aoMap: Texture = this.getTexture(terrainId, "ao", useCache, renderer, afterTextureLoad);
+      const normalMap: Texture = this.getTexture(terrainId, "normal", useCache, renderer, afterTextureLoad);
+      const displacementMap: Texture = this.getTexture(terrainId, "disp", useCache, renderer, afterTextureLoad);
       const material: MeshStandardMaterial = new MeshStandardMaterial({
         ...Object
           .entries(terrain.settings)
@@ -153,7 +159,13 @@ export class TerrainService {
   }
 
   // Получение текстуры
-  private getTexture(terrainId: number, type: TextureType = "face", useCache: boolean = true, afterTextureLoad: (texture: Texture) => void = () => { }): Texture {
+  private getTexture(
+    terrainId: number,
+    type: TextureType = "face",
+    useCache: boolean = true,
+    renderer: WebGLRenderer,
+    afterTextureLoad: (texture: Texture) => void = () => { }
+  ): Texture {
     const findCache: (t: TerrainTextureCache) => boolean = t => t.terrain === terrainId;
     let texture: Texture;
     let aoTexture: Texture;
@@ -179,6 +191,8 @@ export class TerrainService {
       aoTexture = new TextureLoader().load(aoTextureFile, afterTextureLoad);
       dispTexture = new TextureLoader().load(dispTextureFile, afterTextureLoad);
       normalTexture = new TextureLoader().load(normalTextureFile, afterTextureLoad);
+      // Анизотропная фильтрация
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
       // Сохранить в кэш
       if (useCache) {
         this.textureCache.push({
@@ -255,6 +269,7 @@ export const MapTerrains: MapTerrain[] = [
     id: 1,
     name: "grass",
     title: "Газон",
+    color: new Color(0, 0.75, 0),
     settings: {
       colorR: 115,
       colorG: 201,
@@ -270,6 +285,7 @@ export const MapTerrains: MapTerrain[] = [
     id: 2,
     name: "dirt",
     title: "Земля",
+    color: new Color(0.5, 0.24, 0.16),
     settings: {
       colorR: 135,
       colorG: 163,
@@ -285,6 +301,7 @@ export const MapTerrains: MapTerrain[] = [
     id: 3,
     name: "stone",
     title: "Камень",
+    color: new Color(0.5, 0.5, 0.5),
     settings: {
       colorR: 180,
       colorG: 180,
@@ -300,6 +317,7 @@ export const MapTerrains: MapTerrain[] = [
     id: 4,
     name: "sand",
     title: "Песок",
+    color: new Color(1, 0.85, 0),
     settings: {
       colorR: 170,
       colorG: 170,
@@ -315,6 +333,7 @@ export const MapTerrains: MapTerrain[] = [
     id: 5,
     name: "snow",
     title: "Снег",
+    color: new Color(1, 1, 1),
     settings: {
       colorR: 230,
       colorG: 230,
