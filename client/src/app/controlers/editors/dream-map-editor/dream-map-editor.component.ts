@@ -692,24 +692,42 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение типа местности
   private ceilsTerrain(): void {
-    for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
-      for (let cX = -this.toolSizeLand - 1; cX <= this.toolSizeLand + 1; cX++) {
+    const sizes: number[] = Array.from(Array(((this.toolSizeLand + 1) * 2) + 1).keys()).map(v => v - (this.toolSizeLand + 1));
+    const count: number = sizes
+      .map(cY => sizes.map(cX => {
         const x: number = this.currentObject.ceil.coord.x + cX;
         const y: number = this.currentObject.ceil.coord.y + cY;
-        // Ячейка внутри области выделения
+        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+        // Вернуть значение
         if (this.isEditableCeil(x, y)) {
-          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-          // Изменить местность
-          if (ceil.terrain !== this.currentTerrain) {
-            ceil.terrain = this.currentTerrain;
-            // Запомнить ячейку
-            this.saveCeil(ceil);
-            // Обновить
-            this.viewer.setTerrain(ceil);
-          }
+          return ceil.terrain !== this.currentTerrain;
+        }
+        // Пусто
+        return false;
+      }))
+      .filter(y => y.some(x => !!x))
+      .map(y => y = y.filter(x => !!x))
+      .filter(y => y.length > 0)
+      .reduce((o, a) => o + a.length, 0);
+    let i: number = 0;
+    // Обход
+    sizes.forEach(cY => sizes.forEach(cX => {
+      const x: number = this.currentObject.ceil.coord.x + cX;
+      const y: number = this.currentObject.ceil.coord.y + cY;
+      // Ячейка внутри области выделения
+      if (this.isEditableCeil(x, y)) {
+        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+        // Изменить местность
+        if (ceil.terrain !== this.currentTerrain) {
+          ceil.terrain = this.currentTerrain;
+          i++;
+          // Запомнить ячейку
+          this.saveCeil(ceil);
+          // Обновить
+          this.viewer.setTerrain(ceil, i === count);
         }
       }
-    }
+    }));
   }
 
   // Изменение высоты мирового океана
