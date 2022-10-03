@@ -1,6 +1,7 @@
+import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
-import { Color, Light, MeshStandardMaterial, Side, Texture } from "three";
+import { Light, MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -37,7 +38,7 @@ export interface MapTerrain {
   name: string;
   title: string;
   isAvail: boolean;
-  color: Color;
+  splatMap: MapTerrainSplatMapSetting;
   exts: {
     face: ImageExtension;
     ao: ImageExtension;
@@ -45,6 +46,19 @@ export interface MapTerrain {
     normal: ImageExtension;
   };
   settings: MapTerrainSettings;
+}
+
+// Интерфейс настроек для цветовой маски
+export interface MapTerrainSplatMapSetting {
+  layout: number;
+  color: MapTerrainSplatMapColor;
+}
+
+// Перечисление цветов для цветовой маски
+export enum MapTerrainSplatMapColor {
+  Red,
+  Green,
+  Blue
 }
 
 // Интерфейс настроек типа местности
@@ -85,6 +99,7 @@ interface MapSkyBoxLight {
     width: number;
     height: number;
     radius: number;
+    bias: number;
   };
 }
 
@@ -225,21 +240,153 @@ export interface TerrainMaterialCache {
 
 
 
+// Путь к файлам текстур
+const BaseTexturePath: string = "assets/dream-map/terrain/top/";
+export const TexturePaths: CustomObjectKey<TextureType, string> = {
+  face: BaseTexturePath + "face/",
+  ao: BaseTexturePath + "ao/",
+  normal: BaseTexturePath + "normal/",
+  disp: BaseTexturePath + "displacement/",
+};
+
 // Набор типов линий
-export const WayLineTypes: WayLineType[] = [{
-  type: "solid",
-  title: "Ходьба / езда",
-  description: "Перемещение пешком, автомобиле, велосипеде и т.д."
-}, {
-  type: "double",
-  title: "Полет",
-  description: "Персонаж летит сам, или на транспорте, или другом существе"
-}, {
-  type: "dashed",
-  title: "Плавание",
-  description: "Персонаж плывет сам, или на транспорте, или на другом существе"
-}, {
-  type: "dotted",
-  title: "Телепортация",
-  description: "Персонаж перемещается из одной точки в другую, минуя пространство"
-}];
+export const WayLineTypes: WayLineType[] = [
+  //
+  {
+    type: "solid",
+    title: "Ходьба / езда",
+    description: "Перемещение пешком, автомобиле, велосипеде и т.д."
+  },
+  //
+  {
+    type: "double",
+    title: "Полет",
+    description: "Персонаж летит сам, или на транспорте, или другом существе"
+  },
+  //
+  {
+    type: "dashed",
+    title: "Плавание",
+    description: "Персонаж плывет сам, или на транспорте, или на другом существе"
+  },
+  //
+  {
+    type: "dotted",
+    title: "Телепортация",
+    description: "Персонаж перемещается из одной точки в другую, минуя пространство"
+  }
+];
+
+// Список типов местности
+export const MapTerrains: MapTerrain[] = [
+  // Газон
+  {
+    id: 1,
+    name: "grass",
+    title: "Газон",
+    settings: {
+      colorR: 115,
+      colorG: 201,
+      colorB: 44,
+      metalness: 0,
+      roughness: 0.76,
+      aoMapIntensity: 2.5,
+      normalScale: -0.2
+    }
+  },
+  // Земля
+  {
+    id: 2,
+    name: "dirt",
+    title: "Земля",
+    settings: {
+      colorR: 135,
+      colorG: 163,
+      colorB: 158,
+      metalness: 0.1,
+      roughness: 0.85,
+      aoMapIntensity: 5.5,
+      normalScale: -0.2
+    }
+  },
+  // Камень
+  {
+    id: 3,
+    name: "stone",
+    title: "Камень",
+    settings: {
+      colorR: 180,
+      colorG: 180,
+      colorB: 180,
+      metalness: 0.75,
+      roughness: 0.75,
+      aoMapIntensity: 2.5,
+      normalScale: -0.7
+    }
+  },
+  // Песок
+  {
+    id: 4,
+    name: "sand",
+    title: "Песок",
+    settings: {
+      colorR: 170,
+      colorG: 170,
+      colorB: 170,
+      metalness: 0.1,
+      roughness: 0.6,
+      aoMapIntensity: 3.5,
+      normalScale: -0.5
+    }
+  },
+  // Снег
+  {
+    id: 5,
+    name: "snow",
+    title: "Снег",
+    settings: {
+      colorR: 230,
+      colorG: 230,
+      colorB: 230,
+      metalness: 0,
+      roughness: 0.4,
+      aoMapIntensity: 0.5,
+      normalScale: 0.1
+    }
+  }
+]
+  .map(d => d as MapTerrain)
+  .map((d, k, a) => ({
+    ...d,
+    isAvail: !!d?.isAvail || true,
+    exts: {
+      face: d?.exts?.face as ImageExtension ?? ImageExtension.png,
+      disp: d?.exts?.disp as ImageExtension ?? ImageExtension.png,
+      normal: d?.exts?.normal as ImageExtension ?? ImageExtension.png,
+      ao: d?.exts?.ao as ImageExtension ?? ImageExtension.png
+    },
+    settings: {
+      colorR: d?.settings?.colorR === undefined ? 100 : d.settings.colorR,
+      colorG: d?.settings?.colorG === undefined ? 100 : d.settings.colorG,
+      colorB: d?.settings?.colorB === undefined ? 100 : d.settings.colorB,
+      metalness: d?.settings?.metalness === undefined ? 0.5 : d.settings.metalness,
+      roughness: d?.settings?.roughness === undefined ? 0 : d.settings.roughness,
+      aoMapIntensity: d?.settings?.aoMapIntensity === undefined ? 1 : d.settings.aoMapIntensity,
+      displacementScale: d?.settings?.displacementScale === undefined ? 0 : d.settings.displacementScale,
+      envMapIntensity: d?.settings?.envMapIntensity === undefined ? 1 : d.settings.envMapIntensity,
+      normalScale: d?.settings?.normalScale === undefined ? 0 : d.settings.normalScale,
+    }
+  }))
+  .map((d, k) => {
+    const layout: number = Math.floor(k / 3);
+    const colorIndex: number = k - (layout * 3);
+    const colors: MapTerrainSplatMapColor[] = [MapTerrainSplatMapColor.Red, MapTerrainSplatMapColor.Green, MapTerrainSplatMapColor.Blue];
+    // Вернуть массив
+    return {
+      ...d,
+      splatMap: {
+        layout,
+        color: colors[colorIndex]
+      }
+    };
+  });
