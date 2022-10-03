@@ -15,9 +15,11 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private miniMapCeilSize: number = 2;
-  private miniMapCeilBlur: number = 1;
-  private geometryQuality: number = 1;
+  private miniMapTexturesSize: number = 3;
+  private miniMapHeightsSize: number = 3;
+  private miniMapTexturesBlur: number = 1;
+  private miniMapHeightsBlur: number = 0;
+  private geometryQuality: number = 3;
   private outsideMapSize: number = 1;
 
   private textureCanvas: HTMLCanvasElement[] = [];
@@ -237,12 +239,12 @@ export class TerrainService {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapCeilSize;
-    const width: number = (oWidth * this.miniMapCeilSize) + (borderSize * 2);
-    const height: number = (oHeight * this.miniMapCeilSize) + (borderSize * 2);
+    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapTexturesSize;
+    const width: number = (oWidth * this.miniMapTexturesSize) + (borderSize * 2);
+    const height: number = (oHeight * this.miniMapTexturesSize) + (borderSize * 2);
     const cYs: number[] = Array.from(Array(oHeight).keys());
     const cXs: number[] = Array.from(Array(oWidth).keys());
-    const blurs: number[] = Array.from(Array((this.miniMapCeilBlur * 2) + 1).keys()).map(v => v - this.miniMapCeilBlur);
+    const blurs: number[] = Array.from(Array((this.miniMapTexturesBlur * 2) + 1).keys()).map(v => v - this.miniMapTexturesBlur);
     const colors: CustomObjectKey<MapTerrainSplatMapColor, Color> = {
       [MapTerrainSplatMapColor.Red]: new Color(1, 0, 0),
       [MapTerrainSplatMapColor.Green]: new Color(0, 1, 0),
@@ -254,8 +256,8 @@ export class TerrainService {
       const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
       const layout: number = terrain.splatMap.layout;
       const color: Color = colors[terrain.splatMap.color];
-      const sX: number = borderSize + (x * this.miniMapCeilSize);
-      const sY: number = borderSize + (y * this.miniMapCeilSize);
+      const sX: number = borderSize + (x * this.miniMapTexturesSize);
+      const sY: number = borderSize + (y * this.miniMapTexturesSize);
       const context: CanvasRenderingContext2D = contexts[layout];
       // Вставить карту
       if (!!this.textureMap[layout]) {
@@ -264,9 +266,9 @@ export class TerrainService {
       // Нарисовать квадрат
       context.globalCompositeOperation = "source-over";
       context.fillStyle = "#000000";
-      context.fillRect(sX, sY, this.miniMapCeilSize, this.miniMapCeilSize);
+      context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
       context.fillStyle = "#" + color.getHexString();
-      context.fillRect(sX, sY, this.miniMapCeilSize, this.miniMapCeilSize);
+      context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
     };
     // Отрисовка одной ячейки
     if (x >= 0 && y >= 0) {
@@ -294,7 +296,7 @@ export class TerrainService {
       context.fillRect(0, 0, width, height);
       contexts.forEach(context => {
         context.fillStyle = "#000000";
-        context.fillRect(borderSize, borderSize, oWidth * this.miniMapCeilSize, oHeight * this.miniMapCeilSize);
+        context.fillRect(borderSize, borderSize, oWidth * this.miniMapTexturesSize, oHeight * this.miniMapTexturesSize);
         context.globalCompositeOperation = "source-over";
       });
       // Обход ячеек
@@ -304,7 +306,7 @@ export class TerrainService {
     }
     // Размытие карты
     if (bluring) {
-      if (this.miniMapCeilBlur > 0) {
+      if (this.miniMapTexturesBlur > 0) {
         contexts.forEach(context => context.globalAlpha = 0.5);
         blurs.forEach(y => blurs.forEach(x => contexts.forEach((context, k) => context.drawImage(this.textureCanvas[k], x, y))));
         contexts.forEach(context => context.globalAlpha = 1);
@@ -326,25 +328,25 @@ export class TerrainService {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapCeilSize;
-    const width: number = (oWidth * this.miniMapCeilSize) + (borderSize * 2);
-    const height: number = (oHeight * this.miniMapCeilSize) + (borderSize * 2);
+    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapHeightsSize;
+    const width: number = (oWidth * this.miniMapHeightsSize) + (borderSize * 2);
+    const height: number = (oHeight * this.miniMapHeightsSize) + (borderSize * 2);
     const cYs: number[] = Array.from(Array(oHeight).keys());
     const cXs: number[] = Array.from(Array(oWidth).keys());
-    const blurs: number[] = Array.from(Array((this.miniMapCeilBlur * 2) + 1).keys()).map(v => v - this.miniMapCeilBlur);
+    const blurs: number[] = Array.from(Array((this.miniMapHeightsBlur * 2) + 1).keys()).map(v => v - this.miniMapHeightsBlur);
     // Отрисовка ячейки
     const drawCeil: Function = (x: number, y: number) => {
       const z: number = ((this.getCeil(x, y).coord.z * 255) / DreamMaxHeight) / 255;
       const color: Color = new Color(z, z, z);
-      const sX: number = borderSize + (x * this.miniMapCeilSize);
-      const sY: number = borderSize + (y * this.miniMapCeilSize);
+      const sX: number = borderSize + (x * this.miniMapHeightsSize);
+      const sY: number = borderSize + (y * this.miniMapHeightsSize);
       // Вставить карту
       if (this.heightsMap) {
         context.putImageData(this.heightsMap, 0, 0);
       }
       // Нарисовать квадрат
       context.fillStyle = "#" + color.getHexString();
-      context.fillRect(sX, sY, this.miniMapCeilSize, this.miniMapCeilSize);
+      context.fillRect(sX, sY, this.miniMapHeightsSize, this.miniMapHeightsSize);
     };
     // Отрисовка одной ячейки
     if (x >= 0 && y >= 0) {
@@ -369,7 +371,7 @@ export class TerrainService {
     }
     // Размытие карты
     if (bluring) {
-      if (this.miniMapCeilBlur > 0) {
+      if (this.miniMapHeightsBlur > 0) {
         context.globalAlpha = 0.5;
         blurs.forEach(y => blurs.forEach(x => context.drawImage(this.heightsCanvas, x, y)));
         context.globalAlpha = 1;
