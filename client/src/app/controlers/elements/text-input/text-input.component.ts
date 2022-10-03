@@ -31,7 +31,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   @Input() submitAfterActivity: boolean = false;
   @Input() activityTimer: number = 500;
 
-  @Output() submit: EventEmitter<void> = new EventEmitter<void>();
+  @Output() submit: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild("input") input: ElementRef;
 
@@ -119,7 +119,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
     }
     // Остальные
     else if (this.type !== "date") {
-      this.submit.emit();
+      this.submit.emit(value);
     }
   }
 
