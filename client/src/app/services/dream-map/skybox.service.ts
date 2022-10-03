@@ -6,7 +6,7 @@ import { AmbientLight, CameraHelper, CubeTexture, CubeTextureLoader, Directional
 
 
 
-@Injectable({ providedIn: "root" })
+@Injectable()
 
 export class SkyBoxService {
 
@@ -45,7 +45,7 @@ export class SkyBoxService {
         light.shadow.mapSize.width = shadow.width;
         light.shadow.mapSize.height = shadow.height;
         light.shadow.radius = shadow.radius;
-        light.shadow.bias = 0;
+        light.shadow.bias = shadow.bias;
         helper = new CameraHelper(light.shadow.camera);
       }
       // Результат
@@ -103,9 +103,10 @@ export const SkyBoxes: MapSkyBox[] = [{
       left: -BoxSize / 2,
       right: BoxSize / 2,
       bottom: -BoxSize / 2,
-      width: 131072,
-      height: 131072,
-      radius: 5
+      width: 1000,
+      height: 1000,
+      radius: 2,
+      bias: 0.00357
     }
   }, {
     light: new AmbientLight(0xA6C6DB, 0.7),
