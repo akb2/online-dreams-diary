@@ -3,8 +3,7 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
-import { DreamMap, DreamMapCeil, MapTerrain, MapTerrainSettings, XYCoord } from "@_models/dream-map";
-import { MapTerrains } from "@_services/dream-map/terrain.service";
+import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSettings, XYCoord } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -281,7 +280,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       toolSizeLand: [this.getCurrentToolSizeLand],
       toolSizeRoad: [this.getCurrentToolSizeRoad],
       worldOceanHeight: [0],
-      worldLandHeight: [0]
+      worldLandHeight: [0],
     });
   }
 
@@ -632,61 +631,81 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection): void {
-    const z: number = direction === 0 ?
-      this.startZ :
-      this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
-    let change: boolean = false;
-    // Цикл по прилегающим блокам
-    for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
-      for (let cX = -this.toolSizeLand - 1; cX <= this.toolSizeLand + 1; cX++) {
+    const sizes: number[] = Array.from(Array(((this.toolSizeLand + 1) * 2) + 1).keys()).map(v => v - (this.toolSizeLand + 1));
+    const count: number = sizes
+      .map(cY => sizes.map(cX => {
         const x: number = this.currentObject.ceil.coord.x + cX;
         const y: number = this.currentObject.ceil.coord.y + cY;
-        // Ячейка внутри области выделения
+        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+        // Вернуть значение
         if (this.isEditableCeil(x, y)) {
-          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
           const currentZ: number = ceil.coord.z;
-          let corrDirection: HeightDirection = 0;
           let zChange: number = Math.floor(
             ((this.toolSizeLand * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
             this.terrainChangeStep
           );
-          // Изменение высоты: выравнивание
-          if (direction === 0) {
-            corrDirection = currentZ < z ? 1 : currentZ > z ? -1 : 0;
-            zChange = currentZ < z ? zChange : currentZ > z ? -zChange : 0;
-          }
-          // Изменение высоты: вверх / вниз
-          else {
-            zChange *= direction;
-          }
-          // Корректировка высоты
-          if (zChange !== 0) {
-            change = true;
-            // Обновить
-            ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
-            ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
-            ceil.coord.originalZ = ceil.coord.originalZ > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.originalZ;
-            ceil.coord.originalZ = ceil.coord.originalZ < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.originalZ;
-            ceil.coord.z = ceil.coord.originalZ;
-            // Запомнить ячейку
-            this.saveCeil(ceil);
-          }
+          zChange = direction === 0 ? (currentZ < z ? zChange : currentZ > z ? -zChange : 0) : zChange * direction;
+          // Высота изменилась
+          return zChange !== 0;
+        }
+        // Пусто
+        return false;
+      }))
+      .filter(y => y.some(x => !!x))
+      .map(y => y = y.filter(x => !!x))
+      .filter(y => y.length > 0)
+      .reduce((o, a) => o + a.length, 0);
+    const z: number = direction === 0 ?
+      this.startZ :
+      this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+    let change: boolean = false;
+    let i: number = 0;
+    // Обход
+    sizes.forEach(cY => sizes.forEach(cX => {
+      const x: number = this.currentObject.ceil.coord.x + cX;
+      const y: number = this.currentObject.ceil.coord.y + cY;
+      // Ячейка внутри области выделения
+      if (this.isEditableCeil(x, y)) {
+        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+        const currentZ: number = ceil.coord.z;
+        let corrDirection: HeightDirection = 0;
+        let zChange: number = Math.floor(
+          ((this.toolSizeLand * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
+          this.terrainChangeStep
+        );
+        // Изменение высоты: выравнивание
+        if (direction === 0) {
+          corrDirection = currentZ < z ? 1 : currentZ > z ? -1 : 0;
+          zChange = currentZ < z ? zChange : currentZ > z ? -zChange : 0;
+        }
+        // Изменение высоты: вверх / вниз
+        else {
+          zChange *= direction;
+        }
+        // Корректировка высоты
+        if (zChange !== 0) {
+          change = true;
+          i++;
+          // Обновить
+          ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
+          ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
+          ceil.coord.originalZ = ceil.coord.originalZ > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.originalZ;
+          ceil.coord.originalZ = ceil.coord.originalZ < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.originalZ;
+          ceil.coord.z = ceil.coord.originalZ;
+          // Запомнить ячейку
+          this.saveCeil(ceil);
         }
       }
-    }
+    }));
     // Обновить
     if (change) {
-      for (let cY = -this.toolSizeLand - 1; cY <= this.toolSizeLand + 1; cY++) {
-        for (let cX = -this.toolSizeLand - 1; cX <= this.toolSizeLand + 1; cX++) {
-          const x: number = this.currentObject.ceil.coord.x + cX;
-          const y: number = this.currentObject.ceil.coord.y + cY;
-          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-          // Обновить
-          this.viewer.setTerrainHeight(ceil);
-        }
-      }
-      // Проверка геометрии дорог
-      this.viewer.setTerrainHeight(null);
+      sizes.forEach(cY => sizes.forEach(cX => {
+        const x: number = this.currentObject.ceil.coord.x + cX;
+        const y: number = this.currentObject.ceil.coord.y + cY;
+        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+        // Обновить
+        this.viewer.setTerrainHeight(ceil, i === count);
+      }));
     }
   }
 
@@ -738,10 +757,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменение высоты мирового океана
   private setLandHeight(): void {
     this.viewer.setLandHeight(this.dreamMap.land.z);
-  }
-
-  // Добавление дороги
-  private addRoad(): void {
   }
 
 
