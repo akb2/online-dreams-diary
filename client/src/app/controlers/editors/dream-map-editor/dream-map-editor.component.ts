@@ -4,7 +4,7 @@ import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSettings, XYCoord } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
@@ -73,8 +73,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private toolActive: boolean = false;
   private toolActionTimer: number = 30;
   private terrainChangeStep: number = 1;
-  private roadSquareMaxSize: number = 20;
-  private waterMaxCeils: number = 1000;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -203,68 +201,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return {
       width: this.toolSizeLandFormat() + "px",
       height: this.toolSizeLandFormat() + "px"
-    };
-  }
-
-  // Сканирование ячеек для воды
-  private getWaterCeils(object: ObjectHoverEvent, waterZ: number = 0): WaterArea {
-    const width: number = this.dreamMap?.size?.width || DreamMapSize;
-    const height: number = this.dreamMap?.size?.height || DreamMapSize;
-    const partSize: number = DreamCeilSize / DreamCeilWaterParts;
-    const ceils: XYCoord[] = [];
-    const z: number = waterZ > 0 ? waterZ : Math.round(object.point.z / partSize) * partSize;
-    let { x, y, z: maxZ } = object.ceil.coord;
-    // Функция поиска ячеек
-    const findCeils: (x: number, y: number) => void = (x: number, y: number) => {
-      if (!ceils.some(c => c.x === x && c.y === y) && this.viewer.getCeil(x, y).coord.z < z) {
-        ceils.push({ x, y });
-        // Обзор соседних ячеек
-        for (let yN = y - 1; yN <= y + 1; yN++) {
-          for (let xN = x - 1; xN <= x + 1; xN++) {
-            if (
-              (yN !== y || xN !== x) &&
-              xN >= 0 && xN < width &&
-              yN >= 0 && yN < height &&
-              !ceils.some(c => c.x === xN && c.y === yN) &&
-              this.viewer.getCeil(xN, yN).coord.z < z &&
-              ceils.length < this.waterMaxCeils
-            ) {
-              findCeils(xN, yN);
-            }
-          }
-        }
-      }
-    };
-    // Поиск первой ячейки
-    if (maxZ !== z) {
-      let firstCeil: DreamMapCeil = object.ceil;
-      // Поиск соседней ячейки, если вода ниже высоты
-      if (z < maxZ) {
-        const x2: number = x + object.point.xDimen;
-        const y2: number = y + object.point.yDimen;
-        for (let yN: number = Math.min(y, y2); yN <= Math.max(y, y2); yN++) {
-          for (let xN: number = Math.min(x, x2); xN <= Math.max(x, x2); xN++) {
-            if (
-              (xN !== x || yN !== y) &&
-              xN >= 0 && xN < width &&
-              yN >= 0 && yN < height &&
-              this.viewer.getCeil(xN, yN).coord.z < z
-            ) {
-              firstCeil = this.viewer.getCeil(xN, yN);
-            }
-          }
-        }
-      }
-      // Переопределить параметры
-      x = firstCeil.coord.x;
-      y = firstCeil.coord.y;
-    }
-    // Поиск соседних ячеек
-    findCeils(x, y);
-    // Вернуть объект
-    return {
-      ceils: ceils.length < this.waterMaxCeils ? ceils : [],
-      z
     };
   }
 
@@ -465,19 +401,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.toolSizeRoad = ToolSizeRoad[event.value] || ToolSizeRoad[0];
   }
 
-  // Изменение свойств материала
-  onTerrainSettingsChange(key: keyof MapTerrainSettings, event: MatSliderChange): void {
-    this.terrainInfo = {
-      ...this.terrainInfo,
-      settings: {
-        ...this.terrainInfo.settings,
-        [key]: event.value
-      }
-    };
-    // Обновить материалы
-    this.viewer.setTerrainSettings(this.currentTerrain);
-  }
-
   // Изменение инструмента типа местности
   onTerrainChange(id: number): void {
     this.currentTerrain = this.terrainList.find(t => t.id === id).id || this.terrainList[0].id;
@@ -499,134 +422,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Свечение ячеек
   private lightCeils(): void {
-    const circleSize: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    // Добавить свечение для инструментов ландшафта
-    if (circleSize.has(this.tool)) {
-      const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-      const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
-      const oldArea: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => c.highlight);
-      // Размерный цикл
-      for (let cY = -size; cY <= size; cY++) {
-        for (let cX = -size; cX <= size; cX++) {
-          const x: number = this.currentObject.ceil.coord.x + cX;
-          const y: number = this.currentObject.ceil.coord.y + cY;
-          // Ячейка внутри области выделения
-          if (this.isEditableCeil(x, y)) {
-            const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-            const deleteIndex: number = oldArea.findIndex(({ coord: { x: fX, y: fY } }) => fX === x && fY === y);
-            // Удалить из массива предыдущей воды
-            deleteIndex >= 0 ? oldArea.splice(deleteIndex, 1) : null;
-            // Настройки
-            ceil.highlight = true;
-            // Запомнить ячейку
-            this.saveCeil(ceil);
-            // Обновить
-            this.viewer.setTerrainHoverStatus(ceil);
-          }
-        }
-      }
-      // Убрать свечение
-      this.unLightCeils(oldArea, "terrain");
-    }
-    // Свечение воды
-    else if (this.tool === Tool.water) {
-    }
-    // Добавить свечение для дорог
-    else if (this.tool === Tool.road) {
-      // Наметить область
-      if (this.startX >= 0 || this.startY >= 0) {
-        const toolSize: number = this.roadType === RoadTypeTool.square ? 1 : this.toolSizeRoad;
-        const isEven: boolean = Math.round(toolSize / 2) === toolSize / 2;
-        let endX: number = this.currentObject.ceil.coord.x;
-        let endY: number = this.currentObject.ceil.coord.y;
-        endX = Math.abs(this.startX - endX) >= this.roadSquareMaxSize && this.roadType === RoadTypeTool.square ?
-          this.startX > endX ?
-            this.startX - this.roadSquareMaxSize + 1 :
-            this.startX + this.roadSquareMaxSize - 1 :
-          endX;
-        endY = Math.abs(this.startY - endY) >= this.roadSquareMaxSize && this.roadType === RoadTypeTool.square ?
-          this.startY > endY ?
-            this.startY - this.roadSquareMaxSize + 1 :
-            this.startY + this.roadSquareMaxSize - 1 :
-          endY;
-        const dimension: "x" | "y" = Math.abs(this.startX - endX) > Math.abs(this.startY - endY) ? "x" : "y";
-        const start: number = isEven ? -Math.floor(toolSize / 2) + 1 : -Math.floor(toolSize / 2);
-        const end: number = Math.floor(toolSize / 2);
-        const fromX: number = (dimension === "x" || this.roadType === RoadTypeTool.square ? Math.min(this.startX, endX) : this.startX) + start;
-        const fromY: number = (dimension === "y" || this.roadType === RoadTypeTool.square ? Math.min(this.startY, endY) : this.startY) + start;
-        const toX: number = (dimension === "x" || this.roadType === RoadTypeTool.square ? Math.max(this.startX, endX) : this.startX) + end;
-        const toY: number = (dimension === "y" || this.roadType === RoadTypeTool.square ? Math.max(this.startY, endY) : this.startY) + end;
-        // Цикл по координатам
-        for (let y = fromY; y <= toY; y++) {
-          for (let x = fromX; x <= toX; x++) {
-            if (x >= 0 && y >= 0 && x < this.dreamMap.size.width && y < this.dreamMap.size.height) {
-              const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-              // Настройки
-              ceil.highlight = true;
-              // Запомнить ячейку
-              this.saveCeil(ceil);
-              // Обновить
-              this.viewer.setTerrainHoverStatus(ceil);
-            }
-          }
-        }
-      }
-      // Подсветить одну ячейку
-      else {
-        // Для дороги
-        if (this.roadType === RoadTypeTool.road) {
-          const isEven: boolean = Math.round(this.toolSizeRoad / 2) === this.toolSizeRoad / 2;
-          const start: number = isEven ? -Math.floor(this.toolSizeRoad / 2) + 1 : -Math.floor(this.toolSizeRoad / 2);
-          const end: number = Math.floor(this.toolSizeRoad / 2);
-          // Цикл по координатам
-          for (let cY = start; cY <= end; cY++) {
-            for (let cX = start; cX <= end; cX++) {
-              const ceil: DreamMapCeil = this.viewer.getCeil(this.currentObject.ceil.coord.x + cX, this.currentObject.ceil.coord.y + cY);
-              // Настройки
-              ceil.highlight = true;
-              // Запомнить ячейку
-              this.saveCeil(ceil);
-              // Обновить
-              this.viewer.setTerrainHoverStatus(ceil);
-            }
-          }
-        }
-        // Для площади
-        else if (this.roadType === RoadTypeTool.square) {
-          const ceil: DreamMapCeil = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y);
-          // Настройки
-          ceil.highlight = true;
-          // Запомнить ячейку
-          this.saveCeil(ceil);
-          // Обновить
-          this.viewer.setTerrainHoverStatus(ceil);
-        }
-      }
-    }
+    // console.log(this.currentObject);
   }
 
   // Очистить свечение
-  private unLightCeils(ceils: DreamMapCeil[] = null, type: "terrain" | "water" = "terrain"): void {
-    const tHighLight: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => c.highlight);
-    const wHighLight: DreamMapCeil[] = this.dreamMap?.ceils.filter(c => (c?.waterHightlight || 0) > 0);
-    // Убрать свечение ячеек
-    if ((!!ceils && type === "terrain") || tHighLight.length > 0) {
-      (!!ceils ? ceils : tHighLight).map(c => {
-        c.highlight = false;
-        // Обновить
-        this.viewer.setTerrainHoverStatus(c);
-      });
-    }
-    // Убрать свечение воды
-    if ((!!ceils && type === "water") || wHighLight.length > 0) {
-      (!!ceils ? ceils : wHighLight).map(c => {
-        c.waterHightlight = 0;
-        // Запомнить ячейку
-        this.saveCeil(c);
-        // Обновить
-        this.viewer.setTerrainHoverStatus(c);
-      });
-    }
+  private unLightCeils(): void {
   }
 
   // Изменение высоты
