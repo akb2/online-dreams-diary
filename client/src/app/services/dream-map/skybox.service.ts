@@ -93,7 +93,7 @@ export const SkyBoxes: MapSkyBox[] = [{
     target: SkyBoxLightTarget.Scene,
     position: {
       x: 0.1,
-      y: 1,
+      y: 0.7,
       z: -1,
     },
     shadow: {
@@ -103,13 +103,13 @@ export const SkyBoxes: MapSkyBox[] = [{
       left: -BoxSize / 2,
       right: BoxSize / 2,
       bottom: -BoxSize / 2,
-      width: 1000,
-      height: 1000,
+      width: 1024,
+      height: 1024,
       radius: 2,
       bias: 0.00357
     }
   }, {
-    light: new AmbientLight(0xA6C6DB, 0.7),
+    light: new AmbientLight(0xA6C6DB, 0.4),
     target: SkyBoxLightTarget.Scene
   }]
 }];
