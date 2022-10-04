@@ -111,8 +111,6 @@
   </div>
   <!-- Размер кисти -->
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
-  <!-- Настройки материала -->
-  <ng-container [ngTemplateOutlet]="terrainSettings"></ng-container>
 </ng-template>
 
 <!-- Под-инструмент: дорога -->
@@ -239,43 +237,4 @@
       </div>
     </div>
   </form>
-</ng-template>
-
-
-
-
-
-<!-- Под-инструмент: настройки материала -->
-<ng-template #terrainSettings>
-  <form class="tool-button">
-    <mat-icon>settings</mat-icon>
-    <!-- Настройки -->
-    <div class="tool-button__items settings">
-      <!-- Металличность -->
-      <ng-container [ngTemplateOutlet]="terrainSettingsField"
-                    [ngTemplateOutletContext]="setting"
-                    *ngFor="let setting of terrainsSettingsKeys"></ng-container>
-    </div>
-  </form>
-  <!-- Шаблон поля -->
-  <ng-template #terrainSettingsField
-               let-step="step"
-               let-min="min"
-               let-max="max"
-               let-key="key"
-               let-title="title">
-    <div class="tool-button container right">{{title}} ({{terrainInfo.settings[key]}}):</div>
-    <div class="tool-button container">
-      <mat-slider [value]="terrainInfo.settings[key]"
-                  thumbLabel
-                  tickInterval="1000"
-                  color="primary"
-                  [step]="step"
-                  [min]="min"
-                  [max]="max"
-                  aria-label="blocks"
-                  (input)="onTerrainSettingsChange(key, $event)"
-                  (change)="onTerrainSettingsChange(key, $event)"></mat-slider>
-    </div>
-  </ng-template>
 </ng-template>
