@@ -10,6 +10,7 @@ import { CameraHelper, Clock, Intersection, Light, Mesh, MOUSE, PCFSoftShadowMap
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
+import * as THREE from "three";
 
 
 
@@ -195,7 +196,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     private changeDetectorRef: ChangeDetectorRef,
     private skyBoxService: SkyBoxService,
     private terrainService: TerrainService
-  ) { }
+  ) {
+    window.THREE = THREE;
+  }
 
   ngOnInit() {
     this.distance = Math.min(this.dreamMap.size.width ?? DreamMapSize, this.dreamMap.size.height ?? DreamMapSize);
@@ -456,7 +459,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.scene.add(terrain);
       this.terrainMesh = terrain;
       // Рендер
-      // this.drawMiniMap();
+      this.drawMiniMap();
       this.render();
     }
   }
@@ -548,7 +551,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Обновить статус свечения местности
   setTerrainHoverStatus(x: number, y: number, highLightSize: number): void {
     this.terrainService.createMaterials(x, y, highLightSize, true);
-    // this.drawMiniMap();
+    this.drawMiniMap();
   }
 
   // Обновить высоту местности
@@ -560,7 +563,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     if (!!ceil) {
       this.terrainService.updateDreamMap(this.dreamMap);
       this.terrainService.createMaterials(ceil.coord.x, ceil.coord.y, -1, isLastCeils);
-      // this.drawMiniMap();
+      this.drawMiniMap();
     }
   }
 
