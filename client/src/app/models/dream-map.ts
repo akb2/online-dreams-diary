@@ -58,7 +58,8 @@ export interface MapTerrainSplatMapSetting {
 export enum MapTerrainSplatMapColor {
   Red,
   Green,
-  Blue
+  Blue,
+  Empty
 }
 
 // Интерфейс настроек типа местности
