@@ -96,7 +96,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     const cY: number = Math.round(this.currentObject.ceil.coord.y - y);
     // Вернуть результат проверки
     return (
-      cX * cX + cY * cY < (this.toolSizeLand + 0.5) * 2 &&
+      (
+        ((cX * cX) + (cY * cY) < (this.toolSizeLand * 2) + 1 && this.toolSizeLand === 0) ||
+        ((cX * cX) + (cY * cY) <= Math.pow(this.toolSizeLand + 0.5, 2) && this.toolSizeLand > 0)
+      ) &&
       x >= 0 &&
       y >= 0 &&
       x < this.dreamMap.size.width &&
@@ -422,11 +425,23 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Свечение ячеек
   private lightCeils(): void {
-    // console.log(this.currentObject);
+    const circleSize: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
+    const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
+    const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
+    // Очистить карту
+    this.unLightCeils();
+    // Добавить свечение для инструментов ландшафта
+    if (circleSize.has(this.tool)) {
+      this.viewer.setTerrainHoverStatus(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y, size);
+    }
   }
 
   // Очистить свечение
   private unLightCeils(): void {
+    const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
+    const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
+    // Уюрать свечение
+    this.viewer.setTerrainHoverStatus(-1, -1, size);
   }
 
   // Изменение высоты
@@ -565,9 +580,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Запомнить ячейку
   private saveCeil(ceil: DreamMapCeil): void {
-    this.dreamMap.ceils.some(c => c.coord.x === ceil.coord.x && c.coord.y === ceil.coord.y) ?
-      this.dreamMap.ceils.find(c => c.coord.x === ceil.coord.x && c.coord.y === ceil.coord.y) != ceil :
-      this.dreamMap.ceils.push(ceil);
+    const findCeil: (c: DreamMapCeil) => boolean = (c: DreamMapCeil) => c.coord.x === ceil.coord.x && c.coord.y === ceil.coord.y;
+    // Удалить имеющуюся ячейку
+    if (this.dreamMap.ceils.some(findCeil)) {
+      this.dreamMap.ceils.splice(this.dreamMap.ceils.findIndex(findCeil), 1);
+    }
+    // Запомнить ячейку
+    this.dreamMap.ceils.push(ceil);
   }
 }
 
@@ -658,7 +677,7 @@ interface MapTerrainSettingsData {
 
 
 // Типы размеров
-const ToolSizeLand: number[] = [0, 1, 3, 5, 9, 13];
+const ToolSizeLand: number[] = [0, 1, 2, 3, 4];
 const ToolSizeRoad: number[] = [1, 2, 3, 4, 5, 6];
 
 // Список инструментов: общее

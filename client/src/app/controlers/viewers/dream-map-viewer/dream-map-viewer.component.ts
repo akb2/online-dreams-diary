@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { AngleToRad } from "@_models/app";
 import { DreamMap, DreamMapCeil, SkyBoxLightTarget, WaterType } from "@_models/dream-map";
 import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
@@ -37,6 +37,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
+  @ViewChildren("miniMap") private miniMap: QueryList<ElementRef>;
 
   private width: number = 0;
   private height: number = 0;
@@ -46,7 +47,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   evenlyMaxDiff: number = Math.round(DreamCeilParts * 1.5);
   private contextType: string = "webgl";
   private waitContext: number = 30;
-  private mouseMoveLimit: number = 5;
+  private mouseMoveLimit: number = 7;
 
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = DreamCeilSize * 14;
@@ -323,7 +324,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const x: number = Math.floor(object.point.x / DreamCeilSize) + (oWidth * DreamCeilSize / 2);
           const y: number = Math.floor(object.point.z / DreamCeilSize) + (oHeight * DreamCeilSize / 2);
           // В пределах карты
-          if (x >= 0 && y > 0 && x < oWidth && y < oHeight) {
+          if (x >= 0 && y >= 0 && x < oWidth && y < oHeight) {
             const ceil = this.getCeil(x, y);
             // Обратный вызов
             if (ceil.coord.x >= 0 && ceil.coord.y >= 0) {
@@ -455,6 +456,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.scene.add(terrain);
       this.terrainMesh = terrain;
       // Рендер
+      // this.drawMiniMap();
       this.render();
     }
   }
@@ -544,7 +546,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   // Обновить статус свечения местности
-  setTerrainHoverStatus(): void {
+  setTerrainHoverStatus(x: number, y: number, highLightSize: number): void {
+    this.terrainService.createMaterials(x, y, highLightSize, true);
+    // this.drawMiniMap();
   }
 
   // Обновить высоту местности
@@ -553,6 +557,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновить текстуру местности
   setTerrain(ceil: DreamMapCeil, isLastCeils: boolean = false): void {
+    if (!!ceil) {
+      this.terrainService.updateDreamMap(this.dreamMap);
+      this.terrainService.createMaterials(ceil.coord.x, ceil.coord.y, -1, isLastCeils);
+      // this.drawMiniMap();
+    }
   }
 
   // Обновить уровень мирового океана
@@ -567,6 +576,21 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Обновить уровень окружающего ландшафта
   setLandHeight(landHeight: number): void {
+  }
+
+  // Test: отрисовать текстурные карты
+  private drawMiniMap(): void {
+    this.miniMap
+      .map((elm, k) => ({
+        canvas: elm.nativeElement as HTMLCanvasElement,
+        context: (elm.nativeElement as HTMLCanvasElement).getContext("2d"),
+        image: this.terrainService.textureMapBlurs[k]
+      }))
+      .forEach(({ canvas, context, image }) => {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        context.putImageData(image, 0, 0);
+      });
   }
 }
 

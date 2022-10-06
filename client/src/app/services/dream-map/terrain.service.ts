@@ -15,12 +15,12 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private miniMapTexturesSize: number = 3;
-  private miniMapHeightsSize: number = 3;
+  private miniMapTexturesSize: number = 2;
+  private miniMapHeightsSize: number = 2;
   private miniMapTexturesBlur: number = 1;
   private miniMapHeightsBlur: number = 1;
   private geometryQuality: number = 2;
-  outsideMapSize: number = 1;
+  private outsideMapSize: number = 1;
 
   private mapCanvases: HTMLCanvasElement[] = [];
   private displacementCanvas: HTMLCanvasElement;
@@ -29,11 +29,27 @@ export class TerrainService {
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
   private textureMap: ImageData[] = [];
+  textureMapBlurs: ImageData[] = [];
   private displacementMap: ImageData;
 
+  private beforeX: number = -1;
+  private beforeY: number = -1;
 
 
 
+
+
+  // Получить цвет
+  private getColor(colorType: MapTerrainSplatMapColor = MapTerrainSplatMapColor.Empty): Color {
+    const colors: CustomObjectKey<MapTerrainSplatMapColor, Color> = {
+      [MapTerrainSplatMapColor.Empty]: new Color(0, 0, 0),
+      [MapTerrainSplatMapColor.Red]: new Color(1, 0, 0),
+      [MapTerrainSplatMapColor.Green]: new Color(0, 1, 0),
+      [MapTerrainSplatMapColor.Blue]: new Color(0, 0, 1)
+    };
+    // Вернуть цвет
+    return colors[colorType];
+  }
 
   // Получить ячейку
   private getCeil(x: number, y: number): DreamMapCeil {
@@ -259,94 +275,240 @@ export class TerrainService {
 
 
   // Отрисовать текстурную карту
-  createMaterials(x: number = -1, y: number = -1, bluring: boolean = true): void {
-    this.mapCanvases = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).map(() => document.createElement("canvas"));
-    // Параметры
-    const contexts: CanvasRenderingContext2D[] = this.mapCanvases.map(canvas => canvas.getContext("2d"));
+  createMaterials(x: number = -1, y: number = -1, highLightSize: number = -1, bluring: boolean = true): void {
+    const drawOneCeil: boolean = x >= 0 && y >= 0;
+    let canvases: HTMLCanvasElement[] = [];
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight);
     const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapTexturesSize;
     const width: number = (oWidth * this.miniMapTexturesSize) + (borderSize * 2);
     const height: number = (oHeight * this.miniMapTexturesSize) + (borderSize * 2);
+    let contexts: CanvasRenderingContext2D[] = [];
+    // Очистить Canvas
+    if (!drawOneCeil && highLightSize < 0) {
+      this.mapCanvases = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).map(() => document.createElement("canvas"));
+      contexts = this.mapCanvases.map(canvas => {
+        canvas.width = width;
+        canvas.height = height;
+        // Контекст
+        return canvas.getContext("2d");
+      });
+    }
+    // Временный Canvas
+    else {
+      canvases = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).map(() => document.createElement("canvas"));
+      contexts = canvases.map((canvas, k) => {
+        const oContext: CanvasRenderingContext2D = this.mapCanvases[k].getContext("2d");
+        const context: CanvasRenderingContext2D = canvas.getContext("2d");
+        // настройки
+        canvas.width = width;
+        canvas.height = height;
+        context.putImageData(oContext.getImageData(0, 0, width, height), 0, 0);
+        // Вернуть контекст
+        return context;
+      });
+    }
+    // Параметры
+    let changes: boolean = false;
     const cYs: number[] = Array.from(Array(oHeight).keys());
     const cXs: number[] = Array.from(Array(oWidth).keys());
     const blurs: number[] = Array.from(Array((this.miniMapTexturesBlur * 2) + 1).keys()).map(v => v - this.miniMapTexturesBlur);
-    const colors: CustomObjectKey<MapTerrainSplatMapColor, Color> = {
-      [MapTerrainSplatMapColor.Red]: new Color(1, 0, 0),
-      [MapTerrainSplatMapColor.Green]: new Color(0, 1, 0),
-      [MapTerrainSplatMapColor.Blue]: new Color(0, 0, 1)
-    };
     // Отрисовка ячейки
-    const drawCeil: Function = (x: number, y: number) => {
+    const drawCeil: Function = (x: number, y: number, replaceAnyWhere: boolean = false) => {
       const ceil: DreamMapCeil = this.getCeil(x, y);
       const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
       const layout: number = terrain.splatMap.layout;
-      const color: Color = colors[terrain.splatMap.color];
+      const color: Color = this.getColor(terrain.splatMap.color);
       const sX: number = borderSize + (x * this.miniMapTexturesSize);
       const sY: number = borderSize + (y * this.miniMapTexturesSize);
       const context: CanvasRenderingContext2D = contexts[layout];
-      // Вставить карту
-      if (!!this.textureMap[layout]) {
-        context.putImageData(this.textureMap[layout], 0, 0);
+      const texture: ImageData = this.textureMap[layout];
+      // Обработать только текущий слой
+      if (!replaceAnyWhere) {
+        if (!!texture) {
+          context.globalAlpha = 1;
+          context.globalCompositeOperation = "source-over";
+          context.putImageData(texture, 0, 0);
+        }
+      }
+      // Обработать все слои
+      else {
+        contexts.forEach((context, k) => {
+          if (!!this.textureMap[k]) {
+            context.globalAlpha = 1;
+            context.globalCompositeOperation = "source-over";
+            context.putImageData(this.textureMap[k], 0, 0);
+          }
+          // Очистка
+          context.globalAlpha = 1;
+          context.globalCompositeOperation = "source-over";
+          context.fillStyle = "#000000";
+          context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
+          // Запомнить слой
+          this.textureMap[k] = context.getImageData(0, 0, width, height);
+        });
       }
       // Нарисовать квадрат
+      context.globalAlpha = 1;
       context.globalCompositeOperation = "source-over";
-      context.fillStyle = "#000000";
-      context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
       context.fillStyle = "#" + color.getHexString();
       context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
     };
+
+    // Отрисовка подсвечивания
+    if (highLightSize >= 0) {
+      if (this.beforeX !== x && this.beforeY !== y) {
+        // добавить свечение
+        if (drawOneCeil) {
+          // Не размывать
+          changes = true;
+          // Одня ячейка
+          if (highLightSize === 0) {
+            const sX: number = borderSize + (x * this.miniMapTexturesSize);
+            const sY: number = borderSize + (y * this.miniMapTexturesSize);
+            const size: number = this.miniMapTexturesSize;
+            // Изменения
+            contexts.forEach(context => {
+              context.globalAlpha = 0.35;
+              context.fillStyle = "#000000";
+              context.fillRect(sX, sY, size, size);
+            });
+          }
+          // Больше
+          else {
+            const mapStartX: number = borderSize;
+            const mapStartY: number = borderSize;
+            const mapEndX: number = width - mapStartX;
+            const mapEndY: number = height - mapStartY;
+            const sX: number = borderSize + (x * this.miniMapTexturesSize) + (this.miniMapTexturesSize / 2);
+            const sY: number = borderSize + (y * this.miniMapTexturesSize) + (this.miniMapTexturesSize / 2);
+            const size: number = (((highLightSize * 2) + 1) / 2) * this.miniMapTexturesSize;
+            const writeBorder: boolean[] = [
+              sX - size < mapStartX,
+              sX + size > mapEndX,
+              sY - size < mapStartY,
+              sY + size > mapEndY,
+            ];
+            // Изменения
+            contexts.forEach(context => {
+              context.globalAlpha = 0.1;
+              context.beginPath();
+              context.arc(sX, sY, size, AngleToRad(0), AngleToRad(360), false);
+              context.fillStyle = "#000000";
+              context.fill();
+              context.globalAlpha = 1;
+            });
+            // Свечение выходит за пределы карты
+            if (writeBorder.some(v => v)) {
+              const coords: number[][] = [
+                [0, 0, borderSize, height],
+                [width - borderSize, 0, borderSize, height],
+                [0, 0, width, borderSize],
+                [0, height - borderSize, width, borderSize],
+              ];
+              // Очистить курсор за пределами карты
+              writeBorder
+                .map((write, k) => ({ write, coords: coords[k] }))
+                .filter(({ write }) => write)
+                .forEach(({ write, coords: [sX, sY, eX, eY] }) => {
+                  const terrain: MapTerrain = MapTerrains.find(({ id }) => id === 1);
+                  const layout: number = terrain.splatMap.layout;
+                  // Цикл по слоям
+                  contexts.forEach((context, k) => {
+                    const color: Color = k === layout ? this.getColor(terrain.splatMap.color) : this.getColor();
+                    // Заполнить
+                    context.fillStyle = "#" + color.getHexString();
+                    context.fillRect(sX, sY, eX, eY);
+                  });
+                })
+            }
+          }
+        }
+        // Убрать свечение
+        else if (this.beforeY >= 0 && this.beforeX >= 0) {
+          changes = false;
+          contexts.forEach((context, k) => context.putImageData(this.textureMap[k], 0, 0));
+        }
+        // Обновить значения
+        this.beforeY = y;
+        this.beforeX = x;
+      }
+    }
     // Отрисовка одной ячейки
-    if (x >= 0 && y >= 0) {
-      drawCeil(x, y);
-      // Запомнить карту
-      this.textureMap = contexts.map(context => context.getImageData(0, 0, width, height));
+    else if (drawOneCeil) {
+      const ceil: DreamMapCeil = this.getCeil(x, y);
+      const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
+      const layout: number = terrain.splatMap.layout;
+      // нароисовать текстуру
+      drawCeil(x, y, true);
+      // Запомнить слой
+      this.textureMap[layout] = contexts[layout].getImageData(0, 0, width, height);
     }
     // Обход ячеек
     else {
       const terrain: MapTerrain = MapTerrains.find(({ id }) => id === 1);
       const layout: number = terrain.splatMap.layout;
-      const color: Color = colors[terrain.splatMap.color];
+      const color: Color = this.getColor(terrain.splatMap.color);
       const context: CanvasRenderingContext2D = contexts[layout];
-      // Свойства
-      this.mapCanvases.forEach(canvas => {
-        canvas.width = width;
-        canvas.height = height;
-      });
+      // Очистить все слои
       contexts.forEach(context => {
         context.imageSmoothingEnabled = false;
         context.fillStyle = "#000000";
         context.fillRect(0, 0, width, height);
       });
+      // Выставить текстуру за пределами карты
       context.fillStyle = "#" + color.getHexString();
       context.fillRect(0, 0, width, height);
+      // Очистить от текстур область карты
       contexts.forEach(context => {
         context.fillStyle = "#000000";
         context.fillRect(borderSize, borderSize, oWidth * this.miniMapTexturesSize, oHeight * this.miniMapTexturesSize);
         context.globalCompositeOperation = "source-over";
       });
       // Обход ячеек
-      cYs.forEach(cY => cXs.forEach(cX => drawCeil(cX, cY)));
+      cYs.forEach(cY => cXs.forEach(cX => drawCeil(cX, cY, false)));
       // Запомнить карту
       this.textureMap = contexts.map(context => context.getImageData(0, 0, width, height));
     }
+
     // Размытие карты
     if (bluring) {
-      if (this.miniMapTexturesBlur > 0) {
+      if (!changes && this.miniMapTexturesBlur > 0) {
         contexts.forEach((context, k) => {
+          const tempCanvas: HTMLCanvasElement = document.createElement("canvas");
+          tempCanvas.width = this.textureMap[k].width;
+          tempCanvas.height = this.textureMap[k].height;
+          tempCanvas.getContext("2d").putImageData(this.textureMap[k], 0, 0);
+          // Размытие
+          context.globalAlpha = 0.3;
+          blurs.forEach(y => blurs.forEach(x => x !== 0 || y !== 0 ? context.drawImage(tempCanvas, x, y) : null));
           context.globalAlpha = 0.5;
-          blurs.forEach(y => blurs.forEach(x => context.drawImage(this.mapCanvases[k], x, y)));
+          context.drawImage(tempCanvas, 0, 0);
           context.globalAlpha = 1;
+          // Удалить временный Canvas
+          tempCanvas.remove();
+          // Перезаписать Canvas
+          this.mapCanvases[k].getContext("2d").putImageData(context.getImageData(0, 0, width, height), 0, 0);
         });
+      }
+      // Перезаписать Canvas при изменениях
+      else if (changes) {
+        this.mapCanvases.forEach((canvas, k) => canvas.getContext("2d").putImageData(contexts[k].getImageData(0, 0, width, height), 0, 0));
       }
       // Обновить
       if (!!this.material) {
-        const maskNames: string[] = this.textureMap.map((t, k) => "mask_tex_" + k);
-        this.mapCanvases.map((canvas, k) => this.material.uniforms[maskNames[k]].value = new CanvasTexture(canvas));
-        this.material.uniformsNeedUpdate = true;
+        this.mapCanvases.map((canvas, k) => {
+          const maskName: string = "mask_tex_" + k;
+          this.material.uniforms[maskName].value = new CanvasTexture(canvas);
+          this.material.uniformsNeedUpdate = true;
+        });
       }
+      // Test: запомнить для миникарт
+      this.textureMapBlurs = contexts.map(context => context.getImageData(0, 0, width, height));
     }
+    // Удалить временные Canvas
+    canvases.forEach(canvas => canvas.remove());
   }
 
   // Отрисовать карту высот
@@ -438,6 +600,11 @@ export class TerrainService {
     }));
     // Обновить геометрию
     this.geometry.setAttribute("position", vertexes);
+  }
+
+  // Обновить карту
+  updateDreamMap(dreamMap: DreamMap): void {
+    this.dreamMap = dreamMap;
   }
 }
 
