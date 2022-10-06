@@ -92,7 +92,7 @@ export const SkyBoxes: MapSkyBox[] = [{
     fixed: true,
     target: SkyBoxLightTarget.Scene,
     position: {
-      x: 0.1,
+      x: 0.2,
       y: 0.5,
       z: -2,
     },
