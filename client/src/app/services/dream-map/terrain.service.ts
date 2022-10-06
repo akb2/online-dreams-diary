@@ -15,10 +15,10 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private miniMapTexturesSize: number = 2;
-  private miniMapHeightsSize: number = 2;
-  private miniMapTexturesBlur: number = 1;
-  private miniMapHeightsBlur: number = 1;
+  private miniMapTexturesSize: number = 1;
+  private miniMapHeightsSize: number = 3;
+  private miniMapTexturesBlur: number = 0;
+  private miniMapHeightsBlur: number = 2;
   private geometryQuality: number = 2;
   private outsideMapSize: number = 1;
 
@@ -86,6 +86,8 @@ export class TerrainService {
     const qualityHeight: number = height * this.geometryQuality;
     // Создание карт
     this.createMaterials();
+    // Test: конвертация текстурной карты в массив
+    this.textureMapToArray();
     // Создание геометрии
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
     this.createHeights();
@@ -493,7 +495,7 @@ export class TerrainService {
         });
       }
       // Перезаписать Canvas при изменениях
-      else if (changes) {
+      else {
         this.mapCanvases.forEach((canvas, k) => canvas.getContext("2d").putImageData(contexts[k].getImageData(0, 0, width, height), 0, 0));
       }
       // Обновить
@@ -605,6 +607,28 @@ export class TerrainService {
   // Обновить карту
   updateDreamMap(dreamMap: DreamMap): void {
     this.dreamMap = dreamMap;
+  }
+
+  // Test: Преобразование текстурной карты в массив
+  private textureMapToArray(): void {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    const borderOSize: number = Math.max(oWidth, oHeight);
+    const textureArray: CustomObjectKey<number, number>[][] = [];
+    const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
+    // Цикл по координатам Y
+    Array.from(Array(oHeight + (borderOSize * 2)).keys()).forEach(y => {
+      textureArray[y] = [];
+      // Цикл по координатам X
+      Array.from(Array(oWidth + (borderOSize * 2)).keys()).forEach(x => {
+        const isMap: boolean = x >= borderOSize && x < borderOSize + oWidth && y >= borderOSize && y < borderOSize + oHeight;
+        const ceil: DreamMapCeil = this.getCeil(x - borderOSize, y - borderOSize);
+        const terrain: MapTerrain = (isMap ? MapTerrains.find(({ id }) => id === ceil.terrain) : defTerrain) ?? MapTerrains.find(({ id }) => id === 1);
+        // Записать значение
+        textureArray[y][x] = MapTerrains.map(t => ([t.id, t.id === terrain.id ? 1 : 0])).reduce((o, [id, has]) => ({ ...o, [id]: has }), {});
+      });
+    });
+    console.log(textureArray);
   }
 }
 
