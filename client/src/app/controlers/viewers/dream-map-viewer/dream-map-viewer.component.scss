@@ -64,16 +64,40 @@ $toolButtonBRadius: 3px;
   }
   // Мини карта
   &__mini-map {
-    $mapSize: 510px;
+    $mapPadding: 5px;
+    $mapSize: 300px;
+    $__elm: &;
     // Свойства
     position: absolute;
     right: $controlOffset;
     bottom: $controlOffset;
     background-color: #fff;
     border-radius: $toolButtonBRadius;
-    padding: 5px;
-    width: $mapSize;
-    height: $mapSize;
+    padding: $mapPadding;
+    width: $mapSize + ($mapPadding * 2);
+    height: $mapSize + ($mapPadding * 2);
+    // Список миникарт
+    &-layout {
+      position: absolute;
+      right: $controlOffset;
+      bottom: $controlOffset;
+      background-color: #fff;
+      border-radius: $toolButtonBRadius;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+      // Карта внутри списка
+      > #{$__elm} {
+        position: static;
+        background-color: transparent;
+      }
+      // Последовательно идущие карты
+      > #{$__elm} + #{$__elm} {
+        padding-left: 0;
+        width: $mapSize + ($mapPadding * 2) - $mapPadding;
+      }
+    }
     // Картинка
     > canvas {
       display: block;
