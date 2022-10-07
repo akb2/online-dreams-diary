@@ -103,3 +103,9 @@ export const Sin: (angle: number) => number = (angle: number) => parseFloat(Math
 
 // Косинус угла
 export const Cos: (angle: number) => number = (angle: number) => parseFloat(Math.cos(AngleToRad(angle)).toFixed(10));
+
+// Округление после запятой
+export const MathRound: (value: number, afterDotNum?: number) => number = (value: number, afterDotNum: number = 0) => {
+  const sqrt: number = Math.pow(10, afterDotNum);
+  return Math.round((value * sqrt)) / sqrt;
+};
