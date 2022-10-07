@@ -5,6 +5,15 @@
   <div #statsBlock
        class="map-viewer__stats"
        *ngIf="debugInfo"></div>
+  <!-- Текущие координаты -->
+  <div class="map-viewer__coords"
+       *ngIf="debugInfo">
+    <ng-container *ngIf="!!hoverCoords; else outOfMap">
+      <b>X</b>: {{('0' + hoverCoords.x).slice(-2)}};
+      <b>Y</b>: {{('0' + hoverCoords.y).slice(-2)}}
+    </ng-container>
+    <ng-template #outOfMap>Out of map!</ng-template>
+  </div>
   <!-- Вспомогательный блок -->
   <div #helper
        class="map-viewer__helper"></div>
@@ -26,12 +35,12 @@
     </app-inform>
   </div>
 
-  <div class="map-viewer__mini-map-layout">
+  <!-- <div class="map-viewer__mini-map-layout">
     <div class="map-viewer__mini-map">
       <canvas #miniMap></canvas>
     </div>
     <div class="map-viewer__mini-map">
       <canvas #miniMap></canvas>
     </div>
-  </div>
+  </div> -->
 </div>

@@ -45,6 +45,26 @@ $toolButtonBRadius: 3px;
       top: #{$controlOffset} !important;
     }
   }
+  // Текущие координаты
+  &__coords {
+    position: absolute;
+    left: $controlOffset;
+    top: ($controlOffset * 2) + 48px;
+    background-color: #0b0f33;
+    color: #04ece8;
+    width: 80px;
+    text-align: center;
+    padding: 3px 6px;
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 300;
+    // Выделение
+    > b {
+      font-size: inherit;
+      line-height: inherit;
+      font-weight: 400;
+    }
+  }
   // Помощник
   &__helper {
     @include mixins.inset;
