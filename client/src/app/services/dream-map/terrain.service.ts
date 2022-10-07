@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
-import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -264,7 +264,8 @@ export class TerrainService {
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
     const realSize: number = width * height;
-    const pixelSize: number = this.mapPixelBlur ? this.mapPixelSize : 1;
+    const blurMap: boolean = this.mapPixelBlur && this.mapPixelSize > 1 ? true : false;
+    const pixelSize: number = blurMap ? this.mapPixelSize : 1;
     const size: number = realSize * Math.pow(pixelSize, 2);
     const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
     const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
@@ -275,9 +276,7 @@ export class TerrainService {
         defTerrain;
     };
     // Получить сведения о цвете
-    const getColor: Function = (layout: number, color: 0 | 1 | 2, terrain: MapTerrain) => {
-      return terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
-    };
+    const getColor: Function = (layout: number, color: 0 | 1 | 2, terrain: MapTerrain) => terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
     // Цикл по слоям
     return Array.from(Array(depth).keys()).map(d => {
       const data: Uint8Array = new Uint8Array(4 * size);
@@ -289,7 +288,7 @@ export class TerrainService {
         const x: number = Math.floor(realX);
         const y: number = Math.ceil(realY);
         // Включено размытие
-        if (this.mapPixelBlur) {
+        if (blurMap) {
           const blurYA: number = MathRound(realY + 1 - y, 2);
           const blurYB: number = MathRound(1 - blurYA, 2);
           const blurXB: number = MathRound(realX - x, 2);
@@ -330,6 +329,7 @@ export class TerrainService {
       // Настройки
       const texture: DataTexture = new DataTexture(data, width * pixelSize, height * pixelSize);
       texture.magFilter = LinearFilter;
+      texture.minFilter = LinearMipmapNearestFilter;
       // Вернуть текстуру
       return texture;
     });
