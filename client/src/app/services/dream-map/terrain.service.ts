@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { AngleToRad, CustomObject, CustomObjectKey } from "@_models/app";
+import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
-import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -15,9 +15,9 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private miniMapTexturesSize: number = 2;
+  private mapPixelSize: number = 1;
+  private mapPixelBlur: boolean = false;
   private miniMapHeightsSize: number = 2;
-  private miniMapTexturesBlur: number = 0;
   private miniMapHeightsBlur: number = 1;
   private geometryQuality: number = 1;
   private outsideMapSize: number = 1;
@@ -29,24 +29,9 @@ export class TerrainService {
   private material: ShaderMaterial;
   private displacementMap: ImageData;
 
-  private beforeX: number = -1;
-  private beforeY: number = -1;
 
 
 
-
-
-  // Получить цвет
-  private getColor(colorType: MapTerrainSplatMapColor = MapTerrainSplatMapColor.Empty): Color {
-    const colors: CustomObjectKey<MapTerrainSplatMapColor, Color> = {
-      [MapTerrainSplatMapColor.Empty]: new Color(0, 0, 0),
-      [MapTerrainSplatMapColor.Red]: new Color(1, 0, 0),
-      [MapTerrainSplatMapColor.Green]: new Color(0, 1, 0),
-      [MapTerrainSplatMapColor.Blue]: new Color(0, 0, 1)
-    };
-    // Вернуть цвет
-    return colors[colorType];
-  }
 
   // Получить ячейку
   private getCeil(x: number, y: number): DreamMapCeil {
@@ -271,7 +256,7 @@ export class TerrainService {
 
 
 
-  // Test: Преобразование текстурной карты в массив
+  // Создание текстурной карты
   private createMaterials(): DataTexture[] {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
@@ -279,31 +264,72 @@ export class TerrainService {
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
     const realSize: number = width * height;
-    const pixelSize: number = 2;
+    const pixelSize: number = this.mapPixelBlur ? this.mapPixelSize : 1;
     const size: number = realSize * Math.pow(pixelSize, 2);
     const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
     const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
+    // Получить данные о местности
+    const getTerrain: Function = (x: number = -1, y: number = -1): MapTerrain => {
+      return y >= borderOSize && y < borderOSize + oHeight && x >= borderOSize && x < borderOSize + oWidth ?
+        MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1) :
+        defTerrain;
+    };
+    // Получить сведения о цвете
+    const getColor: Function = (layout: number, color: 0 | 1 | 2, terrain: MapTerrain) => {
+      return terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
+    };
     // Цикл по слоям
     return Array.from(Array(depth).keys()).map(d => {
       const data: Uint8Array = new Uint8Array(4 * size);
       // Цикл по размеру
       Array.from(Array(size).keys()).forEach(s => {
         const stride: number = s * 4;
-        const realS: number = Math.floor(s / Math.pow(pixelSize, 2));
-        const coordS: number = realSize - 1 - realS;
-        const y: number = Math.floor(coordS / width);
-        const x: number = Math.floor((s - (Math.floor(s / (width * pixelSize)) * (width * pixelSize))) / pixelSize);
-        const isMap: boolean = y >= borderOSize && y < borderOSize + oHeight && x >= borderOSize && x < borderOSize + oWidth;
-        const terrain: MapTerrain = isMap ?
-          MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1) :
-          defTerrain;
-        // Слой текстуры совпадает с текущим слоем
-        Array.from(Array(4).keys()).forEach(k => data[stride + k] = k === 3 ? 255 : (terrain.splatMap.layout === d ?
-          terrain.splatMap.color === k ? 255 : 0 : 0
-        ));
+        const realX: number = MathRound((s - (Math.floor(s / (width * pixelSize)) * (width * pixelSize))) / pixelSize, 2);
+        const realY: number = MathRound(height - 1 - Math.floor(s / (width * pixelSize)) / pixelSize, 2);
+        const x: number = Math.floor(realX);
+        const y: number = Math.ceil(realY);
+        // Включено размытие
+        if (this.mapPixelBlur) {
+          const blurYA: number = MathRound(realY + 1 - y, 2);
+          const blurYB: number = MathRound(1 - blurYA, 2);
+          const blurXB: number = MathRound(realX - x, 2);
+          const blurXA: number = MathRound(1 - blurXB, 2);
+          const blurLB: number = MathRound(blurXA * blurYA, 2);
+          const blurLT: number = MathRound(blurXA * blurYB, 2);
+          const blurRB: number = MathRound(blurXB * blurYA, 2);
+          const blurRT: number = MathRound(blurXB * blurYB, 2);
+          // Данные о типе местности
+          const terrainLB: MapTerrain = getTerrain(x, y);
+          const terrainLT: MapTerrain = getTerrain(x, y - 1);
+          const terrainRB: MapTerrain = getTerrain(x + 1, y);
+          const terrainRT: MapTerrain = getTerrain(x + 1, y - 1);
+          // Цвета
+          Array.from(Array(3).keys()).forEach(k => {
+            let color: number = (
+              (getColor(d, k, terrainLB) * blurLB) +
+              (getColor(d, k, terrainLT) * blurLT) +
+              (getColor(d, k, terrainRB) * blurRB) +
+              (getColor(d, k, terrainRT) * blurRT)
+            );
+            color = color < 0 ? 0 : color;
+            color = color > 255 ? 255 : color;
+            // Запомнить данные
+            data[stride + k] = color;
+          });
+        }
+        // Без размытия
+        else {
+          // Данные о типе местности
+          const terrain: MapTerrain = getTerrain(x, y);
+          // Цвета
+          Array.from(Array(3).keys()).forEach(k => data[stride + k] = getColor(d, k, terrain));
+        }
+        // Прозрачный канал
+        data[stride + 3] = 255;
       });
       // Настройки
       const texture: DataTexture = new DataTexture(data, width * pixelSize, height * pixelSize);
+      texture.magFilter = LinearFilter;
       // Вернуть текстуру
       return texture;
     });
@@ -348,7 +374,6 @@ export class TerrainService {
     else {
       const z: number = ((this.dreamMap.land.z * 255) / DreamMaxHeight) / 255;
       const displacementColor: Color = new Color(z, z, z);
-      const bumpColor: Color = new Color(1 - z, 1 - z, 1 - z);
       // Свойства
       this.displacementCanvas.width = width;
       this.displacementCanvas.height = height;
@@ -369,8 +394,6 @@ export class TerrainService {
       }
       // Обновить
       if (!!this.geometry) {
-        // this.material.uniforms.displacementMap.value = new CanvasTexture(this.displacementCanvas);
-        // this.material.uniformsNeedUpdate = true;
         this.setDisplacementMap();
       }
     }
