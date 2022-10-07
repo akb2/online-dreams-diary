@@ -83,14 +83,16 @@ export class ScreenService implements OnDestroy {
   }
 
   // Подписчик на загрузку картинки
-  loadImage(url: string): Observable<LoadingImageData> {
+  loadImage(url: string | Blob): Observable<LoadingImageData> {
+    const stringUrl: string = typeof url === "string" ? url : URL.createObjectURL(url);
+    // Подписчик
     const observable: Observable<LoadingImageData> = new Observable(observer => {
       const image: HTMLImageElement = new Image();
       // Путь к картинке
-      image.src = url;
+      image.src = stringUrl;
       // Загрузка
       image.onload = () => {
-        observer.next(new LoadingImageData(url, image.width, image.height));
+        observer.next(new LoadingImageData(stringUrl, image.width, image.height));
         observer.complete();
       };
       // Ошибка

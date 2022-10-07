@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
-import { CanvasTexture, Color, Float32BufferAttribute, IUniform, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -15,21 +15,18 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private miniMapTexturesSize: number = 1;
-  private miniMapHeightsSize: number = 3;
+  private miniMapTexturesSize: number = 2;
+  private miniMapHeightsSize: number = 2;
   private miniMapTexturesBlur: number = 0;
-  private miniMapHeightsBlur: number = 2;
-  private geometryQuality: number = 2;
+  private miniMapHeightsBlur: number = 1;
+  private geometryQuality: number = 1;
   private outsideMapSize: number = 1;
 
-  private mapCanvases: HTMLCanvasElement[] = [];
   private displacementCanvas: HTMLCanvasElement;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
-  private textureMap: ImageData[] = [];
-  textureMapBlurs: ImageData[] = [];
   private displacementMap: ImageData;
 
   private beforeX: number = -1;
@@ -84,10 +81,6 @@ export class TerrainService {
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const qualityWidth: number = width * this.geometryQuality;
     const qualityHeight: number = height * this.geometryQuality;
-    // Создание карт
-    this.createMaterials();
-    // Test: конвертация текстурной карты в массив
-    this.textureMapToArray();
     // Создание геометрии
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
     this.createHeights();
@@ -111,8 +104,9 @@ export class TerrainService {
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const loader: TextureLoader = new TextureLoader();
     // RGBA Маски
-    const maskNames: string[] = this.textureMap.map((t, k) => "mask_tex_" + k);
-    const maskMapNames: string[] = this.textureMap.map((t, k) => "mask_map_" + k);
+    const mapTextures = this.createMaterials();
+    const maskNames: string[] = mapTextures.map((t, k) => "mask_tex_" + k);
+    const maskMapNames: string[] = mapTextures.map((t, k) => "mask_map_" + k);
     // Текстуры
     const texNames: string[] = MapTerrains.map(t => "terrain_tex_" + t.name);
     const repeatNames: string[] = MapTerrains.map(t => "terrain_repeat_" + t.name);
@@ -207,7 +201,7 @@ export class TerrainService {
     };
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
-      ...maskNames.reduce((o, name, k) => ({ ...o, [name]: new CanvasTexture(this.mapCanvases[k]) }), {}),
+      ...maskNames.reduce((o, name, k) => ({ ...o, [name]: mapTextures[k] }), {}),
       ...texNames.map((name, k) => ([name, normalTexNames[k], aoTexNames[k]])).reduce((o, [name, nName, aoName], k) => {
         const terrain: MapTerrain = MapTerrains[k];
         const texture: Texture = loader.load(TexturePaths.face + terrain.name + "." + terrain.exts.face, t => onLoad(name, t));
@@ -276,241 +270,43 @@ export class TerrainService {
 
 
 
-  // Отрисовать текстурную карту
-  createMaterials(x: number = -1, y: number = -1, highLightSize: number = -1, bluring: boolean = true): void {
-    const drawOneCeil: boolean = x >= 0 && y >= 0;
-    let canvases: HTMLCanvasElement[] = [];
+
+  // Test: Преобразование текстурной карты в массив
+  private createMaterials(): DataTexture[] {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapTexturesSize;
-    const width: number = (oWidth * this.miniMapTexturesSize) + (borderSize * 2);
-    const height: number = (oHeight * this.miniMapTexturesSize) + (borderSize * 2);
-    let contexts: CanvasRenderingContext2D[] = [];
-    // Очистить Canvas
-    if (!drawOneCeil && highLightSize < 0) {
-      this.mapCanvases = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).map(() => document.createElement("canvas"));
-      contexts = this.mapCanvases.map(canvas => {
-        canvas.width = width;
-        canvas.height = height;
-        // Контекст
-        return canvas.getContext("2d");
+    const width: number = (borderOSize * 2) + oWidth;
+    const height: number = (borderOSize * 2) + oHeight;
+    const realSize: number = width * height;
+    const pixelSize: number = 2;
+    const size: number = realSize * Math.pow(pixelSize, 2);
+    const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
+    const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
+    // Цикл по слоям
+    return Array.from(Array(depth).keys()).map(d => {
+      const data: Uint8Array = new Uint8Array(4 * size);
+      // Цикл по размеру
+      Array.from(Array(size).keys()).forEach(s => {
+        const stride: number = s * 4;
+        const realS: number = Math.floor(s / Math.pow(pixelSize, 2));
+        const coordS: number = realSize - 1 - realS;
+        const y: number = Math.floor(coordS / width);
+        const x: number = Math.floor((s - (Math.floor(s / (width * pixelSize)) * (width * pixelSize))) / pixelSize);
+        const isMap: boolean = y >= borderOSize && y < borderOSize + oHeight && x >= borderOSize && x < borderOSize + oWidth;
+        const terrain: MapTerrain = isMap ?
+          MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1) :
+          defTerrain;
+        // Слой текстуры совпадает с текущим слоем
+        Array.from(Array(4).keys()).forEach(k => data[stride + k] = k === 3 ? 255 : (terrain.splatMap.layout === d ?
+          terrain.splatMap.color === k ? 255 : 0 : 0
+        ));
       });
-    }
-    // Временный Canvas
-    else {
-      canvases = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).map(() => document.createElement("canvas"));
-      contexts = canvases.map((canvas, k) => {
-        const oContext: CanvasRenderingContext2D = this.mapCanvases[k].getContext("2d");
-        const context: CanvasRenderingContext2D = canvas.getContext("2d");
-        // настройки
-        canvas.width = width;
-        canvas.height = height;
-        context.putImageData(oContext.getImageData(0, 0, width, height), 0, 0);
-        // Вернуть контекст
-        return context;
-      });
-    }
-    // Параметры
-    let changes: boolean = false;
-    const cYs: number[] = Array.from(Array(oHeight).keys());
-    const cXs: number[] = Array.from(Array(oWidth).keys());
-    const blurs: number[] = Array.from(Array((this.miniMapTexturesBlur * 2) + 1).keys()).map(v => v - this.miniMapTexturesBlur);
-    // Отрисовка ячейки
-    const drawCeil: Function = (x: number, y: number, replaceAnyWhere: boolean = false) => {
-      const ceil: DreamMapCeil = this.getCeil(x, y);
-      const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
-      const layout: number = terrain.splatMap.layout;
-      const color: Color = this.getColor(terrain.splatMap.color);
-      const sX: number = borderSize + (x * this.miniMapTexturesSize);
-      const sY: number = borderSize + (y * this.miniMapTexturesSize);
-      const context: CanvasRenderingContext2D = contexts[layout];
-      const texture: ImageData = this.textureMap[layout];
-      // Обработать только текущий слой
-      if (!replaceAnyWhere) {
-        if (!!texture) {
-          context.globalAlpha = 1;
-          context.globalCompositeOperation = "source-over";
-          context.putImageData(texture, 0, 0);
-        }
-      }
-      // Обработать все слои
-      else {
-        contexts.forEach((context, k) => {
-          if (!!this.textureMap[k]) {
-            context.globalAlpha = 1;
-            context.globalCompositeOperation = "source-over";
-            context.putImageData(this.textureMap[k], 0, 0);
-          }
-          // Очистка
-          context.globalAlpha = 1;
-          context.globalCompositeOperation = "source-over";
-          context.fillStyle = "#000000";
-          context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
-          // Запомнить слой
-          this.textureMap[k] = context.getImageData(0, 0, width, height);
-        });
-      }
-      // Нарисовать квадрат
-      context.globalAlpha = 1;
-      context.globalCompositeOperation = "source-over";
-      context.fillStyle = "#" + color.getHexString();
-      context.fillRect(sX, sY, this.miniMapTexturesSize, this.miniMapTexturesSize);
-    };
-
-    // Отрисовка подсвечивания
-    if (highLightSize >= 0) {
-      if (this.beforeX !== x && this.beforeY !== y) {
-        // добавить свечение
-        if (drawOneCeil) {
-          // Не размывать
-          changes = true;
-          // Одня ячейка
-          if (highLightSize === 0) {
-            const sX: number = borderSize + (x * this.miniMapTexturesSize);
-            const sY: number = borderSize + (y * this.miniMapTexturesSize);
-            const size: number = this.miniMapTexturesSize;
-            // Изменения
-            contexts.forEach(context => {
-              context.globalAlpha = 0.35;
-              context.fillStyle = "#000000";
-              context.fillRect(sX, sY, size, size);
-            });
-          }
-          // Больше
-          else {
-            const mapStartX: number = borderSize;
-            const mapStartY: number = borderSize;
-            const mapEndX: number = width - mapStartX;
-            const mapEndY: number = height - mapStartY;
-            const sX: number = borderSize + (x * this.miniMapTexturesSize) + (this.miniMapTexturesSize / 2);
-            const sY: number = borderSize + (y * this.miniMapTexturesSize) + (this.miniMapTexturesSize / 2);
-            const size: number = (((highLightSize * 2) + 1) / 2) * this.miniMapTexturesSize;
-            const writeBorder: boolean[] = [
-              sX - size < mapStartX,
-              sX + size > mapEndX,
-              sY - size < mapStartY,
-              sY + size > mapEndY,
-            ];
-            // Изменения
-            contexts.forEach(context => {
-              context.globalAlpha = 0.1;
-              context.beginPath();
-              context.arc(sX, sY, size, AngleToRad(0), AngleToRad(360), false);
-              context.fillStyle = "#000000";
-              context.fill();
-              context.globalAlpha = 1;
-            });
-            // Свечение выходит за пределы карты
-            if (writeBorder.some(v => v)) {
-              const coords: number[][] = [
-                [0, 0, borderSize, height],
-                [width - borderSize, 0, borderSize, height],
-                [0, 0, width, borderSize],
-                [0, height - borderSize, width, borderSize],
-              ];
-              // Очистить курсор за пределами карты
-              writeBorder
-                .map((write, k) => ({ write, coords: coords[k] }))
-                .filter(({ write }) => write)
-                .forEach(({ write, coords: [sX, sY, eX, eY] }) => {
-                  const terrain: MapTerrain = MapTerrains.find(({ id }) => id === 1);
-                  const layout: number = terrain.splatMap.layout;
-                  // Цикл по слоям
-                  contexts.forEach((context, k) => {
-                    const color: Color = k === layout ? this.getColor(terrain.splatMap.color) : this.getColor();
-                    // Заполнить
-                    context.fillStyle = "#" + color.getHexString();
-                    context.fillRect(sX, sY, eX, eY);
-                  });
-                })
-            }
-          }
-        }
-        // Убрать свечение
-        else if (this.beforeY >= 0 && this.beforeX >= 0) {
-          changes = false;
-          contexts.forEach((context, k) => context.putImageData(this.textureMap[k], 0, 0));
-        }
-        // Обновить значения
-        this.beforeY = y;
-        this.beforeX = x;
-      }
-    }
-    // Отрисовка одной ячейки
-    else if (drawOneCeil) {
-      const ceil: DreamMapCeil = this.getCeil(x, y);
-      const terrain: MapTerrain = MapTerrains.find(({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
-      const layout: number = terrain.splatMap.layout;
-      // нароисовать текстуру
-      drawCeil(x, y, true);
-      // Запомнить слой
-      this.textureMap[layout] = contexts[layout].getImageData(0, 0, width, height);
-    }
-    // Обход ячеек
-    else {
-      const terrain: MapTerrain = MapTerrains.find(({ id }) => id === 1);
-      const layout: number = terrain.splatMap.layout;
-      const color: Color = this.getColor(terrain.splatMap.color);
-      const context: CanvasRenderingContext2D = contexts[layout];
-      // Очистить все слои
-      contexts.forEach(context => {
-        context.imageSmoothingEnabled = false;
-        context.fillStyle = "#000000";
-        context.fillRect(0, 0, width, height);
-      });
-      // Выставить текстуру за пределами карты
-      context.fillStyle = "#" + color.getHexString();
-      context.fillRect(0, 0, width, height);
-      // Очистить от текстур область карты
-      contexts.forEach(context => {
-        context.fillStyle = "#000000";
-        context.fillRect(borderSize, borderSize, oWidth * this.miniMapTexturesSize, oHeight * this.miniMapTexturesSize);
-        context.globalCompositeOperation = "source-over";
-      });
-      // Обход ячеек
-      cYs.forEach(cY => cXs.forEach(cX => drawCeil(cX, cY, false)));
-      // Запомнить карту
-      this.textureMap = contexts.map(context => context.getImageData(0, 0, width, height));
-    }
-
-    // Размытие карты
-    if (bluring) {
-      if (!changes && this.miniMapTexturesBlur > 0) {
-        contexts.forEach((context, k) => {
-          const tempCanvas: HTMLCanvasElement = document.createElement("canvas");
-          tempCanvas.width = this.textureMap[k].width;
-          tempCanvas.height = this.textureMap[k].height;
-          tempCanvas.getContext("2d").putImageData(this.textureMap[k], 0, 0);
-          // Размытие
-          context.globalAlpha = 0.3;
-          blurs.forEach(y => blurs.forEach(x => x !== 0 || y !== 0 ? context.drawImage(tempCanvas, x, y) : null));
-          context.globalAlpha = 0.5;
-          context.drawImage(tempCanvas, 0, 0);
-          context.globalAlpha = 1;
-          // Удалить временный Canvas
-          tempCanvas.remove();
-          // Перезаписать Canvas
-          this.mapCanvases[k].getContext("2d").putImageData(context.getImageData(0, 0, width, height), 0, 0);
-        });
-      }
-      // Перезаписать Canvas при изменениях
-      else {
-        this.mapCanvases.forEach((canvas, k) => canvas.getContext("2d").putImageData(contexts[k].getImageData(0, 0, width, height), 0, 0));
-      }
-      // Обновить
-      if (!!this.material) {
-        this.mapCanvases.map((canvas, k) => {
-          const maskName: string = "mask_tex_" + k;
-          this.material.uniforms[maskName].value = new CanvasTexture(canvas);
-          this.material.uniformsNeedUpdate = true;
-        });
-      }
-      // Test: запомнить для миникарт
-      this.textureMapBlurs = contexts.map(context => context.getImageData(0, 0, width, height));
-    }
-    // Удалить временные Canvas
-    canvases.forEach(canvas => canvas.remove());
+      // Настройки
+      const texture: DataTexture = new DataTexture(data, width * pixelSize, height * pixelSize);
+      // Вернуть текстуру
+      return texture;
+    });
   }
 
   // Отрисовать карту высот
@@ -607,28 +403,6 @@ export class TerrainService {
   // Обновить карту
   updateDreamMap(dreamMap: DreamMap): void {
     this.dreamMap = dreamMap;
-  }
-
-  // Test: Преобразование текстурной карты в массив
-  private textureMapToArray(): void {
-    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
-    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const borderOSize: number = Math.max(oWidth, oHeight);
-    const textureArray: CustomObjectKey<number, number>[][] = [];
-    const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
-    // Цикл по координатам Y
-    Array.from(Array(oHeight + (borderOSize * 2)).keys()).forEach(y => {
-      textureArray[y] = [];
-      // Цикл по координатам X
-      Array.from(Array(oWidth + (borderOSize * 2)).keys()).forEach(x => {
-        const isMap: boolean = x >= borderOSize && x < borderOSize + oWidth && y >= borderOSize && y < borderOSize + oHeight;
-        const ceil: DreamMapCeil = this.getCeil(x - borderOSize, y - borderOSize);
-        const terrain: MapTerrain = (isMap ? MapTerrains.find(({ id }) => id === ceil.terrain) : defTerrain) ?? MapTerrains.find(({ id }) => id === 1);
-        // Записать значение
-        textureArray[y][x] = MapTerrains.map(t => ([t.id, t.id === terrain.id ? 1 : 0])).reduce((o, [id, has]) => ({ ...o, [id]: has }), {});
-      });
-    });
-    console.log(textureArray);
   }
 }
 
