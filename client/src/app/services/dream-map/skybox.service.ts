@@ -52,7 +52,7 @@ export class SkyBoxService {
       return { light, target, helper };
     });
     // Туман
-    const fog: Fog = new Fog(color, (distance * 0.5) * size, distance * size);
+    const fog: Fog = new Fog(color, (distance * skyBoxData.fogDistance) * size, distance * size);
     // Объект неба
     const skyBox: CubeTexture = new CubeTextureLoader().setPath(path).load(this.sides.map(s => s + ".jpg"));
     // Вернуть небо
@@ -87,6 +87,7 @@ export const SkyBoxes: MapSkyBox[] = [{
   name: "land",
   title: "Ясный день",
   fogColor: 0xA6C6DB,
+  fogDistance: 0.5,
   lights: [{
     light: new DirectionalLight(0xFFFFFF, 1.1),
     fixed: true,

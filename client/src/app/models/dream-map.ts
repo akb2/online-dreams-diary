@@ -81,6 +81,7 @@ export interface MapSkyBox {
   name: string;
   title: string;
   fogColor: number;
+  fogDistance: number;
   lights: MapSkyBoxLight[];
 }
 
