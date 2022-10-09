@@ -104,8 +104,8 @@ export const SkyBoxes: MapSkyBox[] = [{
       left: -BoxSize / 2,
       right: BoxSize / 2,
       bottom: -BoxSize / 2,
-      width: 512,
-      height: 512,
+      width: 1024,
+      height: 1024,
       radius: 5,
       bias: 0.00357
     }
