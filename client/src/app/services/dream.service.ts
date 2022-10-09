@@ -340,7 +340,7 @@ export interface SearchDream {
 
 
 // Размер карты по умолчанию
-export const DreamMapSize: number = 50;
+export const DreamMapSize: number = 80;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize: number = 1;
