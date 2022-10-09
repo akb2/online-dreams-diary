@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
-import { CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -15,18 +15,18 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
+  private outsideMapSize: number = 1;
   private mapPixelSize: number = 1;
   private mapPixelBlur: boolean = false;
-  private miniMapHeightsSize: number = 2;
-  private miniMapHeightsBlur: number = 1;
-  private geometryQuality: number = 1;
-  private outsideMapSize: number = 1;
-
-  private displacementCanvas: HTMLCanvasElement;
+  private displacementPixelSize: number = 2;
+  private displacementPixelBlur: number = 1;
+  private geometryQuality: number = 2;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
+
+  private displacementCanvas: HTMLCanvasElement;
   private displacementMap: ImageData;
 
 
@@ -69,8 +69,10 @@ export class TerrainService {
     // Создание геометрии
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
     this.createHeights();
+    // Материал
+    const material: ShaderMaterial = this.getMaterial;
     // Настройки объекта
-    const mesh: Mesh = new Mesh(this.geometry, this.getMaterial);
+    const mesh: Mesh = new Mesh(this.geometry, material);
     mesh.rotateX(AngleToRad(-90));
     mesh.position.setY(-heightPart * (DreamMaxHeight - 1));
     mesh.receiveShadow = true;
@@ -88,8 +90,9 @@ export class TerrainService {
     const height: number = oHeight + (borderOSize * 2);
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const loader: TextureLoader = new TextureLoader();
+    // Базовые ткустуры
+    const mapTextures: DataTexture[] = this.createMaterials();
     // RGBA Маски
-    const mapTextures = this.createMaterials();
     const maskNames: string[] = mapTextures.map((t, k) => "mask_tex_" + k);
     const maskMapNames: string[] = mapTextures.map((t, k) => "mask_map_" + k);
     // Текстуры
@@ -118,7 +121,7 @@ export class TerrainService {
       uniform sampler2D ${texNames.join(", ")};
       uniform vec2 ${repeatNames.join(", ")};
 
-      ${ShaderLib.standard.fragmentShader
+      ${ShaderLib[this.materialType].fragmentShader
         // Заполнение текстурных карт
         .replace("#include <map_fragment>", `
           #ifdef USE_MAP
@@ -215,10 +218,25 @@ export class TerrainService {
       ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
       // Прочее
       normalScale: { type: "v2", value: { x: -1, y: -1 } },
-      displacementMap: { type: "t", value: new CanvasTexture(this.displacementCanvas) },
       displacementScale: { type: "f", value: heightPart * DreamMaxHeight },
       aoMapIntensity: { type: "f", value: 0.5 },
     }]);
+    // Свойства шейдера
+    const defines: CustomObject<boolean> = {
+      USE_MAP: true,
+      USE_UV: true,
+      USE_AOMAP: false,
+      USE_NORMALMAP: true,
+      USE_BUMPMAP: false,
+      USE_DISPLACEMENTMAP: true,
+      PHYSICALLY_CORRECT_LIGHTS: true,
+      FLAT_SHADED: false,
+      USE_TANGENT: true,
+      DOUBLE_SIDED: true,
+      USE_CLEARCOAT: true,
+      USE_SHEEN: true,
+      USE_ENVMAP: true,
+    };
     // Материал
     this.material = new ShaderMaterial({
       vertexShader,
@@ -226,20 +244,7 @@ export class TerrainService {
       uniforms,
       lights: true,
       fog: true,
-      defines: {
-        USE_MAP: true,
-        USE_UV: true,
-        USE_AOMAP: false,
-        USE_NORMALMAP: true,
-        USE_BUMPMAP: true,
-        USE_DISPLACEMENTMAP: false,
-        PHYSICALLY_CORRECT_LIGHTS: true,
-        FLAT_SHADED: true,
-        USE_TANGENT: true,
-        USE_CLEARCOAT: true,
-        USE_SHEEN: true,
-        USE_ENVMAP: true,
-      },
+      defines,
       extensions: {
         derivatives: true,
         fragDepth: false,
@@ -247,6 +252,10 @@ export class TerrainService {
         shaderTextureLOD: false,
       }
     });
+    // Настройки
+    this.material.clipShadows = true;
+    this.material.dithering = true;
+    this.material.shadowSide = BackSide;
     // Вернуть материал
     return this.material;
   }
@@ -268,13 +277,9 @@ export class TerrainService {
     const pixelSize: number = blurMap ? this.mapPixelSize : 1;
     const size: number = realSize * Math.pow(pixelSize, 2);
     const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
-    const defTerrain: MapTerrain = MapTerrains.find(({ id }) => id === this.dreamMap.land.type) ?? MapTerrains.find(({ id }) => id === 1);
     // Получить данные о местности
-    const getTerrain: Function = (x: number = -1, y: number = -1): MapTerrain => {
-      return y >= borderOSize && y < borderOSize + oHeight && x >= borderOSize && x < borderOSize + oWidth ?
-        MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1) :
-        defTerrain;
-    };
+    const getTerrain: Function = (x: number = -1, y: number = -1): MapTerrain =>
+      MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1);
     // Получить сведения о цвете
     const getColor: Function = (layout: number, color: 0 | 1 | 2, terrain: MapTerrain) => terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
     // Цикл по слоям
@@ -335,7 +340,6 @@ export class TerrainService {
     });
   }
 
-  // Отрисовать карту высот
   createHeights(x: number = -1, y: number = -1, bluring: boolean = true): void {
     this.displacementCanvas = document.createElement("canvas");
     // Параметры
@@ -343,26 +347,26 @@ export class TerrainService {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * this.miniMapHeightsSize;
-    const width: number = (oWidth * this.miniMapHeightsSize) + (borderSize * 2);
-    const height: number = (oHeight * this.miniMapHeightsSize) + (borderSize * 2);
+    const borderSize: number = this.outsideMapSize * borderOSize * this.displacementPixelSize;
+    const width: number = (oWidth * this.displacementPixelSize) + (borderSize * 2);
+    const height: number = (oHeight * this.displacementPixelSize) + (borderSize * 2);
     const cYs: number[] = Array.from(Array(oHeight).keys());
     const cXs: number[] = Array.from(Array(oWidth).keys());
-    const blurs: number[] = Array.from(Array((this.miniMapHeightsBlur * 2) + 1).keys()).map(v => v - this.miniMapHeightsBlur);
+    const blurs: number[] = Array.from(Array((this.displacementPixelBlur * 2) + 1).keys()).map(v => v - this.displacementPixelBlur);
     // Отрисовка ячейки
     const drawCeil: Function = (x: number, y: number) => {
       const z: number = ((this.getCeil(x, y).coord.z * 255) / DreamMaxHeight) / 255;
       const displacementColor: Color = new Color(z, z, z);
       const bumpColor: Color = new Color(1 - z, 1 - z, 1 - z);
-      const sX: number = borderSize + (x * this.miniMapHeightsSize);
-      const sY: number = borderSize + (y * this.miniMapHeightsSize);
+      const sX: number = borderSize + (x * this.displacementPixelSize);
+      const sY: number = borderSize + (y * this.displacementPixelSize);
       // Вставить карту высот
       if (!!this.displacementMap) {
         displacementContext.putImageData(this.displacementMap, 0, 0);
       }
       // Нарисовать квадрат
       displacementContext.fillStyle = "#" + displacementColor.getHexString();
-      displacementContext.fillRect(sX, sY, this.miniMapHeightsSize, this.miniMapHeightsSize);
+      displacementContext.fillRect(sX, sY, this.displacementPixelSize, this.displacementPixelSize);
     };
     // Отрисовка одной ячейки
     if (x >= 0 && y >= 0) {
@@ -387,7 +391,7 @@ export class TerrainService {
     }
     // Размытие карты
     if (bluring) {
-      if (this.miniMapHeightsBlur > 0) {
+      if (this.displacementPixelBlur > 0) {
         displacementContext.globalAlpha = 0.5;
         blurs.forEach(y => blurs.forEach(x => displacementContext.drawImage(this.displacementCanvas, x, y)));
         displacementContext.globalAlpha = 1;
@@ -421,6 +425,7 @@ export class TerrainService {
     }));
     // Обновить геометрию
     this.geometry.setAttribute("position", vertexes);
+    this.geometry.computeVertexNormals();
   }
 
   // Обновить карту
