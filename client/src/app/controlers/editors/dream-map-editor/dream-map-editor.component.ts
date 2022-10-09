@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
-import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSettings, XYCoord } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths, XYCoord } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -75,16 +75,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private terrainChangeStep: number = 1;
 
   private destroy$: Subject<void> = new Subject<void>();
-
-  terrainsSettingsKeys: MapTerrainSettingsData[] = [
-    { key: "colorR", title: "Красный", step: 1, min: 0, max: 255 },
-    { key: "colorG", title: "Зеленый", step: 1, min: 0, max: 255 },
-    { key: "colorB", title: "Синий", step: 1, min: 0, max: 255 },
-    { key: "metalness", title: "Металличность", step: 0.01, min: 0, max: 1 },
-    { key: "roughness", title: "Шероховатость", step: 0.01, min: 0, max: 1 },
-    { key: "aoMapIntensity", title: "Интенсивность (AO)", step: 0.5, min: 0, max: 10 },
-    { key: "normalScale", title: "Уровень нормалей", step: 0.1, min: -1, max: 1 },
-  ];
 
 
 
@@ -188,7 +178,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     if (this.terrainList.some(t => t.id === id)) {
       const terrain: MapTerrain = this.terrainList.find(t => t.id === id)!;
       // Ссылка на картинку
-      return "../../../../../assets/dream-map/terrain/top/face/" + terrain.name + "." + terrain.exts.face;
+      return TexturePaths.face + terrain.name + "." + terrain.exts.face;
     }
     // Картинка не найдена
     return "";
@@ -661,15 +651,6 @@ interface RoadTypeToolListItem extends ToolListItemBase {
 // Интерфейс списка инструментов: вода
 interface WaterTypeToolListItem extends ToolListItemBase {
   type: WaterTypeTool;
-}
-
-// Интерфейс данных настроек материалов
-interface MapTerrainSettingsData {
-  key: keyof MapTerrainSettings;
-  title: string;
-  step: number;
-  min: number;
-  max: number;
 }
 
 

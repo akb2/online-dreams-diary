@@ -45,7 +45,6 @@ export interface MapTerrain {
     disp: ImageExtension;
     normal: ImageExtension;
   };
-  settings: MapTerrainSettings;
 }
 
 // Интерфейс настроек для цветовой маски
@@ -60,19 +59,6 @@ export enum MapTerrainSplatMapColor {
   Green,
   Blue,
   Empty
-}
-
-// Интерфейс настроек типа местности
-export interface MapTerrainSettings {
-  colorR: number;
-  colorG: number;
-  colorB: number;
-  metalness: number;            // Металличность
-  roughness: number;            // Шероховатость
-  aoMapIntensity: number;       //
-  displacementScale: number;    //
-  envMapIntensity: number;      //
-  normalScale: number;          //
 }
 
 // Интерфейс типа неба
@@ -243,7 +229,7 @@ export interface TerrainMaterialCache {
 
 
 // Путь к файлам текстур
-const BaseTexturePath: string = "assets/dream-map/terrain/top/";
+export const BaseTexturePath: string = "assets/dream-map/terrain/";
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
   face: BaseTexturePath + "face/",
   ao: BaseTexturePath + "ao/",
@@ -279,6 +265,9 @@ export const WayLineTypes: WayLineType[] = [
   }
 ];
 
+// Список цветов для
+const Colors: MapTerrainSplatMapColor[] = [MapTerrainSplatMapColor.Red, MapTerrainSplatMapColor.Green, MapTerrainSplatMapColor.Blue];
+
 // Список типов местности
 export const MapTerrains: MapTerrain[] = [
   // Газон
@@ -286,109 +275,71 @@ export const MapTerrains: MapTerrain[] = [
     id: 1,
     name: "grass",
     title: "Газон",
-    settings: {
-      colorR: 115,
-      colorG: 201,
-      colorB: 44,
-      metalness: 0,
-      roughness: 0.76,
-      aoMapIntensity: 2.5,
-      normalScale: -0.2
-    }
+    exts: {
+      face: ImageExtension.jpg,
+      normal: ImageExtension.jpg,
+    },
   },
   // Земля
   {
     id: 2,
     name: "dirt",
     title: "Земля",
-    settings: {
-      colorR: 135,
-      colorG: 163,
-      colorB: 158,
-      metalness: 0.1,
-      roughness: 0.85,
-      aoMapIntensity: 5.5,
-      normalScale: -0.2
-    }
+    exts: {
+      face: ImageExtension.jpg,
+      normal: ImageExtension.jpg,
+    },
   },
   // Камень
   {
     id: 3,
     name: "stone",
     title: "Камень",
-    settings: {
-      colorR: 180,
-      colorG: 180,
-      colorB: 180,
-      metalness: 0.75,
-      roughness: 0.75,
-      aoMapIntensity: 2.5,
-      normalScale: -0.7
-    }
+    exts: {
+      face: ImageExtension.jpg,
+      normal: ImageExtension.jpg,
+    },
   },
   // Песок
   {
     id: 4,
     name: "sand",
     title: "Песок",
-    settings: {
-      colorR: 170,
-      colorG: 170,
-      colorB: 170,
-      metalness: 0.1,
-      roughness: 0.6,
-      aoMapIntensity: 3.5,
-      normalScale: -0.5
-    }
+    exts: {
+      face: ImageExtension.jpg,
+      normal: ImageExtension.jpg,
+    },
   },
   // Снег
   {
     id: 5,
     name: "snow",
     title: "Снег",
-    settings: {
-      colorR: 230,
-      colorG: 230,
-      colorB: 230,
-      metalness: 0,
-      roughness: 0.4,
-      aoMapIntensity: 0.5,
-      normalScale: 0.1
-    }
+    exts: {
+      face: ImageExtension.jpg,
+      normal: ImageExtension.jpg,
+    },
   }
 ]
+  // Преобразовать в тип
   .map(d => d as MapTerrain)
-  .map((d, k, a) => ({
-    ...d,
-    isAvail: !!d?.isAvail || true,
-    exts: {
-      face: d?.exts?.face as ImageExtension ?? ImageExtension.png,
-      disp: d?.exts?.disp as ImageExtension ?? ImageExtension.png,
-      normal: d?.exts?.normal as ImageExtension ?? ImageExtension.png,
-      ao: d?.exts?.ao as ImageExtension ?? ImageExtension.png
-    },
-    settings: {
-      colorR: d?.settings?.colorR === undefined ? 100 : d.settings.colorR,
-      colorG: d?.settings?.colorG === undefined ? 100 : d.settings.colorG,
-      colorB: d?.settings?.colorB === undefined ? 100 : d.settings.colorB,
-      metalness: d?.settings?.metalness === undefined ? 0.5 : d.settings.metalness,
-      roughness: d?.settings?.roughness === undefined ? 0 : d.settings.roughness,
-      aoMapIntensity: d?.settings?.aoMapIntensity === undefined ? 1 : d.settings.aoMapIntensity,
-      displacementScale: d?.settings?.displacementScale === undefined ? 0 : d.settings.displacementScale,
-      envMapIntensity: d?.settings?.envMapIntensity === undefined ? 1 : d.settings.envMapIntensity,
-      normalScale: d?.settings?.normalScale === undefined ? 0 : d.settings.normalScale,
-    }
-  }))
-  .map((d, k) => {
-    const layout: number = Math.floor(k / 3);
-    const colorIndex: number = k - (layout * 3);
-    const colors: MapTerrainSplatMapColor[] = [MapTerrainSplatMapColor.Red, MapTerrainSplatMapColor.Green, MapTerrainSplatMapColor.Blue];
-    // Вернуть массив
+  // Дополнить модель данными по умолчанию
+  .map((d, k, a) => {
+    const layout: number = Math.floor(k / Colors.length);
+    const colorIndex: number = k - (layout * Colors.length);
+    // Вернуть модель
     return {
       ...d,
+      isAvail: !!d?.isAvail || true,
+      exts: {
+        face: d?.exts?.face as ImageExtension ?? ImageExtension.png,
+        disp: d?.exts?.disp as ImageExtension ?? ImageExtension.png,
+        normal: d?.exts?.normal as ImageExtension ?? ImageExtension.png,
+        ao: d?.exts?.ao as ImageExtension ?? ImageExtension.png
+      },
       splatMap: {
         layout,
-        color: colors[colorIndex]
+        color: Colors[colorIndex]
       }
     };
   });
