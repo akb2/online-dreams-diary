@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
+import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
 import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
@@ -15,7 +16,7 @@ export class TerrainService {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  private outsideMapSize: number = 1;
+  outsideMapSize: number = 2;
   private mapPixelSize: number = 1;
   private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
@@ -59,8 +60,8 @@ export class TerrainService {
     // Параметры
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * DreamCeilSize;
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    const borderSize: number = borderOSize * DreamCeilSize;
     const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
     const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
     const heightPart: number = DreamCeilSize / DreamCeilParts;
@@ -74,7 +75,7 @@ export class TerrainService {
     // Настройки объекта
     const mesh: Mesh = new Mesh(this.geometry, material);
     mesh.rotateX(AngleToRad(-90));
-    mesh.position.setY(-heightPart * (DreamMaxHeight - 1));
+    // mesh.position.setY(-heightPart * (DreamMaxHeight - 1));
     mesh.receiveShadow = true;
     mesh.castShadow = true;
     // Отдать объект
@@ -257,9 +258,16 @@ export class TerrainService {
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
     // Вернуть материал
-    return this.material;
+    return this.alphaFogService.getShaderMaterial(this.material);
   }
 
+
+
+
+
+  constructor(
+    private alphaFogService: AlphaFogService
+  ) { }
 
 
 
@@ -269,7 +277,7 @@ export class TerrainService {
   private createMaterials(): DataTexture[] {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const borderOSize: number = Math.max(oWidth, oHeight);
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
     const realSize: number = width * height;
@@ -340,14 +348,15 @@ export class TerrainService {
     });
   }
 
+  // Генерация карты высот
   createHeights(x: number = -1, y: number = -1, bluring: boolean = true): void {
     this.displacementCanvas = document.createElement("canvas");
     // Параметры
     const displacementContext: CanvasRenderingContext2D = this.displacementCanvas.getContext("2d");
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const borderOSize: number = Math.max(oWidth, oHeight);
-    const borderSize: number = this.outsideMapSize * borderOSize * this.displacementPixelSize;
+    const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
+    const borderSize: number = borderOSize * this.displacementPixelSize;
     const width: number = (oWidth * this.displacementPixelSize) + (borderSize * 2);
     const height: number = (oHeight * this.displacementPixelSize) + (borderSize * 2);
     const cYs: number[] = Array.from(Array(oHeight).keys());
