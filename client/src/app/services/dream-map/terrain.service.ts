@@ -218,7 +218,7 @@ export class TerrainService {
       b_one_repeat: { type: "v2", value: { x: 1, y: 1 } },
       ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
       // Прочее
-      normalScale: { type: "v2", value: { x: -1, y: -1 } },
+      normalScale: { type: "v2", value: { x: -1, y: 1 } },
       displacementScale: { type: "f", value: heightPart * DreamMaxHeight },
       aoMapIntensity: { type: "f", value: 0.5 },
     }]);
