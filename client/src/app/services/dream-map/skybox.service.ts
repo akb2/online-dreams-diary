@@ -69,13 +69,17 @@ export class SkyBoxService {
 
   // Подсчитать положение
   setSkyTime(time: number): void {
+    const minElevation: number = 0;
+    const maxElevation: number = 50;
+    const minAzimuth: number = 100;
+    const maxAzimuth: number = -100;
     // Параметры
     const uniforms = this.sky.material.uniforms;
     const valueIndex: number = Math.floor((90 + time) / 180);
     const value: number = (time + 90) - (valueIndex * 180);
     const calc: (num: number, min: number, max: number) => number = (num: number, min: number, max: number) => ((min - max) * num) + max;
-    const elevation: number = calc(Math.abs(Cos(value)), 0, 70);
-    const azimuth: number = calc((Cos(value) + 1) / 2, 100, -100);
+    const elevation: number = calc(Math.abs(Cos(value)), minElevation, maxElevation);
+    const azimuth: number = calc((Cos(value) + 1) / 2, minAzimuth, maxAzimuth);
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
     const sunPosition: Vector3 = new Vector3();
