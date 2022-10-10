@@ -25,6 +25,8 @@ export interface MapSkyData {
 
 // Интерфейс данных позиции камеры
 export interface DreamMapCameraPosition {
+  target: CoordDto;
+  position: CoordDto;
 }
 
 // Интерфейс ячейки сновидения
