@@ -1,16 +1,16 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { AngleToRad } from "@_models/app";
-import { DreamMap, DreamMapCeil, SkyBoxLightTarget, WaterType, XYCoord } from "@_models/dream-map";
-import { SkyBoxResult, SkyBoxService } from "@_services/dream-map/skybox.service";
+import { DreamMap, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
+import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { FogFar, SkyBoxOutput, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyBox, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CameraHelper, Clock, Intersection, Light, Mesh, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, Clock, Intersection, Mesh, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
-import * as THREE from "three";
 
 
 
@@ -43,8 +43,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private width: number = 0;
   private height: number = 0;
   private sceneColor: number = 0x000000;
-  minCeilHeight: number = DreamMinHeight;
-  maxCeilHeight: number = DreamMaxHeight;
   evenlyMaxDiff: number = Math.round(DreamCeilParts * 1.5);
   private contextType: string = "webgl";
   private waitContext: number = 30;
@@ -57,8 +55,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private zoomMax: number = DreamCeilSize * 20;
   private minAngle: number = 0;
   private maxAngle: number = 80;
-  private distance: number = DreamMapSize;
-  private showHelpers: boolean = false;
   private drawShadows: boolean = true;
   private oceanFlowSpeed: number = 3;
 
@@ -73,8 +69,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private ocean: Water;
   stats: Stats;
   hoverCoords: XYCoord = null;
-
-  private getAngle: (angle: number) => number = (angle: number) => angle * Math.PI / 180;
 
   loading: boolean = false;
   ready: boolean = false;
@@ -152,7 +146,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       camera: {},
       dreamerWay: [],
       size: this.dreamMap.size,
-      skyBox: this.dreamMap.skyBox,
       ocean: {
         type: this.dreamMap?.ocean?.type ?? WaterType.pool,
         material: this.dreamMap?.ocean?.material ?? 1,
@@ -161,6 +154,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       land: {
         type: this.dreamMap?.land?.type ?? DreamTerrain,
         z: this.dreamMap?.land?.z ?? DreamDefHeight
+      },
+      sky: {
+        time: this.dreamMap?.sky?.time ?? DreamSkyTime
       }
     };
   }
@@ -172,9 +168,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     return Object.entries(ClosestCeilsCoords)
       .map(([k, { x: cX, y: cY }]) => {
         const c: DreamMapCeil = this.getCeil(ceil.coord.x + cX, ceil.coord.y + cY);
-        c.coord.z = c.coord.z > this.maxCeilHeight ?
-          this.maxCeilHeight :
-          (c.coord.z < this.minCeilHeight ? this.minCeilHeight : c.coord.z);
+        c.coord.z = c.coord.z > DreamMaxHeight ?
+          DreamMaxHeight :
+          (c.coord.z < DreamMinHeight ? DreamMinHeight : c.coord.z);
         // Результат
         return [k.toString(), c.coord.z * heightPart, c.terrain];
       })
@@ -196,14 +192,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private skyBoxService: SkyBoxService,
-    private terrainService: TerrainService
-  ) {
-    window.THREE = THREE;
-  }
+    private terrainService: TerrainService,
+    private alphaFogService: AlphaFogService
+  ) { }
 
   ngOnInit() {
-    this.distance = Math.min(this.dreamMap.size.width ?? DreamMapSize, this.dreamMap.size.height ?? DreamMapSize);
-    // События
     forkJoin([
       fromEvent(window, "resize", () => this.onWindowResize()),
       fromEvent(document, "mousemove", this.onMouseMove.bind(this)),
@@ -298,6 +291,20 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       event.target.setX(x);
       event.target.setZ(z);
     }
+    // Пересечение камеры с ландшафтом
+    {
+      const dir: Vector3 = new Vector3();
+      const raycaster: Raycaster = new Raycaster();
+      // Поиск пересечений
+      raycaster.set(this.control.target, dir.subVectors(this.camera.position, this.control.target).normalize());
+      const intersects: Intersection<Object3D<Event>>[] = raycaster.intersectObjects([this.terrainMesh, this.ocean], false);
+      // Остановить камеру
+      if (intersects.length > 0) {
+        if (intersects[0].distance < this.control.target.distanceTo(this.camera.position)) {
+          this.camera.position.copy(intersects[0].point);
+        }
+      }
+    }
   }
 
   // Изменение размеров экрана
@@ -344,7 +351,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 point: {
                   x: ceil.coord.x,
                   y: ceil.coord.y,
-                  z: Math.round((object.point.y + (heightPart * this.maxCeilHeight)) / heightPart),
+                  z: Math.round((object.point.y + (heightPart * DreamMaxHeight)) / heightPart),
                   xDimen: x > ceil.coord.x ? 1 : x < ceil.coord.x ? -1 : 0,
                   yDimen: y > ceil.coord.y ? 1 : y < ceil.coord.y ? -1 : 0
                 }
@@ -381,6 +388,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание сцены
   private createScene(): void {
+    const heightPart: number = DreamCeilSize / DreamCeilParts;
+    // Отрисовщик
     this.renderer = new WebGLRenderer({
       context: this.canvas.nativeElement.getContext(this.contextType),
       canvas: this.canvas.nativeElement,
@@ -393,6 +402,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.renderer.setClearColor(this.sceneColor, 1);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.renderer.outputEncoding = sRGBEncoding;
+    this.renderer.toneMapping = ACESFilmicToneMapping;
     // Сцена
     this.scene = new Scene();
     // Камера
@@ -400,20 +411,21 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       45,
       this.width / this.height,
       DreamCeilSize / 10,
-      DreamCeilSize * this.distance
+      FogFar * DreamCeilSize
     );
     this.camera.position.z = DreamCeilSize * (this.zoomMin + this.zoomMax) / 2;
     this.scene.add(this.camera);
     // Управление
     this.control = new OrbitControls(this.camera, this.canvas.nativeElement);
     this.control.screenSpacePanning = false;
+    this.control.target = new Vector3(0, (heightPart * DreamMaxHeight) + DreamCeilSize, 0);
     this.control.rotateSpeed = this.rotateSpeed;
     this.control.panSpeed = this.moveSpeed;
     this.control.zoomSpeed = this.zoomSpeed;
     this.control.minDistance = this.zoomMin;
     this.control.maxDistance = this.zoomMax;
-    this.control.minPolarAngle = this.getAngle(this.minAngle);
-    this.control.maxPolarAngle = this.getAngle(this.maxAngle);
+    this.control.minPolarAngle = AngleToRad(this.minAngle);
+    this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
     // Статистика
     this.stats = Stats();
@@ -425,32 +437,17 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Отрисовать небо
   private createSky(): void {
     if (this.scene) {
-      // Скайбокс
-      const skyBox: SkyBoxResult = this.skyBoxService.getObject(
-        this.dreamMap?.skyBox || DreamSkyBox,
-        this.distance,
-        DreamCeilSize
-      );
-      // Освещения
-      const lightScene: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Scene).map(({ light }) => light);
-      const lightCamera: Light[] = skyBox.light.filter(({ target }) => target === SkyBoxLightTarget.Camera).map(({ light }) => light);
-      const helperScene: CameraHelper[] = this.showHelpers ?
-        skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Scene && helper).map(({ helper }) => helper) :
-        [];
-      const helperCamera: CameraHelper[] = this.showHelpers ?
-        skyBox.light.filter(({ target, helper }) => target === SkyBoxLightTarget.Camera && helper).map(({ helper }) => helper) :
-        [];
-      // Настройки
-      this.scene.background = skyBox.skyBox;
-      this.scene.fog = skyBox.fog;
+      const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+      const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+      const borderOSize: number = Math.max(oWidth, oHeight) * this.terrainService.outsideMapSize;
+      const borderSize: number = borderOSize * DreamCeilSize;
+      const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
+      const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
+      const size: number = Math.max(width, height);
+      const { sky, sun, fog, atmosphere }: SkyBoxOutput = this.skyBoxService.getObject(this.renderer, size, this.dreamMap?.sky?.time ?? DreamSkyTime);
       // Добавить к сцене
-      if (lightScene?.length > 0 || helperScene?.length > 0) {
-        this.scene.add(...lightScene, ...helperScene);
-      }
-      // Добавить к камере
-      if (lightCamera?.length > 0) {
-        this.camera.add(...lightCamera, ...helperCamera);
-      }
+      this.scene.add(sky, sun, atmosphere);
+      this.scene.fog = fog;
       // Рендер
       this.render();
     }
@@ -474,7 +471,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const width: number = this.dreamMap?.size?.width || DreamMapSize;
       const height: number = this.dreamMap?.size?.height || DreamMapSize;
       const heightPart: number = DreamCeilSize / DreamCeilParts;
-      const z: number = (heightPart * this.dreamMap.ocean.z) - (heightPart * this.maxCeilHeight) - heightPart;
+      const z: number = heightPart * this.dreamMap.ocean.z;
       const geometry: PlaneGeometry = new PlaneGeometry(
         (DreamCeilSize * (width + 2)) * 3,
         (DreamCeilSize * (height + 2)) * 3
@@ -491,8 +488,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         fog: this.scene.fog !== undefined
       });
       // Свойства
-      this.ocean.position.set(0, z, 0);
+      this.ocean.material = this.alphaFogService.getShaderMaterial(this.ocean.material);
       this.ocean.rotation.x = AngleToRad(-90);
+      this.ocean.position.set(0, z, 0);
       this.ocean.material.uniforms.size.value = DreamCeilSize * 10;
       this.ocean.receiveShadow = true;
       // Добавить в сцену
@@ -574,13 +572,21 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.dreamMap.ocean.z = oceanHeight;
     // Параметры
     const heightPart: number = DreamCeilSize / DreamCeilParts;
-    const z: number = (heightPart * this.dreamMap.ocean.z) - (heightPart * this.maxCeilHeight) - heightPart;
+    const z: number = heightPart * this.dreamMap.ocean.z;
     // Свойства
     this.ocean.position.setY(z);
   }
 
   // Обновить уровень окружающего ландшафта
   setLandHeight(landHeight: number): void {
+  }
+
+  // Посчитать полоение небесных светил
+  setSkyTime(time: number): void {
+    this.dreamMap.sky.time = time;
+    // Обновить сцену
+    this.skyBoxService.setSkyTime(time);
+    this.render();
   }
 }
 

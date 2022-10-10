@@ -23,6 +23,9 @@
         </div>
       </div>
     </div>
+    <!-- Под-инструмент: окружение -->
+    <ng-container [ngTemplateOutlet]="envTools"
+                  *ngIf="getCurrentTool.type === toolType.sky"></ng-container>
     <!-- Под-инструмент: ландшафт -->
     <ng-container [ngTemplateOutlet]="landscapeTools"
                   *ngIf="getCurrentTool.type === toolType.landscape"></ng-container>
@@ -41,6 +44,39 @@
 
 
 
+
+<!-- Под-инструмент: окружение -->
+<ng-template #envTools>
+  <!-- Положение небесного светила -->
+  <form class="tool-button"
+        [formGroup]="form">
+    <div class="tool-button__point progress">
+      <div class="tool-button__point progress__height back">{{timeFormat()}}</div>
+      <div class="tool-button__point progress__height fill"
+           [ngStyle]="{ height: timeFormat(true) + '%' }">
+        <span>{{timeFormat()}}</span>
+      </div>
+    </div>
+    <!-- Настройка размера -->
+    <div class="tool-button__items">
+      <div class="tool-button container">Время:</div>
+      <div class="tool-button container">
+        <mat-slider class="long-slider"
+                    thumbLabel
+                    formControlName="currentTime"
+                    [thumbLabel]="false"
+                    tickInterval="1000"
+                    color="primary"
+                    [step]="timeSettings.step"
+                    [min]="timeSettings.min"
+                    [max]="timeSettings.max"
+                    aria-label="blocks"
+                    (input)="onTimeChange($event)"
+                    (change)="onTimeChange($event)"></mat-slider>
+      </div>
+    </div>
+  </form>
+</ng-template>
 
 <!-- Под-инструмент: ландшафт -->
 <ng-template #landscapeTools>
@@ -74,7 +110,8 @@
     <div class="tool-button__items">
       <div class="tool-button container">Общая высота ландшафта:</div>
       <div class="tool-button container">
-        <mat-slider thumbLabel
+        <mat-slider class="long-slider"
+                    thumbLabel
                     formControlName="worldLandHeight"
                     [thumbLabel]="false"
                     tickInterval="1000"
@@ -193,7 +230,8 @@
     <div class="tool-button__items">
       <div class="tool-button container">Высота мирового океана:</div>
       <div class="tool-button container">
-        <mat-slider thumbLabel
+        <mat-slider class="long-slider"
+                    thumbLabel
                     formControlName="worldOceanHeight"
                     [thumbLabel]="false"
                     tickInterval="1000"

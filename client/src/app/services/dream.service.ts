@@ -10,7 +10,6 @@ import { DreamMap, DreamMapCeilDto, DreamMapDto, MapTerrains, Water, WaterType, 
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
-import { SkyBoxes } from "@_services/dream-map/skybox.service";
 import { TokenService } from "@_services/token.service";
 import { forkJoin, Observable, of } from "rxjs";
 import { map, mergeMap, switchMap, tap } from "rxjs/operators";
@@ -243,11 +242,6 @@ export class DreamService {
           place: null,
           terrain: c.terrain ?? DreamTerrain,
           object: null,
-          /* water: {
-            z: c.water?.z > c.coord.z ? c.water.z : DreamWater.z,
-            material: c.water?.material ?? DreamWater.material,
-            type: c.water?.type ?? DreamWater.type
-          }, */
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -255,8 +249,10 @@ export class DreamService {
         })),
         camera: {
         },
+        sky: {
+          time: dreamMapDto?.sky?.time ?? DreamSkyTime
+        },
         dreamerWay: dreamMapDto.dreamerWay,
-        skyBox: dreamMapDto.skyBox ?? DreamSkyBox,
         ocean,
         land
       } as DreamMap;
@@ -273,7 +269,6 @@ export class DreamService {
         },
         ceils: [],
         dreamerWay: [],
-        skyBox: DreamSkyBox,
         ocean: {
           type: WaterType.pool,
           z: DreamWaterDefHeight,
@@ -282,7 +277,10 @@ export class DreamService {
         land: {
           type: DreamTerrain,
           z: DreamDefHeight
-        }
+        },
+        sky: {
+          time: DreamSkyTime
+        },
       };
     }
   }
@@ -316,9 +314,9 @@ export class DreamService {
       camera: dreamMap.camera,
       size: dreamMap.size,
       dreamerWay: dreamMap.dreamerWay,
-      skyBox: dreamMap.skyBox,
       ocean: dreamMap.ocean,
-      land: dreamMap.land
+      land: dreamMap.land,
+      sky: dreamMap.sky,
     };
   }
 }
@@ -351,11 +349,15 @@ export const DreamCeilParts: number = 64;
 // Количество секций по высоте воды в одной ячейке
 export const DreamCeilWaterParts: number = 1;
 
+// Время для положения небесных тел по умолчанию
+// * 0-360 соответствует времени 00:00 - 23:59
+export const DreamSkyTime: number = 130;
+
 // Пределы высот
 export const DreamMinHeight: number = 1;
 export const DreamDefHeight: number = DreamCeilParts * 10;
 export const DreamMaxHeight: number = DreamCeilParts * 20;
-export const DreamWaterDefHeight: number = DreamDefHeight;
+export const DreamWaterDefHeight: number = DreamCeilParts * 9;
 
 // Вода по умолчанию
 export const DreamWater: Water = {
@@ -365,7 +367,7 @@ export const DreamWater: Water = {
 };
 
 // Параметры по умолчанию
-export const DreamSkyBox: number = SkyBoxes[0].id;
+export const DreamSkyType: number = 1;
 export const DreamTerrain: number = MapTerrains[0].id;
 
 // Заголовок по умолчанию

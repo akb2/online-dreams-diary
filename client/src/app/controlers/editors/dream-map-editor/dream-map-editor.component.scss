@@ -202,6 +202,10 @@ $separatorColor: #ccc;
         &.right {
           text-align: right;
         }
+        // Длинный слайдер
+        > .long-slider {
+          min-width: 240px;
+        }
       }
     }
     // Скругление углов

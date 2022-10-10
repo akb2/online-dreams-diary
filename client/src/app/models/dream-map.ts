@@ -1,7 +1,7 @@
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
-import { Light, MeshStandardMaterial, Side, Texture } from "three";
+import { MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -13,9 +13,14 @@ export interface DreamMap {
   camera: DreamMapCameraPosition;
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
-  skyBox: number;
   ocean: Water;
   land: WorldLand;
+  sky: MapSkyData;
+}
+
+// Интерфейс настроек неба
+export interface MapSkyData {
+  time: number;
 }
 
 // Интерфейс данных позиции камеры
@@ -61,42 +66,6 @@ export enum MapTerrainSplatMapColor {
   Empty
 }
 
-// Интерфейс типа неба
-export interface MapSkyBox {
-  id: number;
-  name: string;
-  title: string;
-  fogColor: number;
-  fogDistance: number;
-  lights: MapSkyBoxLight[];
-}
-
-// Интерфейс освещения
-interface MapSkyBoxLight {
-  light: Light;
-  target: SkyBoxLightTarget;
-  position?: CoordDto;
-  fixed?: boolean;
-  shadow?: {
-    near: number;
-    far: number;
-    top: number;
-    left: number;
-    right: number;
-    bottom: number;
-    width: number;
-    height: number;
-    radius: number;
-    bias: number;
-  };
-}
-
-// Перебор для назначения освещения
-export enum SkyBoxLightTarget {
-  Scene = "Scene",
-  Camera = "Camera"
-}
-
 // Интерфейс объекта карты
 export interface MapObject {
   id: number;
@@ -109,9 +78,9 @@ export interface DreamMapDto {
   camera?: DreamMapCameraPosition;
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
-  skyBox: number | null;
   ocean: WaterDto;
   land: WorldLandDto;
+  sky: MapSkyData
 }
 
 // Интерфейс ячейки сновидения

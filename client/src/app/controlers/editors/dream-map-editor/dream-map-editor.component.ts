@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
-import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths, XYCoord } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
@@ -52,7 +52,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.landscape;
+  private tool: Tool = Tool.sky;
   toolSizeLand: number = ToolSizeLand[0];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
@@ -71,8 +71,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
-  private toolActionTimer: number = 30;
+  private toolActionTimer: number = 15;
   private terrainChangeStep: number = 1;
+  timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -151,6 +152,31 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return value;
   }
 
+  // Форматирование слайдера выбора высоты ландшафта
+  timeFormat(asPercent: boolean = false): string {
+    let value: string;
+    let key: number = this.form.get("currentTime")?.value ?? 90;
+    key = key >= this.timeSettings.max ? this.timeSettings.max - 1 : key;
+    key = key < this.timeSettings.min ? this.timeSettings.min : key;
+    // В процентах
+    if (asPercent) {
+      value = Math.round(key / (this.timeSettings.max - 1) * 100).toString();
+    }
+    // В формате 24 часов
+    else {
+      const hours: number = 24;
+      const minutes: number = 60;
+      const minutesInADay: number = hours * minutes;
+      const allMinutes: number = key / this.timeSettings.max * minutesInADay;
+      const hour: number = Math.floor(allMinutes / minutes);
+      const minute: number = Math.floor(allMinutes - (hour * minutes));
+      // Записать значение
+      value = ("0" + hour).slice(-2) + ":" + ("0" + minute).slice(-2);
+    }
+    // Результат
+    return value;
+  }
+
   // Ключ текущего размера дороги
   private get getCurrentToolSizeRoad(): number {
     return ToolSizeRoad.findIndex(t => t === this.toolSizeRoad);
@@ -208,6 +234,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.form = this.formBuilder.group({
       toolSizeLand: [this.getCurrentToolSizeLand],
       toolSizeRoad: [this.getCurrentToolSizeRoad],
+      currentTime: [0],
       worldOceanHeight: [0],
       worldLandHeight: [0],
     });
@@ -220,6 +247,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(): void {
     this.form.get("worldOceanHeight").setValue(this.dreamMap.ocean.z ?? DreamWaterDefHeight);
     this.form.get("worldLandHeight").setValue(this.dreamMap.land.z ?? DreamDefHeight);
+    this.form.get("currentTime").setValue(this.dreamMap.sky.time ?? DreamSkyTime);
   }
 
   ngOnDestroy() {
@@ -389,6 +417,17 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Изменение времени
+  onTimeChange(event: MatSliderChange): void {
+    this.dreamMap.sky.time = event.value ?? DreamSkyTime;
+    this.form.get("currentTime").setValue(this.dreamMap.sky.time);
+    // Установить высоту
+    this.setSkyTime();
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+
+  }
+
   // Изменение размера кисти
   onToolSizeRoadChange(event: MatSliderChange): void {
     this.toolSizeRoad = ToolSizeRoad[event.value] || ToolSizeRoad[0];
@@ -494,8 +533,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
           // Обновить
           ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
           ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
-          ceil.coord.originalZ = ceil.coord.originalZ > this.viewer.maxCeilHeight ? this.viewer.maxCeilHeight : ceil.coord.originalZ;
-          ceil.coord.originalZ = ceil.coord.originalZ < this.viewer.minCeilHeight ? this.viewer.minCeilHeight : ceil.coord.originalZ;
+          ceil.coord.originalZ = ceil.coord.originalZ > DreamMaxHeight ? DreamMaxHeight : ceil.coord.originalZ;
+          ceil.coord.originalZ = ceil.coord.originalZ < DreamMinHeight ? DreamMinHeight : ceil.coord.originalZ;
           ceil.coord.z = ceil.coord.originalZ;
           // Запомнить ячейку
           this.saveCeil(ceil);
@@ -564,6 +603,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.viewer.setLandHeight(this.dreamMap.land.z);
   }
 
+  // Изменить время для положения небесных светил
+  private setSkyTime(): void {
+    this.viewer.setSkyTime(this.dreamMap.sky.time);
+  }
+
 
 
 
@@ -584,18 +628,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-// Интерфейс водной области
-interface WaterArea {
-  ceils: XYCoord[];
-  z: number;
-}
-
-
-
-
-
 // Перечисление инструментов: общее
 enum Tool {
+  sky,
   landscape,
   terrain,
   water,
@@ -653,6 +688,13 @@ interface WaterTypeToolListItem extends ToolListItemBase {
   type: WaterTypeTool;
 }
 
+// Интерфейс параметров слайдера
+interface SliderSettings {
+  min: number;
+  max: number;
+  step: number;
+}
+
 
 
 
@@ -663,6 +705,12 @@ const ToolSizeRoad: number[] = [1, 2, 3, 4, 5, 6];
 
 // Список инструментов: общее
 const Tools: ToolListItem[] = [
+  // Работа с окружением
+  {
+    type: Tool.sky,
+    name: "Окружением",
+    icon: "light_mode"
+  },
   // Работа с ландшафтом
   {
     type: Tool.landscape,
