@@ -468,8 +468,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Отрисовать океан
   private createOcean(): void {
     if (this.scene) {
-      const width: number = this.dreamMap?.size?.width || DreamMapSize;
-      const height: number = this.dreamMap?.size?.height || DreamMapSize;
+      const oWidth: number = this.dreamMap?.size?.width || DreamMapSize;
+      const oHeight: number = this.dreamMap?.size?.height || DreamMapSize;
+      const borderOSize: number = Math.max(oWidth, oHeight) * this.terrainService.outsideMapSize;
+      const borderSize: number = borderOSize * DreamCeilSize;
+      const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
+      const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
       const heightPart: number = DreamCeilSize / DreamCeilParts;
       const z: number = heightPart * this.dreamMap.ocean.z;
       const geometry: PlaneGeometry = new PlaneGeometry(
@@ -483,8 +487,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         waterNormals: new TextureLoader().load("../../assets/dream-map/water/ocean.jpg", texture => texture.wrapS = texture.wrapT = RepeatWrapping),
         sunDirection: new Vector3(),
         sunColor: 0xffffff,
-        waterColor: 0x001e0f,
-        distortionScale: 3.7,
+        waterColor: 0x0082C4,
+        distortionScale: 2,
         fog: this.scene.fog !== undefined
       });
       // Свойства
