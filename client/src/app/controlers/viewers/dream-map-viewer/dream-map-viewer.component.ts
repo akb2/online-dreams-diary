@@ -1,16 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
-import { AngleToRad } from "@_models/app";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AngleToRad, RadToAngle } from "@_models/app";
 import { DreamMap, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
 import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { FogFar, SkyBoxOutput, SkyBoxService } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, TerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { ACESFilmicToneMapping, Clock, DirectionalLight, FrontSide, Intersection, Mesh, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, Clock, DirectionalLight, FrontSide, Intersection, Mesh, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
-import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
 
 
@@ -39,7 +38,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
-  @ViewChildren("miniMap") private miniMap: QueryList<ElementRef>;
 
   private width: number = 0;
   private height: number = 0;
@@ -51,9 +49,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = DreamCeilSize * 14;
-  private zoomSpeed: number = 1.5;
-  private zoomMin: number = DreamCeilSize;
-  private zoomMax: number = DreamCeilSize * 20;
+  private zoomSpeed: number = DreamCeilSize;
   private minAngle: number = 0;
   private maxAngle: number = 80;
   private drawShadows: boolean = true;
@@ -69,7 +65,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private terrainMesh: Mesh;
   private ocean: Water;
   private sun: DirectionalLight;
-  private sky: Sky;
   stats: Stats;
   hoverCoords: XYCoord = null;
 
@@ -146,7 +141,18 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Вернуть карту
     return {
       ceils,
-      camera: {},
+      camera: {
+        target: {
+          x: this.control.target.x,
+          y: this.control.target.y,
+          z: this.control.target.z,
+        },
+        position: {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        }
+      },
       dreamerWay: [],
       size: this.dreamMap.size,
       ocean: {
@@ -203,7 +209,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     forkJoin([
       fromEvent(window, "resize", () => this.onWindowResize()),
       fromEvent(document, "mousemove", this.onMouseMove.bind(this)),
-      fromEvent(document, "mousedown", this.onMouseClick.bind(this))
+      fromEvent(document, "mousedown", this.onMouseClick.bind(this)),
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe();
@@ -277,7 +283,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   // Изменение позиции камеры
-  onCameraChange(event: OrbitControls): void {
+  private onCameraChange(event: OrbitControls): void {
     const width: number = this.dreamMap?.size?.width || DreamMapSize;
     const height: number = this.dreamMap?.size?.height || DreamMapSize;
     // Настройка позиции камеры
@@ -294,24 +300,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       event.target.setX(x);
       event.target.setZ(z);
     }
-    // Пересечение камеры с ландшафтом
-    {
-      const dir: Vector3 = new Vector3();
-      const raycaster: Raycaster = new Raycaster();
-      // Поиск пересечений
-      raycaster.set(this.control.target, dir.subVectors(this.camera.position, this.control.target).normalize());
-      const intersects: Intersection<Object3D<Event>>[] = raycaster.intersectObjects([this.terrainMesh, this.ocean], false);
-      // Остановить камеру
-      if (intersects.length > 0) {
-        if (intersects[0].distance < this.control.target.distanceTo(this.camera.position)) {
-          this.camera.position.copy(intersects[0].point);
-        }
-      }
-    }
   }
 
   // Изменение размеров экрана
-  onWindowResize(): void {
+  private onWindowResize(): void {
     this.createCanvas();
     // Настройки
     if (this.renderer) {
@@ -391,7 +383,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание сцены
   private createScene(): void {
-    const heightPart: number = DreamCeilSize / DreamCeilParts;
     // Отрисовщик
     this.renderer = new WebGLRenderer({
       context: this.canvas.nativeElement.getContext(this.contextType),
@@ -416,20 +407,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       DreamCeilSize / 10,
       FogFar * DreamCeilSize
     );
-    this.camera.position.z = DreamCeilSize * (this.zoomMin + this.zoomMax) / 2;
+    this.camera.position.setX(this.dreamMap.camera.position.x);
+    this.camera.position.setY(this.dreamMap.camera.position.y);
+    this.camera.position.setZ(this.dreamMap.camera.position.z);
     this.scene.add(this.camera);
     // Управление
     this.control = new OrbitControls(this.camera, this.canvas.nativeElement);
     this.control.screenSpacePanning = false;
-    this.control.target = new Vector3(0, (heightPart * DreamMaxHeight) + DreamCeilSize, 0);
     this.control.rotateSpeed = this.rotateSpeed;
     this.control.panSpeed = this.moveSpeed;
     this.control.zoomSpeed = this.zoomSpeed;
-    this.control.minDistance = this.zoomMin;
-    this.control.maxDistance = this.zoomMax;
+    this.control.minDistance = DreamCameraMinZoom;
+    this.control.maxDistance = DreamCameraMaxZoom;
     this.control.minPolarAngle = AngleToRad(this.minAngle);
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
+    this.control.target.setX(this.dreamMap.camera.target.x);
+    this.control.target.setY(this.dreamMap.camera.target.y);
+    this.control.target.setZ(this.dreamMap.camera.target.z);
     // Статистика
     this.stats = Stats();
     this.statsBlock.nativeElement.appendChild(this.stats.dom);
@@ -446,13 +441,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const borderSize: number = borderOSize * DreamCeilSize;
       const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
       const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
-      const size: number = Math.max(width, height);
+      const size: number = Math.min(width, height);
       const { sky, sun, fog, atmosphere }: SkyBoxOutput = this.skyBoxService.getObject(this.renderer, size, this.dreamMap?.sky?.time ?? DreamSkyTime);
       // Добавить к сцене
       this.scene.add(sky, sun, atmosphere);
       this.scene.fog = fog;
       this.sun = sun;
-      this.sky = sky;
       // Рендер
       this.render();
     }
@@ -481,10 +475,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
       const heightPart: number = DreamCeilSize / DreamCeilParts;
       const z: number = heightPart * this.dreamMap.ocean.z;
-      const geometry: PlaneGeometry = new PlaneGeometry(
-        (DreamCeilSize * (width + 2)) * 3,
-        (DreamCeilSize * (height + 2)) * 3
-      );
+      const geometry: PlaneGeometry = new PlaneGeometry(width, height, 1, 1);
       // Создать океан
       this.ocean = new Water(geometry, {
         textureWidth: 1024,
