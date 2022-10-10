@@ -7,9 +7,10 @@ import { ClosestHeights, TerrainService } from "@_services/dream-map/terrain.ser
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { ACESFilmicToneMapping, Clock, Intersection, Mesh, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, Clock, DirectionalLight, FrontSide, Intersection, Mesh, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
 
 
@@ -67,6 +68,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private clock: Clock;
   private terrainMesh: Mesh;
   private ocean: Water;
+  private sun: DirectionalLight;
+  private sky: Sky;
   stats: Stats;
   hoverCoords: XYCoord = null;
 
@@ -448,6 +451,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Добавить к сцене
       this.scene.add(sky, sun, atmosphere);
       this.scene.fog = fog;
+      this.sun = sun;
+      this.sky = sky;
       // Рендер
       this.render();
     }
@@ -485,11 +490,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         textureWidth: 1024,
         textureHeight: 1024,
         waterNormals: new TextureLoader().load("../../assets/dream-map/water/ocean.jpg", texture => texture.wrapS = texture.wrapT = RepeatWrapping),
-        sunDirection: new Vector3(),
-        sunColor: 0xffffff,
-        waterColor: 0x0082C4,
+        sunColor: this.sun.color,
+        eye: this.camera.position,
+        waterColor: 0x001E33,
         distortionScale: 2,
-        fog: this.scene.fog !== undefined
+        fog: true,
+        sunDirection: this.sun.position,
+        side: FrontSide
       });
       // Свойства
       this.ocean.material = this.alphaFogService.getShaderMaterial(this.ocean.material);
