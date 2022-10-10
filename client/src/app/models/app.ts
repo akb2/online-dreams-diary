@@ -98,11 +98,20 @@ export const BrowserNames: SimpleObject = {
 // Градусы в радианы
 export const AngleToRad: (angle: number) => number = (angle: number) => (Math.PI * angle) / 180;
 
+// Радианы в градусы
+export const RadToAngle: (rad: number) => number = (rad: number) => (rad * 180) / Math.PI;
+
 // Синус угла
-export const Sin: (angle: number) => number = (angle: number) => parseFloat(Math.sin(AngleToRad(angle)).toFixed(10))
+export const Sin: (angle: number) => number = (angle: number) => MathRound(Math.sin(AngleToRad(angle)), 10);
 
 // Косинус угла
-export const Cos: (angle: number) => number = (angle: number) => parseFloat(Math.cos(AngleToRad(angle)).toFixed(10));
+export const Cos: (angle: number) => number = (angle: number) => MathRound(Math.cos(AngleToRad(angle)), 10);
+
+// Тангенс угла
+export const Tan: (angle: number) => number = (angle: number) => MathRound(Math.tan(AngleToRad(angle)), 10);
+
+// Катангенс угла
+export const Ctg: (angle: number) => number = (angle: number) => MathRound(1 / Math.tan(AngleToRad(angle)), 10);
 
 // Округление после запятой
 export const MathRound: (value: number, afterDotNum?: number) => number = (value: number, afterDotNum: number = 0) => {
