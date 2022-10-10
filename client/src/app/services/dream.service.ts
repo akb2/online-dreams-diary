@@ -6,7 +6,7 @@ import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { DreamMap, DreamMapCeilDto, DreamMapDto, MapTerrains, Water, WaterType, WorldLand } from "@_models/dream-map";
+import { DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, MapTerrains, Water, WaterType, WorldLand } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -51,6 +51,22 @@ export class DreamService {
       status: DreamStatus.draft,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
+    };
+  }
+
+  // Позиция камеры по умолчанию
+  private getDefaultCamera(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
+    return {
+      target: {
+        x: 0,
+        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight) + DreamCameraMinZoom,
+        z: 0,
+      },
+      position: {
+        x: 0,
+        y: 0,
+        z: -(height * DreamCeilSize) / 2,
+      }
     };
   }
 
@@ -222,6 +238,9 @@ export class DreamService {
   dreamMapConverter(dreamMapDto: DreamMapDto | null = null): DreamMap {
     // Преобразование карты
     if (dreamMapDto) {
+      const width: number = dreamMapDto.size.width ?? DreamMapSize;
+      const height: number = dreamMapDto.size.height ?? DreamMapSize;
+      const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
         type: dreamMapDto?.ocean?.type ?? WaterType.pool,
         z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
@@ -248,6 +267,16 @@ export class DreamService {
           }
         })),
         camera: {
+          target: {
+            x: dreamMapDto?.camera?.target?.x ?? defaultCamera.target.x,
+            y: dreamMapDto?.camera?.target?.y ?? defaultCamera.target.y,
+            z: dreamMapDto?.camera?.target?.z ?? defaultCamera.target.z,
+          },
+          position: {
+            x: dreamMapDto?.camera?.position?.x ?? defaultCamera.position.x,
+            y: dreamMapDto?.camera?.position?.y ?? defaultCamera.position.y,
+            z: dreamMapDto?.camera?.position?.z ?? defaultCamera.position.z,
+          }
         },
         sky: {
           time: dreamMapDto?.sky?.time ?? DreamSkyTime
@@ -265,8 +294,7 @@ export class DreamService {
           height: DreamMapSize,
           zHeight: DreamDefHeight
         },
-        camera: {
-        },
+        camera: this.getDefaultCamera(),
         ceils: [],
         dreamerWay: [],
         ocean: {
@@ -373,3 +401,7 @@ export const DreamTerrain: number = MapTerrains[0].id;
 // Заголовок по умолчанию
 export const DreamTitle: string = "*** Новое сновидение ***";
 export const DreamDescription: string = "*** Без описания ***";
+
+// Настройки камеры
+export const DreamCameraMinZoom: number = DreamCeilSize;
+export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight;
