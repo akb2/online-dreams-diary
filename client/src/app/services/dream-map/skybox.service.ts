@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { AngleToRad, Cos, CustomObject } from "@_models/app";
+import { AngleToRad, Cos, CustomObject, Sin } from "@_models/app";
 import { DreamCeilSize } from "@_services/dream.service";
-import { AmbientLight, BoxGeometry, BufferGeometry, Color, CylinderGeometry, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
 
@@ -30,7 +30,7 @@ export class SkyBoxService {
     const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.4);
     const fog: Fog = new Fog(color, FogNear * DreamCeilSize, FogFar * DreamCeilSize);
     const shadowSize: number = 1024;
-    const boxSize: number = size;
+    const boxSize: number = FogFar * DreamCeilSize / 6;
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
       turbidity: { value: 10 },
@@ -39,9 +39,10 @@ export class SkyBoxService {
       mieDirectionalG: { value: 0.7 },
     };
     // Настройки
-    sky.geometry = new CylinderGeometry(boxSize, boxSize, boxSize, 32, 1) as BufferGeometry as BoxGeometry;
+    sky.geometry = new SphereGeometry(boxSize, 32, 16) as BufferGeometry as BoxGeometry;
     sky.scale.setScalar(boxSize);
     sky.material.uniforms = uniforms;
+    sky.material.side = BackSide;
     // Настройки освещения
     sun.castShadow = true;
     sun.shadow.needsUpdate = true;
@@ -67,19 +68,23 @@ export class SkyBoxService {
     return { sky, sun, fog, atmosphere };
   }
 
+
+
+
+
   // Подсчитать положение
   setSkyTime(time: number): void {
     const minElevation: number = 0;
-    const maxElevation: number = 50;
-    const minAzimuth: number = 100;
-    const maxAzimuth: number = -100;
+    const maxElevation: number = 60;
+    const minAzimuth: number = 110;
+    const maxAzimuth: number = -110;
     // Параметры
     const uniforms = this.sky.material.uniforms;
     const valueIndex: number = Math.floor((90 + time) / 180);
     const value: number = (time + 90) - (valueIndex * 180);
     const calc: (num: number, min: number, max: number) => number = (num: number, min: number, max: number) => ((min - max) * num) + max;
-    const elevation: number = calc(Math.abs(Cos(value)), minElevation, maxElevation);
     const azimuth: number = calc((Cos(value) + 1) / 2, minAzimuth, maxAzimuth);
+    const elevation: number = calc(Math.abs(1 - Sin(value)), minElevation, maxElevation);
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
     const sunPosition: Vector3 = new Vector3();
@@ -116,5 +121,5 @@ export interface SkyBoxOutput {
 }
 
 // Дистанции тумана
-export const FogNear: number = 40;
+export const FogNear: number = 60;
 export const FogFar: number = 100;
