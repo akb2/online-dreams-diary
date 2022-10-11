@@ -70,8 +70,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     borderSize: DreamCeilSize * 0.2,
     zOffset: (DreamCeilParts / DreamCeilSize) * 0.0001,
     ring: {
-      quality: 16,
-      zOffset: (DreamCeilParts / DreamCeilSize) * 0.01,
+      quality: 12,
+      zOffset: (DreamCeilParts / DreamCeilSize) * 0.02,
       height: (DreamCeilParts / DreamCeilSize) * 0.003,
       repeats: 10,
       displacementMap: null,
@@ -644,7 +644,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const ringOuterRadius: number = ringInnerRadius + this.cursor.borderSize;
       const oldRingGeometry: RingGeometry = this.cursor.ring.geometry;
       const needUpdateGeometry: boolean = oldRingGeometry.parameters.innerRadius !== ringInnerRadius || oldRingGeometry.parameters.outerRadius !== ringOuterRadius;
-      const ringGeometry: RingGeometry = needUpdateGeometry ? new RingGeometry(ringInnerRadius, ringOuterRadius, this.cursor.ring.quality, 2) : oldRingGeometry;
+      const ringGeometry: RingGeometry = needUpdateGeometry ? new RingGeometry(ringInnerRadius, ringOuterRadius, this.cursor.ring.quality, 1) : oldRingGeometry;
       const ringSize: number = toolSize + (this.cursor.borderSize * 2);
       const displacementRepeatX: number = ringSize / width;
       const displacementRepeatY: number = ringSize / height;
