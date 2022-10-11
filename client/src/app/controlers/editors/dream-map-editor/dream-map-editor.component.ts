@@ -52,8 +52,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.sky;
-  toolSizeLand: number = ToolSizeLand[0];
+  private tool: Tool = Tool.landscape;
+  toolSizeLand: number = ToolSizeLand[1];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
 
@@ -369,7 +369,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Пассивное действие: наведение курсора на объект
   private onToolActionPassive(): void {
-    if (this.currentObject) {
+    if (!!this.currentObject) {
       const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain, Tool.water, Tool.road]);
       // Работа с ландшафтом
       if (tools.has(this.tool)) {
@@ -377,8 +377,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       }
       // Очистить выделение
       else {
-        this.unLightCeils();
+        this.lightCeils(true);
       }
+    }
+    // Очистить выделение
+    else {
+      this.lightCeils(true);
     }
   }
 
@@ -386,7 +390,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   onToolChange(tool: Tool): void {
     this.tool = tool;
     // Убрать свечение
-    this.unLightCeils();
+    this.lightCeils(true);
   }
 
   // Изменение инструмента ландшафт
@@ -453,24 +457,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
   // Свечение ячеек
-  private lightCeils(): void {
-    const circleSize: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
-    // Очистить карту
-    this.unLightCeils();
-    // Добавить свечение для инструментов ландшафта
-    if (circleSize.has(this.tool)) {
-      this.viewer.setTerrainHoverStatus(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y, size);
-    }
-  }
-
-  // Очистить свечение
-  private unLightCeils(): void {
-    const useSizeInput: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    const size = useSizeInput.has(this.tool) ? this.toolSizeLand : 0;
-    // Уюрать свечение
-    this.viewer.setTerrainHoverStatus(-1, -1, size);
+  private lightCeils(unLight: boolean = false): void {
+    this.viewer.setTerrainHoverStatus(!!this.currentObject && !unLight ? this.currentObject.ceil : null, this.toolSizeLand);
   }
 
   // Изменение высоты

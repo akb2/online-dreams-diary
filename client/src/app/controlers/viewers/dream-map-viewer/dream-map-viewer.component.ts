@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { AngleToRad, RadToAngle } from "@_models/app";
+import { AngleToRad, CustomObjectKey, IsOdd } from "@_models/app";
 import { DreamMap, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
 import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { FogFar, SkyBoxOutput, SkyBoxService } from "@_services/dream-map/skybox.service";
@@ -7,7 +7,7 @@ import { ClosestHeights, TerrainService } from "@_services/dream-map/terrain.ser
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { ACESFilmicToneMapping, Clock, DirectionalLight, FrontSide, Intersection, Mesh, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, WebGLRenderer } from "three";
+import { CanvasTexture, CircleGeometry, Clock, Color, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, Intersection, LinearFilter, LinearMipmapNearestFilter, LinearToneMapping, Mesh, MeshStandardMaterial, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, RGBAFormat, RingGeometry, Scene, sRGBEncoding, TextureLoader, UnsignedByteType, UVMapping, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -65,6 +65,26 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private terrainMesh: Mesh;
   private ocean: Water;
   private sun: DirectionalLight;
+  private cursor: CursorData = {
+    coords: null,
+    borderSize: DreamCeilSize * 0.2,
+    zOffset: (DreamCeilParts / DreamCeilSize) * 0.0001,
+    ring: {
+      quality: 16,
+      zOffset: (DreamCeilParts / DreamCeilSize) * 0.01,
+      height: (DreamCeilParts / DreamCeilSize) * 0.003,
+      repeats: 10,
+      displacementMap: null,
+      geometry: null,
+      material: null,
+    },
+    type: CursorType.default,
+    group: new Group(),
+    names: {
+      light: "pointLight",
+      ring: "ring"
+    }
+  };
   stats: Stats;
   hoverCoords: XYCoord = null;
 
@@ -239,25 +259,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           takeUntil(this.destroy$),
         )
         .subscribe(
-          () => {
-            if (!testWhile()) {
-              this.loading = false;
-              this.ready = true;
-              this.changeDetectorRef.detectChanges();
-              // Создание сцены
-              this.createScene();
-              this.createSky();
-              this.createTerrains();
-              this.createOcean();
-              // События
-              this.animate();
-              fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
-                .pipe(takeUntil(this.destroy$))
-                .subscribe();
-              // Обновить
-              this.control.update();
-            }
-          },
+          () => !testWhile() ? this.create3DViewer() : null,
           () => {
             this.loading = false;
             this.ready = false;
@@ -356,6 +358,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             }
           }
         }
+        // Убрать курсор
+        if (!this.hoverCoords) {
+          this.setTerrainHoverStatus();
+        }
       }
       // Время последнего вызова
       this.lastMouseMove = time;
@@ -374,6 +380,26 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
+
+  // Создание 3D просмотра
+  private create3DViewer(): void {
+    this.loading = false;
+    this.ready = true;
+    this.changeDetectorRef.detectChanges();
+    // Создание сцены
+    this.createScene();
+    this.createSky();
+    this.createTerrains();
+    this.createOcean();
+    this.createCursor();
+    // События
+    this.animate();
+    fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+    // Обновить
+    this.control.update();
+  }
 
   // Инициализация блока рендера
   private createCanvas(): void {
@@ -397,7 +423,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputEncoding = sRGBEncoding;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.toneMapping = LinearToneMapping;
     // Сцена
     this.scene = new Scene();
     // Камера
@@ -501,6 +527,46 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  // Создание курсора
+  private createCursor(): void {
+    const heightPart: number = DreamCeilSize / DreamCeilParts;
+    const ringDisplacementMap: CanvasTexture = new CanvasTexture(this.terrainService.displacementCanvas);
+    const ringGeometry: RingGeometry = new RingGeometry();
+    const ringMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      emissive: new Color(0.8, 0.3, 1),
+      color: new Color(0.8, 0.3, 1),
+      displacementMap: ringDisplacementMap,
+      displacementScale: DreamMaxHeight * heightPart,
+      side: DoubleSide,
+      fog: false,
+    });
+    const ringSpacing: number = this.cursor.ring.height / this.cursor.ring.repeats;
+    const rings: Mesh[] = Array.from(Array(this.cursor.ring.repeats).keys()).map(k => {
+      const ring: Mesh = new Mesh(ringGeometry, ringMaterial);
+      ring.name = this.cursor.names.ring + k;
+      ring.rotateX(AngleToRad(-90));
+      ring.position.setY(k * ringSpacing);
+      // Вернуть фигуру
+      return ring;
+    });
+    const light: PointLight = new PointLight(new Color(1, 1, 1), DreamCeilSize, DreamCeilSize * 3, 2);
+    // Настройки освещения
+    light.name = this.cursor.names.light;
+    // Настройки кольца границы
+    ringDisplacementMap.encoding = sRGBEncoding;
+    // Запомнить все данные
+    this.cursor.group.position.set(0, 20, 0);
+    this.cursor.group.add(...rings, light);
+    this.cursor.ring.displacementMap = ringDisplacementMap;
+    this.cursor.ring.geometry = ringGeometry;
+    this.cursor.ring.material = ringMaterial;
+    this.scene.add(this.cursor.group);
+  }
+
+
+
+
+
   // Рендер сцены
   render(): void {
     this.renderer.render(this.scene, this.camera);
@@ -553,8 +619,76 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   // Обновить статус свечения местности
-  setTerrainHoverStatus(x: number, y: number, highLightSize: number): void {
-    // this.terrainService.createMaterials(x, y, highLightSize, true);
+  setTerrainHoverStatus(ceil: DreamMapCeil = null, oToolSize: number = 0): void {
+    if (!!ceil && (ceil.coord.x !== this.cursor.coords?.x || ceil.coord.y !== this.cursor.coords?.y)) {
+      const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+      const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+      const borderOSize: number = this.terrainService.outsideMapSize * Math.max(oWidth, oHeight);
+      const widthCorrect: number = -oWidth * DreamCeilSize / 2;
+      const heightCorrect: number = -oHeight * DreamCeilSize / 2;
+      const borderSize: number = borderOSize * DreamCeilSize;
+      const width: number = (oWidth + (borderOSize * 2)) * DreamCeilSize;
+      const height: number = (oHeight + (borderOSize * 2)) * DreamCeilSize;
+      const x: number = widthCorrect + (ceil.coord.x * DreamCeilSize) + (DreamCeilSize / 2);
+      const y: number = heightCorrect + (ceil.coord.y * DreamCeilSize) + (DreamCeilSize / 2);
+      const sX: number = (borderSize + (ceil.coord.x * DreamCeilSize)) * this.terrainService.geometryQuality;
+      const sY: number = (borderSize + (ceil.coord.y * DreamCeilSize)) * this.terrainService.geometryQuality;
+      const wdth: number = (((oWidth * DreamCeilSize) + (borderSize * 2)) * this.terrainService.geometryQuality) + 1;
+      const vertexes: Float32BufferAttribute = this.terrainMesh.geometry.getAttribute("position") as Float32BufferAttribute;
+      const quality: number = this.terrainService.geometryQuality + 1;
+      const qualityCenterCount: number = IsOdd(quality) ? 1 : 2;
+      const qualitySpacing: number = (quality - qualityCenterCount) / 2;
+      const toolSize: number = (oToolSize * 2) + 1;
+      const light: PointLight = this.cursor.group.getObjectByName(this.cursor.names.light) as PointLight;
+      const ringInnerRadius: number = toolSize / 2;
+      const ringOuterRadius: number = ringInnerRadius + this.cursor.borderSize;
+      const oldRingGeometry: RingGeometry = this.cursor.ring.geometry;
+      const needUpdateGeometry: boolean = oldRingGeometry.parameters.innerRadius !== ringInnerRadius || oldRingGeometry.parameters.outerRadius !== ringOuterRadius;
+      const ringGeometry: RingGeometry = needUpdateGeometry ? new RingGeometry(ringInnerRadius, ringOuterRadius, this.cursor.ring.quality, 2) : oldRingGeometry;
+      const ringSize: number = toolSize + (this.cursor.borderSize * 2);
+      const displacementRepeatX: number = ringSize / width;
+      const displacementRepeatY: number = ringSize / height;
+      const displacementOffsetX: number = ((1 - displacementRepeatX) / 2) + ((x - (DreamCeilSize / 2)) * (100 / width) / 100);
+      const displacementOffsetY: number = ((1 - displacementRepeatY) / 2) - ((y - (DreamCeilSize / 2)) * (100 / height) / 100);
+      const ringTexture: CanvasTexture = this.cursor.ring.displacementMap;
+      const ringMaterial: MeshStandardMaterial = this.cursor.ring.material;
+      // Поиск максимальной высоты
+      const z: number = Array.from(Array(qualityCenterCount).keys()).map(h => h + qualitySpacing)
+        .map(h => Array.from(Array(qualityCenterCount).keys()).map(w => w + qualitySpacing).map(w => {
+          const index: number = ((sY + h) * wdth) + sX + w;
+          return vertexes.getZ(index);
+        }))
+        .reduce((o, z) => ([...o, ...z]), [])
+        .reduce((o, z) => o < z ? z : o, 0);
+      // Общие настройки курсора
+      this.cursor.coords = { x: ceil.coord.x, y: ceil.coord.y };
+      this.cursor.group.visible = true;
+      this.cursor.group.position.setX(x);
+      this.cursor.group.position.setY(z + this.cursor.zOffset);
+      this.cursor.group.position.setZ(y);
+      // Настройки освещения
+      light.distance = toolSize;
+      light.intensity = toolSize;
+      light.power = toolSize * 20;
+      // Обновить геометрию
+      if (needUpdateGeometry) {
+        Array.from(Array(this.cursor.ring.repeats).keys()).map(k => {
+          const ring: Mesh = this.cursor.group.getObjectByName(this.cursor.names.ring + k) as Mesh;
+          ring.geometry.dispose();
+          ring.geometry = ringGeometry;
+        });
+        this.cursor.ring.geometry = ringGeometry;
+      }
+      // Настройки кольца границы
+      ringMaterial.displacementBias = -z + this.cursor.ring.zOffset;
+      ringTexture.repeat.set(displacementRepeatX, displacementRepeatY);
+      ringTexture.offset.set(displacementOffsetX, displacementOffsetY);
+    }
+    // Убрать свечение
+    else if (!ceil && !!this.cursor.coords) {
+      this.cursor.group.visible = false;
+      this.cursor.coords = null;
+    }
   }
 
   // Обновить высоту местности
@@ -614,6 +748,37 @@ export interface ObjectHoverEvent {
     yDimen: -1 | 0 | 1;
   };
 }
+
+// Данные о курсоре
+interface CursorData {
+  coords: XYCoord;
+  borderSize: number;
+  zOffset: number;
+  ring: {
+    quality: number;
+    zOffset: number;
+    repeats: number;
+    height: number;
+    displacementMap: CanvasTexture;
+    geometry: RingGeometry;
+    material: MeshStandardMaterial;
+  },
+  type: CursorType;
+  group: Group;
+  names: CustomObjectKey<"light" | "ring", string>;
+}
+
+// Перечисление типов курсора
+export enum CursorType {
+  default,
+  planeTop,
+  planeBottom,
+  planeFlat,
+}
+
+
+
+
 
 // Координаты соседних блоков
 const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: -1 | 0 | 1, y: -1 | 0 | 1 } } = {
