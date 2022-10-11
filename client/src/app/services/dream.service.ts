@@ -59,7 +59,7 @@ export class DreamService {
     return {
       target: {
         x: 0,
-        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight) + DreamCameraMinZoom,
+        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight),
         z: 0,
       },
       position: {
@@ -404,4 +404,4 @@ export const DreamDescription: string = "*** Без описания ***";
 
 // Настройки камеры
 export const DreamCameraMinZoom: number = DreamCeilSize;
-export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight;
+export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight / DreamCeilParts;
