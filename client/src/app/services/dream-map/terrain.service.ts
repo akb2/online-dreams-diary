@@ -3,7 +3,7 @@ import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/a
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
-import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -21,13 +21,13 @@ export class TerrainService {
   private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
   private displacementPixelBlur: number = 1;
-  private geometryQuality: number = 2;
+  geometryQuality: number = 2;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
 
-  private displacementCanvas: HTMLCanvasElement;
+  displacementCanvas: HTMLCanvasElement;
   private displacementMap: ImageData;
 
 
@@ -64,7 +64,6 @@ export class TerrainService {
     const borderSize: number = borderOSize * DreamCeilSize;
     const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
     const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
-    const heightPart: number = DreamCeilSize / DreamCeilParts;
     const qualityWidth: number = width * this.geometryQuality;
     const qualityHeight: number = height * this.geometryQuality;
     // Создание геометрии
@@ -75,7 +74,6 @@ export class TerrainService {
     // Настройки объекта
     const mesh: Mesh = new Mesh(this.geometry, material);
     mesh.rotateX(AngleToRad(-90));
-    // mesh.position.setY(-heightPart * (DreamMaxHeight - 1));
     mesh.receiveShadow = true;
     mesh.castShadow = true;
     // Отдать объект
@@ -199,6 +197,7 @@ export class TerrainService {
         // Настройки
         texture.wrapS = RepeatWrapping;
         texture.wrapT = RepeatWrapping;
+        texture.encoding = sRGBEncoding;
         normalTexture.wrapS = RepeatWrapping;
         normalTexture.wrapT = RepeatWrapping;
         // Запомнить текстуры
@@ -366,7 +365,6 @@ export class TerrainService {
     const drawCeil: Function = (x: number, y: number) => {
       const z: number = ((this.getCeil(x, y).coord.z * 255) / DreamMaxHeight) / 255;
       const displacementColor: Color = new Color(z, z, z);
-      const bumpColor: Color = new Color(1 - z, 1 - z, 1 - z);
       const sX: number = borderSize + (x * this.displacementPixelSize);
       const sY: number = borderSize + (y * this.displacementPixelSize);
       // Вставить карту высот
