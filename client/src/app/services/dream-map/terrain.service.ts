@@ -21,7 +21,7 @@ export class TerrainService {
   private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
   private displacementPixelBlur: number = 1;
-  geometryQuality: number = 2;
+  geometryQuality: number = 1;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
