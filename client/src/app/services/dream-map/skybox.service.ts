@@ -89,18 +89,20 @@ export class SkyBoxService {
     const theta = AngleToRad(azimuth);
     const sunPosition: Vector3 = new Vector3();
     const isDay: boolean = valueIndex === 1;
-    const exposure: number = isDay ? 0.5 : 0.005;
+    const turbidity: number = isDay ? calc(Math.abs(Cos(value)), 5, 0) : 0.1;
+    const rayleigh: number = isDay ? 3 : 0;
+    const exposure: number = isDay ? 0.4 : 0.2;
     const sunLight: number = isDay ?
       calc(Math.abs(Cos(value)), 0.7, 1) :
-      calc(Math.abs(Cos(value)), 9, 6);
+      calc(Math.abs(Cos(value)), 0.01, 0.02);
     const atmosphereLight: number = isDay ?
-      calc(Math.abs(Cos(value)), 0.05, 0.2) :
-      0.02;
-    const turbidity: number = isDay ? 10 : 3;
+      calc(Math.abs(Cos(value)), 0.05, 0.3) :
+      calc(Math.abs(Cos(value)), 0.01, 0.03);
     // Обновить данные
     sunPosition.setFromSphericalCoords(1, phi, theta);
     uniforms.sunPosition.value = sunPosition;
     uniforms.turbidity.value = turbidity;
+    uniforms.rayleigh.value = rayleigh;
     this.sun.position.set(sunPosition.x, sunPosition.y, sunPosition.z);
     this.sun.intensity = sunLight;
     this.atmosphere.intensity = atmosphereLight;
