@@ -95,6 +95,12 @@ export const BrowserNames: SimpleObject = {
   "Default Browser": "Неопределен",
 };
 
+// Проверка числа на четность
+export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
+
+// Проверка числа на нечетность
+export const IsOdd: (num: number) => boolean = (num: number) => !IsEven(num);
+
 // Градусы в радианы
 export const AngleToRad: (angle: number) => number = (angle: number) => (Math.PI * angle) / 180;
 
