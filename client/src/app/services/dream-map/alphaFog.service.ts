@@ -9,7 +9,7 @@ import { Material, Shader, ShaderMaterial } from "three";
   providedIn: "root"
 })
 
-export class AlphaFogService {
+export class DreamMapAlphaFogService {
 
 
   // Преобразовать туман материала в прозрачный

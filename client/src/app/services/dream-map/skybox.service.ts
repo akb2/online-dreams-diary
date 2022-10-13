@@ -10,7 +10,7 @@ import { Sky } from "three/examples/jsm/objects/Sky";
 
 @Injectable()
 
-export class SkyBoxService {
+export class DreamMapSkyBoxService {
 
 
   private renderer: WebGLRenderer;

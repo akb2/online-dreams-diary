@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
-import { AlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
 import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils } from "three";
 
@@ -11,7 +11,7 @@ import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IU
 
 @Injectable()
 
-export class TerrainService {
+export class DreamMapTerrainService {
 
 
   private materialType: keyof typeof ShaderLib = "standard";
@@ -257,7 +257,7 @@ export class TerrainService {
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
     // Вернуть материал
-    return this.alphaFogService.getShaderMaterial(this.material);
+    return this.DreamMapAlphaFogService.getShaderMaterial(this.material);
   }
 
 
@@ -265,7 +265,7 @@ export class TerrainService {
 
 
   constructor(
-    private alphaFogService: AlphaFogService
+    private DreamMapAlphaFogService: DreamMapAlphaFogService
   ) { }
 
 
