@@ -74,8 +74,10 @@ export class DreamMapTerrainService {
     // Настройки объекта
     const mesh: Mesh = new Mesh(this.geometry, material);
     mesh.rotateX(AngleToRad(-90));
+    mesh.matrixAutoUpdate = false;
     mesh.receiveShadow = true;
     mesh.castShadow = true;
+    mesh.updateMatrix();
     // Отдать объект
     return mesh;
   }
@@ -218,7 +220,7 @@ export class DreamMapTerrainService {
       ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
       // Прочее
       normalScale: { type: "v2", value: { x: -1, y: 1 } },
-      displacementScale: { type: "f", value: heightPart * DreamMaxHeight },
+      displacementScale: { type: "f", value: DreamCeilParts * DreamMaxHeight },
       aoMapIntensity: { type: "f", value: 0.5 },
     }]);
     // Свойства шейдера
@@ -229,7 +231,7 @@ export class DreamMapTerrainService {
       USE_NORMALMAP: true,
       USE_BUMPMAP: false,
       USE_DISPLACEMENTMAP: true,
-      PHYSICALLY_CORRECT_LIGHTS: true,
+      PHYSICALLY_CORRECT_LIGHTS: false,
       FLAT_SHADED: false,
       USE_TANGENT: true,
       DOUBLE_SIDED: true,
@@ -257,7 +259,7 @@ export class DreamMapTerrainService {
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
     // Вернуть материал
-    return this.DreamMapAlphaFogService.getShaderMaterial(this.material);
+    return this.alphaFogService.getShaderMaterial(this.material);
   }
 
 
@@ -265,7 +267,7 @@ export class DreamMapTerrainService {
 
 
   constructor(
-    private DreamMapAlphaFogService: DreamMapAlphaFogService
+    private alphaFogService: DreamMapAlphaFogService
   ) { }
 
 
