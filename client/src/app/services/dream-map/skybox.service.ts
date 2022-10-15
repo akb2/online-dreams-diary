@@ -123,5 +123,5 @@ export interface SkyBoxOutput {
 }
 
 // Дистанции тумана
-export const FogNear: number = 60;
+export const FogNear: number = 70;
 export const FogFar: number = 100;
