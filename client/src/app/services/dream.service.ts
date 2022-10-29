@@ -247,7 +247,7 @@ export class DreamService {
         material: dreamMapDto?.ocean?.material ?? 1
       };
       const land: WorldLand = {
-        type: dreamMapDto?.land?.type ?? DreamTerrain,
+        type: !!dreamMapDto?.land?.type ? dreamMapDto.land.type : DreamTerrain,
         z: dreamMapDto?.land?.z ?? DreamDefHeight
       };
       // Вернуть объект
@@ -366,7 +366,7 @@ export interface SearchDream {
 
 
 // Размер карты по умолчанию
-export const DreamMapSize: number = 80;
+export const DreamMapSize: number = 50;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize: number = 1;
@@ -397,6 +397,10 @@ export const DreamWater: Water = {
 // Параметры по умолчанию
 export const DreamSkyType: number = 1;
 export const DreamTerrain: number = MapTerrains[0].id;
+export const DreamFogNear: number = 50;
+export const DreamFogFar: number = 70;
+export const DreamLODDistance: number = 20;
+export const DreamLODCount: number = Math.floor(DreamFogFar / DreamLODDistance);
 
 // Заголовок по умолчанию
 export const DreamTitle: string = "*** Новое сновидение ***";
@@ -405,3 +409,14 @@ export const DreamDescription: string = "*** Без описания ***";
 // Настройки камеры
 export const DreamCameraMinZoom: number = DreamCeilSize;
 export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight / DreamCeilParts;
+
+// Максимальное число элементов в ячейке
+export enum DreamObjectElmsValues {
+  VeryLow = 32,
+  Low = 64,
+  Middle = 128,
+  Hight = 256,
+  VeryHigh = 512,
+  Ultra = 1024
+};
+export const DreamObjectMaxElms: DreamObjectElmsValues = DreamObjectElmsValues.VeryHigh;
