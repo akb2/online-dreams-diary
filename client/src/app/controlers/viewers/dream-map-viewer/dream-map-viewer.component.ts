@@ -563,7 +563,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Настройки
         mesh.geometry = geometry;
         mesh.material = material;
-        mesh.castShadow = true;
+        mesh.castShadow = false;
         mesh.receiveShadow = true;
         mesh.matrixAutoUpdate = false;
         // Цикл по ячейкам
