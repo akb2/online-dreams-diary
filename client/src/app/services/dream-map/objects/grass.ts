@@ -328,12 +328,6 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
             vUv = uv;
             float t = time * 2.;
 
-            // VERTEX POSITION
-            vec4 mvPosition = vec4( position, 1.0 );
-            #ifdef USE_INSTANCING
-              mvPosition = instanceMatrix * mvPosition;
-            #endif
-
             #include <color_vertex>
             #include <beginnormal_vertex>
             #include <morphnormal_vertex>
@@ -344,6 +338,13 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
             #include <begin_vertex>
             #include <morphtarget_vertex>
             #include <skinning_vertex>
+            #include <displacementmap_vertex>
+
+            // VERTEX POSITION
+            vec4 mvPosition = vec4( transformed, 1.0 );
+            #ifdef USE_INSTANCING
+              mvPosition = instanceMatrix * mvPosition;
+            #endif
 
             // DISPLACEMENT
             float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
@@ -355,8 +356,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
             float displacement = noise * ( 0.3 * dispPower );
             mvPosition.z -= displacement;
 
-            vec4 modelViewPosition = modelViewMatrix * mvPosition;
-            gl_Position = projectionMatrix * modelViewPosition;
+            mvPosition = modelViewMatrix * mvPosition;
+            gl_Position = projectionMatrix * mvPosition;
 
             #include <logdepthbuf_vertex>
             #include <clipping_planes_vertex>
