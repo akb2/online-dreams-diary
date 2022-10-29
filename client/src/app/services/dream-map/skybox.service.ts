@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AngleToRad, Cos, CustomObject, Sin } from "@_models/app";
-import { DreamCeilSize } from "@_services/dream.service";
+import { DreamCeilSize, DreamFogFar, DreamFogNear } from "@_services/dream.service";
 import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
@@ -93,11 +93,11 @@ export class DreamMapSkyBoxService {
     const rayleigh: number = isDay ? 3 : 0;
     const exposure: number = isDay ? 0.4 : 0.2;
     const sunLight: number = isDay ?
-      calc(Math.abs(Cos(value)), 0.7, 1) :
-      calc(Math.abs(Cos(value)), 0.01, 0.02);
+      calc(Math.abs(Cos(value)), 0.7, 1.1) :
+      calc(Math.abs(Cos(value)), 0.1, 0.3);
     const atmosphereLight: number = isDay ?
-      calc(Math.abs(Cos(value)), 0.05, 0.3) :
-      calc(Math.abs(Cos(value)), 0.01, 0.03);
+      calc(Math.abs(Cos(value)), 0.3, 0.7) :
+      calc(Math.abs(Cos(value)), 0.2, 0.1);
     // Обновить данные
     sunPosition.setFromSphericalCoords(1, phi, theta);
     uniforms.sunPosition.value = sunPosition;
@@ -123,5 +123,5 @@ export interface SkyBoxOutput {
 }
 
 // Дистанции тумана
-export const FogNear: number = 70;
-export const FogFar: number = 100;
+export const FogNear: number = DreamFogNear;
+export const FogFar: number = DreamFogFar;
