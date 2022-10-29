@@ -419,4 +419,4 @@ export enum DreamObjectElmsValues {
   VeryHigh = 512,
   Ultra = 1024
 };
-export const DreamObjectMaxElms: DreamObjectElmsValues = DreamObjectElmsValues.VeryHigh;
+export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.VeryHigh;
