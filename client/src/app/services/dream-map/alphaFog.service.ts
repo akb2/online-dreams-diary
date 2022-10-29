@@ -14,7 +14,7 @@ export class DreamMapAlphaFogService {
 
   // Преобразовать туман материала в прозрачный
   getMaterial(material: Material): Material {
-    const onBeforeCompile: Function = !!material?.onBeforeCompile ? material.onBeforeCompile : (shader) => { };
+    const onBeforeCompile: Function = !!material?.onBeforeCompile ? material.onBeforeCompile : shader => { };
     // Добавление шейдера
     material.onBeforeCompile = (shader: Shader) => {
       onBeforeCompile();
@@ -35,6 +35,13 @@ export class DreamMapAlphaFogService {
     // Преобразованный материал
     return material;
   }
+
+  // Замена шейдерных функций
+  getShader(shader: Shader): Shader {
+    shader.fragmentShader = shader.fragmentShader.replace("#include <fog_fragment>", FogFragmentShader);
+    // Вернуть шейдер
+    return shader;
+  }
 }
 
 
@@ -42,7 +49,7 @@ export class DreamMapAlphaFogService {
 
 
 // Шейдер тумана
-const FogFragmentShader: string = `
+export const FogFragmentShader: string = `
   #ifdef USE_FOG
     #ifdef FOG_EXP2
       float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
