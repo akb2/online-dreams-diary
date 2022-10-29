@@ -1,10 +1,10 @@
 import { AngleToRad, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
-import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxHeight, DreamObjectMaxElms } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxHeight, DreamObjectDetalization } from "@_services/dream.service";
 import { BufferGeometry, Clock, Color, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
 
 
@@ -14,7 +14,7 @@ import { BufferGeometry, Clock, Color, Float32BufferAttribute, Matrix4, Mesh, Me
 export class DreamMapGrassObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
 
 
-  private count: number = DreamObjectMaxElms;
+  private count: number = DreamObjectDetalization;
 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
@@ -22,6 +22,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private width: number = 0.02;
   private height: number = 12;
   private noise: number = 0.15;
+  private rotationRange: number = 7;
 
   private color: Color = new Color(0.3, 1, 0.2);
   private maxHeight: number = this.heightPart * DreamMaxHeight;
@@ -151,8 +152,10 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const z: number = intersect.z;
       // Настройки
       dummy.position.set(x, z, y);
-      dummy.rotation.y = Math.random() * AngleToRad(180);
-      dummy.scale.setScalar(Random(0.5, 1));
+      dummy.rotation.x = AngleToRad(Random(-this.rotationRange, this.rotationRange));
+      dummy.rotation.y = AngleToRad(Random(0, 360));
+      dummy.rotation.z = AngleToRad(Random(-this.rotationRange, this.rotationRange));
+      dummy.scale.setScalar(Random(0.2, 1));
       dummy.updateMatrix();
       // Вернуть геометрию
       return new Matrix4().copy(dummy.matrix);
@@ -187,7 +190,11 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
       // Данные фигуры
       const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({ color: this.color });
+      const material: MeshStandardMaterial = new MeshStandardMaterial({
+        color: this.color,
+        fog: true,
+        transparent: true
+      });
       const dummy: Object3D = new Object3D();
       // Параметры
       const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
@@ -271,106 +278,110 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private createShader(): void {
     if (!this.params.shader) {
       this.params.material.onBeforeCompile = shader => {
+        // Вершинный шейдер
         shader.vertexShader = `
-        #define STANDARD
+          #define STANDARD
 
-        varying vec2 vUv;
-        varying vec3 vViewPosition;
-        uniform float time;
-
-        #ifdef USE_TRANSMISSION
-          varying vec3 vWorldPosition;
-        #endif
-
-        #include <common>
-        #include <uv_pars_vertex>
-        #include <uv2_pars_vertex>
-        #include <displacementmap_pars_vertex>
-        #include <color_pars_vertex>
-        #include <fog_pars_vertex>
-        #include <normal_pars_vertex>
-        #include <morphtarget_pars_vertex>
-        #include <skinning_pars_vertex>
-        #include <shadowmap_pars_vertex>
-        #include <logdepthbuf_pars_vertex>
-        #include <clipping_planes_pars_vertex>
-
-        float N (vec2 st) { // https://thebookofshaders.com/10/
-          return fract( sin( dot( st.xy, vec2(12.9898,78.233 ) ) ) *  43758.5453123);
-        }
-
-        float smoothNoise( vec2 ip ){ // https://www.youtube.com/watch?v=zXsWftRdsvU
-          vec2 lv = fract( ip );
-          vec2 id = floor( ip );
-
-          lv = lv * lv * ( 3. - 2. * lv );
-
-          float bl = N( id );
-          float br = N( id + vec2( 1, 0 ));
-          float b = mix( bl, br, lv.x );
-
-          float tl = N( id + vec2( 0, 1 ));
-          float tr = N( id + vec2( 1, 1 ));
-          float t = mix( tl, tr, lv.x );
-
-          return mix( b, t, lv.y );
-        }
-
-        void main() {
-          vUv = uv;
-          float t = time * 2.;
-
-          // VERTEX POSITION
-          vec4 mvPosition = vec4( position, 1.0 );
-          #ifdef USE_INSTANCING
-            mvPosition = instanceMatrix * mvPosition;
-          #endif
-
-          #include <color_vertex>
-          #include <beginnormal_vertex>
-          #include <morphnormal_vertex>
-          #include <skinbase_vertex>
-          #include <skinnormal_vertex>
-          #include <defaultnormal_vertex>
-          #include <normal_vertex>
-          #include <begin_vertex>
-          #include <morphtarget_vertex>
-          #include <skinning_vertex>
-
-          // DISPLACEMENT
-          float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
-          noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
-
-          // here the displacement is made stronger on the blades tips.
-          float dispPower = 1. - cos( uv.y * 3.1416 * ${MathRound(this.noise, 4).toFixed(4)} );
-
-          float displacement = noise * ( 0.3 * dispPower );
-          mvPosition.z -= displacement;
-
-          #include <logdepthbuf_vertex>
-          #include <clipping_planes_vertex>
-          vViewPosition = - mvPosition.xyz;
-          #include <worldpos_vertex>
-          #include <shadowmap_vertex>
-          #include <fog_vertex>
+          varying vec2 vUv;
+          varying vec3 vViewPosition;
+          uniform float time;
 
           #ifdef USE_TRANSMISSION
-            vWorldPosition = worldPosition.xyz;
+            varying vec3 vWorldPosition;
           #endif
 
-          //
+          #include <common>
+          #include <uv_pars_vertex>
+          #include <uv2_pars_vertex>
+          #include <displacementmap_pars_vertex>
+          #include <color_pars_vertex>
+          #include <fog_pars_vertex>
+          #include <normal_pars_vertex>
+          #include <morphtarget_pars_vertex>
+          #include <skinning_pars_vertex>
+          #include <shadowmap_pars_vertex>
+          #include <logdepthbuf_pars_vertex>
+          #include <clipping_planes_pars_vertex>
 
-          vec4 modelViewPosition = modelViewMatrix * mvPosition;
-          gl_Position = projectionMatrix * modelViewPosition;
-        }
-      `;
+          float N (vec2 st) { // https://thebookofshaders.com/10/
+            return fract( sin( dot( st.xy, vec2(12.9898,78.233 ) ) ) *  43758.5453123);
+          }
+
+          float smoothNoise( vec2 ip ){ // https://www.youtube.com/watch?v=zXsWftRdsvU
+            vec2 lv = fract( ip );
+            vec2 id = floor( ip );
+
+            lv = lv * lv * ( 3. - 2. * lv );
+
+            float bl = N( id );
+            float br = N( id + vec2( 1, 0 ));
+            float b = mix( bl, br, lv.x );
+
+            float tl = N( id + vec2( 0, 1 ));
+            float tr = N( id + vec2( 1, 1 ));
+            float t = mix( tl, tr, lv.x );
+
+            return mix( b, t, lv.y );
+          }
+
+          void main() {
+            vUv = uv;
+            float t = time * 2.;
+
+            // VERTEX POSITION
+            vec4 mvPosition = vec4( position, 1.0 );
+            #ifdef USE_INSTANCING
+              mvPosition = instanceMatrix * mvPosition;
+            #endif
+
+            #include <color_vertex>
+            #include <beginnormal_vertex>
+            #include <morphnormal_vertex>
+            #include <skinbase_vertex>
+            #include <skinnormal_vertex>
+            #include <defaultnormal_vertex>
+            #include <normal_vertex>
+            #include <begin_vertex>
+            #include <morphtarget_vertex>
+            #include <skinning_vertex>
+
+            // DISPLACEMENT
+            float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
+            noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
+
+            // here the displacement is made stronger on the blades tips.
+            float dispPower = 1. - cos( uv.y * 3.1416 * ${MathRound(this.noise, 4).toFixed(4)} );
+
+            float displacement = noise * ( 0.3 * dispPower );
+            mvPosition.z -= displacement;
+
+            vec4 modelViewPosition = modelViewMatrix * mvPosition;
+            gl_Position = projectionMatrix * modelViewPosition;
+
+            #include <logdepthbuf_vertex>
+            #include <clipping_planes_vertex>
+            vViewPosition = - mvPosition.xyz;
+            #include <worldpos_vertex>
+            #include <shadowmap_vertex>
+            #include <fog_vertex>
+
+            #ifdef USE_TRANSMISSION
+              vWorldPosition = worldPosition.xyz;
+            #endif
+          }
+        `;
         // Данные
         shader.uniforms = {
           ...shader.uniforms,
           time: { value: 0 }
         };
+        // Туман
+        shader.fragmentShader = shader.fragmentShader.replace("#include <fog_fragment>", FogFragmentShader);
         // Запомнить шейдер
         this.params.shader = shader;
+        this.params.material.userData.shader = shader;
+        this.params.material.transparent = true;
+        this.params.material.fog = true;
       };
     }
   }
