@@ -33,6 +33,9 @@
       "@_models/*": [
         "src/app/models/*"
       ],
+      "@_threejs/*": [
+        "src/app/models/three.js/*"
+      ],
       "@_modules/*": [
         "src/app/modules/*"
       ],
