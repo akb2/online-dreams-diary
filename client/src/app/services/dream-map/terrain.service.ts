@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
@@ -11,7 +11,7 @@ import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IU
 
 @Injectable()
 
-export class DreamMapTerrainService {
+export class DreamMapTerrainService implements OnDestroy {
 
 
   private materialType: keyof typeof ShaderLib = "standard";
@@ -89,7 +89,6 @@ export class DreamMapTerrainService {
     const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
     const width: number = oWidth + (borderOSize * 2);
     const height: number = oHeight + (borderOSize * 2);
-    const heightPart: number = DreamCeilSize / DreamCeilParts;
     const loader: TextureLoader = new TextureLoader();
     // Базовые ткустуры
     const mapTextures: DataTexture[] = this.createMaterials();
@@ -269,6 +268,11 @@ export class DreamMapTerrainService {
   constructor(
     private alphaFogService: DreamMapAlphaFogService
   ) { }
+
+  ngOnDestroy(): void {
+    this.displacementCanvas.remove();
+    delete this.displacementMap;
+  }
 
 
 
