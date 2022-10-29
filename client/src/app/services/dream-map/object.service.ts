@@ -1,90 +1,53 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamDefHeight, DreamMapSize, DreamTerrain } from "@_services/dream.service";
-import { Clock, Group, Mesh } from "three";
+import { DreamTerrain } from "@_services/dream.service";
+import { BufferGeometry, Clock, Color, LOD, Material, Matrix4, Mesh } from "three";
 
 
 
 
 
-@Injectable({
-  providedIn: "root"
-})
+@Injectable()
 
-export class DreamMapObjectService {
+export class DreamMapObjectService implements OnDestroy {
 
 
-  private dreamMap: DreamMap;
+  private controllers: CustomObjectKey<number, DreamMapObjectTemplate> = {};
 
 
 
 
-
-  // Получить ячейку
-  private getCeil(x: number, y: number): DreamMapCeil {
-    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
-  }
-
-  // Ячейка по умолчанию
-  private getDefaultCeil(x: number, y: number): DreamMapCeil {
-    return {
-      place: null,
-      terrain: DreamTerrain,
-      object: null,
-      coord: {
-        x,
-        y,
-        z: DreamDefHeight,
-        originalZ: DreamDefHeight
-      }
-    };
-  }
 
   // получение объекта
-  getObject(dreamMap: DreamMap, ceil: DreamMapCeil, terrain: Mesh, clock: Clock): Group {
+  getObject(dreamMap: DreamMap, ceil: DreamMapCeil, terrain: Mesh, clock: Clock, displacementCanvas: HTMLCanvasElement): MapObject {
     // Свойства
     const objectId: number = ceil?.object?.id ?? 0;
+    const terrainId: number = ceil?.terrain ?? DreamTerrain;
     // Требуется объект
-    if (objectId > 0) {
+    if (!!objectId) {
+    }
+    // Требуется пустой объект
+    else if (!objectId && ObjectControllers[terrainId]) {
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementCanvas, []];
+      const controller: DreamMapObjectTemplate = !!this.controllers[terrainId] ?
+        this.controllers[terrainId].updateDatas(...params) :
+        new ObjectControllers[terrainId](...params);
+      const object: MapObject = controller.getObject();
+      // Настройки LOD
+      if (object instanceof LOD) {
+        object.autoUpdate = false;
+      }
+      // Обновить данные
+      this.controllers[terrainId] = controller;
+      // Вернуть группу
+      return object;
     }
     // Объект не требуется
     return null;
-  }
-
-  // Получение пустого объекта
-  getEmptyObjects(dreamMap: DreamMap, terrain: Mesh, clock: Clock, displacementCanvas: HTMLCanvasElement): Group[] {
-    // Свойства
-    const oWidth: number = dreamMap.size.width ?? DreamMapSize;
-    const oHeight: number = dreamMap.size.height ?? DreamMapSize;
-    const terrains: Set<number> = new Set(Array.from(Array(oHeight).keys()).map(y => Array.from(Array(oWidth).keys())
-      .map(x => this.getCeil(x, y)))
-      .reduce((o, c) => ([...o, ...c]), [])
-      .filter(c => !c.object?.id)
-      .filter(c => !!ObjectsForEmptyTerrains[c.terrain])
-      .map(c => c.terrain));
-    // Если требуется
-    if (!!terrains.size) {
-      return Array.from(terrains).map(t => {
-        const controller: DreamMapObjectTemplate = new ObjectsForEmptyTerrains[t](
-          dreamMap,
-          null,
-          terrain,
-          clock,
-          this.alphaFogService,
-          displacementCanvas,
-          [],
-        );
-        const object: Group = controller.getObject();
-        // Вернуть группу
-        return object;
-      });
-    }
-    // Объект не требуется
-    return [];
   }
 
 
@@ -94,14 +57,30 @@ export class DreamMapObjectService {
   constructor(
     private alphaFogService: DreamMapAlphaFogService
   ) { }
+
+  ngOnDestroy(): void {
+    Object.values(this.controllers).forEach(controller => controller.destroy());
+  }
 }
 
 
 
 
 
-// Список ландшафтов с объектами для непустых ячеек
-const ObjectsForEmptyTerrains: CustomObjectKey<number, {
+// Тип ответа
+export interface MapObject {
+  matrix: Matrix4[];
+  color: Color[];
+  geometry: BufferGeometry;
+  material: Material;
+  type: string;
+  coords: XYCoord;
+  count: number;
+  animate?: Function;
+};
+
+// Тип контроллера
+type ObjectController = {
   new(
     dreamMap: DreamMap,
     ceil: DreamMapCeil,
@@ -111,6 +90,12 @@ const ObjectsForEmptyTerrains: CustomObjectKey<number, {
     displacementCanvas: HTMLCanvasElement,
     neighboringCeils: DreamMapCeil[],
   ): DreamMapObjectTemplate
-}> = {
+};
+
+// Параметры контроллера
+type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, HTMLCanvasElement, DreamMapCeil[]];
+
+// Список ландшафтов с объектами для непустых ячеек
+const ObjectControllers: CustomObjectKey<number, ObjectController> = {
   1: DreamMapGrassObject,
 };

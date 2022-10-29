@@ -2,13 +2,13 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { AngleToRad, CustomObjectKey, IsOdd } from "@_models/app";
 import { DreamMap, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapObjectService } from "@_services/dream-map/object.service";
+import { DreamMapObjectService, MapObject } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, DreamMapTerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamObjectMaxElms, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CanvasTexture, Clock, Color, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, Intersection, LinearToneMapping, Mesh, MeshStandardMaterial, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, CanvasTexture, Clock, Color, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, LinearToneMapping, Material, Mesh, MeshStandardMaterial, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -24,7 +24,8 @@ import { Water } from "three/examples/jsm/objects/Water";
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     DreamMapTerrainService,
-    DreamMapSkyBoxService
+    DreamMapSkyBoxService,
+    DreamMapObjectService
   ]
 })
 
@@ -65,14 +66,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private clock: Clock;
   private terrainMesh: Mesh;
   private ocean: Water;
-  private objects: Group[] = [];
   private sun: DirectionalLight;
+  private animateFunctions: CustomObjectKey<number, CustomObjectKey<number, Function>> = {};
   private cursor: CursorData = {
     coords: null,
     borderSize: DreamCeilSize * 0.1,
     zOffset: (DreamCeilParts / DreamCeilSize) * 0.0001,
     ring: {
-      quality: 12,
+      quality: 32,
       zOffset: (DreamCeilParts / DreamCeilSize) * 0.02,
       height: (DreamCeilParts / DreamCeilSize) * 0.002,
       repeats: 15,
@@ -105,7 +106,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       return this.getBorderCeil(x, y);
     }
     // Обычная ячейка
-    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
+    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) ?? this.getDefaultCeil(x, y);
   }
 
   // Ячейка по умолчанию
@@ -305,6 +306,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       event.target.setX(x);
       event.target.setZ(z);
     }
+    // обновить объекты
+    // this.objects.filter(object => object instanceof LOD).forEach(object => (object as LOD).update(this.camera));
   }
 
   // Изменение размеров экрана
@@ -540,20 +543,54 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
       const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
       // Цикл по ячейкам
-      Array.from(Array(oHeight).keys()).forEach(y => Array.from(Array(oWidth).keys()).forEach(x => {
-        const ceil: DreamMapCeil = this.getCeil(x, y);
-        // Запросить объект
-        const object: Group = this.objectService.getObject(this.dreamMap, ceil, this.terrainMesh, this.clock);
-        // Добавить объект
-        if (!!object) {
-          this.scene.add(object);
-          this.objects.push(object);
-        }
-      }));
-      // Пустые ячейки
-      const object: Group[] = this.objectService.getEmptyObjects(this.dreamMap, this.terrainMesh, this.clock, this.terrainService.displacementCanvas);
-      this.scene.add(...object);
-      this.objects.push(...object);
+      const objects: MapObject[] = Array.from(Array(oHeight).keys())
+        .map(y => Array.from(Array(oWidth).keys())
+          .map(x => this.objectService.getObject(this.dreamMap, this.getCeil(x, y), this.terrainMesh, this.clock, this.terrainService.displacementCanvas)))
+        .reduce((v, o) => ([...o, ...v]), [])
+        .filter(object => !!object);
+      const types: string[] = Array.from(new Set(objects.map(({ type }) => type)));
+      const meshes: InstancedMesh[] = types.map(() => new InstancedMesh(
+        new BufferGeometry(),
+        this.alphaFogService.getMaterial(new MeshStandardMaterial()) as MeshStandardMaterial,
+        oWidth * oHeight * DreamObjectMaxElms
+      ));
+      // Добавить объект
+      meshes.forEach((mesh, i) => {
+        const type: string = types[i];
+        const filterObjects: MapObject[] = objects.filter(({ type: t }) => t === type);
+        const geometry: BufferGeometry = filterObjects[0].geometry;
+        const material: Material = filterObjects[0].material;
+        // Настройки
+        mesh.geometry = geometry;
+        mesh.material = material;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.matrixAutoUpdate = false;
+        // Цикл по ячейкам
+        objects.forEach(object => {
+          const startIndex: number = ((object.coords.y * oWidth) + object.coords.x) * DreamObjectMaxElms;
+          const count: number = object.count <= DreamObjectMaxElms ? object.count : DreamObjectMaxElms;
+          // Цикл по элементам объекта
+          Array.from(Array(count).keys()).forEach(i => {
+            const index: number = startIndex + i;
+            // Позиция
+            mesh.setMatrixAt(index, object.matrix[i]);
+            // Цвет
+            if (!!object.color[i]) {
+              mesh.setColorAt(index, object.color[i]);
+            }
+          });
+          // Функция анимации
+          if (!!object.animate) {
+            this.animateFunctions[object.coords.y] = this.animateFunctions[object.coords.y] ?? {};
+            this.animateFunctions[object.coords.y][object.coords.x] = object.animate;
+          }
+        });
+        // Настройки
+        mesh.updateMatrix();
+      });
+      // Добавить на сцену
+      this.scene.add(...meshes);
       // Рендер
       this.render();
     }
@@ -613,8 +650,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       requestAnimationFrame(this.animate.bind(this));
       // Обновить воду
       this.ocean.material.uniforms.time.value += heightPart * (this.oceanFlowSpeed / 10);
-      // Обновить объекты
-      this.objects.forEach(object => !!object.userData?.animate ? object.userData.animate() : null);
+      // Анимация объектов
+      Object.values(this.animateFunctions).forEach(o => Object.values(o).forEach(f => f()));
       // Обновить сцену
       this.control.update();
       this.render();
@@ -625,15 +662,71 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Удалить все объекты
   private clearScene(): void {
     if (this.scene) {
-      while (this.scene.children.length > 0) {
-        const node: any = this.scene.children[0];
-        // Удалить встроенные объекты
-        Object.values(node)
-          .filter((o: any) => !!o?.dispose)
-          .forEach((o: any) => o?.dispose());
-        // Удалить фигуру
-        this.scene.remove(node);
+      // Очистить переменные
+      this.cursor.ring.displacementMap.dispose();
+      this.cursor.ring.displacementMap = undefined;
+      this.cursor = undefined;
+      this.control = undefined;
+      this.terrainMesh = undefined;
+      this.ocean = undefined;
+      this.sun = undefined;
+      // Удаление материалов
+      const clearMaterial: (material: any) => void = material => {
+        // Удалить текстуры
+        const textures = Object.entries(material)
+          .filter(([, texture]: [string, any]) => !!texture && !!texture?.dispose && typeof texture.dispose === "function");
+        textures.forEach(([, texture]: [string, any]) => {
+          texture.dispose();
+          texture = undefined;
+        });
+        // Удалить униформы
+        Object.values(material)
+          .filter((o: any) => !!o?.uniforms)
+          .map((o: any) => Object.values(o.uniforms).map((o: any) => o?.value).filter(o => !!o).filter(o => !!o.dispose))
+          .filter(o => !!o?.length)
+          .forEach((o: any[]) => o.forEach(o => {
+            o.dispose();
+            o = undefined;
+          }));
+        // Очистка
+        material.dispose();
+        material = undefined;
+      };
+      // Удаление объектов
+      const clearThree: (node: any) => void = node => {
+        // Потомки
+        while (node.children.length > 0) {
+          clearThree(node.children[0]);
+          node.remove(node.children[0]);
+          this.renderer.dispose();
+        }
+        // Геометрии
+        if (!!node.geometry) {
+          node.geometry.dispose();
+          node.geometry = undefined;
+        }
+        // Материалы
+        if (!!node.material) {
+          Array.isArray(node.material) ?
+            node.material.forEach(material => clearMaterial(material)) :
+            clearMaterial(node.material);
+          node.material = undefined;
+        }
+        // Очистка
+        if (!!node?.clear && typeof node.clear === "function") {
+          node.clear();
+        }
+        // Очистка
+        if (!!node?.dispose && typeof node.dispose === "function") {
+          node.dispose();
+        }
+        // Очистка
+        node = undefined;
       }
+      // Очистка
+      console.log(JSON.stringify(this.renderer.info.memory));
+      clearThree(this.scene);
+      console.log(JSON.stringify(this.renderer.info.memory));
       // Очистить сцену
       this.clock.stop();
       this.stats.end();
@@ -641,11 +734,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.scene.clear();
       this.renderer.clear();
       // Очистить переменные
-      this.clock = null;
-      this.stats = null;
-      this.camera = null;
-      this.scene = null;
-      this.renderer = null;
+      this.clock = undefined;
+      this.stats = undefined;
+      this.camera = undefined;
+      this.scene = undefined;
+      this.renderer = undefined;
     }
   }
 

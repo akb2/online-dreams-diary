@@ -1,7 +1,8 @@
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { MapObject } from "@_services/dream-map/object.service";
 import { DreamDefHeight, DreamTerrain } from "@_services/dream.service";
-import { Clock, Group, Mesh } from "three";
+import { Clock, Mesh } from "three";
 
 
 
@@ -24,7 +25,7 @@ export abstract class DreamMapObjectTemplate {
 
 
   // Получение объекта
-  abstract getObject(): Group;
+  abstract getObject(): MapObject;
 
   // Получить ячейку
   getCeil(x: number, y: number): DreamMapCeil {
@@ -67,6 +68,20 @@ export abstract class DreamMapObjectTemplate {
     this.displacementCanvas = displacementCanvas;
     this.neighboringCeils = neighboringCeils;
   }
+
+  // Обновить сведения уже существующего сервиса
+  abstract updateDatas(
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    alphaFogService: DreamMapAlphaFogService,
+    displacementCanvas: HTMLCanvasElement,
+    neighboringCeils: DreamMapCeil[]
+  ): DreamMapObjectTemplate;
+
+  // Очистка памяти
+  abstract destroy(): void;
 
 
 
