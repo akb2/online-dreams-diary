@@ -101,6 +101,9 @@ export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Mat
 // Проверка числа на нечетность
 export const IsOdd: (num: number) => boolean = (num: number) => !IsEven(num);
 
+// Проверка числа на нечетность
+export const IsMultiple: (num: number, del: number) => boolean = (num: number, del: number) => num / del === Math.round(num / del);
+
 // Градусы в радианы
 export const AngleToRad: (angle: number) => number = (angle: number) => (Math.PI * angle) / 180;
 
@@ -120,7 +123,14 @@ export const Tan: (angle: number) => number = (angle: number) => MathRound(Math.
 export const Ctg: (angle: number) => number = (angle: number) => MathRound(1 / Math.tan(AngleToRad(angle)), 10);
 
 // Округление после запятой
-export const MathRound: (value: number, afterDotNum?: number) => number = (value: number, afterDotNum: number = 0) => {
-  const sqrt: number = Math.pow(10, afterDotNum);
-  return Math.round((value * sqrt)) / sqrt;
+export const MathRound: (value: number, afterDotNum?: number) => number = (value: number, afterDotNum: number = 0): number => {
+  if (afterDotNum > 0) {
+    const sqrt: number = Math.pow(10, afterDotNum);
+    return Math.round((value * sqrt)) / sqrt;
+  }
+  // Округлить до целого
+  return Math.round(value);
 };
+
+// Случайное число
+export const Random: (min: number, max: number) => number = (min: number, max: number) => Math.random() * (max - min) + min;
