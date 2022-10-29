@@ -5,7 +5,7 @@ import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService, MapObject } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { ClosestHeights, DreamMapTerrainService } from "@_services/dream-map/terrain.service";
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamObjectMaxElms, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_services/dream.service";
 import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
 import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
 import { BufferGeometry, CanvasTexture, Clock, Color, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, LinearToneMapping, Material, Mesh, MeshStandardMaterial, MOUSE, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
@@ -552,7 +552,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const meshes: InstancedMesh[] = types.map(() => new InstancedMesh(
         new BufferGeometry(),
         this.alphaFogService.getMaterial(new MeshStandardMaterial()) as MeshStandardMaterial,
-        oWidth * oHeight * DreamObjectMaxElms
+        oWidth * oHeight * DreamObjectDetalization
       ));
       // Добавить объект
       meshes.forEach((mesh, i) => {
@@ -568,8 +568,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         mesh.matrixAutoUpdate = false;
         // Цикл по ячейкам
         objects.forEach(object => {
-          const startIndex: number = ((object.coords.y * oWidth) + object.coords.x) * DreamObjectMaxElms;
-          const count: number = object.count <= DreamObjectMaxElms ? object.count : DreamObjectMaxElms;
+          const startIndex: number = ((object.coords.y * oWidth) + object.coords.x) * DreamObjectDetalization;
+          const count: number = object.count <= DreamObjectDetalization ? object.count : DreamObjectDetalization;
           // Цикл по элементам объекта
           Array.from(Array(count).keys()).forEach(i => {
             const index: number = startIndex + i;
