@@ -4,7 +4,7 @@ import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_services/dream.service";
-import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector3 } from "three";
+import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
 
@@ -21,7 +21,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   private heightPart: number = DreamCeilSize / DreamCeilParts;
   private posRange: number = 0.2;
   private maxHeight: number = this.heightPart * DreamMaxHeight;
-  private noise: number = 0.15;
+  private noise: number = 0.2;
 
   private width: number = 1;
   private height: number = 1;
@@ -154,11 +154,14 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const objHeight: number = this.height * this.heightPart;
       // Данные фигуры
       const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 1);
-      const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png", map => {
-        map.encoding = LinearEncoding;
-      });
+      const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png");
+      const normalMap: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "normal") + this.subType + ".jpg");
       const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         map,
+        normalMap,
+        aoMap: normalMap,
+        aoMapIntensity: -1.5,
+        normalScale: new Vector2(1, 1),
         fog: true,
         transparent: true,
         alphaTest: 0.7,
@@ -195,6 +198,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const ray: Ray = new Ray();
       const intersect: Vector3 = new Vector3();
       const countItterator: number[] = Array.from(Array(this.count).keys());
+      // Настройки
+      geometry.setAttribute("uv2", geometry.getAttribute("uv"));
       // Запомнить параметры
       this.params = {
         objWidth,
@@ -227,6 +232,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         qualityHelper,
         hyp,
         map,
+        normalMap,
       };
       // Создание шейдера
       this.createShader();
@@ -444,6 +450,7 @@ interface Params {
   qualityHelper: number;
   hyp: number;
   map: Texture;
+  normalMap: Texture;
   shader?: Shader;
 }
 
