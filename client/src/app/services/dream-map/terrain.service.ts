@@ -16,7 +16,7 @@ export class DreamMapTerrainService implements OnDestroy {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  outsideMapSize: number = 2;
+  outsideMapSize: number = 1;
   private mapPixelSize: number = 1;
   private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
@@ -68,6 +68,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const qualityHeight: number = height * this.geometryQuality;
     // Создание геометрии
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
+    this.geometry.setAttribute("uv2", this.geometry.getAttribute("uv"));
     this.createHeights();
     // Материал
     const material: ShaderMaterial = this.getMaterial;
@@ -103,10 +104,6 @@ export class DreamMapTerrainService implements OnDestroy {
     const normalTexNames: string[] = MapTerrains.map(t => "normal_terrain_tex_" + t.name);
     const normalRepeatNames: string[] = MapTerrains.map(t => "normal_terrain_repeat_" + t.name);
     const vNormalTexNames: string[] = MapTerrains.map(t => "v_normal_terrain_tex_" + t.name);
-    // Карты AO
-    const aoTexNames: string[] = MapTerrains.map(t => "ao_terrain_tex_" + t.name);
-    const aoRepeatNames: string[] = MapTerrains.map(t => "ao_terrain_repeat_" + t.name);
-    const vAoTexNames: string[] = MapTerrains.map(t => "v_ao_terrain_tex_" + t.name);
     // Имена цветов
     const colorsNames: CustomObjectKey<MapTerrainSplatMapColor, string> = {
       [MapTerrainSplatMapColor.Red]: "r",
@@ -121,17 +118,48 @@ export class DreamMapTerrainService implements OnDestroy {
       uniform sampler2D ${texNames.join(", ")};
       uniform vec2 ${repeatNames.join(", ")};
 
+      #if defined( USE_AOMAP ) || defined( USE_NORMALMAP )
+        uniform vec2 ${normalRepeatNames.join(", ")};
+        uniform sampler2D ${normalTexNames.join(", ")};
+      #endif
+
       ${ShaderLib[this.materialType].fragmentShader
+        // Общие переменные
+        .replace("void main() {", `
+          void main() {
+
+          ${vNormalTexNames.map((n, k) => `vec4 ${n} = texture2D(${normalTexNames[k]}, vUv * ${normalRepeatNames[k]});`).join("\n")}
+          ${maskMapNames.map((n, k) => `vec4 ${n} = texture2D(${maskNames[k]}, vUv);`).join("\n")}
+        `)
         // Заполнение текстурных карт
         .replace("#include <map_fragment>", `
           #ifdef USE_MAP
-            ${maskMapNames.map((n, k) => `vec4 ${n} = texture2D(${maskNames[k]}, vUv);`).join("\n")}
             ${vTexNames.map((n, k) => `vec4 ${n} = texture2D(${texNames[k]}, vUv * ${repeatNames[k]});`).join("\n")}
 
             vec4 texelColor = (
               ${MapTerrains.map((t, k) => "(" + vTexNames[k] + " * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")}
             );
             vec4 diffuseColor = LinearToLinear(texelColor);
+          #endif
+        `)
+        // Заполнение карт атмосферного свечения: фрагмент 1
+        .replace("#include <aomap_pars_fragment>", `
+          #ifdef USE_AOMAP
+            uniform float aoMapIntensity;
+          #endif
+        `)
+        // Заполнение карт атмосферного свечения: фрагмент 2
+        .replace("#include <aomap_fragment>", `
+          #ifdef USE_AOMAP
+            float ambientOcclusion = (
+              ${MapTerrains.map((t, k) => "(" + vNormalTexNames[k] + ".r * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")}
+            ) * aoMapIntensity + 1.0;
+            reflectedLight.indirectDiffuse *= ambientOcclusion;
+
+            #if defined( USE_ENVMAP ) && defined( STANDARD )
+              float dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );
+          		reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
+            #endif
           #endif
         `)
         // Удаление лишней закраски
@@ -142,8 +170,6 @@ export class DreamMapTerrainService implements OnDestroy {
         // Карта нормалей: фрагмент 1
         .replace("#include <normalmap_pars_fragment>", `
           #ifdef USE_NORMALMAP
-            uniform vec2 ${normalRepeatNames.join(", ")};
-            uniform sampler2D ${normalTexNames.join(", ")};
             uniform vec2 normalScale;
 
             vec3 perturbNormal2Arb (vec3 eye_pos, vec3 surf_norm) {
@@ -178,7 +204,7 @@ export class DreamMapTerrainService implements OnDestroy {
         `)
       }
     `;
-    // Код шейдераЖ вершины
+    // Код шейдера: вершины
     const vertexShader: string = ShaderLib[this.materialType].vertexShader;
     // Обновление текстур после загрузки
     const onLoad: Function = (name: string, texture: Texture) => {
@@ -190,7 +216,7 @@ export class DreamMapTerrainService implements OnDestroy {
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...maskNames.reduce((o, name, k) => ({ ...o, [name]: mapTextures[k] }), {}),
-      ...texNames.map((name, k) => ([name, normalTexNames[k], aoTexNames[k]])).reduce((o, [name, nName, aoName], k) => {
+      ...texNames.map((name, k) => ([name, normalTexNames[k]])).reduce((o, [name, nName, aoName], k) => {
         const terrain: MapTerrain = MapTerrains[k];
         const texture: Texture = loader.load(TexturePaths.face + terrain.name + "." + terrain.exts.face, t => onLoad(name, t));
         const normalTexture: Texture = loader.load(TexturePaths.normal + terrain.name + "." + terrain.exts.face, t => onLoad(nName, t));
@@ -216,17 +242,17 @@ export class DreamMapTerrainService implements OnDestroy {
       ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: { type: "t", value } }), {}),
       // Повторы
       b_one_repeat: { type: "v2", value: { x: 1, y: 1 } },
-      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width / 2, y: height / 2 } } }), {}),
+      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
       // Прочее
-      normalScale: { type: "v2", value: { x: -1, y: 1 } },
       displacementScale: { type: "f", value: DreamCeilParts * DreamMaxHeight },
-      aoMapIntensity: { type: "f", value: 0.5 },
+      normalScale: { type: "v2", value: { x: -1, y: 1 } },
+      aoMapIntensity: { type: "f", value: 2 },
     }]);
     // Свойства шейдера
     const defines: CustomObject<boolean> = {
       USE_MAP: true,
       USE_UV: true,
-      USE_AOMAP: false,
+      USE_AOMAP: true,
       USE_NORMALMAP: true,
       USE_BUMPMAP: false,
       USE_DISPLACEMENTMAP: true,
