@@ -27,26 +27,6 @@ export abstract class DreamMapObjectTemplate {
   // Получение объекта
   abstract getObject(): MapObject;
 
-  // Получить ячейку
-  getCeil(x: number, y: number): DreamMapCeil {
-    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
-  }
-
-  // Ячейка по умолчанию
-  getDefaultCeil(x: number, y: number): DreamMapCeil {
-    return {
-      place: null,
-      terrain: DreamTerrain,
-      object: null,
-      coord: {
-        x,
-        y,
-        z: DreamDefHeight,
-        originalZ: DreamDefHeight
-      }
-    };
-  }
-
 
 
 
