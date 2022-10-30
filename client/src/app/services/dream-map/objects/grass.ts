@@ -4,8 +4,8 @@ import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxHeight, DreamObjectDetalization } from "@_services/dream.service";
-import { BufferGeometry, Clock, Color, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_services/dream.service";
+import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Side, Triangle, Vector3 } from "three";
 
 
 
@@ -14,70 +14,21 @@ import { BufferGeometry, Clock, Color, Float32BufferAttribute, Matrix4, Mesh, Me
 export class DreamMapGrassObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
 
 
-  private count: number = DreamObjectDetalization;
+  private count: number = DreamObjectDetalization === DreamObjectElmsValues.VeryLow ? 0 : DreamMaxElmsCount;
 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.02;
-  private height: number = 12;
+  private width: number = 0.014;
+  private height: number = 6;
   private noise: number = 0.15;
-  private rotationRange: number = 7;
+  private rotationRange: number = 15;
+  private side: Side = DoubleSide;
 
   private color: Color = new Color(0.3, 1, 0.2);
   private maxHeight: number = this.heightPart * DreamMaxHeight;
 
   private params: Params;
-
-
-
-
-  constructor(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
-  ) {
-    super(
-      dreamMap,
-      ceil,
-      terrain,
-      clock,
-      alphaFogService,
-      displacementCanvas,
-      neighboringCeils
-    );
-  }
-
-  // Обновить сведения уже существующего сервиса
-  updateDatas(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
-  ): DreamMapGrassObject {
-    this.dreamMap = dreamMap;
-    this.ceil = ceil;
-    this.terrain = terrain;
-    this.clock = clock;
-    this.alphaFogService = alphaFogService;
-    this.displacementCanvas = displacementCanvas;
-    this.neighboringCeils = neighboringCeils;
-    // Вернуть экземаляр
-    return this;
-  }
-
-  // Очистка памяти
-  destroy(): void {
-    this.params.dummy.remove();
-    delete this.params;
-  }
 
 
 
@@ -132,8 +83,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
         // Вернуть сторону
         return facesTriangle[i].set(vertex[a], vertex[b], vertex[c]);
       });
-      const lX: number = (Math.random() * DreamCeilSize);
-      const lY: number = (Math.random() * DreamCeilSize);
+      const lX: number = Random(0, DreamCeilSize, true, 5);
+      const lY: number = Random(0, DreamCeilSize, true, 5);
       const xSeg: number = Math.floor(lX * qualityHelper);
       const ySeg: number = Math.floor(lY * qualityHelper);
       const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
@@ -155,7 +106,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       dummy.rotation.x = AngleToRad(Random(-this.rotationRange, this.rotationRange));
       dummy.rotation.y = AngleToRad(Random(0, 360));
       dummy.rotation.z = AngleToRad(Random(-this.rotationRange, this.rotationRange));
-      dummy.scale.setScalar(Random(0.2, 1));
+      dummy.scale.setScalar(Random(0.7, 1.2));
       dummy.updateMatrix();
       // Вернуть геометрию
       return new Matrix4().copy(dummy.matrix);
@@ -172,7 +123,9 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
         x: this.ceil.coord.x,
         y: this.ceil.coord.y
       },
-      animate: this.animate.bind(this)
+      animate: this.animate.bind(this),
+      castShadow: false,
+      recieveShadow: true
     };
   }
 
@@ -193,7 +146,9 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const material: MeshStandardMaterial = new MeshStandardMaterial({
         color: this.color,
         fog: true,
-        transparent: true
+        transparent: false,
+        side: this.side,
+        flatShading: true
       });
       const dummy: Object3D = new Object3D();
       // Параметры
@@ -209,8 +164,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       // Параметры карты
       const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
       const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-      const widthCorrect: number = -oWidth * this.widthPart / 2;
-      const heightCorrect: number = -oHeight * this.widthPart / 2;
+      const widthCorrect: number = -(oWidth * DreamCeilSize) / 2;
+      const heightCorrect: number = -(oHeight * DreamCeilSize) / 2;
       const borderOSize: number = (terrainGeometry.parameters.width - oWidth) / 2;
       // Координаты
       const cX: number = widthCorrect + (this.ceil.coord.x * DreamCeilSize);
@@ -269,6 +224,57 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
 
 
 
+  constructor(
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    alphaFogService: DreamMapAlphaFogService,
+    displacementCanvas: HTMLCanvasElement,
+    neighboringCeils: DreamMapCeil[] = []
+  ) {
+    super(
+      dreamMap,
+      ceil,
+      terrain,
+      clock,
+      alphaFogService,
+      displacementCanvas,
+      neighboringCeils
+    );
+  }
+
+  // Обновить сведения уже существующего сервиса
+  updateDatas(
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    alphaFogService: DreamMapAlphaFogService,
+    displacementCanvas: HTMLCanvasElement,
+    neighboringCeils: DreamMapCeil[] = []
+  ): DreamMapGrassObject {
+    this.dreamMap = dreamMap;
+    this.ceil = ceil;
+    this.terrain = terrain;
+    this.clock = clock;
+    this.alphaFogService = alphaFogService;
+    this.displacementCanvas = displacementCanvas;
+    this.neighboringCeils = neighboringCeils;
+    // Вернуть экземаляр
+    return this;
+  }
+
+  // Очистка памяти
+  destroy(): void {
+    this.params.dummy.remove();
+    delete this.params;
+  }
+
+
+
+
+
   // Анимация
   animate(): void {
     this.params.shader.uniforms.time.value = this.clock.getElapsedTime();
@@ -303,11 +309,11 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
           #include <logdepthbuf_pars_vertex>
           #include <clipping_planes_pars_vertex>
 
-          float N (vec2 st) { // https://thebookofshaders.com/10/
+          float N (vec2 st) {
             return fract( sin( dot( st.xy, vec2(12.9898,78.233 ) ) ) *  43758.5453123);
           }
 
-          float smoothNoise( vec2 ip ){ // https://www.youtube.com/watch?v=zXsWftRdsvU
+          float smoothNoise( vec2 ip ){
             vec2 lv = fract( ip );
             vec2 id = floor( ip );
 
@@ -354,7 +360,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
             float dispPower = 1. - cos( uv.y * 3.1416 * ${MathRound(this.noise, 4).toFixed(4)} );
 
             float displacement = noise * ( 0.3 * dispPower );
-            mvPosition.z -= displacement;
+            mvPosition.z += displacement;
 
             mvPosition = modelViewMatrix * mvPosition;
             gl_Position = projectionMatrix * mvPosition;
