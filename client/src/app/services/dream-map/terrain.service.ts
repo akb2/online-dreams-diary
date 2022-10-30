@@ -216,7 +216,7 @@ export class DreamMapTerrainService implements OnDestroy {
       ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: { type: "t", value } }), {}),
       // Повторы
       b_one_repeat: { type: "v2", value: { x: 1, y: 1 } },
-      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
+      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width / 2, y: height / 2 } } }), {}),
       // Прочее
       normalScale: { type: "v2", value: { x: -1, y: 1 } },
       displacementScale: { type: "f", value: DreamCeilParts * DreamMaxHeight },
