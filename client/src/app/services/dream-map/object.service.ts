@@ -3,9 +3,10 @@ import { CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
+import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { DreamTerrain } from "@_services/dream.service";
-import { BufferGeometry, Clock, Color, LOD, Material, Matrix4, Mesh } from "three";
+import { BufferGeometry, Clock, Color, Material, Matrix4, Mesh } from "three";
 
 
 
@@ -14,7 +15,6 @@ import { BufferGeometry, Clock, Color, LOD, Material, Matrix4, Mesh } from "thre
 @Injectable()
 
 export class DreamMapObjectService implements OnDestroy {
-
 
   private controllers: CustomObjectKey<number, DreamMapObjectTemplate> = {};
 
@@ -37,10 +37,6 @@ export class DreamMapObjectService implements OnDestroy {
         this.controllers[terrainId].updateDatas(...params) :
         new ObjectControllers[terrainId](...params);
       const object: MapObject = controller.getObject();
-      // Настройки LOD
-      if (object instanceof LOD) {
-        object.autoUpdate = false;
-      }
       // Обновить данные
       this.controllers[terrainId] = controller;
       // Вернуть группу
@@ -76,6 +72,8 @@ export interface MapObject {
   type: string;
   coords: XYCoord;
   count: number;
+  castShadow: boolean;
+  recieveShadow: boolean;
   animate?: Function;
 };
 
@@ -98,4 +96,5 @@ type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlph
 // Список ландшафтов с объектами для непустых ячеек
 const ObjectControllers: CustomObjectKey<number, ObjectController> = {
   1: DreamMapGrassObject,
+  2: DreamMapTreeObject,
 };
