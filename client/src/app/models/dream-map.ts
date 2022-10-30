@@ -199,13 +199,25 @@ export interface TerrainMaterialCache {
 
 
 
-// Путь к файлам текстур
+// Путь к файлам текстур местости
 export const BaseTexturePath: string = "assets/dream-map/terrain/";
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
   face: BaseTexturePath + "face/",
   ao: BaseTexturePath + "ao/",
   normal: BaseTexturePath + "normal/",
   disp: BaseTexturePath + "displacement/",
+};
+
+const BaseobjectTexturePath: string = "assets/dream-map/object/";
+export const ObjectTexturePaths: (name: string, type: TextureType) => string = (name: string, type: TextureType) => {
+  const paths: CustomObjectKey<TextureType, string> = {
+    face: BaseobjectTexturePath + name + "/face/",
+    ao: BaseobjectTexturePath + name + "/ao/",
+    normal: BaseobjectTexturePath + name + "/normal/",
+    disp: BaseobjectTexturePath + name + "/displacement/",
+  };
+  // Вернуть путь
+  return paths[type];
 };
 
 // Набор типов линий
