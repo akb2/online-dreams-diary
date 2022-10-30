@@ -398,7 +398,7 @@ export const DreamWater: Water = {
 export const DreamSkyType: number = 1;
 export const DreamTerrain: number = MapTerrains[0].id;
 export const DreamFogNear: number = 50;
-export const DreamFogFar: number = 70;
+export const DreamFogFar: number = 90;
 export const DreamLODDistance: number = 20;
 export const DreamLODCount: number = Math.floor(DreamFogFar / DreamLODDistance);
 
@@ -412,11 +412,13 @@ export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight / Dream
 
 // Максимальное число элементов в ячейке
 export enum DreamObjectElmsValues {
-  VeryLow = 32,
-  Low = 64,
-  Middle = 128,
-  Hight = 256,
-  VeryHigh = 512,
-  Ultra = 1024
+  VeryLow,
+  Low,
+  Middle,
+  High,
+  VeryHigh,
+  Ultra,
+  Awesome
 };
-export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.VeryHigh;
+export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.Awesome;
+export const DreamMaxElmsCount: number = 64 * (DreamObjectDetalization + 1);
