@@ -561,7 +561,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.scene) {
       const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
       const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-      const borderOSize: number = 1;
+      const borderOSize: number = 0;
       const width: number = oWidth + (borderOSize * 2);
       const height: number = oHeight + (borderOSize * 2);
       // Цикл по ячейкам
