@@ -71,7 +71,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
-  private toolActionTimer: number = 15;
+  private toolActionTimer: number = 50;
   private terrainChangeStep: number = 1;
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
 
