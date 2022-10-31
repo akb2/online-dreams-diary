@@ -54,7 +54,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private moveSpeed: number = DreamCeilSize * 14;
   private zoomSpeed: number = DreamCeilSize;
   private minAngle: number = 0;
-  private maxAngle: number = 80;
+  private maxAngle: number = 85;
   private drawShadows: boolean = true;
   private oceanFlowSpeed: number = 3;
 
