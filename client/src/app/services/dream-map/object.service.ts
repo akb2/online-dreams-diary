@@ -1,9 +1,7 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, ObjectControllerParams, ObjectControllers, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
-import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { DreamTerrain } from "@_services/dream.service";
 import { BufferGeometry, Clock, Color, Material, Matrix4, Mesh } from "three";
@@ -75,26 +73,4 @@ export interface MapObject {
   castShadow: boolean;
   recieveShadow: boolean;
   animate?: Function;
-};
-
-// Тип контроллера
-type ObjectController = {
-  new(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[],
-  ): DreamMapObjectTemplate
-};
-
-// Параметры контроллера
-type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, HTMLCanvasElement, DreamMapCeil[]];
-
-// Список ландшафтов с объектами для непустых ячеек
-const ObjectControllers: CustomObjectKey<number, ObjectController> = {
-  1: DreamMapGrassObject,
-  2: DreamMapTreeObject,
 };
