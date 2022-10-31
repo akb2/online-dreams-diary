@@ -6,7 +6,7 @@ import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, MapTerrains, Water, WaterType, WorldLand } from "@_models/dream-map";
+import { DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, Water, WaterType, WorldLand } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -387,18 +387,13 @@ export const DreamDefHeight: number = DreamCeilParts * 10;
 export const DreamMaxHeight: number = DreamCeilParts * 20;
 export const DreamWaterDefHeight: number = DreamCeilParts * 9;
 
-// Вода по умолчанию
-export const DreamWater: Water = {
-  z: 0,
-  type: WaterType.pool,
-  material: 0
-};
-
 // Параметры по умолчанию
 export const DreamSkyType: number = 1;
-export const DreamTerrain: number = MapTerrains[0].id;
+export const DreamTerrain: number = 1;
 export const DreamFogNear: number = DreamMapSize * 0.8;
-export const DreamFogFar: number = DreamMapSize;
+export const DreamFogFar: number = DreamMapSize * 2;
+export const DreamHorizont: number = DreamFogFar * 2;
+export const DreamOutsideSize: number = 2;
 export const DreamLODDistance: number = 20;
 export const DreamLODCount: number = Math.floor(DreamFogFar / DreamLODDistance);
 
@@ -420,5 +415,5 @@ export enum DreamObjectElmsValues {
   Ultra,
   Awesome
 };
-export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.VeryLow;
+export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.Awesome;
 export const DreamMaxElmsCount: number = 64 * (DreamObjectDetalization + 1);
