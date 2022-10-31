@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamTerrain } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_services/dream.service";
 import { BackSide, CanvasTexture, Color, DataTexture, Float32BufferAttribute, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils } from "three";
 
 
@@ -16,7 +16,7 @@ export class DreamMapTerrainService implements OnDestroy {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
-  outsideMapSize: number = 1;
+  outsideMapSize: number = DreamOutsideSize;
   private mapPixelSize: number = 1;
   private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
