@@ -4,7 +4,7 @@ import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_services/dream.service";
-import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
+import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
 
@@ -19,7 +19,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   private count: number = DreamMaxElmsCount;
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
-  private posRange: number = 0.2;
+  private posRange: number = 0.3;
   private maxHeight: number = this.heightPart * DreamMaxHeight;
   private noise: number = 0.2;
 
@@ -99,6 +99,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
     const seg: number = locHyp >= hyp ? 1 : 0;
     const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
+    const scale: number = Random(0.8, 1.1, false, 3);
     // Поиск координаты Z
     v1.set(x, y, 0);
     v2.set(x, y, this.maxHeight);
@@ -107,14 +108,14 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     ray.set(v1, dir);
     ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
     // Координата Z
-    const z: number = intersect.z + centerY;
+    const z: number = intersect.z + (centerY * scale);
     // Настройки
     dummy.position.set(x, z, y);
+    dummy.scale.setScalar(scale);
     geometry.rotateY(AngleToRad(180));
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = countItterator.map(i => {
       dummy.rotation.y = AngleToRad(i * angle);
-      dummy.scale.setScalar(Random(0.7, 1));
       dummy.updateMatrix();
       // Вернуть геометрию
       return new Matrix4().copy(dummy.matrix);
@@ -154,20 +155,20 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const objHeight: number = this.height * this.heightPart;
       // Данные фигуры
       const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 1);
-      const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png");
+      const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png", map => map.encoding = LinearEncoding);
       const normalMap: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "normal") + this.subType + ".jpg");
       const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         map,
         normalMap,
-        aoMap: normalMap,
-        aoMapIntensity: -1.5,
         normalScale: new Vector2(1, 1),
+        aoMap: normalMap,
+        aoMapIntensity: -1,
+        color: new Color(1, 1, 1),
         fog: true,
         transparent: true,
         alphaTest: 0.7,
-        color: new Color(0.4, 1, 0),
         side: DoubleSide,
-        flatShading: true
+        flatShading: true,
       })) as MeshStandardMaterial;
       const dummy: Object3D = new Object3D();
       // Параметры
@@ -464,7 +465,7 @@ const TypesByID: CustomObjectKey<number, Types> = {
 
 // Список высот по типу дерева
 const Heights: CustomObjectKey<Types, number> = {
-  oak: 1.375
+  oak: 2
 };
 
 // Список количества повторов текстуры
@@ -475,5 +476,5 @@ const Counts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.High]: 5,
   [DreamObjectElmsValues.VeryHigh]: 6,
   [DreamObjectElmsValues.Ultra]: 7,
-  [DreamObjectElmsValues.Awesome]: 8,
+  [DreamObjectElmsValues.Awesome]: 4,
 };
