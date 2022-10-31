@@ -1,7 +1,10 @@
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
-import { MeshStandardMaterial, Side, Texture } from "three";
+import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
+import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
+import { Clock, Mesh, MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -54,6 +57,14 @@ export interface MapTerrain {
   };
 }
 
+// Интерфейс объекта карты
+export interface MapObject {
+  id: number;
+  type: string;
+  subType: string;
+  controller: ObjectController;
+}
+
 // Интерфейс настроек для цветовой маски
 export interface MapTerrainSplatMapSetting {
   layout: number;
@@ -66,12 +77,6 @@ export enum MapTerrainSplatMapColor {
   Green,
   Blue,
   Empty
-}
-
-// Интерфейс объекта карты
-export interface MapObject {
-  id: number;
-  name: string;
 }
 
 // Интерфейс карты для сервера
@@ -161,6 +166,22 @@ export enum WaterType {
 
 // Типы цветов пути
 export type WayColor = "red" | "green" | "blue" | "white" | "black" | "gray" | "orange" | "pink" | "pink" | "purple";
+
+// Тип контроллера объектов
+export type ObjectController = {
+  new(
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    alphaFogService: DreamMapAlphaFogService,
+    displacementCanvas: HTMLCanvasElement,
+    neighboringCeils: DreamMapCeil[],
+  ): DreamMapObjectTemplate
+};
+
+// Параметры контроллера
+export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, HTMLCanvasElement, DreamMapCeil[]];
 
 // Тип линии
 export interface WayLineType {
@@ -322,3 +343,8 @@ export const MapTerrains: MapTerrain[] = [
       }
     };
   });
+
+// Список ландшафтов с объектами для непустых ячеек
+export const ObjectControllers: CustomObjectKey<number, ObjectController> = {
+  1: DreamMapGrassObject,
+};
