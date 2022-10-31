@@ -1,7 +1,6 @@
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
-import { DreamDefHeight, DreamTerrain } from "@_services/dream.service";
 import { Clock, Mesh } from "three";
 
 
