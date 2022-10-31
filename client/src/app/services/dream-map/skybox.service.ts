@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AngleToRad, Cos, CustomObject, Sin } from "@_models/app";
-import { DreamCeilSize, DreamFogFar, DreamFogNear } from "@_services/dream.service";
+import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont } from "@_services/dream.service";
 import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
@@ -30,7 +30,7 @@ export class DreamMapSkyBoxService {
     const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.4);
     const fog: Fog = new Fog(color, FogNear * DreamCeilSize, FogFar * DreamCeilSize);
     const shadowSize: number = 1024;
-    const boxSize: number = FogFar * DreamCeilSize / 6;
+    const boxSize: number = DreamHorizont;
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
       turbidity: { value: 10 },
@@ -39,7 +39,7 @@ export class DreamMapSkyBoxService {
       mieDirectionalG: { value: 0.7 },
     };
     // Настройки
-    sky.geometry = new SphereGeometry(boxSize, 32, 16) as BufferGeometry as BoxGeometry;
+    sky.geometry = new SphereGeometry(1, 32, 16) as BufferGeometry as BoxGeometry;
     sky.scale.setScalar(boxSize);
     sky.material.uniforms = uniforms;
     sky.material.side = BackSide;
