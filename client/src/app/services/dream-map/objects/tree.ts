@@ -476,5 +476,5 @@ const Counts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.High]: 5,
   [DreamObjectElmsValues.VeryHigh]: 6,
   [DreamObjectElmsValues.Ultra]: 7,
-  [DreamObjectElmsValues.Awesome]: 4,
+  [DreamObjectElmsValues.Awesome]: 8,
 };
