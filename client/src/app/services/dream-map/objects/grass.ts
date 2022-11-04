@@ -1,10 +1,11 @@
-import { AngleToRad, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { AngleToRad, CustomObjectKey, IsEven, IsMultiple, LineFunc, MathRound, Random, TriangleSquare } from "@_models/app";
+import { DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_services/dream.service";
+import { ClosestHeight, ClosestHeights } from "@_services/dream-map/terrain.service";
 import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Side, Triangle, Vector3 } from "three";
 
 
@@ -19,7 +20,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.014;
+  private width: number = 0.02;
   private height: number = 6;
   private noise: number = 0.15;
   private rotationRange: number = 15;
@@ -29,6 +30,34 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private maxHeight: number = this.heightPart * DreamMaxHeight;
 
   private params: Params;
+
+  private randomFactor: number = 3;
+  private closestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];
+  private anglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 180, bottom: 270, left: 0 };
+  private anglesB: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, number>> = {
+    top: { left: 0, right: 90 },
+    left: { top: 0, bottom: 180 },
+    right: { top: 90, bottom: 270 },
+    bottom: { left: 180, right: 270 },
+  };
+  private allCorners: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, (keyof ClosestHeights)[]>> = {
+    top: { left: ["topRight", "bottomLeft"], right: ["topLeft", "bottomRight"] },
+    left: { top: ["topRight", "bottomLeft"], bottom: ["topLeft", "bottomRight"] },
+    right: { top: ["topLeft", "bottomRight"], bottom: ["topRight", "bottomLeft"] },
+    bottom: { left: ["topLeft", "bottomRight"], right: ["topRight", "bottomLeft"] },
+  };
+  private bordersX: CustomObjectKey<number, number[]> = { 0: [-0.5, 0], 180: [0, 0.5] };
+  private bordersY: CustomObjectKey<number, number[]> = { 90: [-0.5, 0], 270: [0, 0.5] };
+  private a: XYCoord = { x: 0, y: 0 };
+  private b: XYCoord = { x: 1, y: 0 };
+  private c: XYCoord = { x: 0, y: 1 };
+  private d: XYCoord = { x: 1, y: 1 };
+  private trianglesCoords: CustomObjectKey<number, XYCoord[]> = {
+    0: [this.a, this.b, this.c],
+    90: [this.a, this.b, this.d],
+    180: [this.a, this.c, this.d],
+    270: [this.b, this.c, this.d]
+  };
 
 
 
@@ -61,7 +90,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       intersect
     }: Params = this.getParams;
     // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = countItterator.map(i => {
+    const matrix: Matrix4[] = countItterator.map(() => {
       const vertex: Vector3[] = vertexItterator.map(h => borderOSize + (cY - widthCorrect) + h)
         .map(h => vertexItterator.map(w => borderOSize + (cX - widthCorrect) + w).map(w => (h * wdth) + w))
         .reduce((o, v) => ([...o, ...v]), [])
@@ -92,29 +121,36 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
       const x: number = cX + lX;
       const y: number = cY + lY;
-      // Поиск координаты Z
-      v1.set(x, y, 0);
-      v2.set(x, y, this.maxHeight);
-      dir.subVectors(v2, v1).normalize();
-      dir.normalize();
-      ray.set(v1, dir);
-      ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
-      // Координата Z
-      const z: number = intersect.z;
-      // Настройки
-      dummy.position.set(x, z, y);
-      dummy.rotation.x = AngleToRad(Random(-this.rotationRange, this.rotationRange));
-      dummy.rotation.y = AngleToRad(Random(0, 360));
-      dummy.rotation.z = AngleToRad(Random(-this.rotationRange, this.rotationRange));
-      dummy.scale.setScalar(Random(0.7, 1.2));
-      dummy.updateMatrix();
-      // Вернуть геометрию
-      return new Matrix4().copy(dummy.matrix);
-    });
+      // Проверка вписания в фигуру
+      if (this.checkCeilForm(cX, cY, x, y)) {
+        const scaleY: number = Random(0.7, 2, false, 5);
+        const scaleX: number = LineFunc(1, 0.5, scaleY, 0.7, 2);
+        // Поиск координаты Z
+        v1.set(x, y, 0);
+        v2.set(x, y, this.maxHeight);
+        dir.subVectors(v2, v1).normalize();
+        dir.normalize();
+        ray.set(v1, dir);
+        ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
+        // Координата Z
+        const z: number = intersect.z;
+        // Настройки
+        dummy.position.set(x, z, y);
+        dummy.rotation.x = AngleToRad(Random(-this.rotationRange, this.rotationRange));
+        dummy.rotation.y = AngleToRad(Random(0, 360));
+        dummy.rotation.z = AngleToRad(Random(-this.rotationRange, this.rotationRange));
+        dummy.scale.set(scaleX, scaleY, 0);
+        dummy.updateMatrix();
+        // Вернуть геометрию
+        return new Matrix4().copy(dummy.matrix);
+      }
+      // Не отрисовывать геометрию
+      return null;
+    }).filter(matrix => !!matrix);
     // Вернуть объект
     return {
       type: "grass",
-      count: this.count,
+      count: matrix.length,
       matrix,
       color: [],
       geometry: geometry as BufferGeometry,
@@ -231,7 +267,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
+    neighboringCeils: ClosestHeights
   ) {
     super(
       dreamMap,
@@ -252,7 +288,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
+    neighboringCeils: ClosestHeights
   ): DreamMapGrassObject {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -392,6 +428,108 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       };
     }
   }
+
+
+
+
+
+  // Проверка вписания травы в плавную фигуру с учетом соседних ячеек
+  private checkCeilForm(cX: number, cY: number, x: number, y: number): boolean {
+    const randomCheck: boolean = Random(1, 100) <= this.randomFactor;
+    // Проверка соседних ячеек, если не фактор случайности не сработал
+    if (!randomCheck) {
+      const closestCeils: ClosestHeight[] = this.closestKeysAll.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain);
+      const closestCount: number = closestCeils.length;
+      const closestKeys: (keyof ClosestHeights)[] = this.closestKeysAll.filter(k => this.neighboringCeils[k].terrain === this.ceil.terrain);
+      // Отрисовка только для существующих типов фигур
+      if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
+        // Для ячеек без похожих соседних ячеек
+        if (closestCount === 0) {
+          return this.checkCeilCircleForm(cX, cY, x, y);
+        }
+        // Для ячеек с одной похожей геометрией
+        else if (closestCount === 1) {
+          const angle: number = this.anglesA[closestKeys[0]];
+          // Тест геометрии
+          return this.checkCeilHalfCircleForm(cX, cY, x, y, angle);
+        }
+        // Для ячеек с двумя похожими геометриями
+        else if (closestCount === 2) {
+          const angle: number = this.anglesB[closestKeys[0]][closestKeys[1]] ?? -1;
+          // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
+          if (angle >= 0) {
+            const corners: (keyof ClosestHeights)[] = this.allCorners[closestKeys[0]][closestKeys[1]];
+            const cornersCount: number = corners.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain).length;
+            // Посчитать
+            return cornersCount > 0 ?
+              this.checkCeilTriangleForm(cX, cY, x, y, angle) :
+              this.checkCeilQuarterCircleForm(cX, cY, x, y, angle);
+          }
+        }
+      }
+    }
+    // Координата вписывается в фигуру
+    return true;
+  }
+
+  // Проверка круговой геометрии
+  private checkCeilCircleForm(cX: number, cY: number, oX: number, oY: number): boolean {
+    const radius: number = DreamCeilSize / 2;
+    const x: number = oX - cX - radius;
+    const y: number = oY - cY - radius;
+    // Результат
+    return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
+  }
+
+  // Проверка полукруговой геометрии
+  private checkCeilHalfCircleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
+    const borderDef: number[] = [-0.5, 0.5];
+    const borderX: number[] = this.bordersX[angle] ?? borderDef;
+    const borderY: number[] = this.bordersY[angle] ?? borderDef;
+    const radius: number = DreamCeilSize / 2;
+    const x: number = oX - cX - radius;
+    const y: number = oY - cY - radius;
+    // Результат
+    return x >= borderX[0] && x <= borderX[1] && y >= borderY[0] && y <= borderY[1] ?
+      true :
+      this.checkCeilCircleForm(cX, cY, oX, oY);
+  }
+
+  // Проверка треугольной геометрии
+  private checkCeilTriangleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
+    const triangle: XYCoord[] = this.trianglesCoords[angle];
+    // Проверка внутри треугольника
+    if (!!triangle) {
+      const traingleSquare: number = MathRound(TriangleSquare(triangle), 5);
+      const x: number = oX - cX;
+      const y: number = oY - cY;
+      const checkCoord: XYCoord = { x, y };
+      const checkCoords: XYCoord[][] = [
+        [checkCoord, triangle[1], triangle[2]],
+        [triangle[0], checkCoord, triangle[2]],
+        [triangle[0], triangle[1], checkCoord],
+      ];
+      const checkSquaries: number = MathRound(checkCoords.map(c => TriangleSquare(c)).reduce((s, o) => s + o, 0), 5);
+      // Вписывается
+      if (angle === 0) {
+        console.log(traingleSquare, checkSquaries);
+      }
+      return traingleSquare === checkSquaries;
+    }
+    // Не вписывается
+    return false;
+  }
+
+  // Проверка геометрии четверти круга
+  private checkCeilQuarterCircleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
+    const radius: number = DreamCeilSize;
+    const subtractorY: number = angle === 180 || angle === 270 ? -1 : 0;
+    const subtractorX: number = Math.abs((angle === 90 || angle === 180 ? -1 : 0) - subtractorY) * -1;
+    const x: number = oX - cX + subtractorX;
+    const y: number = oY - cY + subtractorY;
+    // Результат
+    return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
+  }
 }
 
 
@@ -433,3 +571,11 @@ interface Params {
   intersect: Vector3;
   shader?: Shader;
 }
+
+// Перечисление типов геометрий травы для ячеек
+type CeilGrassFillGeometryType = "circle" | "half-circle" | "triangle" | false;
+const CeilGrassFillGeometry: CeilGrassFillGeometryType[] = [
+  "circle",
+  "half-circle",
+  "triangle",
+];
