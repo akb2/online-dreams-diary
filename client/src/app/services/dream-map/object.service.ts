@@ -1,9 +1,10 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapCeil, ObjectControllerParams, ObjectControllers, XYCoord } from "@_models/dream-map";
+import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamTerrain } from "@_services/dream.service";
+import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { BufferGeometry, Clock, Color, Material, Matrix4, Mesh } from "three";
 
 
@@ -21,7 +22,14 @@ export class DreamMapObjectService implements OnDestroy {
 
 
   // получение объекта
-  getObject(dreamMap: DreamMap, ceil: DreamMapCeil, terrain: Mesh, clock: Clock, displacementCanvas: HTMLCanvasElement): MapObject {
+  getObject(
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    displacementCanvas: HTMLCanvasElement,
+    closestsCeils: ClosestHeights
+  ): MapObject | MapObject[] {
     // Свойства
     const objectId: number = ceil?.object?.id ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
@@ -30,11 +38,11 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Требуется пустой объект
     else if (!objectId && ObjectControllers[terrainId]) {
-      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementCanvas, []];
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementCanvas, closestsCeils];
       const controller: DreamMapObjectTemplate = !!this.controllers[terrainId] ?
         this.controllers[terrainId].updateDatas(...params) :
         new ObjectControllers[terrainId](...params);
-      const object: MapObject = controller.getObject();
+      const object: MapObject | MapObject[] = controller.getObject();
       // Обновить данные
       this.controllers[terrainId] = controller;
       // Вернуть группу
