@@ -1,4 +1,5 @@
 import { MatDialogConfig } from "@angular/material/dialog";
+import { XYCoord } from "@_models/dream-map";
 import { AuthRules } from "@_models/menu";
 
 
@@ -95,6 +96,10 @@ export const BrowserNames: SimpleObject = {
   "Default Browser": "Неопределен",
 };
 
+
+
+
+
 // Проверка числа на четность
 export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
 
@@ -142,3 +147,19 @@ export const Random: (min: number, max: number, noBorder?: boolean, afterDotNum?
     // Вернуть случайное число
     return MathRound(Math.random() * (max - min) + min, afterDotNum);
   };
+
+// Площадь треугольника
+export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) => number = (a: XYCoord | XYCoord[], b: XYCoord = null, c: XYCoord = null) => {
+  if (Array.isArray(a)) {
+    [, b, c] = a;
+    a = a[0] as unknown as XYCoord;
+  }
+  // Вернуть площадь или ошибку
+  return !!a && !!b && !!c ?
+    0.5 * (Math.abs((a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y))) :
+    0;
+};
+
+// Линейная функция расчета
+export const LineFunc: (min: number, max: number, value: number, valueMin: number, valueMax: number) => number =
+  (min: number, max: number, value: number, valueMin: number, valueMax: number) => (((min - max) / valueMax) * (value - valueMin)) + max;
