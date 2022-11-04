@@ -1,10 +1,11 @@
 import { AngleToRad, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
 import { DreamMap, DreamMapCeil, ObjectTexturePaths } from "@_models/dream-map";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_services/dream.service";
-import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
+import { ClosestHeights } from "@_services/dream-map/terrain.service";
+import { BufferGeometry, Clock, Color, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
 
@@ -38,12 +39,56 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   }
 
   // Получение объекта
-  getObject(): MapObject {
+  getObject(): MapObject[] {
+    const {
+      objHeight,
+      cX,
+      cY,
+      qualityHelper,
+      hyp,
+      v1,
+      v2,
+      dir,
+      ray,
+      intersect,
+      faces,
+    }: Params = this.getParams;
+    // Параметры
+    const centerY: number = objHeight / 2;
+    const centerX: number = DreamCeilSize / 2;
+    const scale: number = Random(0.8, 1.1, false, 3);
+    const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
+    const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
+    const x: number = cX + lX;
+    const y: number = cY + lY;
+    // Параметры местности
+    const xSeg: number = Math.floor(lX * qualityHelper);
+    const ySeg: number = Math.floor(lY * qualityHelper);
+    const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
+    const seg: number = locHyp >= hyp ? 1 : 0;
+    const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
+    // Поиск координаты Z
+    v1.set(x, y, 0);
+    v2.set(x, y, this.maxHeight);
+    dir.subVectors(v2, v1).normalize();
+    dir.normalize();
+    ray.set(v1, dir);
+    ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
+    // Координата Z
+    const z: number = intersect.z + (centerY * scale);
+    // Вернуть массив объектов
+    return [
+      this.getVerticalParts(lX, lY, scale, z)
+    ];
+  }
+
+  // Горизонтальные части
+  private getHorizontalParts(lX: number, lY: number, scale: number): void {
     const {
       objHeight,
       dummy,
       material,
-      geometry,
+      geometry: { h: geometry },
       widthCorrect,
       borderOSize,
       cX,
@@ -62,53 +107,28 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       v2,
       dir,
       ray,
-      intersect
+      intersect,
+      faces,
     }: Params = this.getParams;
     // Параметры
-    const angle: number = 180 / this.count;
-    const centerX: number = DreamCeilSize / 2;
-    const centerY: number = objHeight / 2;
-    const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
-    const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const x: number = cX + lX;
     const y: number = cY + lY;
-    // Параметры местности
-    const vertex: Vector3[] = vertexItterator.map(h => borderOSize + (cY - widthCorrect) + h)
-      .map(h => vertexItterator.map(w => borderOSize + (cX - widthCorrect) + w).map(w => (h * wdth) + w))
-      .reduce((o, v) => ([...o, ...v]), [])
-      .map((i, k) => vertexVector3[k].set(vertexes.getX(i), -vertexes.getY(i), vertexes.getZ(i)))
-      .sort((a, b) => {
-        const rA: number = a.y * quality + a.x;
-        const rB: number = b.y * quality + b.x;
-        return rA > rB ? 1 : rA < rB ? -1 : 0
-      });
-    let vertexStart: number = 0;
-    const faces: Triangle[] = facesCountItterator.map(i => {
-      const isOdd: boolean = IsEven(i);
-      const isEnd: boolean = IsMultiple(i + 1, quality) && i > 0;
-      const a: number = vertexStart;
-      const b: number = isOdd ? vertexStart + 1 : vertexStart + qualityHelper;
-      const c: number = vertexStart + qualityHelper + 1;
-      // Увеличить инкримент
-      vertexStart = isOdd || isEnd ? vertexStart + 1 : vertexStart;
-      // Вернуть сторону
-      return facesTriangle[i].set(vertex[a], vertex[b], vertex[c]);
-    });
-    const xSeg: number = Math.floor(lX * qualityHelper);
-    const ySeg: number = Math.floor(lY * qualityHelper);
-    const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
-    const seg: number = locHyp >= hyp ? 1 : 0;
-    const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
-    const scale: number = Random(0.8, 1.1, false, 3);
-    // Поиск координаты Z
-    v1.set(x, y, 0);
-    v2.set(x, y, this.maxHeight);
-    dir.subVectors(v2, v1).normalize();
-    dir.normalize();
-    ray.set(v1, dir);
-    ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
-    // Координата Z
-    const z: number = intersect.z + (centerY * scale);
+  }
+
+  // Вертикальные части
+  private getVerticalParts(lX: number, lY: number, scale: number, z: number): MapObject {
+    const {
+      dummy,
+      material,
+      geometry: { v: geometry },
+      cX,
+      cY,
+      countItterator,
+    }: Params = this.getParams;
+    // Параметры
+    const angle: number = 360 / this.count;
+    const x: number = cX + lX;
+    const y: number = cY + lY;
     // Настройки
     dummy.position.set(x, z, y);
     dummy.scale.setScalar(scale);
@@ -122,7 +142,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     });
     // Вернуть объект
     return {
-      type: this.fullType,
+      type: this.fullType + "-v",
       count: this.count,
       matrix: matrix,
       color: [],
@@ -154,7 +174,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const objWidth: number = this.width * this.widthPart;
       const objHeight: number = this.height * this.heightPart;
       // Данные фигуры
-      const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 1);
+      const vGeometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 1);
+      const hGeometry: PlaneGeometry = new PlaneGeometry(objWidth, objWidth, 1, 1);
       const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png", map => map.encoding = LinearEncoding);
       const normalMap: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "normal") + this.subType + ".jpg");
       const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
@@ -167,7 +188,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         fog: true,
         transparent: true,
         alphaTest: 0.7,
-        side: DoubleSide,
+        side: FrontSide,
         flatShading: true,
       })) as MeshStandardMaterial;
       const dummy: Object3D = new Object3D();
@@ -200,12 +221,15 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const intersect: Vector3 = new Vector3();
       const countItterator: number[] = Array.from(Array(this.count).keys());
       // Настройки
-      geometry.setAttribute("uv2", geometry.getAttribute("uv"));
+      vGeometry.setAttribute("uv2", vGeometry.getAttribute("uv"));
       // Запомнить параметры
       this.params = {
         objWidth,
         objHeight,
-        geometry,
+        geometry: {
+          v: vGeometry,
+          h: hGeometry
+        },
         material,
         dummy,
         terrainGeometry,
@@ -234,10 +258,44 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         hyp,
         map,
         normalMap,
+        vertex: [],
+        faces: [],
       };
       // Создание шейдера
       this.createShader();
     }
+    // Вершины текущей ячейки
+    this.params.vertex = this.params.vertexItterator.map(h => this.params.borderOSize + (this.params.cY - this.params.widthCorrect) + h)
+      .map(h => this.params.vertexItterator
+        .map(w => this.params.borderOSize + (this.params.cX - this.params.widthCorrect) + w)
+        .map(w => (h * this.params.wdth) + w)
+      )
+      .reduce((o, v) => ([...o, ...v]), [])
+      .map((i, k) => this.params.vertexVector3[k]
+        .set(this.params.vertexes.getX(i), -this.params.vertexes.getY(i), this.params.vertexes.getZ(i))
+      )
+      .sort((a, b) => {
+        const rA: number = a.y * this.params.quality + a.x;
+        const rB: number = b.y * this.params.quality + b.x;
+        return rA > rB ? 1 : rA < rB ? -1 : 0
+      });
+    // Стороны текущей ячейки
+    let vertexStart: number = 0;
+    this.params.faces = this.params.facesCountItterator.map(i => {
+      const isOdd: boolean = IsEven(i);
+      const isEnd: boolean = IsMultiple(i + 1, this.params.quality) && i > 0;
+      const a: number = vertexStart;
+      const b: number = isOdd ? vertexStart + 1 : vertexStart + this.params.qualityHelper;
+      const c: number = vertexStart + this.params.qualityHelper + 1;
+      // Увеличить инкримент
+      vertexStart = isOdd || isEnd ? vertexStart + 1 : vertexStart;
+      // Вернуть сторону
+      return this.params.facesTriangle[i].set(
+        this.params.vertex[a],
+        this.params.vertex[b],
+        this.params.vertex[c]
+      );
+    });
     // Вернуть данные
     return this.params;
   }
@@ -253,7 +311,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
+    neighboringCeils: ClosestHeights
   ) {
     super(
       dreamMap,
@@ -274,7 +332,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[] = []
+    neighboringCeils: ClosestHeights
   ): DreamMapTreeObject {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -423,7 +481,10 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 interface Params {
   objWidth: number;
   objHeight: number;
-  geometry: PlaneGeometry;
+  geometry: {
+    v: PlaneGeometry,
+    h: PlaneGeometry
+  };
   material: MeshStandardMaterial;
   dummy: Object3D;
   terrainGeometry: PlaneGeometry;
@@ -438,6 +499,8 @@ interface Params {
   wdth: number;
   vertexItterator: number[];
   vertexes: Float32BufferAttribute;
+  vertex: Vector3[];
+  faces: Triangle[];
   vertexVector3: Vector3[];
   facesCount: number;
   facesCountItterator: number[];
@@ -470,11 +533,11 @@ const Heights: CustomObjectKey<Types, number> = {
 
 // Список количества повторов текстуры
 const Counts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: 2,
-  [DreamObjectElmsValues.Low]: 3,
-  [DreamObjectElmsValues.Middle]: 4,
-  [DreamObjectElmsValues.High]: 5,
+  [DreamObjectElmsValues.VeryLow]: 4,
+  [DreamObjectElmsValues.Low]: 4,
+  [DreamObjectElmsValues.Middle]: 6,
+  [DreamObjectElmsValues.High]: 6,
   [DreamObjectElmsValues.VeryHigh]: 6,
-  [DreamObjectElmsValues.Ultra]: 7,
+  [DreamObjectElmsValues.Ultra]: 8,
   [DreamObjectElmsValues.Awesome]: 8,
 };
