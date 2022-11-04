@@ -4,7 +4,7 @@ import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_services/dream.service";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 

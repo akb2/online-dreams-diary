@@ -5,9 +5,10 @@ import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { User } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
+import { DreamDescription, DreamTitle } from "@_models/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
-import { DreamDescription, DreamService, DreamTitle } from "@_services/dream.service";
+import { DreamService } from "@_services/dream.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { filter, Subject, takeUntil } from "rxjs";
 
