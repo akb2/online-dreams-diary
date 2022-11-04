@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AngleToRad, Cos, CustomObject, Sin } from "@_models/app";
-import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont } from "@_services/dream.service";
+import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamObjectDetalization } from "@_models/dream-map-settings";
 import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
@@ -12,6 +12,10 @@ import { Sky } from "three/examples/jsm/objects/Sky";
 
 export class DreamMapSkyBoxService {
 
+
+
+  private shadowMinSize: number = 512;
+  private shadowMaxSize: number = 4096;
 
   private renderer: WebGLRenderer;
   private sky: Sky;
@@ -29,7 +33,6 @@ export class DreamMapSkyBoxService {
     const sun: DirectionalLight = new DirectionalLight(color, 0.8);
     const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.4);
     const fog: Fog = new Fog(color, FogNear * DreamCeilSize, FogFar * DreamCeilSize);
-    const shadowSize: number = 1024;
     const boxSize: number = DreamHorizont;
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
@@ -38,6 +41,10 @@ export class DreamMapSkyBoxService {
       mieCoefficient: { value: 0.005 },
       mieDirectionalG: { value: 0.7 },
     };
+    // Настройка тени
+    let shadowSize: number = Math.pow(2, DreamObjectDetalization + 6);
+    shadowSize = shadowSize < this.shadowMinSize ? this.shadowMinSize : shadowSize;
+    shadowSize = shadowSize > this.shadowMaxSize ? this.shadowMaxSize : shadowSize;
     // Настройки
     sky.geometry = new SphereGeometry(1, 32, 16) as BufferGeometry as BoxGeometry;
     sky.scale.setScalar(boxSize);
