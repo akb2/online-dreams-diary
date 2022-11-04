@@ -21,7 +21,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
   private width: number = 0.02;
-  private height: number = 6;
+  private height: number = 4;
   private noise: number = 0.15;
   private rotationRange: number = 15;
   private side: Side = DoubleSide;
@@ -123,8 +123,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const y: number = cY + lY;
       // Проверка вписания в фигуру
       if (this.checkCeilForm(cX, cY, x, y)) {
-        const scaleY: number = Random(0.7, 2, false, 5);
-        const scaleX: number = LineFunc(1, 0.5, scaleY, 0.7, 2);
+        const scaleY: number = Random(0.7, 2.5, false, 5);
+        const scaleX: number = LineFunc(1.2, 0.6, scaleY, 0.7, 2);
         // Поиск координаты Z
         v1.set(x, y, 0);
         v2.set(x, y, this.maxHeight);
