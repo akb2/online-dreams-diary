@@ -1,6 +1,7 @@
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
+import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { Clock, Mesh } from "three";
 
 
@@ -17,14 +18,14 @@ export abstract class DreamMapObjectTemplate {
   clock: Clock;
   alphaFogService: DreamMapAlphaFogService;
   displacementCanvas: HTMLCanvasElement;
-  neighboringCeils: DreamMapCeil[];
+  neighboringCeils: ClosestHeights;
 
 
 
 
 
   // Получение объекта
-  abstract getObject(): MapObject;
+  abstract getObject(): MapObject | MapObject[];
 
 
 
@@ -37,7 +38,7 @@ export abstract class DreamMapObjectTemplate {
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[]
+    neighboringCeils: ClosestHeights
   ) {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -56,7 +57,7 @@ export abstract class DreamMapObjectTemplate {
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: DreamMapCeil[]
+    neighboringCeils: ClosestHeights
   ): DreamMapObjectTemplate;
 
   // Очистка памяти
