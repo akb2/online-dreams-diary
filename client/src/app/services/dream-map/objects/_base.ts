@@ -1,7 +1,6 @@
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
-import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { Clock, Mesh } from "three";
 
 
@@ -26,6 +25,11 @@ export abstract class DreamMapObjectTemplate {
 
   // Получение объекта
   abstract getObject(): MapObject | MapObject[];
+
+  // Получение подтипа
+  static getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights): string {
+    return "";
+  }
 
 
 

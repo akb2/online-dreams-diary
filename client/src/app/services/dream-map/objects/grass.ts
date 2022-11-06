@@ -1,11 +1,10 @@
-import { AngleToRad, CustomObjectKey, IsEven, IsMultiple, LineFunc, MathRound, Random, TriangleSquare } from "@_models/app";
-import { DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, LineFunc, MathRound, Random, TriangleSquare } from "@_models/app";
+import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { ClosestHeight, ClosestHeights } from "@_services/dream-map/terrain.service";
 import { BufferGeometry, Clock, Color, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Side, Triangle, Vector3 } from "three";
 
 
@@ -20,7 +19,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.02;
+  private width: number = 0.025;
   private height: number = 4;
   private noise: number = 0.15;
   private rotationRange: number = 15;
@@ -32,20 +31,6 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private params: Params;
 
   private randomFactor: number = 3;
-  private closestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];
-  private anglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 180, bottom: 270, left: 0 };
-  private anglesB: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, number>> = {
-    top: { left: 0, right: 90 },
-    left: { top: 0, bottom: 180 },
-    right: { top: 90, bottom: 270 },
-    bottom: { left: 180, right: 270 },
-  };
-  private allCorners: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, (keyof ClosestHeights)[]>> = {
-    top: { left: ["topRight", "bottomLeft"], right: ["topLeft", "bottomRight"] },
-    left: { top: ["topRight", "bottomLeft"], bottom: ["topLeft", "bottomRight"] },
-    right: { top: ["topLeft", "bottomRight"], bottom: ["topRight", "bottomLeft"] },
-    bottom: { left: ["topLeft", "bottomRight"], right: ["topRight", "bottomLeft"] },
-  };
   private bordersX: CustomObjectKey<number, number[]> = { 0: [-0.5, 0], 180: [0, 0.5] };
   private bordersY: CustomObjectKey<number, number[]> = { 90: [-0.5, 0], 270: [0, 0.5] };
   private a: XYCoord = { x: 0, y: 0 };
@@ -150,7 +135,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     // Вернуть объект
     return {
       type: "grass",
-      count: matrix.length,
+      subType: DreamMapGrassObject.getSubType(this.ceil, this.neighboringCeils),
+      count: this.count,
       matrix,
       color: [],
       geometry: geometry as BufferGeometry,
@@ -192,9 +178,9 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
       const qualityHelper: number = quality - 1;
       const hyp: number = Math.sqrt(Math.pow(DreamCeilSize / qualityHelper, 2) * 2);
-      const vertexItterator: number[] = Array.from(Array(quality).keys());
+      const vertexItterator: number[] = CreateArray(quality);
       const facesCount: number = Math.pow(quality - 1, 2) * 2;
-      const facesCountI: number[] = Array.from(Array(facesCount).keys());
+      const facesCountI: number[] = CreateArray(facesCount);
       const vertexes: Float32BufferAttribute = terrainGeometry.getAttribute("position") as Float32BufferAttribute;
       const wdth: number = terrainGeometry.parameters.widthSegments + 1;
       // Параметры карты
@@ -214,7 +200,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       const dir = new Vector3();
       const ray: Ray = new Ray();
       const intersect: Vector3 = new Vector3();
-      const countItterator: number[] = Array.from(Array(this.count).keys());
+      const countItterator: number[] = CreateArray(this.count);
       // Запомнить параметры
       this.params = {
         countItterator,
@@ -254,6 +240,37 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     }
     // Вернуть данные
     return this.params;
+  }
+
+  // Под тип
+  static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
+    const closestCeils: ClosestHeight[] = ClosestKeysAll.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain);
+    const closestCount: number = closestCeils.length;
+    const closestKeys: (keyof ClosestHeights)[] = ClosestKeysAll.filter(k => neighboringCeils[k].terrain === ceil.terrain);
+    // Отрисовка только для существующих типов фигур
+    if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
+      // Для ячеек без похожих соседних ячеек
+      if (closestCount === 0) {
+        return "circle";
+      }
+      // Для ячеек с одной похожей геометрией
+      else if (closestCount === 1) {
+        return "half-circle";
+      }
+      // Для ячеек с двумя похожими геометриями
+      else if (closestCount === 2) {
+        const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
+        // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
+        if (angle >= 0) {
+          const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
+          const cornersCount: number = corners.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain).length;
+          // Посчитать
+          return cornersCount > 0 ? "triangle" : "quarter-ceil";
+        }
+      }
+    }
+    // Полная геометрия
+    return "square";
   }
 
 
@@ -313,7 +330,9 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
 
   // Анимация
   animate(): void {
-    this.params.shader.uniforms.time.value = this.clock.getElapsedTime();
+    if (!!this.params?.shader?.uniforms?.time) {
+      this.params.shader.uniforms.time.value = this.clock.getElapsedTime();
+    }
   }
 
   // Создание шейдера движения
@@ -438,9 +457,9 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     const randomCheck: boolean = Random(1, 100) <= this.randomFactor;
     // Проверка соседних ячеек, если не фактор случайности не сработал
     if (!randomCheck) {
-      const closestCeils: ClosestHeight[] = this.closestKeysAll.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain);
+      const closestCeils: ClosestHeight[] = ClosestKeysAll.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain);
       const closestCount: number = closestCeils.length;
-      const closestKeys: (keyof ClosestHeights)[] = this.closestKeysAll.filter(k => this.neighboringCeils[k].terrain === this.ceil.terrain);
+      const closestKeys: (keyof ClosestHeights)[] = ClosestKeysAll.filter(k => this.neighboringCeils[k].terrain === this.ceil.terrain);
       // Отрисовка только для существующих типов фигур
       if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
         // Для ячеек без похожих соседних ячеек
@@ -449,16 +468,16 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
         }
         // Для ячеек с одной похожей геометрией
         else if (closestCount === 1) {
-          const angle: number = this.anglesA[closestKeys[0]];
+          const angle: number = AnglesA[closestKeys[0]];
           // Тест геометрии
           return this.checkCeilHalfCircleForm(cX, cY, x, y, angle);
         }
         // Для ячеек с двумя похожими геометриями
         else if (closestCount === 2) {
-          const angle: number = this.anglesB[closestKeys[0]][closestKeys[1]] ?? -1;
+          const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
           // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
           if (angle >= 0) {
-            const corners: (keyof ClosestHeights)[] = this.allCorners[closestKeys[0]][closestKeys[1]];
+            const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
             const cornersCount: number = corners.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain).length;
             // Посчитать
             return cornersCount > 0 ?
@@ -511,9 +530,6 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       ];
       const checkSquaries: number = MathRound(checkCoords.map(c => TriangleSquare(c)).reduce((s, o) => s + o, 0), 5);
       // Вписывается
-      if (angle === 0) {
-        console.log(traingleSquare, checkSquaries);
-      }
       return traingleSquare === checkSquaries;
     }
     // Не вписывается
@@ -579,3 +595,19 @@ const CeilGrassFillGeometry: CeilGrassFillGeometryType[] = [
   "half-circle",
   "triangle",
 ];
+
+
+const ClosestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];
+const AnglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 180, bottom: 270, left: 0 };
+const AnglesB: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, number>> = {
+  top: { left: 0, right: 90 },
+  left: { top: 0, bottom: 180 },
+  right: { top: 90, bottom: 270 },
+  bottom: { left: 180, right: 270 },
+};
+const AllCorners: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, (keyof ClosestHeights)[]>> = {
+  top: { left: ["topRight", "bottomLeft"], right: ["topLeft", "bottomRight"] },
+  left: { top: ["topRight", "bottomLeft"], bottom: ["topLeft", "bottomRight"] },
+  right: { top: ["topLeft", "bottomRight"], bottom: ["topRight", "bottomLeft"] },
+  bottom: { left: ["topLeft", "bottomRight"], right: ["topRight", "bottomLeft"] },
+};

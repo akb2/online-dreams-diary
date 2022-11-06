@@ -1,10 +1,9 @@
-import { AngleToRad, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
-import { DreamMap, DreamMapCeil, ObjectTexturePaths } from "@_models/dream-map";
+import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
+import { ClosestHeights, DreamMap, DreamMapCeil, ObjectTexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { MapObject } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { BufferGeometry, Clock, Color, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
@@ -143,6 +142,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     // Вернуть объект
     return {
       type: this.fullType + "-v",
+      subType: DreamMapTreeObject.getSubType(this.ceil, this.neighboringCeils),
       count: this.count,
       matrix: matrix,
       color: [],
@@ -160,14 +160,14 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   // Определение параметров
   private get getParams(): Params {
-    this.subType = this.ceil?.object?.id && TypesByID[this.ceil.object.id] ? TypesByID[this.ceil.object.id] : Object.values(TypesByID)[0];
+    this.subType = this.ceil?.object && TypesByID[this.ceil.object] ? TypesByID[this.ceil.object] : Object.values(TypesByID)[0];
     this.height = Heights[this.subType] * DreamCeilParts;
     this.count = Counts[DreamObjectDetalization];
     // Параметры уже существуют
     if (!!this.params) {
       this.params.cX = this.params.widthCorrect + (this.ceil.coord.x * DreamCeilSize);
       this.params.cY = this.params.heightCorrect + (this.ceil.coord.y * DreamCeilSize);
-      this.params.countItterator = Array.from(Array(this.count).keys());
+      this.params.countItterator = CreateArray(this.count);
     }
     // Определить параметры
     else {
@@ -197,9 +197,9 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
       const qualityHelper: number = quality - 1;
       const hyp: number = Math.sqrt(Math.pow(DreamCeilSize / qualityHelper, 2) * 2);
-      const vertexItterator: number[] = Array.from(Array(quality).keys());
+      const vertexItterator: number[] = CreateArray(quality);
       const facesCount: number = Math.pow(quality - 1, 2) * 2;
-      const facesCountItterator: number[] = Array.from(Array(facesCount).keys());
+      const facesCountItterator: number[] = CreateArray(facesCount);
       const vertexes: Float32BufferAttribute = terrainGeometry.getAttribute("position") as Float32BufferAttribute;
       const wdth: number = terrainGeometry.parameters.widthSegments + 1;
       // Параметры карты
@@ -219,7 +219,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const dir = new Vector3();
       const ray: Ray = new Ray();
       const intersect: Vector3 = new Vector3();
-      const countItterator: number[] = Array.from(Array(this.count).keys());
+      const countItterator: number[] = CreateArray(this.count);
       // Настройки
       vGeometry.setAttribute("uv2", vGeometry.getAttribute("uv"));
       // Запомнить параметры
@@ -298,6 +298,11 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     });
     // Вернуть данные
     return this.params;
+  }
+
+  // Под тип
+  static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
+    return "";
   }
 
 
