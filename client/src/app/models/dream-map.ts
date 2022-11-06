@@ -5,7 +5,6 @@ import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
 import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { Clock, Mesh, MeshStandardMaterial, Side, Texture } from "three";
 
 
@@ -38,7 +37,7 @@ export interface DreamMapCameraPosition {
 export interface DreamMapCeil {
   place: Place | null;
   terrain: number;
-  object: MapObject | null;
+  object: number;
   highlight?: boolean;
   waterHightlight?: number;
   coord: Coord;
@@ -98,6 +97,26 @@ export interface DreamMapCeilDto {
   terrain?: number | null;
   object?: number | null;
   coord?: CoordDto;
+}
+
+// Интерфейс соседних блоков
+export interface ClosestHeights {
+  top: ClosestHeight;
+  left: ClosestHeight;
+  right: ClosestHeight;
+  bottom: ClosestHeight;
+  topLeft: ClosestHeight;
+  topRight: ClosestHeight;
+  bottomLeft: ClosestHeight;
+  bottomRight: ClosestHeight;
+}
+
+// Интерфейс для соседних блоков
+export interface ClosestHeight {
+  height: number;
+  terrain: number;
+  object: number;
+  coords: Coord;
 }
 
 
@@ -349,5 +368,9 @@ export const MapTerrains: MapTerrain[] = [
 // Список ландшафтов с объектами для непустых ячеек
 export const ObjectControllers: CustomObjectKey<number, ObjectController> = {
   1: DreamMapGrassObject,
-  2: DreamMapTreeObject,
+};
+
+// Список ландшафтов с объектами для непустых ячеек
+export const ObjectStaticSubTypeControllers: CustomObjectKey<number, Function> = {
+  1: DreamMapGrassObject.getSubType,
 };
