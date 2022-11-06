@@ -163,3 +163,6 @@ export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) 
 // Линейная функция расчета
 export const LineFunc: (min: number, max: number, value: number, valueMin: number, valueMax: number) => number =
   (min: number, max: number, value: number, valueMin: number, valueMax: number) => (((min - max) / valueMax) * (value - valueMin)) + max;
+
+// Цикл из числа
+export const CreateArray: (length: number) => number[] = (length: number) => Array.from(Array(length).keys());
