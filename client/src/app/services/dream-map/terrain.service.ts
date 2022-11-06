@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { AngleToRad, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
+import { AngleToRad, CreateArray, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
@@ -16,9 +16,9 @@ export class DreamMapTerrainService implements OnDestroy {
 
   private materialType: keyof typeof ShaderLib = "standard";
 
+  private maskTextureNamePreffix: string = "mask_tex_";
+
   outsideMapSize: number = DreamOutsideSize;
-  private mapPixelSize: number = 1;
-  private mapPixelBlur: boolean = false;
   private displacementPixelSize: number = 2;
   private displacementPixelBlur: number = 1;
   geometryQuality: number = 1;
@@ -94,7 +94,7 @@ export class DreamMapTerrainService implements OnDestroy {
     // Базовые ткустуры
     const mapTextures: DataTexture[] = this.createMaterials();
     // RGBA Маски
-    const maskNames: string[] = mapTextures.map((t, k) => "mask_tex_" + k);
+    const maskNames: string[] = mapTextures.map((t, k) => this.maskTextureNamePreffix + k);
     const maskMapNames: string[] = mapTextures.map((t, k) => "mask_map_" + k);
     // Текстуры
     const texNames: string[] = MapTerrains.map(t => "terrain_tex_" + t.name);
@@ -287,6 +287,20 @@ export class DreamMapTerrainService implements OnDestroy {
     return this.alphaFogService.getShaderMaterial(this.material);
   }
 
+  // Получить данные о местности
+  private getTerrain(x: number = -1, y: number = -1): MapTerrain {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    // Вернуть данные
+    return MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1);
+  }
+
+  // Получить сведения о цвете
+  private getColor(layout: number, color: number, terrain: MapTerrain): number {
+    return terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
+  }
+
 
 
 
@@ -311,67 +325,26 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
-    const realSize: number = width * height;
-    const blurMap: boolean = this.mapPixelBlur && this.mapPixelSize > 1 ? true : false;
-    const pixelSize: number = blurMap ? this.mapPixelSize : 1;
-    const size: number = realSize * Math.pow(pixelSize, 2);
+    const size: number = width * height;
     const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
-    // Получить данные о местности
-    const getTerrain: Function = (x: number = -1, y: number = -1): MapTerrain =>
-      MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1);
-    // Получить сведения о цвете
-    const getColor: Function = (layout: number, color: 0 | 1 | 2, terrain: MapTerrain) => terrain.splatMap.layout === layout && terrain.splatMap.color === color ? 255 : 0;
     // Цикл по слоям
-    return Array.from(Array(depth).keys()).map(d => {
+    return CreateArray(depth).map(d => {
       const data: Uint8Array = new Uint8Array(4 * size);
       // Цикл по размеру
-      Array.from(Array(size).keys()).forEach(s => {
+      CreateArray(size).forEach(s => {
         const stride: number = s * 4;
-        const realX: number = MathRound((s - (Math.floor(s / (width * pixelSize)) * (width * pixelSize))) / pixelSize, 2);
-        const realY: number = MathRound(height - 1 - Math.floor(s / (width * pixelSize)) / pixelSize, 2);
+        const realX: number = MathRound((s - (Math.floor(s / width) * width)), 2);
+        const realY: number = MathRound(height - 1 - Math.floor(s / width), 2);
         const x: number = Math.floor(realX);
         const y: number = Math.ceil(realY);
-        // Включено размытие
-        if (blurMap) {
-          const blurYA: number = MathRound(realY + 1 - y, 2);
-          const blurYB: number = MathRound(1 - blurYA, 2);
-          const blurXB: number = MathRound(realX - x, 2);
-          const blurXA: number = MathRound(1 - blurXB, 2);
-          const blurLB: number = MathRound(blurXA * blurYA, 2);
-          const blurLT: number = MathRound(blurXA * blurYB, 2);
-          const blurRB: number = MathRound(blurXB * blurYA, 2);
-          const blurRT: number = MathRound(blurXB * blurYB, 2);
-          // Данные о типе местности
-          const terrainLB: MapTerrain = getTerrain(x, y);
-          const terrainLT: MapTerrain = getTerrain(x, y - 1);
-          const terrainRB: MapTerrain = getTerrain(x + 1, y);
-          const terrainRT: MapTerrain = getTerrain(x + 1, y - 1);
-          // Цвета
-          Array.from(Array(3).keys()).forEach(k => {
-            let color: number = (
-              (getColor(d, k, terrainLB) * blurLB) +
-              (getColor(d, k, terrainLT) * blurLT) +
-              (getColor(d, k, terrainRB) * blurRB) +
-              (getColor(d, k, terrainRT) * blurRT)
-            );
-            color = color < 0 ? 0 : color;
-            color = color > 255 ? 255 : color;
-            // Запомнить данные
-            data[stride + k] = color;
-          });
-        }
-        // Без размытия
-        else {
-          // Данные о типе местности
-          const terrain: MapTerrain = getTerrain(x, y);
-          // Цвета
-          Array.from(Array(3).keys()).forEach(k => data[stride + k] = getColor(d, k, terrain));
-        }
+        const terrain: MapTerrain = this.getTerrain(x, y);
+        // Цвета
+        CreateArray(3).forEach(k => data[stride + k] = this.getColor(d, k, terrain));
         // Прозрачный канал
         data[stride + 3] = 255;
       });
       // Настройки
-      const texture: DataTexture = new DataTexture(data, width * pixelSize, height * pixelSize);
+      const texture: DataTexture = new DataTexture(data, width, height);
       texture.magFilter = LinearFilter;
       texture.minFilter = LinearMipmapNearestFilter;
       // Вернуть текстуру
@@ -390,9 +363,9 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderSize: number = borderOSize * this.displacementPixelSize;
     const width: number = (oWidth * this.displacementPixelSize) + (borderSize * 2);
     const height: number = (oHeight * this.displacementPixelSize) + (borderSize * 2);
-    const cYs: number[] = Array.from(Array(oHeight).keys());
-    const cXs: number[] = Array.from(Array(oWidth).keys());
-    const blurs: number[] = Array.from(Array((this.displacementPixelBlur * 2) + 1).keys()).map(v => v - this.displacementPixelBlur);
+    const cYs: number[] = CreateArray(oHeight);
+    const cXs: number[] = CreateArray(oWidth);
+    const blurs: number[] = CreateArray((this.displacementPixelBlur * 2) + 1).map(v => v - this.displacementPixelBlur);
     // Отрисовка ячейки
     const drawCeil: Function = (x: number, y: number) => {
       const z: number = ((this.getCeil(x, y).coord.z * 255) / DreamMaxHeight) / 255;
@@ -448,14 +421,12 @@ export class DreamMapTerrainService implements OnDestroy {
     const hght: number = this.geometry.parameters.heightSegments + 1;
     const widthStep: number = this.displacementMap.width / wdth;
     const heightStep: number = this.displacementMap.height / hght;
-    const wdthArray: number[] = Array.from(Array(wdth).keys());
-    const hghtArray: number[] = Array.from(Array(hght).keys());
     const context: CanvasRenderingContext2D = this.displacementCanvas.getContext("2d");
     const vertexes: Float32BufferAttribute = this.geometry.getAttribute("position") as Float32BufferAttribute;
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const scale: number = heightPart * DreamMaxHeight;
     // Цикл по вершинам
-    hghtArray.forEach(h => wdthArray.forEach(w => {
+    CreateArray(hght).forEach(h => CreateArray(wdth).forEach(w => {
       const imgData: Uint8ClampedArray = context.getImageData(Math.round(w * widthStep), Math.round(h * heightStep), 1, 1).data;
       const index = (h * wdth) + w;
       const z: number = (imgData[0] / 255) * scale;
@@ -467,31 +438,34 @@ export class DreamMapTerrainService implements OnDestroy {
     this.geometry.computeVertexNormals();
   }
 
+  // Обновить материалы
+  updateMaterials(ceils: DreamMapCeil[]): void {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    const width: number = oWidth + (borderOSize * 2);
+    const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
+    // Цикл по данным
+    ceils.forEach(ceil => {
+      const dataX: number = borderOSize + ceil.coord.x;
+      const dataY: number = borderOSize + (oHeight - 1 - ceil.coord.y);
+      const stride: number = ((dataY * width) + dataX) * 4;
+      const terrain: MapTerrain = this.getTerrain(ceil.coord.x + borderOSize, ceil.coord.y + borderOSize);
+      // Уровни
+      CreateArray(depth).forEach(d => {
+        CreateArray(3).forEach(k => this.material.uniforms[this.maskTextureNamePreffix + d].value.image.data[stride + k] = this.getColor(d, k, terrain));
+        // Прозрачный канал
+        this.material.uniforms[this.maskTextureNamePreffix + d].value.image.data[stride + 3] = 255;
+        // Обновить текстуру
+        this.material.uniforms[this.maskTextureNamePreffix + d].value.needsUpdate = true;
+      });
+    });
+    // Обновить общую текстуру
+    this.material.uniformsNeedUpdate = true;
+  }
+
   // Обновить карту
   updateDreamMap(dreamMap: DreamMap): void {
     this.dreamMap = dreamMap;
   }
-}
-
-
-
-
-
-// Интерфейс соседних блоков
-export interface ClosestHeights {
-  top: ClosestHeight;
-  left: ClosestHeight;
-  right: ClosestHeight;
-  bottom: ClosestHeight;
-  topLeft: ClosestHeight;
-  topRight: ClosestHeight;
-  bottomLeft: ClosestHeight;
-  bottomRight: ClosestHeight;
-}
-
-// Интерфейс для соседних блоков
-export interface ClosestHeight {
-  height: number;
-  terrain: number;
-  object: number;
 }
