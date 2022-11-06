@@ -261,7 +261,7 @@ export class DreamService {
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
           terrain: c.terrain ?? DreamTerrain,
-          object: null,
+          object: c.object ?? 0,
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -333,7 +333,7 @@ export class DreamService {
         // if (!!c.water && c.water.z > c.coord.originalZ) ceil.water = c.water;
         if (!!c.place) ceil.place = c.place.id;
         if (!!c.terrain && c.terrain !== DreamTerrain) ceil.terrain = c.terrain;
-        if (!!c.object) ceil.object = c.object.id;
+        if (!!c.object) ceil.object = c.object;
         // Ячейка
         return ceil;
       });
