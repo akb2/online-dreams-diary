@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { SimpleObject } from "@_models/app";
+import { CreateArray, SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
@@ -52,8 +52,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.landscape;
-  toolSizeLand: number = ToolSizeLand[1];
+  private tool: Tool = Tool.terrain;
+  toolSizeLand: number = ToolSizeLand[0];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
 
@@ -61,7 +61,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private landscapeTool: LandscapeTool = LandscapeTool.up;
 
   // * Инструменты: местность
-  currentTerrain: number = this.terrainList.find(t => t.id === 1).id;
+  currentTerrain: number = this.terrainList.find(t => t.id === 2).id;
 
   // * Инструменты: дорога
   roadType: RoadTypeTool = RoadTypeTool.road;
@@ -463,7 +463,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection): void {
-    const sizes: number[] = Array.from(Array(((this.toolSizeLand + 1) * 2) + 1).keys()).map(v => v - (this.toolSizeLand + 1));
+    const sizes: number[] = CreateArray(((this.toolSizeLand + 1) * 2) + 1).map(v => v - (this.toolSizeLand + 1));
     const count: number = sizes
       .map(cY => sizes.map(cX => {
         const x: number = this.currentObject.ceil.coord.x + cX;
@@ -543,42 +543,36 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение типа местности
   private ceilsTerrain(): void {
-    const sizes: number[] = Array.from(Array(((this.toolSizeLand + 1) * 2) + 1).keys()).map(v => v - (this.toolSizeLand + 1));
-    const count: number = sizes
+    const sizes: number[] = CreateArray(((this.toolSizeLand + 1) * 2) + 1).map(v => v - (this.toolSizeLand + 1));
+    const oldTerrains: number[] = [];
+    let i: number = 0;
+    // Обход
+    const ceils: DreamMapCeil[] = sizes
       .map(cY => sizes.map(cX => {
         const x: number = this.currentObject.ceil.coord.x + cX;
         const y: number = this.currentObject.ceil.coord.y + cY;
-        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-        // Вернуть значение
+        // Ячейка внутри области выделения
         if (this.isEditableCeil(x, y)) {
-          return ceil.terrain !== this.currentTerrain;
+          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+          // Изменить местность
+          if (ceil.terrain !== this.currentTerrain) {
+            oldTerrains[i] = ceil.terrain;
+            // Заменить тип местности
+            ceil.terrain = this.currentTerrain;
+            i++;
+            // Запомнить ячейку
+            this.saveCeil(ceil);
+            // Вернуть обновленную ячейку
+            return ceil;
+          }
         }
-        // Пусто
-        return false;
+        // Нередактируемая ячейка
+        return null;
       }))
-      .filter(y => y.some(x => !!x))
-      .map(y => y = y.filter(x => !!x))
-      .filter(y => y.length > 0)
-      .reduce((o, a) => o + a.length, 0);
-    let i: number = 0;
-    // Обход
-    sizes.forEach(cY => sizes.forEach(cX => {
-      const x: number = this.currentObject.ceil.coord.x + cX;
-      const y: number = this.currentObject.ceil.coord.y + cY;
-      // Ячейка внутри области выделения
-      if (this.isEditableCeil(x, y)) {
-        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-        // Изменить местность
-        if (ceil.terrain !== this.currentTerrain) {
-          ceil.terrain = this.currentTerrain;
-          i++;
-          // Запомнить ячейку
-          this.saveCeil(ceil);
-          // Обновить
-          this.viewer.setTerrain(ceil, i === count);
-        }
-      }
-    }));
+      .reduce((o, c) => ([...o, ...c]), [])
+      .filter(c => !!c);
+    // Обновить
+    this.viewer.setTerrain(ceils, oldTerrains);
   }
 
   // Изменение высоты мирового океана
