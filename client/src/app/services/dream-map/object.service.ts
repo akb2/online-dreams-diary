@@ -1,10 +1,9 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapCeil, ObjectControllerParams, ObjectControllers, XYCoord } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, ObjectControllerParams, ObjectControllers, ObjectStaticSubTypeControllers, XYCoord } from "@_models/dream-map";
 import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { ClosestHeights } from "@_services/dream-map/terrain.service";
 import { BufferGeometry, Clock, Color, Material, Matrix4, Mesh } from "three";
 
 
@@ -31,7 +30,7 @@ export class DreamMapObjectService implements OnDestroy {
     closestsCeils: ClosestHeights
   ): MapObject | MapObject[] {
     // Свойства
-    const objectId: number = ceil?.object?.id ?? 0;
+    const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
     // Требуется объект
     if (!!objectId) {
@@ -50,6 +49,22 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Объект не требуется
     return null;
+  }
+
+  // Получение под типа
+  getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
+    // Свойства
+    const objectId: number = ceil?.object ?? 0;
+    const terrainId: number = ceil?.terrain ?? DreamTerrain;
+    // Требуется объект
+    if (!!objectId) {
+    }
+    // Требуется пустой объект
+    else if (!objectId && ObjectStaticSubTypeControllers[terrainId]) {
+      return ObjectStaticSubTypeControllers[terrainId](ceil, neighboringCeils);
+    }
+    // Вернуть пусто
+    return "";
   }
 
 
@@ -76,6 +91,7 @@ export interface MapObject {
   geometry: BufferGeometry;
   material: Material;
   type: string;
+  subType: string;
   coords: XYCoord;
   count: number;
   castShadow: boolean;
