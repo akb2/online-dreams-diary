@@ -19,16 +19,13 @@ export class DreamMapTerrainService implements OnDestroy {
   private maskTextureNamePreffix: string = "mask_tex_";
 
   outsideMapSize: number = DreamOutsideSize;
-  private displacementPixelSize: number = 2;
-  private displacementPixelBlur: number = 1;
   geometryQuality: number = 1;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
 
-  displacementCanvas: HTMLCanvasElement;
-  private displacementMap: ImageData;
+  displacementTexture: DataTexture;
 
 
 
@@ -36,7 +33,7 @@ export class DreamMapTerrainService implements OnDestroy {
 
   // Получить ячейку
   private getCeil(x: number, y: number): DreamMapCeil {
-    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) || this.getDefaultCeil(x, y);
+    return this.dreamMap?.ceils?.find(c => c.coord.x === x && c.coord.y === y) ?? this.getDefaultCeil(x, y);
   }
 
   // Ячейка по умолчанию
@@ -48,8 +45,8 @@ export class DreamMapTerrainService implements OnDestroy {
       coord: {
         x,
         y,
-        z: DreamDefHeight,
-        originalZ: DreamDefHeight
+        z: this.dreamMap?.land?.z ?? DreamDefHeight,
+        originalZ: this.dreamMap?.land?.z ?? DreamDefHeight
       }
     };
   }
@@ -70,6 +67,7 @@ export class DreamMapTerrainService implements OnDestroy {
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
     this.geometry.setAttribute("uv2", this.geometry.getAttribute("uv"));
     this.createHeights();
+    this.setDisplacementMap();
     // Материал
     const material: ShaderMaterial = this.getMaterial;
     // Настройки объекта
@@ -310,8 +308,8 @@ export class DreamMapTerrainService implements OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
-    this.displacementCanvas.remove();
-    delete this.displacementMap;
+    this.displacementTexture.dispose();
+    delete this.displacementTexture;
   }
 
 
@@ -353,89 +351,67 @@ export class DreamMapTerrainService implements OnDestroy {
   }
 
   // Генерация карты высот
-  createHeights(x: number = -1, y: number = -1, bluring: boolean = true): void {
-    this.displacementCanvas = document.createElement("canvas");
-    // Параметры
-    const displacementContext: CanvasRenderingContext2D = this.displacementCanvas.getContext("2d");
+  private createHeights(): DataTexture {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
-    const borderSize: number = borderOSize * this.displacementPixelSize;
-    const width: number = (oWidth * this.displacementPixelSize) + (borderSize * 2);
-    const height: number = (oHeight * this.displacementPixelSize) + (borderSize * 2);
-    const cYs: number[] = CreateArray(oHeight);
-    const cXs: number[] = CreateArray(oWidth);
-    const blurs: number[] = CreateArray((this.displacementPixelBlur * 2) + 1).map(v => v - this.displacementPixelBlur);
-    // Отрисовка ячейки
-    const drawCeil: Function = (x: number, y: number) => {
-      const z: number = ((this.getCeil(x, y).coord.z * 255) / DreamMaxHeight) / 255;
-      const displacementColor: Color = new Color(z, z, z);
-      const sX: number = borderSize + (x * this.displacementPixelSize);
-      const sY: number = borderSize + (y * this.displacementPixelSize);
-      // Вставить карту высот
-      if (!!this.displacementMap) {
-        displacementContext.putImageData(this.displacementMap, 0, 0);
-      }
-      // Нарисовать квадрат
-      displacementContext.fillStyle = "#" + displacementColor.getHexString();
-      displacementContext.fillRect(sX, sY, this.displacementPixelSize, this.displacementPixelSize);
-    };
-    // Отрисовка одной ячейки
-    if (x >= 0 && y >= 0) {
-      drawCeil(x, y);
-      // Запомнить карту
-      this.displacementMap = displacementContext.getImageData(0, 0, width, height);
-    }
-    // Обход ячеек
-    else {
-      const z: number = ((this.dreamMap.land.z * 255) / DreamMaxHeight) / 255;
-      const displacementColor: Color = new Color(z, z, z);
-      // Свойства
-      this.displacementCanvas.width = width;
-      this.displacementCanvas.height = height;
-      displacementContext.imageSmoothingEnabled = false;
-      displacementContext.fillStyle = "#" + displacementColor.getHexString();
-      displacementContext.fillRect(0, 0, width, height);
-      // Обход ячеек
-      cYs.forEach(cY => cXs.forEach(cX => drawCeil(cX, cY)));
-      // Запомнить карту
-      this.displacementMap = displacementContext.getImageData(0, 0, width, height);
-    }
-    // Размытие карты
-    if (bluring) {
-      if (this.displacementPixelBlur > 0) {
-        displacementContext.globalAlpha = 0.5;
-        blurs.forEach(y => blurs.forEach(x => displacementContext.drawImage(this.displacementCanvas, x, y)));
-        displacementContext.globalAlpha = 1;
-      }
-      // Обновить
-      if (!!this.geometry) {
-        this.setDisplacementMap();
-      }
-    }
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    const width: number = (borderOSize * 2) + oWidth;
+    const height: number = (borderOSize * 2) + oHeight;
+    const size: number = width * height;
+    const data: Uint8Array = new Uint8Array(4 * size);
+    // Цикл по слоям
+    CreateArray(size).forEach(s => {
+      const stride: number = s * 4;
+      const realX: number = MathRound((s - (Math.floor(s / width) * width)), 2);
+      const realY: number = MathRound(Math.floor(s / width), 2);
+      const x: number = Math.floor(realX);
+      const y: number = Math.ceil(realY);
+      const colorZ: number = (this.getCeil(x - borderOSize, y - borderOSize).coord.z * 255) / DreamMaxHeight;
+      // Цвета
+      CreateArray(3).forEach(k => data[stride + k] = colorZ);
+      // Прозрачный канал
+      data[stride + 3] = 255;
+    });
+    // Настройки
+    const texture: DataTexture = new DataTexture(data, width, height);
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapNearestFilter;
+    texture.flipY = true;
+    this.displacementTexture = texture;
+    // Вернуть текстуру
+    return texture;
   }
 
   // Выставить вершины по карте высот
   private setDisplacementMap(): void {
     const wdth: number = this.geometry.parameters.widthSegments + 1;
     const hght: number = this.geometry.parameters.heightSegments + 1;
-    const widthStep: number = this.displacementMap.width / wdth;
-    const heightStep: number = this.displacementMap.height / hght;
-    const context: CanvasRenderingContext2D = this.displacementCanvas.getContext("2d");
     const vertexes: Float32BufferAttribute = this.geometry.getAttribute("position") as Float32BufferAttribute;
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const scale: number = heightPart * DreamMaxHeight;
+    const width: number = this.displacementTexture.image.width;
+    const height: number = this.displacementTexture.image.height;
     // Цикл по вершинам
     CreateArray(hght).forEach(h => CreateArray(wdth).forEach(w => {
-      const imgData: Uint8ClampedArray = context.getImageData(Math.round(w * widthStep), Math.round(h * heightStep), 1, 1).data;
-      const index = (h * wdth) + w;
-      const z: number = (imgData[0] / 255) * scale;
+      const indexes: number[] = CreateArray(2).map(h2 => h + h2 - 1).map(iH => iH < 0 ? 0 : (iH >= height - 1 ? height - 1 : iH))
+        .map(iH => CreateArray(2).map(w2 => w + w2 - 1).map(iW => iW < 0 ? 0 : (iW >= width - 1 ? width - 1 : iW)).map(iW => ((iH * width) + iW) * 4))
+        .reduce((o, i) => ([...o, ...i]), []);
+      const indexV: number = (h * wdth) + w;
+      // Поиск среднего Z
+      const z: number = indexes
+        .map(index => (this.displacementTexture.image.data[index] / 255) * scale)
+        .reduce((o, z) => o + z, 0) / indexes.length;
       // Установить высоту
-      vertexes.setZ(index, z);
+      vertexes.setZ(indexV, z);
     }));
     // Обновить геометрию
     this.geometry.setAttribute("position", vertexes);
     this.geometry.computeVertexNormals();
+  }
+
+  // Обновить карту
+  updateDreamMap(dreamMap: DreamMap): void {
+    this.dreamMap = dreamMap;
   }
 
   // Обновить материалы
@@ -464,8 +440,93 @@ export class DreamMapTerrainService implements OnDestroy {
     this.material.uniformsNeedUpdate = true;
   }
 
-  // Обновить карту
-  updateDreamMap(dreamMap: DreamMap): void {
-    this.dreamMap = dreamMap;
+  // Обновить высоту
+  updateHeights(ceils: DreamMapCeil[]): void {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    const width: number = this.displacementTexture.image.width;
+    const height: number = this.displacementTexture.image.height;
+    const wdth: number = this.geometry.parameters.widthSegments + 1;
+    const vertexes: Float32BufferAttribute = this.geometry.getAttribute("position") as Float32BufferAttribute;
+    const heightPart: number = DreamCeilSize / DreamCeilParts;
+    const scale: number = heightPart * DreamMaxHeight;
+    // Цикл по ячейкам
+    ceils.forEach(({ coord: { x, y, z } }, i) => {
+      const colorZ: number = (z * 255) / DreamMaxHeight;
+      const textureX: number = x + borderOSize;
+      const textureY: number = y + borderOSize;
+      const index: number = ((textureY * width) + textureX) * 4;
+      // Обновить цвета
+      CreateArray(3).forEach(k => this.displacementTexture.image.data[index + k] = colorZ);
+      // Обновить вершины
+      CreateArray(2).map(h => textureY + h).forEach(h => CreateArray(2).map(w => textureX + w).forEach(w => {
+        const indexes: number[] = CreateArray(2).map(h2 => h + h2 - 1).map(iH => iH < 0 ? 0 : (iH >= height - 1 ? height - 1 : iH))
+          .map(iH => CreateArray(2).map(w2 => w + w2 - 1).map(iW => iW < 0 ? 0 : (iW >= width - 1 ? width - 1 : iW)).map(iW => ((iH * width) + iW) * 4))
+          .reduce((o, i) => ([...o, ...i]), []);
+        const indexV: number = (h * wdth) + w;
+        // Поиск среднего Z
+        const z: number = indexes
+          .map(index => (this.displacementTexture.image.data[index] / 255) * scale)
+          .reduce((o, z) => o + z, 0) / indexes.length;
+        // Установить высоту
+        vertexes.setZ(indexV, z);
+      }));
+    });
+    // Обновить геометрию
+    this.geometry.setAttribute("position", vertexes);
+    this.geometry.computeVertexNormals();
+    this.geometry.attributes.position.needsUpdate = true;
+    this.displacementTexture.needsUpdate = true;
+  }
+
+  // Обновить высоту за пределами карты
+  updateOutsideHeight(landHeight: number): void {
+    this.dreamMap.land.z = landHeight;
+    // Параметры
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
+    const width: number = (borderOSize * 2) + oWidth;
+    const height: number = (borderOSize * 2) + oHeight;
+    const size: number = width * height;
+    const vertexes: Float32BufferAttribute = this.geometry.getAttribute("position") as Float32BufferAttribute;
+    const heightPart: number = DreamCeilSize / DreamCeilParts;
+    const scale: number = heightPart * DreamMaxHeight;
+    const colorZ: number = (landHeight * 255) / DreamMaxHeight;
+    const wdth: number = this.geometry.parameters.widthSegments + 1;
+    const hght: number = this.geometry.parameters.heightSegments + 1;
+    // Цикл по слоям
+    CreateArray(size).forEach(s => {
+      const stride: number = s * 4;
+      const realX: number = MathRound((s - (Math.floor(s / width) * width)), 2);
+      const realY: number = MathRound(Math.floor(s / width), 2);
+      const x: number = Math.floor(realX);
+      const y: number = Math.ceil(realY);
+      const ceilX: number = x - borderOSize;
+      const ceilY: number = y - borderOSize;
+      // Определить что за пределами
+      if ((ceilX < 0 || ceilX >= oWidth || ceilY < 0 || ceilY >= oHeight)) {
+        CreateArray(3).forEach(k => this.displacementTexture.image.data[stride + k] = colorZ);
+      }
+    });
+    // Цикл по вершинам
+    CreateArray(hght).forEach(h => CreateArray(wdth).forEach(w => {
+      const indexes: number[] = CreateArray(2).map(h2 => h + h2 - 1).map(iH => iH < 0 ? 0 : (iH >= height - 1 ? height - 1 : iH))
+        .map(iH => CreateArray(2).map(w2 => w + w2 - 1).map(iW => iW < 0 ? 0 : (iW >= width - 1 ? width - 1 : iW)).map(iW => ((iH * width) + iW) * 4))
+        .reduce((o, i) => ([...o, ...i]), []);
+      const indexV: number = (h * wdth) + w;
+      // Поиск среднего Z
+      const z: number = indexes
+        .map(index => (this.displacementTexture.image.data[index] / 255) * scale)
+        .reduce((o, z) => o + z, 0) / indexes.length;
+      // Установить высоту
+      vertexes.setZ(indexV, z);
+    }));
+    // Обновить геометрию
+    this.geometry.setAttribute("position", vertexes);
+    this.geometry.computeVertexNormals();
+    this.geometry.attributes.position.needsUpdate = true;
+    this.displacementTexture.needsUpdate = true;
   }
 }
