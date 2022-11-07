@@ -23,8 +23,8 @@ export const DreamWaterDefHeight: number = DreamCeilParts * 9;
 // Параметры по умолчанию
 export const DreamSkyType: number = 1;
 export const DreamTerrain: number = 1;
-export const DreamFogNear: number = DreamMapSize * 0.8;
-export const DreamFogFar: number = DreamMapSize * 2;
+export const DreamFogNear: number = Math.sqrt(Math.pow(DreamMapSize / 2, 2) * 2);
+export const DreamFogFar: number = DreamFogNear * 1.6;
 export const DreamHorizont: number = DreamFogFar * 2;
 export const DreamOutsideSize: number = 2;
 export const DreamLODDistance: number = 20;
@@ -49,4 +49,4 @@ export enum DreamObjectElmsValues {
   Awesome
 };
 export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.Awesome;
-export const DreamMaxElmsCount: number = 32 * (DreamObjectDetalization + 1);
+export const DreamMaxElmsCount: number = 24 * (DreamObjectDetalization + 1);
