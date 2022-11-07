@@ -19,6 +19,7 @@ $toolButtonBRadius: 3px;
   height: 100%;
   position: relative;
   background-color: inherit;
+  user-select: none;
   // Общие стили
   &,
   > canvas,
@@ -47,6 +48,7 @@ $toolButtonBRadius: 3px;
   }
   // Текущие координаты
   &__coords {
+    user-select: none;
     position: absolute;
     left: $controlOffset;
     top: ($controlOffset * 2) + 48px;
