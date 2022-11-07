@@ -52,8 +52,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.terrain;
-  toolSizeLand: number = ToolSizeLand[0];
+  private tool: Tool = Tool.landscape;
+  toolSizeLand: number = ToolSizeLand[2];
   toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
 
@@ -71,7 +71,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
-  private toolActionTimer: number = 50;
+  private toolActionTimer: number = 20;
   private terrainChangeStep: number = 1;
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
 
@@ -463,35 +463,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection): void {
-    const sizes: number[] = CreateArray(((this.toolSizeLand + 1) * 2) + 1).map(v => v - (this.toolSizeLand + 1));
-    const count: number = sizes
-      .map(cY => sizes.map(cX => {
-        const x: number = this.currentObject.ceil.coord.x + cX;
-        const y: number = this.currentObject.ceil.coord.y + cY;
-        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-        // Вернуть значение
-        if (this.isEditableCeil(x, y)) {
-          const currentZ: number = ceil.coord.z;
-          let zChange: number = Math.floor(
-            ((this.toolSizeLand * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
-            this.terrainChangeStep
-          );
-          zChange = direction === 0 ? (currentZ < z ? zChange : currentZ > z ? -zChange : 0) : zChange * direction;
-          // Высота изменилась
-          return zChange !== 0;
-        }
-        // Пусто
-        return false;
-      }))
-      .filter(y => y.some(x => !!x))
-      .map(y => y = y.filter(x => !!x))
-      .filter(y => y.length > 0)
-      .reduce((o, a) => o + a.length, 0);
+    const sizes: number[] = CreateArray((this.toolSizeLand * 2) + 1).map(v => v - this.toolSizeLand);
     const z: number = direction === 0 ?
       this.startZ :
       this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
     let change: boolean = false;
-    let i: number = 0;
     // Обход
     sizes.forEach(cY => sizes.forEach(cX => {
       const x: number = this.currentObject.ceil.coord.x + cX;
@@ -517,7 +493,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         // Корректировка высоты
         if (zChange !== 0) {
           change = true;
-          i++;
           // Обновить
           ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
           ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
@@ -531,13 +506,14 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }));
     // Обновить
     if (change) {
-      sizes.forEach(cY => sizes.forEach(cX => {
+      const ceils = sizes.map(cY => sizes.map(cX => {
         const x: number = this.currentObject.ceil.coord.x + cX;
         const y: number = this.currentObject.ceil.coord.y + cY;
-        const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
-        // Обновить
-        this.viewer.setTerrainHeight(ceil, i === count);
-      }));
+        // Вернуть ячейку
+        return this.viewer.getCeil(x, y);
+      })).reduce((o, c) => ([...o, ...c]), []);
+      // Обновить
+      this.viewer.setTerrainHeight(ceils);
     }
   }
 
@@ -682,7 +658,7 @@ interface SliderSettings {
 
 
 // Типы размеров
-const ToolSizeLand: number[] = [0, 1, 2, 3, 4];
+const ToolSizeLand: number[] = [0, 1, 2, 3, 4, 5, 6, 7];
 const ToolSizeRoad: number[] = [1, 2, 3, 4, 5, 6];
 
 // Список инструментов: общее
