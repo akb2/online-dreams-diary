@@ -153,12 +153,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Объект по событию
-  private getEventObject(event: MouseEvent): Intersection[] {
+  private getEventObject(event: MouseEvent | TouchEvent): Intersection[] {
     if (event.target === this.canvas.nativeElement) {
+      const clientX: number = event instanceof MouseEvent ? event.clientX : event.touches.item(0).clientX;
+      const clientY: number = event instanceof MouseEvent ? event.clientY : event.touches.item(0).clientY;
       const far: number = FogFar * DreamCeilSize;
       const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
-      const x: number = ((event.clientX - this.canvas.nativeElement.getBoundingClientRect().left) / this.width) * 2 - 1;
-      const y: number = -(((event.clientY - this.canvas.nativeElement.getBoundingClientRect().top) / this.height) * 2 - 1);
+      const x: number = ((clientX - this.canvas.nativeElement.getBoundingClientRect().left) / this.width) * 2 - 1;
+      const y: number = -(((clientY - this.canvas.nativeElement.getBoundingClientRect().top) / this.height) * 2 - 1);
       // Настройки
       raycaster.setFromCamera({ x, y }, this.camera)
       // Объекты в фокусе
@@ -235,6 +237,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     return x < 0 || y < 0 || x >= width || y >= height;
   }
 
+  // Проверка сенсорного экрана
+  private get isTouchDevice(): boolean {
+    return "ontouchstart" in window || !!navigator?.maxTouchPoints;
+  }
+
 
 
 
@@ -248,10 +255,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   ) { }
 
   ngOnInit() {
+    const moveEvent = this.isTouchDevice ? "touchmove" : "mousemove";
+    const enterEvent = this.isTouchDevice ? "touchstart" : "mousedown";
+    // Объеденить события
     forkJoin([
       fromEvent(window, "resize", () => this.onWindowResize()),
-      fromEvent(document, "mousemove", this.onMouseMove.bind(this)),
-      fromEvent(document, "mousedown", this.onMouseClick.bind(this)),
+      fromEvent(document, moveEvent, this.onMouseMove.bind(this)),
+      fromEvent(document, enterEvent, this.onMouseClick.bind(this)),
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe();
@@ -342,7 +352,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Движение мышки
-  private onMouseMove(event: MouseEvent): void {
+  private onMouseMove(event: MouseEvent | TouchEvent): void {
     const limit: number = 1000 / this.mouseMoveLimit;
     const time: number = (new Date()).getTime();
     // Триггерить событие по интервалу
@@ -394,12 +404,18 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Клик мышкой
-  private onMouseClick(event: MouseEvent): void {
-    if (event.button === 1 && event.target === this.canvas.nativeElement) {
-      event.preventDefault();
+  private onMouseClick(event: MouseEvent | TouchEvent): void {
+    if (event instanceof MouseEvent) {
+      if (event.button === 1 && event.target === this.canvas.nativeElement) {
+        event.preventDefault();
+      }
+      // Движение мышкой
+      this.onMouseMove(event);
     }
-    // Движение мышкой
-    this.onMouseMove(event);
+    // Сенсорный экран
+    else if (event.touches.length === 1) {
+      this.onMouseMove(event);
+    }
   }
 
 

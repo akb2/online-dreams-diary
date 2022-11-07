@@ -223,6 +223,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     };
   }
 
+  // Проверка сенсорного экрана
+  private get isTouchDevice(): boolean {
+    return "ontouchstart" in window || !!navigator?.maxTouchPoints;
+  }
+
 
 
 
@@ -241,7 +246,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    fromEvent(document, "mouseup", this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
+    const enterEvent = this.isTouchDevice ? "touchend" : "mouseup";
+    // События
+    fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
   }
 
   ngOnChanges(): void {
