@@ -4,7 +4,7 @@ import { ClosestHeights, DreamMap, DreamMapCeil, ObjectControllerParams, ObjectC
 import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { BufferGeometry, Clock, Color, Material, Matrix4, Mesh } from "three";
+import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
 
 
 
@@ -20,16 +20,15 @@ export class DreamMapObjectService implements OnDestroy {
 
 
 
-  // получение объекта
+  // Получение объекта
   getObject(
     dreamMap: DreamMap,
     ceil: DreamMapCeil,
     terrain: Mesh,
     clock: Clock,
-    displacementCanvas: HTMLCanvasElement,
+    displacementTexture: DataTexture,
     closestsCeils: ClosestHeights
   ): MapObject | MapObject[] {
-    // Свойства
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
     // Требуется объект
@@ -37,7 +36,7 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Требуется пустой объект
     else if (!objectId && ObjectControllers[terrainId]) {
-      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementCanvas, closestsCeils];
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
       const controller: DreamMapObjectTemplate = !!this.controllers[terrainId] ?
         this.controllers[terrainId].updateDatas(...params) :
         new ObjectControllers[terrainId](...params);
@@ -49,6 +48,30 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Объект не требуется
     return null;
+  }
+
+  // Обновить позицию по оси Z
+  updateHeight(
+    objectSetting: ObjectSetting,
+    dreamMap: DreamMap,
+    ceil: DreamMapCeil,
+    terrain: Mesh,
+    clock: Clock,
+    displacementTexture: DataTexture,
+    closestsCeils: ClosestHeights,
+  ): void {
+    const objectId: number = ceil?.object ?? 0;
+    const terrainId: number = ceil?.terrain ?? DreamTerrain;
+    // Требуется объект
+    if (!!objectId) {
+    }
+    // Требуется пустой объект
+    else if (!objectId && ObjectControllers[terrainId]) {
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
+      // Обновить данные
+      this.controllers[terrainId].updateDatas(...params);
+      this.controllers[terrainId].updateHeight(objectSetting);
+    }
   }
 
   // Получение под типа
@@ -83,6 +106,16 @@ export class DreamMapObjectService implements OnDestroy {
 
 
 
+
+// Интерфейс данных объекта
+export interface ObjectSetting {
+  coords: XYCoord;
+  mesh: InstancedMesh;
+  type: string;
+  subType: string;
+  indexKeys: number[];
+  count: number;
+}
 
 // Тип ответа
 export interface MapObject {
