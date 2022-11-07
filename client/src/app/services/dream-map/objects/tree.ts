@@ -2,9 +2,9 @@ import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, MathRound
 import { ClosestHeights, DreamMap, DreamMapCeil, ObjectTexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
-import { MapObject } from "@_services/dream-map/object.service";
+import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { BufferGeometry, Clock, Color, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
+import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
 
@@ -336,7 +336,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     terrain: Mesh,
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
+    displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights
   ): DreamMapTreeObject {
     this.dreamMap = dreamMap;
@@ -344,10 +344,14 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     this.terrain = terrain;
     this.clock = clock;
     this.alphaFogService = alphaFogService;
-    this.displacementCanvas = displacementCanvas;
+    this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
     // Вернуть экземаляр
     return this;
+  }
+
+  // Обновить позицию по оси Z
+  updateHeight(objectSetting: ObjectSetting): void {
   }
 
   // Очистка памяти
