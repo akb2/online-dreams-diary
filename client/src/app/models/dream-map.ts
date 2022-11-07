@@ -3,9 +3,8 @@ import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
-import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { Clock, Mesh, MeshStandardMaterial, Side, Texture } from "three";
+import { Clock, DataTexture, Mesh, MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -196,13 +195,13 @@ export type ObjectController = {
     terrain: Mesh,
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
+    displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
   ): DreamMapObjectTemplate
 };
 
 // Параметры контроллера
-export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, HTMLCanvasElement, ClosestHeights];
+export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, DataTexture, ClosestHeights];
 
 // Тип линии
 export interface WayLineType {
