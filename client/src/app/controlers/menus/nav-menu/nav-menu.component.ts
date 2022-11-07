@@ -7,7 +7,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, interval, map, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { fromEvent, interval, map, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
