@@ -56,7 +56,7 @@ export class DreamService {
   }
 
   // Позиция камеры по умолчанию
-  private getDefaultCamera(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
+  getDefaultCamera(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
     return {
       target: {
         x: 0,
@@ -247,10 +247,6 @@ export class DreamService {
         z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
         material: dreamMapDto?.ocean?.material ?? 1
       };
-      const land: WorldLand = {
-        type: !!dreamMapDto?.land?.type ? dreamMapDto.land.type : DreamTerrain,
-        z: dreamMapDto?.land?.z ?? DreamDefHeight
-      };
       // Вернуть объект
       return {
         size: {
@@ -283,8 +279,7 @@ export class DreamService {
           time: dreamMapDto?.sky?.time ?? DreamSkyTime
         },
         dreamerWay: dreamMapDto.dreamerWay,
-        ocean,
-        land
+        ocean
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -344,7 +339,6 @@ export class DreamService {
       size: dreamMap.size,
       dreamerWay: dreamMap.dreamerWay,
       ocean: dreamMap.ocean,
-      land: dreamMap.land,
       sky: dreamMap.sky,
     };
   }
