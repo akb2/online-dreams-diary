@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { AngleToRad, Cos, CustomObject, Sin } from "@_models/app";
+import { AngleToRad, Cos, CustomObject, CustomObjectKey, LineFunc } from "@_models/app";
 import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamObjectDetalization } from "@_models/dream-map-settings";
 import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -37,7 +37,7 @@ export class DreamMapSkyBoxService {
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
       turbidity: { value: 10 },
-      rayleigh: { value: 3 },
+      rayleigh: { value: 10 },
       mieCoefficient: { value: 0.005 },
       mieDirectionalG: { value: 0.7 },
     };
@@ -81,35 +81,35 @@ export class DreamMapSkyBoxService {
 
   // Подсчитать положение
   setSkyTime(time: number): void {
-    const minElevation: number = 0;
-    const maxElevation: number = 60;
-    const minAzimuth: number = 110;
-    const maxAzimuth: number = -110;
-    // Параметры
+    const calc: (num: number, min: number, max: number) => number = (num: number, min: number, max: number) => ((min - max) * num) + max;
+    // Общие параметры
     const uniforms = this.sky.material.uniforms;
     const valueIndex: number = Math.floor((90 + time) / 180);
     const value: number = (time + 90) - (valueIndex * 180);
-    const calc: (num: number, min: number, max: number) => number = (num: number, min: number, max: number) => ((min - max) * num) + max;
-    const azimuth: number = calc((Cos(value) + 1) / 2, minAzimuth, maxAzimuth);
-    const elevation: number = calc(Math.abs(1 - Sin(value)), minElevation, maxElevation);
+    const cosValue: number = Math.abs(Cos(value));
+    const isDay: boolean = valueIndex === 1;
+    const settingsKey: "day" | "night" = isDay ? "day" : "night";
+    // Настраиваемые параметры
+    const azimuth: number = calc((Cos(value) + 1) / 2, SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max);
+    const elevation: number = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, cosValue, 0, 1);
+    const turbidity: number = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, cosValue, 0, 1);
+    const rayleigh: number = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, cosValue, 0, 1);
+    const exposure: number = LineFunc(SkySettings.exposure[settingsKey].min, SkySettings.exposure[settingsKey].max, cosValue, 0, 1);
+    const sunLight: number = LineFunc(SkySettings.sunLight[settingsKey].min, SkySettings.sunLight[settingsKey].max, cosValue, 0, 1);
+    const atmosphereLight: number = LineFunc(SkySettings.atmosphereLight[settingsKey].min, SkySettings.atmosphereLight[settingsKey].max, cosValue, 0, 1);
+    const mieCoefficient: number = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, cosValue, 0, 1);
+    const mieDirectionalG: number = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, cosValue, 0, 1);
+    // Прочие параметры
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
     const sunPosition: Vector3 = new Vector3();
-    const isDay: boolean = valueIndex === 1;
-    const turbidity: number = isDay ? calc(Math.abs(Cos(value)), 5, 0) : 0.1;
-    const rayleigh: number = isDay ? 3 : 0;
-    const exposure: number = isDay ? 0.4 : 0.2;
-    const sunLight: number = isDay ?
-      calc(Math.abs(Cos(value)), 0.7, 1.1) :
-      calc(Math.abs(Cos(value)), 0.1, 0.3);
-    const atmosphereLight: number = isDay ?
-      calc(Math.abs(Cos(value)), 0.3, 0.7) :
-      calc(Math.abs(Cos(value)), 0.2, 0.1);
     // Обновить данные
     sunPosition.setFromSphericalCoords(1, phi, theta);
     uniforms.sunPosition.value = sunPosition;
     uniforms.turbidity.value = turbidity;
     uniforms.rayleigh.value = rayleigh;
+    uniforms.mieCoefficient.value = mieCoefficient;
+    uniforms.mieDirectionalG.value = mieDirectionalG;
     this.sun.position.set(sunPosition.x, sunPosition.y, sunPosition.z);
     this.sun.intensity = sunLight;
     this.atmosphere.intensity = atmosphereLight;
@@ -128,6 +128,47 @@ export interface SkyBoxOutput {
   atmosphere: AmbientLight;
   fog: Fog;
 }
+
+// Настройки
+type SettingsVars = "azimuth" | "elevation" | "sunLight" | "atmosphereLight" | "turbidity" | "rayleigh" | "exposure" | "mieCoefficient" | "mieDirectionalG";
+const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night", CustomObjectKey<"min" | "max", number>>> = {
+  azimuth: {
+    day: { min: 110, max: -110 },
+    night: { min: 110, max: -110 }
+  },
+  elevation: {
+    day: { min: 0, max: 60 },
+    night: { min: 0, max: 60 }
+  },
+  sunLight: {
+    day: { min: 0.7, max: 1.1 },
+    night: { min: 0.1, max: 0.3 }
+  },
+  atmosphereLight: {
+    day: { min: 0.3, max: 0.7 },
+    night: { min: 0.2, max: 0.1 }
+  },
+  turbidity: {
+    day: { min: 5, max: 0 },
+    night: { min: 0.05, max: 0.1 }
+  },
+  rayleigh: {
+    day: { min: 3, max: 0.2 },
+    night: { min: 0, max: 0 }
+  },
+  exposure: {
+    day: { min: 0.2, max: 0.4 },
+    night: { min: 0.1, max: 0.15 }
+  },
+  mieCoefficient: {
+    day: { min: 0.005, max: 0 },
+    night: { min: 0.005, max: 0.005 }
+  },
+  mieDirectionalG: {
+    day: { min: 0.8, max: 0.99 },
+    night: { min: 0.7, max: 0.7 }
+  },
+};
 
 // Дистанции тумана
 export const FogNear: number = DreamFogNear;
