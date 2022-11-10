@@ -86,7 +86,6 @@ export interface DreamMapDto {
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   ocean: WaterDto;
-  land: WorldLandDto;
   sky: MapSkyData
 }
 
@@ -170,12 +169,6 @@ export interface WaterDto {
 export interface WorldLand {
   z: number;
   type: number;
-}
-
-// Интерфейс воды для сервера
-export interface WorldLandDto {
-  z: number | null;
-  type: number | null;
 }
 
 // Перечисления типа воды
