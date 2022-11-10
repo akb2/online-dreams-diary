@@ -14,6 +14,7 @@ export interface ScreenBreakpoints {
 // Данные о загруженной картинке
 export class LoadingImageData {
   constructor(
+    public image: HTMLImageElement,
     public url: string,
     public width: number,
     public height: number,
