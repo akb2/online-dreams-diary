@@ -92,7 +92,7 @@ export class ScreenService implements OnDestroy {
       image.src = stringUrl;
       // Загрузка
       image.onload = () => {
-        observer.next(new LoadingImageData(stringUrl, image.width, image.height));
+        observer.next(new LoadingImageData(image, stringUrl, image.width, image.height));
         observer.complete();
       };
       // Ошибка
