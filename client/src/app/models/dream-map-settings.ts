@@ -1,5 +1,5 @@
 // Размер карты по умолчанию
-export const DreamMapSize: number = 50;
+export const DreamMapSize: number = 48;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize: number = 1;
@@ -12,7 +12,7 @@ export const DreamCeilWaterParts: number = 1;
 
 // Время для положения небесных тел по умолчанию
 // * 0-360 соответствует времени 00:00 - 23:59
-export const DreamSkyTime: number = 130;
+export const DreamSkyTime: number = 180;
 
 // Пределы высот
 export const DreamMinHeight: number = 1;
@@ -23,10 +23,10 @@ export const DreamWaterDefHeight: number = DreamCeilParts * 9;
 // Параметры по умолчанию
 export const DreamSkyType: number = 1;
 export const DreamTerrain: number = 1;
-export const DreamFogNear: number = Math.sqrt(Math.pow(DreamMapSize / 2, 2) * 2);
-export const DreamFogFar: number = DreamFogNear * 1.6;
-export const DreamHorizont: number = DreamFogFar * 2;
-export const DreamOutsideSize: number = 2;
+export const DreamFogNear: number = DreamMapSize * 0.5;
+export const DreamFogFar: number = DreamMapSize;
+export const DreamHorizont: number = DreamFogFar * 3;
+export const DreamOutsideSize: number = 1;
 export const DreamLODDistance: number = 20;
 export const DreamLODCount: number = Math.floor(DreamFogFar / DreamLODDistance);
 
