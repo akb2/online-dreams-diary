@@ -29,11 +29,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   toolList: ToolListItem[] = Tools;
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
-  toolSizeRoadLength: number = ToolSizeRoad.length - 1;
   form: FormGroup;
 
-  private startX: number = -1;
-  private startY: number = -1;
   private startZ: number = -1;
 
   oceanMinZ: number = DreamMinHeight;
@@ -46,15 +43,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Списки параметров
   toolType: typeof Tool = Tool;
   landscapeToolType: typeof LandscapeTool = LandscapeTool;
-  roadTypeTool: typeof RoadTypeTool = RoadTypeTool;
   terrainList: MapTerrain[] = MapTerrains;
-  roadTypeList: RoadTypeToolListItem[] = RoadTypeTools;
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
 
   // * Инструменты: общее
   private tool: Tool = Tool.landscape;
   toolSizeLand: number = ToolSizeLand[2];
-  toolSizeRoad: number = ToolSizeRoad[0];
   private currentObject: ObjectHoverEvent = null;
 
   // * Инструменты: ландшафт
@@ -62,9 +56,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // * Инструменты: местность
   currentTerrain: number = this.terrainList.find(t => t.id === 2).id;
-
-  // * Инструменты: дорога
-  roadType: RoadTypeTool = RoadTypeTool.road;
 
   // * Инструменты: вода
   waterType: WaterTypeTool = WaterTypeTool.sea;
@@ -111,11 +102,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Текущий инструмент: вода
   get getCurrentWaterTypeTool(): WaterTypeToolListItem {
     return this.waterTypeList.find(t => t.type === this.waterType) || this.waterTypeList[0];
-  }
-
-  // Текущий инструмент: дорога
-  get getCurrentRoadTypeTool(): RoadTypeToolListItem {
-    return this.roadTypeList.find(t => t.type === this.roadType) || this.roadTypeList[0];
   }
 
   // Ключ текущего размера кисти
@@ -177,18 +163,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return value;
   }
 
-  // Ключ текущего размера дороги
-  private get getCurrentToolSizeRoad(): number {
-    return ToolSizeRoad.findIndex(t => t === this.toolSizeRoad);
-  }
-
-  // Форматирование слайдера выбора размера дороги
-  toolSizeRoadFormat(key: number = -1): number {
-    const toolSizeRoad: number = key >= 0 ? ToolSizeRoad[key] : ToolSizeRoad[this.getCurrentToolSizeRoad];
-    // Результат
-    return toolSizeRoad;
-  }
-
   // Сведения о текущем материале
   get terrainInfo(): MapTerrain {
     return this.terrainList.find(t => t.id === this.currentTerrain)! || this.terrainList[0];
@@ -238,10 +212,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   ) {
     this.form = this.formBuilder.group({
       toolSizeLand: [this.getCurrentToolSizeLand],
-      toolSizeRoad: [this.getCurrentToolSizeRoad],
       currentTime: [0],
       worldOceanHeight: [0],
-      worldLandHeight: [0],
     });
   }
 
@@ -253,7 +225,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(): void {
     this.form.get("worldOceanHeight").setValue(this.dreamMap.ocean.z ?? DreamWaterDefHeight);
-    this.form.get("worldLandHeight").setValue(this.dreamMap.land.z ?? DreamDefHeight);
     this.form.get("currentTime").setValue(this.dreamMap.sky.time ?? DreamSkyTime);
   }
 
@@ -269,7 +240,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Нажатие кнопки мыши
   onMouseDown(event: MouseEvent): void {
     if (event.button === 0) {
-      if (this.tool === Tool.landscape || this.tool === Tool.terrain || this.tool === Tool.road) {
+      if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
         this.toolActive = true;
         this.onToolActionBeforeActive();
       }
@@ -326,12 +297,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
             this.startZ = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
             break;
         }; break;
-        // Работа с дорогами
-        case (Tool.road): {
-          this.startX = this.currentObject.ceil.coord.x;
-          this.startY = this.currentObject.ceil.coord.y;
-          break;
-        }
       }
     }
   }
@@ -360,16 +325,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private onToolActionAfterActive(): void {
     if (this.currentObject && this.toolActive) {
       switch (this.tool) {
-        // Вода
-        case (Tool.water): {
-          break;
-        }
-        // Дорога
-        case (Tool.road): {
-          this.startX = -1;
-          this.startY = -1;
-          break;
-        }
       }
     }
   }
@@ -377,7 +332,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Пассивное действие: наведение курсора на объект
   private onToolActionPassive(): void {
     if (!!this.currentObject) {
-      const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain, Tool.water, Tool.road]);
+      const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
       // Работа с ландшафтом
       if (tools.has(this.tool)) {
         this.lightCeils();
@@ -419,15 +374,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
-  // Изменение высоты окружающего ландшафта
-  onLandHeightChange(event: MatSliderChange): void {
-    this.dreamMap.land.z = event.value ?? DreamDefHeight;
-    // Установить высоту
-    this.setLandHeight();
-    // Обновить
-    this.changeDetectorRef.detectChanges();
-  }
-
   // Изменение времени
   onTimeChange(event: MatSliderChange): void {
     this.dreamMap.sky.time = event.value ?? DreamSkyTime;
@@ -439,19 +385,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   }
 
-  // Изменение размера кисти
-  onToolSizeRoadChange(event: MatSliderChange): void {
-    this.toolSizeRoad = ToolSizeRoad[event.value] || ToolSizeRoad[0];
-  }
-
   // Изменение инструмента типа местности
   onTerrainChange(id: number): void {
     this.currentTerrain = this.terrainList.find(t => t.id === id).id || this.terrainList[0].id;
-  }
-
-  // Изменение инструмента типа дороги
-  onRoadTypeChange(roadType: RoadTypeTool): void {
-    this.roadType = roadType;
   }
 
   // Изменение инструмента типа воды
@@ -563,11 +499,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.viewer.setOceanHeight(this.dreamMap.ocean.z);
   }
 
-  // Изменение высоты мирового океана
-  private setLandHeight(): void {
-    this.viewer.setLandHeight(this.dreamMap.land.z);
-  }
-
   // Изменить время для положения небесных светил
   private setSkyTime(): void {
     this.viewer.setSkyTime(this.dreamMap.sky.time);
@@ -599,7 +530,6 @@ enum Tool {
   landscape,
   terrain,
   water,
-  road
 };
 
 // Перечисление инструментов: ландшафт
@@ -608,12 +538,6 @@ enum LandscapeTool {
   down,
   align
 };
-
-// Перечисление инструментов: дороги
-enum RoadTypeTool {
-  square,
-  road
-}
 
 // Перечисление инструментов: вода
 enum WaterTypeTool {
@@ -643,11 +567,6 @@ interface LandscapeToolListItem extends ToolListItemBase {
   type: LandscapeTool;
 }
 
-// Интерфейс списка инструментов: дороги
-interface RoadTypeToolListItem extends ToolListItemBase {
-  type: RoadTypeTool;
-}
-
 // Интерфейс списка инструментов: вода
 interface WaterTypeToolListItem extends ToolListItemBase {
   type: WaterTypeTool;
@@ -666,7 +585,6 @@ interface SliderSettings {
 
 // Типы размеров
 const ToolSizeLand: number[] = [0, 1, 2, 3, 4, 5, 6, 7];
-const ToolSizeRoad: number[] = [1, 2, 3, 4, 5, 6];
 
 // Список инструментов: общее
 const Tools: ToolListItem[] = [
@@ -694,12 +612,6 @@ const Tools: ToolListItem[] = [
     name: "Вода (изменять водные пространства)",
     icon: "water_drop"
   },
-  // Работа с дорогами
-  {
-    type: Tool.road,
-    name: "Дороги (изменять дороги, рельсы, тротуары)",
-    icon: "edit_road"
-  },
 ];
 
 // Список инструментов: ландшафт
@@ -724,26 +636,10 @@ const LandscapeTools: LandscapeToolListItem[] = [
   },
 ];
 
-// Список инструментов: дороги
-const RoadTypeTools: RoadTypeToolListItem[] = [
-  // Дорога
-  {
-    type: RoadTypeTool.road,
-    name: "Дорога",
-    icon: "add_road"
-  },
-  // Площадь
-  {
-    type: RoadTypeTool.square,
-    name: "Парковка (площадка)",
-    icon: "check_box_outline_blank"
-  },
-];
-
 
 // Список инструментов: вода
 const WaterTypeTools: WaterTypeToolListItem[] = [
-  // Дорога
+  // Общая вода
   {
     type: WaterTypeTool.sea,
     name: "Море (для всей карты)",

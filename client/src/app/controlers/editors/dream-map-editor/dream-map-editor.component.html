@@ -35,9 +35,6 @@
     <!-- Под-инструмент: вода -->
     <ng-container [ngTemplateOutlet]="waterTools"
                   *ngIf="getCurrentTool.type === toolType.water"></ng-container>
-    <!-- Под-инструмент: дорога -->
-    <ng-container [ngTemplateOutlet]="roadTools"
-                  *ngIf="getCurrentTool.type === toolType.road"></ng-container>
   </div>
 </div>
 
@@ -96,35 +93,6 @@
   </div>
   <!-- Размер кисти -->
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
-  <!-- Высота окружающего ландшафта -->
-  <form class="tool-button"
-        [formGroup]="form">
-    <div class="tool-button__point progress">
-      <div class="tool-button__point progress__height back">{{landHeightFormat}}%</div>
-      <div class="tool-button__point progress__height fill"
-           [ngStyle]="{ height: landHeightFormat + '%' }">
-        <span>{{landHeightFormat}}%</span>
-      </div>
-    </div>
-    <!-- Настройка размера -->
-    <div class="tool-button__items">
-      <div class="tool-button container">Общая высота ландшафта:</div>
-      <div class="tool-button container">
-        <mat-slider class="long-slider"
-                    thumbLabel
-                    formControlName="worldLandHeight"
-                    [thumbLabel]="false"
-                    tickInterval="1000"
-                    color="primary"
-                    [step]="landStepZ"
-                    [min]="landMinZ"
-                    [max]="landMaxZ"
-                    aria-label="blocks"
-                    (input)="onLandHeightChange($event)"
-                    (change)="onLandHeightChange($event)"></mat-slider>
-      </div>
-    </div>
-  </form>
 </ng-template>
 
 <!-- Под-инструмент: тип местности -->
@@ -150,72 +118,24 @@
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
 </ng-template>
 
-<!-- Под-инструмент: дорога -->
-<ng-template #roadTools>
-  <!-- Тип -->
-  <div class="tool-button"
-       *ngIf="getCurrentTool.type === toolType.road">
-    <mat-icon>{{getCurrentRoadTypeTool.icon}}</mat-icon>
-    <!-- Список инструментов -->
-    <div class="tool-button__items border-radius">
-      <ng-container *ngFor="let type of roadTypeList">
-        <div class="tool-button"
-             [ngClass]="{ active: type.type === roadType }"
-             matTooltip="Тип дороги: {{type.name}}"
-             (click)="onRoadTypeChange(type.type)">
-          <mat-icon>{{type.icon}}</mat-icon>
-        </div>
-      </ng-container>
-    </div>
-  </div>
-  <!-- Размер -->
-  <div class="tool-button"
-       *ngIf="this.getCurrentTool.type === toolType.road && this.roadType === roadTypeTool.road">
-    <div class="tool-button__point "
-         [ngStyle]="{
-             'border-radius': 0,
-             width: (toolSizeRoadFormat() * 3) + 'px',
-             height: (toolSizeRoadFormat() * 3) + 'px'
-           }"></div>
-    <!-- Настройка размера -->
-    <div class="tool-button__items">
-      <div class="tool-button container">Ширина дороги:</div>
-      <form class="tool-button container"
-            [formGroup]="form">
-        <mat-slider thumbLabel
-                    formControlName="toolSizeRoad"
-                    [displayWith]="toolSizeRoadFormat"
-                    tickInterval="1000"
-                    color="primary"
-                    step="1"
-                    min="0"
-                    [max]="toolSizeRoadLength"
-                    aria-label="blocks"
-                    (input)="onToolSizeRoadChange($event)"
-                    (change)="onToolSizeRoadChange($event)"></mat-slider>
-      </form>
-    </div>
-  </div>
-</ng-template>
-
 <!-- Под-инструмент: вода -->
 <ng-template #waterTools>
   <!-- Тип -->
-  <div class="tool-button"
+  <!-- <div class="tool-button"
        *ngIf="getCurrentTool.type === toolType.water">
     <mat-icon>{{getCurrentWaterTypeTool.icon}}</mat-icon>
-    <!-- Список инструментов -->
+    Список инструментов
     <div class="tool-button__items border-radius">
       <ng-container *ngFor="let type of waterTypeList">
         <div class="tool-button"
              [ngClass]="{ active: type.type === waterType }"
-             matTooltip="Тип дороги: {{type.name}}"
+             matTooltip="Тип воды: {{type.name}}"
              (click)="onWaterTypeChange(type.type)">
           <mat-icon>{{type.icon}}</mat-icon>
         </div>
       </ng-container>
     </div>
-  </div>
+  </div> -->
   <!-- Высота мирового океана -->
   <form class="tool-button"
         [formGroup]="form">

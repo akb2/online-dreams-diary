@@ -1,14 +1,15 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCameraPosition, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService, MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { DreamMapTerrainService } from "@_services/dream-map/terrain.service";
-import { forkJoin, fromEvent, of, Subject, throwError, timer } from "rxjs";
-import { skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
+import { DreamService } from "@_services/dream.service";
+import { forkJoin, fromEvent, Observable, of, Subject, throwError, timer } from "rxjs";
+import { map, skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
 import { BufferGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Material, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -141,13 +142,13 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private getBorderCeil(x: number, y: number): DreamMapCeil {
     return {
       place: null,
-      terrain: this.dreamMap.land.type,
+      terrain: DreamTerrain,
       object: null,
       coord: {
         x,
         y,
-        z: this.dreamMap.land.z,
-        originalZ: this.dreamMap.land.z
+        z: DreamDefHeight,
+        originalZ: DreamDefHeight
       }
     };
   }
@@ -178,19 +179,20 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       (!!c.terrain && c.terrain > 0 && c.terrain !== DreamTerrain) ||
       (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
     );
+    const defaultCamera: DreamMapCameraPosition = this.dreamService.getDefaultCamera(this.dreamMap.size.width, this.dreamMap.size.height);
     // Вернуть карту
     return {
       ceils,
       camera: {
         target: {
-          x: this.control.target.x,
-          y: this.control.target.y,
-          z: this.control.target.z,
+          x: this.control?.target?.x ?? defaultCamera.target.x,
+          y: this.control?.target?.y ?? defaultCamera.target.y,
+          z: this.control?.target?.z ?? defaultCamera.target.z,
         },
         position: {
-          x: this.camera.position.x,
-          y: this.camera.position.y,
-          z: this.camera.position.z,
+          x: this.camera?.position?.x ?? defaultCamera.position.x,
+          y: this.camera?.position?.y ?? defaultCamera.position.y,
+          z: this.camera?.position?.z ?? defaultCamera.position.z,
         }
       },
       dreamerWay: [],
@@ -251,7 +253,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     private skyBoxService: DreamMapSkyBoxService,
     private terrainService: DreamMapTerrainService,
     private alphaFogService: DreamMapAlphaFogService,
-    private objectService: DreamMapObjectService
+    private objectService: DreamMapObjectService,
+    private dreamService: DreamService
   ) { }
 
   ngOnInit() {
@@ -430,23 +433,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание 3D просмотра
   private create3DViewer(): void {
-    this.loading = false;
-    this.ready = true;
-    this.changeDetectorRef.detectChanges();
-    // Создание сцены
     this.createScene();
     this.createSky();
     this.createOcean();
-    this.createTerrains();
-    this.createObjects();
-    this.createCursor();
-    // События
-    this.animate();
-    fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
-      .pipe(takeUntil(this.destroy$))
-      .subscribe();
-    // Обновить
-    this.control.update();
+    // Создание местности
+    this.createTerrains().subscribe(() => {
+      this.createObjects();
+      this.createCursor();
+      // События
+      this.animate();
+      fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+      // Обновить
+      this.loading = false;
+      this.ready = true;
+      this.control.update();
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   // Создание сцены
@@ -573,17 +577,18 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Отрисовать объекты
-  private createTerrains(): void {
-    if (this.scene) {
-      const terrain: Mesh = this.terrainService.getObject(this.dreamMap);
-      // Добавить на сцену
-      this.scene.add(terrain);
-      this.terrainMesh = terrain;
-      this.octree.add(terrain, { useVertices: false, useFaces: false });
-      // Рендер
-      this.render();
-      this.octree.update();
-    }
+  private createTerrains(): Observable<void> {
+    return this.terrainService.getObject(this.dreamMap).pipe(
+      takeUntil(this.destroy$),
+      map(terrain => {
+        this.scene.add(terrain);
+        this.terrainMesh = terrain;
+        this.octree.add(terrain, { useVertices: false, useFaces: false });
+        // Рендер
+        this.render();
+        this.octree.update();
+      })
+    );
   }
 
   // Создание объектов
@@ -595,21 +600,20 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const defaultColor: Color = new Color("transparent");
       const defaultMatrix: Matrix4 = new Matrix4();
       // Цикл по ячейкам
-      const objects: MapObject[] = CreateArray(oHeight)
-        .map(y => CreateArray(oWidth)
-          .map(x => {
-            const ceil: DreamMapCeil = this.getCeil(x, y);
-            const object: MapObject | MapObject[] = this.objectService.getObject(
-              this.dreamMap,
-              this.getCeil(x, y),
-              this.terrainMesh,
-              this.clock,
-              this.terrainService.displacementTexture,
-              this.getClosestCeils(ceil)
-            );
-            // Вернуть массив объектов
-            return Array.isArray(object) ? object : [object];
-          }))
+      const objects: MapObject[] = CreateArray(oWidth).map(y =>
+        CreateArray(oHeight).map(x => {
+          const ceil: DreamMapCeil = this.getCeil(x, y);
+          const object: MapObject | MapObject[] = this.objectService.getObject(
+            this.dreamMap,
+            this.getCeil(x, y),
+            this.terrainMesh,
+            this.clock,
+            this.terrainService.displacementTexture,
+            this.getClosestCeils(ceil)
+          );
+          // Вернуть массив объектов
+          return Array.isArray(object) ? object : [object];
+        }))
         .reduce((v, o) => ([...o, ...v]), [])
         .reduce((v, o) => ([...o, ...v]), [])
         .filter(object => !!object);
@@ -1105,33 +1109,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const z: number = heightPart * this.dreamMap.ocean.z;
     // Свойства
     this.ocean.position.setY(z);
-  }
-
-  // Обновить уровень окружающего ландшафта
-  setLandHeight(landHeight: number): void {
-    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
-    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-    const ceils: DreamMapCeil[] = this.dreamMap.ceils.filter(({ coord: { x, y } }) => x === 0 || x === oWidth - 1 || y === 0 || y === oHeight - 1);
-    // Запомнить высоту
-    this.dreamMap.land.z = landHeight;
-    // Обновить данные
-    this.terrainService.updateOutsideHeight(landHeight);
-    // Цикл по объектам
-    ceils.filter(ceil => !ceil.object).forEach((ceil, i) => {
-      const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
-      // Если существуют объекты
-      if (!!objectSettings?.length) {
-        objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-          objectSetting,
-          this.dreamMap,
-          ceil,
-          this.terrainMesh,
-          this.clock,
-          this.terrainService.displacementTexture,
-          this.getClosestCeils(ceil)
-        ));
-      }
-    });
   }
 
   // Посчитать полоение небесных светил
