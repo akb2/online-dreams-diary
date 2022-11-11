@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCameraPosition, DreamMapCeil, WaterType, XYCoord } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService, MapObject, ObjectSetting } from "@_services/dream-map/object.service";
@@ -180,6 +180,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
     );
     const defaultCamera: DreamMapCameraPosition = this.dreamService.getDefaultCamera(this.dreamMap.size.width, this.dreamMap.size.height);
+    const reliefNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
     // Вернуть карту
     return {
       ceils,
@@ -198,7 +199,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       dreamerWay: [],
       size: this.dreamMap.size,
       ocean: {
-        type: this.dreamMap?.ocean?.type ?? WaterType.pool,
         material: this.dreamMap?.ocean?.material ?? 1,
         z: this.dreamMap?.ocean?.z ?? DreamWaterDefHeight
       },
@@ -208,6 +208,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       },
       sky: {
         time: this.dreamMap?.sky?.time ?? DreamSkyTime
+      },
+      relief: {
+        rewrite: !!this.dreamMap?.relief.rewrite,
+        types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: this.dreamMap?.relief[name] ?? ReliefType.flat }), {})
       }
     };
   }
@@ -227,7 +231,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       })
       .reduce((o, [k, height, terrain, object, coords]) => ({
         ...o,
-        [k as keyof ClosestHeights]: { height, terrain, object, coords }
+        [k as keyof ClosestHeights]: {
+          height: height as number,
+          terrain: terrain as number,
+          object: object as number,
+          coords: coords as Coord
+        }
       }), {} as ClosestHeights);
   }
 
