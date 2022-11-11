@@ -19,6 +19,7 @@ export interface DreamMap {
   ocean: Water;
   land: WorldLand;
   sky: MapSkyData;
+  relief: DreamMapReliefSettings;
 }
 
 // Интерфейс настроек неба
@@ -57,6 +58,15 @@ export interface MapTerrain {
   };
 }
 
+// Тип рельефов
+export enum ReliefType {
+  flat = "flat",
+  hill = "hill",
+  mountain = "mountain",
+  canyon = "canyon",
+  pit = "pit",
+}
+
 // Интерфейс объекта карты
 export interface MapObject {
   id: number;
@@ -86,7 +96,8 @@ export interface DreamMapDto {
   size: MapSize;
   dreamerWay: DreamerWay[] | null;
   ocean: WaterDto;
-  sky: MapSkyData
+  sky: MapSkyData;
+  relief?: DreamMapReliefSettings;
 }
 
 // Интерфейс ячейки сновидения
@@ -98,16 +109,7 @@ export interface DreamMapCeilDto {
 }
 
 // Интерфейс соседних блоков
-export interface ClosestHeights {
-  top: ClosestHeight;
-  left: ClosestHeight;
-  right: ClosestHeight;
-  bottom: ClosestHeight;
-  topLeft: ClosestHeight;
-  topRight: ClosestHeight;
-  bottomLeft: ClosestHeight;
-  bottomRight: ClosestHeight;
-}
+export type ClosestHeights = CustomObjectKey<ClosestHeightName, ClosestHeight>;
 
 // Интерфейс для соседних блоков
 export interface ClosestHeight {
@@ -116,6 +118,9 @@ export interface ClosestHeight {
   object: number;
   coords: Coord;
 }
+
+// Имена соседних ячеек
+export type ClosestHeightName = "topLeft" | "top" | "topRight" | "left" | "right" | "bottomLeft" | "bottom" | "bottomRight";
 
 
 
@@ -154,14 +159,12 @@ export interface CoordDto extends XYCoord {
 // Интерфейс воды
 export interface Water {
   z: number;
-  type: WaterType;
   material: number;
 }
 
 // Интерфейс воды для сервера
 export interface WaterDto {
   z: number | null;
-  type: WaterType | null;
   material: number | null;
 }
 
@@ -169,12 +172,6 @@ export interface WaterDto {
 export interface WorldLand {
   z: number;
   type: number;
-}
-
-// Перечисления типа воды
-export enum WaterType {
-  pool,
-  stream
 }
 
 // Типы цветов пути
@@ -208,6 +205,12 @@ export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 
 // Типы текстур
 export type TextureType = "face" | "ao" | "normal" | "disp";
+
+// Настройки карты за пределами
+export interface DreamMapReliefSettings {
+  rewrite: boolean;
+  types: CustomObjectKey<keyof ClosestHeights, ReliefType>;
+}
 
 
 
