@@ -310,7 +310,7 @@ export class DreamService {
         },
         relief: {
           rewrite: true,
-          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.pit }), {})
+          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
         }
       };
     }
