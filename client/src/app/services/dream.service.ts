@@ -6,7 +6,7 @@ import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, Water, WaterType, WorldLand } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, ReliefType, Water } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -237,13 +237,13 @@ export class DreamService {
 
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto | null = null): DreamMap {
+    const reliefNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
     // Преобразование карты
     if (dreamMapDto) {
       const width: number = dreamMapDto.size.width ?? DreamMapSize;
       const height: number = dreamMapDto.size.height ?? DreamMapSize;
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
-        type: dreamMapDto?.ocean?.type ?? WaterType.pool,
         z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
         material: dreamMapDto?.ocean?.material ?? 1
       };
@@ -279,7 +279,11 @@ export class DreamService {
           time: dreamMapDto?.sky?.time ?? DreamSkyTime
         },
         dreamerWay: dreamMapDto.dreamerWay,
-        ocean
+        ocean,
+        relief: {
+          rewrite: !!dreamMapDto?.relief?.rewrite,
+          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: dreamMapDto?.relief[name] ?? ReliefType.flat }), {})
+        }
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -294,7 +298,6 @@ export class DreamService {
         ceils: [],
         dreamerWay: [],
         ocean: {
-          type: WaterType.pool,
           z: DreamWaterDefHeight,
           material: 1
         },
@@ -305,6 +308,10 @@ export class DreamService {
         sky: {
           time: DreamSkyTime
         },
+        relief: {
+          rewrite: true,
+          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.pit }), {})
+        }
       };
     }
   }
