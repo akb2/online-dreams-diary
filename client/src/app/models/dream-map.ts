@@ -369,3 +369,6 @@ export const ObjectControllers: CustomObjectKey<number, ObjectController> = {
 export const ObjectStaticSubTypeControllers: CustomObjectKey<number, Function> = {
   1: DreamMapGrassObject.getSubType,
 };
+
+// Список имен соседних ячеек
+export const ClosestHeightNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
