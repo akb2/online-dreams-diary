@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { CreateArray, SimpleObject } from "@_models/app";
-import { DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -579,6 +579,11 @@ interface SliderSettings {
   step: number;
 }
 
+// Интерфейс данных о фоновом ландшафте
+interface OutMapReliefData {
+  key: keyof ClosestHeights | "center";
+}
+
 
 
 
@@ -635,7 +640,6 @@ const LandscapeTools: LandscapeToolListItem[] = [
     icon: "vertical_align_center"
   },
 ];
-
 
 // Список инструментов: вода
 const WaterTypeTools: WaterTypeToolListItem[] = [
