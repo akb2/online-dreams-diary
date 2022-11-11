@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { CreateArray, SimpleObject } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, TexturePaths } from "@_models/dream-map";
+import { CreateArray, CustomObjectKey, SimpleObject } from "@_models/app";
+import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -53,6 +53,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // * Инструменты: ландшафт
   private landscapeTool: LandscapeTool = LandscapeTool.up;
+  reliefElmDatas: ReliefElmData[];
 
   // * Инструменты: местность
   currentTerrain: number = this.terrainList.find(t => t.id === 2).id;
@@ -202,6 +203,50 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return "ontouchstart" in window || !!navigator?.maxTouchPoints;
   }
 
+  // Список для управление окружающим лундшафтом
+  private createReliefData(): void {
+    const outerIcons: CustomObjectKey<ReliefType, string> = {
+      [ReliefType.flat]: "horizontal_rule",
+      [ReliefType.hill]: "waves",
+      [ReliefType.mountain]: "landscape",
+      [ReliefType.canyon]: "align_vertical_bottom",
+      [ReliefType.pit]: "download",
+    };
+    const outerDescription: CustomObjectKey<ReliefType, string> = {
+      [ReliefType.flat]: "Равнина",
+      [ReliefType.hill]: "Холмы",
+      [ReliefType.mountain]: "Горы",
+      [ReliefType.canyon]: "Каньоны",
+      [ReliefType.pit]: "Низина",
+    };
+    const sideNames: CustomObjectKey<ClosestHeightName, string> = {
+      topLeft: "Верхний левый",
+      top: "Верхний",
+      topRight: "Верхний правый",
+      left: "Левый",
+      right: "Правый",
+      bottomLeft: "Нижний левый",
+      bottom: "Нижний",
+      bottomRight: "Нижний правый",
+    };
+    // Управление за пределами карты
+    this.reliefElmDatas = ClosestHeightNames.map(type => ({
+      type,
+      icon: outerIcons[this.dreamMap.relief.types[type]],
+      description: sideNames[type] + " угол: " + outerDescription[this.dreamMap.relief.types[type]],
+      clickEvent: (type => console.log(type)).bind(this)
+    }));
+    // Добавить для центрального элемента
+    this.reliefElmDatas.splice(4, 0, {
+      type: "center",
+      icon: "zoom_in_map",
+      description: "Размыть внутренний рельеф с внешним",
+      clickEvent: (type => console.log(type)).bind(this)
+    });
+    // Обновтиь
+    this.changeDetectorRef.detectChanges();
+  }
+
 
 
 
@@ -221,6 +266,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     const enterEvent = this.isTouchDevice ? "touchend" : "mouseup";
     // События
     fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
+    // Создать список управления рельефом
+    this.createReliefData();
   }
 
   ngOnChanges(): void {
@@ -579,9 +626,12 @@ interface SliderSettings {
   step: number;
 }
 
-// Интерфейс данных о фоновом ландшафте
-interface OutMapReliefData {
-  key: keyof ClosestHeights | "center";
+// Интерфейс настроек окружающего ландшафта
+interface ReliefElmData {
+  type: ClosestHeightName | "center";
+  icon: string;
+  description: string;
+  clickEvent: (type: ClosestHeightName | "center") => void;
 }
 
 

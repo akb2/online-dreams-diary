@@ -221,6 +221,11 @@ $separatorColor: #ccc;
         overflow: hidden;
       }
     }
+    // Сетка 3 элемента в ширину
+    &.three-items {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
     // Настройки
     &.settings {
       display: grid;

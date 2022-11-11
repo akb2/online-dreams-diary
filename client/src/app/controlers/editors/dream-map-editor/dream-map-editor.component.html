@@ -93,6 +93,19 @@
   </div>
   <!-- Размер кисти -->
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
+  <!-- Управление рельефом за пределами карты -->
+  <div class="tool-button">
+    <mat-icon>grid_on</mat-icon>
+    <!-- Список инструментов -->
+    <div class="tool-button__items border-radius three-items"
+         *ngIf="!!reliefElmDatas">
+      <div class="tool-button"
+           (click)="tool.clickEvent(tool.type)"
+           *ngFor="let tool of reliefElmDatas">
+        <mat-icon>{{tool.icon}}</mat-icon>
+      </div>
+    </div>
+  </div>
 </ng-template>
 
 <!-- Под-инструмент: тип местности -->
