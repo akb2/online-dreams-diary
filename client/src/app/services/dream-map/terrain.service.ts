@@ -1,10 +1,10 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { AngleToRad, CreateArray, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
-import { ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, ReliefType, TexturePaths, XYCoord } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, ReliefType, TexturePaths, XYCoord } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, map, Observable, Subject, takeUntil, tap } from "rxjs";
+import { forkJoin, map, mergeMap, Observable, of, Subject, takeUntil, tap } from "rxjs";
 import {
   BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils
 } from "three";
@@ -28,7 +28,7 @@ export class DreamMapTerrainService implements OnDestroy {
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
-  private reliefDatas: ReliefData[];
+  private reliefDatas: ReliefData[] = [];
 
   displacementTexture: DataTexture;
 
@@ -354,7 +354,8 @@ export class DreamMapTerrainService implements OnDestroy {
         const data: number[] = Array.from(context.getImageData(0, 0, width, height).data);
         // Вернуть массив
         return { correctSize, type, data, size: { width, height } };
-      })
+      }),
+      tap(datas => !this.reliefDatas.some(({ type: t }) => type === t) ? this.reliefDatas.push(datas) : null),
     );
   }
 
@@ -422,42 +423,54 @@ export class DreamMapTerrainService implements OnDestroy {
   }
 
   // Выстроение фонового рельефа
-  private createRelief(): Observable<void> {
+  private createRelief(createTexture: boolean = true): Observable<void> {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
     const size: number = width * height;
-    const mapData: Uint8Array = new Uint8Array(4 * size);
     const types: CustomObjectKey<ReliefName, ReliefType> = this.dreamMap.relief.types;
     const filterTypes: ReliefType[] = Array.from(new Set(Object.values(types)));
+    // Создать текстуру
+    if (createTexture) {
+      this.displacementTexture = new DataTexture(new Uint8Array(4 * size), width, height);
+      this.displacementTexture.magFilter = LinearFilter;
+      this.displacementTexture.minFilter = LinearMipmapNearestFilter;
+      this.displacementTexture.flipY = true;
+    }
     // Запрос к данным
     return forkJoin(filterTypes.map(type => this.getRelief(type))).pipe(
       takeUntil(this.destroyed$),
-      tap(datas => this.reliefDatas = datas),
-      tap(() => ReliefSideNames.forEach(yNames => yNames.forEach(name => this.setReliefSection(name, mapData)))),
-      map(() => new DataTexture(mapData, width, height)),
-      tap(texture => {
-        texture.magFilter = LinearFilter;
-        texture.minFilter = LinearMipmapNearestFilter;
-        texture.flipY = true;
-        this.displacementTexture = texture;
-      }),
-      map(() => ReliefSideNames.forEach(yNames => yNames.filter(name => name !== "center").forEach(name => this.setReliefSmooth(name, mapData)))),
+      tap(() => ReliefSideNames.forEach(yNames => yNames.forEach(name => this.setReliefSection(
+        name,
+        this.displacementTexture.image.data
+      )))),
+      map(() => ReliefSideNames
+        .reduce((o, n) => ([...o, ...n]), [])
+        .filter(name => name !== "center")
+        .sort((nameA, nameB) => {
+          const indexA: number = ReliefSideNamesSort.findIndex(n => n === nameA);
+          const indexB: number = ReliefSideNamesSort.findIndex(n => n === nameB);
+          // Сортировка
+          return indexA < indexB ? -1 : indexA > indexB ? 1 : 0;
+        })
+        .forEach(name => this.setReliefSmooth(name, this.displacementTexture.image.data))
+      ),
       tap(() => this.setReliefSmooth(
         "center",
-        mapData,
+        this.displacementTexture.image.data,
         CreateArray(oHeight).map(y => CreateArray(oWidth).map(x => ({ x, y })))
           .reduce((o, v) => ([...o, ...v]), [])
           .reduce((o, { x, y }) => ([...o, this.getCeil(x, y)]), []),
-        this.dreamMap.relief.rewrite
-      ))
+        !!this.dreamMap?.isNew
+      )),
+      tap(() => this.dreamMap.isNew = false)
     );
   }
 
   // Выставить высоту рельефа за пределами карты
-  private setReliefSection(name: ReliefName, mapData: Uint8Array): void {
+  private setReliefSection(name: ReliefName, mapData: Uint8Array | Uint8ClampedArray): void {
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
@@ -510,17 +523,18 @@ export class DreamMapTerrainService implements OnDestroy {
         .reduce((o, [name, data]) => ({ ...o, [name as ReliefName]: data as ReliefData }), {});
       // Цикл по ячейкам
       ceils.filter(({ coord: { x, y } }) => !this.isBorder(x, y)).forEach(ceil => {
-        const { coord: { x, y, z } }: DreamMapCeil = ceil;
+        const { coord: { x, y, originalZ: z } }: DreamMapCeil = ceil;
         const textureX: number = x + borderOSize;
         const textureY: number = y + borderOSize;
         const index: number = ((textureY * width) + textureX) * 4;
-        let color: number = this.correctColor((z * 255) / DreamMaxHeight);
         // Не перезаписывать
         if (!rewrite) {
+          const color: number = MathRound(this.correctColor((ceil.coord.z * 255) / DreamMaxHeight), 5);
           CreateArray(3).map(k => mapData[index + k] = color);
         }
         // Перезаписать высоты
         else {
+          let color: number = MathRound(this.correctColor((z * 255) / DreamMaxHeight), 5);
           const topY: number = y < reliefDatas.top.correctSize.bottom ? reliefDatas.top.size.height - reliefDatas.top.correctSize.bottom + y : -1;
           const rightX: number = (oWidth - 1) - x < reliefDatas.right.correctSize.left ? (oWidth - 1) - x : -1;
           const leftX: number = x < reliefDatas.left.correctSize.right ? reliefDatas.left.size.width - reliefDatas.left.correctSize.right + x : -1;
@@ -562,8 +576,8 @@ export class DreamMapTerrainService implements OnDestroy {
           });
           // Записать значения в общий массив
           CreateArray(3).map(k => mapData[index + k] = color);
-          ceil.coord.z = (color * DreamMaxHeight) / 255;
-          ceil.coord.originalZ = ceil.coord.z;
+          ceil.coord.z = MathRound((color * DreamMaxHeight) / 255, 5);
+          // ceil.coord.originalZ = ceil.coord.z;
           // Запомнить значения
           if (!this.dreamMap.ceils.some(({ coord: { x: cX, y: cY } }) => cX === x && cY === y)) {
             this.dreamMap.ceils.push(ceil);
@@ -728,6 +742,41 @@ export class DreamMapTerrainService implements OnDestroy {
     this.geometry.attributes.position.needsUpdate = true;
     this.displacementTexture.needsUpdate = true;
   }
+
+  // Обновить фоновый рельеф
+  updateRelief(type: ClosestHeightName): Observable<void> {
+    const closestName: CustomObjectKey<ReliefName, ReliefName> = ReliefSideClosestsNames[type];
+    const names: ReliefName[] = [...Object.values(closestName), type, "center"];
+    // Загрузить типы
+    const types: Observable<ReliefData>[] = names
+      .map(name => this.dreamMap.relief.types[name])
+      .map(type => this.reliefDatas.some(({ type: t }) => type === t) ?
+        of(this.reliefDatas.find(({ type: t }) => type === t)) :
+        this.getRelief(type));
+    // Обновить вершины
+    return forkJoin(types).pipe(
+      takeUntil(this.destroyed$),
+      mergeMap(() => this.createRelief(false)),
+      tap(() => this.setDisplacementMap())
+    );
+  }
+
+  // Смазывание рельефа
+  updateReliefRewrite(): void {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    // Смазать
+    this.setReliefSmooth(
+      "center",
+      this.displacementTexture.image.data,
+      CreateArray(oHeight).map(y => CreateArray(oWidth).map(x => ({ x, y })))
+        .reduce((o, v) => ([...o, ...v]), [])
+        .reduce((o, { x, y }) => ([...o, this.getCeil(x, y)]), []),
+      true
+    )
+    // Обновить геометрию
+    this.setDisplacementMap();
+  }
 }
 
 
@@ -761,6 +810,18 @@ const ReliefSideNames: ReliefName[][] = [
   ["topLeft", "top", "topRight"],
   ["left", "center", "right"],
   ["bottomLeft", "bottom", "bottomRight"]
+];
+
+// Список сортировки секций
+const ReliefSideNamesSort: ReliefName[] = [
+  "top",
+  "left",
+  "right",
+  "bottom",
+  "topLeft",
+  "topRight",
+  "bottomLeft",
+  "bottomRight"
 ];
 
 // Список соседних имен областей рельефа

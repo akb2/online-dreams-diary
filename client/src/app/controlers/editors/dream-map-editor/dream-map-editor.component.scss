@@ -181,6 +181,15 @@ $separatorColor: #ccc;
       &.active {
         background-color: #{map.get(colors.$mat-disabled, 500)};
         color: #{map.get(colors.$mat-disabled, contrast, 500)};
+
+        &.active-hover:hover {
+          background-color: #{map.get(colors.$mat-primary, 500)};
+          color: #{map.get(colors.$mat-primary, contrast, 500)};
+        }
+      }
+      // Заблокированный элемент
+      &.disabled {
+        opacity: 0.7;
       }
       // Контейнер
       &.container {

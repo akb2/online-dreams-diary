@@ -210,9 +210,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         time: this.dreamMap?.sky?.time ?? DreamSkyTime
       },
       relief: {
-        rewrite: !!this.dreamMap?.relief.rewrite,
-        types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: this.dreamMap?.relief[name] ?? ReliefType.flat }), {})
-      }
+        types: reliefNames.reduce((o, name) => ({
+          ...o,
+          [name as ClosestHeightName]: this.dreamMap?.relief?.types?.hasOwnProperty(name) ? this.dreamMap.relief.types[name] : ReliefType.flat
+        }), {})
+      },
+      isNew: false
     };
   }
 
@@ -1048,7 +1051,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           .values(this.getClosestCeils(ceil))
           .map(({ coords: { x, y } }) => this.getCeil(x, y))
           .filter(ceil => !usedCeils.some(c => ceil === c));
-        // Добавить обратанне ячейки в массив
+        // Добавить обратанные ячейки в массив
         nCeils.forEach(nCeil => {
           const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
           // Если существуют объекты
@@ -1126,6 +1129,62 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Обновить сцену
     this.skyBoxService.setSkyTime(time);
     this.render();
+  }
+
+  // Изменить фоновый рельеф
+  setReliefType(type: ClosestHeightName): Observable<void> {
+    this.terrainService.updateDreamMap(this.dreamMap);
+    // Вернуть подписку
+    return this.terrainService.updateRelief(type).pipe(
+      takeUntil(this.destroy$),
+      tap(() => {
+        const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+        const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+        // Цикл по ячейкам
+        CreateArray(oHeight).forEach(y => CreateArray(oWidth).forEach(x => {
+          const ceil: DreamMapCeil = this.getCeil(x, y);
+          const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
+          // Если существуют объекты
+          if (!!objectSettings?.length) {
+            objectSettings.forEach(objectSetting => this.objectService.updateHeight(
+              objectSetting,
+              this.dreamMap,
+              ceil,
+              this.terrainMesh,
+              this.clock,
+              this.terrainService.displacementTexture,
+              this.getClosestCeils(ceil)
+            ));
+          }
+        }));
+      })
+    );
+  }
+
+  // Настройки смазывания рельефа внутри карты
+  setReliefRewrite(): void {
+    const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+    const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+    // Смазывание
+    this.terrainService.updateDreamMap(this.dreamMap);
+    this.terrainService.updateReliefRewrite();
+    // Цикл по ячейкам
+    CreateArray(oHeight).forEach(y => CreateArray(oWidth).forEach(x => {
+      const ceil: DreamMapCeil = this.getCeil(x, y);
+      const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
+      // Если существуют объекты
+      if (!!objectSettings?.length) {
+        objectSettings.forEach(objectSetting => this.objectService.updateHeight(
+          objectSetting,
+          this.dreamMap,
+          ceil,
+          this.terrainMesh,
+          this.clock,
+          this.terrainService.displacementTexture,
+          this.getClosestCeils(ceil)
+        ));
+      }
+    }));
   }
 }
 

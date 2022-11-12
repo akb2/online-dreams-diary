@@ -30,6 +30,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
   form: FormGroup;
+  disableUI: boolean = false;
 
   private startZ: number = -1;
 
@@ -229,19 +230,22 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       bottom: "Нижний",
       bottomRight: "Нижний правый",
     };
+    const clickEvent: (type: ClosestHeightName | "center") => void = this.onReliefTypeChange.bind(this);
     // Управление за пределами карты
     this.reliefElmDatas = ClosestHeightNames.map(type => ({
       type,
+      clickEvent,
+      active: false,
       icon: outerIcons[this.dreamMap.relief.types[type]],
       description: sideNames[type] + " угол: " + outerDescription[this.dreamMap.relief.types[type]],
-      clickEvent: (type => console.log(type)).bind(this)
     }));
     // Добавить для центрального элемента
     this.reliefElmDatas.splice(4, 0, {
       type: "center",
+      clickEvent,
+      active: false,
       icon: "zoom_in_map",
-      description: "Размыть внутренний рельеф с внешним",
-      clickEvent: (type => console.log(type)).bind(this)
+      description: "Размыть внутренний рельеф с внешним"
     });
     // Обновтиь
     this.changeDetectorRef.detectChanges();
@@ -442,6 +446,37 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.waterType = waterType;
   }
 
+  // Изменение типа рельефа
+  onReliefTypeChange(type: ClosestHeightName | "center"): void {
+    this.disableUI = true;
+    // Для центральной ячейки
+    if (type === "center") {
+      this.viewer.setReliefRewrite();
+      // Разблокировать UI
+      this.disableUI = false;
+      // обновить интерфейс
+      this.createReliefData();
+    }
+    // Тип за пределами карты
+    else {
+      const nextitems: CustomObjectKey<ReliefType, ReliefType> = {
+        [ReliefType.flat]: ReliefType.hill,
+        [ReliefType.hill]: ReliefType.mountain,
+        [ReliefType.mountain]: ReliefType.canyon,
+        [ReliefType.canyon]: ReliefType.pit,
+        [ReliefType.pit]: ReliefType.flat
+      };
+      // Заменить тип
+      this.dreamMap.relief.types[type] = nextitems[this.dreamMap.relief.types[type]];
+      // обновить интерфейс
+      this.createReliefData();
+      // Перерисовать рельеф
+      this.viewer.setReliefType(type)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.disableUI = false);
+    }
+  }
+
 
 
 
@@ -468,7 +503,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         const currentZ: number = ceil.coord.z;
         let corrDirection: HeightDirection = 0;
         let zChange: number = Math.floor(
-          ((this.toolSizeLand * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
+          (((this.toolSizeLand + 1) * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
           this.terrainChangeStep
         );
         // Изменение высоты: выравнивание
@@ -483,12 +518,16 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         // Корректировка высоты
         if (zChange !== 0) {
           change = true;
-          // Обновить
+          // Обновить оригинальную высоту
           ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
           ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
           ceil.coord.originalZ = ceil.coord.originalZ > DreamMaxHeight ? DreamMaxHeight : ceil.coord.originalZ;
           ceil.coord.originalZ = ceil.coord.originalZ < DreamMinHeight ? DreamMinHeight : ceil.coord.originalZ;
-          ceil.coord.z = ceil.coord.originalZ;
+          // Обновить высоту
+          ceil.coord.z = Math.floor(ceil.coord.z + zChange);
+          ceil.coord.z = (corrDirection > 0 && ceil.coord.z > z) || (corrDirection < 0 && ceil.coord.z < z) ? z : ceil.coord.z;
+          ceil.coord.z = ceil.coord.z > DreamMaxHeight ? DreamMaxHeight : ceil.coord.z;
+          ceil.coord.z = ceil.coord.z < DreamMinHeight ? DreamMinHeight : ceil.coord.z;
           // Запомнить ячейку
           this.saveCeil(ceil);
         }
@@ -629,6 +668,7 @@ interface SliderSettings {
 // Интерфейс настроек окружающего ландшафта
 interface ReliefElmData {
   type: ClosestHeightName | "center";
+  active: boolean;
   icon: string;
   description: string;
   clickEvent: (type: ClosestHeightName | "center") => void;
