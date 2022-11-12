@@ -54,8 +54,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.044;
-  private height: number = 10;
+  private width: number = 0.02;
+  private height: number = 5;
   private noise: number = 0.2;
   private scaleY: number[] = [1, 3];
   private scaleX: number[] = [1.6, 0.9];
