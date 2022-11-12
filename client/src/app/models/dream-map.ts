@@ -20,6 +20,7 @@ export interface DreamMap {
   land: WorldLand;
   sky: MapSkyData;
   relief: DreamMapReliefSettings;
+  isNew: boolean;
 }
 
 // Интерфейс настроек неба
@@ -208,7 +209,6 @@ export type TextureType = "face" | "ao" | "normal" | "disp";
 
 // Настройки карты за пределами
 export interface DreamMapReliefSettings {
-  rewrite: boolean;
   types: CustomObjectKey<keyof ClosestHeights, ReliefType>;
 }
 

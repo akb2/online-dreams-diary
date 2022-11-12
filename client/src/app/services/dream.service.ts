@@ -281,9 +281,12 @@ export class DreamService {
         dreamerWay: dreamMapDto.dreamerWay,
         ocean,
         relief: {
-          rewrite: !!dreamMapDto?.relief?.rewrite,
-          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: dreamMapDto?.relief[name] ?? ReliefType.flat }), {})
-        }
+          types: reliefNames.reduce((o, name) => ({
+            ...o,
+            [name as ClosestHeightName]: !!dreamMapDto?.relief?.types?.hasOwnProperty(name) ? dreamMapDto.relief.types[name] : ReliefType.flat
+          }), {})
+        },
+        isNew: false
       } as DreamMap;
     }
     // Карта по умолчанию
@@ -309,9 +312,9 @@ export class DreamService {
           time: DreamSkyTime
         },
         relief: {
-          rewrite: true,
           types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
-        }
+        },
+        isNew: true
       };
     }
   }
@@ -347,6 +350,7 @@ export class DreamService {
       dreamerWay: dreamMap.dreamerWay,
       ocean: dreamMap.ocean,
       sky: dreamMap.sky,
+      relief: dreamMap.relief
     };
   }
 }
