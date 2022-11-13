@@ -2,7 +2,8 @@ import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapGrassObject } from "@_services/dream-map/objects/grass";
+import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantain";
+import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { Clock, DataTexture, Mesh, MeshStandardMaterial, Side, Texture } from "three";
 
@@ -361,13 +362,16 @@ export const MapTerrains: MapTerrain[] = [
   });
 
 // Список ландшафтов с объектами для непустых ячеек
-export const ObjectControllers: CustomObjectKey<number, ObjectController> = {
-  1: DreamMapGrassObject,
+export const ObjectControllers: CustomObjectKey<number, ObjectController[]> = {
+  1: [DreamMapWheatGrassObject, DreamMapPlantainGrassObject],
 };
 
 // Список ландшафтов с объектами для непустых ячеек
-export const ObjectStaticSubTypeControllers: CustomObjectKey<number, Function> = {
-  1: DreamMapGrassObject.getSubType,
+export const ObjectStaticSubTypeControllers: CustomObjectKey<number, CustomObjectKey<string, Function>> = {
+  1: {
+    wheatgrass: DreamMapWheatGrassObject.getSubType,
+    plantain: DreamMapPlantainGrassObject.getSubType
+  },
 };
 
 // Список имен соседних ячеек

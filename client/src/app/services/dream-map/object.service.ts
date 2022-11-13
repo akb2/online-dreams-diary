@@ -14,7 +14,7 @@ import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Mat
 
 export class DreamMapObjectService implements OnDestroy {
 
-  private controllers: CustomObjectKey<number, DreamMapObjectTemplate> = {};
+  private controllers: CustomObjectKey<number, DreamMapObjectTemplate[]> = {};
 
 
 
@@ -28,7 +28,7 @@ export class DreamMapObjectService implements OnDestroy {
     clock: Clock,
     displacementTexture: DataTexture,
     closestsCeils: ClosestHeights
-  ): MapObject | MapObject[] {
+  ): (MapObject | MapObject[])[] {
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
     // Требуется объект
@@ -37,10 +37,10 @@ export class DreamMapObjectService implements OnDestroy {
     // Требуется пустой объект
     else if (!objectId && ObjectControllers[terrainId]) {
       const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
-      const controller: DreamMapObjectTemplate = !!this.controllers[terrainId] ?
-        this.controllers[terrainId].updateDatas(...params) :
-        new ObjectControllers[terrainId](...params);
-      const object: MapObject | MapObject[] = controller.getObject();
+      const controller: DreamMapObjectTemplate[] = !!this.controllers[terrainId] ?
+        this.controllers[terrainId].map(c => c.updateDatas(...params)) :
+        ObjectControllers[terrainId].map(c => new c(...params));
+      const object: (MapObject | MapObject[])[] = controller.map(c => c.getObject());
       // Обновить данные
       this.controllers[terrainId] = controller;
       // Вернуть группу
@@ -69,13 +69,15 @@ export class DreamMapObjectService implements OnDestroy {
     else if (!objectId && ObjectControllers[terrainId]) {
       const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
       // Обновить данные
-      this.controllers[terrainId].updateDatas(...params);
-      this.controllers[terrainId].updateHeight(objectSetting);
+      this.controllers[terrainId].forEach(c => {
+        c.updateDatas(...params);
+        c.updateHeight(objectSetting);
+      });
     }
   }
 
   // Получение под типа
-  getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
+  getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights, type: string): string {
     // Свойства
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
@@ -83,8 +85,8 @@ export class DreamMapObjectService implements OnDestroy {
     if (!!objectId) {
     }
     // Требуется пустой объект
-    else if (!objectId && ObjectStaticSubTypeControllers[terrainId]) {
-      return ObjectStaticSubTypeControllers[terrainId](ceil, neighboringCeils);
+    else if (!objectId && !!ObjectStaticSubTypeControllers[terrainId] && !!ObjectStaticSubTypeControllers[terrainId][type]) {
+      return ObjectStaticSubTypeControllers[terrainId][type](ceil, neighboringCeils);
     }
     // Вернуть пусто
     return "";
@@ -99,7 +101,7 @@ export class DreamMapObjectService implements OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
-    Object.values(this.controllers).forEach(controller => controller.destroy());
+    Object.values(this.controllers).forEach(controllers => controllers.forEach(controller => controller.destroy()));
   }
 }
 
