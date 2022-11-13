@@ -1,17 +1,20 @@
-import { AngleToRad, Cos, CreateArray, CustomObjectKey, IsEven, IsMultiple, LineFunc, MathRound, Random, Sin, TriangleSquare } from "@_models/app";
-import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
+import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
-import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
+import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
+import { CheckCeilForm } from "@_services/dream-map/objects/grass/_functions";
+import { AllCorners, AnglesB, CeilGrassFillGeometry, ClosestKeysAll } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
+import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Side, Triangle, Vector3 } from "three";
 
 
 
 
 
-export class DreamMapGrassObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
+export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
 
 
   // Под тип
@@ -54,33 +57,20 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.02;
+  private width: number = 0.025;
   private height: number = 5;
-  private noise: number = 0.2;
+  private noize: number = 0.22;
+  private countStep: [number, number] = [2, 3];
   private scaleY: number[] = [1, 3];
-  private scaleX: number[] = [1.6, 0.9];
-  private noizeRotate: number = 90 * this.noise;
-  private rotationRadiusRange: number = 20;
+  private scaleX: number[] = [1.5, 1];
+  private noizeRotate: number = 90 * this.noize * 2;
+  private rotationRadiusRange: number = 30;
   private side: Side = DoubleSide;
 
   private color: Color = new Color(0.3, 1, 0.2);
   private maxHeight: number = this.heightPart * DreamMaxHeight;
 
   private params: Params;
-
-  private randomFactor: number = 3;
-  private bordersX: CustomObjectKey<number, number[]> = { 0: [-0.5, 0], 180: [0, 0.5] };
-  private bordersY: CustomObjectKey<number, number[]> = { 90: [-0.5, 0], 270: [0, 0.5] };
-  private a: XYCoord = { x: 0, y: 0 };
-  private b: XYCoord = { x: 1, y: 0 };
-  private c: XYCoord = { x: 0, y: 1 };
-  private d: XYCoord = { x: 1, y: 1 };
-  private trianglesCoords: CustomObjectKey<number, XYCoord[]> = {
-    0: [this.a, this.b, this.c],
-    90: [this.a, this.b, this.d],
-    180: [this.a, this.c, this.d],
-    270: [this.b, this.c, this.d]
-  };
 
 
 
@@ -96,19 +86,31 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
       cX,
       cY,
     }: Params = this.getParams;
+    let lX: number;
+    let lY: number;
+    let i: number = -1;
+    let countStep: number;
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = countItterator.map(() => {
-      const lX: number = Random(0, DreamCeilSize, true, 5);
-      const lY: number = Random(0, DreamCeilSize, true, 5);
+      if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
+        lX = Random(0, DreamCeilSize, true, 5);
+        lY = Random(0, DreamCeilSize, true, 5);
+        countStep = Random(this.countStep[0], this.countStep[1], false, 0);
+        i = 0;
+      }
+      // Итератор
+      i++;
+      // Точная координата
       const x: number = cX + lX;
       const y: number = cY + lY;
       // Проверка вписания в фигуру
-      if (this.checkCeilForm(cX, cY, x, y)) {
+      if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
         const scaleY: number = Random(this.scaleY[0], this.scaleY[1], false, 5);
         const scaleX: number = LineFunc(this.scaleX[0], this.scaleX[1], scaleY, this.scaleY[0], this.scaleY[1]);
         const rotationRadius: number = Random(0, this.rotationRadiusRange, false, 5);
         const rotationAngle: number = Random(0, 360);
         // Настройки
+        dummy.rotation.set(0, 0, 0);
         dummy.position.set(x, this.getHeight(x, y), y);
         dummy.rotation.x = AngleToRad((rotationRadius * Sin(rotationAngle)) - this.noizeRotate);
         dummy.rotation.z = AngleToRad(rotationRadius * Cos(rotationAngle));
@@ -123,8 +125,8 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     }).filter(matrix => !!matrix);
     // Вернуть объект
     return {
-      type: "grass",
-      subType: DreamMapGrassObject.getSubType(this.ceil, this.neighboringCeils),
+      type: "wheatgrass",
+      subType: DreamMapWheatGrassObject.getSubType(this.ceil, this.neighboringCeils),
       count: this.count,
       matrix,
       color: [],
@@ -324,7 +326,7 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights
-  ): DreamMapGrassObject {
+  ): DreamMapWheatGrassObject {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
     this.terrain = terrain;
@@ -383,212 +385,10 @@ export class DreamMapGrassObject extends DreamMapObjectTemplate implements Dream
   private createShader(): void {
     if (!this.params.shader) {
       this.params.material.onBeforeCompile = shader => {
-        // Вершинный шейдер
-        shader.vertexShader = `
-          #define STANDARD
-
-          varying vec2 vUv;
-          varying vec3 vViewPosition;
-          uniform float time;
-
-          #ifdef USE_TRANSMISSION
-            varying vec3 vWorldPosition;
-          #endif
-
-          #include <common>
-          #include <uv_pars_vertex>
-          #include <uv2_pars_vertex>
-          #include <displacementmap_pars_vertex>
-          #include <color_pars_vertex>
-          #include <fog_pars_vertex>
-          #include <normal_pars_vertex>
-          #include <morphtarget_pars_vertex>
-          #include <skinning_pars_vertex>
-          #include <shadowmap_pars_vertex>
-          #include <logdepthbuf_pars_vertex>
-          #include <clipping_planes_pars_vertex>
-
-          float N (vec2 st) {
-            return fract( sin( dot( st.xy, vec2(12.9898,78.233 ) ) ) *  43758.5453123);
-          }
-
-          float smoothNoise( vec2 ip ){
-            vec2 lv = fract( ip );
-            vec2 id = floor( ip );
-
-            lv = lv * lv * ( 3. - 2. * lv );
-
-            float bl = N( id );
-            float br = N( id + vec2( 1, 0 ));
-            float b = mix( bl, br, lv.x );
-
-            float tl = N( id + vec2( 0, 1 ));
-            float tr = N( id + vec2( 1, 1 ));
-            float t = mix( tl, tr, lv.x );
-
-            return mix( b, t, lv.y );
-          }
-
-          void main() {
-            vUv = uv;
-            float t = time * 2.;
-
-            #include <color_vertex>
-            #include <beginnormal_vertex>
-            #include <morphnormal_vertex>
-            #include <skinbase_vertex>
-            #include <skinnormal_vertex>
-            #include <defaultnormal_vertex>
-            #include <normal_vertex>
-            #include <begin_vertex>
-            #include <morphtarget_vertex>
-            #include <skinning_vertex>
-            #include <displacementmap_vertex>
-
-            // VERTEX POSITION
-            vec4 mvPosition = vec4( transformed, 1.0 );
-            #ifdef USE_INSTANCING
-              mvPosition = instanceMatrix * mvPosition;
-            #endif
-
-            // DISPLACEMENT
-            float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
-            noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
-
-            // here the displacement is made stronger on the blades tips.
-            float dispPower = 1. - cos( uv.y * 3.1416 * ${MathRound(this.noise, 4).toFixed(4)} );
-
-            float displacement = noise * ( 0.3 * dispPower );
-            mvPosition.z += displacement;
-
-            mvPosition = modelViewMatrix * mvPosition;
-            gl_Position = projectionMatrix * mvPosition;
-
-            #include <logdepthbuf_vertex>
-            #include <clipping_planes_vertex>
-            vViewPosition = - mvPosition.xyz;
-            #include <worldpos_vertex>
-            #include <shadowmap_vertex>
-            #include <fog_vertex>
-
-            #ifdef USE_TRANSMISSION
-              vWorldPosition = worldPosition.xyz;
-            #endif
-          }
-        `;
-        // Данные
-        shader.uniforms = {
-          ...shader.uniforms,
-          time: { value: 0 }
-        };
-        // Туман
-        shader.fragmentShader = shader.fragmentShader.replace("#include <fog_fragment>", FogFragmentShader);
-        // Запомнить шейдер
+        NoizeShader(this.params.material, shader, this.noize);
         this.params.shader = shader;
-        this.params.material.userData.shader = shader;
-        this.params.material.transparent = true;
-        this.params.material.fog = true;
       };
     }
-  }
-
-
-
-
-
-  // Проверка вписания травы в плавную фигуру с учетом соседних ячеек
-  private checkCeilForm(cX: number, cY: number, x: number, y: number): boolean {
-    const randomCheck: boolean = Random(1, 100) <= this.randomFactor;
-    // Проверка соседних ячеек, если не фактор случайности не сработал
-    if (!randomCheck) {
-      const closestCeils: ClosestHeight[] = ClosestKeysAll.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain);
-      const closestCount: number = closestCeils.length;
-      const closestKeys: (keyof ClosestHeights)[] = ClosestKeysAll.filter(k => this.neighboringCeils[k].terrain === this.ceil.terrain);
-      // Отрисовка только для существующих типов фигур
-      if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
-        // Для ячеек без похожих соседних ячеек
-        if (closestCount === 0) {
-          return this.checkCeilCircleForm(cX, cY, x, y);
-        }
-        // Для ячеек с одной похожей геометрией
-        else if (closestCount === 1) {
-          const angle: number = AnglesA[closestKeys[0]];
-          // Тест геометрии
-          return this.checkCeilHalfCircleForm(cX, cY, x, y, angle);
-        }
-        // Для ячеек с двумя похожими геометриями
-        else if (closestCount === 2) {
-          const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
-          // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
-          if (angle >= 0) {
-            const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
-            const cornersCount: number = corners.map(k => this.neighboringCeils[k]).filter(c => c.terrain === this.ceil.terrain).length;
-            // Посчитать
-            return cornersCount > 0 ?
-              this.checkCeilTriangleForm(cX, cY, x, y, angle) :
-              this.checkCeilQuarterCircleForm(cX, cY, x, y, angle);
-          }
-        }
-      }
-    }
-    // Координата вписывается в фигуру
-    return true;
-  }
-
-  // Проверка круговой геометрии
-  private checkCeilCircleForm(cX: number, cY: number, oX: number, oY: number): boolean {
-    const radius: number = DreamCeilSize / 2;
-    const x: number = oX - cX - radius;
-    const y: number = oY - cY - radius;
-    // Результат
-    return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
-  }
-
-  // Проверка полукруговой геометрии
-  private checkCeilHalfCircleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
-    const borderDef: number[] = [-0.5, 0.5];
-    const borderX: number[] = this.bordersX[angle] ?? borderDef;
-    const borderY: number[] = this.bordersY[angle] ?? borderDef;
-    const radius: number = DreamCeilSize / 2;
-    const x: number = oX - cX - radius;
-    const y: number = oY - cY - radius;
-    // Результат
-    return x >= borderX[0] && x <= borderX[1] && y >= borderY[0] && y <= borderY[1] ?
-      true :
-      this.checkCeilCircleForm(cX, cY, oX, oY);
-  }
-
-  // Проверка треугольной геометрии
-  private checkCeilTriangleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
-    const triangle: XYCoord[] = this.trianglesCoords[angle];
-    // Проверка внутри треугольника
-    if (!!triangle) {
-      const traingleSquare: number = MathRound(TriangleSquare(triangle), 5);
-      const x: number = oX - cX;
-      const y: number = oY - cY;
-      const checkCoord: XYCoord = { x, y };
-      const checkCoords: XYCoord[][] = [
-        [checkCoord, triangle[1], triangle[2]],
-        [triangle[0], checkCoord, triangle[2]],
-        [triangle[0], triangle[1], checkCoord],
-      ];
-      const checkSquaries: number = MathRound(checkCoords.map(c => TriangleSquare(c)).reduce((s, o) => s + o, 0), 5);
-      // Вписывается
-      return traingleSquare === checkSquaries;
-    }
-    // Не вписывается
-    return false;
-  }
-
-  // Проверка геометрии четверти круга
-  private checkCeilQuarterCircleForm(cX: number, cY: number, oX: number, oY: number, angle: number): boolean {
-    const radius: number = DreamCeilSize;
-    const subtractorY: number = angle === 180 || angle === 270 ? -1 : 0;
-    const subtractorX: number = Math.abs((angle === 90 || angle === 180 ? -1 : 0) - subtractorY) * -1;
-    const x: number = oX - cX + subtractorX;
-    const y: number = oY - cY + subtractorY;
-    // Результат
-    return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
   }
 }
 
@@ -634,27 +434,3 @@ interface Params {
   intersect: Vector3;
   shader?: Shader;
 }
-
-// Перечисление типов геометрий травы для ячеек
-type CeilGrassFillGeometryType = "circle" | "half-circle" | "triangle" | false;
-const CeilGrassFillGeometry: CeilGrassFillGeometryType[] = [
-  "circle",
-  "half-circle",
-  "triangle",
-];
-
-
-const ClosestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];
-const AnglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 180, bottom: 270, left: 0 };
-const AnglesB: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, number>> = {
-  top: { left: 0, right: 90 },
-  left: { top: 0, bottom: 180 },
-  right: { top: 90, bottom: 270 },
-  bottom: { left: 180, right: 270 },
-};
-const AllCorners: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, (keyof ClosestHeights)[]>> = {
-  top: { left: ["topRight", "bottomLeft"], right: ["topLeft", "bottomRight"] },
-  left: { top: ["topRight", "bottomLeft"], bottom: ["topLeft", "bottomRight"] },
-  right: { top: ["topLeft", "bottomRight"], bottom: ["topRight", "bottomLeft"] },
-  bottom: { left: ["topLeft", "bottomRight"], right: ["topRight", "bottomLeft"] },
-};
