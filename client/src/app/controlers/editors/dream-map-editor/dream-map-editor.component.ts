@@ -49,7 +49,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // * Инструменты: общее
   private tool: Tool = Tool.landscape;
-  toolSizeLand: number = ToolSizeLand[2];
+  toolSizeLand: number = ToolSizeLand[1];
   private currentObject: ObjectHoverEvent = null;
 
   // * Инструменты: ландшафт
@@ -57,7 +57,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   reliefElmDatas: ReliefElmData[];
 
   // * Инструменты: местность
-  currentTerrain: number = this.terrainList.find(t => t.id === 2).id;
+  currentTerrain: number = this.terrainList.find(t => t.id === 1).id;
 
   // * Инструменты: вода
   waterType: WaterTypeTool = WaterTypeTool.sea;
@@ -596,10 +596,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Запомнить ячейку
   private saveCeil(ceil: DreamMapCeil): void {
-    const findCeil: (c: DreamMapCeil) => boolean = (c: DreamMapCeil) => c.coord.x === ceil.coord.x && c.coord.y === ceil.coord.y;
+    const index: number = this.dreamMap.ceils.findIndex(c => c.coord.x === ceil.coord.x && c.coord.y === ceil.coord.y);
     // Удалить имеющуюся ячейку
-    if (this.dreamMap.ceils.some(findCeil)) {
-      this.dreamMap.ceils.splice(this.dreamMap.ceils.findIndex(findCeil), 1);
+    if (index >= 0) {
+      this.dreamMap.ceils.splice(index, 1);
     }
     // Запомнить ячейку
     this.dreamMap.ceils.push(ceil);
