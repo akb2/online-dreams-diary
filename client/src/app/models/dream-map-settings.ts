@@ -49,4 +49,5 @@ export enum DreamObjectElmsValues {
   Awesome
 };
 export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.Awesome;
-export const DreamMaxElmsCount: number = 24 * (DreamObjectDetalization + 1);
+export const DreamBaseElmsCount: number = 32;
+export const DreamMaxElmsCount: number = DreamBaseElmsCount * (DreamObjectDetalization + 1);
