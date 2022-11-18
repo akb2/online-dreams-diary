@@ -2,7 +2,7 @@ import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { ImageExtension } from "@_models/screen";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantain";
+import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { Clock, DataTexture, Mesh, MeshStandardMaterial, Side, Texture } from "three";
@@ -370,7 +370,7 @@ export const ObjectControllers: CustomObjectKey<number, ObjectController[]> = {
 export const ObjectStaticSubTypeControllers: CustomObjectKey<number, CustomObjectKey<string, Function>> = {
   1: {
     wheatgrass: DreamMapWheatGrassObject.getSubType,
-    plantain: DreamMapPlantainGrassObject.getSubType
+    plantaingrass: DreamMapPlantainGrassObject.getSubType
   },
 };
 
