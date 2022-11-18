@@ -6,7 +6,7 @@ import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { ScreenService } from "@_services/screen.service";
 import { forkJoin, map, mergeMap, Observable, of, Subject, takeUntil, tap } from "rxjs";
 import {
-  BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, IUniform, LinearFilter, LinearMipmapNearestFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils
+  BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, IUniform, LinearFilter, Mesh, PlaneGeometry, RepeatWrapping, ShaderLib, ShaderMaterial, sRGBEncoding, Texture, TextureLoader, UniformsUtils
 } from "three";
 
 
@@ -416,7 +416,7 @@ export class DreamMapTerrainService implements OnDestroy {
       // Настройки
       const texture: DataTexture = new DataTexture(data, width, height);
       texture.magFilter = LinearFilter;
-      texture.minFilter = LinearMipmapNearestFilter;
+      texture.minFilter = LinearFilter;
       // Вернуть текстуру
       return texture;
     });
@@ -436,7 +436,7 @@ export class DreamMapTerrainService implements OnDestroy {
     if (createTexture) {
       this.displacementTexture = new DataTexture(new Uint8Array(4 * size), width, height);
       this.displacementTexture.magFilter = LinearFilter;
-      this.displacementTexture.minFilter = LinearMipmapNearestFilter;
+      this.displacementTexture.minFilter = LinearFilter;
       this.displacementTexture.flipY = true;
     }
     // Запрос к данным
