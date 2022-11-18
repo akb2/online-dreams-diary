@@ -5,10 +5,10 @@ import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { CheckCeilForm } from "@_services/dream-map/objects/grass/_functions";
-import { AllCorners, AnglesB, CeilGrassFillGeometry, ClosestKeysAll } from "@_services/dream-map/objects/grass/_models";
+import { AllCorners, AnglesB, CeilGrassFillGeometry, ClosestKeysAll, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Side, Triangle, Vector3 } from "three";
+import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
 
 
 
@@ -57,17 +57,15 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.025;
-  private height: number = 5;
+  private width: number = 0.022;
+  private height: number = 6;
   private noize: number = 0.22;
-  private countStep: [number, number] = [2, 3];
+  private countStep: [number, number] = [1, 3];
   private scaleY: number[] = [1, 3];
   private scaleX: number[] = [1.5, 1];
-  private noizeRotate: number = 90 * this.noize * 2;
+  private noizeRotate: number = 90 * (this.noize / 2);
   private rotationRadiusRange: number = 30;
-  private side: Side = DoubleSide;
 
-  private color: Color = new Color(0.3, 1, 0.2);
   private maxHeight: number = this.heightPart * DreamMaxHeight;
 
   private params: Params;
@@ -129,7 +127,11 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       subType: DreamMapWheatGrassObject.getSubType(this.ceil, this.neighboringCeils),
       count: this.count,
       matrix,
-      color: [],
+      color: matrix.map(() => new Color(
+        Random(ColorRange[0], ColorRange[1], false, 3),
+        Random(ColorRange[2], ColorRange[3], false, 3),
+        Random(ColorRange[4], ColorRange[5], false, 3)
+      )),
       geometry: geometry as BufferGeometry,
       material,
       coords: {
@@ -156,13 +158,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
       // Данные фигуры
       const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
-      const material: MeshPhongMaterial = new MeshPhongMaterial({
-        color: this.color,
-        fog: true,
-        transparent: false,
-        side: this.side,
-        flatShading: true
-      });
+      const material: MeshPhongMaterial = GrassMaterial;
       const dummy: Object3D = new Object3D();
       // Параметры
       const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
