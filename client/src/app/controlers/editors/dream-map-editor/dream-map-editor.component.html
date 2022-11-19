@@ -10,15 +10,14 @@
   <div class="area__control"
        *ngIf="form">
     <!-- Инструмент -->
-    <div class="tool-button"
-         [ngClass]="{ disable: disableUI }">
+    <div class="tool-button">
       <mat-icon>{{getCurrentTool.icon}}</mat-icon>
       <!-- Список инструментов -->
       <div class="tool-button__items border-radius">
         <div class="tool-button"
-             [ngClass]="{ active: tool.type === getCurrentTool.type, disable: disableUI  }"
+             [ngClass]="{ active: tool.type === getCurrentTool.type }"
              matTooltip="Инструмент: {{tool.name}}"
-             (click)="disableUI? null: onToolChange(tool.type)"
+             (click)="onToolChange(tool.type)"
              *ngFor="let tool of toolList">
           <mat-icon>{{tool.icon}}</mat-icon>
         </div>
@@ -37,6 +36,14 @@
     <ng-container [ngTemplateOutlet]="waterTools"
                   *ngIf="getCurrentTool.type === toolType.water"></ng-container>
   </div>
+  <!-- Загрузчик -->
+  <div class="area__loader"
+       *ngIf="loading">
+    <app-inform color="white"
+                icon="loader"
+                title="Обновление карты"
+                subTitle="Пожалуйста подождите"></app-inform>
+  </div>
 </div>
 
 
@@ -47,7 +54,6 @@
 <ng-template #envTools>
   <!-- Положение небесного светила -->
   <form class="tool-button"
-        [ngClass]="{ disable: disableUI }"
         [formGroup]="form">
     <div class="tool-button__point progress">
       <div class="tool-button__point progress__height back">{{timeFormat()}}</div>
@@ -57,8 +63,7 @@
       </div>
     </div>
     <!-- Настройка размера -->
-    <div class="tool-button__items"
-         [ngClass]="{ disable: disableUI }">
+    <div class="tool-button__items">
       <div class="tool-button container">Время:</div>
       <div class="tool-button container">
         <mat-slider class="long-slider"
@@ -81,15 +86,14 @@
 <!-- Под-инструмент: ландшафт -->
 <ng-template #landscapeTools>
   <!-- Направление изменения -->
-  <div class="tool-button"
-       [ngClass]="{ disable: disableUI }">
+  <div class="tool-button">
     <mat-icon>{{getCurrentLandscapeTool.icon}}</mat-icon>
     <!-- Список инструментов -->
     <div class="tool-button__items border-radius">
       <div class="tool-button"
-           [ngClass]="{ active: tool.type === getCurrentLandscapeTool.type, disable: disableUI }"
+           [ngClass]="{ active: tool.type === getCurrentLandscapeTool.type }"
            matTooltip="Ландшафт: {{tool.name}}"
-           (click)="disableUI? null: onLandscapeToolChange(tool.type)"
+           (click)="onLandscapeToolChange(tool.type)"
            *ngFor="let tool of landscapeToolList">
         <mat-icon>{{tool.icon}}</mat-icon>
       </div>
@@ -98,15 +102,14 @@
   <!-- Размер кисти -->
   <ng-container [ngTemplateOutlet]="toolsSizeForm"></ng-container>
   <!-- Управление рельефом за пределами карты -->
-  <div class="tool-button"
-       [ngClass]="{ disable: disableUI }">
+  <div class="tool-button">
     <mat-icon>grid_on</mat-icon>
     <!-- Список инструментов -->
     <div class="tool-button__items border-radius three-items"
          *ngIf="!!reliefElmDatas">
       <div class="tool-button active-hover"
-           [ngClass]="{ disable: disableUI, active: tool.active }"
-           (click)="disableUI? null: tool.clickEvent(tool.type)"
+           [ngClass]="{ active: tool.active }"
+           (click)="tool.clickEvent(tool.type)"
            *ngFor="let tool of reliefElmDatas">
         <mat-icon>{{tool.icon}}</mat-icon>
       </div>
@@ -118,16 +121,15 @@
 <ng-template #terrainTools>
   <!-- Текстура -->
   <div class="tool-button"
-       [ngClass]="{ disable: disableUI }"
        *ngIf="getCurrentTool.type === toolType.terrain">
     <img [src]="getTerrainImage(currentTerrain)" />
     <!-- Список инструментов -->
     <div class="tool-button__items border-radius">
       <ng-container *ngFor="let terrain of terrainList">
         <div class="tool-button"
-             [ngClass]="{ active: terrain.id === currentTerrain, disable: disableUI }"
+             [ngClass]="{ active: terrain.id === currentTerrain }"
              matTooltip="Материал: {{terrain.title}}"
-             (click)="disableUI? null: onTerrainChange(terrain.id)"
+             (click)="onTerrainChange(terrain.id)"
              *ngIf="terrain.isAvail">
           <img [src]="getTerrainImage(terrain.id)" />
         </div>
@@ -142,7 +144,6 @@
 <ng-template #waterTools>
   <!-- Высота мирового океана -->
   <form class="tool-button"
-        [ngClass]="{ disable: disableUI }"
         [formGroup]="form">
     <div class="tool-button__point progress">
       <div class="tool-button__point progress__height back">{{oceanHeightFormat}}%</div>
@@ -179,7 +180,6 @@
 <!-- Под-инструмент: размер кисти -->
 <ng-template #toolsSizeForm>
   <form class="tool-button"
-        [ngClass]="{ disable: disableUI }"
         [formGroup]="form">
     <div class="tool-button__point "
          [ngStyle]="toolSizeStyles"></div>

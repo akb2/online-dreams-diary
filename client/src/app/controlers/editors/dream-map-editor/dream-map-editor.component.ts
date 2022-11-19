@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { CreateArray, CustomObjectKey, SimpleObject } from "@_models/app";
+import { CreateArray, CustomObjectKey, IsMultiple, SimpleObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
@@ -30,7 +30,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
   form: FormGroup;
-  disableUI: boolean = false;
+  loading: boolean = false;
 
   private startZ: number = -1;
 
@@ -66,6 +66,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private toolActive: boolean = false;
   private toolActionTimer: number = 20;
   private terrainChangeStep: number = 1;
+  private terrainObjectsUpdateCounter: number = 1;
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
 
   private destroy$: Subject<void> = new Subject<void>();
@@ -297,8 +298,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       }
       // Цикл по активности
       if (this.toolActive) {
-        timer(0, this.toolActionTimer).pipe(tap(this.onToolActionCycle.bind(this)))
-          .pipe(takeWhile(() => this.toolActive), takeUntil(this.destroy$))
+        timer(0, this.toolActionTimer)
+          .pipe(
+            takeWhile(() => this.toolActive),
+            takeUntil(this.destroy$),
+            tap(i => this.onToolActionCycle(i))
+          )
           .subscribe();
       }
     }
@@ -353,17 +358,19 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Активное действие в цикле: ЛКМ зажата
-  private onToolActionCycle(): void {
+  private onToolActionCycle(itterator: number): void {
     if (this.currentObject && this.toolActive) {
+      const updateObjects: boolean = this.terrainObjectsUpdateCounter > 0 ? IsMultiple(itterator, this.terrainObjectsUpdateCounter) : false;
+      // Инструмент
       switch (this.tool) {
         // Работа с ландшафтом
         case (Tool.landscape): switch (this.landscapeTool) {
           // Работа с ландшафтом: поднять
-          case (LandscapeTool.up): this.ceilsHeight(1); break;
+          case (LandscapeTool.up): this.ceilsHeight(1, updateObjects); break;
           // Работа с ландшафтом: опустить
-          case (LandscapeTool.down): this.ceilsHeight(-1); break;
+          case (LandscapeTool.down): this.ceilsHeight(-1, updateObjects); break;
           // Работа с ландшафтом: выровнять
-          case (LandscapeTool.align): this.ceilsHeight(0); break;
+          case (LandscapeTool.align): this.ceilsHeight(0, updateObjects); break;
         }; break;
         // Работа с типом местности
         case (Tool.terrain):
@@ -376,6 +383,15 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private onToolActionAfterActive(): void {
     if (this.currentObject && this.toolActive) {
       switch (this.tool) {
+        // Работа с ландшафтом
+        case (Tool.landscape): switch (this.landscapeTool) {
+          // Работа с ландшафтом: поднять
+          case (LandscapeTool.up): this.ceilsHeight(1, true); break;
+          // Работа с ландшафтом: опустить
+          case (LandscapeTool.down): this.ceilsHeight(-1, true); break;
+          // Работа с ландшафтом: выровнять
+          case (LandscapeTool.align): this.ceilsHeight(0, true); break;
+        }; break;
       }
     }
   }
@@ -448,12 +464,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение типа рельефа
   onReliefTypeChange(type: ClosestHeightName | "center"): void {
-    this.disableUI = true;
+    this.loading = true;
     // Для центральной ячейки
     if (type === "center") {
       this.viewer.setReliefRewrite();
       // Разблокировать UI
-      this.disableUI = false;
+      this.loading = false;
       // обновить интерфейс
       this.createReliefData();
     }
@@ -473,7 +489,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       // Перерисовать рельеф
       this.viewer.setReliefType(type)
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.disableUI = false);
+        .subscribe(() => {
+          this.loading = false;
+          this.changeDetectorRef.detectChanges();
+        });
     }
   }
 
@@ -487,7 +506,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Изменение высоты
-  private ceilsHeight(direction: HeightDirection): void {
+  private ceilsHeight(direction: HeightDirection, update: boolean = false): void {
     const sizes: number[] = CreateArray((this.toolSizeLand * 2) + 1).map(v => v - this.toolSizeLand);
     const z: number = direction === 0 ?
       this.startZ :
@@ -542,7 +561,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         return this.viewer.getCeil(x, y);
       })).reduce((o, c) => ([...o, ...c]), []);
       // Обновить
-      this.viewer.setTerrainHeight(ceils);
+      this.viewer.setTerrainHeight(ceils, update);
     }
   }
 

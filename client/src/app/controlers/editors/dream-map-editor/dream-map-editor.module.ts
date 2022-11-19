@@ -5,6 +5,7 @@ import { DreamMapViewerModule } from "@_controlers/dream-map-viewer/dream-map-vi
 import { CoreModule } from "@_modules/core.module";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSliderModule } from "@angular/material/slider";
+import { InformModule } from "@_controlers/inform/inform.module";
 
 
 
@@ -22,7 +23,8 @@ import { MatSliderModule } from "@angular/material/slider";
     CoreModule,
     DreamMapViewerModule,
     MatTooltipModule,
-    MatSliderModule
+    MatSliderModule,
+    InformModule
   ]
 })
 
