@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import { IconColor } from "@_models/app";
 
 
 
@@ -15,6 +16,7 @@ export class InformComponent implements OnInit, AfterViewInit {
 
   @Input() icon: string = "loader";
   @Input() aboveIcon: boolean = false;
+  @Input() color: IconColor | "white" = "primary";
   @Input() title: string;
   @Input() subTitle: string;
   @Input() description: string;

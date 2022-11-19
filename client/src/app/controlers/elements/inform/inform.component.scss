@@ -32,25 +32,39 @@ $figure-time-2: $figure-time-1 * 2;
 
   // Фигура
   &__figure {
+    $__elm: &;
+    // Свойства
     position: absolute;
     border-radius: 50%;
+
     // Граница 1
     &-1 {
       @include mixins.inset(calc(50% - #{math.div($figure-size-1, 2)}));
+      // Свойства
       width: $figure-size-1;
       height: $figure-size-1;
       border: $figure-line-1 solid transparent;
       border-top-color: $figure-color-1;
       animation: loader-animation #{$figure-time-1} linear infinite;
+      // Белый цвет
+      &.white {
+        border-top-color: #fff;
+      }
     }
     // Граница 2
     &-2 {
       @include mixins.inset(calc(50% - #{math.div($figure-size-2, 2)}));
+      // Свойства
       width: $figure-size-2;
       height: $figure-size-2;
       border: $figure-line-2 solid transparent;
       border-bottom-color: $figure-color-2;
       animation: loader-animation #{$figure-time-2} linear infinite;
+      // Белый цвет
+      &.white {
+        border-bottom-color: #fff;
+        opacity: 0.8;
+      }
     }
   }
 
@@ -93,6 +107,10 @@ $figure-time-2: $figure-time-1 * 2;
     font-size: 24px;
     font-weight: 500;
     text-transform: uppercase;
+    // Белый цвет
+    &.white {
+      color: #fff;
+    }
   }
 
   // Подзаголовок
@@ -101,6 +119,10 @@ $figure-time-2: $figure-time-1 * 2;
     font-weight: 300;
     margin-top: 3px;
     text-transform: uppercase;
+    // Белый цвет
+    &.white {
+      color: #eee;
+    }
     // Отступ
     #{$elm} + & {
       margin-top: 5px;
@@ -111,6 +133,10 @@ $figure-time-2: $figure-time-1 * 2;
   &__description {
     font-size: 14px;
     font-weight: 300;
+    // Белый цвет
+    &.white {
+      color: #ddd;
+    }
   }
 
   // Описание
