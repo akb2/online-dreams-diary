@@ -2,7 +2,8 @@
   <!-- Область просмотра -->
   <div class="area__viewer"
        (mousedown)="onMouseDown($event)">
-    <app-dream-map-viewer [dreamMap]="dreamMap"
+    <app-dream-map-viewer [showCompass]="true"
+                          [dreamMap]="dreamMap"
                           [debugInfo]="debugInfo"
                           (objectHover)="onObjectHover($event)"></app-dream-map-viewer>
   </div>

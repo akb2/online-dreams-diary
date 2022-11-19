@@ -1,4 +1,6 @@
+@use "sass:math";
 @use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/colors";
 
 $controlOffset: 5px;
 $toolButtonBRadius: 3px;
@@ -126,6 +128,80 @@ $toolButtonBRadius: 3px;
       width: 100%;
       height: 100%;
       object-fit: contain;
+    }
+  }
+  // Компасс
+  &__compass {
+    $size: 64px;
+    $textSize: 10px;
+    $arrowSize: 4px;
+    $arrowLength: $size * 0.4;
+    // Свойства
+    position: absolute;
+    bottom: $controlOffset;
+    right: $controlOffset;
+    width: $size;
+    height: $size + $textSize;
+    pointer-events: none;
+    // Текст
+    &-text {
+      font-size: $textSize;
+      line-height: $textSize;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      text-shadow: 1px 1px 3px #{colors.$shadow};
+      // Полукруги
+      &::before,
+      &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: $size;
+        height: $size;
+        border: 2px solid transparent;
+        border-top-color: #fff;
+        border-left-color: #ddd;
+        border-left-style: dotted;
+        border-radius: 50%;
+        transform: rotate(-56deg);
+      }
+      &::after {
+        border-left-color: transparent;
+        border-right-color: #ddd;
+        border-right-style: dotted;
+        transform: rotate(56deg);
+      }
+    }
+    // Стрелка
+    &-arrow {
+      position: absolute;
+      top: calc(50% - #{$arrowLength * 2});
+      left: calc(50% - #{math.div($arrowSize, 2)});
+      width: $arrowSize;
+      height: $arrowLength * 2;
+      border-style: solid;
+      border-color: transparent;
+      border-width: #{$arrowLength} #{math.div($arrowSize, 2)};
+      border-bottom-color: #fff;
+      transform-origin: 50% 100%;
+      // Центр
+      &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        bottom: -($arrowLength + math.div($arrowSize, 2));
+        left: math.div($arrowSize, -2);
+        width: $arrowSize;
+        height: $arrowSize;
+        border-radius: 50%;
+        background-color: #fff;
+      }
     }
   }
 }

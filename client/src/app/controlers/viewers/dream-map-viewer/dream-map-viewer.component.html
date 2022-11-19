@@ -34,7 +34,14 @@
          target="_blank">Подробнее тут</a>
     </app-inform>
   </div>
-
+  <!-- Компас -->
+  <div class="map-viewer__compass"
+       *ngIf="showCompass">
+    <div class="map-viewer__compass-text">С</div>
+    <div class="map-viewer__compass-arrow"
+         [ngStyle]="{ transform: 'rotate(' + compassAngle + 'deg)' }"></div>
+  </div>
+  <!-- Мини карта -->
   <!-- <div class="map-viewer__mini-map-layout">
     <div class="map-viewer__mini-map">
       <canvas #miniMap></canvas>

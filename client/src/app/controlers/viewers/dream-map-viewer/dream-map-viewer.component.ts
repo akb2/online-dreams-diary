@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
-import { AngleToRad, CreateArray, CustomObjectKey, IsOdd } from "@_models/app";
+import { AngleToRad, CreateArray, CustomObjectKey, IsOdd, RadToAngle } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
@@ -10,7 +10,7 @@ import { DreamMapTerrainService } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
 import { forkJoin, fromEvent, Observable, of, Subject, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Quaternion, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -36,6 +36,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   @Input() dreamMap: DreamMap;
   @Input() debugInfo: boolean = false;
+  @Input() showCompass: boolean = false;
 
   @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>();
 
@@ -95,6 +96,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private objectCounts: CustomObjectKey<string, number> = {};
   stats: Stats;
   hoverCoords: XYCoord = null;
+  compassAngle: number = 0;
 
   loading: boolean = false;
   ready: boolean = false;
@@ -334,6 +336,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private onCameraChange(event: OrbitControls): void {
     const width: number = this.dreamMap?.size?.width || DreamMapSize;
     const height: number = this.dreamMap?.size?.height || DreamMapSize;
+    const vector: Vector3 = new Vector3();
     // Настройка позиции камеры
     this.control.panSpeed = this.moveSpeed / event.getDistance();
     let x: number = event.target.x;
@@ -348,6 +351,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       event.target.setX(x);
       event.target.setZ(z);
     }
+    // Угол для компаса
+    event.object.getWorldDirection(vector);
+    this.compassAngle = RadToAngle(Math.atan2(-vector.x, -vector.z));
+    this.changeDetectorRef.detectChanges();
     // обновить объекты
     // this.objects.filter(object => object instanceof LOD).forEach(object => (object as LOD).update(this.camera));
   }
@@ -523,6 +530,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.control.target.setX(this.dreamMap.camera.target.x);
     this.control.target.setY(this.dreamMap.camera.target.y);
     this.control.target.setZ(this.dreamMap.camera.target.z);
+    this.onCameraChange(this.control);
     // Статистика
     this.stats = Stats();
     this.statsBlock.nativeElement.appendChild(this.stats.dom);
