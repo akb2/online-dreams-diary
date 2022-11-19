@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, ObjectControllerParams, ObjectControllers, ObjectStaticSubTypeControllers, XYCoord } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, ObjectControllerParams, ObjectControllers, ObjectStaticSubTypeControllers, XYCoord } from "@_models/dream-map";
 import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
@@ -27,7 +27,8 @@ export class DreamMapObjectService implements OnDestroy {
     terrain: Mesh,
     clock: Clock,
     displacementTexture: DataTexture,
-    closestsCeils: ClosestHeights
+    closestsCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ): (MapObject | MapObject[])[] {
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
@@ -36,7 +37,7 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Требуется пустой объект
     else if (!objectId && ObjectControllers[terrainId]) {
-      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils, dreamMapSettings];
       const controller: DreamMapObjectTemplate[] = !!this.controllers[terrainId] ?
         this.controllers[terrainId].map(c => c.updateDatas(...params)) :
         ObjectControllers[terrainId].map(c => new c(...params));
@@ -59,6 +60,7 @@ export class DreamMapObjectService implements OnDestroy {
     clock: Clock,
     displacementTexture: DataTexture,
     closestsCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings,
   ): void {
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
@@ -67,7 +69,7 @@ export class DreamMapObjectService implements OnDestroy {
     }
     // Требуется пустой объект
     else if (!objectId && ObjectControllers[terrainId]) {
-      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils];
+      const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils, dreamMapSettings];
       // Обновить данные
       this.controllers[terrainId].forEach(c => {
         c.updateDatas(...params);

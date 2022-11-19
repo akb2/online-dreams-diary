@@ -1,7 +1,7 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd, RadToAngle } from "@_models/app";
-import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, ReliefType, XYCoord } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService, MapObject, ObjectSetting } from "@_services/dream-map/object.service";
@@ -31,12 +31,13 @@ import { Water } from "three/examples/jsm/objects/Water";
   ]
 })
 
-export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
 
 
   @Input() dreamMap: DreamMap;
   @Input() debugInfo: boolean = false;
   @Input() showCompass: boolean = false;
+  @Input() dreamMapSettings: DreamMapSettings;
 
   @Output() objectHover: EventEmitter<ObjectHoverEvent> = new EventEmitter<ObjectHoverEvent>();
 
@@ -293,6 +294,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     private objectService: DreamMapObjectService,
     private dreamService: DreamService
   ) { }
+
+  ngOnChanges(): void {
+    this.dreamMapSettings = this.dreamMapSettings ?? this.dreamService.getDreamMapSettings;
+  }
 
   ngOnInit() {
     const moveEvent = this.isTouchDevice ? "touchmove" : "mousemove";
@@ -803,6 +808,90 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
+  // Добавить объект на карту
+  // ? obj.0: Добавить объект по умолчанию
+  private addObject(x: number, y: number, obj: number = -1, oldTerrain: number = DreamTerrain, force: boolean = false): void {
+    if (obj >= 0) {
+      const ceil: DreamMapCeil = this.getCeil(x, y);
+      // Определение объекта
+      obj = obj === 0 ? (ceil.object ?? 0) : obj;
+      // Только если объект должен смениться
+      if (ceil.object !== obj || (ceil.terrain !== oldTerrain && !ceil.object) || force) {
+        this.removeObject(x, y);
+        // Данные объекта
+        const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
+        const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
+        const size: number = oWidth * oHeight;
+        const mixedObjects: (MapObject | MapObject[])[] = this.objectService.getObject(
+          this.dreamMap,
+          ceil,
+          this.terrainMesh,
+          this.clock,
+          this.terrainService.displacementTexture,
+          this.getClosestCeils(ceil),
+          this.dreamMapSettings
+        );
+        // Получены объекты
+        if (!!mixedObjects && !!mixedObjects?.length) {
+          const objects: MapObject[][] = mixedObjects.map(mixedObject => Array.isArray(mixedObject) ? mixedObject : [mixedObject]);
+          const defaultColor: Color = new Color();
+          const defaultMatrix: Matrix4 = new Matrix4();
+          // Цикл по объектам
+          objects
+            .reduce((o, d) => ([...o, ...d]), [])
+            .filter(object => !!object).forEach(object => {
+              const count: number = object.count;
+              const length: number = object.matrix?.length ?? 0;
+              // Если у объекта есть фрагменты
+              if (count > 0 && length > 0) {
+                const type: string = object.type;
+                // Параметры
+                const subType: string = object.subType;
+                const oldObjects: ObjectSetting[] = this.objectSettings.filter(({ type: t }) => type === t);
+                const isOldObject: boolean = !!oldObjects?.length;
+                const mesh: InstancedMesh = isOldObject ? oldObjects[0].mesh : new InstancedMesh(object.geometry, object.material, count * size);
+                const coords: XYCoord = object.coords;
+                const startIndex: number = this.objectCounts[type] ?? 0;
+                const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
+                const objectSetting: ObjectSetting = { coords, mesh, type, subType, indexKeys, count };
+                // Цикл по ключам
+                indexKeys.forEach((index, k) => {
+                  mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
+                  mesh.setColorAt(index, object.color[k] ?? defaultColor);
+                });
+                // Функция анимации
+                if (!!object.animate) {
+                  this.animateFunctions[type] = object.animate;
+                }
+                // Обновить старый объект
+                if (isOldObject) {
+                  mesh.updateMatrix();
+                  mesh.instanceMatrix.needsUpdate = true;
+                  mesh.instanceColor.needsUpdate = true;
+                }
+                // Обновить новый объект
+                else {
+                  mesh.castShadow = object.castShadow;
+                  mesh.receiveShadow = object.recieveShadow;
+                  mesh.matrixAutoUpdate = false;
+                  // Добавить на сцену
+                  this.scene.add(mesh);
+                }
+                // Общие настройки
+                this.objectSettings.push(objectSetting);
+                this.objectCounts[type] = !!this.objectCounts[type] ? this.objectCounts[type] + length : length;
+                mesh.count = this.objectCounts[type];
+              }
+            });
+        }
+      }
+    }
+    // Удаление объекта
+    else {
+      this.removeObject(x, y);
+    }
+  }
+
   // Удалить объект с карты
   private removeObject(x: number, y: number): void {
     const objectSettingKeys: number[] = this.getObjectSettingByCoords(x, y);
@@ -874,87 +963,25 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  // Добавить объект на карту
-  // ? obj.0: Добавить объект по умолчанию
-  private addObject(x: number, y: number, obj: number = -1, oldTerrain: number = DreamTerrain, force: boolean = false): void {
-    if (obj >= 0) {
-      const ceil: DreamMapCeil = this.getCeil(x, y);
-      // Определение объекта
-      obj = obj === 0 ? (ceil.object ?? 0) : obj;
-      // Только если объект должен смениться
-      if (ceil.object !== obj || (ceil.terrain !== oldTerrain && !ceil.object) || force) {
-        this.removeObject(x, y);
-        // Данные объекта
-        const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
-        const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-        const size: number = oWidth * oHeight;
-        const mixedObjects: (MapObject | MapObject[])[] = this.objectService.getObject(
-          this.dreamMap,
-          ceil,
-          this.terrainMesh,
-          this.clock,
-          this.terrainService.displacementTexture,
-          this.getClosestCeils(ceil)
-        );
-        // Получены объекты
-        if (!!mixedObjects && !!mixedObjects?.length) {
-          const objects: MapObject[][] = mixedObjects.map(mixedObject => Array.isArray(mixedObject) ? mixedObject : [mixedObject]);
-          const defaultColor: Color = new Color();
-          const defaultMatrix: Matrix4 = new Matrix4();
-          // Цикл по объектам
-          objects
-            .reduce((o, d) => ([...o, ...d]), [])
-            .filter(object => !!object).forEach(object => {
-              const count: number = object.count;
-              const length: number = object.matrix?.length ?? 0;
-              // Если у объекта есть фрагменты
-              if (count > 0 && length > 0) {
-                const type: string = object.type;
-                // Параметры
-                const subType: string = object.subType;
-                const oldObjects: ObjectSetting[] = this.objectSettings.filter(({ type: t }) => type === t);
-                const isOldObject: boolean = !!oldObjects?.length;
-                const mesh: InstancedMesh = isOldObject ? oldObjects[0].mesh : new InstancedMesh(object.geometry, object.material, count * size);
-                const coords: XYCoord = object.coords;
-                const startIndex: number = this.objectCounts[type] ?? 0;
-                const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
-                const objectSetting: ObjectSetting = { coords, mesh, type, subType, indexKeys, count };
-                // Цикл по ключам
-                indexKeys.forEach((index, k) => {
-                  mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
-                  mesh.setColorAt(index, object.color[k] ?? defaultColor);
-                });
-                // Функция анимации
-                if (!!object.animate) {
-                  this.animateFunctions[type] = object.animate;
-                }
-                // Обновить старый объект
-                if (isOldObject) {
-                  mesh.updateMatrix();
-                  mesh.instanceMatrix.needsUpdate = true;
-                  mesh.instanceColor.needsUpdate = true;
-                }
-                // Обновить новый объект
-                else {
-                  mesh.castShadow = object.castShadow;
-                  mesh.receiveShadow = object.recieveShadow;
-                  mesh.matrixAutoUpdate = false;
-                  // Добавить на сцену
-                  this.scene.add(mesh);
-                }
-                // Общие настройки
-                this.objectSettings.push(objectSetting);
-                this.objectCounts[type] = !!this.objectCounts[type] ? this.objectCounts[type] + length : length;
-                mesh.count = this.objectCounts[type];
-              }
-            });
-        }
+  // Удалить все объекты
+  private clearObjects(): void {
+    const length: number = this.objectSettings.length;
+    // Цикл по элементам с конца
+    CreateArray(length).map(k => length - 1 - k).forEach(k => {
+      const objectSetting: ObjectSetting = this.objectSettings[k];
+      const type: string = objectSetting.type;
+      const mesh: InstancedMesh = objectSetting.mesh;
+      const typeLength: number = this.objectSettings.filter(({ type: t }) => t === type).length;
+      // Удалить настройки
+      this.objectSettings.splice(k, 1);
+      // Удалить объекты
+      if (typeLength <= 1) {
+        delete this.animateFunctions[type];
+        this.scene.remove(mesh);
+        mesh.dispose();
+        this.renderer.dispose();
       }
-    }
-    // Удаление объекта
-    else {
-      this.removeObject(x, y);
-    }
+    });
   }
 
 
@@ -1051,7 +1078,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               this.terrainMesh,
               this.clock,
               this.terrainService.displacementTexture,
-              this.getClosestCeils(ceil)
+              this.getClosestCeils(ceil),
+              this.dreamMapSettings
             ));
           }
           // Запомнить ячейку и не изменять больше
@@ -1075,7 +1103,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 this.terrainMesh,
                 this.clock,
                 this.terrainService.displacementTexture,
-                this.getClosestCeils(nCeil)
+                this.getClosestCeils(nCeil),
+                this.dreamMapSettings
               ));
             }
             // Запомнить ячейку и не изменять больше
@@ -1168,7 +1197,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               this.terrainMesh,
               this.clock,
               this.terrainService.displacementTexture,
-              this.getClosestCeils(ceil)
+              this.getClosestCeils(ceil),
+              this.dreamMapSettings
             ));
           }
         }));
@@ -1196,7 +1226,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.terrainMesh,
           this.clock,
           this.terrainService.displacementTexture,
-          this.getClosestCeils(ceil)
+          this.getClosestCeils(ceil),
+          this.dreamMapSettings
         ));
       }
     }));

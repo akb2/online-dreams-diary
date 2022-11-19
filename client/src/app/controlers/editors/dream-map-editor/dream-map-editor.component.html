@@ -17,7 +17,7 @@
       <div class="tool-button__items border-radius">
         <div class="tool-button"
              [ngClass]="{ active: tool.type === getCurrentTool.type }"
-             matTooltip="Инструмент: {{tool.name}}"
+             matTooltip="{{!!tool.hidePreffix? '': 'Инструмент: '}}{{tool.name}}"
              (click)="onToolChange(tool.type)"
              *ngFor="let tool of toolList">
           <mat-icon>{{tool.icon}}</mat-icon>

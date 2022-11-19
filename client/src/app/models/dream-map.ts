@@ -1,5 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
+import { DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { ImageExtension } from "@_models/screen";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
@@ -189,11 +190,12 @@ export type ObjectController = {
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings,
   ): DreamMapObjectTemplate
 };
 
 // Параметры контроллера
-export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, DataTexture, ClosestHeights];
+export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, DataTexture, ClosestHeights, DreamMapSettings];
 
 // Тип линии
 export interface WayLineType {
@@ -211,6 +213,11 @@ export type TextureType = "face" | "ao" | "normal" | "disp";
 // Настройки карты за пределами
 export interface DreamMapReliefSettings {
   types: CustomObjectKey<keyof ClosestHeights, ReliefType>;
+}
+
+// Настройки редактора
+export interface DreamMapSettings {
+  datalization: DreamObjectElmsValues;
 }
 
 

@@ -1,5 +1,5 @@
 import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
-import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
@@ -52,7 +52,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
 
 
-  private count: number = DreamObjectDetalization === DreamObjectElmsValues.VeryLow ? 0 : DreamMaxElmsCount;
+  private count: number = 0;
 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
@@ -300,7 +300,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ) {
     super(
       dreamMap,
@@ -309,8 +310,11 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       clock,
       alphaFogService,
       displacementTexture,
-      neighboringCeils
+      neighboringCeils,
+      dreamMapSettings
     );
+    // Обновить
+    this.count = dreamMapSettings.datalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.datalization) / 8);
   }
 
   // Обновить сведения уже существующего сервиса
@@ -321,7 +325,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ): DreamMapWheatGrassObject {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -330,6 +335,9 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
     this.alphaFogService = alphaFogService;
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
+    this.dreamMapSettings = dreamMapSettings;
+    // Обновить
+    this.count = dreamMapSettings.datalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.datalization) / 8);
     // Вернуть экземаляр
     return this;
   }

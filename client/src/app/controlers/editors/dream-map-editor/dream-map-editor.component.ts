@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { CreateArray, CustomObjectKey, IsMultiple, SimpleObject } from "@_models/app";
-import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -68,6 +68,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private terrainChangeStep: number = 1;
   private terrainObjectsUpdateCounter: number = 1;
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
+  dreamMapSettings: DreamMapSettings;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -635,6 +636,7 @@ enum Tool {
   landscape,
   terrain,
   water,
+  settings,
 };
 
 // Перечисление инструментов: ландшафт
@@ -665,6 +667,7 @@ interface ToolListItemBase {
 // Интерфейс списка инструментов: общее
 interface ToolListItem extends ToolListItemBase {
   type: Tool;
+  hidePreffix?: boolean;
 }
 
 // Интерфейс списка инструментов: ландшафт
@@ -725,6 +728,13 @@ const Tools: ToolListItem[] = [
     type: Tool.water,
     name: "Вода (изменять водные пространства)",
     icon: "water_drop"
+  },
+  // Настройки
+  {
+    hidePreffix: true,
+    type: Tool.settings,
+    name: "Настройки",
+    icon: "settings"
   },
 ];
 

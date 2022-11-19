@@ -1,4 +1,4 @@
-import { ClosestHeights, DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { Clock, DataTexture, Mesh } from "three";
@@ -18,6 +18,7 @@ export abstract class DreamMapObjectTemplate {
   alphaFogService: DreamMapAlphaFogService;
   displacementTexture: DataTexture;
   neighboringCeils: ClosestHeights;
+  dreamMapSettings: DreamMapSettings;
 
 
 
@@ -45,7 +46,8 @@ export abstract class DreamMapObjectTemplate {
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ) {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -54,6 +56,7 @@ export abstract class DreamMapObjectTemplate {
     this.alphaFogService = alphaFogService;
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
+    this.dreamMapSettings = dreamMapSettings;
   }
 
   // Обновить сведения уже существующего сервиса
@@ -64,7 +67,8 @@ export abstract class DreamMapObjectTemplate {
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ): DreamMapObjectTemplate;
 
   // Очистка памяти

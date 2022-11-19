@@ -6,11 +6,12 @@ import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
-import { ClosestHeightName, ClosestHeights, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, ReliefType, Water } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
+import { ClosestHeightName, ClosestHeights, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
+import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { forkJoin, Observable, of } from "rxjs";
 import { map, mergeMap, switchMap, tap } from "rxjs/operators";
@@ -27,6 +28,8 @@ export class DreamService {
 
 
   private baseUrl: string = environment.baseUrl;
+  private cookieKey: string = "dream_service";
+  private cookieLifeTime: number = 60 * 60 * 24 * 365;
 
   private user: User;
 
@@ -71,6 +74,17 @@ export class DreamService {
     };
   }
 
+  // Настройки редактора карт
+  get getDreamMapSettings(): DreamMapSettings {
+    this.configLocalStorage();
+    // Параметры
+    const detalizationString: string = this.localStorageService.getCookie("settings_quality");
+    // Параметры
+    const datalization: DreamObjectElmsValues = parseInt(!!detalizationString ? detalizationString : DreamObjectDetalization.toString()) as DreamObjectElmsValues;
+    // Настройки
+    return { datalization };
+  }
+
 
 
 
@@ -79,7 +93,8 @@ export class DreamService {
     private accountService: AccountService,
     private httpClient: HttpClient,
     private apiService: ApiService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private localStorageService: LocalStorageService
   ) {
     this.user = this.accountService.getCurrentUser();
     // Подписка на актуальные сведения о пользователе
@@ -352,6 +367,16 @@ export class DreamService {
       sky: dreamMap.sky,
       relief: dreamMap.relief
     };
+  }
+
+
+
+
+
+  // Инициализация Local Storage
+  private configLocalStorage(): void {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
   }
 }
 

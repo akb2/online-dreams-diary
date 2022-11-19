@@ -18,7 +18,10 @@ import { takeUntil } from "rxjs/operators";
 @Component({
   selector: "app-register",
   templateUrl: "./register.component.html",
-  styleUrls: ["./register.component.scss"]
+  styleUrls: ["./register.component.scss"],
+  providers: [
+    LocalStorageService
+  ]
 })
 
 export class RegisterComponent implements OnInit, OnDestroy {
@@ -50,7 +53,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private localStorage: LocalStorageService,
     private accountService: AccountService
   ) {
-    // Кукис
     this.localStorage.cookieKey = this.cookieKey;
     this.localStorage.cookieLifeTime = this.cookieLifeTime;
 
