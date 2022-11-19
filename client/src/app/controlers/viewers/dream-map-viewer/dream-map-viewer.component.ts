@@ -1024,55 +1024,57 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Обновить высоту местности
-  setTerrainHeight(ceils: DreamMapCeil[]): void {
+  setTerrainHeight(ceils: DreamMapCeil[], updateObjects: boolean = false): void {
     if (!!ceils?.length) {
-      const usedCeils: DreamMapCeil[] = [];
-      // Заменить высоту
       this.terrainService.updateDreamMap(this.dreamMap);
       this.terrainService.updateHeights(ceils);
       // Цикл по объектам
-      ceils.filter(ceil => !ceil.object).forEach((ceil, i) => {
-        const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
-        // Если существуют объекты
-        if (!!objectSettings?.length) {
-          objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-            objectSetting,
-            this.dreamMap,
-            ceil,
-            this.terrainMesh,
-            this.clock,
-            this.terrainService.displacementTexture,
-            this.getClosestCeils(ceil)
-          ));
-        }
-        // Запомнить ячейку и не изменять больше
-        usedCeils.push(ceil);
-      });
-      // Удалить/выставить объекты по умолчанию в соседних ячейках
-      ceils.forEach(ceil => {
-        const nCeils: DreamMapCeil[] = Object
-          .values(this.getClosestCeils(ceil))
-          .map(({ coords: { x, y } }) => this.getCeil(x, y))
-          .filter(ceil => !usedCeils.includes(ceil));
-        // Добавить обратанные ячейки в массив
-        nCeils.forEach(nCeil => {
-          const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
+      if (updateObjects) {
+        const usedCeils: DreamMapCeil[] = [];
+        // Активные ячейки
+        ceils.filter(ceil => !ceil.object).forEach((ceil, i) => {
+          const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
           // Если существуют объекты
           if (!!objectSettings?.length) {
             objectSettings.forEach(objectSetting => this.objectService.updateHeight(
               objectSetting,
               this.dreamMap,
-              nCeil,
+              ceil,
               this.terrainMesh,
               this.clock,
               this.terrainService.displacementTexture,
-              this.getClosestCeils(nCeil)
+              this.getClosestCeils(ceil)
             ));
           }
           // Запомнить ячейку и не изменять больше
-          usedCeils.push(nCeil);
+          usedCeils.push(ceil);
         });
-      });
+        // Удалить/выставить объекты по умолчанию в соседних ячейках
+        ceils.forEach(ceil => {
+          const nCeils: DreamMapCeil[] = Object
+            .values(this.getClosestCeils(ceil))
+            .map(({ coords: { x, y } }) => this.getCeil(x, y))
+            .filter(ceil => !usedCeils.includes(ceil));
+          // Добавить обратанные ячейки в массив
+          nCeils.forEach(nCeil => {
+            const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
+            // Если существуют объекты
+            if (!!objectSettings?.length) {
+              objectSettings.forEach(objectSetting => this.objectService.updateHeight(
+                objectSetting,
+                this.dreamMap,
+                nCeil,
+                this.terrainMesh,
+                this.clock,
+                this.terrainService.displacementTexture,
+                this.getClosestCeils(nCeil)
+              ));
+            }
+            // Запомнить ячейку и не изменять больше
+            usedCeils.push(nCeil);
+          });
+        });
+      }
     }
   }
 
