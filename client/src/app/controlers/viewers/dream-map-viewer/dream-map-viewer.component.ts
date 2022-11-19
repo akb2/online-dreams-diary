@@ -257,6 +257,30 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     return "ontouchstart" in window || !!navigator?.maxTouchPoints;
   }
 
+  // Получить настройку по индексу в меше
+  private getObjectSettingKeyByIndex(index: number, type: string, key: number, keys: CustomObjectKey<string, number[]>): number {
+    if (!!this.objectSettings[key] && this.objectSettings[key].type === type && this.objectSettings[key].indexKeys.includes(index)) {
+      return key;
+    }
+    // Поиск в массиве использованных объектов
+    else if (!!keys?.length) {
+      const keysA: number[] = keys[type];
+      // Вернуть ключ
+      return keysA.map(k => !!this.objectSettings[k] && this.objectSettings[k].indexKeys.includes(index) ? k : -1).filter(k => k >= 0)[0];
+    }
+    // Поиск среди всех настроек
+    return this.objectSettings
+      .map(({ type: t, indexKeys: is }, k) => t === type ? (is.includes(index) ? k : -1) : -1)
+      .filter(k => k >= 0)[0];
+  }
+
+  // Получить настройку по координатам
+  private getObjectSettingByCoords(x: number, y: number): number[] {
+    return !!this.objectSettings ?
+      this.objectSettings.map(({ coords: { x: oX, y: oY } }, k) => x === oX && y === oY ? k : -1).filter(k => k >= 0) :
+      [];
+  }
+
 
 
 
@@ -778,30 +802,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-
-  // Получить настройку по индексу в меше
-  private getObjectSettingKeyByIndex(index: number, type: string, key: number, keys: CustomObjectKey<string, number[]>): number {
-    if (!!this.objectSettings[key] && this.objectSettings[key].type === type && this.objectSettings[key].indexKeys.includes(index)) {
-      return key;
-    }
-    // Поиск в массиве использованных объектов
-    else if (!!keys?.length) {
-      const keysA: number[] = keys[type];
-      // Вернуть ключ
-      return keysA.map(k => !!this.objectSettings[k] && this.objectSettings[k].indexKeys.includes(index) ? k : -1).filter(k => k >= 0)[0];
-    }
-    // Поиск среди всех настроек
-    return this.objectSettings
-      .map(({ type: t, indexKeys: is }, k) => t === type ? (is.includes(index) ? k : -1) : -1)
-      .filter(k => k >= 0)[0];
-  }
-
-  // Получить настройку по координатам
-  private getObjectSettingByCoords(x: number, y: number): number[] {
-    return !!this.objectSettings ?
-      this.objectSettings.map(({ coords: { x: oX, y: oY } }, k) => x === oX && y === oY ? k : -1).filter(k => k >= 0) :
-      [];
-  }
 
   // Удалить объект с карты
   private removeObject(x: number, y: number): void {
