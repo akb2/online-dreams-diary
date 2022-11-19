@@ -154,6 +154,7 @@ $toolButtonBRadius: 3px;
       text-align: center;
       color: #fff;
       text-shadow: 1px 1px 3px #{colors.$shadow};
+      transform-origin: 50% #{math.div($textSize + $size - 1px, 2)};
       // Полукруги
       &::before,
       &::after {
