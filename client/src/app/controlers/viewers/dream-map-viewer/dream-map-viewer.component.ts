@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd, RadToAngle } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -9,8 +9,8 @@ import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-ma
 import { DreamMapTerrainService } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
 import { forkJoin, fromEvent, Observable, of, Subject, throwError, timer } from "rxjs";
-import { map, skipWhile, switchMap, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Quaternion, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
+import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -974,12 +974,15 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const typeLength: number = this.objectSettings.filter(({ type: t }) => t === type).length;
       // Удалить настройки
       this.objectSettings.splice(k, 1);
+      this.objectCounts[type] = 0;
+      mesh.count = 0;
       // Удалить объекты
       if (typeLength <= 1) {
-        delete this.animateFunctions[type];
-        this.scene.remove(mesh);
         mesh.dispose();
+        mesh.removeFromParent();
         this.renderer.dispose();
+        // Удаление
+        delete this.animateFunctions[type];
       }
     });
   }
@@ -1231,6 +1234,21 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         ));
       }
     }));
+  }
+
+  // Изменить уровни детализации
+  setDetalization(settings: DreamMapSettings): Observable<void> {
+    this.dreamMapSettings = settings;
+    // Подписка на изменения
+    return timer(10).pipe(
+      takeUntil(this.destroy$),
+      take(1),
+      map(() => {
+        this.clearObjects();
+        this.createObjects();
+        this.render();
+      })
+    );
   }
 }
 
