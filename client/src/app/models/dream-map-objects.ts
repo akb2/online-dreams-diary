@@ -3,6 +3,7 @@ import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } fro
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
+import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
 
@@ -13,9 +14,23 @@ import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Mat
 // Интерфейс объекта карты
 export interface DreamMapObject {
   id: number;
-  type: string;
-  subType: string;
+  name: string;
+  catalog: number;
   controller: ObjectController;
+  settings?: DreamMapObjectSettings;
+}
+
+// Параметры объекта
+export interface DreamMapObjectSettings {
+  rotation?: boolean;
+  variants?: boolean;
+  mixWithDefault?: boolean;
+}
+
+// Интерфейс категории объектов
+export interface DreamMapObjectCatalog {
+  id: number;
+  name: string;
 }
 
 // Интерфейс данных объекта
@@ -62,7 +77,16 @@ export type ObjectController = {
 };
 
 // Параметры контроллера
-export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, DataTexture, ClosestHeights, DreamMapSettings];
+export type ObjectControllerParams = [
+  DreamMap,
+  DreamMapCeil,
+  Mesh,
+  Clock,
+  DreamMapAlphaFogService,
+  DataTexture,
+  ClosestHeights,
+  DreamMapSettings
+];
 
 
 
@@ -80,3 +104,33 @@ export const ObjectStaticSubTypeControllers: CustomObjectKey<number, CustomObjec
     plantaingrass: DreamMapPlantainGrassObject.getSubType
   },
 };
+
+// Список категорий объектов
+export const DreamMapObjectCatalogs: DreamMapObjectCatalog[] = [
+  // Растения
+  {
+    id: 1,
+    name: "Растительность"
+  }
+];
+
+// Список объектов
+export const DreamMapObjects: DreamMapObject[] = [
+  // Дуб
+  {
+    id: 1,
+    name: "Дуб",
+    catalog: 1,
+    controller: DreamMapTreeObject,
+    settings: {
+      mixWithDefault: true
+    }
+  }
+].map((data: DreamMapObject) => ({
+  ...data,
+  settings: {
+    rotation: !!data?.settings?.rotation,
+    variants: !!data?.settings?.variants,
+    mixWithDefault: !!data?.settings?.mixWithDefault
+  }
+}));
