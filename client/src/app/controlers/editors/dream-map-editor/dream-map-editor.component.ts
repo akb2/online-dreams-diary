@@ -4,6 +4,7 @@ import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { CreateArray, CustomObjectKey, IsMultiple, SimpleObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
+import { DreamMapObject, DreamMapObjectCatalog, DreamMapObjectCatalogs, DreamMapObjects } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamService } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
@@ -50,11 +51,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   terrainList: MapTerrain[] = MapTerrains;
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
   detaliationLabels: CustomObjectKey<DreamObjectElmsValues, string> = DetaliationLabels;
+  objectsCategories: DreamMapObjectCatalog[] = DreamMapObjectCatalogs;
+  objects: DreamMapObject[] = DreamMapObjects;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.settings;
+  private tool: Tool = Tool.objects;
   toolSizeLand: number = ToolSizeLand[1];
-  private currentObject: ObjectHoverEvent = null;
+  private currentCeil: ObjectHoverEvent = null;
 
   // * Инструменты: ландшафт
   private landscapeTool: LandscapeTool = LandscapeTool.up;
@@ -65,6 +68,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // * Инструменты: вода
   waterType: WaterTypeTool = WaterTypeTool.sea;
+
+  // * Инструменты: объекты
+  currentObjectCategory: number = DreamMapObjectCatalogs[0].id;
+  currentObject: number = 0;
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
@@ -82,8 +89,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Координата внутри области редактирования
   private isEditableCeil(x: number, y: number): boolean {
-    const cX: number = Math.round(this.currentObject.ceil.coord.x - x);
-    const cY: number = Math.round(this.currentObject.ceil.coord.y - y);
+    const cX: number = Math.round(this.currentCeil.ceil.coord.x - x);
+    const cY: number = Math.round(this.currentCeil.ceil.coord.y - y);
     // Вернуть результат проверки
     return (
       (
@@ -322,7 +329,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.onToolActionAfterActive();
     // Окончить действие
     this.toolActive = false;
-    this.currentObject = null;
+    this.currentCeil = null;
   }
 
   // Наведение курсора на объект
@@ -330,20 +337,20 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     if (this.viewer) {
       const noChangeCoords: Set<Tool> = new Set([Tool.water]);
       const partSize: number = DreamCeilSize / DreamCeilWaterParts;
-      const prevZ: number = Math.round((this.currentObject?.point.z || 0) / partSize) * partSize;
+      const prevZ: number = Math.round((this.currentCeil?.point.z || 0) / partSize) * partSize;
       const currZ: number = Math.round((event.point.z || 0) / partSize) * partSize;
       // Проверка пересечения
       if (
         (
           !noChangeCoords.has(this.tool) && (
-            !this.currentObject ||
-            this.currentObject.ceil.coord.x !== event.ceil.coord.x ||
-            this.currentObject.ceil.coord.y !== event.ceil.coord.y
+            !this.currentCeil ||
+            this.currentCeil.ceil.coord.x !== event.ceil.coord.x ||
+            this.currentCeil.ceil.coord.y !== event.ceil.coord.y
           )
         ) ||
         (noChangeCoords.has(this.tool) && prevZ !== currZ)
       ) {
-        this.currentObject = event;
+        this.currentCeil = event;
         // Пассивные действия
         this.onToolActionPassive();
       }
@@ -352,13 +359,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Активное действие: ЛКМ зажимается
   private onToolActionBeforeActive(): void {
-    if (this.currentObject && this.toolActive) {
+    if (this.currentCeil && this.toolActive) {
       switch (this.tool) {
         // Работа с ландшафтом
         case (Tool.landscape): switch (this.landscapeTool) {
           // Выравнивание
           case (LandscapeTool.align):
-            this.startZ = this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+            this.startZ = this.viewer.getCeil(this.currentCeil.ceil.coord.x, this.currentCeil.ceil.coord.y).coord.z;
             break;
         }; break;
       }
@@ -367,7 +374,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Активное действие в цикле: ЛКМ зажата
   private onToolActionCycle(itterator: number): void {
-    if (this.currentObject && this.toolActive) {
+    if (this.currentCeil && this.toolActive) {
       const updateObjects: boolean = this.terrainObjectsUpdateCounter > 0 ? IsMultiple(itterator, this.terrainObjectsUpdateCounter) : false;
       // Инструмент
       switch (this.tool) {
@@ -389,7 +396,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Активное действие: ЛКМ отпускается
   private onToolActionAfterActive(): void {
-    if (this.currentObject && this.toolActive) {
+    if (this.currentCeil && this.toolActive) {
       switch (this.tool) {
         // Работа с ландшафтом
         case (Tool.landscape): switch (this.landscapeTool) {
@@ -406,8 +413,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Пассивное действие: наведение курсора на объект
   private onToolActionPassive(): void {
-    if (!!this.currentObject) {
-      const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
+    if (!!this.currentCeil) {
+      const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain, Tool.objects]);
       // Работа с ландшафтом
       if (tools.has(this.tool)) {
         this.lightCeils();
@@ -506,10 +513,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение уровня детализации
   onDetalizationChange(detalization: DreamObjectElmsValues): void {
-    const min: number = 0;
-    const max: number = Object.keys(DreamObjectElmsValues).length - 1;
-    // Установить уровень детализации
-    if (detalization >= min && detalization <= max && this.dreamMapSettings.detalization !== detalization) {
+    if (detalization >= this.detalizationMin && detalization <= this.detalizationMax && this.dreamMapSettings.detalization !== detalization) {
       this.dreamMapSettings.detalization = detalization ?? DreamObjectDetalization;
       // Установить высоту
       this.setDetalization();
@@ -522,7 +526,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Свечение ячеек
   private lightCeils(unLight: boolean = false): void {
-    this.viewer.setTerrainHoverStatus(!!this.currentObject && !unLight ? this.currentObject.ceil : null, this.toolSizeLand);
+    const sizedTools: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
+    const toolSize: number = sizedTools.has(this.tool) ? this.toolSizeLand : ToolSizeLand[0];
+    // Подсветить ячейку
+    this.viewer.setTerrainHoverStatus(!!this.currentCeil && !unLight ? this.currentCeil.ceil : null, toolSize);
   }
 
   // Изменение высоты
@@ -530,12 +537,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     const sizes: number[] = CreateArray((this.toolSizeLand * 2) + 1).map(v => v - this.toolSizeLand);
     const z: number = direction === 0 ?
       this.startZ :
-      this.viewer.getCeil(this.currentObject.ceil.coord.x, this.currentObject.ceil.coord.y).coord.z;
+      this.viewer.getCeil(this.currentCeil.ceil.coord.x, this.currentCeil.ceil.coord.y).coord.z;
     let change: boolean = false;
     // Обход
     sizes.forEach(cY => sizes.forEach(cX => {
-      const x: number = this.currentObject.ceil.coord.x + cX;
-      const y: number = this.currentObject.ceil.coord.y + cY;
+      const x: number = this.currentCeil.ceil.coord.x + cX;
+      const y: number = this.currentCeil.ceil.coord.y + cY;
       // Ячейка внутри области выделения
       if (this.isEditableCeil(x, y)) {
         const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
@@ -575,8 +582,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     // Обновить
     if (change) {
       const ceils = sizes.map(cY => sizes.map(cX => {
-        const x: number = this.currentObject.ceil.coord.x + cX;
-        const y: number = this.currentObject.ceil.coord.y + cY;
+        const x: number = this.currentCeil.ceil.coord.x + cX;
+        const y: number = this.currentCeil.ceil.coord.y + cY;
         // Вернуть ячейку
         return this.viewer.getCeil(x, y);
       })).reduce((o, c) => ([...o, ...c]), []);
@@ -593,8 +600,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     // Обход
     const ceils: DreamMapCeil[] = sizes
       .map(cY => sizes.map(cX => {
-        const x: number = this.currentObject.ceil.coord.x + cX;
-        const y: number = this.currentObject.ceil.coord.y + cY;
+        const x: number = this.currentCeil.ceil.coord.x + cX;
+        const y: number = this.currentCeil.ceil.coord.y + cY;
         // Ячейка внутри области выделения
         if (this.isEditableCeil(x, y)) {
           const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
@@ -665,9 +672,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 // Перечисление инструментов: общее
 enum Tool {
   sky,
+  water,
   landscape,
   terrain,
-  water,
+  objects,
   settings,
 };
 
@@ -743,6 +751,12 @@ const Tools: ToolListItem[] = [
     name: "Окружением",
     icon: "light_mode"
   },
+  // Работа с водой
+  {
+    type: Tool.water,
+    name: "Вода (изменять водные пространства)",
+    icon: "water_drop"
+  },
   // Работа с ландшафтом
   {
     type: Tool.landscape,
@@ -755,11 +769,11 @@ const Tools: ToolListItem[] = [
     name: "Материалы (изменять тип местности)",
     icon: "grass"
   },
-  // Работа с водой
+  // Объекты
   {
-    type: Tool.water,
-    name: "Вода (изменять водные пространства)",
-    icon: "water_drop"
+    type: Tool.objects,
+    name: "Объекты",
+    icon: "category"
   },
   // Настройки
   {

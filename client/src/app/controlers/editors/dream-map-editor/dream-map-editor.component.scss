@@ -169,6 +169,7 @@ $separatorColor: #ccc;
     > #{$_elm} {
       border-radius: 0;
       overflow: hidden;
+      cursor: pointer;
       // Скругление углов
       & {
         // Первый и последний элемент
@@ -201,7 +202,10 @@ $separatorColor: #ccc;
       }
       // Заблокированный элемент
       &.disabled {
-        opacity: 0.7;
+        &:hover {
+          background-color: #{map.get(colors.$mat-disabled, 500)};
+          color: #{map.get(colors.$mat-disabled, contrast, 500)};
+        }
       }
       // Контейнер
       &.container {
@@ -219,9 +223,17 @@ $separatorColor: #ccc;
         & + #{$_elm}.container {
           padding-left: 0;
         }
+        // Выравнивание по середине
+        &.center {
+          text-align: center;
+        }
         // Выравнивание справа
         &.right {
           text-align: right;
+        }
+        // Фиксированный текст
+        &.text-fixed {
+          width: 240px;
         }
         // Длинный слайдер
         > .long-slider {
