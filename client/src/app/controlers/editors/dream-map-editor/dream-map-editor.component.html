@@ -36,6 +36,9 @@
     <!-- Под-инструмент: вода -->
     <ng-container [ngTemplateOutlet]="waterTools"
                   *ngIf="getCurrentTool.type === toolType.water"></ng-container>
+    <!-- Под-инструмент: настройки -->
+    <ng-container [ngTemplateOutlet]="settingsTools"
+                  *ngIf="getCurrentTool.type === toolType.settings"></ng-container>
   </div>
   <!-- Загрузчик -->
   <div class="area__loader"
@@ -169,6 +172,30 @@
                     aria-label="blocks"
                     (input)="onOceanHeightChange($event)"
                     (change)="onOceanHeightChange($event)"></mat-slider>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Под-инструмент: настройки -->
+<ng-template #settingsTools>
+  <!-- Детализация -->
+  <form class="tool-button"
+        [formGroup]="form">
+    <mat-icon>deblur</mat-icon>
+    <!-- Настройка размера -->
+    <div class="tool-button__items border-radius">
+      <!-- Снижение качества -->
+      <div class="tool-button"
+           (click)="onDetalizationChange(dreamMapSettings.detalization - 1)">
+        <mat-icon>chevron_left</mat-icon>
+      </div>
+      <!-- отметка -->
+      <div class="tool-button container">Детализация: {{detaliationLabels[dreamMapSettings.detalization]}}</div>
+      <!-- Увеличение качества -->
+      <div class="tool-button"
+           (click)="onDetalizationChange(dreamMapSettings.detalization + 1)">
+        <mat-icon>chevron_right</mat-icon>
       </div>
     </div>
   </form>

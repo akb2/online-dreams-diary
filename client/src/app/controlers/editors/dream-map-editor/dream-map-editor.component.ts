@@ -4,7 +4,8 @@ import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { CreateArray, CustomObjectKey, IsMultiple, SimpleObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
+import { DreamService } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
@@ -40,15 +41,18 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   landMinZ: number = DreamMinHeight;
   landMaxZ: number = DreamMaxHeight;
   landStepZ: number = DreamCeilSize / DreamCeilParts;
+  detalizationMin: number = 0;
+  detalizationMax: number = (Object.keys(DreamObjectElmsValues).length / 2) - 1;
 
   // Списки параметров
   toolType: typeof Tool = Tool;
   landscapeToolType: typeof LandscapeTool = LandscapeTool;
   terrainList: MapTerrain[] = MapTerrains;
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
+  detaliationLabels: CustomObjectKey<DreamObjectElmsValues, string> = DetaliationLabels;
 
   // * Инструменты: общее
-  private tool: Tool = Tool.landscape;
+  private tool: Tool = Tool.settings;
   toolSizeLand: number = ToolSizeLand[1];
   private currentObject: ObjectHoverEvent = null;
 
@@ -259,12 +263,15 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private formBuilder: FormBuilder,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private dreamService: DreamService
   ) {
+    this.dreamMapSettings = this.dreamService.getDreamMapSettings;
+    // Настройки формы
     this.form = this.formBuilder.group({
-      toolSizeLand: [this.getCurrentToolSizeLand],
-      currentTime: [0],
-      worldOceanHeight: [0],
+      toolSizeLand: this.getCurrentToolSizeLand,
+      currentTime: 0,
+      worldOceanHeight: 0,
     });
   }
 
@@ -497,6 +504,18 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // Изменение уровня детализации
+  onDetalizationChange(detalization: DreamObjectElmsValues): void {
+    const min: number = 0;
+    const max: number = Object.keys(DreamObjectElmsValues).length - 1;
+    // Установить уровень детализации
+    if (detalization >= min && detalization <= max && this.dreamMapSettings.detalization !== detalization) {
+      this.dreamMapSettings.detalization = detalization ?? DreamObjectDetalization;
+      // Установить высоту
+      this.setDetalization();
+    }
+  }
+
 
 
 
@@ -603,6 +622,19 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменение высоты мирового океана
   private setOceanHeight(): void {
     this.viewer.setOceanHeight(this.dreamMap.ocean.z);
+  }
+
+  // Перерисовка объектов
+  private setDetalization(): void {
+    this.loading = true;
+    this.dreamService.saveSettings(this.dreamMapSettings);
+    // Обновить объекты
+    this.viewer.setDetalization(this.dreamMapSettings)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loading = false;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   // Изменить время для положения небесных светил
@@ -769,3 +801,14 @@ const WaterTypeTools: WaterTypeToolListItem[] = [
     icon: "zoom_out_map"
   },
 ];
+
+// Список обозначений качества
+const DetaliationLabels: CustomObjectKey<DreamObjectElmsValues, string> = {
+  [DreamObjectElmsValues.VeryLow]: "Очень низкая",
+  [DreamObjectElmsValues.Low]: "Низкая",
+  [DreamObjectElmsValues.Middle]: "Средняя",
+  [DreamObjectElmsValues.High]: "Высокая",
+  [DreamObjectElmsValues.VeryHigh]: "Очень высокая",
+  [DreamObjectElmsValues.Ultra]: "Ультра",
+  [DreamObjectElmsValues.Awesome]: "Невероятная",
+};
