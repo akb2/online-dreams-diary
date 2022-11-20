@@ -1,6 +1,6 @@
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
+import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { Clock, DataTexture, Mesh } from "three";
 
 

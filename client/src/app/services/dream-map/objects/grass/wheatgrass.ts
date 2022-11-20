@@ -1,9 +1,9 @@
 import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
 import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
+import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { CheckCeilForm } from "@_services/dream-map/objects/grass/_functions";
 import { AllCorners, AnglesB, CeilGrassFillGeometry, ClosestKeysAll, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";

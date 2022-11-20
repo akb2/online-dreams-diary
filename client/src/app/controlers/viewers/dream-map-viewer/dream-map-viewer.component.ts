@@ -2,9 +2,10 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd, RadToAngle } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
+import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapObjectService, MapObject, ObjectSetting } from "@_services/dream-map/object.service";
+import { DreamMapObjectService } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { DreamMapTerrainService } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";

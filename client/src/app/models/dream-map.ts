@@ -2,11 +2,7 @@ import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { ImageExtension } from "@_models/screen";
-import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
-import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
-import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { Clock, DataTexture, Mesh, MeshStandardMaterial, Side, Texture } from "three";
+import { MeshStandardMaterial, Side, Texture } from "three";
 
 
 
@@ -68,14 +64,6 @@ export enum ReliefType {
   mountain = "mountain",
   canyon = "canyon",
   pit = "pit",
-}
-
-// Интерфейс объекта карты
-export interface MapObject {
-  id: number;
-  type: string;
-  subType: string;
-  controller: ObjectController;
 }
 
 // Интерфейс настроек для цветовой маски
@@ -179,23 +167,6 @@ export interface WorldLand {
 
 // Типы цветов пути
 export type WayColor = "red" | "green" | "blue" | "white" | "black" | "gray" | "orange" | "pink" | "pink" | "purple";
-
-// Тип контроллера объектов
-export type ObjectController = {
-  new(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights,
-    dreamMapSettings: DreamMapSettings,
-  ): DreamMapObjectTemplate
-};
-
-// Параметры контроллера
-export type ObjectControllerParams = [DreamMap, DreamMapCeil, Mesh, Clock, DreamMapAlphaFogService, DataTexture, ClosestHeights, DreamMapSettings];
 
 // Тип линии
 export interface WayLineType {
@@ -367,19 +338,6 @@ export const MapTerrains: MapTerrain[] = [
       }
     };
   });
-
-// Список ландшафтов с объектами для непустых ячеек
-export const ObjectControllers: CustomObjectKey<number, ObjectController[]> = {
-  1: [DreamMapWheatGrassObject, DreamMapPlantainGrassObject],
-};
-
-// Список ландшафтов с объектами для непустых ячеек
-export const ObjectStaticSubTypeControllers: CustomObjectKey<number, CustomObjectKey<string, Function>> = {
-  1: {
-    wheatgrass: DreamMapWheatGrassObject.getSubType,
-    plantaingrass: DreamMapPlantainGrassObject.getSubType
-  },
-};
 
 // Список имен соседних ячеек
 export const ClosestHeightNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];

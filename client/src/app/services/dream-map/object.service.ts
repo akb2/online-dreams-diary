@@ -1,10 +1,11 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, ObjectControllerParams, ObjectControllers, ObjectStaticSubTypeControllers, XYCoord } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
+import { MapObject, ObjectControllerParams, ObjectControllers, ObjectSetting, ObjectStaticSubTypeControllers } from "@_models/dream-map-objects";
 import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
+import { Clock, DataTexture, Mesh } from "three";
 
 
 
@@ -106,32 +107,3 @@ export class DreamMapObjectService implements OnDestroy {
     Object.values(this.controllers).forEach(controllers => controllers.forEach(controller => controller.destroy()));
   }
 }
-
-
-
-
-
-// Интерфейс данных объекта
-export interface ObjectSetting {
-  coords: XYCoord;
-  mesh: InstancedMesh;
-  type: string;
-  subType: string;
-  indexKeys: number[];
-  count: number;
-}
-
-// Тип ответа
-export interface MapObject {
-  matrix: Matrix4[];
-  color: Color[];
-  geometry: BufferGeometry;
-  material: Material;
-  type: string;
-  subType: string;
-  coords: XYCoord;
-  count: number;
-  castShadow: boolean;
-  recieveShadow: boolean;
-  animate?: Function;
-};
