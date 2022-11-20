@@ -375,7 +375,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
   // Очистка памяти
   destroy(): void {
-    this.params.dummy.remove();
+    this.params?.dummy?.remove();
     delete this.params;
   }
 

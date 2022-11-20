@@ -370,7 +370,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 
   // Очистка памяти
   destroy(): void {
-    this.params.dummy.remove();
+    this.params?.dummy?.remove();
     delete this.params;
   }
 
