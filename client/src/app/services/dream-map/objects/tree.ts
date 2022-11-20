@@ -1,8 +1,8 @@
 import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, ObjectTexturePaths } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, ObjectTexturePaths } from "@_models/dream-map";
+import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService, FogFragmentShader } from "@_services/dream-map/alphaFog.service";
-import { MapObject, ObjectSetting } from "@_services/dream-map/object.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
@@ -16,7 +16,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   private type: string = "tree";
   private subType: Types;
 
-  private count: number = DreamMaxElmsCount;
+  private count: number = 0;
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
   private posRange: number = 0.3;
@@ -315,8 +315,9 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     terrain: Mesh,
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
-    displacementCanvas: HTMLCanvasElement,
-    neighboringCeils: ClosestHeights
+    displacementCanvas: DataTexture,
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ) {
     super(
       dreamMap,
@@ -325,8 +326,11 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       clock,
       alphaFogService,
       displacementCanvas,
-      neighboringCeils
+      neighboringCeils,
+      dreamMapSettings,
     );
+    // Количество объектов
+    this.count = DreamMaxElmsCount(this.dreamMapSettings.detalization);
   }
 
   // Обновить сведения уже существующего сервиса
@@ -337,7 +341,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     clock: Clock,
     alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights
+    neighboringCeils: ClosestHeights,
+    dreamMapSettings: DreamMapSettings
   ): DreamMapTreeObject {
     this.dreamMap = dreamMap;
     this.ceil = ceil;
@@ -346,7 +351,10 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     this.alphaFogService = alphaFogService;
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
-    // Вернуть экземаляр
+    this.dreamMapSettings = dreamMapSettings;
+    // Количество объектов
+    this.count = DreamMaxElmsCount(this.dreamMapSettings.detalization);
+    // Вернуть экземпляр
     return this;
   }
 
