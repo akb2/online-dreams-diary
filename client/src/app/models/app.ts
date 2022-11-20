@@ -166,3 +166,6 @@ export const LineFunc: (min: number, max: number, value: number, valueMin: numbe
 
 // Цикл из числа
 export const CreateArray: (length: number) => number[] = (length: number) => Array.from(Array(length).keys());
+
+// Случайный элемент массива
+export const ArrayRandom: <T>(data: T[]) => T = <T>(data: T[]) => data[Random(0, data.length - 1, false, 0)];
