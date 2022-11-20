@@ -30,6 +30,7 @@ export interface DreamMapObjectSettings {
 // Интерфейс категории объектов
 export interface DreamMapObjectCatalog {
   id: number;
+  icon: string;
   name: string;
 }
 
@@ -110,6 +111,7 @@ export const DreamMapObjectCatalogs: DreamMapObjectCatalog[] = [
   // Растения
   {
     id: 1,
+    icon: "forest",
     name: "Растительность"
   }
 ];
