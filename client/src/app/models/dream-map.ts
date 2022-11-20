@@ -217,7 +217,7 @@ export interface DreamMapReliefSettings {
 
 // Настройки редактора
 export interface DreamMapSettings {
-  datalization: DreamObjectElmsValues;
+  detalization: DreamObjectElmsValues;
 }
 
 

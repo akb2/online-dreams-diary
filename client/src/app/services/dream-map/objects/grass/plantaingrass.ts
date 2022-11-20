@@ -74,69 +74,73 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 
   // Получение объекта
   getObject(): MapObject {
-    const {
-      countItterator,
-      dummy,
-      material,
-      geometry,
-      cX,
-      cY,
-    }: Params = this.getParams;
-    let lX: number;
-    let lY: number;
-    let i: number = -1;
-    let countStep: number;
-    // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = countItterator.map(() => {
-      if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
-        lX = Random(0, DreamCeilSize, true, 5);
-        lY = Random(0, DreamCeilSize, true, 5);
-        countStep = Random(this.countStep[0], this.countStep[1], false, 0);
-        i = 0;
-      }
-      // Итератор
-      i++;
-      // Точная координата
-      const x: number = cX + lX;
-      const y: number = cY + lY;
-      const stepAngle: number = 360 / countStep;
-      // Проверка вписания в фигуру
-      if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
-        const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
-        // Настройки
-        dummy.rotation.set(0, 0, 0);
-        dummy.position.set(x, this.getHeight(x, y), y);
-        dummy.rotateY(AngleToRad((stepAngle * i) + Random(this.itemRotateRange[0], this.itemRotateRange[1])));
-        dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1]) + this.noizeRotate));
-        dummy.scale.setScalar(scale);
-        dummy.updateMatrix();
-        // Вернуть геометрию
-        return new Matrix4().copy(dummy.matrix);
-      }
-      // Не отрисовывать геометрию
-      return null;
-    }).filter(matrix => !!matrix);
-    // Вернуть объект
-    return {
-      type: "plantaingrass",
-      subType: DreamMapPlantainGrassObject.getSubType(this.ceil, this.neighboringCeils),
-      count: this.count,
-      matrix,
-      color: matrix.map(() => new Color(
-        Random(ColorRange[0], ColorRange[1], false, 3),
-        Random(ColorRange[2], ColorRange[3], false, 3),
-        Random(ColorRange[4], ColorRange[5], false, 3)
-      )),
-      geometry: geometry as BufferGeometry,
-      material,
-      coords: {
-        x: this.ceil.coord.x,
-        y: this.ceil.coord.y
-      },
-      animate: this.animate.bind(this),
-      castShadow: false,
-      recieveShadow: true
-    };
+    if (this.count > 0) {
+      const {
+        countItterator,
+        dummy,
+        material,
+        geometry,
+        cX,
+        cY,
+      }: Params = this.getParams;
+      let lX: number;
+      let lY: number;
+      let i: number = -1;
+      let countStep: number;
+      // Цикл по количеству фрагментов
+      const matrix: Matrix4[] = countItterator.map(() => {
+        if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
+          lX = Random(0, DreamCeilSize, true, 5);
+          lY = Random(0, DreamCeilSize, true, 5);
+          countStep = Random(this.countStep[0], this.countStep[1], false, 0);
+          i = 0;
+        }
+        // Итератор
+        i++;
+        // Точная координата
+        const x: number = cX + lX;
+        const y: number = cY + lY;
+        const stepAngle: number = 360 / countStep;
+        // Проверка вписания в фигуру
+        if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
+          const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
+          // Настройки
+          dummy.rotation.set(0, 0, 0);
+          dummy.position.set(x, this.getHeight(x, y), y);
+          dummy.rotateY(AngleToRad((stepAngle * i) + Random(this.itemRotateRange[0], this.itemRotateRange[1])));
+          dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1]) + this.noizeRotate));
+          dummy.scale.setScalar(scale);
+          dummy.updateMatrix();
+          // Вернуть геометрию
+          return new Matrix4().copy(dummy.matrix);
+        }
+        // Не отрисовывать геометрию
+        return null;
+      }).filter(matrix => !!matrix);
+      // Вернуть объект
+      return {
+        type: "plantaingrass",
+        subType: DreamMapPlantainGrassObject.getSubType(this.ceil, this.neighboringCeils),
+        count: this.count,
+        matrix,
+        color: matrix.map(() => new Color(
+          Random(ColorRange[0], ColorRange[1], false, 3),
+          Random(ColorRange[2], ColorRange[3], false, 3),
+          Random(ColorRange[4], ColorRange[5], false, 3)
+        )),
+        geometry: geometry as BufferGeometry,
+        material,
+        coords: {
+          x: this.ceil.coord.x,
+          y: this.ceil.coord.y
+        },
+        animate: this.animate.bind(this),
+        castShadow: false,
+        recieveShadow: true
+      };
+    }
+    // Пустой объект
+    return null;
   }
 
   // Определение параметров
@@ -144,6 +148,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     if (!!this.params) {
       this.params.cX = this.params.widthCorrect + (this.ceil.coord.x * DreamCeilSize);
       this.params.cY = this.params.heightCorrect + (this.ceil.coord.y * DreamCeilSize);
+      this.params.countItterator = CreateArray(this.count);
     }
     // Определить параметры
     else {
@@ -309,7 +314,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       dreamMapSettings
     );
     // Обновить
-    this.count = dreamMapSettings.datalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.datalization) / 8);
+    this.count = dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.detalization) / 8);
   }
 
   // Обновить сведения уже существующего сервиса
@@ -332,7 +337,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     this.neighboringCeils = neighboringCeils;
     this.dreamMapSettings = dreamMapSettings;
     // Обновить
-    this.count = dreamMapSettings.datalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.datalization) / 8);
+    this.count = dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : Math.ceil(DreamMaxElmsCount(dreamMapSettings.detalization) / 8);
     // Вернуть экземаляр
     return this;
   }

@@ -78,11 +78,11 @@ export class DreamService {
   get getDreamMapSettings(): DreamMapSettings {
     this.configLocalStorage();
     // Параметры
-    const detalizationString: string = this.localStorageService.getCookie("settings_quality");
+    const detalizationString: string = this.localStorageService.getCookie("settings_detalization");
     // Параметры
-    const datalization: DreamObjectElmsValues = parseInt(!!detalizationString ? detalizationString : DreamObjectDetalization.toString()) as DreamObjectElmsValues;
+    const detalization: DreamObjectElmsValues = parseInt(!!detalizationString ? detalizationString : DreamObjectDetalization.toString()) as DreamObjectElmsValues;
     // Настройки
-    return { datalization };
+    return { detalization };
   }
 
 
@@ -189,6 +189,13 @@ export class DreamService {
           this.apiService.checkResponse(result.result.code, codes)
       )
     );
+  }
+
+  // Сохранить настройки карты
+  saveSettings(settings: DreamMapSettings): void {
+    this.configLocalStorage();
+    // Сохранение параметров
+    this.localStorageService.setCookie("settings_detalization", settings.detalization.toString());
   }
 
 
