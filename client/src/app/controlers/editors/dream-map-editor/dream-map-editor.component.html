@@ -39,6 +39,9 @@
     <!-- Под-инструмент: настройки -->
     <ng-container [ngTemplateOutlet]="settingsTools"
                   *ngIf="getCurrentTool.type === toolType.settings"></ng-container>
+    <!-- Под-инструмент: объекты -->
+    <ng-container [ngTemplateOutlet]="objectsTools"
+                  *ngIf="getCurrentTool.type === toolType.objects"></ng-container>
   </div>
   <!-- Загрузчик -->
   <div class="area__loader"
@@ -198,6 +201,41 @@
            [ngClass]="{ disabled: dreamMapSettings.detalization >= detalizationMax }"
            (click)="onDetalizationChange(dreamMapSettings.detalization + 1)">
         <mat-icon>chevron_right</mat-icon>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Под-инструмент: объекты -->
+<ng-template #objectsTools>
+  <!-- Категории -->
+  <form class="tool-button"
+        [formGroup]="form">
+    <mat-icon>{{getCurrentObjectsCatalog.icon}}</mat-icon>
+    <!-- Список категорий объектов -->
+    <div class="tool-button__items border-radius">
+      <div class="tool-button"
+           matTooltip="Категория объектов: {{catalog.name}}"
+           (click)="onObjectsCategoriesChange(catalog.id)"
+           *ngFor="let catalog of objectsCatalogs">
+        <mat-icon>{{catalog.icon}}</mat-icon>
+      </div>
+    </div>
+  </form>
+  <!-- Объекты -->
+  <form class="tool-button"
+        [formGroup]="form"
+        [ngClass]="{ active: currentObject > 0 }"
+        *ngIf="!!getCurrentObject">
+    <img [src]="getCurrentObject.image" />
+    <!-- Список категорий объектов -->
+    <div class="tool-button__items border-radius">
+      <div class="tool-button"
+           matTooltip="Объект: {{object.name}}"
+           [ngClass]="{ active: currentObject === object.id }"
+           (click)="onObjectChange(object.id)"
+           *ngFor="let object of filteredObjects">
+        <img [src]="object.image" />
       </div>
     </div>
   </form>

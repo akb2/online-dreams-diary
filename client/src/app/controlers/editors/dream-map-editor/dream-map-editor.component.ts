@@ -51,8 +51,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   terrainList: MapTerrain[] = MapTerrains;
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
   detaliationLabels: CustomObjectKey<DreamObjectElmsValues, string> = DetaliationLabels;
-  objectsCategories: DreamMapObjectCatalog[] = DreamMapObjectCatalogs;
-  objects: DreamMapObject[] = DreamMapObjects;
+  objectsCatalogs: DreamMapObjectCatalog[] = DreamMapObjectCatalogs;
+  private objects: DreamMapObject[] = DreamMapObjects;
+  filteredObjects: DreamMapObject[] = [];
 
   // * Инструменты: общее
   private tool: Tool = Tool.objects;
@@ -70,7 +71,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterType: WaterTypeTool = WaterTypeTool.sea;
 
   // * Инструменты: объекты
-  currentObjectCategory: number = DreamMapObjectCatalogs[0].id;
+  currentObjectCatalog: number;
   currentObject: number = 0;
 
   // ? Настройки работы редактора
@@ -264,6 +265,16 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Выбранная категория
+  get getCurrentObjectsCatalog(): DreamMapObjectCatalog {
+    return this.objectsCatalogs.find(({ id }) => id === this.currentObjectCatalog) ?? this.objectsCatalogs[0];
+  }
+
+  // Выбранная категория
+  get getCurrentObject(): DreamMapObject {
+    return this.filteredObjects.find(({ id }) => id === this.currentObject) ?? this.filteredObjects[0];
+  }
+
 
 
 
@@ -288,6 +299,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
     // Создать список управления рельефом
     this.createReliefData();
+    this.onObjectsCategoriesChange(0);
   }
 
   ngOnChanges(): void {
@@ -517,6 +529,29 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.dreamMapSettings.detalization = detalization ?? DreamObjectDetalization;
       // Установить высоту
       this.setDetalization();
+    }
+  }
+
+  // Изменение категории объектов
+  onObjectsCategoriesChange(catalog: number): void {
+    catalog = this.objectsCatalogs.find(({ id }) => id === catalog)?.id ?? this.objectsCatalogs[0].id;
+    // Настройки объектов
+    if (!!catalog && this.currentObjectCatalog !== catalog) {
+      this.currentObjectCatalog = catalog;
+      this.filteredObjects = this.objects.filter(({ catalog: c }) => c === catalog);
+      // Обновить текущий объект
+      this.onObjectChange(0);
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Изменение категории объектов
+  onObjectChange(object: number): void {
+    object = this.filteredObjects.find(({ id }) => id === object)?.id ?? this.filteredObjects[0].id;
+    // Настройки объектов
+    if (!!object && this.currentObject !== object) {
+      this.currentObject = object;
     }
   }
 

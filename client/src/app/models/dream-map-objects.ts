@@ -15,6 +15,7 @@ import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Mat
 export interface DreamMapObject {
   id: number;
   name: string;
+  image: string;
   catalog: number;
   controller: ObjectController;
   settings?: DreamMapObjectSettings;
@@ -128,8 +129,12 @@ export const DreamMapObjects: DreamMapObject[] = [
       mixWithDefault: true
     }
   }
-].map((data: DreamMapObject) => ({
-  ...data,
+].map((data: Partial<DreamMapObject>) => ({
+  id: data.id,
+  name: data.name,
+  image: "../../assets/dream-map/object/_icons/" + data.id + ".png",
+  catalog: data.catalog,
+  controller: data.controller,
   settings: {
     rotation: !!data?.settings?.rotation,
     variants: !!data?.settings?.variants,
