@@ -189,7 +189,6 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       const intersect: Vector3 = new Vector3();
       const countItterator: number[] = CreateArray(this.count);
       // Настройки геометрии
-      geometry.rotateZ(AngleToRad((90)));
       geometry.applyMatrix4(new Matrix4().makeTranslation(0, geometryRadius, 0));
       geometry.scale(0.5, 1, 0);
       // Запомнить параметры
