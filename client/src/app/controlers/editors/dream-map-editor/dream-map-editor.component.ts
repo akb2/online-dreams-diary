@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { CreateArray, CustomObjectKey, IsMultiple, SimpleObject } from "@_models/app";
+import { CreateArray, CustomObjectKey, IsMultiple, LengthByCoords, MathRound, Random, SimpleObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
 import { DreamMapObject, DreamMapObjectCatalog, DreamMapObjectCatalogs, DreamMapObjects } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
@@ -76,8 +76,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
-  private toolActionTimer: number = 20;
-  private terrainChangeStep: number = 1;
+  private toolActionTimer: number = 25;
+  private terrainChangeStep: number = 5;
   private terrainObjectsUpdateCounter: number = 1;
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
   dreamMapSettings: DreamMapSettings;
@@ -569,7 +569,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection, update: boolean = false): void {
-    const sizes: number[] = CreateArray((this.toolSizeLand * 2) + 1).map(v => v - this.toolSizeLand);
+    const size: number = (this.toolSizeLand * 2) + 1;
+    const sizes: number[] = CreateArray(size).map(v => v - this.toolSizeLand);
+    const radius: number = size - this.toolSizeLand;
     const z: number = direction === 0 ?
       this.startZ :
       this.viewer.getCeil(this.currentCeil.ceil.coord.x, this.currentCeil.ceil.coord.y).coord.z;
@@ -582,11 +584,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       if (this.isEditableCeil(x, y)) {
         const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
         const currentZ: number = ceil.coord.z;
+        const currentRadius: number = LengthByCoords({ x: cX, y: cY });
         let corrDirection: HeightDirection = 0;
-        let zChange: number = Math.floor(
-          (((this.toolSizeLand + 1) * this.terrainChangeStep) + 1 - ((Math.abs(cX) + Math.abs(cY)) * this.terrainChangeStep / 2)) /
-          this.terrainChangeStep
-        );
+        let zChange: number = MathRound(this.terrainChangeStep * ((size - currentRadius) / size));
         // Изменение высоты: выравнивание
         if (direction === 0) {
           corrDirection = currentZ < z ? 1 : currentZ > z ? -1 : 0;
