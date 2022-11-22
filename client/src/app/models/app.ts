@@ -160,6 +160,10 @@ export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) 
     0;
 };
 
+// Расстояние между двумя точками
+export const LengthByCoords: (a: XYCoord, b?: XYCoord) => number = (a: XYCoord, b: XYCoord = { x: 0, y: 0 }) =>
+  Math.sqrt(Math.pow(Math.abs(a.x - b.x), 2) + Math.pow(Math.abs(a.y - b.y), 2));
+
 // Линейная функция расчета
 export const LineFunc: (min: number, max: number, value: number, valueMin: number, valueMax: number) => number =
   (min: number, max: number, value: number, valueMin: number, valueMax: number) => (((min - max) / valueMax) * (value - valueMin)) + max;
