@@ -1,11 +1,11 @@
 import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
 import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { CheckCeilForm } from "@_services/dream-map/objects/grass/_functions";
-import { AllCorners, AnglesB, CeilGrassFillGeometry, ClosestKeysAll, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
+import { CheckCeilForm, GetLikeNeighboringKeys } from "@_services/dream-map/objects/grass/_functions";
+import { AllCorners, AnglesB, CeilGrassFillGeometry, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
@@ -19,9 +19,9 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
   // Под тип
   static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
-    const closestCeils: ClosestHeight[] = ClosestKeysAll.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain);
+    const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);
+    const closestCeils: ClosestHeight[] = closestKeys.map(k => neighboringCeils[k]);
     const closestCount: number = closestCeils.length;
-    const closestKeys: (keyof ClosestHeights)[] = ClosestKeysAll.filter(k => neighboringCeils[k].terrain === ceil.terrain);
     // Отрисовка только для существующих типов фигур
     if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
       // Для ячеек без похожих соседних ячеек
@@ -60,7 +60,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private width: number = 0.022;
   private height: number = 6;
   private noize: number = 0.22;
-  private countStep: [number, number] = [1, 3];
+  private countStep: [number, number] = [1, 1];
   private scaleY: number[] = [1, 3];
   private scaleX: number[] = [1.5, 1];
   private noizeRotate: number = 90 * (this.noize / 2);
@@ -141,7 +141,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         },
         animate: this.animate.bind(this),
         castShadow: false,
-        recieveShadow: true
+        recieveShadow: true,
+        isDefault: false
       };
     }
     // Пустой объект
