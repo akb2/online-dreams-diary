@@ -56,6 +56,7 @@ export const FogFragmentShader: string = `
     #else
       float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
     #endif
-    gl_FragColor.a = saturate(1.0 - fogFactor);
+
+    gl_FragColor.a = saturate(gl_FragColor.a - fogFactor);
   #endif
 `;
