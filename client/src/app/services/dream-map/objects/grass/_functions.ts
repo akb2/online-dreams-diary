@@ -1,5 +1,6 @@
 import { MathRound, Random, TriangleSquare } from "@_models/app";
 import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { DreamMapObjects } from "@_models/dream-map-objects";
 import { DreamCeilSize } from "@_models/dream-map-settings";
 import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, ClosestKeysAll, RandomFactor, TrianglesCoords } from "@_services/dream-map/objects/grass/_models";
 
@@ -7,14 +8,25 @@ import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry
 
 
 
+// Получить список ключей соседних ячеек с травой
+export const GetLikeNeighboringKeys: (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => (keyof ClosestHeights)[] = (
+  ceil: DreamMapCeil,
+  neighboringCeils: ClosestHeights
+) => ClosestKeysAll.filter(k => {
+  const c: ClosestHeight = neighboringCeils[k];
+  const objectData = DreamMapObjects.find(({ id }) => id === c.object);
+  // Вернуть результат проверки
+  return c.terrain === ceil.terrain && (!!objectData?.settings?.mixWithDefault || !c.object);
+});
+
 // Проверка вписания травы в плавную фигуру с учетом соседних ячеек
 export const CheckCeilForm = (cX: number, cY: number, x: number, y: number, neighboringCeils: ClosestHeights, ceil: DreamMapCeil): boolean => {
   const randomCheck: boolean = Random(1, 100) <= RandomFactor;
   // Проверка соседних ячеек, если не фактор случайности не сработал
   if (!randomCheck) {
-    const closestCeils: ClosestHeight[] = ClosestKeysAll.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain);
+    const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);
+    const closestCeils: ClosestHeight[] = closestKeys.map(k => neighboringCeils[k]);
     const closestCount: number = closestCeils.length;
-    const closestKeys: (keyof ClosestHeights)[] = ClosestKeysAll.filter(k => neighboringCeils[k].terrain === ceil.terrain);
     // Отрисовка только для существующих типов фигур
     if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
       // Для ячеек без похожих соседних ячеек
