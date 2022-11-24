@@ -7,10 +7,10 @@ import { Material, Shader } from "three";
 
 
 // Вершинный шейдер
-const VertexShader: (noize: number) => string = (noize: number) => `
+const VertexShader: (noize: number, defineVuV?: boolean) => string = (noize: number, defineVuV: boolean = true) => `
   #define STANDARD
 
-  varying vec2 vUv;
+  ${defineVuV ? "varying vec2 vUv;" : ""}
   varying vec3 vViewPosition;
   uniform float time;
 
@@ -105,9 +105,14 @@ const VertexShader: (noize: number) => string = (noize: number) => `
 
 
 // Создание шейдера
-export const NoizeShader: (material: Material, shader: Shader, noize: number) => Shader = (material: Material, shader: Shader, noize: number) => {
+export const NoizeShader: (material: Material, shader: Shader, noize: number, defineVuV?: boolean) => Shader = (
+  material: Material,
+  shader: Shader,
+  noize: number,
+  defineVuV: boolean = true
+) => {
   // Вершинный шейдер
-  shader.vertexShader = VertexShader(noize);
+  shader.vertexShader = VertexShader(noize, defineVuV);
   // Данные
   shader.uniforms = {
     ...shader.uniforms,
