@@ -1,4 +1,4 @@
-import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, Random } from "@_models/app";
+import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, ObjectTexturePaths } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
@@ -38,6 +38,12 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   private params: Params;
 
+  private colorRange: number[] = [
+    0, 0.3,
+    0.7, 1,
+    0, 0.3
+  ];
+
 
 
 
@@ -50,41 +56,18 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   // Получение объекта
   getObject(): MapObject[] {
     const {
-      objHeight,
       cX,
       cY,
-      qualityHelper,
-      hyp,
-      v1,
-      v2,
-      dir,
-      ray,
-      intersect,
-      faces,
     }: Params = this.getParams;
     // Параметры
-    const centerY: number = objHeight / 2;
     const centerX: number = DreamCeilSize / 2;
     const scale: number = Random(0.8, 1.1, false, 3);
     const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const x: number = cX + lX;
     const y: number = cY + lY;
-    // Параметры местности
-    const xSeg: number = Math.floor(lX * qualityHelper);
-    const ySeg: number = Math.floor(lY * qualityHelper);
-    const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
-    const seg: number = locHyp >= hyp ? 1 : 0;
-    const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
-    // Поиск координаты Z
-    v1.set(x, y, 0);
-    v2.set(x, y, this.maxHeight);
-    dir.subVectors(v2, v1).normalize();
-    dir.normalize();
-    ray.set(v1, dir);
-    ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
     // Координата Z
-    const z: number = intersect.z + (centerY * scale);
+    const z: number = this.getHeight(x, y);
     // Вернуть массив объектов
     return [
       this.getVerticalParts(lX, lY, scale, z)
@@ -137,6 +120,12 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     // Параметры
     const type: string = this.fullType + "-v";
     const angle: number = 360 / this.count;
+    const rotate: number = Random(0, 360, false, 0);
+    const color: Color = new Color(
+      Random(this.colorRange[0], this.colorRange[1], false, 3),
+      Random(this.colorRange[2], this.colorRange[3], false, 3),
+      Random(this.colorRange[4], this.colorRange[5], false, 3)
+    );
     const x: number = cX + lX;
     const y: number = cY + lY;
     // Настройки
@@ -145,18 +134,19 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     geometry.rotateY(AngleToRad(180));
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = countItterator.map(i => {
-      dummy.rotation.y = AngleToRad(i * angle);
+      dummy.rotation.y = AngleToRad(rotate + (i * angle));
       dummy.updateMatrix();
       // Вернуть геометрию
       return new Matrix4().copy(dummy.matrix);
     });
+    // Цвета
     // Вернуть объект
     return {
       type,
       subType: DreamMapTreeObject.getSubType(this.ceil, this.neighboringCeils, type),
       count: this.count,
       matrix: matrix,
-      color: [],
+      color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
       coords: {
@@ -224,6 +214,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const cX: number = widthCorrect + (this.ceil.coord.x * DreamCeilSize);
       const cY: number = heightCorrect + (this.ceil.coord.y * DreamCeilSize);
       // Свойства для оптимизации
+      const triangle: Triangle = new Triangle();
       const facesTriangle: Triangle[] = facesCountItterator.map(() => new Triangle());
       const vertexVector3: Vector3[] = vertexItterator.map(() => vertexItterator.map(() => 0)).reduce((o, v) => ([...o, ...v]), []).map(() => new Vector3());
       const v1: Vector3 = new Vector3();
@@ -272,6 +263,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         normalMap,
         vertex: [],
         faces: [],
+        triangle
       };
       // Создание шейдера
       this.createShader();
@@ -310,6 +302,42 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     });
     // Вернуть данные
     return this.params;
+  }
+
+  // Получить высоту объекта
+  private getHeight(x: number, y: number): number {
+    const {
+      qualityHelper,
+      hyp,
+      v1,
+      v2,
+      dir,
+      ray,
+      intersect,
+      triangle,
+      faces,
+      cX,
+      cY,
+      objHeight
+    }: Params = this.getParams;
+    const centerY: number = objHeight / 2;
+    const lX: number = x - cX;
+    const lY: number = y - cY;
+    const xSeg: number = Math.floor(lX * qualityHelper);
+    const ySeg: number = Math.floor(lY * qualityHelper);
+    const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
+    const seg: number = locHyp >= hyp ? 1 : 0;
+    const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
+    // Поиск координаты Z
+    v1.set(x, y, 0);
+    v2.set(x, y, this.maxHeight);
+    dir.subVectors(v2, v1).normalize();
+    dir.normalize();
+    ray.set(v1, dir);
+    ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
+    triangle.set(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c);
+    // Координата Z
+    return intersect.z + centerY;
   }
 
 
@@ -367,6 +395,28 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   // Обновить позицию по оси Z
   updateHeight(objectSetting: ObjectSetting): void {
+    if (objectSetting.count > 0) {
+      const matrix: Matrix4 = new Matrix4();
+      const position: Vector3 = new Vector3();
+      // Цикл по фрагментам
+      objectSetting.indexKeys.forEach(index => {
+        objectSetting.mesh.getMatrixAt(index, matrix);
+        position.setFromMatrixPosition(matrix);
+        // Координаты
+        const x: number = position.x;
+        const y: number = position.z;
+        // Если координаты не нулевые
+        if (x !== 0 && y !== 0) {
+          const z: number = this.getHeight(x, y);
+          // Запомнить позицию
+          matrix.setPosition(x, z, y);
+          objectSetting.mesh.setMatrixAt(index, matrix);
+        }
+      });
+      // Обновить
+      objectSetting.mesh.updateMatrix();
+      objectSetting.mesh.instanceMatrix.needsUpdate = true;
+    }
   }
 
   // Очистка памяти
@@ -440,6 +490,7 @@ interface Params {
   map: Texture;
   normalMap: Texture;
   shader?: Shader;
+  triangle: Triangle;
 }
 
 // Типы деревьев
