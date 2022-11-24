@@ -17,7 +17,8 @@ export interface DreamMapObject {
   name: string;
   image: string;
   catalog: number;
-  controller: ObjectController;
+  controllers: ObjectController[];
+  subTypeFunctions: CustomObjectKey<string, Function>;
   settings?: DreamMapObjectSettings;
 }
 
@@ -26,6 +27,7 @@ export interface DreamMapObjectSettings {
   rotation?: boolean;
   variants?: boolean;
   mixWithDefault?: boolean;
+  multiCeils?: boolean;
 }
 
 // Интерфейс категории объектов
@@ -43,6 +45,7 @@ export interface ObjectSetting {
   subType: string;
   indexKeys: number[];
   count: number;
+  isDefault: boolean;
 }
 
 // Тип ответа
@@ -57,6 +60,7 @@ export interface MapObject {
   count: number;
   castShadow: boolean;
   recieveShadow: boolean;
+  isDefault: boolean;
   animate?: Function;
 };
 
@@ -114,7 +118,7 @@ export const DreamMapObjectCatalogs: DreamMapObjectCatalog[] = [
     id: 1,
     icon: "forest",
     name: "Растительность"
-  }
+  },
 ];
 
 // Список объектов
@@ -124,20 +128,26 @@ export const DreamMapObjects: DreamMapObject[] = [
     id: 1,
     name: "Дуб",
     catalog: 1,
-    controller: DreamMapTreeObject,
+    controllers: [DreamMapTreeObject],
+    subTypeFunctions: {
+      "tree-oak-v": DreamMapTreeObject.getSubType
+    },
     settings: {
-      mixWithDefault: true
+      mixWithDefault: true,
+      multiCeils: true
     }
-  }
+  },
 ].map((data: Partial<DreamMapObject>) => ({
   id: data.id,
   name: data.name,
   image: "../../assets/dream-map/object/_icons/" + data.id + ".png",
   catalog: data.catalog,
-  controller: data.controller,
+  controllers: data.controllers,
+  subTypeFunctions: data.subTypeFunctions,
   settings: {
     rotation: !!data?.settings?.rotation,
     variants: !!data?.settings?.variants,
-    mixWithDefault: !!data?.settings?.mixWithDefault
+    mixWithDefault: !!data?.settings?.mixWithDefault,
+    multiCeils: !!data?.settings?.multiCeils,
   }
 }));
