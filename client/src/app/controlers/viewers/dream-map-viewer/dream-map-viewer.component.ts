@@ -516,7 +516,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       alpha: true,
       precision: "highp",
       powerPreference: "high-performance",
-      // logarithmicDepthBuffer: true
+      logarithmicDepthBuffer: false
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 1);
