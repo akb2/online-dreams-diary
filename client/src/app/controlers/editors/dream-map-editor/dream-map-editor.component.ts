@@ -299,7 +299,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
     // Создать список управления рельефом
     this.createReliefData();
-    this.onObjectsCategoriesChange(0);
+    this.onObjectsCategoriesChange(-1);
   }
 
   ngOnChanges(): void {
@@ -319,7 +319,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Нажатие кнопки мыши
   onMouseDown(event: MouseEvent): void {
     if (event.button === 0) {
-      if (this.tool === Tool.landscape || this.tool === Tool.terrain) {
+      const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain, Tool.objects]);
+      // предварительное действие
+      if (tools.has(this.tool)) {
         this.toolActive = true;
         this.onToolActionBeforeActive();
       }
@@ -369,7 +371,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // Активное действие: ЛКМ зажимается
+  // * Активное действие: ЛКМ зажимается
   private onToolActionBeforeActive(): void {
     if (this.currentCeil && this.toolActive) {
       switch (this.tool) {
@@ -384,29 +386,28 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // Активное действие в цикле: ЛКМ зажата
+  // * Активное действие в цикле: ЛКМ зажата
   private onToolActionCycle(itterator: number): void {
     if (this.currentCeil && this.toolActive) {
-      const updateObjects: boolean = this.terrainObjectsUpdateCounter > 0 ? IsMultiple(itterator, this.terrainObjectsUpdateCounter) : false;
-      // Инструмент
-      switch (this.tool) {
-        // Работа с ландшафтом
-        case (Tool.landscape): switch (this.landscapeTool) {
-          // Работа с ландшафтом: поднять
-          case (LandscapeTool.up): this.ceilsHeight(1, updateObjects); break;
-          // Работа с ландшафтом: опустить
-          case (LandscapeTool.down): this.ceilsHeight(-1, updateObjects); break;
-          // Работа с ландшафтом: выровнять
-          case (LandscapeTool.align): this.ceilsHeight(0, updateObjects); break;
-        }; break;
-        // Работа с типом местности
-        case (Tool.terrain):
-          this.ceilsTerrain(); break;
+      // Работа с ландшафтом
+      if (this.tool === Tool.landscape) {
+        const direction: HeightDirection = this.landscapeTool === LandscapeTool.up ? 1 : this.landscapeTool === LandscapeTool.down ? -1 : 0;
+        const updateObjects: boolean = this.terrainObjectsUpdateCounter > 0 ? IsMultiple(itterator, this.terrainObjectsUpdateCounter) : false;
+        // Действие с ландшафтом
+        this.ceilsHeight(direction, updateObjects);
+      }
+      // Работа с типом местности
+      else if (this.tool === Tool.terrain) {
+        this.ceilsTerrain();
+      }
+      // Работа с объектами
+      else if (this.tool === Tool.objects) {
+        this.setObject();
       }
     }
   }
 
-  // Активное действие: ЛКМ отпускается
+  // * Активное действие: ЛКМ отпускается
   private onToolActionAfterActive(): void {
     if (this.currentCeil && this.toolActive) {
       switch (this.tool) {
@@ -423,7 +424,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // Пассивное действие: наведение курсора на объект
+  // * Пассивное действие: наведение курсора на объект
   private onToolActionPassive(): void {
     if (!!this.currentCeil) {
       const tools: Set<Tool> = new Set([Tool.landscape, Tool.terrain, Tool.objects]);
@@ -533,24 +534,24 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Изменение категории объектов
-  onObjectsCategoriesChange(catalog: number): void {
-    catalog = this.objectsCatalogs.find(({ id }) => id === catalog)?.id ?? this.objectsCatalogs[0].id;
+  onObjectsCategoriesChange(catalog: number = 0): void {
+    catalog = catalog !== 0 ? this.objectsCatalogs.find(({ id }) => id === catalog)?.id ?? this.objectsCatalogs[0].id : 0;
     // Настройки объектов
-    if (!!catalog && this.currentObjectCatalog !== catalog) {
+    if ((!!catalog || catalog === 0) && this.currentObjectCatalog !== catalog) {
       this.currentObjectCatalog = catalog;
       this.filteredObjects = this.objects.filter(({ catalog: c }) => c === catalog);
       // Обновить текущий объект
-      this.onObjectChange(0);
+      this.onObjectChange(-1);
       // Обновить
       this.changeDetectorRef.detectChanges();
     }
   }
 
   // Изменение категории объектов
-  onObjectChange(object: number): void {
-    object = this.filteredObjects.find(({ id }) => id === object)?.id ?? this.filteredObjects[0].id;
+  onObjectChange(object: number = 0): void {
+    object = object !== 0 ? this.filteredObjects.find(({ id }) => id === object)?.id ?? this.filteredObjects[0]?.id ?? 0 : 0;
     // Настройки объектов
-    if (!!object && this.currentObject !== object) {
+    if ((!!object || object === 0) && this.currentObject !== object) {
       this.currentObject = object;
     }
   }
@@ -562,7 +563,16 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Свечение ячеек
   private lightCeils(unLight: boolean = false): void {
     const sizedTools: Set<Tool> = new Set([Tool.landscape, Tool.terrain]);
-    const toolSize: number = sizedTools.has(this.tool) ? this.toolSizeLand : ToolSizeLand[0];
+    let toolSize: number = sizedTools.has(this.tool) ? this.toolSizeLand : ToolSizeLand[0];
+    // Для объектов
+    if (this.tool === Tool.objects) {
+      const objectsSetting: DreamMapObject = DreamMapObjects.find(({ id }) => id === this.currentObject)
+      const multiCeils: boolean = !!objectsSetting?.settings?.multiCeils || this.currentObject === 0;
+      // Мультиячейки
+      if (multiCeils) {
+        toolSize = this.toolSizeLand;
+      }
+    }
     // Подсветить ячейку
     this.viewer.setTerrainHoverStatus(!!this.currentCeil && !unLight ? this.currentCeil.ceil : null, toolSize);
   }
@@ -682,6 +692,42 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменить время для положения небесных светил
   private setSkyTime(): void {
     this.viewer.setSkyTime(this.dreamMap.sky.time);
+  }
+
+  // Изменить объект
+  private setObject(): void {
+    const objectsSetting: DreamMapObject = DreamMapObjects.find(({ id }) => id === this.currentObject)
+    const multiCeils: boolean = !!objectsSetting?.settings?.multiCeils || this.currentObject === 0;
+    const toolSize: number = multiCeils ? this.toolSizeLand : ToolSizeLand[0];
+    const sizes: number[] = multiCeils ? CreateArray(((toolSize + 1) * 2) + 1).map(v => v - (toolSize + 1)) : [0];
+    // Цикл по ячейкам
+    const ceils: DreamMapCeil[] = sizes
+      .map(cY => sizes.map(cX => {
+        const x: number = this.currentCeil.ceil.coord.x + cX;
+        const y: number = this.currentCeil.ceil.coord.y + cY;
+        // Ячейка внутри области выделения
+        if (this.isEditableCeil(x, y)) {
+          const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+          // Изменить местность
+          if (ceil.object !== this.currentObject) {
+            return ceil;
+          }
+        }
+        // Нередактируемая ячейка
+        return null;
+      }))
+      .reduce((o, c) => ([...o, ...c]), [])
+      .filter(c => !!c);
+    // Заменить объекты
+    if (!!ceils?.length) {
+      this.viewer.setObject(ceils, this.currentObject);
+      // Запомнить объект
+      ceils.forEach(ceil => {
+        ceil.object = this.currentObject;
+        // Запомнить ячейку
+        this.saveCeil(ceil);
+      });
+    }
   }
 
 

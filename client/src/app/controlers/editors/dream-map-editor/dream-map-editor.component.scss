@@ -152,6 +152,26 @@ $separatorColor: #ccc;
     opacity: 1;
     visibility: visible;
   }
+
+  // Статусы
+  &,
+  &__items > & {
+    &:not(.container) {
+      // Активный элемент
+      &.active {
+        background-color: #{map.get(colors.$mat-disabled, 500)};
+        color: #{map.get(colors.$mat-disabled, contrast, 500)};
+      }
+      // Заблокированный элемент
+      &.disabled {
+        &:hover {
+          background-color: #{map.get(colors.$mat-disabled, 500)};
+          color: #{map.get(colors.$mat-disabled, contrast, 500)};
+        }
+      }
+    }
+  }
+
   // Список инструментов
   &__items {
     position: absolute;
@@ -183,28 +203,6 @@ $separatorColor: #ccc;
         // Последний элемент: одна линия
         &:last-of-type {
           border-radius: 0 #{$toolButtonBRadius} #{$toolButtonBRadius} 0;
-        }
-      }
-      // Выделение
-      &:hover {
-        background-color: #{map.get(colors.$mat-primary, 500)};
-        color: #{map.get(colors.$mat-primary, contrast, 500)};
-      }
-      // Активный элемент
-      &.active {
-        background-color: #{map.get(colors.$mat-disabled, 500)};
-        color: #{map.get(colors.$mat-disabled, contrast, 500)};
-
-        &.active-hover:hover {
-          background-color: #{map.get(colors.$mat-primary, 500)};
-          color: #{map.get(colors.$mat-primary, contrast, 500)};
-        }
-      }
-      // Заблокированный элемент
-      &.disabled {
-        &:hover {
-          background-color: #{map.get(colors.$mat-disabled, 500)};
-          color: #{map.get(colors.$mat-disabled, contrast, 500)};
         }
       }
       // Контейнер
@@ -239,6 +237,17 @@ $separatorColor: #ccc;
         > .long-slider {
           min-width: 240px;
         }
+      }
+
+      // Выделение
+      &:not(.container):hover {
+        background-color: #{map.get(colors.$mat-primary, 500)};
+        color: #{map.get(colors.$mat-primary, contrast, 500)};
+      }
+      // Активный элемент
+      &.active .active-hover:hover {
+        background-color: #{map.get(colors.$mat-primary, 500)};
+        color: #{map.get(colors.$mat-primary, contrast, 500)};
       }
     }
     // Скругление углов

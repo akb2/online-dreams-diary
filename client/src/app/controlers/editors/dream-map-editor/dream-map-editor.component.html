@@ -208,25 +208,31 @@
 
 <!-- Под-инструмент: объекты -->
 <ng-template #objectsTools>
+  <!-- Удаление -->
+  <div class="tool-button"
+       [ngClass]="{ active: !currentObject }"
+       (click)="onObjectsCategoriesChange()">
+    <mat-icon>close</mat-icon>
+  </div>
   <!-- Категории -->
-  <form class="tool-button"
-        [formGroup]="form">
+  <div class="tool-button"
+       (click)="onObjectsCategoriesChange(getCurrentObjectsCatalog.id)">
     <mat-icon>{{getCurrentObjectsCatalog.icon}}</mat-icon>
     <!-- Список категорий объектов -->
     <div class="tool-button__items border-radius">
       <div class="tool-button"
+           [ngClass]="{ active: currentObjectCatalog === catalog.id }"
            matTooltip="Категория объектов: {{catalog.name}}"
            (click)="onObjectsCategoriesChange(catalog.id)"
            *ngFor="let catalog of objectsCatalogs">
         <mat-icon>{{catalog.icon}}</mat-icon>
       </div>
     </div>
-  </form>
+  </div>
   <!-- Объекты -->
-  <form class="tool-button"
-        [formGroup]="form"
-        [ngClass]="{ active: currentObject > 0 }"
-        *ngIf="!!getCurrentObject">
+  <div class="tool-button"
+       [ngClass]="{ active: !!currentObject }"
+       *ngIf="!!getCurrentObject">
     <img [src]="getCurrentObject.image" />
     <!-- Список категорий объектов -->
     <div class="tool-button__items border-radius">
@@ -238,7 +244,10 @@
         <img [src]="object.image" />
       </div>
     </div>
-  </form>
+  </div>
+  <!-- Размер кисти -->
+  <ng-container [ngTemplateOutlet]="toolsSizeForm"
+                *ngIf="(!!getCurrentObject && !!getCurrentObject?.settings?.multiCeils) || currentObject === 0"></ng-container>
 </ng-template>
 
 
