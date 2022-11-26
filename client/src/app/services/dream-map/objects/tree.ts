@@ -1,11 +1,11 @@
 import { AngleToRad, CreateArray, CustomObjectKey, IsEven, IsMultiple, MathRound, Random } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, ObjectTexturePaths } from "@_models/dream-map";
+import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
+import { BufferGeometry, CircleGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, FrontSide, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
 
 
 
@@ -15,8 +15,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
 
   // Под тип
-  static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights, type: string): string {
-    return "123";
+  static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights, type: string, subType: string): string {
+    return subType;
   }
 
 
@@ -24,25 +24,24 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
 
   private type: string = "tree";
-  private subType: Types;
+  private subType: string;
+  private defaultMatrix: Matrix4 = new Matrix4();
 
-  private count: number = 0;
+  private treeCount: number = 0;
+  private leafCount: number = 0;
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
-  private posRange: number = 0.3;
+  private posRange: number = 0.2;
   private maxHeight: number = this.heightPart * DreamMaxHeight;
   private noize: number = 0.2;
 
-  private width: number = 1;
-  private height: number = 1;
+  private width: number = 0.05;
+  private height: number = 50;
 
   private params: Params;
 
-  private colorRange: number[] = [
-    0, 0.3,
-    0.7, 1,
-    0, 0.3
-  ];
+  private colorRange: number[] = [0.3, 0.4, 0.2, 0.3, 0.1, 0.15];
+  private leafColorRange: number[] = [0, 0.4, 0.7, 1, 0, 0.4];
 
 
 
@@ -50,7 +49,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   // Полный тип
   private get fullType(): string {
-    return this.type + "-" + this.subType;
+    return this.type + "-oak";
   }
 
   // Получение объекта
@@ -60,8 +59,10 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       cY,
     }: Params = this.getParams;
     // Параметры
+    const geometryIndex: number = Random(0, this.treeCount - 1, false, 0);
     const centerX: number = DreamCeilSize / 2;
-    const scale: number = Random(0.8, 1.1, false, 3);
+    const scale: number = Random(0.7, 1, false, 3);
+    const rotate: number = Random(0, 360, false, 0);
     const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const x: number = cX + lX;
@@ -70,81 +71,65 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     const z: number = this.getHeight(x, y);
     // Вернуть массив объектов
     return [
-      this.getVerticalParts(lX, lY, scale, z)
+      this.getBranchGeometry(lX, lY, scale, rotate, z, geometryIndex),
+      this.getLeafParts(x, y, scale, rotate, z, geometryIndex)
     ];
   }
 
   // Горизонтальные части
-  private getHorizontalParts(lX: number, lY: number, scale: number): void {
+  private getLeafParts(bX: number, bY: number, scale: number, rotate: number, bZ: number, geometryIndex: number): MapObject {
     const {
-      objHeight,
-      dummy,
-      material,
-      geometry: { h: geometry },
-      widthCorrect,
-      borderOSize,
-      cX,
-      cY,
-      countItterator,
-      quality,
-      vertexItterator,
-      vertexVector3,
-      vertexes,
-      wdth,
-      facesCountItterator,
-      qualityHelper,
-      facesTriangle,
-      hyp,
-      v1,
-      v2,
-      dir,
-      ray,
-      intersect,
-      faces,
+      geometry: { tree: treeGeometries, leaf: geometry },
+      material: { leaf: material },
+      leafItterator
     }: Params = this.getParams;
     // Параметры
-    const x: number = cX + lX;
-    const y: number = cY + lY;
-  }
-
-  // Вертикальные части
-  private getVerticalParts(lX: number, lY: number, scale: number, z: number): MapObject {
-    const {
-      dummy,
-      material,
-      geometry: { v: geometry },
-      cX,
-      cY,
-      countItterator,
-    }: Params = this.getParams;
-    // Параметры
-    const type: string = this.fullType + "-v";
-    const angle: number = 360 / this.count;
-    const rotate: number = Random(0, 360, false, 0);
+    const type: string = this.fullType + "-leaf";
+    const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
+    const branchEnds: Vector3[] = treeGeometry.getEndsOfBranches;
     const color: Color = new Color(
-      Random(this.colorRange[0], this.colorRange[1], false, 3),
-      Random(this.colorRange[2], this.colorRange[3], false, 3),
-      Random(this.colorRange[4], this.colorRange[5], false, 3)
+      Random(this.leafColorRange[0], this.leafColorRange[1], false, 3),
+      Random(this.leafColorRange[2], this.leafColorRange[3], false, 3),
+      Random(this.leafColorRange[4], this.leafColorRange[5], false, 3)
     );
-    const x: number = cX + lX;
-    const y: number = cY + lY;
-    // Настройки
-    dummy.position.set(x, z, y);
-    dummy.scale.setScalar(scale);
-    geometry.rotateY(AngleToRad(180));
+    const treePos: Vector3 = new Vector3(bX, bZ, bY);
+    let branchIndex: number = 0;
     // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = countItterator.map(i => {
-      dummy.rotation.y = AngleToRad(rotate + (i * angle));
-      dummy.updateMatrix();
-      // Вернуть геометрию
-      return new Matrix4().copy(dummy.matrix);
-    });
-    // Цвета
+    const matrix: Matrix4[] = leafItterator.map(() => {
+      branchIndex = branchIndex + 1 < branchEnds.length ? branchIndex + 1 : 0;
+      // Если найдена ветка
+      if (!!branchEnds[branchIndex]) {
+        const dummy: Object3D = new Object3D();
+        const branchEnd: Vector3 = branchEnds[branchIndex];
+        const x: number = bX + (branchEnd.x * scale);
+        const y: number = bZ + (branchEnd.y * scale);
+        const z: number = bY + (branchEnd.z * scale);
+        // Точные координаты
+        const leafPos: Vector3 = new Vector3(x, y, z);
+        let moveDist: number = leafPos.distanceTo(treePos);
+        let moveDir: Vector3 = new Vector3(treePos.x - leafPos.x, treePos.y - leafPos.y, treePos.z - leafPos.z);
+        moveDir.normalize();
+        // Преобразования
+        dummy.position.set(x, y, z);
+        dummy.scale.setScalar(scale);
+        dummy.translateOnAxis(moveDir, moveDist);
+        dummy.rotation.y = AngleToRad(rotate);
+        moveDir.multiplyScalar(-1);
+        dummy.translateOnAxis(moveDir, moveDist);
+        dummy.rotation.set(Random(0, 180), Random(0, 180), Random(0, 180));
+        dummy.updateMatrix();
+        // Вернуть геометрию
+        return dummy.matrix.clone();
+      }
+      // Ветка не найдена
+      return null;
+    }).filter(matrix => !!matrix);
     // Вернуть объект
     return {
       type,
-      subType: DreamMapTreeObject.getSubType(this.ceil, this.neighboringCeils, type),
-      count: this.count,
+      subType: DreamMapTreeObject.getSubType(this.ceil, this.neighboringCeils, type, geometryIndex.toString()),
+      splitBySubType: false,
+      count: this.leafCount,
       matrix: matrix,
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
@@ -160,40 +145,89 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     };
   }
 
+  // Вертикальные части
+  private getBranchGeometry(lX: number, lY: number, scale: number, rotate: number, z: number, geometryIndex: number): MapObject {
+    const {
+      material: { tree: material },
+      geometry: { tree: geometries },
+      cX,
+      cY,
+    }: Params = this.getParams;
+    // Параметры
+    const dummy: Object3D = new Object3D();
+    const type: string = this.fullType + "-branch";
+    const x: number = cX + lX;
+    const y: number = cY + lY;
+    const color: Color = new Color(
+      Random(this.colorRange[0], this.colorRange[1], false, 3),
+      Random(this.colorRange[2], this.colorRange[3], false, 3),
+      Random(this.colorRange[4], this.colorRange[5], false, 3)
+    );
+    const geometry: TreeGeometry = geometries[geometryIndex];
+    // Настройки
+    dummy.matrix = this.defaultMatrix.clone();
+    dummy.position.set(x, z, y);
+    dummy.scale.setScalar(scale);
+    dummy.rotation.y = AngleToRad(rotate);
+    dummy.updateMatrix();
+    // Цикл по количеству фрагментов
+    const matrix: Matrix4[] = [dummy.matrix.clone()];
+    // Цвета
+    const colors: Color[] = [color];
+    // Вернуть объект
+    return {
+      type,
+      subType: DreamMapTreeObject.getSubType(this.ceil, this.neighboringCeils, type, geometryIndex.toString()),
+      splitBySubType: true,
+      count: 1,
+      matrix: matrix,
+      color: colors,
+      geometry: geometry as BufferGeometry,
+      material,
+      coords: {
+        x: this.ceil.coord.x,
+        y: this.ceil.coord.y
+      },
+      animate: this.animate.bind(this),
+      castShadow: false,
+      recieveShadow: false,
+      isDefault: false
+    };
+  }
+
   // Определение параметров
   private get getParams(): Params {
-    this.subType = this.ceil?.object && TypesByID[this.ceil.object] ? TypesByID[this.ceil.object] : Object.values(TypesByID)[0];
-    this.height = Heights[this.subType] * DreamCeilParts;
-    this.count = Counts[DreamObjectDetalization];
+    this.treeCount = TreeCounts[this.dreamMapSettings.detalization];
+    this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
+    // Генерация параметров
+    const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => ({
+      generations: 4,
+      length: objHeight,
+      uvLength: 16,
+      radius: objWidth * Random(1, 2, false, 3),
+      radiusSegments: 3,
+      heightSegments: 3
+    });
     // Параметры уже существуют
     if (!!this.params) {
       this.params.cX = this.params.widthCorrect + (this.ceil.coord.x * DreamCeilSize);
       this.params.cY = this.params.heightCorrect + (this.ceil.coord.y * DreamCeilSize);
-      this.params.countItterator = CreateArray(this.count);
+      this.params.leafItterator = CreateArray(this.leafCount);
+      this.params.geometry.tree = CreateArray(this.treeCount).map(i =>
+        this.params.geometry.tree[i] ??
+        new TreeGeometry(treeGeometryParams(this.params.objWidth, this.params.objHeight))
+      );
     }
     // Определить параметры
     else {
-      const objWidth: number = this.width * this.widthPart;
-      const objHeight: number = this.height * this.heightPart;
+      const objWidth: number = MathRound(this.width * this.widthPart, 4);
+      const objHeight: number = MathRound((this.height * DreamCeilSize) * this.heightPart, 4);
+      const leafSize: number = objWidth * 5;
       // Данные фигуры
-      const vGeometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 1);
-      const hGeometry: PlaneGeometry = new PlaneGeometry(objWidth, objWidth, 1, 1);
-      const map: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "face") + this.subType + ".png", map => map.encoding = LinearEncoding);
-      const normalMap: Texture = new TextureLoader().load(ObjectTexturePaths(this.type, "normal") + this.subType + ".jpg");
-      const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
-        map,
-        normalMap,
-        normalScale: new Vector2(1, 1),
-        aoMap: normalMap,
-        aoMapIntensity: -1,
-        color: new Color(1, 1, 1),
-        fog: true,
-        transparent: true,
-        alphaTest: 0.7,
-        side: FrontSide,
-        flatShading: true,
-      })) as MeshStandardMaterial;
-      const dummy: Object3D = new Object3D();
+      const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
+      const leafGeometry: CircleGeometry = new CircleGeometry(leafSize, 6);
+      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({ fog: true, side: FrontSide })) as MeshStandardMaterial;
+      const leafMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({ fog: true, side: DoubleSide })) as MeshStandardMaterial;
       // Параметры
       const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
       const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
@@ -222,19 +256,20 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const dir = new Vector3();
       const ray: Ray = new Ray();
       const intersect: Vector3 = new Vector3();
-      const countItterator: number[] = CreateArray(this.count);
-      // Настройки
-      vGeometry.setAttribute("uv2", vGeometry.getAttribute("uv"));
+      const leafItterator: number[] = CreateArray(this.leafCount);
       // Запомнить параметры
       this.params = {
         objWidth,
         objHeight,
+        leafSize,
         geometry: {
-          v: vGeometry,
-          h: hGeometry
+          tree: treeGeometry,
+          leaf: leafGeometry
         },
-        material,
-        dummy,
+        material: {
+          tree: treeMaterial,
+          leaf: leafMaterial
+        },
         terrainGeometry,
         oWidth,
         oHeight,
@@ -243,7 +278,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         borderOSize,
         cX,
         cY,
-        countItterator,
+        leafItterator,
         wdth,
         vertexes,
         vertexItterator,
@@ -259,8 +294,6 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         quality,
         qualityHelper,
         hyp,
-        map,
-        normalMap,
         vertex: [],
         faces: [],
         triangle
@@ -318,9 +351,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       faces,
       cX,
       cY,
-      objHeight
     }: Params = this.getParams;
-    const centerY: number = objHeight / 2;
     const lX: number = x - cX;
     const lY: number = y - cY;
     const xSeg: number = Math.floor(lX * qualityHelper);
@@ -337,7 +368,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
     triangle.set(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c);
     // Координата Z
-    return intersect.z + centerY;
+    return intersect.z;
   }
 
 
@@ -364,8 +395,6 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       neighboringCeils,
       dreamMapSettings,
     );
-    // Количество объектов
-    this.count = DreamMaxElmsCount(this.dreamMapSettings.detalization);
   }
 
   // Обновить сведения уже существующего сервиса
@@ -387,8 +416,6 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
     this.dreamMapSettings = dreamMapSettings;
-    // Количество объектов
-    this.count = DreamMaxElmsCount(this.dreamMapSettings.detalization);
     // Вернуть экземпляр
     return this;
   }
@@ -421,7 +448,6 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   // Очистка памяти
   destroy(): void {
-    this.params.dummy.remove();
     delete this.params;
   }
 
@@ -438,12 +464,12 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
   // Создание шейдера движения
   private createShader(): void {
-    if (!this.params.shader) {
-      this.params.material.onBeforeCompile = shader => {
-        NoizeShader(this.params.material, shader, this.noize, false);
-        this.params.shader = shader;
-      };
-    }
+    // if (!this.params.shader) {
+    //   this.params.material.onBeforeCompile = shader => {
+    //     NoizeShader(this.params.material, shader, this.noize, false);
+    //     this.params.shader = shader;
+    //   };
+    // }
   }
 }
 
@@ -455,12 +481,15 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 interface Params {
   objWidth: number;
   objHeight: number;
+  leafSize: number;
   geometry: {
-    v: PlaneGeometry,
-    h: PlaneGeometry
+    tree: TreeGeometry[],
+    leaf: CircleGeometry
   };
-  material: MeshStandardMaterial;
-  dummy: Object3D;
+  material: {
+    tree: MeshStandardMaterial,
+    leaf: MeshStandardMaterial
+  };
   terrainGeometry: PlaneGeometry;
   oWidth: number;
   oHeight: number;
@@ -469,7 +498,7 @@ interface Params {
   borderOSize: number;
   cX: number;
   cY: number;
-  countItterator: number[];
+  leafItterator: number[];
   wdth: number;
   vertexItterator: number[];
   vertexes: Float32BufferAttribute;
@@ -487,32 +516,28 @@ interface Params {
   quality: number;
   qualityHelper: number;
   hyp: number;
-  map: Texture;
-  normalMap: Texture;
   shader?: Shader;
   triangle: Triangle;
 }
 
-// Типы деревьев
-type Types = "oak";
-
-// Тип по ID
-const TypesByID: CustomObjectKey<number, Types> = {
-  [1]: "oak"
+// Список количества геометрий дерева
+const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
+  [DreamObjectElmsValues.VeryLow]: 1,
+  [DreamObjectElmsValues.Low]: 2,
+  [DreamObjectElmsValues.Middle]: 3,
+  [DreamObjectElmsValues.High]: 4,
+  [DreamObjectElmsValues.VeryHigh]: 5,
+  [DreamObjectElmsValues.Ultra]: 6,
+  [DreamObjectElmsValues.Awesome]: 7,
 };
 
-// Список высот по типу дерева
-const Heights: CustomObjectKey<Types, number> = {
-  oak: 2
-};
-
-// Список количества повторов текстуры
-const Counts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: 4,
-  [DreamObjectElmsValues.Low]: 4,
-  [DreamObjectElmsValues.Middle]: 6,
-  [DreamObjectElmsValues.High]: 6,
-  [DreamObjectElmsValues.VeryHigh]: 6,
-  [DreamObjectElmsValues.Ultra]: 8,
-  [DreamObjectElmsValues.Awesome]: 8,
+// Список количества листвы на деревьях
+const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
+  [DreamObjectElmsValues.VeryLow]: DreamBaseElmsCount,
+  [DreamObjectElmsValues.Low]: Math.round(DreamBaseElmsCount * 1.1),
+  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.2),
+  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.3),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.4),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 1.5),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 1.6),
 };
