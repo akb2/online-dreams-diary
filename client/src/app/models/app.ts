@@ -6,6 +6,9 @@ import { AuthRules } from "@_models/menu";
 
 
 
+// Многомерный рекурсивный массив
+export type MultiArray<T> = T[] | MultiArray<T>[];
+
 // Тип базового одномерного объекта
 export type SimpleObject = { [key: string]: string };
 export type CustomObject<V> = { [key: string]: V };
