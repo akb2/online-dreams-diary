@@ -10,7 +10,7 @@ export class TriangleGeometry extends BufferGeometry {
 
   parameters: TriangleGeometryParameters;
 
-  override type: string = "TriangleGeomtry";
+  override type: string = "TriangleGeometry";
 
 
 
@@ -41,7 +41,7 @@ export class TriangleGeometry extends BufferGeometry {
     // Параметры
     const uvs: number[] = [0, 0, 1, 0, cX / sideB, 1];
     const position: number[] = [a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z];
-    const normal: number[] = [dirAB.x, dirAB.y, dirAB.z, dirBC.x, dirBC.y, dirBC.z, dirCA.x, dirCA.y, dirCA.z,];
+    const normal: number[] = [dirAB.x, dirAB.y, dirAB.z, dirBC.x, dirBC.y, dirBC.z, dirCA.x, dirCA.y, dirCA.z];
     const indexes: number[] = [0, 1, 2];
     // Свойства
     this.parameters = { sideA, sideB, sideC };
