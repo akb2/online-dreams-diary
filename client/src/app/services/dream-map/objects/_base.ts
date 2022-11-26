@@ -31,7 +31,7 @@ export abstract class DreamMapObjectTemplate {
   abstract updateHeight(objectSetting: ObjectSetting): void;
 
   // Получение подтипа
-  static getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights, type?: string): string {
+  static getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights, type?: string, subType?: string): string {
     return "";
   }
 
