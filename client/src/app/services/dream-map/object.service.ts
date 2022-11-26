@@ -49,10 +49,10 @@ export class DreamMapObjectService implements OnDestroy {
         const mixedObject: (MapObject | MapObject[])[] = controller
           .map(c => ([c, c.getObject()]))
           .map(([c, objects]) => {
-            (Array.isArray(objects) ? objects : [objects as MapObject]).map(object => {
-              this.objectControllers[objectId] = this.objectControllers[objectId] ?? {};
-              this.objectControllers[objectId][object.type] = c as DreamMapObjectTemplate;
-            });
+            const object: MapObject = (Array.isArray(objects) ? objects : [objects as MapObject])[0];
+            // Запомнить контроллер
+            this.objectControllers[objectId] = this.objectControllers[objectId] ?? {};
+            this.objectControllers[objectId][object.type] = c as DreamMapObjectTemplate;
             // Вернуть объекты
             return objects as MapObject | MapObject[];
           });
@@ -70,16 +70,21 @@ export class DreamMapObjectService implements OnDestroy {
         .map(c => ([c, c.getObject()]))
         .map(([c, cs]) => {
           const objects: MapObject | MapObject[] = Array.isArray(cs) ?
-            cs.map(c => ({ ...c, isDefault: true } as MapObject)) :
-            ({ ...cs, isDefault: true } as MapObject);
+            cs.filter(cs => !!cs).map(c => ({ ...c, isDefault: true } as MapObject)) :
+            !!cs ? ({ ...cs, isDefault: true } as MapObject) : null;
           // Запомнить контроллеры
-          (Array.isArray(objects) ? objects : [objects]).map(object => {
+          if ((Array.isArray(objects) && !!objects?.length) || (!Array.isArray(objects) && !!objects)) {
+            const object: MapObject = (Array.isArray(objects) ? objects : [objects as MapObject])[0];
+            // Запомнить контроллер
             this.emptyControllers[terrainId] = this.emptyControllers[terrainId] ?? {};
             this.emptyControllers[terrainId][object.type] = c as DreamMapObjectTemplate;
-          });
-          // Вернуть объекты
-          return objects;
-        });
+            // Вернуть объекты
+            return objects;
+          }
+          // Пустой объект
+          return null;
+        })
+        .filter(cs => !!cs);
       // Обновить данные
       objects.push(...mixedObject);
     }
@@ -120,7 +125,7 @@ export class DreamMapObjectService implements OnDestroy {
   }
 
   // Получение под типа
-  getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights, type: string): string {
+  getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights, type: string, subType: string): string {
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
     let useDefault: boolean = true;
@@ -129,12 +134,12 @@ export class DreamMapObjectService implements OnDestroy {
       const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === objectId)!;
       // Объект найден
       if (!!objectData && !!objectData.subTypeFunctions[type]) {
-        return objectData.subTypeFunctions[type](ceil, neighboringCeils);
+        return objectData.subTypeFunctions[type](ceil, neighboringCeils, type, subType);
       }
     }
     // Требуется пустой объект
     if ((useDefault || !objectId) && !!ObjectStaticSubTypeControllers[terrainId] && !!ObjectStaticSubTypeControllers[terrainId][type]) {
-      return ObjectStaticSubTypeControllers[terrainId][type](ceil, neighboringCeils);
+      return ObjectStaticSubTypeControllers[terrainId][type](ceil, neighboringCeils, type, subType);
     }
     // Вернуть пусто
     return "";
