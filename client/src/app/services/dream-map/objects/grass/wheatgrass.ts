@@ -126,6 +126,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       return {
         type: "wheatgrass",
         subType: DreamMapWheatGrassObject.getSubType(this.ceil, this.neighboringCeils),
+        splitBySubType: false,
         count: this.count,
         matrix,
         color: matrix.map(() => new Color(

@@ -121,6 +121,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       return {
         type: "plantaingrass",
         subType: DreamMapPlantainGrassObject.getSubType(this.ceil, this.neighboringCeils),
+        splitBySubType: false,
         count: this.count,
         matrix,
         color: matrix.map(() => new Color(
