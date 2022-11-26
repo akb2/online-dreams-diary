@@ -43,6 +43,7 @@ export interface ObjectSetting {
   mesh: InstancedMesh;
   type: string;
   subType: string;
+  splitBySubType: boolean;
   indexKeys: number[];
   count: number;
   isDefault: boolean;
@@ -56,6 +57,7 @@ export interface MapObject {
   material: Material;
   type: string;
   subType: string;
+  splitBySubType: boolean;
   coords: XYCoord;
   count: number;
   castShadow: boolean;
@@ -130,7 +132,7 @@ export const DreamMapObjects: DreamMapObject[] = [
     catalog: 1,
     controllers: [DreamMapTreeObject],
     subTypeFunctions: {
-      "tree-oak-v": DreamMapTreeObject.getSubType
+      "tree-oak-branch": DreamMapTreeObject.getSubType
     },
     settings: {
       mixWithDefault: true,
