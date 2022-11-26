@@ -260,19 +260,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // Получить настройку по индексу в меше
-  private getObjectSettingKeyByIndex(index: number, type: string, key: number, keys: CustomObjectKey<string, number[]>): number {
-    if (!!this.objectSettings[key] && this.objectSettings[key].type === type && this.objectSettings[key].indexKeys.includes(index)) {
+  private getObjectSettingKeyByIndex(index: number, type: string, subType: string, key: number, keys: CustomObjectKey<string, number[]>): number {
+    const keyType: string = type + (!!subType ? "-" + subType : "");
+    // Поиск в текущем ключе
+    if (
+      !!this.objectSettings[key] &&
+      this.objectSettings[key].type === type &&
+      ((this.objectSettings[key].subType === subType && !!subType) || !subType) &&
+      this.objectSettings[key].indexKeys.includes(index)
+    ) {
       return key;
     }
     // Поиск в массиве использованных объектов
     else if (!!keys?.length) {
-      const keysA: number[] = keys[type];
+      const keysA: number[] = keys[keyType];
       // Вернуть ключ
-      return keysA.map(k => !!this.objectSettings[k] && this.objectSettings[k].indexKeys.includes(index) ? k : -1).filter(k => k >= 0)[0];
+      return keysA.map(k =>
+        !!this.objectSettings[k] &&
+          this.objectSettings[k].indexKeys.includes(index) ? k : -1
+      ).filter(k => k >= 0)[0];
     }
     // Поиск среди всех настроек
     return this.objectSettings
-      .map(({ type: t, indexKeys: is }, k) => t === type ? (is.includes(index) ? k : -1) : -1)
+      .map(({ type: t, subType: st, indexKeys: is }, k) => t === type && (st === subType || !subType) ? (is.includes(index) ? k : -1) : -1)
       .filter(k => k >= 0)[0];
   }
 
@@ -843,22 +853,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Цикл по объектам
           objects
             .reduce((o, d) => ([...o, ...d]), [])
-            .filter(object => !!object).forEach(object => {
+            .filter(object => !!object)
+            .forEach(object => {
               const count: number = object.count;
               const length: number = object.matrix?.length ?? 0;
               // Если у объекта есть фрагменты
               if (count > 0 && length > 0) {
                 const type: string = object.type;
-                // Параметры
                 const subType: string = object.subType;
-                const oldObjects: ObjectSetting[] = this.objectSettings.filter(({ type: t }) => type === t);
+                const splitBySubType: boolean = object.splitBySubType;
+                const keyType: string = type + (splitBySubType ? "-" + subType : "");
+                const oldObjects: ObjectSetting[] = this.objectSettings.filter(({ type: t, subType: st }) => type === t && (st === subType || !splitBySubType));
                 const isOldObject: boolean = !!oldObjects?.length;
                 const mesh: InstancedMesh = isOldObject ? oldObjects[0].mesh : new InstancedMesh(object.geometry, object.material, count * size);
                 const coords: XYCoord = object.coords;
                 const isDefault: boolean = object.isDefault;
-                const startIndex: number = this.objectCounts[type] ?? 0;
+                const startIndex: number = this.objectCounts[keyType] ?? 0;
                 const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
-                const objectSetting: ObjectSetting = { coords, mesh, type, subType, indexKeys, count, isDefault };
+                const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault };
                 // Цикл по ключам
                 indexKeys.forEach((index, k) => {
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
@@ -866,7 +878,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 });
                 // Функция анимации
                 if (!!object.animate) {
-                  this.animateFunctions[type] = object.animate;
+                  this.animateFunctions[keyType] = object.animate;
                 }
                 // Обновить старый объект
                 if (isOldObject) {
@@ -884,8 +896,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 }
                 // Общие настройки
                 this.objectSettings.push(objectSetting);
-                this.objectCounts[type] = !!this.objectCounts[type] ? this.objectCounts[type] + length : length;
-                mesh.count = this.objectCounts[type];
+                this.objectCounts[keyType] = !!this.objectCounts[keyType] ? this.objectCounts[keyType] + length : length;
+                mesh.count = this.objectCounts[keyType];
               }
             });
         }
@@ -914,23 +926,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Удалять объекты по умолчанию, если передан параметр их удаления
         if ((isDefault && removeDefault) || !isDefault) {
           const type: string = this.objectSettings[kA].type;
+          const subType: string = this.objectSettings[kA].subType;
+          const splitBySubType: boolean = this.objectSettings[kA].splitBySubType;
+          const keyType: string = type + (splitBySubType ? "-" + subType : "");
           const mesh: InstancedMesh = this.objectSettings[kA].mesh;
-          const lastIndexPreffix: number = this.objectCounts[type] ?? 0;
-          const objectCount: number = this.objectSettings.filter(({ type: t }) => t === type)?.length - 1;
+          const lastIndexPreffix: number = this.objectCounts[keyType] ?? 0;
+          const objectCount: number = this.objectSettings.filter(({ type: t, subType: st }) => t === type && st == subType)?.length - 1;
           // Обновить
           if (objectCount > 0) {
             this.objectSettings[kA].indexKeys.forEach((index, k) => {
               const lastIndex: number = lastIndexPreffix - 1 - k;
               // Индекс последней геометрии
-              kB = this.getObjectSettingKeyByIndex(lastIndex, type, kB, ksB);
+              kB = this.getObjectSettingKeyByIndex(lastIndex, type, splitBySubType ? subType : null, kB, ksB);
               // Перемещение данных
               if (index !== lastIndex) {
                 const lastType: string = this.objectSettings[kB].type;
+                const lastSubType: string = this.objectSettings[kB].subType;
+                const lastSplitBySubType: boolean = this.objectSettings[kB].splitBySubType;
+                const lastKeyType: string = lastType + (lastSplitBySubType ? "-" + lastSubType : "");
                 const lastIndexKey: number = this.objectSettings[kB].indexKeys.findIndex(i => i === lastIndex);
                 // Добавить в массив использований
-                if (!ksB[lastType]?.includes(kB)) {
-                  ksB[lastType] = ksB[lastType] ?? [];
-                  ksB[lastType].push(kB);
+                if (!ksB[lastKeyType]?.includes(kB)) {
+                  ksB[lastKeyType] = ksB[lastKeyType] ?? [];
+                  ksB[lastKeyType].push(kB);
                 }
                 // Получить матрицу и цвет
                 mesh.getMatrixAt(lastIndex, matrix);
@@ -951,7 +969,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 mesh.setColorAt(index, defaultColor);
               }
               // Обновить количества
-              this.objectCounts[type] -= 1;
+              this.objectCounts[keyType] -= 1;
               mesh.count -= 1;
             });
             // Обновить
@@ -960,7 +978,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           }
           // Удалить
           else {
-            delete this.animateFunctions[type];
+            delete this.animateFunctions[keyType];
             this.scene.remove(mesh);
             mesh.dispose();
             this.renderer.dispose();
@@ -982,11 +1000,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     CreateArray(length).map(k => length - 1 - k).forEach(k => {
       const objectSetting: ObjectSetting = this.objectSettings[k];
       const type: string = objectSetting.type;
+      const subType: string = objectSetting.subType;
+      const splitBySubType: boolean = objectSetting.splitBySubType;
+      const keyType: string = type + (splitBySubType ? "-" + subType : "");
       const mesh: InstancedMesh = objectSetting.mesh;
-      const typeLength: number = this.objectSettings.filter(({ type: t }) => t === type).length;
+      const typeLength: number = this.objectSettings.filter(({ type: t, subType: st }) => t === type && (st === subType || !splitBySubType)).length;
       // Удалить настройки
       this.objectSettings.splice(k, 1);
-      this.objectCounts[type] = 0;
+      this.objectCounts[keyType] = 0;
       mesh.count = 0;
       // Удалить объекты
       if (typeLength <= 1) {
@@ -994,7 +1015,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         mesh.removeFromParent();
         this.renderer.dispose();
         // Удаление
-        delete this.animateFunctions[type];
+        delete this.animateFunctions[keyType];
       }
     });
   }
@@ -1145,7 +1166,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Если объект уже существует
           if (!!objectSettings?.length) {
             update += objectSettings.filter(objectSetting => {
-              const newSubType: string = this.objectService.getSubType(ceil, this.getClosestCeils(ceil), objectSetting.type);
+              const newSubType: string = this.objectService.getSubType(ceil, this.getClosestCeils(ceil), objectSetting.type, objectSetting.subType);
               const oldSubType: string = objectSetting.subType;
               // Обновить объект
               return newSubType !== oldSubType;
@@ -1171,7 +1192,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Если объект уже существует
           if (!!objectSettings?.length) {
             update += objectSettings.filter(objectSetting => {
-              const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type);
+              const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type, objectSetting.subType);
               const oldSubType: string = objectSetting.subType;
               // Обновить объект
               return newSubType !== oldSubType;
@@ -1316,7 +1337,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Если объект уже существует
         if (!!objectSettings?.length) {
           update += objectSettings.filter(objectSetting => {
-            const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type);
+            const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type, objectSetting.subType);
             const oldSubType: string = objectSetting.subType;
             // Обновить объект
             return newSubType !== oldSubType;
