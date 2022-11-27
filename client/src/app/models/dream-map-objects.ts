@@ -134,7 +134,8 @@ export const DreamMapObjects: DreamMapObject[] = [
     catalog: 1,
     controllers: [DreamMapTreeObject],
     subTypeFunctions: {
-      "tree-oak-branch": DreamMapTreeObject.getSubType
+      "tree-oak-branch": DreamMapTreeObject.getSubType,
+      "tree-oak-leaf": DreamMapTreeObject.getSubType
     },
     settings: {
       mixWithDefault: true,
