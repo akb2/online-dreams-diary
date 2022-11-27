@@ -3,7 +3,7 @@ import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYC
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
-import { DreamMapTreeObject } from "@_services/dream-map/objects/tree";
+import { DreamMapOakTreeObject } from "@_services/dream-map/objects/tree/oak";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
 
@@ -132,10 +132,10 @@ export const DreamMapObjects: DreamMapObject[] = [
     id: 1,
     name: "Дуб",
     catalog: 1,
-    controllers: [DreamMapTreeObject],
+    controllers: [DreamMapOakTreeObject],
     subTypeFunctions: {
-      "tree-oak-branch": DreamMapTreeObject.getSubType,
-      "tree-oak-leaf": DreamMapTreeObject.getSubType
+      "tree-oak-branch": DreamMapOakTreeObject.getSubType,
+      "tree-oak-leaf": DreamMapOakTreeObject.getSubType
     },
     settings: {
       mixWithDefault: true,
