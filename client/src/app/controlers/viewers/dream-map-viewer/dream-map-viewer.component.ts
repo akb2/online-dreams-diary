@@ -1338,8 +1338,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Если объект уже существует
         if (!!objectSettings?.length) {
           update += objectSettings.filter(objectSetting => {
-            const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type, objectSetting.subType);
             const oldSubType: string = objectSetting.subType;
+            const newSubType: string = this.objectService.getSubType(nCeil, this.getClosestCeils(nCeil), objectSetting.type, oldSubType);
             // Обновить объект
             return newSubType !== oldSubType;
           }).length;
