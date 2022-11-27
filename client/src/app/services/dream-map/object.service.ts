@@ -16,7 +16,7 @@ import { Clock, DataTexture, Mesh } from "three";
 export class DreamMapObjectService implements OnDestroy {
 
   private emptyControllers: CustomObjectKey<number, CustomObjectKey<string, DreamMapObjectTemplate>> = {};
-  private objectControllers: CustomObjectKey<number, CustomObjectKey<string, DreamMapObjectTemplate>> = {};
+  private objectControllers: CustomObjectKey<number, CustomObjectKey<string, [DreamMapObjectTemplate, string[]]>> = {};
 
 
 
@@ -44,15 +44,16 @@ export class DreamMapObjectService implements OnDestroy {
       // Объект найден
       if (!!objectData) {
         const controller: DreamMapObjectTemplate[] = !!this.objectControllers[objectId] ?
-          Object.values(this.objectControllers[objectId]).map(c => c.updateDatas(...params)) :
+          Object.values(this.objectControllers[objectId]).map(c => c[0].updateDatas(...params)) :
           objectData.controllers.map(c => new c(...params));
         const mixedObject: (MapObject | MapObject[])[] = controller
           .map(c => ([c, c.getObject()]))
           .map(([c, objects]) => {
-            const object: MapObject = (Array.isArray(objects) ? objects : [objects as MapObject])[0];
+            const allObjects: MapObject[] = (Array.isArray(objects) ? objects : [objects as MapObject]);
+            const object: MapObject = allObjects[0];
             // Запомнить контроллер
             this.objectControllers[objectId] = this.objectControllers[objectId] ?? {};
-            this.objectControllers[objectId][object.type] = c as DreamMapObjectTemplate;
+            this.objectControllers[objectId][object.type] = [c as DreamMapObjectTemplate, allObjects.map(({ type }) => type)];
             // Вернуть объекты
             return objects as MapObject | MapObject[];
           });
@@ -101,7 +102,7 @@ export class DreamMapObjectService implements OnDestroy {
     clock: Clock,
     displacementTexture: DataTexture,
     closestsCeils: ClosestHeights,
-    dreamMapSettings: DreamMapSettings,
+    dreamMapSettings: DreamMapSettings
   ): void {
     const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils, dreamMapSettings];
     const type: string = objectSetting.type;
@@ -111,10 +112,13 @@ export class DreamMapObjectService implements OnDestroy {
     // Требуется объект
     if (!!objectId && !isDefault) {
       const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === objectId)!;
+      const controllerType: string = Object.entries(this.objectControllers[objectId])
+        .filter(([, [, types]]) => types.includes(type))
+        .map(([key]) => key)[0];
       // Объект найден
-      if (!!objectData && !!this.objectControllers[objectId] && !!this.objectControllers[objectId][type]) {
-        this.objectControllers[objectId][type].updateDatas(...params);
-        this.objectControllers[objectId][type].updateHeight(objectSetting);
+      if (!!objectData && !!this.objectControllers[objectId] && !!controllerType) {
+        this.objectControllers[objectId][controllerType][0].updateDatas(...params);
+        this.objectControllers[objectId][controllerType][0].updateHeight(objectSetting);
       }
     }
     // Требуется пустой объект
