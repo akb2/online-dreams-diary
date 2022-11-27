@@ -56,12 +56,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   filteredObjects: DreamMapObject[] = [];
 
   // * Инструменты: общее
-  private tool: Tool = Tool.objects;
-  toolSizeLand: number = ToolSizeLand[1];
+  private tool: Tool = Tool.landscape;
+  toolSizeLand: number = ToolSizeLand[0];
   private currentCeil: ObjectHoverEvent = null;
 
   // * Инструменты: ландшафт
-  private landscapeTool: LandscapeTool = LandscapeTool.up;
+  private landscapeTool: LandscapeTool = LandscapeTool.down;
   reliefElmDatas: ReliefElmData[];
 
   // * Инструменты: местность
@@ -581,7 +581,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private ceilsHeight(direction: HeightDirection, update: boolean = false): void {
     const size: number = (this.toolSizeLand * 2) + 1;
     const sizes: number[] = CreateArray(size).map(v => v - this.toolSizeLand);
-    const radius: number = size - this.toolSizeLand;
     const z: number = direction === 0 ?
       this.startZ :
       this.viewer.getCeil(this.currentCeil.ceil.coord.x, this.currentCeil.ceil.coord.y).coord.z;
@@ -608,7 +607,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         }
         // Корректировка высоты
         if (zChange !== 0) {
-          change = true;
           // Обновить оригинальную высоту
           ceil.coord.originalZ = Math.floor(ceil.coord.originalZ + zChange);
           ceil.coord.originalZ = (corrDirection > 0 && ceil.coord.originalZ > z) || (corrDirection < 0 && ceil.coord.originalZ < z) ? z : ceil.coord.originalZ;
@@ -619,6 +617,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
           ceil.coord.z = (corrDirection > 0 && ceil.coord.z > z) || (corrDirection < 0 && ceil.coord.z < z) ? z : ceil.coord.z;
           ceil.coord.z = ceil.coord.z > DreamMaxHeight ? DreamMaxHeight : ceil.coord.z;
           ceil.coord.z = ceil.coord.z < DreamMinHeight ? DreamMinHeight : ceil.coord.z;
+          // Значение корректировки
+          change = true;
           // Запомнить ячейку
           this.saveCeil(ceil);
         }
@@ -626,12 +626,16 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }));
     // Обновить
     if (change) {
-      const ceils = sizes.map(cY => sizes.map(cX => {
-        const x: number = this.currentCeil.ceil.coord.x + cX;
-        const y: number = this.currentCeil.ceil.coord.y + cY;
-        // Вернуть ячейку
-        return this.viewer.getCeil(x, y);
-      })).reduce((o, c) => ([...o, ...c]), []);
+      const ceils = sizes
+        .map(cY => sizes.map(cX => {
+          const x: number = this.currentCeil.ceil.coord.x + cX;
+          const y: number = this.currentCeil.ceil.coord.y + cY;
+          // Вернуть ячейку
+          return [x, y];
+        }))
+        .reduce((o, c) => ([...o, ...c]), [])
+        .filter(([x, y]) => this.isEditableCeil(x, y))
+        .map(([x, y]) => this.viewer.getCeil(x, y));
       // Обновить
       this.viewer.setTerrainHeight(ceils, update);
     }
