@@ -27,11 +27,11 @@ export class TreeGeometry extends BufferGeometry {
       const points: Vector3[] = [];
       // Функция поиска данных
       const search = (node: TreeBranch) => {
-        if (!!node?.children?.length) {
+        if (node.children.length > 0) {
           node.children.forEach(n => search(n));
         }
         // Добавить точки
-        if (node.children.length <= 3 && node.children.length > 0) {
+        if (node.children.length <= this.parameters.generations && node.children.length > 0) {
           points.unshift(node.to);
         }
       };
@@ -52,19 +52,22 @@ export class TreeGeometry extends BufferGeometry {
     super();
     // Определение параметров
     this.parameters = parameters;
-    this.parameters.heightSegments = this.parameters.heightSegments > 1 ? this.parameters.heightSegments : 2;
     this.tree = new Tree(this.parameters);
     // Построение геометрии
     const [vertices, faces, faceVertexUvs]: BuildData = this.buildBranches(this.tree.root);
-    const position: number[] = vertices.reduce((o, p) => ([...o, p.x, p.y, p.z]), []);
+    const position: number[] = [];
     const uvs: number[] = [];
     // Текстурная сетка
-    faceVertexUvs.forEach(uvs2 => uvs2.forEach(uv => uvs.push(uv.x, uv.y)));
+    faceVertexUvs.forEach(uv => uvs.push(uv.x, uv.y));
+    vertices.forEach(({ x, y, z }) => position.push(x, y, z));
+    // Сетка
+    const positionArray: Float32BufferAttribute = new Float32BufferAttribute(position, 3);
+    const uvsArray: Float32BufferAttribute = new Float32BufferAttribute(uvs, 2);
     // Параметры
     this.setIndex(faces);
-    this.setAttribute("position", new Float32BufferAttribute(position, 3));
-    this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
-    this.setAttribute("uv2", new Float32BufferAttribute(uvs, 2));
+    this.setAttribute("position", positionArray);
+    this.setAttribute("uv", uvsArray);
+    this.setAttribute("uv2", uvsArray);
     this.computeVertexNormals();
   }
 
@@ -94,9 +97,8 @@ export class TreeGeometry extends BufferGeometry {
     const radiusSegments: number = branch.radiusSegments;
     const heightSegments: number = branch.segments.length - 1;
     const faces: number[] = [];
-    const faceVertexUvs: Vector2[][] = [];
     const indices: number[][] = [];
-    const uvs: Vector2[][] = [];
+    const uvs: Vector2[] = [];
     const vertices: Vector3[] = [];
     let index: number = 0;
     // Цикл по сегментам высоты
@@ -105,14 +107,14 @@ export class TreeGeometry extends BufferGeometry {
       const segment = branch.segments[y];
       // Добавить параметры
       vertices.push(...segment.vertices);
-      uvs.push(segment.uvs);
+      uvs.push(...segment.uvs);
       // Цикл по сегментам радиуса
       CreateArray(radiusSegments + 1).forEach(() => indicesRow.push(index++));
       // Добавить индексы
       indices.push(indicesRow);
     });
     // Создание сторон
-    CreateArray(radiusSegments).forEach(x => CreateArray(heightSegments).forEach(y => {
+    CreateArray(heightSegments).forEach(y => CreateArray(radiusSegments).forEach(x => {
       const cy: number = y;
       const ny: number = y + 1;
       const cx: number = x;
@@ -121,13 +123,8 @@ export class TreeGeometry extends BufferGeometry {
       const v2: number = indices[ny][cx] + offset;
       const v3: number = indices[ny][nx] + offset;
       const v4: number = indices[cy][nx] + offset;
-      const uv1: Vector2 = uvs[cy][cx];
-      const uv2: Vector2 = uvs[ny][cx];
-      const uv3: Vector2 = uvs[ny][nx];
-      const uv4: Vector2 = uvs[cy][nx];
       // Секция A
       faces.push(v1, v4, v2, v2, v4, v3);
-      faceVertexUvs.push([uv1, uv4, uv2], [uv2, uv4, uv3]);
     }));
 
     // Начальный фрагмент
@@ -135,17 +132,14 @@ export class TreeGeometry extends BufferGeometry {
       const bottom: TreeSegment = branch.segments[0]; 4
       // Добавить параметр
       vertices.push(bottom.position);
+      uvs.push(...bottom.uvs);
       // Цикл по сегментам радиуса
       CreateArray(radiusSegments).map(x => {
         const v1: number = indices[0][x] + offset;
         const v2: number = indices[0][x + 1] + offset;
         const v3: number = index + offset;
-        const uv1: Vector2 = uvs[0][x];
-        const uv2: Vector2 = uvs[0][x + 1];
-        const uv3: Vector2 = new Vector2(uv2.x, branch.uvOffset);
         // Записать параметры
         faces.push(v1, v3, v2);
-        faceVertexUvs.push([uv1, uv3, uv2]);
       });
     }
     // Остальные фрагменты
@@ -154,6 +148,7 @@ export class TreeGeometry extends BufferGeometry {
       const bottomIndices: number[] = CreateArray(radiusSegments + 1).map(() => (index++) + offset);
       // Добавить индексы
       vertices.push(...from.vertices);
+      uvs.push(...from.uvs);
       indices.push(bottomIndices);
       // Цикл по радиальным сегментам
       CreateArray(radiusSegments).forEach(x => {
@@ -161,17 +156,12 @@ export class TreeGeometry extends BufferGeometry {
         const v1: number = indices[0][x + 1] + offset;
         const v2: number = bottomIndices[x];
         const v3: number = bottomIndices[x + 1];
-        const uv0: Vector2 = uvs[0][x];
-        const uv1: Vector2 = uvs[0][x + 1];
-        const uv2: Vector2 = from.uvs[x];
-        const uv3: Vector2 = from.uvs[x + 1];
         // Секции
         faces.push(v0, v3, v1, v0, v2, v3);
-        faceVertexUvs.push([uv0, uv3, uv1], [uv0, uv2, uv3]);
       });
     }
     // Вернуть параметры
-    return [vertices, faces, faceVertexUvs];
+    return [vertices, faces, uvs];
   }
 }
 
@@ -472,4 +462,4 @@ export interface TreeGeometryParams {
 }
 
 // Тип данных для построения геометрии
-type BuildData = [Vector3[], number[], Vector2[][]];
+type BuildData = [Vector3[], number[], Vector2[]];
