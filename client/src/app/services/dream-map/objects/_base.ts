@@ -60,7 +60,7 @@ export abstract class DreamMapObjectTemplate {
   }
 
   // Обновить сведения уже существующего сервиса
-  abstract updateDatas(
+  updateDatas(
     dreamMap: DreamMap,
     ceil: DreamMapCeil,
     terrain: Mesh,
@@ -69,7 +69,18 @@ export abstract class DreamMapObjectTemplate {
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
     dreamMapSettings: DreamMapSettings
-  ): DreamMapObjectTemplate;
+  ): DreamMapObjectTemplate {
+    this.dreamMap = dreamMap;
+    this.ceil = ceil;
+    this.terrain = terrain;
+    this.clock = clock;
+    this.alphaFogService = alphaFogService;
+    this.displacementTexture = displacementTexture;
+    this.neighboringCeils = neighboringCeils;
+    this.dreamMapSettings = dreamMapSettings;
+    // Вернуть экземпляр
+    return this;
+  }
 
   // Очистка памяти
   abstract destroy(): void;

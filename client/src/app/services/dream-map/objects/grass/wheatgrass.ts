@@ -1,12 +1,13 @@
 import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
 import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamMaxHeight, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { CheckCeilForm, GetLikeNeighboringKeys } from "@_services/dream-map/objects/grass/_functions";
 import { AllCorners, AnglesB, CeilGrassFillGeometry, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
+import { GetHeightByTerrain, GetHeightByTerrainObject, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
 
@@ -66,8 +67,6 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private noizeRotate: number = 90 * (this.noize / 2);
   private rotationRadiusRange: number = 30;
 
-  private maxHeight: number = this.heightPart * DreamMaxHeight;
-
   private params: Params;
 
 
@@ -77,14 +76,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   // Получение объекта
   getObject(): MapObject {
     if (this.count > 0) {
-      const {
-        countItterator,
-        dummy,
-        material,
-        geometry,
-        cX,
-        cY,
-      }: Params = this.getParams;
+      const { qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY, countItterator, dummy, material, geometry }: Params = this.getParams;
+      const params: GetHeightByTerrainObject = { qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY };
       let lX: number;
       let lY: number;
       let i: number = -1;
@@ -110,7 +103,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
           const rotationAngle: number = Random(0, 360);
           // Настройки
           dummy.rotation.set(0, 0, 0);
-          dummy.position.set(x, this.getHeight(x, y), y);
+          dummy.position.set(x, GetHeightByTerrain(params, x, y), y);
           dummy.rotation.x = AngleToRad((rotationRadius * Sin(rotationAngle)) - this.noizeRotate);
           dummy.rotation.z = AngleToRad(rotationRadius * Cos(rotationAngle));
           dummy.rotation.y = AngleToRad(Random(0, 180, false, 1));
@@ -262,51 +255,6 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
     return this.params;
   }
 
-  // Получить высоту объекта
-  private getHeight(x: number, y: number): number {
-    const {
-      qualityHelper,
-      hyp,
-      v1,
-      v2,
-      dir,
-      ray,
-      intersect,
-      triangle,
-      faces,
-      cX,
-      cY
-    }: Params = this.getParams;
-    const step: number = DreamCeilSize;
-    let lX: number = x - cX;
-    let lY: number = y - cY;
-    // Корректировка координат
-    if (lX > step || lY > step || lX < 0 || lY < 0) {
-      const xCorr: number = Math.floor(lX / step);
-      const yCorr: number = Math.floor(lY / step);
-      x = x + xCorr;
-      y = y + yCorr;
-      lX = lX - xCorr;
-      lY = lY - yCorr;
-    }
-    // Параметры
-    const xSeg: number = Math.floor(lX * qualityHelper);
-    const ySeg: number = Math.floor(lY * qualityHelper);
-    const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
-    const seg: number = locHyp >= hyp ? 1 : 0;
-    const faceIndex: number = (((ySeg * qualityHelper) + xSeg) * 2) + seg;
-    // Поиск координаты Z
-    v1.set(x, y, 0);
-    v2.set(x, y, this.maxHeight);
-    dir.subVectors(v2, v1).normalize();
-    dir.normalize();
-    ray.set(v1, dir);
-    ray.intersectTriangle(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c, false, intersect);
-    triangle.set(faces[faceIndex].a, faces[faceIndex].b, faces[faceIndex].c);
-    // Координата Z
-    return intersect.z;
-  }
-
 
 
 
@@ -335,55 +283,9 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
     this.count = dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : DreamMaxElmsCount(dreamMapSettings.detalization);
   }
 
-  // Обновить сведения уже существующего сервиса
-  updateDatas(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights,
-    dreamMapSettings: DreamMapSettings
-  ): DreamMapWheatGrassObject {
-    this.dreamMap = dreamMap;
-    this.ceil = ceil;
-    this.terrain = terrain;
-    this.clock = clock;
-    this.alphaFogService = alphaFogService;
-    this.displacementTexture = displacementTexture;
-    this.neighboringCeils = neighboringCeils;
-    this.dreamMapSettings = dreamMapSettings;
-    // Обновить
-    this.count = dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : DreamMaxElmsCount(dreamMapSettings.detalization);
-    // Вернуть экземаляр
-    return this;
-  }
-
   // Обновить позицию по оси Z
   updateHeight(objectSetting: ObjectSetting): void {
-    if (objectSetting.count > 0) {
-      const matrix: Matrix4 = new Matrix4();
-      const position: Vector3 = new Vector3();
-      // Цикл по фрагментам
-      objectSetting.indexKeys.forEach(index => {
-        objectSetting.mesh.getMatrixAt(index, matrix);
-        position.setFromMatrixPosition(matrix);
-        // Координаты
-        const x: number = position.x;
-        const y: number = position.z;
-        // Если координаты не нулевые
-        if (x !== 0 && y !== 0) {
-          const z: number = this.getHeight(x, y);
-          // Запомнить позицию
-          matrix.setPosition(x, z, y);
-          objectSetting.mesh.setMatrixAt(index, matrix);
-        }
-      });
-      // Обновить
-      objectSetting.mesh.updateMatrix();
-      objectSetting.mesh.instanceMatrix.needsUpdate = true;
-    }
+    UpdateHeight(objectSetting, this.getParams);
   }
 
   // Очистка памяти
@@ -419,7 +321,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
 
 // Интерфейс параметров для расчетов
-interface Params {
+interface Params extends GetHeightByTerrainObject {
   countItterator: number[];
   objWidth: number;
   objHeight: number;
@@ -430,8 +332,6 @@ interface Params {
   dummy: Object3D;
   terrainGeometry: PlaneGeometry;
   quality: number;
-  qualityHelper: number;
-  hyp: number;
   vertexItterator: number[];
   facesCount: number;
   facesCountI: number[];
@@ -442,17 +342,8 @@ interface Params {
   widthCorrect: number;
   heightCorrect: number;
   borderOSize: number;
-  cX: number;
-  cY: number;
-  triangle: Triangle;
   facesTriangle: Triangle[];
   vertexVector3: Vector3[];
-  faces: Triangle[];
   vertex: Vector3[];
-  v1: Vector3;
-  v2: Vector3;
-  dir: Vector3;
-  ray: Ray;
-  intersect: Vector3;
   shader?: Shader;
 }
