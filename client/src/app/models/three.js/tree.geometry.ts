@@ -57,7 +57,9 @@ export class TreeGeometry extends BufferGeometry {
     // Построение геометрии
     const [vertices, faces, faceVertexUvs]: BuildData = this.buildBranches(this.tree.root);
     const position: number[] = vertices.reduce((o, p) => ([...o, p.x, p.y, p.z]), []);
-    const uvs: number[] = faceVertexUvs.reduce((o, u) => ([...o, ...u]), []).reduce((o, u) => ([...o, u.x, u.y]), []);
+    const uvs: number[] = [];
+    // Текстурная сетка
+    faceVertexUvs.forEach(uvs2 => uvs2.forEach(uv => uvs.push(uv.x, uv.y)));
     // Параметры
     this.setIndex(faces);
     this.setAttribute("position", new Float32BufferAttribute(position, 3));
