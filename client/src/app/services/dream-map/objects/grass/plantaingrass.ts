@@ -271,8 +271,19 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       cX,
       cY
     }: Params = this.getParams;
-    const lX: number = x - cX;
-    const lY: number = y - cY;
+    const step: number = DreamCeilSize;
+    let lX: number = x - cX;
+    let lY: number = y - cY;
+    // Корректировка координат
+    if (lX > step || lY > step || lX < 0 || lY < 0) {
+      const xCorr: number = Math.floor(lX / step);
+      const yCorr: number = Math.floor(lY / step);
+      x = x + xCorr;
+      y = y + yCorr;
+      lX = lX - xCorr;
+      lY = lY - yCorr;
+    }
+    // Параметры
     const xSeg: number = Math.floor(lX * qualityHelper);
     const ySeg: number = Math.floor(lY * qualityHelper);
     const locHyp: number = Math.sqrt(Math.pow((lX - (xSeg / qualityHelper)) + (lY - (ySeg / qualityHelper)), 2) * 2);
