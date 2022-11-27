@@ -5,7 +5,7 @@ import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamMapSize, DreamM
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { BufferGeometry, CircleGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, FrontSide, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
+import { BufferGeometry, CircleGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, FrontSide, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, RepeatWrapping, Shader, Texture, TextureLoader, Triangle, Vector3 } from "three";
 
 
 
@@ -35,8 +35,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
   private maxHeight: number = this.heightPart * DreamMaxHeight;
   private noize: number = 0.2;
 
-  private width: number = 0.05;
-  private height: number = 50;
+  private width: number = 0.04;
+  private height: number = 60;
 
   private params: Params;
 
@@ -96,11 +96,12 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     let branchIndex: number = 0;
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = leafItterator.map(() => {
-      branchIndex = branchIndex + 1 < branchEnds.length ? branchIndex + 1 : 0;
+      branchIndex = Random(0, branchEnds.length - 1);
       // Если найдена ветка
       if (!!branchEnds[branchIndex]) {
         const dummy: Object3D = new Object3D();
         const branchEnd: Vector3 = branchEnds[branchIndex];
+        const leafScale: number = Random(0.7, 1, false, 4);
         const x: number = bX + (branchEnd.x * scale);
         const y: number = bZ + (branchEnd.y * scale);
         const z: number = bY + (branchEnd.z * scale);
@@ -117,6 +118,7 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         moveDir.multiplyScalar(-1);
         dummy.translateOnAxis(moveDir, moveDist);
         dummy.rotation.set(Random(0, 180), Random(0, 180), Random(0, 180));
+        dummy.scale.setScalar(leafScale);
         dummy.updateMatrix();
         // Вернуть геометрию
         return dummy.matrix.clone();
@@ -203,10 +205,10 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => ({
       generations: 4,
       length: objHeight,
-      uvLength: 16,
+      uvLength: 1,
       radius: objWidth * Random(1, 2, false, 3),
-      radiusSegments: 3,
-      heightSegments: 3
+      radiusSegments: 6,
+      heightSegments: 2
     });
     // Параметры уже существуют
     if (!!this.params) {
@@ -220,13 +222,24 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     }
     // Определить параметры
     else {
+      const textureLoader: TextureLoader = new TextureLoader();
+      const repeatTexture: (texture: Texture) => void = (texture: Texture) => {
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+      };
+      // Параметры геометрии
       const objWidth: number = MathRound(this.width * this.widthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * this.heightPart, 4);
       const leafSize: number = objWidth * 5;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: CircleGeometry = new CircleGeometry(leafSize, 6);
-      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({ fog: true, side: FrontSide })) as MeshStandardMaterial;
+      const treeTexture: Texture = textureLoader.load("/assets/dream-map/object/tree/face/1-0.jpg", repeatTexture);
+      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+        fog: true,
+        side: FrontSide,
+        map: treeTexture
+      })) as MeshStandardMaterial;
       const leafMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({ fog: true, side: DoubleSide })) as MeshStandardMaterial;
       // Параметры
       const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
@@ -269,6 +282,10 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
         material: {
           tree: treeMaterial,
           leaf: leafMaterial
+        },
+        texture: {
+          tree: treeTexture,
+          leaf: null
         },
         terrainGeometry,
         oWidth,
@@ -490,6 +507,10 @@ interface Params {
     tree: MeshStandardMaterial,
     leaf: MeshStandardMaterial
   };
+  texture: {
+    tree: Texture;
+    leaf: Texture;
+  };
   terrainGeometry: PlaneGeometry;
   oWidth: number;
   oHeight: number;
@@ -534,10 +555,10 @@ const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
 // Список количества листвы на деревьях
 const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.VeryLow]: DreamBaseElmsCount,
-  [DreamObjectElmsValues.Low]: Math.round(DreamBaseElmsCount * 1.1),
-  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.2),
-  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.3),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.4),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 1.5),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 1.6),
+  [DreamObjectElmsValues.Low]: Math.round(DreamBaseElmsCount * 1.2),
+  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.4),
+  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.6),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.8),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 2),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 2.2),
 };
