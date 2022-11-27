@@ -6,7 +6,7 @@ import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometr
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, FrontSide, Matrix4, Mesh, MeshLambertMaterial, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Texture, TextureLoader, Triangle, Vector3 } from "three";
+import { BufferGeometry, Clock, Color, DataTexture, DoubleSide, Float32BufferAttribute, FrontSide, LinearMipMapNearestFilter, Matrix4, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, Ray, Shader, sRGBEncoding, TangentSpaceNormalMap, Texture, TextureLoader, Triangle, Vector2, Vector3 } from "three";
 
 
 
@@ -25,8 +25,14 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
 
 
   private type: string = "tree";
-  private subType: string;
   private defaultMatrix: Matrix4 = new Matrix4();
+  private textureKeys: [keyof MeshStandardMaterial, string][] = [
+    ["map", "face"],
+    ["aoMap", "ao"],
+    ["lightMap", "light"],
+    ["normalMap", "normal"],
+    ["displacementMap", "displacement"]
+  ];
 
   private treeCount: number = 0;
   private leafCount: number = 0;
@@ -219,29 +225,48 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
     // Определить параметры
     else {
       const textureLoader: TextureLoader = new TextureLoader();
+      const textureData: (texture: Texture) => void = (texture: Texture) => {
+        texture.encoding = sRGBEncoding;
+        texture.minFilter = LinearMipMapNearestFilter;
+        texture.magFilter = LinearMipMapNearestFilter;
+      }
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * this.widthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * this.heightPart, 4);
       const leafSize: number = objWidth * 12;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
-      const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 1, 1);
-      const treeTexture: Texture = textureLoader.load("/assets/dream-map/object/tree/face/1-0.jpg");
-      const leafTexture: Texture = textureLoader.load("/assets/dream-map/object/tree/face/1-1.png");
-      const treeMaterial: MeshLambertMaterial = this.alphaFogService.getMaterial(new MeshLambertMaterial({
+      const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
+      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = this.textureKeys
+        .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-0.jpg", textureData)]))
+        .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = this.textureKeys
+        .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-1.png", textureData)]))
+        .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
+      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
-        map: treeTexture
-      })) as MeshLambertMaterial;
-      const leafMaterial: MeshPhongMaterial = this.alphaFogService.getMaterial(new MeshPhongMaterial({
+        ...treeTextures,
+        aoMapIntensity: 0.5,
+        lightMapIntensity: 10,
+        roughness: 0.8,
+        normalMapType: TangentSpaceNormalMap,
+        normalScale: new Vector2(1, 1)
+      })) as MeshStandardMaterial;
+      const leafMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
-        map: leafTexture,
         transparent: true,
-        alphaTest: 0.5,
-        aoMapIntensity: -5,
-        flatShading: true
-      })) as MeshPhongMaterial;
+        alphaTest: 0.7,
+        flatShading: true,
+        ...leafTextures,
+        aoMapIntensity: -0.5,
+        lightMapIntensity: 10,
+        roughness: 0.8,
+        normalMapType: TangentSpaceNormalMap,
+        normalScale: new Vector2(1, 1),
+        displacementScale: leafSize / 4
+      })) as MeshStandardMaterial;
       // Параметры
       const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
       const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
@@ -271,6 +296,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
       const ray: Ray = new Ray();
       const intersect: Vector3 = new Vector3();
       const leafItterator: number[] = CreateArray(this.leafCount);
+      // Настройки
+      leafGeometry.setAttribute("uv2", leafGeometry.getAttribute("uv"));
       // Запомнить параметры
       this.params = {
         objWidth,
@@ -285,8 +312,8 @@ export class DreamMapTreeObject extends DreamMapObjectTemplate implements DreamM
           leaf: leafMaterial
         },
         texture: {
-          tree: treeTexture,
-          leaf: leafTexture
+          tree: treeTextures,
+          leaf: leafTextures
         },
         terrainGeometry,
         oWidth,
@@ -514,12 +541,12 @@ interface Params {
     leaf: PlaneGeometry
   };
   material: {
-    tree: MeshLambertMaterial,
-    leaf: MeshPhongMaterial
+    tree: MeshStandardMaterial,
+    leaf: MeshStandardMaterial
   };
   texture: {
-    tree: Texture;
-    leaf: Texture;
+    tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
+    leaf: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
   };
   terrainGeometry: PlaneGeometry;
   oWidth: number;
