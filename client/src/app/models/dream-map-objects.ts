@@ -1,5 +1,5 @@
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
+import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
@@ -47,6 +47,7 @@ export interface ObjectSetting {
   indexKeys: number[];
   count: number;
   isDefault: boolean;
+  translates?: CoordDto[];
 }
 
 // Тип ответа
@@ -63,6 +64,7 @@ export interface MapObject {
   castShadow: boolean;
   recieveShadow: boolean;
   isDefault: boolean;
+  translates?: CoordDto[];
   animate?: Function;
 };
 

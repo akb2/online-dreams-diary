@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { AngleToRad, CreateArray, CustomObjectKey, IsOdd, RadToAngle } from "@_models/app";
-import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, DreamMapObjects, MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
@@ -870,7 +870,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const isDefault: boolean = object.isDefault;
                 const startIndex: number = this.objectCounts[keyType] ?? 0;
                 const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
-                const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault };
+                const translates: CoordDto[] = object.translates ?? [];
+                const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault, translates };
                 // Цикл по ключам
                 indexKeys.forEach((index, k) => {
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
@@ -1103,7 +1104,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       if (updateObjects) {
         const usedCeils: DreamMapCeil[] = [];
         // Активные ячейки
-        ceils.filter(ceil => !ceil.object).forEach((ceil, i) => {
+        ceils.forEach((ceil, i) => {
           const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
           // Если существуют объекты
           if (!!objectSettings?.length) {
