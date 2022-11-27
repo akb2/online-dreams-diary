@@ -31,7 +31,7 @@ export class TreeGeometry extends BufferGeometry {
           node.children.forEach(n => search(n));
         }
         // Добавить точки
-        if (!!node?.children?.length || node.children.length === 1) {
+        if (node.children.length <= 3 && node.children.length > 0) {
           points.unshift(node.to);
         }
       };
