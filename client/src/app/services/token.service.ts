@@ -1,7 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
-import { AppComponent } from "@app/app.component";
 import { environment } from '@_environments/environment';
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";

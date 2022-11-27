@@ -1,5 +1,5 @@
-import { CdkDragDrop, CdkDragEnter, moveItemInArray } from "@angular/cdk/drag-drop";
-import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, EventEmitter, Input, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
+import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
+import { ChangeDetectionStrategy, Component, DoCheck, EventEmitter, Input, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { MatChipInput, MatChipInputEvent } from "@angular/material/chips";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
