@@ -235,7 +235,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
-        displacementScale: leafSize / 4
+        displacementScale: 0
       })) as MeshStandardMaterial;
       // Свойства для оптимизации
       const leafItterator: number[] = CreateArray(this.leafCount);
@@ -265,6 +265,8 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Создание шейдера
       CreateNoizeShader(this.params.shader, this.params.material.leaf, this.noize, false, shader => this.params.shader = shader);
     }
+    // Настройки
+    this.params.material.leaf.displacementScale = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : this.params.leafSize / 3;
     // Вернуть данные
     return this.params;
   }
