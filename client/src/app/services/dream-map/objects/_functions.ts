@@ -1,63 +1,40 @@
+import { CreateArray, IsEven, IsMultiple, Random } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_models/dream-map-settings";
-import { Matrix4, Ray, Triangle, Vector3 } from "three";
-
-
-
-
-
-// Значение точки максимального положения объектов на оси Y
-const MaxHeight: number = (DreamCeilSize / DreamCeilParts) * DreamMaxHeight;
-
-// Объект параметров для функции определения положения объекта на координате Y
-export interface GetHeightByTerrainObject {
-  qualityHelper: number;
-  hyp: number;
-  v1: Vector3;
-  v2: Vector3;
-  dir: Vector3;
-  ray: Ray;
-  intersect: Vector3;
-  triangle: Triangle;
-  faces: Triangle[];
-  cX: number;
-  cY: number;
-};
-
-// Смещение по умолчанию
-const DefTranslate: CoordDto = { x: 0, y: 0, z: 0 };
+import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
+import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, MaxHeight, ShaderUniforms } from "@_services/dream-map/objects/_models";
+import { NoizeShader } from "@_services/dream-map/shaders/noise";
+import { GeometryQuality } from "@_services/dream-map/terrain.service";
+import { Clock, Color, Float32BufferAttribute, Material, Matrix4, PlaneGeometry, Shader, Triangle, Vector3 } from "three";
 
 
 
 
 
 // Функция определения положения объекта на координате Y
-export const GetHeightByTerrain: (params: GetHeightByTerrainObject, x: number, y: number) => number = (params: GetHeightByTerrainObject, x: number, y: number) => {
-  const {
-    qualityHelper,
-    hyp,
-    v1,
-    v2,
-    dir,
-    ray,
-    intersect,
-    triangle,
-    faces,
-    cX,
-    cY,
-  }: GetHeightByTerrainObject = params;
+export const GetHeightByTerrain = (params: GetHeightByTerrainObject, x: number, y: number) => {
   const step: number = DreamCeilSize;
+  let { qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY, terrainGeometry }: GetHeightByTerrainObject = params;
   let lX: number = x - cX;
   let lY: number = y - cY;
   // Корректировка координат
   if (lX > step || lY > step || lX < 0 || lY < 0) {
+    const oWidth: number = ((terrainGeometry.parameters.width / ((GeometryQuality * 2) + 1)) / DreamCeilSize) ?? DreamMapSize;
+    const oHeight: number = ((terrainGeometry.parameters.height / ((GeometryQuality * 2) + 1)) / DreamCeilSize) ?? DreamMapSize;
+    const widthCorrect: number = -(oWidth * DreamCeilSize) / 2;
+    const heightCorrect: number = -(oHeight * DreamCeilSize) / 2;
     const xCorr: number = Math.floor(lX / step);
     const yCorr: number = Math.floor(lY / step);
-    x = x + xCorr;
-    y = y + yCorr;
-    lX = lX - xCorr;
-    lY = lY - yCorr;
+    const ceilX: number = (Math.floor(x + xCorr) / DreamCeilSize) - widthCorrect;
+    const ceilY: number = (Math.floor(y + yCorr) / DreamCeilSize) - heightCorrect;
+    // Новые параметры
+    const terrainParams: CreateTerrainTrianglesObject = CreateTerrainTriangles(terrainGeometry, ceilX, ceilY);
+    // Обновить координаты
+    faces = terrainParams.faces;
+    cX = terrainParams.cX;
+    cY = terrainParams.cY;
+    lX = x + xCorr - cX;
+    lY = y + yCorr - cY;
   }
   // Параметры
   const xSeg: number = Math.floor(lX * qualityHelper);
@@ -99,4 +76,99 @@ export const UpdateHeight = (objectSetting: ObjectSetting, params: GetHeightByTe
     objectSetting.mesh.updateMatrix();
     objectSetting.mesh.instanceMatrix.needsUpdate = true;
   }
-}
+};
+
+// Создание массива треугольников для рельефа
+export const CreateTerrainTriangles = (terrainGeometry: PlaneGeometry, x: number, y: number) => {
+  const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
+  const qualityHelper: number = quality - 1;
+  const hyp: number = Math.sqrt(Math.pow(DreamCeilSize / qualityHelper, 2) * 2);
+  const vertexItterator: number[] = CreateArray(quality);
+  const facesCount: number = Math.pow(qualityHelper, 2) * 2;
+  const facesCountItterator: number[] = CreateArray(facesCount);
+  const vertexes: Float32BufferAttribute = terrainGeometry.getAttribute("position") as Float32BufferAttribute;
+  const wdth: number = terrainGeometry.parameters.widthSegments + 1;
+  const oWidth: number = ((terrainGeometry.parameters.width / ((GeometryQuality * 2) + 1)) / DreamCeilSize) ?? DreamMapSize;
+  const oHeight: number = ((terrainGeometry.parameters.height / ((GeometryQuality * 2) + 1)) / DreamCeilSize) ?? DreamMapSize;
+  const borderOSize: number = (terrainGeometry.parameters.width - oWidth) / 2;
+  const widthCorrect: number = -(oWidth * DreamCeilSize) / 2;
+  const heightCorrect: number = -(oHeight * DreamCeilSize) / 2;
+  const facesTriangle: Triangle[] = facesCountItterator.map(() => new Triangle());
+  const vertexVector3: Vector3[] = vertexItterator.map(() => vertexItterator.map(() => 0)).reduce((o, v) => ([...o, ...v]), []).map(() => new Vector3());
+  const cX: number = widthCorrect + (x * DreamCeilSize);
+  const cY: number = heightCorrect + (y * DreamCeilSize);
+  let vertexStart: number = 0;
+  // Поиск вершин ячейки
+  const vertex: Vector3[] = vertexItterator
+    .map(h => borderOSize + (cY - widthCorrect) + h)
+    .map(h => vertexItterator.map(w => (h * wdth) + (borderOSize + (cX - widthCorrect) + w)))
+    .reduce((o, v) => ([...o, ...v]), [])
+    .map((i, k) => vertexVector3[k].set(vertexes.getX(i), -vertexes.getY(i), vertexes.getZ(i)))
+    .sort((a, b) => {
+      const rA: number = a.y * quality + a.x;
+      const rB: number = b.y * quality + b.x;
+      // Проверка
+      return rA > rB ? 1 : rA < rB ? -1 : 0
+    });
+  // Поиск фрагментов ячейки
+  const faces: Triangle[] = facesCountItterator.map(i => {
+    const isOdd: boolean = IsEven(i);
+    const isEnd: boolean = IsMultiple(i + 1, quality) && i > 0;
+    const a: number = vertexStart;
+    const b: number = isOdd ? vertexStart + 1 : vertexStart + qualityHelper;
+    const c: number = vertexStart + qualityHelper + 1;
+    // Увеличить инкримент
+    vertexStart = isOdd || isEnd ? vertexStart + 1 : vertexStart;
+    // Вернуть сторону
+    return facesTriangle[i].set(vertex[a], vertex[b], vertex[c]);
+  });
+  // Вернуть данные
+  return {
+    terrainGeometry,
+    oWidth,
+    oHeight,
+    widthCorrect,
+    heightCorrect,
+    borderOSize,
+    quality,
+    qualityHelper,
+    wdth,
+    vertexItterator,
+    vertexVector3,
+    vertexes,
+    facesCount,
+    facesCountItterator,
+    facesTriangle,
+    vertex,
+    faces,
+    hyp,
+    cX,
+    cY
+  } as CreateTerrainTrianglesObject;
+};
+
+// Случайный цвет из диапазона
+export const GetRandomColorByRange = ([rA, rB, gA, gB, bA, bB]: ColorRange, afterDotNum: number = 5) => new Color(
+  Random(rA, rB, false, afterDotNum),
+  Random(gA, gB, false, afterDotNum),
+  Random(bA, bB, false, afterDotNum)
+);
+
+// Создание анимации ветра
+export const CreateNoizeShader = (shader: Shader, material: Material, noize: number, defineVuV: boolean = false, callback: (shader: Shader) => void) => {
+  if (!shader) {
+    material.onBeforeCompile = subShader => {
+      NoizeShader(material, subShader, noize, defineVuV);
+      callback(subShader);
+    };
+  }
+  // Вернуть шейдер
+  return shader;
+};
+
+// Анимация для шейдера ветра
+export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {
+  if (!!uniforms?.time) {
+    uniforms.time.value = clock.getElapsedTime();
+  }
+};

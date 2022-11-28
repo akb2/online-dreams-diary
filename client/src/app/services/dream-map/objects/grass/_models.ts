@@ -1,5 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, XYCoord } from "@_models/dream-map";
+import { ColorRange } from "@_services/dream-map/objects/_models";
 import { DoubleSide, MeshPhongMaterial } from "three";
 
 
@@ -59,8 +60,4 @@ export const GrassMaterial: MeshPhongMaterial = new MeshPhongMaterial({
 });
 
 // Предел цветов
-export const ColorRange: number[] = [
-  0, 0.3,
-  0.7, 1,
-  0, 0.3
-];
+export const GrassColorRange: ColorRange = [0, 0.3, 0.7, 1, 0, 0.3];

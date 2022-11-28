@@ -1,7 +1,9 @@
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { Clock, DataTexture, Mesh } from "three";
+import { CreateTerrainTriangles } from "@_services/dream-map/objects/_functions";
+import { BaseObjectControllerParams, CreateTerrainTrianglesObject } from "@_services/dream-map/objects/_models";
+import { Clock, DataTexture, Mesh, PlaneGeometry, Ray, Triangle, Vector3 } from "three";
 
 
 
@@ -27,12 +29,26 @@ export abstract class DreamMapObjectTemplate {
   // Получение объекта
   abstract getObject(): MapObject | MapObject[];
 
-  // Обновление высоты
-  abstract updateHeight(objectSetting: ObjectSetting): void;
-
   // Получение подтипа
-  static getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights, type?: string, subType?: string): string {
-    return "";
+  static getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights, type: string = "", subType: string = ""): string {
+    return subType;
+  }
+
+  // Получение параметров рельефа
+  createTerrainTriangles(): CreateTerrainTrianglesObject {
+    return CreateTerrainTriangles(this.terrain.geometry as PlaneGeometry, this.ceil.coord.x, this.ceil.coord.y);
+  }
+
+  // Создание вспомогательных объектов
+  createParamsHelpers(): BaseObjectControllerParams {
+    const triangle: Triangle = new Triangle();
+    const v1: Vector3 = new Vector3();
+    const v2: Vector3 = new Vector3();
+    const dir = new Vector3();
+    const ray: Ray = new Ray();
+    const intersect: Vector3 = new Vector3();
+    // Вернуть объект
+    return { v1, v2, dir, ray, intersect, triangle };
   }
 
 
@@ -81,6 +97,9 @@ export abstract class DreamMapObjectTemplate {
     // Вернуть экземпляр
     return this;
   }
+
+  // Обновление высоты
+  abstract updateHeight(objectSetting: ObjectSetting): void;
 
   // Очистка памяти
   abstract destroy(): void;

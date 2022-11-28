@@ -8,11 +8,39 @@ import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry
 
 
 
+// Получить под типа травы
+export const GetGrassSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => {
+  const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);
+  const closestCeils: ClosestHeight[] = closestKeys.map(k => neighboringCeils[k]);
+  const closestCount: number = closestCeils.length;
+  // Отрисовка только для существующих типов фигур
+  if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
+    // Для ячеек без похожих соседних ячеек
+    if (closestCount === 0) {
+      return "circle";
+    }
+    // Для ячеек с одной похожей геометрией
+    else if (closestCount === 1) {
+      return "half-circle";
+    }
+    // Для ячеек с двумя похожими геометриями
+    else if (closestCount === 2) {
+      const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
+      // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
+      if (angle >= 0) {
+        const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
+        const cornersCount: number = corners.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain).length;
+        // Посчитать
+        return cornersCount > 0 ? "triangle" : "quarter-ceil";
+      }
+    }
+  }
+  // Полная геометрия
+  return "square";
+};
+
 // Получить список ключей соседних ячеек с травой
-export const GetLikeNeighboringKeys: (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => (keyof ClosestHeights)[] = (
-  ceil: DreamMapCeil,
-  neighboringCeils: ClosestHeights
-) => ClosestKeysAll.filter(k => {
+export const GetLikeNeighboringKeys = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => ClosestKeysAll.filter(k => {
   const c: ClosestHeight = neighboringCeils[k];
   const objectData = DreamMapObjects.find(({ id }) => id === c.object);
   // Вернуть результат проверки
@@ -56,7 +84,7 @@ export const CheckCeilForm = (cX: number, cY: number, x: number, y: number, neig
   }
   // Координата вписывается в фигуру
   return true;
-}
+};
 
 // Проверка круговой геометрии
 export const CheckCeilCircleForm = (cX: number, cY: number, oX: number, oY: number): boolean => {
@@ -65,7 +93,7 @@ export const CheckCeilCircleForm = (cX: number, cY: number, oX: number, oY: numb
   const y: number = oY - cY - radius;
   // Результат
   return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
-}
+};
 
 // Проверка полукруговой геометрии
 export const CheckCeilHalfCircleForm = (cX: number, cY: number, oX: number, oY: number, angle: number): boolean => {
@@ -79,7 +107,7 @@ export const CheckCeilHalfCircleForm = (cX: number, cY: number, oX: number, oY: 
   return x >= borderX[0] && x <= borderX[1] && y >= borderY[0] && y <= borderY[1] ?
     true :
     CheckCeilCircleForm(cX, cY, oX, oY);
-}
+};
 
 // Проверка треугольной геометрии
 export const CheckCeilTriangleForm = (cX: number, cY: number, oX: number, oY: number, angle: number): boolean => {
@@ -101,7 +129,7 @@ export const CheckCeilTriangleForm = (cX: number, cY: number, oX: number, oY: nu
   }
   // Не вписывается
   return false;
-}
+};
 
 // Проверка геометрии четверти круга
 export const CheckCeilQuarterCircleForm = (cX: number, cY: number, oX: number, oY: number, angle: number): boolean => {
@@ -112,4 +140,4 @@ export const CheckCeilQuarterCircleForm = (cX: number, cY: number, oX: number, o
   const y: number = oY - cY + subtractorY;
   // Результат
   return Math.pow(x, 2) + Math.pow(y, 2) < Math.pow(radius, 2);
-}
+};

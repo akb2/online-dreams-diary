@@ -1,15 +1,14 @@
-import { AngleToRad, Cos, CreateArray, IsEven, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
-import { ClosestHeight, ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
-import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, CreateArray, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
+import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
+import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
-import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { CheckCeilForm, GetLikeNeighboringKeys } from "@_services/dream-map/objects/grass/_functions";
-import { AllCorners, AnglesB, CeilGrassFillGeometry, ColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
+import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
+import { GrassColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { GetHeightByTerrain, GetHeightByTerrainObject, UpdateHeight } from "@_services/dream-map/objects/_functions";
-import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Clock, Color, DataTexture, Float32BufferAttribute, Matrix4, Mesh, MeshPhongMaterial, Object3D, PlaneGeometry, Ray, Shader, Triangle, Vector3 } from "three";
+import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
+import { BufferGeometry, Matrix4, MeshPhongMaterial, Object3D, Shader } from "three";
 
 
 
@@ -20,33 +19,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
   // Под тип
   static override getSubType(ceil: DreamMapCeil, neighboringCeils: ClosestHeights): string {
-    const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);
-    const closestCeils: ClosestHeight[] = closestKeys.map(k => neighboringCeils[k]);
-    const closestCount: number = closestCeils.length;
-    // Отрисовка только для существующих типов фигур
-    if (closestCount < CeilGrassFillGeometry.length && !!CeilGrassFillGeometry[closestCount]) {
-      // Для ячеек без похожих соседних ячеек
-      if (closestCount === 0) {
-        return "circle";
-      }
-      // Для ячеек с одной похожей геометрией
-      else if (closestCount === 1) {
-        return "half-circle";
-      }
-      // Для ячеек с двумя похожими геометриями
-      else if (closestCount === 2) {
-        const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
-        // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
-        if (angle >= 0) {
-          const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
-          const cornersCount: number = corners.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain).length;
-          // Посчитать
-          return cornersCount > 0 ? "triangle" : "quarter-ceil";
-        }
-      }
-    }
-    // Полная геометрия
-    return "square";
+    return GetGrassSubType(ceil, neighboringCeils);
   }
 
 
@@ -76,8 +49,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   // Получение объекта
   getObject(): MapObject {
     if (this.count > 0) {
-      const { qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY, countItterator, dummy, material, geometry }: Params = this.getParams;
-      const params: GetHeightByTerrainObject = { qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY };
+      const params: Params = this.getParams;
+      const { countItterator, dummy, cX, cY, geometry, material } = params;
       let lX: number;
       let lY: number;
       let i: number = -1;
@@ -122,11 +95,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         splitBySubType: false,
         count: this.count,
         matrix,
-        color: matrix.map(() => new Color(
-          Random(ColorRange[0], ColorRange[1], false, 3),
-          Random(ColorRange[2], ColorRange[3], false, 3),
-          Random(ColorRange[4], ColorRange[5], false, 3)
-        )),
+        color: matrix.map(() => GetRandomColorByRange(GrassColorRange)),
         geometry: geometry as BufferGeometry,
         material,
         coords: {
@@ -145,10 +114,12 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
   // Определение параметров
   private get getParams(): Params {
+    const geometryDatas: CreateTerrainTrianglesObject = this.createTerrainTriangles();
+    // Параметры уже существуют
     if (!!this.params) {
-      this.params.cX = this.params.widthCorrect + (this.ceil.coord.x * DreamCeilSize);
-      this.params.cY = this.params.heightCorrect + (this.ceil.coord.y * DreamCeilSize);
       this.params.countItterator = CreateArray(this.count);
+      // Добавить параметры рельефа
+      Object.entries(geometryDatas).forEach(([k, v]) => this.params[k] = v);
     }
     // Определить параметры
     else {
@@ -161,36 +132,14 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const material: MeshPhongMaterial = GrassMaterial;
       const dummy: Object3D = new Object3D();
       // Параметры
-      const terrainGeometry: PlaneGeometry = this.terrain.geometry as PlaneGeometry;
-      const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
-      const qualityHelper: number = quality - 1;
-      const hyp: number = Math.sqrt(Math.pow(DreamCeilSize / qualityHelper, 2) * 2);
-      const vertexItterator: number[] = CreateArray(quality);
-      const facesCount: number = Math.pow(quality - 1, 2) * 2;
+      const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;
       const facesCountI: number[] = CreateArray(facesCount);
-      const vertexes: Float32BufferAttribute = terrainGeometry.getAttribute("position") as Float32BufferAttribute;
-      const wdth: number = terrainGeometry.parameters.widthSegments + 1;
-      // Параметры карты
-      const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
-      const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-      const widthCorrect: number = -(oWidth * DreamCeilSize) / 2;
-      const heightCorrect: number = -(oHeight * DreamCeilSize) / 2;
-      const borderOSize: number = (terrainGeometry.parameters.width - oWidth) / 2;
-      // Координаты
-      const cX: number = widthCorrect + (this.ceil.coord.x * DreamCeilSize);
-      const cY: number = heightCorrect + (this.ceil.coord.y * DreamCeilSize);
       // Свойства для оптимизации
-      const triangle: Triangle = new Triangle();
-      const facesTriangle: Triangle[] = facesCountI.map(() => new Triangle());
-      const vertexVector3: Vector3[] = vertexItterator.map(() => vertexItterator.map(() => 0)).reduce((o, v) => ([...o, ...v]), []).map(() => new Vector3());
-      const v1: Vector3 = new Vector3();
-      const v2: Vector3 = new Vector3();
-      const dir = new Vector3();
-      const ray: Ray = new Ray();
-      const intersect: Vector3 = new Vector3();
       const countItterator: number[] = CreateArray(this.count);
       // Запомнить параметры
       this.params = {
+        ...geometryDatas,
+        ...this.createParamsHelpers(),
         countItterator,
         objWidth,
         objHeight,
@@ -199,88 +148,40 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         leg,
         geometry,
         dummy,
-        terrainGeometry,
-        quality,
-        qualityHelper,
-        hyp,
-        vertexItterator,
         facesCount,
         facesCountI,
-        vertexes,
-        wdth,
-        oWidth,
-        oHeight,
-        widthCorrect,
-        heightCorrect,
-        borderOSize,
-        cX,
-        cY,
-        triangle,
-        facesTriangle,
-        vertexVector3,
-        v1,
-        v2,
-        dir,
-        ray,
-        intersect,
-        vertex: [],
-        faces: []
       };
       // Создание шейдера
-      this.createShader();
+      CreateNoizeShader(this.params.shader, this.params.material, this.noize, true, shader => this.params.shader = shader);
     }
-    // Вершины
-    this.params.vertex = this.params.vertexItterator.map(h => this.params.borderOSize + (this.params.cY - this.params.widthCorrect) + h)
-      .map(h => this.params.vertexItterator.map(w => this.params.borderOSize + (this.params.cX - this.params.widthCorrect) + w).map(w => (h * this.params.wdth) + w))
-      .reduce((o, v) => ([...o, ...v]), [])
-      .map((i, k) => this.params.vertexVector3[k].set(this.params.vertexes.getX(i), -this.params.vertexes.getY(i), this.params.vertexes.getZ(i)))
-      .sort((a, b) => {
-        const rA: number = a.y * this.params.quality + a.x;
-        const rB: number = b.y * this.params.quality + b.x;
-        return rA > rB ? 1 : rA < rB ? -1 : 0
-      });
-    let vertexStart: number = 0;
-    this.params.faces = this.params.facesCountI.map(i => {
-      const isOdd: boolean = IsEven(i);
-      const isEnd: boolean = IsMultiple(i + 1, this.params.quality) && i > 0;
-      const a: number = vertexStart;
-      const b: number = isOdd ? vertexStart + 1 : vertexStart + this.params.qualityHelper;
-      const c: number = vertexStart + this.params.qualityHelper + 1;
-      // Увеличить инкримент
-      vertexStart = isOdd || isEnd ? vertexStart + 1 : vertexStart;
-      // Вернуть сторону
-      return this.params.facesTriangle[i].set(this.params.vertex[a], this.params.vertex[b], this.params.vertex[c]);
-    });
     // Вернуть данные
     return this.params;
+  }
+
+  // Вычислить количество элементов
+  private setCount(): void {
+    this.count = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ?
+      0 :
+      DreamMaxElmsCount(this.dreamMapSettings.detalization);
   }
 
 
 
 
 
-  constructor(
-    dreamMap: DreamMap,
-    ceil: DreamMapCeil,
-    terrain: Mesh,
-    clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
-    displacementTexture: DataTexture,
-    neighboringCeils: ClosestHeights,
-    dreamMapSettings: DreamMapSettings
-  ) {
-    super(
-      dreamMap,
-      ceil,
-      terrain,
-      clock,
-      alphaFogService,
-      displacementTexture,
-      neighboringCeils,
-      dreamMapSettings
-    );
+  constructor(...params: ObjectControllerParams) {
+    super(...params);
     // Обновить
-    this.count = dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : DreamMaxElmsCount(dreamMapSettings.detalization);
+    this.setCount();
+  }
+
+  // Обновить сведения уже существующего сервиса
+  override updateDatas(...params: ObjectControllerParams) {
+    super.updateDatas(...params);
+    // Обновить
+    this.setCount();
+    // Вернуть класс
+    return this;
   }
 
   // Обновить позицию по оси Z
@@ -300,19 +201,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
   // Анимация
   animate(): void {
-    if (!!this.params?.shader?.uniforms?.time) {
-      this.params.shader.uniforms.time.value = this.clock.getElapsedTime();
-    }
-  }
-
-  // Создание шейдера движения
-  private createShader(): void {
-    if (!this.params.shader) {
-      this.params.material.onBeforeCompile = shader => {
-        NoizeShader(this.params.material, shader, this.noize);
-        this.params.shader = shader;
-      };
-    }
+    AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
   }
 }
 
@@ -321,7 +210,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
 
 
 // Интерфейс параметров для расчетов
-interface Params extends GetHeightByTerrainObject {
+interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject {
   countItterator: number[];
   objWidth: number;
   objHeight: number;
@@ -330,20 +219,7 @@ interface Params extends GetHeightByTerrainObject {
   geometry: TriangleGeometry;
   material: MeshPhongMaterial;
   dummy: Object3D;
-  terrainGeometry: PlaneGeometry;
-  quality: number;
-  vertexItterator: number[];
   facesCount: number;
   facesCountI: number[];
-  vertexes: Float32BufferAttribute;
-  wdth: number;
-  oWidth: number;
-  oHeight: number;
-  widthCorrect: number;
-  heightCorrect: number;
-  borderOSize: number;
-  facesTriangle: Triangle[];
-  vertexVector3: Vector3[];
-  vertex: Vector3[];
   shader?: Shader;
 }
