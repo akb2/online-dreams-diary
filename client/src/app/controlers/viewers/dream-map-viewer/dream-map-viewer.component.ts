@@ -7,7 +7,7 @@ import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, 
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
-import { DreamMapTerrainService } from "@_services/dream-map/terrain.service";
+import { DreamMapTerrainService, GeometryQuality } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
 import { forkJoin, fromEvent, Observable, of, Subject, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
@@ -1038,11 +1038,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const height: number = (oHeight + (borderOSize * 2)) * DreamCeilSize;
       const x: number = widthCorrect + (ceil.coord.x * DreamCeilSize) + (DreamCeilSize / 2);
       const y: number = heightCorrect + (ceil.coord.y * DreamCeilSize) + (DreamCeilSize / 2);
-      const sX: number = (borderSize + (ceil.coord.x * DreamCeilSize)) * this.terrainService.geometryQuality;
-      const sY: number = (borderSize + (ceil.coord.y * DreamCeilSize)) * this.terrainService.geometryQuality;
-      const wdth: number = (((oWidth * DreamCeilSize) + (borderSize * 2)) * this.terrainService.geometryQuality) + 1;
+      const sX: number = (borderSize + (ceil.coord.x * DreamCeilSize)) * GeometryQuality;
+      const sY: number = (borderSize + (ceil.coord.y * DreamCeilSize)) * GeometryQuality;
+      const wdth: number = (((oWidth * DreamCeilSize) + (borderSize * 2)) * GeometryQuality) + 1;
       const vertexes: Float32BufferAttribute = this.terrainMesh.geometry.getAttribute("position") as Float32BufferAttribute;
-      const quality: number = this.terrainService.geometryQuality + 1;
+      const quality: number = GeometryQuality + 1;
       const qualityCenterCount: number = IsOdd(quality) ? 1 : 2;
       const qualitySpacing: number = (quality - qualityCenterCount) / 2;
       const toolSize: number = (oToolSize * 2) + 1;

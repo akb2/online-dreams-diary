@@ -23,7 +23,6 @@ export class DreamMapTerrainService implements OnDestroy {
   private maskTextureNamePreffix: string = "mask_tex_";
 
   outsideMapSize: number = DreamOutsideSize;
-  geometryQuality: number = 1;
 
   private dreamMap: DreamMap;
   private geometry: PlaneGeometry;
@@ -90,8 +89,8 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderSize: number = borderOSize * DreamCeilSize;
     const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
     const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
-    const qualityWidth: number = width * this.geometryQuality;
-    const qualityHeight: number = height * this.geometryQuality;
+    const qualityWidth: number = width * GeometryQuality;
+    const qualityHeight: number = height * GeometryQuality;
     // Создание геометрии
     this.geometry = new PlaneGeometry(width, height, qualityWidth, qualityHeight);
     this.geometry.setAttribute("uv2", this.geometry.getAttribute("uv"));
@@ -782,6 +781,9 @@ export class DreamMapTerrainService implements OnDestroy {
 
 
 
+
+// Качество геометрии
+export const GeometryQuality: number = 1;
 
 // Имена сторон
 type ReliefName = keyof ClosestHeights | "center";
