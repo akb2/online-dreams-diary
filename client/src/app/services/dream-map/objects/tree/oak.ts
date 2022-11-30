@@ -5,7 +5,7 @@ import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamObjectElmsValue
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
-import { ColorRange, CreateTerrainTrianglesObject, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
+import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
 import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, sRGBEncoding, TangentSpaceNormalMap, Texture, TextureLoader, Vector2, Vector3 } from "three";
 
 
@@ -16,7 +16,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
 
   private type: string = "tree-oak";
-  private defaultMatrix: Matrix4 = new Matrix4();
   private textureKeys: [keyof MeshStandardMaterial, string][] = TextureKeys;
 
   private treeCount: number = 0;
@@ -66,7 +65,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     const color: Color = GetRandomColorByRange(TreeColorRange);
     const geometry: TreeGeometry = geometries[geometryIndex];
     // Настройки
-    dummy.matrix = this.defaultMatrix.clone();
+    dummy.matrix = DefaultMatrix.clone();
     dummy.position.set(x, z, y);
     dummy.scale.setScalar(scale);
     dummy.rotation.y = AngleToRad(rotate);
