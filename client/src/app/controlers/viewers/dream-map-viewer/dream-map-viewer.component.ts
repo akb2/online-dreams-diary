@@ -294,6 +294,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       [];
   }
 
+  // Фильтр на получение данных об объекте по типу и подтипу
+  private getFilterObjectsFunc(objectSettings: ObjectSetting, type: string, subType: string, splitBySubType: boolean): boolean {
+    return objectSettings.type === type && (!splitBySubType || (splitBySubType && objectSettings.subType === subType));
+  }
+
 
 
 
@@ -863,7 +868,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const subType: string = object.subType;
                 const splitBySubType: boolean = object.splitBySubType;
                 const keyType: string = type + (splitBySubType ? "-" + subType : "");
-                const oldObjects: ObjectSetting[] = this.objectSettings.filter(({ type: t, subType: st }) => type === t && (st === subType || !splitBySubType));
+                const oldObjects: ObjectSetting[] = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType));
                 const isOldObject: boolean = !!oldObjects?.length;
                 const mesh: InstancedMesh = isOldObject ? oldObjects[0].mesh : new InstancedMesh(object.geometry, object.material, count * size);
                 const coords: XYCoord = object.coords;
@@ -932,7 +937,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const keyType: string = type + (splitBySubType ? "-" + subType : "");
           const mesh: InstancedMesh = this.objectSettings[kA].mesh;
           const lastIndexPreffix: number = this.objectCounts[keyType] ?? 0;
-          const objectCount: number = this.objectSettings.filter(({ type: t, subType: st }) => t === type && st == subType)?.length - 1;
+          const objectCount: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType))?.length - 1;
           // Обновить
           if (objectCount > 0) {
             this.objectSettings[kA].indexKeys.forEach((index, k) => {
@@ -980,6 +985,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Удалить
           else {
             delete this.animateFunctions[keyType];
+            this.objectCounts[keyType] = 0;
             this.scene.remove(mesh);
             mesh.dispose();
             this.renderer.dispose();
@@ -1005,7 +1011,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const splitBySubType: boolean = objectSetting.splitBySubType;
       const keyType: string = type + (splitBySubType ? "-" + subType : "");
       const mesh: InstancedMesh = objectSetting.mesh;
-      const typeLength: number = this.objectSettings.filter(({ type: t, subType: st }) => t === type && (st === subType || !splitBySubType)).length;
+      const typeLength: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType)).length;
       // Удалить настройки
       this.objectSettings.splice(k, 1);
       this.objectCounts[keyType] = 0;
