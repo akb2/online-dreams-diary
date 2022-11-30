@@ -15,7 +15,7 @@ import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapNearestFilter
 export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
 
 
-  private type: string = "tree";
+  private type: string = "tree-oak";
   private defaultMatrix: Matrix4 = new Matrix4();
   private textureKeys: [keyof MeshStandardMaterial, string][] = TextureKeys;
 
@@ -34,11 +34,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
 
 
-
-  // Полный тип
-  private get fullType(): string {
-    return this.type + "-oak";
-  }
 
   // Получение объекта
   getObject(): MapObject[] {
@@ -65,7 +60,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private getBranchGeometry(lX: number, lY: number, scale: number, rotate: number, z: number, geometryIndex: number): MapObject {
     const { material: { tree: material }, geometry: { tree: geometries }, cX, cY, }: Params = this.getParams;
     const dummy: Object3D = new Object3D();
-    const type: string = this.fullType + "-branch";
+    const type: string = this.type + "-branch";
     const x: number = cX + lX;
     const y: number = cY + lY;
     const color: Color = GetRandomColorByRange(TreeColorRange);
@@ -104,7 +99,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   // Горизонтальные части
   private getLeafParts(bX: number, bY: number, scale: number, rotate: number, bZ: number, geometryIndex: number): MapObject {
     const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material }, leafItterator }: Params = this.getParams;
-    const type: string = this.fullType + "-leaf";
+    const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
     const branchEnds: Vector3[] = treeGeometry.getEndsOfBranches;
     const color: Color = GetRandomColorByRange(LeafColorRange);
