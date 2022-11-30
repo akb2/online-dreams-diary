@@ -25,7 +25,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private posRange: number = 0.2;
   private noize: number = 0.25;
 
-  private width: number = 0.05;
+  private width: number = 0.06;
   private height: number = 60;
 
   private params: Params;
@@ -40,7 +40,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     const params: GetHeightByTerrainObject = { terrainGeometry, qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY };
     const geometryIndex: number = Random(0, this.treeCount - 1, false, 0);
     const centerX: number = DreamCeilSize / 2;
-    const scale: number = Random(0.5, 1, false, 3);
+    const scale: number = Random(0.8, 1, false, 3);
     const rotate: number = Random(0, 360, false, 0);
     const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
     const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
@@ -161,14 +161,20 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     this.treeCount = TreeCounts[this.dreamMapSettings.detalization];
     this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
-    const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => ({
-      generations: 3,
-      length: objHeight,
-      uvLength: 16,
-      radius: objWidth * Random(1, 2, false, 3),
-      radiusSegments: 3,
-      heightSegments: 2
-    });
+    const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
+      const generations: number = Random(1, 3);
+      const heightSegments: number = 7 - generations;
+      const length: number = objHeight;
+      // Вернуть геоиетрию
+      return {
+        generations,
+        length,
+        uvLength: 16,
+        radius: objWidth * Random(1, 2, false, 3),
+        radiusSegments: 3,
+        heightSegments
+      };
+    };
     // Параметры уже существуют
     if (!!this.params) {
       this.params.leafItterator = CreateArray(this.leafCount);
@@ -190,7 +196,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * this.widthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * this.heightPart, 4);
-      const leafSize: number = objWidth * 16;
+      const leafSize: number = objWidth * 14;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
@@ -229,7 +235,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
-        displacementScale: 0
+        displacementScale: leafSize * 2
       })) as MeshStandardMaterial;
       // Свойства для оптимизации
       const leafItterator: number[] = CreateArray(this.leafCount);
@@ -328,12 +334,12 @@ const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
 // Список количества листвы на деревьях
 const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.VeryLow]: DreamBaseElmsCount,
-  [DreamObjectElmsValues.Low]: Math.round(DreamBaseElmsCount * 1.2),
-  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.4),
-  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.6),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.8),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 2),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 2.2),
+  [DreamObjectElmsValues.Low]: DreamBaseElmsCount,
+  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.1),
+  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.2),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.3),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 1.4),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 1.5)
 };
 
 // Диапазон цветов ствола
