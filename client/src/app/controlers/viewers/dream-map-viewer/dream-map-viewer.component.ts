@@ -985,7 +985,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           // Удалить
           else {
             delete this.animateFunctions[keyType];
-            this.objectCounts[keyType] = 0;
+            delete this.objectCounts[keyType];
             this.scene.remove(mesh);
             mesh.dispose();
             this.renderer.dispose();
