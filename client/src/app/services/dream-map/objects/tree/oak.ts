@@ -26,8 +26,8 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private posRange: number = 0.2;
   private noize: number = 0.25;
 
-  private width: number = 0.04;
-  private height: number = 48;
+  private width: number = 0.05;
+  private height: number = 60;
 
   private params: Params;
 
@@ -96,7 +96,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       },
       animate: this.animate.bind(this),
       castShadow: false,
-      recieveShadow: false,
+      recieveShadow: true,
       isDefault: false
     };
   }
@@ -142,7 +142,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     return {
       type,
       subType: DreamMapOakTreeObject.getSubType(this.ceil, this.neighboringCeils, type, geometryIndex.toString()),
-      splitBySubType: true,
+      splitBySubType: false,
       count: this.leafCount,
       matrix: matrix,
       color: matrix.map(() => color),
@@ -168,7 +168,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => ({
-      generations: 4,
+      generations: 3,
       length: objHeight,
       uvLength: 16,
       radius: objWidth * Random(1, 2, false, 3),
@@ -328,7 +328,7 @@ const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.High]: 4,
   [DreamObjectElmsValues.VeryHigh]: 5,
   [DreamObjectElmsValues.Ultra]: 6,
-  [DreamObjectElmsValues.Awesome]: 10,
+  [DreamObjectElmsValues.Awesome]: 7,
 };
 
 // Список количества листвы на деревьях
