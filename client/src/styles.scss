@@ -20,6 +20,14 @@ $mat-theme: mat.define-light-theme(
 @import "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@200;300;400;500&display=swap";
 @import "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&display=swap";
 
+// Шрифт иконок
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  src: local("./assets/fonts/material-icons.woff");
+}
+
 // Базовый стиль
 html {
   $scroll-size: 0;
@@ -151,13 +159,6 @@ html {
 // Материал иконки
 .material-icons,
 mat-icon {
-  @font-face {
-    font-family: "Material Icons";
-    font-style: normal;
-    font-weight: 400;
-    src: local("./assets/fonts/material-icons.woff");
-  }
-  // Свойства
   font-family: "Material Icons";
   font-weight: normal;
   font-style: normal;
