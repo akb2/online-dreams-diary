@@ -1,8 +1,9 @@
 import { AngleToRad, Cos, CreateArray, CustomObjectKey, MathRound, Random, Sin } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
+import { LeafCounts, TreeCounts } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
@@ -318,28 +319,6 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   leafItterator: number[];
   shader?: Shader;
 }
-
-// Список количества геометрий дерева
-const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: 1,
-  [DreamObjectElmsValues.Low]: 2,
-  [DreamObjectElmsValues.Middle]: 3,
-  [DreamObjectElmsValues.High]: 4,
-  [DreamObjectElmsValues.VeryHigh]: 5,
-  [DreamObjectElmsValues.Ultra]: 6,
-  [DreamObjectElmsValues.Awesome]: 7,
-};
-
-// Список количества листвы на деревьях
-const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: DreamBaseElmsCount,
-  [DreamObjectElmsValues.Low]: DreamBaseElmsCount,
-  [DreamObjectElmsValues.Middle]: Math.round(DreamBaseElmsCount * 1.1),
-  [DreamObjectElmsValues.High]: Math.round(DreamBaseElmsCount * 1.2),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamBaseElmsCount * 1.3),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamBaseElmsCount * 1.4),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamBaseElmsCount * 1.5)
-};
 
 // Диапазон цветов ствола
 const TreeColorRange: ColorRange = [0.9, 1, 0.9, 1, 0.9, 1];
