@@ -16,7 +16,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
 
   private type: string = "tree-oak";
-  private textureKeys: [keyof MeshStandardMaterial, string][] = TextureKeys;
 
   private treeCount: number = 0;
   private leafCount: number = 0;
@@ -200,7 +199,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = this.textureKeys
+      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = TextureKeys
         .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-0.jpg", texture => {
           const repeat: number = 1;
           // Настройки
@@ -210,7 +209,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
           texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
         })]))
         .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = this.textureKeys
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = TextureKeys
         .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-1.png", textureData)]))
         .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
