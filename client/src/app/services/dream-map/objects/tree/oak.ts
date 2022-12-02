@@ -17,13 +17,13 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
   private type: string = "tree-oak";
 
-  private treeCount: number = 0;
-  private leafCount: number = 0;
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
+
+  private treeCount: number = 0;
+  private leafCount: number = 0;
   private posRange: number = 0.2;
   private noize: number = 0.25;
-
   private width: number = 0.06;
   private height: number = 60;
 
