@@ -174,12 +174,17 @@ export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {
 };
 
 // Пакет текстур
-export const GetTextures: (name: string, path: string, useKeys?: (keyof MeshStandardMaterial)[]) => CustomObjectKey<keyof MeshStandardMaterial, Texture> =
-  (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null) => TextureKeys
-    .filter(([key]) => !useKeys || useKeys.includes(key))
-    .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
-      texture.encoding = sRGBEncoding;
-      texture.minFilter = LinearFilter;
-      texture.magFilter = LinearFilter;
-    })]))
-    .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
+type GetTexturesType = (name: string, path: string, useKeys?: (keyof MeshStandardMaterial)[], callback?: (texture: Texture) => void) =>
+  CustomObjectKey<keyof MeshStandardMaterial, Texture>;
+export const GetTextures: GetTexturesType = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
+  .filter(([key]) => !useKeys || useKeys.includes(key))
+  .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
+    texture.encoding = sRGBEncoding;
+    texture.minFilter = LinearFilter;
+    texture.magFilter = LinearFilter;
+    // Доп обработка
+    if (!!callback) {
+      callback(texture);
+    }
+  })]))
+  .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
