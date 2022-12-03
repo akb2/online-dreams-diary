@@ -30,9 +30,9 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.025;
+  private width: number = 0.03;
   private height: number = 5;
-  private noize: number = 0.22;
+  private noize: number = 0.15;
   private countStep: [number, number] = [1, 1];
   private scaleY: number[] = [1, 3];
   private scaleX: number[] = [1.5, 1];
@@ -128,7 +128,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
       // Данные фигуры
       const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 3);
-      const textures = GetTextures("wheatgrass.png", "grass");
+      const textures = GetTextures("wheatgrass.png", "grass", ["map", "aoMap", "lightMap", "normalMap"]);
       const material: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
@@ -137,11 +137,11 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         flatShading: true,
         ...textures,
         aoMapIntensity: -3,
-        lightMapIntensity: 10,
+        lightMapIntensity: 6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
-        displacementScale: objWidth / 4
+        displacementScale: objWidth
       });
       const dummy: Object3D = new Object3D();
       // Параметры
