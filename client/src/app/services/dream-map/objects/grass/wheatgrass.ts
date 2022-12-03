@@ -137,7 +137,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: -3,
+        aoMapIntensity: -4,
         lightMapIntensity: 6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
