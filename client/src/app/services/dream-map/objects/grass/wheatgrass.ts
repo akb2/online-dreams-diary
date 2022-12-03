@@ -2,6 +2,7 @@ import { AngleToRad, Cos, CreateArray, IsMultiple, LineFunc, Random, Sin } from 
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
@@ -30,11 +31,11 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.03;
+  private width: number = 0.04;
   private height: number = 5;
   private noize: number = 0.15;
-  private countStep: [number, number] = [1, 1];
-  private scaleY: number[] = [1, 3];
+  private countStep: [number, number] = [1, 3];
+  private scaleY: number[] = [1, 2];
   private scaleX: number[] = [1.5, 1];
   private noizeRotate: number = 90 * (this.noize / 2);
   private rotationRadiusRange: number = 30;
@@ -127,7 +128,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const hyp2: number = objWidth / 2;
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
       // Данные фигуры
-      const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 3);
+      const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
       const textures = GetTextures("wheatgrass.png", "grass", ["map", "aoMap", "lightMap", "normalMap"]);
       const material: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
@@ -140,8 +141,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         lightMapIntensity: 6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
-        normalScale: new Vector2(1, 1),
-        displacementScale: objWidth
+        normalScale: new Vector2(1, 1)
       });
       const dummy: Object3D = new Object3D();
       // Параметры
@@ -149,8 +149,6 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const facesCountI: number[] = CreateArray(facesCount);
       // Свойства для оптимизации
       const countItterator: number[] = CreateArray(this.count);
-      // Настройки
-      geometry.translate(0, objHeight / 2, 0);
       // Запомнить параметры
       this.params = {
         ...geometryDatas,
@@ -231,7 +229,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   objHeight: number;
   hyp2: number;
   leg: number;
-  geometry: PlaneGeometry;
+  geometry: TriangleGeometry;
   material: MeshStandardMaterial;
   dummy: Object3D;
   facesCount: number;
