@@ -1,13 +1,13 @@
-import { AngleToRad, CreateArray, IsMultiple, Random } from "@_models/app";
+import { AngleToRad, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
-import { GrassColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
+import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
-import { BufferGeometry, CircleGeometry, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader } from "three";
+import { BufferGeometry, CircleGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 
 
 
@@ -29,10 +29,10 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 
   private widthPart: number = DreamCeilSize;
 
-  private size: number = 0.06;
-  private noize: number = 0.12;
+  private size: number = 0.02;
+  private noize: number = 0.05;
   private noizeRotate: number = 90 * this.noize;
-  private countStep: [number, number] = [2, 5];
+  private countStep: [number, number] = [2, 9];
   private itemRotateRange: [number, number] = [-10, 10];
   private scaleRange: [number, number] = [1, 1.6];
   private rotationRadiusRange: [number, number] = [60, 20];
@@ -119,10 +119,22 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     else {
       const objSize: number = this.size * this.widthPart;
       const geometryRadius: number = objSize;
-      const geometryQuality: number = 6;
       // Данные фигуры
-      const geometry: CircleGeometry = new CircleGeometry(geometryRadius, geometryQuality);
-      const material: MeshPhongMaterial = GrassMaterial;
+      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("plantaingrass.png", "grass", ["map", "aoMap", "lightMap", "normalMap"]);
+      const geometry: CircleGeometry = new CircleGeometry(geometryRadius, 6);
+      const material: MeshStandardMaterial = new MeshStandardMaterial({
+        fog: true,
+        side: DoubleSide,
+        transparent: true,
+        alphaTest: 0.7,
+        flatShading: true,
+        ...textures,
+        aoMapIntensity: 0.5,
+        lightMapIntensity: 6,
+        roughness: 0.8,
+        normalMapType: TangentSpaceNormalMap,
+        normalScale: new Vector2(1, 1)
+      });
       const dummy: Object3D = new Object3D();
       // Параметры
       const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;
@@ -131,7 +143,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       const countItterator: number[] = CreateArray(this.count);
       // Настройки геометрии
       geometry.applyMatrix4(new Matrix4().makeTranslation(0, geometryRadius, 0));
-      geometry.scale(0.5, 1, 0);
+      geometry.scale(1, 1.5, 0);
       // Запомнить параметры
       this.params = {
         ...geometryDatas,
@@ -144,7 +156,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         facesCountI
       };
       // Создание шейдера
-      CreateNoizeShader(this.params.shader, this.params.material, this.noize, true, shader => this.params.shader = shader);
+      CreateNoizeShader(this.params.shader, this.params.material, this.noize, false, shader => this.params.shader = shader);
     }
     // Вернуть данные
     return this.params;
@@ -154,7 +166,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
   private setCount(): void {
     this.count = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ?
       0 :
-      Math.ceil(DreamMaxElmsCount(this.dreamMapSettings.detalization) / 8);
+      Math.ceil(DreamMaxElmsCount(this.dreamMapSettings.detalization) / 4);
   }
 
 
@@ -206,7 +218,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   countItterator: number[];
   objSize: number;
   geometry: CircleGeometry;
-  material: MeshPhongMaterial;
+  material: MeshStandardMaterial;
   dummy: Object3D;
   terrainGeometry: PlaneGeometry;
   facesCountI: number[];
