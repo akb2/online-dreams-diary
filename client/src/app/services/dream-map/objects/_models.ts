@@ -1,6 +1,6 @@
 import { CoordDto } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_models/dream-map-settings";
-import { Float32BufferAttribute, IUniform, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, Triangle, Vector3 } from "three";
+import { Float32BufferAttribute, IUniform, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
 
 
 
@@ -82,3 +82,6 @@ export const TextureKeys: [keyof MeshStandardMaterial, string][] = [
 
 // Матрица по умолчанию
 export const DefaultMatrix: Matrix4 = new Matrix4();
+
+// Загрузчик текстур
+export const GetTextureLoader: TextureLoader = new TextureLoader();

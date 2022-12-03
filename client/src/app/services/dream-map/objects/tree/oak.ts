@@ -3,7 +3,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
-import { LeafCounts, TreeCounts } from "@_services/dream-map/objects/tree/_models";
+import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
@@ -17,9 +17,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
 
   private type: string = "tree-oak";
-
-  private widthPart: number = DreamCeilSize;
-  private heightPart: number = DreamCeilSize / DreamCeilParts;
 
   private treeCount: number = 0;
   private leafCount: number = 0;
@@ -194,8 +191,8 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         texture.magFilter = LinearMipMapNearestFilter;
       }
       // Параметры геометрии
-      const objWidth: number = MathRound(this.width * this.widthPart, 4);
-      const objHeight: number = MathRound((this.height * DreamCeilSize) * this.heightPart, 4);
+      const objWidth: number = MathRound(this.width * WidthPart, 4);
+      const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
       const leafSize: number = objWidth * 14;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));

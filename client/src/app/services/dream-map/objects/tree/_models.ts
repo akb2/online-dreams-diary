@@ -1,9 +1,15 @@
 import { CustomObjectKey } from "@_models/app";
-import { DreamBaseElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
 
 
 
 
+
+// Размер ячейки по ширине/глубине
+export const WidthPart: number = DreamCeilSize;
+
+// Количество частей в ячейке по высоте
+export const HeightPart: number = DreamCeilSize / DreamCeilParts;
 
 // Список количества геометрий дерева
 export const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {

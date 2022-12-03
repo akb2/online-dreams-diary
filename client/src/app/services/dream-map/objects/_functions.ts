@@ -1,11 +1,11 @@
-import { CreateArray, IsEven, IsMultiple, Random } from "@_models/app";
+import { CreateArray, CustomObjectKey, IsEven, IsMultiple, Random } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
-import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, MaxHeight, ShaderUniforms } from "@_services/dream-map/objects/_models";
+import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";
-import { Clock, Color, Float32BufferAttribute, Material, Matrix4, PlaneGeometry, Shader, Triangle, Vector3 } from "three";
+import { Clock, Color, Float32BufferAttribute, LinearFilter, Material, Matrix4, MeshStandardMaterial, PlaneGeometry, Shader, sRGBEncoding, Texture, Triangle, Vector3 } from "three";
 
 
 
@@ -172,3 +172,14 @@ export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {
     uniforms.time.value = clock.getElapsedTime();
   }
 };
+
+// Пакет текстур
+export const GetTextures: (name: string, path: string, useKeys?: (keyof MeshStandardMaterial)[]) => CustomObjectKey<keyof MeshStandardMaterial, Texture> =
+  (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null) => TextureKeys
+    .filter(([key]) => !useKeys || useKeys.includes(key))
+    .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
+      texture.encoding = sRGBEncoding;
+      texture.minFilter = LinearFilter;
+      texture.magFilter = LinearFilter;
+    })]))
+    .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
