@@ -1,11 +1,11 @@
 import { AngleToRad, Cos, CreateArray, CustomObjectKey, MathRound, Random, Sin } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
 import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, sRGBEncoding, TangentSpaceNormalMap, Texture, TextureLoader, Vector2, Vector3 } from "three";
 
@@ -197,19 +197,14 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = TextureKeys
-        .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-0.jpg", texture => {
-          const repeat: number = 1;
-          // Настройки
-          textureData(texture);
-          texture.wrapS = RepeatWrapping;
-          texture.wrapT = RepeatWrapping;
-          texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
-        })]))
-        .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = TextureKeys
-        .map(([key, path]) => ([key, textureLoader.load("/assets/dream-map/object/tree/" + path + "/1-1.png", textureData)]))
-        .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
+      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.png", "tree", null, texture => {
+        const repeat: number = 1;
+        // Настройки
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+        texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
+      });
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree");
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
