@@ -2,13 +2,12 @@ import { AngleToRad, Cos, CreateArray, IsMultiple, LineFunc, Random, Sin } from 
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
-import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
-import { GrassColorRange, GrassMaterial } from "@_services/dream-map/objects/grass/_models";
+import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
-import { BufferGeometry, Matrix4, MeshPhongMaterial, Object3D, Shader } from "three";
+import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Vector2 } from "three";
 
 
 
@@ -31,8 +30,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   private widthPart: number = DreamCeilSize;
   private heightPart: number = DreamCeilSize / DreamCeilParts;
 
-  private width: number = 0.022;
-  private height: number = 6;
+  private width: number = 0.025;
+  private height: number = 5;
   private noize: number = 0.22;
   private countStep: [number, number] = [1, 1];
   private scaleY: number[] = [1, 3];
@@ -128,14 +127,30 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const hyp2: number = objWidth / 2;
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
       // Данные фигуры
-      const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
-      const material: MeshPhongMaterial = GrassMaterial;
+      const geometry: PlaneGeometry = new PlaneGeometry(objWidth, objHeight, 1, 3);
+      const textures = GetTextures("wheatgrass.png", "grass");
+      const material: MeshStandardMaterial = new MeshStandardMaterial({
+        fog: true,
+        side: DoubleSide,
+        transparent: true,
+        alphaTest: 0.7,
+        flatShading: true,
+        ...textures,
+        aoMapIntensity: -3,
+        lightMapIntensity: 10,
+        roughness: 0.8,
+        normalMapType: TangentSpaceNormalMap,
+        normalScale: new Vector2(1, 1),
+        displacementScale: objWidth / 4
+      });
       const dummy: Object3D = new Object3D();
       // Параметры
       const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;
       const facesCountI: number[] = CreateArray(facesCount);
       // Свойства для оптимизации
       const countItterator: number[] = CreateArray(this.count);
+      // Настройки
+      geometry.translate(0, objHeight / 2, 0);
       // Запомнить параметры
       this.params = {
         ...geometryDatas,
@@ -152,7 +167,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         facesCountI,
       };
       // Создание шейдера
-      CreateNoizeShader(this.params.shader, this.params.material, this.noize, true, shader => this.params.shader = shader);
+      CreateNoizeShader(this.params.shader, this.params.material, this.noize, false, shader => this.params.shader = shader);
     }
     // Вернуть данные
     return this.params;
@@ -216,8 +231,8 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   objHeight: number;
   hyp2: number;
   leg: number;
-  geometry: TriangleGeometry;
-  material: MeshPhongMaterial;
+  geometry: PlaneGeometry;
+  material: MeshStandardMaterial;
   dummy: Object3D;
   facesCount: number;
   facesCountI: number[];
