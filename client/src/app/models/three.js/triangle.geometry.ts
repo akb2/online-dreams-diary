@@ -1,5 +1,5 @@
 import { CustomObject, MathRound } from "@_models/app";
-import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from "three";
 
 
 
@@ -16,12 +16,21 @@ export class TriangleGeometry extends BufferGeometry {
 
 
 
+  // Преобразование в массив чисел
+  private vector3ToNumber(...vectors: Vector3[]): number[] {
+    return vectors.map(({ x, y, z }) => ([x, y, z])).reduce((o, v) => ([...o, ...v]), []);
+  }
+
+
+
+
+
   /**
    * @param [sideA] — Левый катет.
    * @param [sideB] — Гипотенуза в основании.
    * @param [sideC] — Правый катет (если не указывать, то высчитается автоматически по формуле прямоугольных треугольников).
    */
-  constructor(sideA: number, sideB: number, sideC?: number) {
+  constructor(sideA: number, sideB: number, sideC?: number, segments?: number) {
     super();
     // Правый катет
     sideC = sideC ?? Math.sqrt(Math.pow(sideA, 2) - Math.pow(sideB, 2));
@@ -38,13 +47,33 @@ export class TriangleGeometry extends BufferGeometry {
     const dirAB: Vector3 = new Vector3().subVectors(b, a).normalize();
     const dirBC: Vector3 = new Vector3().subVectors(c, b).normalize();
     const dirCA: Vector3 = new Vector3().subVectors(a, c).normalize();
-    // Параметры
-    const uvs: number[] = [0, 0, 1, 0, cX / sideB, 1];
-    const position: number[] = [a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z];
-    const normal: number[] = [dirAB.x, dirAB.y, dirAB.z, dirBC.x, dirBC.y, dirBC.z, dirCA.x, dirCA.y, dirCA.z];
-    const indexes: number[] = [0, 1, 2];
+    let uvs: number[] = [];
+    let position: number[] = [];
+    let normal: number[] = [];
+    let indexes: number[] = [];
+    // Параметры: два сегмент
+    if (segments === 2) {
+      const d: Vector3 = new Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+      const dirAC: Vector3 = new Vector3().subVectors(c, a).normalize();
+      const dirDA: Vector3 = new Vector3().subVectors(a, d).normalize();
+      const dirDB: Vector3 = new Vector3().subVectors(b, d).normalize();
+      const dirCD: Vector3 = new Vector3().subVectors(d, c).normalize();
+      // Параметры
+      uvs = [0, 0, 0.5, 0, 1, 0, cX / sideB, 1];
+      position = this.vector3ToNumber(a, d, b, c);
+      normal = this.vector3ToNumber(dirDA, dirAC, dirCD, dirDB, dirBC, dirCD);
+      indexes = [1, 0, 3, 1, 2, 3];
+    }
+    // Параметры: один сегмент
+    else {
+      uvs = [0, 0, 1, 0, cX / sideB, 1];
+      position = this.vector3ToNumber(a, b, c);
+      normal = this.vector3ToNumber(dirAB, dirBC, dirCA);
+      indexes = [0, 1, 2];
+      segments = 1;
+    }
     // Свойства
-    this.parameters = { sideA, sideB, sideC };
+    this.parameters = { sideA, sideB, sideC, segments };
     this.setIndex(indexes);
     this.setAttribute("position", new Float32BufferAttribute(position, 3));
     this.setAttribute("normal", new Float32BufferAttribute(normal, 3));
@@ -75,4 +104,5 @@ interface TriangleGeometryParameters {
   sideA: number;
   sideB: number;
   sideC: number;
+  segments: number;
 }
