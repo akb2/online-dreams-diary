@@ -129,7 +129,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: 0.1,
+        aoMapIntensity: 0.3,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -144,6 +144,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       // Настройки геометрии
       geometry.applyMatrix4(new Matrix4().makeTranslation(0, geometryRadius, 0));
       geometry.scale(1, 1.5, 0);
+      geometry.setAttribute("uv2", geometry.getAttribute("uv"));
       // Запомнить параметры
       this.params = {
         ...geometryDatas,

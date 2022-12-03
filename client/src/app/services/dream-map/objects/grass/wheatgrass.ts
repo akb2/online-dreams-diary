@@ -141,7 +141,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         lightMapIntensity: 4,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
-        normalScale: new Vector2(1, 1)
+        normalScale: new Vector2(1, -1)
       });
       const dummy: Object3D = new Object3D();
       // Параметры
