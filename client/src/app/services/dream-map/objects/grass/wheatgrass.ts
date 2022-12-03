@@ -8,7 +8,7 @@ import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
-import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Vector2 } from "three";
+import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Vector2 } from "three";
 
 
 
