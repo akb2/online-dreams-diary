@@ -86,7 +86,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         y: this.ceil.coord.y
       },
       animate: this.animate.bind(this),
-      castShadow: false,
+      castShadow: true,
       recieveShadow: true,
       isDefault: false
     };
