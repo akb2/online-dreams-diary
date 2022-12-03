@@ -6,8 +6,8 @@ import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometr
 import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
-import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject, TextureKeys } from "@_services/dream-map/objects/_models";
-import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, sRGBEncoding, TangentSpaceNormalMap, Texture, TextureLoader, Vector2, Vector3 } from "three";
+import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
+import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapLinearFilter, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 
 
 
@@ -184,12 +184,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     }
     // Определить параметры
     else {
-      const textureLoader: TextureLoader = new TextureLoader();
-      const textureData: (texture: Texture) => void = (texture: Texture) => {
-        texture.encoding = sRGBEncoding;
-        texture.minFilter = LinearMipMapNearestFilter;
-        texture.magFilter = LinearMipMapNearestFilter;
-      }
+      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
@@ -197,14 +192,19 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.png", "tree", null, texture => {
+      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 1;
         // Настройки
+        texture.minFilter = LinearMipMapNearestFilter;
+        texture.magFilter = LinearMipMapNearestFilter;
         texture.wrapS = RepeatWrapping;
         texture.wrapT = RepeatWrapping;
         texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree");
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"], texture => {
+        texture.minFilter = LinearMipMapLinearFilter;
+        texture.magFilter = LinearMipMapLinearFilter;
+      });
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
