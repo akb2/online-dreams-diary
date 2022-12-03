@@ -215,7 +215,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.5,
-        lightMapIntensity: 10,
+        lightMapIntensity: 6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
