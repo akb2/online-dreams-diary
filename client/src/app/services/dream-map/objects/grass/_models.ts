@@ -1,7 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, XYCoord } from "@_models/dream-map";
 import { ColorRange } from "@_services/dream-map/objects/_models";
-import { DoubleSide, MeshPhongMaterial } from "three";
 
 
 
@@ -50,14 +49,6 @@ export const AllCorners: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<k
   right: { top: ["topLeft", "bottomRight"], bottom: ["topRight", "bottomLeft"] },
   bottom: { left: ["topLeft", "bottomRight"], right: ["topRight", "bottomLeft"] },
 };
-
-// Материал
-export const GrassMaterial: MeshPhongMaterial = new MeshPhongMaterial({
-  fog: true,
-  transparent: false,
-  side: DoubleSide,
-  flatShading: true
-});
 
 // Предел цветов
 export const GrassColorRange: ColorRange = [0, 0.3, 0.7, 1, 0, 0.3];
