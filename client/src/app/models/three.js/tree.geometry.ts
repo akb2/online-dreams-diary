@@ -1,4 +1,4 @@
-import { CreateArray, MultiArray, Random } from "@_models/app";
+import { CreateArray, MathRound, MultiArray, Random } from "@_models/app";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -9,7 +9,6 @@ export class TreeGeometry extends BufferGeometry {
 
 
   private tree: Tree;
-  private endsOfBranches: Vector3[];
 
   override type: string = "TreeGeometry";
 
@@ -19,27 +18,42 @@ export class TreeGeometry extends BufferGeometry {
 
   // Список окончаний веток
   get getEndsOfBranches(): Vector3[] {
-    if (!!this.endsOfBranches?.length) {
-      return this.endsOfBranches;
-    }
-    // Поиск концов веток
-    else {
-      const points: Vector3[] = [];
-      // Функция поиска данных
-      const search = (node: TreeBranch) => {
-        if (node.children.length > 0) {
-          node.children.forEach(n => search(n));
-        }
-        // Добавить точки
-        if (node.children.length <= this.parameters.generations && node.children.length > 0) {
-          points.unshift(node.to);
-        }
-      };
-      // Поиск данных
-      search(this.tree.root);
-      // Вернуть вершины
-      return points;
-    }
+    const points: Vector3[] = [];
+    // Функция поиска данных
+    const search = (node: TreeBranch) => {
+      if (node.children.length > 0) {
+        node.children.forEach(n => search(n));
+      }
+      // Добавить точки
+      if (node.children.length <= this.parameters.generations && node.children.length > 0) {
+        points.push(node.to);
+      }
+    };
+    // Поиск данных
+    search(this.tree.root);
+    // Вернуть вершины
+    return points;
+  }
+
+  // Список точек на ветках
+  getPositionsOfBranches(skip: number = 0): Vector3[] {
+    const search: (node: TreeBranch) => Vector3[] = (node: TreeBranch) => ([
+      ...node.segments
+        .filter((s, k) => k < node.segments.length - 1 || node.children.length > 0)
+        .map(({ vertices }) => vertices)
+        .map(vertices => {
+          const x: number = MathRound(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
+          const y: number = MathRound(vertices.map(({ y }) => y).reduce((o, y) => o + y, 0) / vertices.length, 5);
+          const z: number = MathRound(vertices.map(({ z }) => z).reduce((o, z) => o + z, 0) / vertices.length, 5);
+          return new Vector3(x, y, z);
+        }),
+      ...node.children.map(n => search(n)).reduce((o, v) => ([...o, ...v]), [])
+    ]);
+    const points: Vector3[] = search(this.tree.root);
+    // Поиск данных
+    return points
+      .sort(({ y: yA }, { y: yB }) => yA > yB ? 1 : yA < yB ? -1 : 0)
+      .filter((p, k) => k >= skip);
   }
 
 
