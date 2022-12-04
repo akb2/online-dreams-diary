@@ -6,8 +6,9 @@ import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
+import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Vector2 } from "three";
 
 
@@ -165,7 +166,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         facesCountI,
       };
       // Создание шейдера
-      CreateNoizeShader(this.params.shader, this.params.material, this.noize, false, shader => this.params.shader = shader);
+      this.createShader();
     }
     // Вернуть данные
     return this.params;
@@ -215,6 +216,16 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   // Анимация
   animate(): void {
     AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+  }
+
+  // Создание шейдера
+  private createShader(): void {
+    if (!this.params.shader) {
+      this.params.material.onBeforeCompile = subShader => {
+        NoizeShader(this.params.material, subShader, this.noize, false);
+        this.params.shader = subShader;
+      };
+    }
   }
 }
 

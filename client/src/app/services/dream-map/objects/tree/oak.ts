@@ -5,8 +5,9 @@ import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-setting
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
+import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapLinearFilter, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 
 
@@ -255,7 +256,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         leafItterator
       };
       // Создание шейдера
-      CreateNoizeShader(this.params.shader, this.params.material.leaf, this.noize, false, shader => this.params.shader = shader);
+      this.createShader();
     }
     // Настройки
     this.params.material.leaf.displacementScale = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : this.params.leafSize / 3;
@@ -284,6 +285,16 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   // Анимация
   animate(): void {
     AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+  }
+
+  // Создание шейдера
+  private createShader(): void {
+    if (!this.params.shader) {
+      this.params.material.leaf.onBeforeCompile = subShader => {
+        NoizeShader(this.params.material.leaf, subShader, this.noize, false);
+        this.params.shader = subShader;
+      };
+    }
   }
 }
 

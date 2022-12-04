@@ -3,9 +3,8 @@ import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
-import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";
-import { Clock, Color, Float32BufferAttribute, LinearFilter, Material, Matrix4, MeshStandardMaterial, PlaneGeometry, Shader, sRGBEncoding, Texture, Triangle, Vector3 } from "three";
+import { Clock, Color, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, sRGBEncoding, Texture, Triangle, Vector3 } from "three";
 
 
 
@@ -153,18 +152,6 @@ export const GetRandomColorByRange = ([rA, rB, gA, gB, bA, bB]: ColorRange, afte
   Random(gA, gB, false, afterDotNum),
   Random(bA, bB, false, afterDotNum)
 );
-
-// Создание анимации ветра
-export const CreateNoizeShader = (shader: Shader, material: Material, noize: number, defineVuV: boolean = false, callback: (shader: Shader) => void) => {
-  if (!shader) {
-    material.onBeforeCompile = subShader => {
-      NoizeShader(material, subShader, noize, defineVuV);
-      callback(subShader);
-    };
-  }
-  // Вернуть шейдер
-  return shader;
-};
 
 // Анимация для шейдера ветра
 export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {

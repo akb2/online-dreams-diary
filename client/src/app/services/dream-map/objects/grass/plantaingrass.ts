@@ -1,12 +1,13 @@
-import { AngleToRad, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
+import { AngleToRad, Cos, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, CreateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
+import { NoizeShader } from "@_services/dream-map/shaders/noise";
 import { BufferGeometry, CircleGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 
 
@@ -30,8 +31,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
   private widthPart: number = DreamCeilSize;
 
   private size: number = 0.02;
-  private noize: number = 0.05;
-  private noizeRotate: number = 90 * this.noize;
+  private noize: number = 0.08;
   private countStep: [number, number] = [2, 9];
   private itemRotateRange: [number, number] = [-10, 10];
   private scaleRange: [number, number] = [1, 1.6];
@@ -69,11 +69,12 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
           const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
+          const rotateY: number = (stepAngle * i) + Random(this.itemRotateRange[0], this.itemRotateRange[1]);
           // Настройки
           dummy.rotation.set(0, 0, 0);
           dummy.position.set(x, GetHeightByTerrain(params, x, y), y);
-          dummy.rotateY(AngleToRad((stepAngle * i) + Random(this.itemRotateRange[0], this.itemRotateRange[1])));
-          dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1]) + this.noizeRotate));
+          dummy.rotateY(AngleToRad(rotateY));
+          dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1])));
           dummy.scale.setScalar(scale);
           dummy.updateMatrix();
           // Вернуть геометрию
@@ -157,7 +158,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         facesCountI
       };
       // Создание шейдера
-      CreateNoizeShader(this.params.shader, this.params.material, this.noize, false, shader => this.params.shader = shader);
+      this.createShader();
     }
     // Вернуть данные
     return this.params;
@@ -207,6 +208,16 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
   // Анимация
   animate(): void {
     AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+  }
+
+  // Создание шейдера
+  private createShader(): void {
+    if (!this.params.shader) {
+      this.params.material.onBeforeCompile = subShader => {
+        NoizeShader(this.params.material, subShader, this.noize, false);
+        this.params.shader = subShader;
+      };
+    }
   }
 }
 
