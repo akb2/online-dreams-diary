@@ -883,7 +883,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                   mesh.setColorAt(index, object.color[k] ?? defaultColor);
                 });
                 // Функция анимации
-                if (!!object.animate) {
+                if (!!object.animate && !this.animateFunctions.hasOwnProperty(keyType)) {
                   this.animateFunctions[keyType] = object.animate;
                 }
                 // Обновить старый объект
