@@ -15,7 +15,7 @@ import { Clock, DataTexture, Mesh } from "three";
 
 export class DreamMapObjectService implements OnDestroy {
 
-  private emptyControllers: CustomObjectKey<number, CustomObjectKey<string, DreamMapObjectTemplate>> = {};
+  private emptyControllers: CustomObjectKey<number, CustomObjectKey<string, [DreamMapObjectTemplate, string[]]>> = {};
   private objectControllers: CustomObjectKey<number, CustomObjectKey<string, [DreamMapObjectTemplate, string[]]>> = {};
 
 
@@ -65,7 +65,7 @@ export class DreamMapObjectService implements OnDestroy {
     // Требуется пустой объект
     if ((useDefault || !objectId) && ObjectControllers[terrainId] && getDefault) {
       const controller: DreamMapObjectTemplate[] = !!this.emptyControllers[terrainId] ?
-        Object.values(this.emptyControllers[terrainId]).map(c => c.updateDatas(...params)) :
+        Object.values(this.emptyControllers[terrainId]).map(c => c[0].updateDatas(...params)) :
         ObjectControllers[terrainId].map(c => new c(...params));
       const mixedObject: (MapObject | MapObject[])[] = controller
         .map(c => ([c, c.getObject()]))
@@ -75,12 +75,13 @@ export class DreamMapObjectService implements OnDestroy {
             !!cs ? ({ ...cs, isDefault: true } as MapObject) : null;
           // Запомнить контроллеры
           if ((Array.isArray(objects) && !!objects?.length) || (!Array.isArray(objects) && !!objects)) {
-            const object: MapObject = (Array.isArray(objects) ? objects : [objects as MapObject])[0];
+            const allObjects: MapObject[] = (Array.isArray(objects) ? objects : [objects as MapObject]);
+            const object: MapObject = allObjects[0];
             // Запомнить контроллер
             this.emptyControllers[terrainId] = this.emptyControllers[terrainId] ?? {};
-            this.emptyControllers[terrainId][object.type] = c as DreamMapObjectTemplate;
+            this.emptyControllers[terrainId][object.type] = [c as DreamMapObjectTemplate, allObjects.map(({ type }) => type)];
             // Вернуть объекты
-            return objects;
+            return objects as MapObject | MapObject[];
           }
           // Пустой объект
           return null;
@@ -122,9 +123,15 @@ export class DreamMapObjectService implements OnDestroy {
       }
     }
     // Требуется пустой объект
-    else if (isDefault && !!this.emptyControllers[terrainId] && !!this.emptyControllers[terrainId][type]) {
-      this.emptyControllers[terrainId][type].updateDatas(...params);
-      this.emptyControllers[terrainId][type].updateHeight(objectSetting);
+    else if (isDefault) {
+      const controllerType: string = Object.entries(this.emptyControllers[terrainId])
+        .filter(([, [, types]]) => types.includes(type))
+        .map(([key]) => key)[0];
+      // Объект найден
+      if (!!this.emptyControllers[terrainId] && !!controllerType) {
+        this.emptyControllers[terrainId][controllerType][0].updateDatas(...params);
+        this.emptyControllers[terrainId][controllerType][0].updateHeight(objectSetting);
+      }
     }
   }
 
@@ -158,6 +165,7 @@ export class DreamMapObjectService implements OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
-    Object.values(this.emptyControllers).forEach(controllers => Object.values(controllers).filter(c => !!c).forEach(controller => controller.destroy()));
+    Object.values(this.objectControllers).forEach(controllers => Object.values(controllers).filter(([c]) => !!c).forEach(([controller]) => controller.destroy()));
+    Object.values(this.emptyControllers).forEach(controllers => Object.values(controllers).filter(([c]) => !!c).forEach(([controller]) => controller.destroy()));
   }
 }
