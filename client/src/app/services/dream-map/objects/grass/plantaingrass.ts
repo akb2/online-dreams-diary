@@ -1,4 +1,4 @@
-import { AngleToRad, Cos, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
+import { AngleToRad, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
