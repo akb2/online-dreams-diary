@@ -56,7 +56,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   filteredObjects: DreamMapObject[] = [];
 
   // * Инструменты: общее
-  private tool: Tool = Tool.landscape;
+  private tool: Tool = Tool.objects;
   toolSizeLand: number = ToolSizeLand[0];
   private currentCeil: ObjectHoverEvent = null;
 
