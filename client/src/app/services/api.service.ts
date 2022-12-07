@@ -23,11 +23,9 @@ export class ApiService {
 
 
   // Регистрация
-  public getMessageByCode(code: string): string {
-    if (code) {
-      if (ApiResponseMessages[code]) {
-        return ApiResponseMessages[code];
-      }
+  getMessageByCode(code: string): string {
+    if (!!code && !!ApiResponseMessages[code]) {
+      return ApiResponseMessages[code];
     }
     // Нет текста ошибки
     return "Неизвестная ошибка. Повторите позже";
@@ -35,18 +33,18 @@ export class ApiService {
 
 
   // Функция для переключения ошибок
-  public checkSwitchMap(result: ApiResponse, codes: string[] = []): Observable<ApiResponse> {
+  checkSwitchMap(result: ApiResponse, codes: string[] = []): Observable<ApiResponse> {
     const code: string = result.result.code;
     // Сохранить токен
     if (code === "0001") {
       return of(result);
     }
     // Вернуть данные
-    return this.checkResponse(result.result.code, codes);
+    return this.checkResponse(code, codes);
   }
 
   // Функция обработки ошибок
-  public checkResponse(code: string, codes: string[] = []): Observable<any> {
+  checkResponse(code: string, codes: string[] = []): Observable<any> {
     // Обработать ошибку внутри подписчика
     if (code === "0001" || codes.some(testCode => testCode === code)) {
       return of(code);
@@ -55,10 +53,7 @@ export class ApiService {
     else {
       const message: string = "Ошибка " + code + ": " + this.getMessageByCode(code);
       // Сообщение с ошибкой
-      this.snackbarService.open({
-        message: message,
-        mode: "error"
-      });
+      this.snackbarService.open({ message, mode: "error" });
       // Вернуть ошибку
       return throwError(message);
     }

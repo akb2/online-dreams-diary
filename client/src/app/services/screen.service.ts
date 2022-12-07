@@ -40,7 +40,7 @@ export class ScreenService implements OnDestroy {
   constructor() {
     this.updateIsMobile();
     // Обновить метку о типе интерфейса
-    fromEvent(window, "resize", () => this.updateIsMobile()).pipe(takeUntil(this.destroy$)).subscribe();
+    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(() => this.updateIsMobile());
   }
 
   ngOnDestroy(): void {
@@ -54,7 +54,8 @@ export class ScreenService implements OnDestroy {
 
 
   // Определить брейкпоинт
-  getBreakpoint(resolution: number = window.innerWidth): ScreenKeys {
+  getBreakpoint(resolution: number = -1): ScreenKeys {
+    resolution = resolution >= 0 ? resolution : window.innerWidth;
     let breakpoint: ScreenKeys = "default";
     // Цикл по брейкпоинтам
     for (let key in this.breakpoints) {
