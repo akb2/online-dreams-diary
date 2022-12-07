@@ -43,6 +43,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   config: CKEditor5.Config = { language: "ru" };
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
+  tabAnimation: boolean = false;
   private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -212,7 +213,13 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Переключение вкладки
   onChangeTab(index: number): void {
-    this.mainMenu.collapseMenu()
+    this.mainMenu.collapseMenu();
+    this.tabAnimation = true;
+  }
+
+  // Конец анимации
+  onTabAnimationDone(): void {
+    this.tabAnimation = false;
   }
 
 

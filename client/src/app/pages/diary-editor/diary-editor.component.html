@@ -21,115 +21,130 @@
          [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
-                     [selectedIndex]="2"
-                     (selectedIndexChange)="onChangeTab($event)">
+                     [selectedIndex]="1"
+                     (selectedIndexChange)="onChangeTab($event)"
+                     (animationDone)="onTabAnimationDone()">
         <!-- Общее -->
         <mat-tab label="Общее">
-          <div class="overlay">
-            <div class="section root-section tabs">
-              <div class="container">
-                <div class="cards-list">
-                  <!-- Общие данные -->
-                  <app-card title="Общие данные"
-                            avatarIcon="format_list_bulleted"
-                            avatarColor="primary"
-                            avatarBackground="fill"
-                            [fullHeight]="true">
-                    <form content
-                          [formGroup]="dreamForm">
-                      <!-- Название -->
-                      <app-text-input label="Название"
-                                      formControlName="title"
-                                      [errors]="errors.title"
-                                      [maxLength]="titleMaxLength"></app-text-input>
-                      <!-- Описание -->
-                      <app-text-input label="Краткое описание"
-                                      formControlName="description"
-                                      [errors]="errors.description"
-                                      [multiLine]="true"
-                                      [multiLineMinLines]="1"
-                                      [multiLineMaxLines]="6"
-                                      [maxLength]="descriptionMaxLength"></app-text-input>
-                      <!-- Когда приснился сон -->
-                      <app-text-input type="date"
-                                      label="Дата сновидения"
-                                      formControlName="date"
-                                      [minDate]="dateMin"
-                                      [maxDate]="dateMax"></app-text-input>
-                    </form>
-                  </app-card>
-                  <!-- Настройки -->
-                  <app-card title="Настройки"
-                            subTitle="Упоминания и поиск"
-                            avatarIcon="settings"
-                            avatarColor="primary"
-                            avatarBackground="fill"
-                            [fullHeight]="true">
-                    <form content
-                          [formGroup]="dreamForm">
-                      <!-- Ключевые слова -->
-                      <app-chips-input label="Ключевые слова для поиска"
-                                       placeholder="Введите ключевую фразу"
-                                       placeholderLimit="Достигнута максимальное количество ключевых фраз"
-                                       formControlName="keywords"
-                                       [maxLength]="keywordsMaxLength"></app-chips-input>
-                      <!-- Тип данных -->
-                      <app-autocomplete-input required
-                                              label="Тип описания сновидения"
-                                              formControlName="mode"
-                                              [optionData]="dreamModes"
-                                              (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
-                      <!-- Статус сновидения -->
-                      <app-autocomplete-input required
-                                              label="Кому достпно сновидение"
-                                              formControlName="status"
-                                              [optionData]="dreamStatuses"></app-autocomplete-input>
-                    </form>
-                  </app-card>
+          <ng-template matTabContent>
+            <div class="overlay">
+              <div class="section root-section tabs">
+                <div class="container">
+                  <div class="cards-list">
+                    <!-- Общие данные -->
+                    <app-card title="Общие данные"
+                              avatarIcon="format_list_bulleted"
+                              avatarColor="primary"
+                              avatarBackground="fill"
+                              [fullHeight]="true">
+                      <form content
+                            [formGroup]="dreamForm">
+                        <!-- Название -->
+                        <app-text-input label="Название"
+                                        formControlName="title"
+                                        [errors]="errors.title"
+                                        [maxLength]="titleMaxLength"></app-text-input>
+                        <!-- Описание -->
+                        <app-text-input label="Краткое описание"
+                                        formControlName="description"
+                                        [errors]="errors.description"
+                                        [multiLine]="true"
+                                        [multiLineMinLines]="1"
+                                        [multiLineMaxLines]="6"
+                                        [maxLength]="descriptionMaxLength"></app-text-input>
+                        <!-- Когда приснился сон -->
+                        <app-text-input type="date"
+                                        label="Дата сновидения"
+                                        formControlName="date"
+                                        [minDate]="dateMin"
+                                        [maxDate]="dateMax"></app-text-input>
+                      </form>
+                    </app-card>
+                    <!-- Настройки -->
+                    <app-card title="Настройки"
+                              subTitle="Упоминания и поиск"
+                              avatarIcon="settings"
+                              avatarColor="primary"
+                              avatarBackground="fill"
+                              [fullHeight]="true">
+                      <form content
+                            [formGroup]="dreamForm">
+                        <!-- Ключевые слова -->
+                        <app-chips-input label="Ключевые слова для поиска"
+                                         placeholder="Введите ключевую фразу"
+                                         placeholderLimit="Достигнута максимальное количество ключевых фраз"
+                                         formControlName="keywords"
+                                         [maxLength]="keywordsMaxLength"></app-chips-input>
+                        <!-- Тип данных -->
+                        <app-autocomplete-input required
+                                                label="Тип описания сновидения"
+                                                formControlName="mode"
+                                                [optionData]="dreamModes"
+                                                (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
+                        <!-- Статус сновидения -->
+                        <app-autocomplete-input required
+                                                label="Кому достпно сновидение"
+                                                formControlName="status"
+                                                [optionData]="dreamStatuses"></app-autocomplete-input>
+                      </form>
+                    </app-card>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ng-template>
         </mat-tab>
         <!-- Описание -->
         <mat-tab label="События сновидения"
                  *ngIf="dream.mode === _dreamMode.text || dream.mode === _dreamMode.mixed">
-          <div class="overlay">
-            <div class="section root-section tabs">
-              <div class="container"
-                   [formGroup]="dreamForm">
-                <ckeditor #dreamTextEditor
-                          formControlName="text"
-                          [editor]="editor"
-                          [config]="config"></ckeditor>
+          <ng-template matTabContent>
+            <div class="overlay">
+              <div class="section root-section tabs">
+                <div class="container all-height"
+                     [formGroup]="dreamForm">
+                  <ckeditor #dreamTextEditor
+                            formControlName="text"
+                            [editor]="editor"
+                            [config]="config"></ckeditor>
+                </div>
               </div>
             </div>
-          </div>
+          </ng-template>
         </mat-tab>
         <!-- Карта -->
         <mat-tab label="Карта сновидения"
                  *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
-          <div class="overlay">
-            <div class="section root-section tabs">
-              <div class="container all-height">
-                <app-dream-map-editor [dreamMap]="dream.map"
-                                      [debugInfo]="true"></app-dream-map-editor>
+          <ng-template matTabContent>
+            <div class="overlay">
+              <div class="section root-section tabs">
+                <div class="container all-height">
+                  <app-dream-map-editor [dreamMap]="dream.map"
+                                        [debugInfo]="true"
+                                        *ngIf="!tabAnimation"></app-dream-map-editor>
+                  <!-- Filler image -->
+                  <div class="filler-image"
+                       *ngIf="tabAnimation">
+                    <img src="/assets/dream-map/_filler.jpg" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </ng-template>
         </mat-tab>
         <!-- Оформление -->
         <mat-tab label="Оформление">
-          <div class="overlay">
-            <div class="section root-section tabs">
-              <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
-                                     [navMenuType]="dream.headerType"
-                                     [useAvatar]="false"
-                                     [title]="dream.title || defaultTitle"
-                                     subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
-                                     (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+          <ng-template matTabContent>
+            <div class="overlay">
+              <div class="section root-section tabs">
+                <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
+                                       [navMenuType]="dream.headerType"
+                                       [useAvatar]="false"
+                                       [title]="dream.title || defaultTitle"
+                                       subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                                       (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
+              </div>
             </div>
-          </div>
+          </ng-template>
         </mat-tab>
       </mat-tab-group>
     </div>
