@@ -10,10 +10,6 @@ import { SnackbarProps } from "@_models/app";
   providedIn: "root"
 })
 
-
-
-
-
 export class SnackbarService {
 
 
@@ -26,7 +22,7 @@ export class SnackbarService {
 
 
   // Раскрыть сообщение
-  public open({ message, action, mode }: SnackbarProps): void {
+  open({ message, action, mode }: SnackbarProps): void {
     const actionMsg: string = action || "Закрыть";
 
     this.snackBar.open(message, actionMsg, {
