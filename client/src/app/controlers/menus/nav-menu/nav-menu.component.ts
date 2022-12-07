@@ -7,7 +7,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, interval, map, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { filter, fromEvent, interval, map, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -78,31 +78,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   css: CustomObject<SimpleObject> = {};
 
-  private cssNamesVar: SimpleObject = {
-    menu: "menu",
-    menuList: "",
-    menuSubList: "menuSubList",
-    menuSubListDecorator: "menuSubListDecorator",
-    menuItem: "menuItem",
-    menuItemLine: "menuItemLine",
-    menuSubItem: "menuSubItem",
-    menuSubItemLast: "menuSubItemLast",
-    menuSubItemLine: "menuSubItemLine",
-    menuSubItemSeparator: "menuSubItemSeparator",
-    helper: "",
-    header: "header",
-    image: "image",
-    scroll: "scroll",
-    title: "",
-    subtitle: "",
-    avatar: "",
-    floatingButton: "floatingButton",
-    floatingButtonText: "floatingButtonText",
-    floatingButtonOverlay: "floatingButtonOverlay",
-    backButton: "backButton",
-    toContentButton: "toContentButton"
-  };
-
   private destroy$: Subject<void> = new Subject<void>();
 
 
@@ -116,60 +91,56 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Получить ключи для CSS правил
   get cssNames(): SimpleObject {
-    this.cssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
-    this.cssNamesVar.menuList = this.floatButtonIcon?.length > 0 ? "menuListWithFloatingButton" : "menuList";
-    this.cssNamesVar.helper = this.type == NavMenuType.short && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
+    CssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
+    CssNamesVar.menuList = this.floatButtonIcon?.length > 0 ? "menuListWithFloatingButton" : "menuList";
+    CssNamesVar.helper = this.type == NavMenuType.short && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
     // Расчет заголовка
     {
-      this.cssNamesVar.title = "title";
+      CssNamesVar.title = "title";
       // С кнопкой и аватаркой
       if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.title = "titleWithBackButtonAndAvatar";
+        CssNamesVar.title = "titleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
       else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.title = "titleWithBackButton";
+        CssNamesVar.title = "titleWithBackButton";
       }
       // Только с аватркой
       if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.title = "titleWithAvatar";
+        CssNamesVar.title = "titleWithAvatar";
       }
     }
     // Расчет подзаголовка
     {
-      this.cssNamesVar.subtitle = "subtitle";
+      CssNamesVar.subtitle = "subtitle";
       // С кнопкой и аватаркой
       if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
+        CssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
       else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.subtitle = "subtitleWithBackButton";
+        CssNamesVar.subtitle = "subtitleWithBackButton";
       }
       // Только с аватркой
       if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
-        this.cssNamesVar.subtitle = "subtitleWithAvatar";
+        CssNamesVar.subtitle = "subtitleWithAvatar";
       }
     }
     // Расчет аватарки
     {
-      this.cssNamesVar.avatar = "avatar";
+      CssNamesVar.avatar = "avatar";
       // С кнопкой и аватаркой
       if (this.backButtonLink || this.isMobile) {
-        this.cssNamesVar.avatar = "avatarWithBackButton";
+        CssNamesVar.avatar = "avatarWithBackButton";
       }
     }
     // Вернуть CSS правила
-    return this.cssNamesVar;
+    return CssNamesVar;
   }
 
   // Высота документа для скролла
   get scrollHeight(): number {
-    return Math.max(
-      document.body.scrollHeight, document.documentElement.scrollHeight,
-      document.body.offsetHeight, document.documentElement.offsetHeight,
-      document.body.clientHeight, document.documentElement.clientHeight
-    ) - this.headerHeight;
+    return this.getCurrentScroll.maxY - this.headerHeight;
   }
 
   // Состояние шапки
@@ -186,9 +157,17 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     return Math.round(DrawDatas.maxHeight - DrawDatas.minHeight);
   }
 
-  // Текущий скролл
-  private get getCurrentScroll(): number {
-    return Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+  // Текущий скролл по оси Y
+  private get getCurrentScroll(): ScrollData {
+    const x: number = Math.ceil(document?.scrollingElement?.scrollLeft ?? window.scrollX ?? 0);
+    const y: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+    const maxElms: HTMLElement[] = [document.body, document.documentElement];
+    const maxKeysX: (keyof HTMLElement)[] = ["scrollWidth", "offsetWidth", "clientWidth"];
+    const maxKeysY: (keyof HTMLElement)[] = ["scrollHeight", "offsetHeight", "clientHeight"];
+    const maxX = Math.max(...maxElms.map(e => maxKeysX.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    const maxY = Math.max(...maxElms.map(e => maxKeysY.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    // Скролл
+    return { x, y, maxX, maxY };
   }
 
 
@@ -210,7 +189,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.maxHeight = DrawDatas.maxHeight;
     // События
     fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e as Event));
-    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(e => this.onResize());
     fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
     fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
     // Пункты меню
@@ -220,15 +198,22 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         this.menuItems = menuItems;
         this.changeDetectorRef.detectChanges();
       });
+    // Подписка на брейкпоинт
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.onResize();
+      });
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
-        this.changeDetectorRef.detectChanges();
+        this.onResize();
       });
     // Скролл
-    this.scroll = this.getCurrentScroll;
+    this.scroll = this.getCurrentScroll.y;
     this.scrollTo(0);
   }
 
@@ -267,14 +252,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   ngAfterViewInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
-    // Отрисовка
-    timer(0)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.onResize();
-        // Обновить
-        this.changeDetectorRef.detectChanges();
-      });
   }
 
   ngOnDestroy() {
@@ -288,7 +265,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Событие скролла
   private onWindowScroll(event: Event): void {
-    let scroll: number = this.getCurrentScroll;
+    let scroll: number = this.getCurrentScroll.y;
     // Скролл
     if (!this.swipeScrollPress) {
       // Автоколапс (если уже не происходит)
@@ -416,8 +393,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Расчет параметров шапки
   private dataCalculate(): void {
-    this.breakpoint = this.screenService.getBreakpoint(DrawDatas.screenWidth);
-    // Цикл по свойствам
     for (let titleKey in this.cssNames) {
       let titleValue: string = this.cssNames[titleKey];
       this.css[titleKey] = {};
@@ -574,7 +549,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Скролл
   private scrollTo(top: number, behavior: ScrollBehavior = "auto"): void {
-    if (this.getCurrentScroll !== top) {
+    if (this.getCurrentScroll.y !== top) {
       if (behavior === "auto") {
         window.scrollTo({ behavior, top });
         // Окончить скролл
@@ -582,7 +557,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
       // Плавный скролл
       else {
-        const startScroll: number = this.getCurrentScroll;
+        const startScroll: number = this.getCurrentScroll.y;
         const scrollDiff: number = Math.abs(top - startScroll);
         const scrollDelta: -1 | 1 = ((top - startScroll) / scrollDiff) > 0 ? 1 : -1;
         const scrollSmoothStep: number = Math.ceil((scrollDiff * this.scrollSmoothTimeStep) / this.scrollSmoothSpeed);
@@ -634,9 +609,43 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
 
 
+// Интерфейс данных скролла
+interface ScrollData {
+  x: number;
+  y: number;
+  maxX: number;
+  maxY: number;
+}
+
 // Состояние шапки
 enum HeaderStatus {
   expanded,
   inProccess,
   collapsed
+};
+
+// Массив ключей свойств
+const CssNamesVar: SimpleObject = {
+  menu: "menu",
+  menuList: "",
+  menuSubList: "menuSubList",
+  menuSubListDecorator: "menuSubListDecorator",
+  menuItem: "menuItem",
+  menuItemLine: "menuItemLine",
+  menuSubItem: "menuSubItem",
+  menuSubItemLast: "menuSubItemLast",
+  menuSubItemLine: "menuSubItemLine",
+  menuSubItemSeparator: "menuSubItemSeparator",
+  helper: "",
+  header: "header",
+  image: "image",
+  scroll: "scroll",
+  title: "",
+  subtitle: "",
+  avatar: "",
+  floatingButton: "floatingButton",
+  floatingButtonText: "floatingButtonText",
+  floatingButtonOverlay: "floatingButtonOverlay",
+  backButton: "backButton",
+  toContentButton: "toContentButton"
 };

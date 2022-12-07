@@ -220,8 +220,7 @@
 
 <!-- Мобильное меню -->
 <ng-template #mobileMenu>
-  <div class="mobile-menu {{showMobileMenu?'show':''}}"
-       *ngIf="isMobile">
+  <div class="mobile-menu {{showMobileMenu?'show':''}}">
     <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
          (click)="toggleMobileMenu(-1)"></div>
     <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">

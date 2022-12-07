@@ -203,8 +203,7 @@ export class DrawDatas {
         default: { min: 14, max: 17, unit: "px" }
       }
     }];
-    DrawDatas.menuSubItemLast = [];
-    Object.assign(DrawDatas.menuSubItemLast, DrawDatas.menuSubItem);
+    DrawDatas.menuSubItemLast = [...DrawDatas.menuSubItem];
     DrawDatas.menuSubItemLast.push({
       property: "border-radius",
       data: {
@@ -230,8 +229,7 @@ export class DrawDatas {
         default: { min: DrawDatas.maxHeight, max: DrawDatas.maxHeight, unit: "px" }
       }
     }];
-    DrawDatas.helperWithFloatingButton = [];
-    Object.assign(DrawDatas.helperWithFloatingButton, DrawDatas.helper);
+    DrawDatas.helperWithFloatingButton = [...DrawDatas.helper];
     DrawDatas.helperWithFloatingButton.push({
       property: "margin-bottom",
       data: {
@@ -276,8 +274,7 @@ export class DrawDatas {
       }
     }];
     // Заголовок с кнопкой меню или назад
-    DrawDatas.titleWithBackButton = [];
-    Object.assign(DrawDatas.titleWithBackButton, DrawDatas.title);
+    DrawDatas.titleWithBackButton = [...DrawDatas.title];
     DrawDatas.titleWithBackButton.push({
       property: "margin-left",
       data: {
@@ -295,8 +292,7 @@ export class DrawDatas {
       }
     });
     // Заголовок с аватаркой
-    DrawDatas.titleWithAvatar = [];
-    Object.assign(DrawDatas.titleWithAvatar, DrawDatas.title);
+    DrawDatas.titleWithAvatar = [...DrawDatas.title];
     DrawDatas.titleWithAvatar.push({
       property: "margin-left",
       data: {
@@ -315,8 +311,7 @@ export class DrawDatas {
       }
     });
     // Заголовок с аватаркой и кнопкой
-    DrawDatas.titleWithBackButtonAndAvatar = [];
-    Object.assign(DrawDatas.titleWithBackButtonAndAvatar, DrawDatas.title);
+    DrawDatas.titleWithBackButtonAndAvatar = [...DrawDatas.title];
     DrawDatas.titleWithBackButtonAndAvatar.push({
       property: "margin-left",
       data: {
@@ -397,8 +392,7 @@ export class DrawDatas {
       }
     ];
     // Подзаголовок с кнопкой меню или назад
-    DrawDatas.subtitleWithBackButton = [];
-    Object.assign(DrawDatas.subtitleWithBackButton, DrawDatas.subtitle);
+    DrawDatas.subtitleWithBackButton = [...DrawDatas.subtitle];
     DrawDatas.subtitleWithBackButton.push({
       property: "margin-left",
       data: {
@@ -416,8 +410,7 @@ export class DrawDatas {
       }
     });
     // Подзаголовок с аватаркой
-    DrawDatas.subtitleWithAvatar = [];
-    Object.assign(DrawDatas.subtitleWithAvatar, DrawDatas.subtitle);
+    DrawDatas.subtitleWithAvatar = [...DrawDatas.subtitle];
     DrawDatas.subtitleWithAvatar.push({
       property: "margin-left",
       data: {
@@ -436,8 +429,7 @@ export class DrawDatas {
       }
     });
     // Подзаголовок с аватаркой и кнопкой
-    DrawDatas.subtitleWithBackButtonAndAvatar = [];
-    Object.assign(DrawDatas.subtitleWithBackButtonAndAvatar, DrawDatas.subtitle);
+    DrawDatas.subtitleWithBackButtonAndAvatar = [...DrawDatas.subtitle];
     DrawDatas.subtitleWithBackButtonAndAvatar.push({
       property: "margin-left",
       data: {
@@ -496,8 +488,7 @@ export class DrawDatas {
       }
     }];
     // Аватарка с кнопкой назад или меню
-    DrawDatas.avatarWithBackButton = [];
-    Object.assign(DrawDatas.avatarWithBackButton, DrawDatas.avatar);
+    DrawDatas.avatarWithBackButton = [...DrawDatas.avatar];
     DrawDatas.avatarWithBackButton.push({
       property: "left",
       data: {
