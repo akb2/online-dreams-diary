@@ -1,4 +1,5 @@
-import { CreateArray, MathRound, MultiArray, Random } from "@_models/app";
+import { CreateArray, MultiArray } from "@_models/app";
+import { MathRound, Random } from "@_models/math";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -9,6 +10,7 @@ export class TreeGeometry extends BufferGeometry {
 
 
   private tree: Tree;
+  private positionsOfBranches: Vector3[];
 
   override type: string = "TreeGeometry";
 
@@ -37,23 +39,23 @@ export class TreeGeometry extends BufferGeometry {
 
   // Список точек на ветках
   getPositionsOfBranches(skip: number = 0): Vector3[] {
-    const search: (node: TreeBranch) => Vector3[] = (node: TreeBranch) => ([
-      ...node.segments
-        .filter((s, k) => k < node.segments.length - 1 || node.children.length > 0)
-        .map(({ vertices }) => vertices)
-        .map(vertices => {
-          const x: number = MathRound(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
-          const y: number = MathRound(vertices.map(({ y }) => y).reduce((o, y) => o + y, 0) / vertices.length, 5);
-          const z: number = MathRound(vertices.map(({ z }) => z).reduce((o, z) => o + z, 0) / vertices.length, 5);
-          return new Vector3(x, y, z);
-        }),
-      ...node.children.map(n => search(n)).reduce((o, v) => ([...o, ...v]), [])
-    ]);
-    const points: Vector3[] = search(this.tree.root);
+    if (!this.positionsOfBranches) {
+      const search: (node: TreeBranch) => Vector3[] = (node: TreeBranch) => ([
+        ...node.segments
+          .filter((s, k) => k < node.segments.length - 1 || node.children.length > 0)
+          .map(({ vertices }) => vertices)
+          .map(vertices => {
+            const x: number = MathRound(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
+            const y: number = MathRound(vertices.map(({ y }) => y).reduce((o, y) => o + y, 0) / vertices.length, 5);
+            const z: number = MathRound(vertices.map(({ z }) => z).reduce((o, z) => o + z, 0) / vertices.length, 5);
+            return new Vector3(x, y, z);
+          }),
+        ...node.children.map(n => search(n)).reduce((o, v) => ([...o, ...v]), [])
+      ]);
+      this.positionsOfBranches = search(this.tree.root).sort(({ y: yA }, { y: yB }) => yA > yB ? 1 : yA < yB ? -1 : 0);
+    }
     // Поиск данных
-    return points
-      .sort(({ y: yA }, { y: yB }) => yA > yB ? 1 : yA < yB ? -1 : 0)
-      .filter((p, k) => k >= skip);
+    return this.positionsOfBranches.filter((p, k) => k >= skip);
   }
 
 
