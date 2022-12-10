@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
-import { AngleToRad, Cos, CustomObject, CustomObjectKey, LineFunc } from "@_models/app";
+import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamObjectDetalization } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, LineFunc } from "@_models/math";
 import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
@@ -30,8 +31,8 @@ export class DreamMapSkyBoxService {
   getObject(renderer: WebGLRenderer, size: number, time: number): SkyBoxOutput {
     const color: Color | number = new Color(1, 1, 1);
     const sky: Sky = new Sky();
-    const sun: DirectionalLight = new DirectionalLight(color, 0.8);
-    const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.4);
+    const sun: DirectionalLight = new DirectionalLight(color, 1.2);
+    const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.5);
     const fog: Fog = new Fog(color, FogNear * DreamCeilSize, FogFar * DreamCeilSize);
     const boxSize: number = DreamHorizont;
     const uniforms: CustomObject<IUniform<any>> = {
@@ -141,8 +142,8 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night"
     night: { min: 0, max: 60 }
   },
   sunLight: {
-    day: { min: 0.7, max: 1.1 },
-    night: { min: 0.1, max: 0.3 }
+    day: { min: 0.7, max: 1.3 },
+    night: { min: 0.1, max: 0.2 }
   },
   atmosphereLight: {
     day: { min: 0.3, max: 0.7 },
