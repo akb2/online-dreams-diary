@@ -131,9 +131,10 @@ export class DreamMapTerrainService implements OnDestroy {
     const loader: TextureLoader = new TextureLoader();
     // Базовые ткустуры
     const mapTextures: DataTexture[] = this.createMaterials();
+    const mapTexturesItterator: number[] = CreateArray(mapTextures.length);
     // RGBA Маски
-    const maskNames: string[] = mapTextures.map((t, k) => this.maskTextureNamePreffix + k);
-    const maskMapNames: string[] = mapTextures.map((t, k) => "mask_map_" + k);
+    const maskNames: string[] = mapTexturesItterator.map(k => this.maskTextureNamePreffix + k);
+    const maskMapNames: string[] = mapTexturesItterator.map(k => "mask_map_" + k);
     // Текстуры
     const texNames: string[] = MapTerrains.map(t => "terrain_tex_" + t.name);
     const repeatNames: string[] = MapTerrains.map(t => "terrain_repeat_" + t.name);
