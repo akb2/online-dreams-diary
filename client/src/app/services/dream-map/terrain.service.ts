@@ -125,6 +125,9 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
     const width: number = oWidth + (borderOSize * 2);
     const height: number = oHeight + (borderOSize * 2);
+    const repeat: number = 0.6;
+    const repeatX: number = MathRound(repeat * width);
+    const repeatY: number = MathRound(repeat * height);
     const loader: TextureLoader = new TextureLoader();
     // Базовые ткустуры
     const mapTextures: DataTexture[] = this.createMaterials();
@@ -251,7 +254,7 @@ export class DreamMapTerrainService implements OnDestroy {
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...maskNames.reduce((o, name, k) => ({ ...o, [name]: mapTextures[k] }), {}),
-      ...texNames.map((name, k) => ([name, normalTexNames[k]])).reduce((o, [name, nName, aoName], k) => {
+      ...texNames.map((name, k) => ([name, normalTexNames[k]])).reduce((o, [name, nName], k) => {
         const terrain: MapTerrain = MapTerrains[k];
         const texture: Texture = loader.load(TexturePaths.face + terrain.name + "." + terrain.exts.face, t => onLoad(name, t));
         const normalTexture: Texture = loader.load(TexturePaths.normal + terrain.name + "." + terrain.exts.face, t => onLoad(nName, t));
@@ -277,7 +280,7 @@ export class DreamMapTerrainService implements OnDestroy {
       ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: { type: "t", value } }), {}),
       // Повторы
       b_one_repeat: { type: "v2", value: { x: 1, y: 1 } },
-      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: width, y: height } } }), {}),
+      ...[...repeatNames, ...normalRepeatNames].reduce((o, name) => ({ ...o, [name]: { type: "v2", value: { x: repeatX, y: repeatY } } }), {}),
       // Прочее
       displacementScale: { type: "f", value: DreamCeilParts * DreamMaxHeight },
       normalScale: { type: "v2", value: { x: -1, y: 1 } },
