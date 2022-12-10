@@ -17,12 +17,12 @@ export const DreamTreeElmsCount: number = Math.min(DreamBaseElmsCount, 24);
 // Список количества геометрий дерева
 export const TreeCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.VeryLow]: 1,
-  [DreamObjectElmsValues.Low]: 2,
-  [DreamObjectElmsValues.Middle]: 3,
-  [DreamObjectElmsValues.High]: 4,
-  [DreamObjectElmsValues.VeryHigh]: 5,
-  [DreamObjectElmsValues.Ultra]: 6,
-  [DreamObjectElmsValues.Awesome]: 7,
+  [DreamObjectElmsValues.Low]: 1,
+  [DreamObjectElmsValues.Middle]: 2,
+  [DreamObjectElmsValues.High]: 2,
+  [DreamObjectElmsValues.VeryHigh]: 3,
+  [DreamObjectElmsValues.Ultra]: 4,
+  [DreamObjectElmsValues.Awesome]: 5,
 };
 
 // Список количества листвы на деревьях
