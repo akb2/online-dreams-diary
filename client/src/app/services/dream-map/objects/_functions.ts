@@ -1,10 +1,11 @@
-import { CreateArray, CustomObjectKey, IsEven, IsMultiple, Random } from "@_models/app";
+import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_models/math";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";
-import { Clock, Color, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, sRGBEncoding, Texture, Triangle, Vector3 } from "three";
+import { Clock, Color, Euler, Float32BufferAttribute, LinearEncoding, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, Texture, Triangle, Vector3 } from "three";
 
 
 
@@ -166,7 +167,7 @@ type GetTexturesType = (name: string, path: string, useKeys?: (keyof MeshStandar
 export const GetTextures: GetTexturesType = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
   .filter(([key]) => !useKeys || useKeys.includes(key))
   .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
-    texture.encoding = sRGBEncoding;
+    texture.encoding = LinearEncoding;
     texture.minFilter = LinearFilter;
     texture.magFilter = LinearFilter;
     // Доп обработка
@@ -175,3 +176,37 @@ export const GetTextures: GetTexturesType = (name: string, path: string, useKeys
     }
   })]))
   .reduce((o, [key, texture]) => ({ ...o, [key as keyof MeshStandardMaterial]: texture as Texture }), {});
+
+// Получение нормализованного вектора направления
+export const GetNormalizeVector = (from: Vector3, to: Vector3) => {
+  const normals: Vector3 = new Vector3();
+  // Нормализация
+  normals.subVectors(to, from);
+  normals.normalize();
+  // Вернуть нормализованный вектор
+  return normals;
+};
+
+// Получение углов из вектора
+export const RotateCoordsByY = (pos: Vector3, rotate: number) => new Vector3(
+  (pos.x * Cos(rotate)) - (pos.z * Sin(rotate)),
+  pos.y,
+  (pos.x * Sin(rotate)) + (pos.z * Cos(rotate)),
+);
+
+// Получение углов из вектора направления
+export const GetRotateFromNormal = (vector: Vector3, angleX: number = 0, angleY: number = 0, angleZ: number = 0) => {
+  const sinZ: number = vector.y;
+  const cosZ: number = vector.x;
+  const sinX: number = vector.y;
+  const cosX: number = -vector.z;
+  const sinY: number = -vector.z;
+  const cosY: number = vector.x;
+  // Вернуть углы
+  return new Euler(
+    SinCosToRad(sinX, cosX) + AngleToRad(angleX),
+    SinCosToRad(sinY, cosY) + AngleToRad(angleY),
+    SinCosToRad(sinZ, cosZ) + AngleToRad(angleZ),
+    "xyz"
+  );
+};
