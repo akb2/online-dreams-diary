@@ -11,12 +11,6 @@ const routes: Routes = [
   {
     path: "",
     component: DiaryEditorComponent,
-    data: { title: "Новое сновидение" }
-  },
-  // Изменить сновидение
-  {
-    path: ":dreamId",
-    component: DiaryEditorComponent,
     data: { title: "Редактор сновидения" }
   }
 ];

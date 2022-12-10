@@ -82,9 +82,16 @@ import { AuthGuard } from "@_helpers/auth-guard";
         data: { userId: -1, authRule: 1 },
         canActivate: [AuthGuard]
       },
-      // Дневник: Редактор
+      // Дневник: Редактор: новый сон
       {
         path: "diary/editor",
+        loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
+        data: { userId: 0, authRule: 1 },
+        canActivate: [AuthGuard]
+      },
+      // Дневник: Редактор: редактирование сна
+      {
+        path: "diary/editor/:dreamId",
         loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
         data: { userId: 0, authRule: 1 },
         canActivate: [AuthGuard]
@@ -136,6 +143,13 @@ import { AuthGuard } from "@_helpers/auth-guard";
       // Дневник: Просмотр
       {
         path: "diary/viewer",
+        loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
+        data: { userId: 0, from: "", authRule: 0 },
+        canActivate: [AuthGuard]
+      },
+      // Дневник: Просмотр
+      {
+        path: "diary/viewer/:dreamId",
         loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
         data: { userId: 0, from: "", authRule: 0 },
         canActivate: [AuthGuard]

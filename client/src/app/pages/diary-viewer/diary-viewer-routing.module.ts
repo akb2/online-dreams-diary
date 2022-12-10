@@ -12,12 +12,6 @@ const routes: Routes = [
     path: "",
     component: DiaryViewerComponent,
     data: { title: "Просмотр сновидения" }
-  },
-  // Просмотр сновидения
-  {
-    path: ":dreamId",
-    component: DiaryViewerComponent,
-    data: { title: "Просмотр сновидения" }
   }
 ];
 
