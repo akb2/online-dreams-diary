@@ -1,14 +1,15 @@
-import { AngleToRad, Cos, CreateArray, CustomObjectKey, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_models/app";
+import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_models/math";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
-import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
+import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Color, DoubleSide, FrontSide, LinearFilter, LinearMipMapLinearFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, LinearFilter, LinearMipMapLinearFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 
 
 
@@ -22,10 +23,18 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   private treeCount: number = 0;
   private leafCount: number = 0;
   private posRange: number = 0.2;
-  private noize: number = 0.25;
-  private width: number = 0.06;
-  private height: number = 57;
+  private noize: number = 0.15;
+  private width: number = 0.03;
+  private height: number = 70;
+
+  private maxGeneration: number = 1;
+  private radiusSegments: number = 3;
   private leafBranchCount: number = 2;
+  private leafSkipSegments: number = 3;
+
+  private yAxis: Vector3 = new Vector3(0, 1, 0);
+  private xAxis: Vector3 = new Vector3(1, 0, 0);
+  private zAxis: Vector3 = new Vector3(0, 0, 1);
 
   private params: Params;
 
@@ -99,43 +108,47 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material }, leafItterator }: Params = this.getParams;
     const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
-    const branchEnds: Vector3[] = treeGeometry.getPositionsOfBranches(2);
+    const branchEnds: Vector3[] = treeGeometry.getPositionsOfBranches(this.leafSkipSegments);
     const maxY: number = branchEnds.reduce((o, { y }) => y > o ? y : o, 0);
     const minY: number = branchEnds.reduce((o, { y }) => y < o ? y : o, maxY);
     const color: Color = GetRandomColorByRange(LeafColorRange);
     const translates: CoordDto[] = [];
+    let rotationCorr: Euler;
     let branchIndex: number = 0;
     let translate: CoordDto;
-    let rotateY: number;
-    let rotateX: number;
-    let rotateZ: number;
     let leafScale: number;
+    let leafRotate: number;
+    let isEven: boolean;
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = leafItterator.map(k => {
-      const isEven: boolean = IsMultiple(k, this.leafBranchCount);
+      isEven = IsMultiple(k, this.leafBranchCount);
       branchIndex = isEven ? Random(0, branchEnds.length - 1) : branchIndex;
       const dummy: Object3D = new Object3D();
       const branchEnd: Vector3 = branchEnds[branchIndex].clone();
-      const rotateZScale: number = AngleToRad(Random(-45, 45, false, 5));
       // Новый фрагмент
       if (isEven) {
-        const translateY: number = branchEnd.y * scale;
-        const branchNormals: Vector3 = new Vector3().copy(branchEnd);
-        // Параметры
-        branchNormals.normalize();
+        const beforePoint: Vector3 = branchIndex > 0 ? branchEnds[branchIndex - 1].clone() : new Vector3(0, 0, 0);
+        const branchNormals: Vector3 = GetNormalizeVector(branchEnd, beforePoint);
+        const branchSizes: Vector3 = new Vector3((branchEnd.x - beforePoint.x) * scale, (branchEnd.y - beforePoint.y) * scale, (branchEnd.z - beforePoint.z) * scale);
+        const shiftSize: number = Random(0, branchIndex > 0 ? 0.999999 : 0.2, false, 6);
+        const leafZRotate: number = Random(0, 180);
+        // Применение параметров
         translate = {
-          x: MathRound(branchEnd.x * scale, 6),
-          y: MathRound(translateY + Random(-translateY * 0.1, translateY * 0.1, false, 6), 6),
-          z: MathRound(branchEnd.z * scale, 6)
+          x: MathRound((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
+          y: MathRound((branchEnd.y * scale) - (branchSizes.y * shiftSize), 6),
+          z: MathRound((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
         };
-        rotateY = AngleToRad(Random(0, 360)) + Math.asin(branchNormals.y);
-        rotateX = AngleToRad(LineFunc(-90, 0, translate.y, minY, maxY) + Random(-10, 10, false, 3)) + Math.asin(branchNormals.x);
-        rotateZ = rotateZScale + Math.asin(branchNormals.z);
-        leafScale = LineFunc(0.16, 1, translate.y, minY, maxY) + Random(0, 0.1);
+        // Параметры
+        const branchUpRotate: number = LineFunc(0, 90, translate.y, minY, maxY) + AngleToRad(Random(-5, 15));
+        // Применение параметров
+        leafRotate = Random(0, 360);
+        rotationCorr = GetRotateFromNormal(RotateCoordsByY(branchNormals, leafRotate), branchUpRotate, 0, leafZRotate);
+        leafScale = LineFunc(0.001, 1.5, translate.y, minY, maxY);
+        leafScale += Random(-leafScale * 0.1, leafScale * 0.1, false, 5);
       }
       // Копировать старый
       else {
-        rotateZ += rotateZScale + AngleToRad(180 / this.leafBranchCount);
+        rotationCorr.z += AngleToRad(180 / this.leafBranchCount);
       }
       // Преобразования
       dummy.position.set(bX, bZ, bY);
@@ -143,9 +156,9 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       dummy.translateX(translate.x);
       dummy.translateY(translate.y);
       dummy.translateZ(translate.z);
-      dummy.rotateY(rotateY);
-      dummy.rotateX(rotateX);
-      dummy.rotateZ(rotateZ);
+      dummy.rotateOnAxis(this.yAxis, AngleToRad(leafRotate));
+      dummy.rotateOnAxis(this.xAxis, rotationCorr.x);
+      dummy.rotateOnAxis(this.zAxis, rotationCorr.z);
       dummy.scale.setScalar(leafScale);
       dummy.updateMatrix();
       // Массив преобразований
@@ -188,16 +201,16 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
-      const generations: number = Random(1, 2);
-      const heightSegments: number = 7 - generations;
+      const generations: number = Random(1, this.maxGeneration);
+      const heightSegments: number = Math.round(7 / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {
         generations,
         length,
-        uvLength: 16,
+        uvLength: generations * 4,
         radius: objWidth * Random(1, 2, false, 3),
-        radiusSegments: 3,
+        radiusSegments: this.radiusSegments,
         heightSegments
       };
     };
@@ -232,7 +245,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         texture.wrapT = RepeatWrapping;
         texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", [...useTextureKeys, "displacementMap"], texture => {
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys, texture => {
         texture.minFilter = LinearFilter;
         texture.magFilter = LinearFilter;
       });
@@ -240,7 +253,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         fog: true,
         side: FrontSide,
         ...treeTextures,
-        aoMapIntensity: 0.3,
+        aoMapIntensity: 0.5,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -253,8 +266,8 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         alphaTest: 0.5,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: 0.2,
-        lightMapIntensity: 7,
+        aoMapIntensity: 0.5,
+        lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
@@ -368,10 +381,10 @@ const LeafColorRange: ColorRange = [0.8, 0.9, 0.9, 1, 0.8, 0.9];
 // Список количества листвы на деревьях
 export const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.VeryLow]: DreamTreeElmsCount,
-  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 1.3),
-  [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 1.6),
-  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 1.9),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 2.2),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 2.5),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 3)
+  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 1.5),
+  [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 2),
+  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 2.5),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 3),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 3.5),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 4)
 };
