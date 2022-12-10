@@ -1,7 +1,8 @@
-import { AngleToRad, CreateArray, CustomObjectKey, IsMultiple, Random } from "@_models/app";
+import { CreateArray, CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { AngleToRad, IsMultiple, Random } from "@_models/math";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
@@ -120,22 +121,23 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     else {
       const objSize: number = this.size * this.widthPart;
       const geometryRadius: number = objSize;
+      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
       // Данные фигуры
-      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("plantaingrass.png", "grass", ["map", "aoMap", "lightMap", "normalMap"]);
+      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("plantaingrass.png", "grass", useTextureKeys);
       const geometry: CircleGeometry = new CircleGeometry(geometryRadius, 6);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({
+      const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: 0.3,
-        lightMapIntensity: 1,
+        aoMapIntensity: 0,
+        lightMapIntensity: 0.5,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
-      });
+      })) as MeshStandardMaterial;
       const dummy: Object3D = new Object3D();
       // Параметры
       const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;

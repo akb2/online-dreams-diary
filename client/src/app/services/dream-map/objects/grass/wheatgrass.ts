@@ -1,7 +1,8 @@
-import { AngleToRad, Cos, CreateArray, IsMultiple, LineFunc, Random, Sin } from "@_models/app";
+import { CreateArray, CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_models/math";
 import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
@@ -9,7 +10,7 @@ import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Vector2 } from "three";
+import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 
 
 
@@ -128,22 +129,23 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const objHeight: number = this.height * this.heightPart;
       const hyp2: number = objWidth / 2;
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
+      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
       // Данные фигуры
       const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
-      const textures = GetTextures("wheatgrass.png", "grass", ["map", "aoMap", "lightMap", "normalMap"]);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({
+      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("wheatgrass.png", "grass", useTextureKeys);
+      const material: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: -3,
-        lightMapIntensity: 4,
+        aoMapIntensity: 0,
+        lightMapIntensity: 1.6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, -1)
-      });
+      })) as MeshStandardMaterial;
       const dummy: Object3D = new Object3D();
       // Параметры
       const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;

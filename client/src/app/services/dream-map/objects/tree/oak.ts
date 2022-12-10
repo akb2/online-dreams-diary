@@ -1,7 +1,8 @@
-import { AngleToRad, Cos, CreateArray, CustomObjectKey, MathRound, Random, Sin } from "@_models/app";
+import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { AngleToRad, Cos, MathRound, Random, Sin } from "@_models/math";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
@@ -25,6 +26,9 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private noize: number = 0.25;
   private width: number = 0.06;
   private height: number = 60;
+
+  private maxGeneration: number = 3;
+  private radiusSegments: number = 3;
 
   private params: Params;
 
@@ -160,16 +164,16 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
-      const generations: number = Random(1, 3);
-      const heightSegments: number = 7 - generations;
+      const generations: number = Random(1, this.maxGeneration);
+      const heightSegments: number = Math.round(7 / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {
         generations,
         length,
-        uvLength: 16,
+        uvLength: generations * 4,
         radius: objWidth * Random(1, 2, false, 3),
-        radiusSegments: 3,
+        radiusSegments: this.radiusSegments,
         heightSegments
       };
     };
@@ -211,7 +215,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.5,
-        lightMapIntensity: 6,
+        lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
@@ -223,8 +227,8 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         alphaTest: 0.7,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: -0.5,
-        lightMapIntensity: 10,
+        aoMapIntensity: 0.5,
+        lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
