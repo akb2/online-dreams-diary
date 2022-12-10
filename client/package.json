@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",
-    "build": "ng build --configuration production",
+    "build": "ng build --configuration production --aot --build-optimizer",
     "bundle-stats": "npm run build --stats-json && webpack-bundle-analyzer ../app/stats.json",
     "watch": "npm run build --watch --configuration development",
     "test": "ng test",
