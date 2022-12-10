@@ -1,5 +1,6 @@
-import { CustomObject, MathRound } from "@_models/app";
-import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from "three";
+import { CustomObject } from "@_models/app";
+import { MathRound } from "@_models/math";
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
 
 
 

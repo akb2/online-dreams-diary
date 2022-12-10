@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { CreateArray, CustomObjectKey, IsMultiple, LengthByCoords, MathRound, SimpleObject } from "@_models/app";
+import { CreateArray, CustomObjectKey, SimpleObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeightNames, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, MapTerrains, ReliefType, TexturePaths } from "@_models/dream-map";
 import { DreamMapObject, DreamMapObjectCatalog, DreamMapObjectCatalogs, DreamMapObjects } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
+import { IsMultiple, LengthByCoords, MathRound } from "@_models/math";
 import { DreamService } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 

@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { AngleToRad, CreateArray, CustomObject, CustomObjectKey, MathRound } from "@_models/app";
+import { CreateArray, CustomObject, CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, MapTerrains, MapTerrainSplatMapColor, ReliefType, TexturePaths, XYCoord } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_models/dream-map-settings";
+import { AngleToRad, MathRound } from "@_models/math";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { ScreenService } from "@_services/screen.service";
 import { forkJoin, map, mergeMap, Observable, of, Subject, takeUntil, tap } from "rxjs";
