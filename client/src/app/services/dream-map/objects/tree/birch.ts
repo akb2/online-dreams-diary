@@ -25,12 +25,13 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   private posRange: number = 0.2;
   private noize: number = 0.15;
   private width: number = 0.03;
-  private height: number = 70;
+  private height: number = 90;
 
   private maxGeneration: number = 1;
   private radiusSegments: number = 3;
   private leafBranchCount: number = 1;
-  private leafSkipSegments: number = 3;
+  private leafSkipSegments: number = 2;
+  private segmentsCount: number = 5;
 
   private yAxis: Vector3 = new Vector3(0, 1, 0);
   private xAxis: Vector3 = new Vector3(1, 0, 0);
@@ -108,7 +109,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material }, leafItterator }: Params = this.getParams;
     const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
-    const branchEnds: Vector3[] = treeGeometry.getPositionsOfBranches(this.leafSkipSegments);
+    const branchEnds: Vector3[] = treeGeometry.getPositionsOfBranches(this.leafSkipSegments < this.segmentsCount ? this.leafSkipSegments : 0);
     const maxY: number = branchEnds.reduce((o, { y }) => y > o ? y : o, 0);
     const minY: number = branchEnds.reduce((o, { y }) => y < o ? y : o, maxY);
     const color: Color = GetRandomColorByRange(LeafColorRange);
@@ -143,8 +144,8 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         // Применение параметров
         leafRotate = Random(0, 360);
         rotationCorr = GetRotateFromNormal(RotateCoordsByY(branchNormals, leafRotate), branchUpRotate, 0, leafZRotate);
-        leafScale = LineFunc(0.001, 1.5, translate.y, minY, maxY);
-        leafScale += Random(-leafScale * 0.1, leafScale * 0.1, false, 5);
+        leafScale = LineFunc(0.0001, 1.5, translate.y, minY, maxY);
+        leafScale += Random(-leafScale * 0.05, leafScale * 0.05, false, 5);
       }
       // Копировать старый
       else {
@@ -203,7 +204,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
       const generations: number = Random(1, this.maxGeneration);
-      const heightSegments: number = Math.round(7 / generations);
+      const heightSegments: number = Math.round(this.segmentsCount / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {
@@ -238,17 +239,17 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafWidth, leafHeight, 2, 2);
       const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-branch.jpg", "tree", useTextureKeys, texture => {
-        const repeat: number = 0.5;
+        const repeat: number = 1;
         // Настройки
-        texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
+        texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
       const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys);
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
-        aoMapIntensity: -1,
-        lightMapIntensity: 1,
+        aoMapIntensity: -0.5,
+        lightMapIntensity: 0.5,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)

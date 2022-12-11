@@ -4,7 +4,7 @@ import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
 import { AngleToRad, Cos, MathRound, Random, Sin } from "@_models/math";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
-import { HeightPart, LeafCounts, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
+import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
@@ -21,14 +21,15 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private type: string = "tree-oak";
 
   private treeCount: number = 0;
-  private leafCount: number = 0;
+  private leafCount: number = DreamTreeElmsCount;
   private posRange: number = 0.2;
   private noize: number = 0.25;
   private width: number = 0.06;
-  private height: number = 60;
+  private height: number = 70;
 
   private maxGeneration: number = 3;
   private radiusSegments: number = 3;
+  private segmentsCount: number = 7;
 
   private params: Params;
 
@@ -161,11 +162,10 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     const geometryDatas: CreateTerrainTrianglesObject = this.createTerrainTriangles();
     // Параметры
     this.treeCount = TreeCounts[this.dreamMapSettings.detalization];
-    this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
       const generations: number = Random(1, this.maxGeneration);
-      const heightSegments: number = Math.round(7 / generations);
+      const heightSegments: number = Math.round(this.segmentsCount / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {
@@ -193,14 +193,14 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
-      const leafSize: number = objWidth * 14;
+      const leafSize: number = objWidth * 15;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
       const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
-        const repeat: number = 1;
+        const repeat: number = 2;
         // Настройки
-        texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
+        texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
       const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"]);
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
