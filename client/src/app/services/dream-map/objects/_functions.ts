@@ -5,7 +5,7 @@ import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
 import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_models/math";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";
-import { Clock, Color, Euler, Float32BufferAttribute, LinearEncoding, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, Texture, Triangle, Vector3 } from "three";
+import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";
 
 
 
@@ -167,9 +167,11 @@ type GetTexturesType = (name: string, path: string, useKeys?: (keyof MeshStandar
 export const GetTextures: GetTexturesType = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
   .filter(([key]) => !useKeys || useKeys.includes(key))
   .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
-    texture.encoding = LinearEncoding;
+    texture.encoding = sRGBEncoding;
     texture.minFilter = LinearFilter;
     texture.magFilter = LinearFilter;
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
     // Доп обработка
     if (!!callback) {
       callback(texture);

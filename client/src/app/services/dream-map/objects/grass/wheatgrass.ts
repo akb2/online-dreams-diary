@@ -10,7 +10,7 @@ import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
+import { BufferGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 
 
 
@@ -140,8 +140,8 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: 0,
-        lightMapIntensity: 1.6,
+        aoMapIntensity: -6,
+        lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, -1)

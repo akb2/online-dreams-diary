@@ -132,8 +132,8 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         alphaTest: 0.7,
         flatShading: true,
         ...textures,
-        aoMapIntensity: 0,
-        lightMapIntensity: 0.5,
+        aoMapIntensity: -6,
+        lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)

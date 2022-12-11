@@ -125,7 +125,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
     const width: number = oWidth + (borderOSize * 2);
     const height: number = oHeight + (borderOSize * 2);
-    const repeat: number = 0.6;
+    const repeat: number = 1;
     const repeatX: number = MathRound(repeat * width);
     const repeatY: number = MathRound(repeat * height);
     const loader: TextureLoader = new TextureLoader();
@@ -266,6 +266,7 @@ export class DreamMapTerrainService implements OnDestroy {
         texture.encoding = sRGBEncoding;
         normalTexture.wrapS = RepeatWrapping;
         normalTexture.wrapT = RepeatWrapping;
+        normalTexture.encoding = sRGBEncoding;
         // Запомнить текстуры
         return {
           ...o,
@@ -285,7 +286,8 @@ export class DreamMapTerrainService implements OnDestroy {
       // Прочее
       displacementScale: { type: "f", value: DreamCeilParts * DreamMaxHeight },
       normalScale: { type: "v2", value: { x: -1, y: 1 } },
-      aoMapIntensity: { type: "f", value: 2 },
+      aoMapIntensity: { type: "f", value: 3 },
+      lightMapIntensity: { type: "f", value: 2 },
     }]);
     // Свойства шейдера
     const defines: CustomObject<boolean> = {

@@ -9,7 +9,7 @@ import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, LinearFilter, LinearMipMapLinearFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 
 
 
@@ -29,7 +29,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
 
   private maxGeneration: number = 1;
   private radiusSegments: number = 3;
-  private leafBranchCount: number = 2;
+  private leafBranchCount: number = 1;
   private leafSkipSegments: number = 3;
 
   private yAxis: Vector3 = new Vector3(0, 1, 0);
@@ -199,6 +199,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     // Параметры
     this.treeCount = TreeCounts[this.dreamMapSettings.detalization];
     this.leafCount = LeafCounts[this.dreamMapSettings.detalization];
+    this.leafBranchCount = LeafBranchCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
       const generations: number = Random(1, this.maxGeneration);
@@ -239,21 +240,14 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 0.5;
         // Настройки
-        texture.minFilter = LinearMipMapLinearFilter;
-        texture.magFilter = LinearMipMapLinearFilter;
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
         texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys, texture => {
-        texture.minFilter = LinearFilter;
-        texture.magFilter = LinearFilter;
-      });
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys);
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
-        aoMapIntensity: 0.5,
+        aoMapIntensity: -1,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -266,7 +260,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         alphaTest: 0.5,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: 0.5,
+        aoMapIntensity: -6,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -279,6 +273,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       leafGeometry.setAttribute("uv2", leafGeometry.getAttribute("uv"));
       leafGeometry.translate(0, leafHeight / 2, 0);
       leafGeometry.rotateX(AngleToRad(90));
+      leafGeometry.attributes.uv2.needsUpdate = true;
       // Запомнить параметры
       this.params = {
         ...geometryDatas,
@@ -380,11 +375,22 @@ const LeafColorRange: ColorRange = [0.8, 0.9, 0.9, 1, 0.8, 0.9];
 
 // Список количества листвы на деревьях
 export const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: DreamTreeElmsCount,
-  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 1.5),
+  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 2),
+  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 2),
   [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 2),
   [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 2.5),
   [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 3),
   [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 3.5),
   [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 4)
+};
+
+// Список фрагментов в одной ветке
+export const LeafBranchCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
+  [DreamObjectElmsValues.VeryLow]: 1,
+  [DreamObjectElmsValues.Low]: 1,
+  [DreamObjectElmsValues.Middle]: 1,
+  [DreamObjectElmsValues.High]: 1,
+  [DreamObjectElmsValues.VeryHigh]: 2,
+  [DreamObjectElmsValues.Ultra]: 2,
+  [DreamObjectElmsValues.Awesome]: 2
 };

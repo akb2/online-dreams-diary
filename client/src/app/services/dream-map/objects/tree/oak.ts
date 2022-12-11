@@ -9,7 +9,7 @@ import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Color, DoubleSide, FrontSide, LinearMipMapLinearFilter, LinearMipMapNearestFilter, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 
 
 
@@ -200,21 +200,14 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 1;
         // Настройки
-        texture.minFilter = LinearMipMapNearestFilter;
-        texture.magFilter = LinearMipMapNearestFilter;
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
         texture.repeat.set(repeat, repeat * (objHeight / objWidth * 2));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"], texture => {
-        texture.minFilter = LinearMipMapLinearFilter;
-        texture.magFilter = LinearMipMapLinearFilter;
-      });
+      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"]);
       const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
-        aoMapIntensity: 0.5,
+        aoMapIntensity: -2,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -227,7 +220,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         alphaTest: 0.7,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: 0.5,
+        aoMapIntensity: -2,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
@@ -238,6 +231,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       const leafItterator: number[] = CreateArray(this.leafCount);
       // Настройки
       leafGeometry.setAttribute("uv2", leafGeometry.getAttribute("uv"));
+      leafGeometry.attributes.uv2.needsUpdate = true;
       // Запомнить параметры
       this.params = {
         ...geometryDatas,
