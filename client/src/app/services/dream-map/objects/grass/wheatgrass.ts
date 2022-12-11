@@ -10,7 +10,7 @@ import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "@_services/dream-map/objects/_models";
 import { NoizeShader } from "@_services/dream-map/shaders/noise";
-import { BufferGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
+import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 
 
 
