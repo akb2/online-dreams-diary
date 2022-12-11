@@ -42,7 +42,6 @@ export class TreeGeometry extends BufferGeometry {
     if (!this.positionsOfBranches) {
       const search: (node: TreeBranch) => Vector3[] = (node: TreeBranch) => ([
         ...node.segments
-          .filter((s, k) => k < node.segments.length - 1 || node.children.length > 0)
           .map(({ vertices }) => vertices)
           .map(vertices => {
             const x: number = MathRound(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
