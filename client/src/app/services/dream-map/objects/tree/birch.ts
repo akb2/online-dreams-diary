@@ -260,7 +260,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         alphaTest: 0.5,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: -6,
+        aoMapIntensity: -7,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
