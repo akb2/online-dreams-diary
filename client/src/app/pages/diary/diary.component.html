@@ -76,12 +76,25 @@
   <app-inform [aboveIcon]="true"
               icon="close"
               title="Ошибка поиска"
-              subTitle="Сновидения не найдены. Измените условия поиска или повторите позже">
-    <a mat-flat-button
-       color="primary"
-       (click)="openSearch()">
-      <mat-icon>search</mat-icon>Открыть поиск
-    </a>
+              subTitle="Сновидения не найдены. Измените условия поиска или {{isMyDiary? 'запишите новое сновидение': 'повторите позже'}}">
+    <div class="buttons">
+      <a mat-flat-button
+         color="primary"
+         (click)="openSearch()"
+         *ngIf="!isMyDiary; else listNotFoundMyButtons">
+        <mat-icon>search</mat-icon>Открыть поиск
+      </a>
+      <!-- Кнопки для моего дневника -->
+      <ng-template #listNotFoundMyButtons>
+        <a mat-stroked-button
+           color="basic"
+           (click)="openSearch()">Открыть поиск</a>
+        <!-- Новый сон -->
+        <a mat-flat-button
+           color="primary"
+           routerLink="/diary/editor">Новый сон</a>
+      </ng-template>
+    </div>
   </app-inform>
 </ng-template>
 

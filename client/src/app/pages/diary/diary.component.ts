@@ -11,7 +11,6 @@ import { Dream, DreamPlural } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
-import { ScreenService } from "@_services/screen.service";
 import { of, Subject, throwError } from "rxjs";
 import { filter, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
@@ -85,6 +84,11 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return this.pageCount > this.pageLimit / 2;
   }
 
+  // Мой дневник
+  get isMyDiary(): boolean {
+    return !!this.user && !!this.visitedUser && this.user?.id === this.visitedUser?.id;
+  }
+
 
 
 
@@ -95,8 +99,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private titleService: Title,
-    private router: Router,
-    private screenService: ScreenService
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -187,7 +190,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   // Установить параметры страницы
   private setPageData(): void {
     // Мой дневник
-    if (!!this.user && !!this.visitedUser && this.user.id === this.visitedUser.id) {
+    if (this.isMyDiary) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = "Мой дневник сновидений";
       this.pageTitle = AppComponent.createTitle(this.subTitle);
