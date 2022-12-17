@@ -583,7 +583,7 @@ export class DreamMapTerrainService implements OnDestroy {
           // Записать значения в общий массив
           CreateArray(3).map(k => mapData[index + k] = color);
           ceil.coord.z = MathRound((color * DreamMaxHeight) / 255, 5);
-          // ceil.coord.originalZ = ceil.coord.z;
+          ceil.coord.originalZ = ceil.coord.z;
           // Запомнить значения
           if (!this.dreamMap.ceils.some(({ coord: { x: cX, y: cY } }) => cX === x && cY === y)) {
             this.dreamMap.ceils.push(ceil);
