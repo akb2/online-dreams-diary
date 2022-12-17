@@ -159,6 +159,15 @@ $figure-time-2: $figure-time-1 * 2;
   }
 }
 
+// Контейнер для кнопок
+::ng-deep .buttons {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
 // Правила анимации
 @keyframes loader-animation {
   0% {
