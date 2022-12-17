@@ -16,7 +16,8 @@ class UserService
 
   private DataBaseService $dataBaseService;
 
-  private string $avatarDir = '../media/images/user_avatars';
+  private string $avatarRelativeDir = 'images/user_avatars';
+  private string $avatarDir = 'images/user_avatars';
   private string $avatarUrl = '/images/user_avatars';
   private array $avatarExts = array('png', 'jpg', 'jpeg');
   private array $avatarKeys = array('full', 'crop', 'middle', 'small');
@@ -31,6 +32,8 @@ class UserService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->reCaptchaService = new ReCaptchaService('', $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    // Данные
+    $this->avatarDir = $this->config['mediaPath'].$this->avatarRelativeDir;
   }
 
 
