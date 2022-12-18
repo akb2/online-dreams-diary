@@ -7,7 +7,8 @@ import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.com
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
-import { Dream, DreamPlural } from "@_models/dream";
+import { Dream } from "@_models/dream";
+import { DreamPlural } from "@_datas/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
