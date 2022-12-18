@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { User } from "@_models/account";
-import { MenuItem, MenuItems, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
+import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
+import { MenuItems } from "@_datas/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
