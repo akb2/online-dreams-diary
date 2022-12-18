@@ -2,7 +2,7 @@ import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
-import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_models/math";
+import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_helpers/math";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";
 import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";

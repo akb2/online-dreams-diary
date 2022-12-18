@@ -1,5 +1,5 @@
 import { MatDialogConfig } from "@angular/material/dialog";
-import { Random } from "@_models/math";
+import { Random } from "@_helpers/math";
 import { AuthRules } from "@_models/menu";
 
 

@@ -5,7 +5,7 @@ import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapC
 import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_models/dream-map-settings";
-import { AngleToRad, IsOdd, RadToAngle } from "@_models/math";
+import { AngleToRad, IsOdd, RadToAngle } from "@_helpers/math";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService } from "@_services/dream-map/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";

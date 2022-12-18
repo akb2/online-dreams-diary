@@ -2,7 +2,7 @@ import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_models/dream-map-settings";
-import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_models/math";
+import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_helpers/math";
 import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
 import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";

@@ -1,5 +1,5 @@
 import { CreateArray, MultiArray } from "@_models/app";
-import { MathRound, Random } from "@_models/math";
+import { MathRound, Random } from "@_helpers/math";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 

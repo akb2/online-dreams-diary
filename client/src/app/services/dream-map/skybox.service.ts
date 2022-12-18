@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamObjectDetalization } from "@_models/dream-map-settings";
-import { AngleToRad, Cos, LineFunc } from "@_models/math";
+import { AngleToRad, Cos, LineFunc } from "@_helpers/math";
 import { BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, HemisphereLight, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 

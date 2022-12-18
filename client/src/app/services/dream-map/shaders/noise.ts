@@ -1,4 +1,4 @@
-import { MathRound } from "@_models/math";
+import { MathRound } from "@_helpers/math";
 import { FogFragmentShader } from "@_services/dream-map/alphaFog.service";
 import { Material, Shader } from "three";
 
