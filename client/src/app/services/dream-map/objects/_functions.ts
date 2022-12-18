@@ -1,7 +1,7 @@
 import { CreateArray, CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilSize, DreamMapSize } from "@_models/dream-map-settings";
+import { DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_helpers/math";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "@_services/dream-map/objects/_models";
 import { GeometryQuality } from "@_services/dream-map/terrain.service";

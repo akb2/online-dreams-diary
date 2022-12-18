@@ -6,7 +6,7 @@ import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode } from "@_models/dream";
-import { DreamTitle } from "@_models/dream-map-settings";
+import { DreamTitle } from "@_datas/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";

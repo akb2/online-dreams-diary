@@ -1,6 +1,6 @@
 import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
 import { DreamMapObjects } from "@_datas/dream-map-objects";
-import { DreamCeilSize } from "@_models/dream-map-settings";
+import { DreamCeilSize } from "@_datas/dream-map-settings";
 import { MathRound, Random, TriangleSquare } from "@_helpers/math";
 import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, ClosestKeysAll, RandomFactor, TrianglesCoords } from "@_services/dream-map/objects/grass/_models";
 

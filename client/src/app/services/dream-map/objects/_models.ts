@@ -1,5 +1,5 @@
 import { CoordDto } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { Float32BufferAttribute, IUniform, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
 
 

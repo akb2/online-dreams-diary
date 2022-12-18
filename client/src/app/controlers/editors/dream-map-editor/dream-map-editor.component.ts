@@ -7,7 +7,7 @@ import { CreateArray, CustomObjectKey, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_models/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound } from "@_helpers/math";
 import { DreamService } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";

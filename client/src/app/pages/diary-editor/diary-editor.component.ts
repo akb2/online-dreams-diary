@@ -15,7 +15,7 @@ import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_models/appearance";
 import { Dream, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamModes, DreamStatuses } from "@_datas/dream";
-import { DreamTitle } from "@_models/dream-map-settings";
+import { DreamTitle } from "@_datas/dream-map-settings";
 import { ErrorMessagesType } from "@_models/form";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { NavMenuType } from "@_models/nav-menu";

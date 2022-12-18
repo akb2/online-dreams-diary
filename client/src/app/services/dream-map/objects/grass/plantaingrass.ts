@@ -1,7 +1,7 @@
 import { CreateArray, CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { AngleToRad, IsMultiple, Random } from "@_helpers/math";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";

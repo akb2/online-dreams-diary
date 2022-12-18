@@ -1,6 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
-import { DreamObjectElmsValues } from "@_models/dream-map-settings";
+import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { ImageExtension } from "@_models/screen";
 import { MeshStandardMaterial, Side, Texture } from "three";
 
