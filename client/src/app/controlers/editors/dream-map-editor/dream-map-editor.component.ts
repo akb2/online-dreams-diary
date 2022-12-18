@@ -274,7 +274,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return this.objectsCatalogs.find(({ id }) => id === this.currentObjectCatalog) ?? this.objectsCatalogs[0];
   }
 
-  // Выбранная категория
+  // Выбранный объект
   get getCurrentObject(): DreamMapObject {
     return this.filteredObjects.find(({ id }) => id === this.currentObject) ?? this.filteredObjects[0];
   }
@@ -543,7 +543,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     // Настройки объектов
     if ((!!catalog || catalog === 0) && this.currentObjectCatalog !== catalog) {
       this.currentObjectCatalog = catalog;
-      this.filteredObjects = this.objects.filter(({ catalog: c }) => c === catalog);
+      this.filteredObjects = this.objects.filter(({ catalog: c }) => c === catalog).sort((a, b) => a.sortIndex - b.sortIndex);
       // Обновить текущий объект
       this.onObjectChange(-1);
       // Обновить

@@ -11,6 +11,7 @@ import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Mat
 // Интерфейс объекта карты
 export interface DreamMapObject {
   id: number;
+  sortIndex: number;
   name: string;
   image: string;
   catalog: number;

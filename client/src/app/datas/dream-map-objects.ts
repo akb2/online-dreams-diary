@@ -37,6 +37,7 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
   // Дуб
   {
     id: 1,
+    sortIndex: 0,
     name: "Дуб",
     catalog: 1,
     controllers: [DreamMapOakTreeObject],
@@ -52,6 +53,7 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
   // Береза
   {
     id: 2,
+    sortIndex: 1,
     name: "Берёза",
     catalog: 1,
     controllers: [DreamMapBirchTreeObject],
@@ -68,6 +70,7 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
 
 export const DreamMapObjects: DreamMapObject[] = DreamMapPartialObjects.map((data: Partial<DreamMapObject>) => ({
   id: data.id,
+  sortIndex: data.sortIndex ?? 0,
   name: data.name,
   image: "../../assets/dream-map/object/_icons/" + data.id + ".png",
   catalog: data.catalog,
