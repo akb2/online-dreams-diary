@@ -5,7 +5,8 @@ import { DefaultExtraDatas, ExtraDatas as ExtraDatasApp } from '@app/app.compone
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
-import { PeoplePlural, User, UserSex } from '@_models/account';
+import { User, UserSex } from '@_models/account';
+import { PeoplePlural } from "@_datas/account";
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { BackgroundImageDatas } from '@_datas/appearance';
