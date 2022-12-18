@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
-import { BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 
 
 

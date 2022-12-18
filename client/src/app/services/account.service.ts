@@ -5,7 +5,7 @@ import { environment } from '@_environments/environment';
 import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserPrivateNames, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";

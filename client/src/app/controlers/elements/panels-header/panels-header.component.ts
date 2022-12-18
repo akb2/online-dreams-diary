@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { BackgroundHorizontalPosition, BackgroundImageData, BackgroundImageDatas, BackgroundVerticalPosition } from "@_models/appearance";
+import { BackgroundHorizontalPosition, BackgroundImageData, BackgroundVerticalPosition } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 
 
 

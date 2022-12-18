@@ -12,7 +12,7 @@ import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-sett
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 import { Dream, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamModes, DreamStatuses } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
-import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageData } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 import { MenuItem } from "@_models/menu";
 import { NavMenuType } from "@_models/nav-menu";
 import { MenuService } from "@_services/menu.service";

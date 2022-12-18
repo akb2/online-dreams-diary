@@ -4,7 +4,7 @@ import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";

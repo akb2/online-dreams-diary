@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { BackgroundImageData, BackgroundImageDatas } from "@_models/appearance";
+import { BackgroundImageData } from "@_models/appearance";
+import { BackgroundImageDatas } from "@_datas/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
 
