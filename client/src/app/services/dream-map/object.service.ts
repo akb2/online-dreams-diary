@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
-import { DreamMapObject, DreamMapObjects, MapObject, ObjectControllerParams, ObjectControllers, ObjectSetting, ObjectStaticSubTypeControllers } from "@_models/dream-map-objects";
+import { DreamMapObject, MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { DreamMapObjects, ObjectControllers, ObjectStaticSubTypeControllers } from "@_datas/dream-map-objects";
 import { DreamTerrain } from "@_models/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
