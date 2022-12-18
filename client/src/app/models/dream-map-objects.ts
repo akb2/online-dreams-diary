@@ -1,10 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
-import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
-import { DreamMapBirchTreeObject } from "@_services/dream-map/objects/tree/birch";
-import { DreamMapOakTreeObject } from "@_services/dream-map/objects/tree/oak";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
 

@@ -1,5 +1,3 @@
-import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
-import { SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
