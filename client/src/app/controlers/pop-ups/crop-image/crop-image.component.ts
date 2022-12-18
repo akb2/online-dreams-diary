@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { UserAvatarCropDataElement } from "@_models/account";
-import { AppMatDialogConfig } from "@_models/app";
+import { AppMatDialogConfig } from "@_datas/app";
 import { ScreenService } from "@_services/screen.service";
 import { fromEvent, Subject, takeUntil } from "rxjs";
 

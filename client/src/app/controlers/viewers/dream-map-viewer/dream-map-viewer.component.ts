@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
-import { CreateArray, CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@_models/app";
+import { CreateArray } from "@_datas/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamMapObjects } from "@_datas/dream-map-objects";

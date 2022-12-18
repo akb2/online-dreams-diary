@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestro
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { User, UserPrivate, UserPrivateItem } from "@_models/account";
-import { AppMatDialogConfig } from "@_models/app";
+import { AppMatDialogConfig } from "@_datas/app";
 import { ScreenKeys } from "@_models/screen";
 import { AccountService, SearchUser } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";

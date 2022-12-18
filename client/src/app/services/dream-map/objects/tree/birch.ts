@@ -1,4 +1,5 @@
-import { CreateArray, CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@_models/app";
+import { CreateArray } from "@_datas/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";

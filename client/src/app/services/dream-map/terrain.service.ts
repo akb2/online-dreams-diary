@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { CreateArray, CustomObject, CustomObjectKey } from "@_models/app";
+import { CustomObject, CustomObjectKey } from "@_models/app";
+import { CreateArray } from "@_datas/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, MapTerrainSplatMapColor, ReliefType, XYCoord } from "@_models/dream-map";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
