@@ -3,7 +3,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
 import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserPrivateNames, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
-import { ApiResponse, Search } from "@_models/api";
+import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { NavMenuType } from "@_models/nav-menu";
@@ -116,7 +116,7 @@ export class AccountService implements OnDestroy {
     formData.append("password", password);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "account/auth", formData, this.httpHeader).pipe(switchMap(result => {
-      const code: string = result.result.code;
+      const code: ApiResponseCodes = result.result.code;
       // Сохранить токен
       if (code === "0001") {
         this.tokenService.saveAuth(result.result.data.token, result.result.data.id);

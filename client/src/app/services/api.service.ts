@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { ApiResponse, ApiResponseMessages } from "@_models/api";
+import { ApiResponse, ApiResponseCodes } from "@_models/api";
+import { ApiResponseMessages } from "@_datas/api";
 import { SnackbarService } from "@_services/snackbar.service";
 import { Observable, of, throwError } from "rxjs";
 
@@ -23,7 +24,7 @@ export class ApiService {
 
 
   // Регистрация
-  getMessageByCode(code: string): string {
+  getMessageByCode(code: ApiResponseCodes): string {
     if (!!code && !!ApiResponseMessages[code]) {
       return ApiResponseMessages[code];
     }
@@ -34,7 +35,7 @@ export class ApiService {
 
   // Функция для переключения ошибок
   checkSwitchMap(result: ApiResponse, codes: string[] = []): Observable<ApiResponse> {
-    const code: string = result.result.code;
+    const code: ApiResponseCodes = result.result.code;
     // Сохранить токен
     if (code === "0001") {
       return of(result);
@@ -44,7 +45,7 @@ export class ApiService {
   }
 
   // Функция обработки ошибок
-  checkResponse(code: string, codes: string[] = []): Observable<any> {
+  checkResponse(code: ApiResponseCodes, codes: string[] = []): Observable<any> {
     // Обработать ошибку внутри подписчика
     if (code === "0001" || codes.some(testCode => testCode === code)) {
       return of(code);

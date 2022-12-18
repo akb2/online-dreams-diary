@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from '@_environments/environment';
 import { User } from "@_models/account";
-import { ApiResponse } from "@_models/api";
+import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
@@ -99,7 +99,7 @@ export class TokenService {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>(this.baseUrl + "token/checkToken", formData, this.httpHeader).pipe(switchMap(
       result => {
-        const code: string = result.result.code;
+        const code: ApiResponseCodes = result.result.code;
         // Сохранить токен
         if (code === "0001") {
           if (this.id === result.result.data.tokenData.user_id) {
