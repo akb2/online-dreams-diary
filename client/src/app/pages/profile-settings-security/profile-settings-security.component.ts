@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
 import { BrowserNames, OsNames, SimpleObject } from "@_models/app";
-import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
+import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
 import { AccountService } from "@_services/account.service";

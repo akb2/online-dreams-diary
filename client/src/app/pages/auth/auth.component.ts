@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
-import { AccountErrorMessages, ErrorMessagesType, FormData, FormDataType, AccountValidatorData } from "@_models/form";
+import { AccountErrorMessages, FormData, AccountValidatorData } from "@_datas/form";
+import { FormDataType, ErrorMessagesType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 

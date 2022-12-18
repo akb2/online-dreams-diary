@@ -7,7 +7,8 @@ import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-i
 import { ImageUploadComponent } from "@_controlers/image-upload/image-upload.component";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserSave } from "@_models/account";
-import { AccountErrorMessages, AccountValidatorData, ErrorMessagesType, FormData, FormDataType } from "@_models/form";
+import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
+import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";

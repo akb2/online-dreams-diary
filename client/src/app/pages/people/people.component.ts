@@ -8,7 +8,7 @@ import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.com
 import { PeoplePlural, User, UserSex } from '@_models/account';
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData, BackgroundImageDatas } from '@_models/appearance';
-import { FormData, MonthPlural } from '@_models/form';
+import { FormData, MonthPlural } from '@_datas/form';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService, SearchUser } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
