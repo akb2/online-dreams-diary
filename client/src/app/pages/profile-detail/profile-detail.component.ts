@@ -195,7 +195,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         mergeMap(
-          hasAccess => hasAccess ? this.dreamService.search({ user, limit }) : of({ count: 0, result: [], limit: 1 }),
+          hasAccess => hasAccess ? this.dreamService.search({ user, limit }, ["0002", "8100"]) : of({ count: 0, result: [], limit: 1 }),
           (hasAccess, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
         ),
         switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
