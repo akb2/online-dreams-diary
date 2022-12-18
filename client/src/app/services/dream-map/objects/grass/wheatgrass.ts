@@ -4,7 +4,7 @@ import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/math";
-import { TriangleGeometry } from "@_models/three.js/triangle.geometry";
+import { TriangleGeometry } from "@_threejs/triangle.geometry";
 import { CheckCeilForm, GetGrassSubType } from "@_services/dream-map/objects/grass/_functions";
 import { GrassColorRange } from "@_services/dream-map/objects/grass/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";

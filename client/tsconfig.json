@@ -37,7 +37,7 @@
         "src/app/datas/*"
       ],
       "@_threejs/*": [
-        "src/app/models/three.js/*"
+        "src/app/helpers/three.js/*"
       ],
       "@_modules/*": [
         "src/app/modules/*"

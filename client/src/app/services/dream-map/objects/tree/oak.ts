@@ -4,7 +4,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, MathRound, Random, Sin } from "@_helpers/math";
-import { TreeGeometry, TreeGeometryParams } from "@_models/three.js/tree.geometry";
+import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "@_services/dream-map/objects/tree/_models";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "@_services/dream-map/objects/_functions";
