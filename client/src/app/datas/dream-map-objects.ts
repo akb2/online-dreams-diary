@@ -1,5 +1,5 @@
 import { CustomObjectKey } from "@_models/app";
-import { DreamMapObject, DreamMapObjectCatalog, ObjectController } from "@_models/dream-map-objects";
+import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
 import { DreamMapBirchTreeObject } from "@_services/dream-map/objects/tree/birch";
@@ -68,18 +68,61 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
   },
 ];
 
-export const DreamMapObjects: DreamMapObject[] = DreamMapPartialObjects.map((data: Partial<DreamMapObject>) => ({
-  id: data.id,
-  sortIndex: data.sortIndex ?? 0,
-  name: data.name,
-  image: "../../assets/dream-map/object/_icons/" + data.id + ".png",
-  catalog: data.catalog,
-  controllers: data.controllers,
-  subTypeFunctions: data.subTypeFunctions,
-  settings: {
-    rotation: !!data?.settings?.rotation,
-    variants: !!data?.settings?.variants,
-    mixWithDefault: !!data?.settings?.mixWithDefault,
-    multiCeils: !!data?.settings?.multiCeils,
+// Список групп объектов
+const DreamMapGroupObjects: Partial<DreamMapGroupObject>[] = [
+  // Лес
+  {
+    id: 1,
+    ids: [1, 2],
+    sortIndex: 2,
+    name: "Лес (случайное дерево)",
+    icon: "forest",
+    catalog: 1,
+    settings: {
+      multiCeils: true
+    }
   }
-}))
+];
+
+export const DreamMapObjects: DreamMapMixedObject[] = [
+  // Объекты
+  ...DreamMapPartialObjects.map((data: Partial<DreamMapObject>) => ({
+    id: data.id,
+    type: "object" as DreamMapObjectType,
+    sortIndex: data.sortIndex ?? 0,
+    name: data.name,
+    icon: !!data.icon ? data.icon : "",
+    image: !!data.icon ? "" : "../../assets/dream-map/object/_icons/" + data.id + ".png",
+    catalog: data.catalog,
+    controllers: data.controllers,
+    subTypeFunctions: data.subTypeFunctions,
+    settings: {
+      rotation: !!data?.settings?.rotation,
+      variants: !!data?.settings?.variants,
+      mixWithDefault: !!data?.settings?.mixWithDefault,
+      multiCeils: !!data?.settings?.multiCeils,
+    }
+  } as DreamMapObject)),
+  // Группы объектов
+  ...DreamMapGroupObjects.map((data: Partial<DreamMapGroupObject>) => {
+    const idPreffix: number = 100000000;
+    const id: number = idPreffix + data.id;
+    // Вернуть полный объект
+    return {
+      id,
+      ids: data.ids,
+      type: "group" as DreamMapGroupObjectType,
+      sortIndex: data.sortIndex ?? 0,
+      name: data.name,
+      icon: !!data.icon ? data.icon : "",
+      image: !!data.icon ? "" : "../../assets/dream-map/object/_icons/" + id + ".png",
+      catalog: data.catalog,
+      settings: {
+        rotation: !!data?.settings?.rotation,
+        variants: !!data?.settings?.variants,
+        mixWithDefault: !!data?.settings?.mixWithDefault,
+        multiCeils: !!data?.settings?.multiCeils,
+      }
+    } as DreamMapGroupObject;
+  })
+];
