@@ -3,6 +3,7 @@ import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, Drea
 import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
 import { DreamMapBirchTreeObject } from "@_services/dream-map/objects/tree/birch";
+import { DreamMapFirTreeObject } from "@_services/dream-map/objects/tree/fir";
 import { DreamMapOakTreeObject } from "@_services/dream-map/objects/tree/oak";
 
 
@@ -66,6 +67,23 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
       multiCeils: true
     }
   },
+  // Елка
+  {
+    id: 3,
+    sortIndex: 2,
+    name: "Ель",
+    catalog: 1,
+    controllers: [DreamMapFirTreeObject],
+    subTypeFunctions: {
+      "tree-fir-branch": DreamMapFirTreeObject.getSubType,
+      "tree-fir-leaf-a": DreamMapFirTreeObject.getSubType,
+      "tree-fir-leaf-b": DreamMapFirTreeObject.getSubType
+    },
+    settings: {
+      mixWithDefault: true,
+      multiCeils: true
+    }
+  }
 ];
 
 // Список групп объектов
@@ -73,7 +91,7 @@ const DreamMapGroupObjects: Partial<DreamMapGroupObject>[] = [
   // Лес
   {
     id: 1,
-    ids: [1, 2],
+    ids: [1, 2, 3],
     sortIndex: 2,
     name: "Лес (случайное дерево)",
     icon: "forest",
