@@ -1,10 +1,11 @@
 import { Injectable, OnDestroy } from "@angular/core";
+import { ObjectControllers, ObjectStaticSubTypeControllers } from "@_datas/dream-map-objects";
+import { DreamTerrain } from "@_datas/dream-map-settings";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { DreamMapObject, MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamMapObjects, ObjectControllers, ObjectStaticSubTypeControllers } from "@_datas/dream-map-objects";
-import { DreamTerrain } from "@_datas/dream-map-settings";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
+import { GetDreamMapObjectByID } from "@_services/dream-map/objects/grass/_functions";
 import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
 import { Clock, DataTexture, Mesh } from "three";
 
@@ -41,7 +42,7 @@ export class DreamMapObjectService implements OnDestroy {
     let useDefault: boolean = true;
     // Требуется объект
     if (!!objectId) {
-      const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === objectId)!;
+      const objectData: DreamMapObject = GetDreamMapObjectByID(objectId);
       // Объект найден
       if (!!objectData) {
         const controller: DreamMapObjectTemplate[] = !!this.objectControllers[objectId] ?
@@ -113,7 +114,7 @@ export class DreamMapObjectService implements OnDestroy {
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
     // Требуется объект
     if (!!objectId && !isDefault) {
-      const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === objectId)!;
+      const objectData: DreamMapObject = GetDreamMapObjectByID(objectId);
       const controllerType: string = Object.entries(this.objectControllers[objectId])
         .filter(([, [, types]]) => types.includes(type))
         .map(([key]) => key)[0];
@@ -143,7 +144,7 @@ export class DreamMapObjectService implements OnDestroy {
     let useDefault: boolean = true;
     // Требуется объект
     if (!!objectId) {
-      const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === objectId)!;
+      const objectData: DreamMapObject = GetDreamMapObjectByID(objectId);
       // Объект найден
       if (!!objectData && !!objectData.subTypeFunctions[type]) {
         return objectData.subTypeFunctions[type](ceil, neighboringCeils, type, subType);

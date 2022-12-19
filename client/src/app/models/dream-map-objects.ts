@@ -11,14 +11,36 @@ import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Mat
 // Интерфейс объекта карты
 export interface DreamMapObject {
   id: number;
+  type: DreamMapObjectType;
   sortIndex: number;
   name: string;
-  image: string;
+  icon?: string;
+  image?: string;
   catalog: number;
   controllers: ObjectController[];
   subTypeFunctions: CustomObjectKey<string, Function>;
   settings?: DreamMapObjectSettings;
 }
+
+// Интерфейс группы объектов
+export interface DreamMapGroupObject {
+  id: number;
+  ids: number[];
+  type: DreamMapGroupObjectType;
+  sortIndex: number;
+  name: string;
+  icon?: string;
+  image?: string;
+  catalog: number;
+  settings?: DreamMapObjectSettings;
+}
+
+// Тип смеси объектов с группами объектов
+export type DreamMapMixedObject = DreamMapObject | DreamMapGroupObject;
+
+// Типы объектов
+export type DreamMapObjectType = "object";
+export type DreamMapGroupObjectType = "group";
 
 // Параметры объекта
 export interface DreamMapObjectSettings {

@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
-import { CustomObjectKey, SimpleObject } from "@_models/app";
-import { CreateArray } from "@_datas/app";
-import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
+import { ArrayRandom, CreateArray } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map";
-import { DreamMapObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
+import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound } from "@_helpers/math";
+import { CustomObjectKey, SimpleObject } from "@_models/app";
+import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
+import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
 import { DreamService } from "@_services/dream.service";
 import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -56,8 +56,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   waterTypeList: WaterTypeToolListItem[] = WaterTypeTools;
   detaliationLabels: CustomObjectKey<DreamObjectElmsValues, string> = DetaliationLabels;
   objectsCatalogs: DreamMapObjectCatalog[] = DreamMapObjectCatalogs;
-  private objects: DreamMapObject[] = DreamMapObjects;
-  filteredObjects: DreamMapObject[] = [];
+  private objects: DreamMapMixedObject[] = DreamMapObjects;
+  filteredObjects: DreamMapMixedObject[] = [];
 
   // * Инструменты: общее
   private tool: Tool = Tool.objects;
@@ -77,6 +77,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // * Инструменты: объекты
   currentObjectCatalog: number;
   currentObject: number = 0;
+  private currentObjectsByCatalog: CustomObjectKey<number, number> = {};
 
   // ? Настройки работы редактора
   private toolActive: boolean = false;
@@ -222,60 +223,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     return "ontouchstart" in window || !!navigator?.maxTouchPoints;
   }
 
-  // Список для управление окружающим лундшафтом
-  private createReliefData(): void {
-    const outerIcons: CustomObjectKey<ReliefType, string> = {
-      [ReliefType.flat]: "horizontal_rule",
-      [ReliefType.hill]: "waves",
-      [ReliefType.mountain]: "landscape",
-      [ReliefType.canyon]: "align_vertical_bottom",
-      [ReliefType.pit]: "download",
-    };
-    const outerDescription: CustomObjectKey<ReliefType, string> = {
-      [ReliefType.flat]: "Равнина",
-      [ReliefType.hill]: "Холмы",
-      [ReliefType.mountain]: "Горы",
-      [ReliefType.canyon]: "Каньоны",
-      [ReliefType.pit]: "Низина",
-    };
-    const sideNames: CustomObjectKey<ClosestHeightName, string> = {
-      topLeft: "Верхний левый",
-      top: "Верхний",
-      topRight: "Верхний правый",
-      left: "Левый",
-      right: "Правый",
-      bottomLeft: "Нижний левый",
-      bottom: "Нижний",
-      bottomRight: "Нижний правый",
-    };
-    const clickEvent: (type: ClosestHeightName | "center") => void = this.onReliefTypeChange.bind(this);
-    // Управление за пределами карты
-    this.reliefElmDatas = ClosestHeightNames.map(type => ({
-      type,
-      clickEvent,
-      active: false,
-      icon: outerIcons[this.dreamMap.relief.types[type]],
-      description: sideNames[type] + " угол: " + outerDescription[this.dreamMap.relief.types[type]],
-    }));
-    // Добавить для центрального элемента
-    this.reliefElmDatas.splice(4, 0, {
-      type: "center",
-      clickEvent,
-      active: false,
-      icon: "zoom_in_map",
-      description: "Размыть внутренний рельеф с внешним"
-    });
-    // Обновтиь
-    this.changeDetectorRef.detectChanges();
-  }
-
   // Выбранная категория
   get getCurrentObjectsCatalog(): DreamMapObjectCatalog {
     return this.objectsCatalogs.find(({ id }) => id === this.currentObjectCatalog) ?? this.objectsCatalogs[0];
   }
 
   // Выбранный объект
-  get getCurrentObject(): DreamMapObject {
+  get getCurrentObject(): DreamMapMixedObject {
     return this.filteredObjects.find(({ id }) => id === this.currentObject) ?? this.filteredObjects[0];
   }
 
@@ -481,7 +435,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.setSkyTime();
     // Обновить
     this.changeDetectorRef.detectChanges();
-
   }
 
   // Изменение инструмента типа местности
@@ -553,10 +506,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение категории объектов
   onObjectChange(object: number = 0): void {
-    object = object !== 0 ? this.filteredObjects.find(({ id }) => id === object)?.id ?? this.filteredObjects[0]?.id ?? 0 : 0;
+    object = object !== 0 ?
+      (this.filteredObjects.find(({ id }) => id === object)?.id ?? this.currentObjectsByCatalog[this.currentObjectCatalog] ?? this.filteredObjects[0]?.id ?? 0) :
+      0;
     // Настройки объектов
     if ((!!object || object === 0) && this.currentObject !== object) {
       this.currentObject = object;
+      this.currentObjectsByCatalog[this.currentObjectCatalog] = this.currentObject;
     }
   }
 
@@ -570,7 +526,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     let toolSize: number = sizedTools.has(this.tool) ? this.toolSizeLand : ToolSizeLand[0];
     // Для объектов
     if (this.tool === Tool.objects) {
-      const objectsSetting: DreamMapObject = DreamMapObjects.find(({ id }) => id === this.currentObject)
+      const objectsSetting: DreamMapMixedObject = this.getCurrentObject;
       const multiCeils: boolean = !!objectsSetting?.settings?.multiCeils || this.currentObject === 0;
       // Мультиячейки
       if (multiCeils) {
@@ -704,7 +660,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменить объект
   private setObject(): void {
-    const objectsSetting: DreamMapObject = DreamMapObjects.find(({ id }) => id === this.currentObject)
+    const objectsSetting: DreamMapMixedObject = this.getCurrentObject;
     const multiCeils: boolean = !!objectsSetting?.settings?.multiCeils || this.currentObject === 0;
     const toolSize: number = multiCeils ? this.toolSizeLand : ToolSizeLand[0];
     const sizes: number[] = multiCeils ? CreateArray(((toolSize + 1) * 2) + 1).map(v => v - (toolSize + 1)) : [0];
@@ -716,8 +672,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         // Ячейка внутри области выделения
         if (this.isEditableCeil(x, y)) {
           const ceil: DreamMapCeil = this.viewer.getCeil(x, y);
+          const newObjects: number[] = this.currentObject === 0 || objectsSetting?.type === "object" ?
+            [this.currentObject > 0 ? objectsSetting.id : 0] :
+            objectsSetting.ids;
           // Изменить местность
-          if (ceil.object !== this.currentObject) {
+          if (!newObjects.includes(ceil.object)) {
             return ceil;
           }
         }
@@ -728,19 +687,36 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       .filter(c => !!c);
     // Заменить объекты
     if (!!ceils?.length) {
-      this.viewer.setObject(ceils, this.currentObject);
-      // Запомнить объект
-      ceils.forEach(ceil => {
-        ceil.object = this.currentObject;
-        // Запомнить ячейку
-        this.saveCeil(ceil);
-      });
+      if (objectsSetting?.type === "object" || this.currentObject === 0) {
+        this.viewer.setObject(ceils, this.currentObject);
+        // Запомнить объект
+        ceils.forEach(ceil => {
+          ceil.object = this.currentObject;
+          // Запомнить ячейку
+          this.saveCeil(ceil);
+        });
+      }
+      // Установить для группы объектов
+      else {
+        const newObjects: number[] = CreateArray(ceils.length).map(() => ArrayRandom(objectsSetting.ids));
+        const objectCeils: DreamMapCeil[] = ceils.map((ceil, k) => ({ ...ceil, object: newObjects[k] }));
+        // Перерисовать объекты
+        objectsSetting.ids.forEach(objectId => {
+          const ceilsByObject: DreamMapCeil[] = objectCeils.filter(({ object }) => object === objectId);
+          // Если массив ячеек не пуст
+          if (!!ceilsByObject?.length) {
+            this.viewer.setObject(ceilsByObject, objectId);
+          }
+        });
+        // Запомнить объекты
+        ceils.forEach((ceil, k) => {
+          ceil.object = newObjects[k];
+          // Запомнить ячейку
+          this.saveCeil(ceil);
+        });
+      }
     }
   }
-
-
-
-
 
   // Запомнить ячейку
   private saveCeil(ceil: DreamMapCeil): void {
@@ -751,6 +727,53 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
     // Запомнить ячейку
     this.dreamMap.ceils.push(ceil);
+  }
+
+  // Список для управление окружающим лундшафтом
+  private createReliefData(): void {
+    const outerIcons: CustomObjectKey<ReliefType, string> = {
+      [ReliefType.flat]: "horizontal_rule",
+      [ReliefType.hill]: "waves",
+      [ReliefType.mountain]: "landscape",
+      [ReliefType.canyon]: "align_vertical_bottom",
+      [ReliefType.pit]: "download",
+    };
+    const outerDescription: CustomObjectKey<ReliefType, string> = {
+      [ReliefType.flat]: "Равнина",
+      [ReliefType.hill]: "Холмы",
+      [ReliefType.mountain]: "Горы",
+      [ReliefType.canyon]: "Каньоны",
+      [ReliefType.pit]: "Низина",
+    };
+    const sideNames: CustomObjectKey<ClosestHeightName, string> = {
+      topLeft: "Верхний левый",
+      top: "Верхний",
+      topRight: "Верхний правый",
+      left: "Левый",
+      right: "Правый",
+      bottomLeft: "Нижний левый",
+      bottom: "Нижний",
+      bottomRight: "Нижний правый",
+    };
+    const clickEvent: (type: ClosestHeightName | "center") => void = this.onReliefTypeChange.bind(this);
+    // Управление за пределами карты
+    this.reliefElmDatas = ClosestHeightNames.map(type => ({
+      type,
+      clickEvent,
+      active: false,
+      icon: outerIcons[this.dreamMap.relief.types[type]],
+      description: sideNames[type] + " угол: " + outerDescription[this.dreamMap.relief.types[type]],
+    }));
+    // Добавить для центрального элемента
+    this.reliefElmDatas.splice(4, 0, {
+      type: "center",
+      clickEvent,
+      active: false,
+      icon: "zoom_in_map",
+      description: "Размыть внутренний рельеф с внешним"
+    });
+    // Обновтиь
+    this.changeDetectorRef.detectChanges();
   }
 }
 

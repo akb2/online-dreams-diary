@@ -233,7 +233,9 @@
   <div class="tool-button"
        [ngClass]="{ active: !!currentObject }"
        *ngIf="!!getCurrentObject">
-    <img [src]="getCurrentObject.image" />
+    <img [src]="getCurrentObject.image"
+         *ngIf="!!getCurrentObject.image && !getCurrentObject.icon" />
+    <mat-icon *ngIf="!getCurrentObject.image && !!getCurrentObject.icon">{{getCurrentObject.icon}}</mat-icon>
     <!-- Список объектов -->
     <div class="tool-button__items border-radius">
       <div class="tool-button"
@@ -241,7 +243,9 @@
            [ngClass]="{ active: currentObject === object.id }"
            (click)="onObjectChange(object.id)"
            *ngFor="let object of filteredObjects">
-        <img [src]="object.image" />
+        <img [src]="object.image"
+             *ngIf="!!object.image && !object.icon" />
+        <mat-icon *ngIf="!object.image && !!object.icon">{{object.icon}}</mat-icon>
       </div>
     </div>
   </div>

@@ -1,14 +1,14 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
-import { CustomObjectKey } from "@_models/app";
 import { CreateArray } from "@_datas/app";
-import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
-import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, IsOdd, RadToAngle } from "@_helpers/math";
+import { CustomObjectKey } from "@_models/app";
+import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
+import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService } from "@_services/dream-map/object.service";
+import { GetDreamMapObjectByID } from "@_services/dream-map/objects/grass/_functions";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { DreamMapTerrainService, GeometryQuality } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
@@ -1312,12 +1312,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Установить объект
   setObject(ceils: DreamMapCeil[], newObject: number): void {
-    const objectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === newObject);
+    const objectData: DreamMapObject = GetDreamMapObjectByID(newObject);
     const usedCeils: DreamMapCeil[] = [];
     // Цикл по ячейкам
     ceils
       .forEach(ceil => {
-        const oldObjectData: DreamMapObject = DreamMapObjects.find(({ id }) => id === ceil.object);
+        const oldObjectData: DreamMapObject = GetDreamMapObjectByID(ceil.object);
         // Удаление
         if (newObject <= 0) {
           ceil.object = 0;

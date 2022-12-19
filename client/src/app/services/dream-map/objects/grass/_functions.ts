@@ -1,12 +1,19 @@
-import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
 import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilSize } from "@_datas/dream-map-settings";
 import { MathRound, Random, TriangleSquare } from "@_helpers/math";
+import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { DreamMapObject } from "@_models/dream-map-objects";
 import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, ClosestKeysAll, RandomFactor, TrianglesCoords } from "@_services/dream-map/objects/grass/_models";
 
 
 
 
+
+// Объект по ID
+export const GetDreamMapObjectByID = (objectId: number) => DreamMapObjects
+  .filter(({ type }) => type === "object")
+  .map(d => d as DreamMapObject)
+  .find(({ id }) => id === objectId);
 
 // Получить под типа травы
 export const GetGrassSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => {
@@ -42,7 +49,7 @@ export const GetGrassSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHei
 // Получить список ключей соседних ячеек с травой
 export const GetLikeNeighboringKeys = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => ClosestKeysAll.filter(k => {
   const c: ClosestHeight = neighboringCeils[k];
-  const objectData = DreamMapObjects.find(({ id }) => id === c.object);
+  const objectData = GetDreamMapObjectByID(c.object);
   // Вернуть результат проверки
   return c.terrain === ceil.terrain && (!!objectData?.settings?.mixWithDefault || !c.object);
 });
