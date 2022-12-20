@@ -30,7 +30,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
 
   private maxGeneration: number = 1;
   private radiusSegments: number = 3;
-  private leafBranchCount: number = 1;
+  private leafBranchCount: number = 2;
   private leafSkipSegments: number = 2;
   private segmentsCount: number = 5;
 

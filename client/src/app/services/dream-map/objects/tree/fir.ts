@@ -24,14 +24,14 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
   private treeCount: number = 0;
   private leafACount: number = 0;
   private leafBCount: number = 0;
-  private posRange: number = 0.2;
+  private posRange: number = 0.1;
   private noize: number = 0.15;
   private width: number = 0.04;
   private height: number = 110;
 
   private maxGeneration: number = 1;
   private radiusSegments: number = 3;
-  private leafBranchCount: number = 1;
+  private leafBranchCount: number = 2;
   private leafSkipSegments: number = 1;
   private segmentsCount: number = 5;
 
@@ -318,7 +318,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const leafHeight: number = leafWidth * 2;
       const leafDiameter: number = (leafHeight * 2) * 1.2;
       const leafASize: number = 0;
-      const leafBSize: number = leafDiameter * 0.5;
+      const leafBSize: number = leafDiameter;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometryA: PlaneGeometry = new PlaneGeometry(leafWidth, leafHeight, 2, 2);
@@ -412,7 +412,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     }
     // Настройки
     this.params.material.leafA.displacementScale = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : this.params.leafASize;
-    this.params.material.leafB.displacementScale = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : this.params.leafBSize;
+    // this.params.material.leafB.displacementScale = this.dreamMapSettings.detalization === DreamObjectElmsValues.VeryLow ? 0 : this.params.leafBSize;
     // Вернуть данные
     return this.params;
   }
@@ -500,24 +500,24 @@ const LeafColorRange: ColorRange = [0.8, 0.9, 0.9, 1, 0.8, 0.9];
 
 // Список количества листвы на деревьях
 export const LeafACounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 2),
-  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 2),
-  [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 2),
-  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 2.5),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 3),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 3.5),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 4)
+  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 0.5),
+  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 0.6),
+  [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 0.7),
+  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 0.8),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 0.9),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 1.0),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 1.1)
 };
 
 // Список количества листвы на деревьях
 export const LeafBCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 0.8),
-  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 0.9),
-  [DreamObjectElmsValues.Middle]: DreamTreeElmsCount,
-  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 1.1),
-  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 1.2),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 1.3),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 1.4)
+  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 0.5),
+  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 0.6),
+  [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 0.7),
+  [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 0.8),
+  [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 0.9),
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 1.0),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 1.1)
 };
 
 // Список фрагментов в одной ветке
