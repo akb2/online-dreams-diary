@@ -11,6 +11,13 @@ export interface ScreenBreakpoints {
   xlarge: number;
 }
 
+// Интерфейс размеров элемента
+export interface ElmSize {
+  element: HTMLElement;
+  width: number;
+  height: number;
+}
+
 // Данные о загруженной картинке
 export class LoadingImageData {
   constructor(

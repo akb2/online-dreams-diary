@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
-import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { ElmSize, LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
+import { BehaviorSubject, fromEvent, Observable, Subject, Subscriber, timer } from "rxjs";
+import { map, skipWhile, takeUntil, takeWhile } from "rxjs/operators";
 
 
 
@@ -101,6 +101,32 @@ export class ScreenService implements OnDestroy {
     });
     // Вернуть подписчик
     return observable.pipe(takeUntil(this.destroy$));
+  }
+
+  // Изменение размеров HTML элемента
+  elmResize(elm: HTMLElement | HTMLElement[]): Observable<ElmSize[]> {
+    const elms: HTMLElement[] = Array.isArray(elm) ? elm : [elm];
+    const observable: Observable<ElmSize[]> = new Observable((subscriber: Subscriber<ElmSize[]>) => {
+      const resizeObserver = new ResizeObserver(entries => subscriber.next(entries.map(e => e.target as HTMLElement).map(element => ({
+        element,
+        width: element.offsetWidth,
+        height: element.offsetHeight
+      }))));
+      elms.forEach(e => resizeObserver.observe(e));
+      return () => resizeObserver.disconnect();
+    });
+
+    return observable.pipe(takeUntil(this.destroy$));
+  }
+
+  // Ожидание значения
+  waitWhileFalse<T>(data: T): Observable<T> {
+    return timer(0, 100).pipe(
+      takeUntil(this.destroy$),
+      takeWhile(() => !data, true),
+      skipWhile(() => !data),
+      map(() => data)
+    );
   }
 
 
