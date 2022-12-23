@@ -361,7 +361,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         alphaTest: 0.5,
         flatShading: true,
         ...leafBTextures,
-        aoMapIntensity: -2.3,
+        aoMapIntensity: -3,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
