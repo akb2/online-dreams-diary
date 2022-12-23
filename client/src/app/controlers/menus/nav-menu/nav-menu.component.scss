@@ -9,14 +9,6 @@ $breakpointMobile: small;
 
 // Главное меню
 .main-menu {
-  $header-size: (
-    xsmall: 180px,
-    small: 180px,
-    middle: 240px,
-    large: 360px,
-    xlarge: 420px,
-  );
-  // Миксины
   @include mixins.inset(0, 0, auto, 0);
   // Свойства
   max-width: 100vw;
@@ -60,14 +52,11 @@ $breakpointMobile: small;
       height: 100%;
       padding-top: 0;
       padding-bottom: 0;
+      grid-template-columns: minmax(1px, 1fr) auto auto;
       // Адаптив горизонтальных отступов
       @include screens.adaptive(auto, $breakpointMobile) {
         padding-left: 0;
         padding-right: 0;
-      }
-      // Адаптив шаблона
-      @include screens.adaptiveFor($header-size) using($size) {
-        grid-template-columns: #{$size} auto 60px;
       }
 
       // Все варианты
@@ -421,6 +410,7 @@ $breakpointMobile: small;
   align-items: center;
   position: relative;
   user-select: none;
+  padding-left: 0;
   // Пункт меню
   &__item {
     $__elm: &;
@@ -428,6 +418,7 @@ $breakpointMobile: small;
     list-style-type: none;
     display: block;
     position: relative;
+    z-index: 1;
     // Линия
     &-line {
       position: absolute;

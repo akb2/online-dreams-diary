@@ -7,7 +7,7 @@ import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_mod
 import { ScreenKeys } from "@_models/screen";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, interval, map, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { forkJoin, fromEvent, interval, map, mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -252,6 +252,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   ngAfterViewInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
+    // Изменения размера контейнера текста
+    forkJoin([this.screenService.waitWhileFalse(this.contentLayerContainer), this.screenService.waitWhileFalse(this.contentLayerContainerLeft)])
+      .pipe(
+        takeUntil(this.destroy$),
+        mergeMap(() => this.screenService.elmResize(this.contentLayerContainer.nativeElement)),
+        mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement))
+      )
+      .subscribe(() => this.onResize());
   }
 
   ngOnDestroy() {
@@ -406,7 +414,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           // Значение
           let value: string
           // Определить значение для заранее заданных значений
-          if (sizes.value) {
+          if (!!sizes.value) {
             value = this.dataChoiceValue(sizes.value);
           }
           // Расчитать зависимое значение
@@ -436,12 +444,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Формула расчета параметров
-  private dataCalculateFormula(
-    max: number | number[],
-    min: number | number[],
-    unit: string | string[] = "",
-    separator: string = ""
-  ): string {
+  private dataCalculateFormula(max: number | number[], min: number | number[], unit: string | string[] = "", separator: string = ""): string {
     const headerMaxHeight: number = this.getHeaderMaxHeight;
     // Расчет
     if (this.scroll < headerMaxHeight) {
@@ -501,16 +504,20 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private dataChoiceValue(value: DrawDataValue): string {
     if (this.scroll < this.getHeaderMaxHeight) {
       // Для промежуточного состояния
-      if (this.scroll > 0) {
+      if (this.scroll > 0 && !!value.process) {
         return value.process;
       }
       // Для развернутого меню
-      else {
+      else if (this.scroll === 0 && !!value.expand) {
         return value.expand;
       }
     }
     // Для схлопнутого меню
-    return value.collapse;
+    else if (this.scroll >= this.getHeaderMaxHeight && value.collapse) {
+      return value.collapse;
+    }
+    // По умолчанию
+    return value.default;
   }
 
 
@@ -627,6 +634,8 @@ enum HeaderStatus {
 // Массив ключей свойств
 const CssNamesVar: SimpleObject = {
   menu: "menu",
+  menuLayer: "menuLayer",
+  menuContainer: "menuContainer",
   menuList: "",
   menuSubList: "menuSubList",
   menuSubListDecorator: "menuSubListDecorator",

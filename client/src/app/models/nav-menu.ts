@@ -1,3 +1,5 @@
+import { CustomObjectKey } from "@_models/app";
+
 // Данные для параметров
 export interface DrawInterface {
   property: string | string[];
@@ -14,6 +16,9 @@ export interface DrawData {
   xlarge?: DrawDataPeriod;
 }
 
+// Список ключей данных для отрисовки
+export const DrawDataKeys: (keyof DrawData)[] = ["default", "xsmall", "small", "middle", "large", "xlarge"];
+
 // Данные размеров
 export interface DrawDataPeriod {
   min?: number | number[];
@@ -27,27 +32,42 @@ export interface DrawDataPeriod {
 
 // Интерфейс выбора заранее заданных значений
 export interface DrawDataValue {
-  expand: string;
-  process: string;
-  collapse: string;
+  expand?: string;
+  process?: string;
+  collapse?: string;
+  default: string;
 }
 
 // Типы стилей для DrawDatas
 export type DrawDatasKeys =
   "menu" |
+  "menuLayer" |
+  "menuContainer" |
   "menuList" |
+  "menuSubList" |
+  "menuSubListDecorator" |
   "menuListWithFloatingButton" |
   "menuItem" |
   "menuItemLine" |
+  "menuSubItem" |
+  "menuSubItemLast" |
+  "menuSubItemLine" |
+  "menuSubItemSeparator" |
   "helper" |
   "helperWithFloatingButton" |
   "header" |
   "scroll" |
   "title" |
   "titleWithBackButton" |
-  "avatar" |
+  "titleWithBackButtonAndAvatar" |
+  "titleWithAvatar" |
   "subtitle" |
   "subtitleWithBackButton" |
+  "subtitleWithBackButtonAndAvatar" |
+  "subtitleWithAvatar" |
+  "image" |
+  "avatar" |
+  "avatarWithBackButton" |
   "floatingButton" |
   "floatingButtonOverlay" |
   "backButton" |
@@ -60,3 +80,6 @@ export enum NavMenuType {
   short = "short",
   collapse = "collapse"
 };
+
+// Тип определяющего массива
+export type DrawDataArray = CustomObjectKey<keyof DrawData, [number, number, string]>;

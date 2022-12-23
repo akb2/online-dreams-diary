@@ -39,7 +39,8 @@
   <!-- Средний фон -->
   <div class="main-menu__layer content">
     <!-- Все содержимое -->
-    <div class="main-menu__layer-container container">
+    <div class="main-menu__layer-container container"
+         [ngStyle]="css.menuContainer">
       <!-- Слой слева -->
       <div #contentLayerContainerLeft
            class="main-menu__layer-container_left {{backButtonLink? 'has-back-button': ''}}">
@@ -78,7 +79,8 @@
              *ngIf="subTitle">{{subTitle}}</div>
       </div>
       <!-- Слой посередине -->
-      <div class="main-menu__layer-container_center">
+      <div class="main-menu__layer-container_center"
+           [ngStyle]="css.menuLayer">
         <!-- Пункты главного меню -->
         <ng-container [ngTemplateOutlet]="mainMenu"
                       *ngIf="!isMobile"></ng-container>
