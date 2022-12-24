@@ -12,6 +12,7 @@ const log = getLogger({ name: "file" });
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MinifyHtmlWebpackPlugin = require('minify-html-webpack-plugin');
+const fs = require('fs');
 
 const config = require("./config/main");
 
@@ -22,6 +23,7 @@ const config = require("./config/main");
 // Проверка настроек
 module.exports = (env, option) => {
   const production = option.mode === "production";
+  const entry = production ? { main: path.resolve(__dirname, config.folders.input.base + "/" + config.scripts.entry_name + ".js") } : {};
   let pluginsOptions = [];
   let minimizer = [];
 
@@ -40,20 +42,27 @@ module.exports = (env, option) => {
   // Поиск страниц PUG
   {
     const pages = glob.sync(__dirname + "/" + config.folders.input.pages + "\\**\\*.pug");
+
     pages.forEach(function (file) {
       let base = path.relative(__dirname + "/" + config.folders.input.pages, file);
       base = base.replace(/\.pug$/, "");
       const filename = config.folders.output.pages + "/" + base + "." + (production ? config.pages.ext : "html");
       const template = config.folders.input.pages + "/" + base + ".pug";
+      const entryFile = config.folders.input.pages + "/" + base + ".js";
+      const entryKey = base.replace(/([\/]+)/i, "-");
 
       pluginsOptions.push(
         new HtmlWebpackPlugin({
           filename,
           template,
-          inject: false,
+          inject: !production,
           minify: config.pages.minify,
         })
       );
+
+      if (!production) {
+        entry[entryKey] = path.resolve(__dirname, entryFile);
+      }
 
       if (production && config.pages.minify) {
         const file = path.join(__dirname, config.folders.output.base);
@@ -107,11 +116,11 @@ module.exports = (env, option) => {
 
   // Базовые настройки WebPack
   let webpack_config = {
-    entry: { main: path.resolve(__dirname, config.folders.input.base + "/" + config.scripts.entry_name + ".js") },
+    entry,
     output: {
       path: path.resolve(__dirname, "./" + config.folders.output.base),
-      filename: config.folders.output.scripts + "/" + config.scripts.export_name + ".js",
-      publicPath: production ? "/" : "file:///" + path.resolve(__dirname, "./" + config.folders.output.base + "/").replace(/([\\]+)/g, "/"),
+      filename: config.folders.output.scripts + "/[name].js",
+      publicPath: production ? "/" : "http://localhost:" + config.server.port + "/",
     },
     module: {
       rules: [
@@ -140,7 +149,8 @@ module.exports = (env, option) => {
                 data: {
                   require,
                   scss: JSTransformer,
-                  renderScss: file => JSTransformer.renderFile(file).body
+                  production,
+                  renderScss: file => production ? JSTransformer.renderFile(file).body : ""
                 }
               }
             }
@@ -191,7 +201,7 @@ module.exports = (env, option) => {
       liveReload: true,
       compress: true,
       inline: true,
-      open: true,
+      open: false,
       port: config.server.port,
       watchOptions: {
         poll: true,
