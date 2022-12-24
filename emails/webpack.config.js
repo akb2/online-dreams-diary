@@ -57,7 +57,6 @@ module.exports = (env, option) => {
 
       if (config.pages.minify) {
         const file = path.join(__dirname, config.folders.output.base);
-        log.info(file);
         pluginsOptions.push(new MinifyHtmlWebpackPlugin({
           src: file,
           dest: file,
