@@ -1,0 +1,49 @@
+{
+  "name": "online-dreams-diary-email-templates-builder",
+  "version": "1.0.0",
+  "description": "My realisation of test task on front-end vacantion for Mercury Media Group company.",
+  "main": "app.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development",
+    "start": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akb2/mercury-media-group-test-task"
+  },
+  "keywords": [
+    "layout",
+    "pug",
+    "sass",
+    "babel"
+  ],
+  "author": "Andrew Kobelev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akb2/mercury-media-group-test-task/issues"
+  },
+  "homepage": "https://github.com/akb2/mercury-media-group-test-task#readme",
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.1.0",
+    "css-loader": "^4.3.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "^6.1.0",
+    "html-loader": "^1.3.0",
+    "html-webpack-plugin": "^4.4.1",
+    "jstransformer-scss": "^2.0.0",
+    "mini-css-extract-plugin": "^0.11.2",
+    "minify-html-webpack-plugin": "^1.1.7",
+    "optimize-css-assets-webpack-plugin": "^5.0.4",
+    "pug-html-loader": "^1.1.5",
+    "sass": "^1.22.10",
+    "sass-loader": "^10.0.2",
+    "style-loader": "^2.0.0",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-log": "^3.0.1"
+  }
+}

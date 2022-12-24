@@ -1,0 +1,19 @@
+{
+  "files.exclude": {
+    ".dist/": true,
+    "node_modules/": true,
+    "config/main.js": false,
+    "config/base.js": false,
+    "config/folders.js": false,
+    "config/scripts.js": false,
+    "config/pages.js": false,
+    "config/styles.js": false,
+    ".gitignore": true,
+    "package.json": false,
+    "package-lock.json": true,
+    "README.md": false,
+    "webpack.config.js": false,
+  },
+  "debug.node.autoAttach": "disabled",
+  "debug.javascript.usePreview": false
+}
