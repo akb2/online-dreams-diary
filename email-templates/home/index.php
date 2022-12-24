@@ -1,1 +1,0 @@
-<!doctype html><html><head><title>Dreams Diary Default Email Template</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>a{display:block}body{background-color:red}</style></head><body><main id="page"><div id="all-content"><div>123</div></div></main></body></html>
