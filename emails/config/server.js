@@ -1,4 +1,4 @@
 module.exports = {
   'port': 9000,
-  'openPage': 'home/index.html',
+  'openPage': 'account/email-confirmation.html',
 };

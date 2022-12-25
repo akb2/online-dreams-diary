@@ -1,4 +1,4 @@
 module.exports = {
   "minify": true,
-  "ext": "php"
+  "ext": "html"
 };
