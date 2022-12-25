@@ -1,5 +1,6 @@
-$fontSize: 13px;
-$lineHeight: 16px;
+@use "sass:map";
+@use "../settings/vars";
+@use "../settings/colors";
 
 * {
   &,
@@ -11,19 +12,55 @@ $lineHeight: 16px;
     padding: 0;
     z-index: 1;
   }
-
-  font-size: $fontSize;
-  line-height: $lineHeight;
 }
 
 html {
   overflow-y: scroll;
   overflow-x: hidden;
   position: static;
+
+  &,
+  * {
+    &,
+    &:before,
+    &:after {
+      font-size: vars.$defaultTextSize;
+      line-height: vars.$defaultTextHeight;
+      font-weight: 400;
+      font-family: Open Sans, serif;
+      letter-spacing: 0.02em;
+    }
+  }
+
+  b {
+    font-weight: 600;
+  }
+
+  p {
+    text-indent: 0;
+
+    @each $align in left, center, right, justify {
+      &.#{$align} {
+        text-align: $align;
+      }
+    }
+
+    & + p {
+      margin-top: vars.$defaultTextSize * vars.$defaultTextHeight;
+    }
+  }
 }
 
 body,
 html,
 header,
-section {
+section,
+main {
+  display: block;
+}
+
+a {
+  text-decoration: underline;
+  color: map.get(colors.$mat-secondary, 500);
+  cursor: pointer;
 }

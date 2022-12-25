@@ -1,0 +1,26 @@
+@use "../settings/vars";
+
+$hSpacing: 30px;
+$vSpacings: (
+  default: 45px,
+  "no-v-spacing": 0,
+  middle: 60px,
+  large: 90px,
+);
+
+.container {
+  @each $vSpacingKey, $vSpacing in $vSpacings {
+    // Класс для модификатора отступа
+    $vSpacingClass: "";
+    @if ($vSpacingKey != "default") {
+      $vSpacingClass: "--#{$vSpacingKey}";
+    }
+
+    &#{$vSpacingClass} {
+      width: vars.$pageWidth + ($hSpacing * 2);
+      max-width: 100%;
+      margin: 0 auto;
+      padding: #{$vSpacing} #{$hSpacing};
+    }
+  }
+}

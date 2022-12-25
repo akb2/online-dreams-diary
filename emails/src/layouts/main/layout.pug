@@ -1,27 +1,24 @@
-- title = "Dreams Diary Default Email Template";
-- current_page = "home";
+-
+	title = "Dreams Diary Default Email Template";
+	current_page = "home";
+	headerTitle = "Online Dreams Diary (Онлайн дневник сновидений)";
+	headerSubTitle = "";
+	footerSmallText = ""
+	siteLink = "https://dreams-diary.ru";
 block vars
-
-
-
 doctype html
 html
-
-  head
-    title= title
-    meta( name = "viewport", content = "width=device-width, initial-scale=1.0" )
-    meta( http-equiv = "Content-Type", content = "text/html; charset=UTF-8" )
-
-    style=renderScss("src/layouts/main/styles.scss")
-
-  body
-    main#page
-
-      block header
-        include header
-
-      div#all-content
-        block content
-
-      block footer
-        include footer
+	head
+		title= title
+		meta( name = "viewport", content = "width=device-width, initial-scale=1.0" )
+		meta( http-equiv = "Content-Type", content = "text/html; charset=UTF-8" )
+		style=renderScss("src/layouts/main/styles.scss")
+		link( href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@100;300;400;600&display=swap" rel="stylesheet" )
+	body
+		main#page
+			block header
+				include header
+			#all-content
+				block content
+			block footer
+				include footer

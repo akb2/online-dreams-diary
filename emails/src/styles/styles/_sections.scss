@@ -1,0 +1,40 @@
+@use "sass:map";
+@use "../settings/colors";
+
+.section {
+  $sectionColors: (
+    default: (
+      back: #efefef,
+      text: #000,
+      link: map.get(colors.$mat-secondary, 500),
+    ),
+    white: (
+      back: #fff,
+      text: #000,
+      link: map.get(colors.$mat-secondary, 500),
+    ),
+  );
+
+  @each $colorKey, $color in $sectionColors {
+    // Класс для модификатора цвета
+    $colorClass: "";
+    @if ($colorKey != "default") {
+      $colorClass: "--#{$colorKey}";
+    }
+
+    &#{$colorClass} {
+      display: block;
+      width: 100%;
+      background-color: map.get($color, back);
+
+      &,
+      * {
+        color: map.get($color, text);
+      }
+
+      a {
+        color: map.get($color, link);
+      }
+    }
+  }
+}

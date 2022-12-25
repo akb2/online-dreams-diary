@@ -1,0 +1,41 @@
+@use "sass:map";
+@use "../../styles/settings/colors";
+
+$footerGap: 15px;
+$footerLeftColumnSize: 40%;
+$footerRightColumnSize: calc(100% - #{$footerGap} - #{$footerLeftColumnSize});
+$footerBottomColumnSize: 100%;
+
+.footer {
+  background-color: #111;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $footerGap;
+
+  &__left {
+    width: $footerLeftColumnSize;
+  }
+
+  &__right {
+    width: $footerRightColumnSize;
+  }
+
+  &__bottom {
+    width: $footerBottomColumnSize;
+  }
+
+  &__small-text {
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-weight: 100;
+    opacity: 0.7;
+  }
+
+  &,
+  * {
+    color: #fff;
+  }
+}

@@ -1,0 +1,54 @@
+@use "sass:map";
+@use "../settings/colors";
+
+*.button {
+  $sizes: (
+    default: (
+      textSize: 15px,
+      vSpacing: 15px,
+      hSpacing: 25px,
+      radius: 3px,
+    ),
+    big: (
+      textSize: 18px,
+      vSpacing: 20px,
+      hSpacing: 40px,
+      radius: 5px,
+    ),
+  );
+  $colors: (
+    default: (
+      back: #999,
+      text: #fff,
+    ),
+    primary: (
+      back: map.get(colors.$mat-primary, 500),
+      text: map.get(colors.$mat-primary, contrast, 500),
+    ),
+  );
+
+  @each $sizeKey, $size in $sizes {
+    @each $colorKey, $color in $colors {
+      // Класс для модификатора размера
+      $sizeClass: "";
+      @if ($sizeKey != "default") {
+        $sizeClass: "--#{$sizeKey}";
+      }
+      // Класс для модификатора цвета
+      $colorClass: "";
+      @if ($colorKey != "default") {
+        $colorClass: "--#{$colorKey}";
+      }
+
+      &#{$sizeClass}#{$colorClass} {
+        display: inline-block;
+        padding: #{map.get($size, vSpacing)} #{map.get($size, hSpacing)};
+        font-size: map.get($size, textSize);
+        border-radius: map.get($size, radius);
+        text-decoration: none;
+        background-color: map.get($color, back);
+        color: map.get($color, text) !important;
+      }
+    }
+  }
+}
