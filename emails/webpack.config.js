@@ -201,7 +201,7 @@ module.exports = (env, option) => {
       liveReload: true,
       compress: true,
       inline: true,
-      open: false,
+      open: true,
       port: config.server.port,
       watchOptions: {
         poll: true,
