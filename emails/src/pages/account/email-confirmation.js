@@ -1,0 +1,1 @@
+import "../../layouts/main/styles.scss";
