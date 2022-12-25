@@ -12,9 +12,10 @@ class UserService
 {
   private PDO $pdo;
   private array $config;
-  private TokenService $tokenService;
 
   private DataBaseService $dataBaseService;
+  private ReCaptchaService $reCaptchaService;
+  private TokenService $tokenService;
 
   private string $avatarRelativeDir = 'images/user_avatars';
   private string $avatarDir = 'images/user_avatars';
@@ -33,7 +34,7 @@ class UserService
     $this->reCaptchaService = new ReCaptchaService('', $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     // Данные
-    $this->avatarDir = $this->config['mediaPath'].$this->avatarRelativeDir;
+    $this->avatarDir = $this->config['mediaPath'] . $this->avatarRelativeDir;
   }
 
 
@@ -243,7 +244,8 @@ class UserService
   }
 
   // Преобразовать пароль
-  private function hashPassword(string $password): string {
+  private function hashPassword(string $password): string
+  {
     return hash('sha512', $this->config['hashSecret'] . $password);
   }
 
@@ -251,8 +253,8 @@ class UserService
   public function checkPrivate(string $rule, int $userId, int $currentUser): bool
   {
     $user = $this->getUser($userId);
-    $rules = is_array($user['private']) && count($user['private']) > 0? $user['private']: $this->getDefaultUserPrivate();
-    $ruleData = is_array($rules[$rule]) && count($rules[$rule]) > 0? $rules[$rule]: $this->getDefaultUserPrivateItem();
+    $rules = is_array($user['private']) && count($user['private']) > 0 ? $user['private'] : $this->getDefaultUserPrivate();
+    $ruleData = is_array($rules[$rule]) && count($rules[$rule]) > 0 ? $rules[$rule] : $this->getDefaultUserPrivateItem();
     // Правило существует
     if (!!$ruleData) {
       // Привести к типам
@@ -636,11 +638,10 @@ class UserService
   {
     $count = 0;
     $result = array();
-    $limit = $search['limit'] > 0 & $search['limit'] <= 500? $search['limit']: $this->config["dreams"]["limit"];
+    $limit = $search['limit'] > 0 & $search['limit'] <= 500 ? $search['limit'] : $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
-    $sql = '';
     // Отфильтровать поиск по ФИО
-    if(strlen($search['q']) > 0){
+    if (strlen($search['q']) > 0) {
       $q = array();
       // Цикл по словам
       foreach (explode(' ', $search['q']) as $w) {
@@ -676,7 +677,7 @@ class UserService
       $sqlData['limit_length'] = intval($limit);
       $queryResult = $this->dataBaseService->getDatasFromFile('account/searchUsers.php', $sqlData);
       // Список данных
-      foreach($queryResult as $user) {
+      foreach ($queryResult as $user) {
         $result[] = $this->getUserData($user);
       }
     }
