@@ -1,6 +1,8 @@
 SELECT
   `id`,
   `page_status`,
+  `activation_key`,
+  `activation_key_expire`,
   `settings`,
   `private`,
   `status`,

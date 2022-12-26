@@ -3,6 +3,8 @@ CREATE TABLE `users`
     `id` INT NOT NULL AUTO_INCREMENT,
     `page_status` VARCHAR(128) NOT NULL DEFAULT "",
     `status` TINYINT(1) NOT NULL DEFAULT 0,
+    `activation_key` VARCHAR(128) NOT NULL DEFAULT "",
+    `activation_key_expire` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `login` VARCHAR(24) NOT NULL DEFAULT "",
     `password` VARCHAR(128) NOT NULL DEFAULT "",
     `name` VARCHAR(30) NOT NULL DEFAULT "",
