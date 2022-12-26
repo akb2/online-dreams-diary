@@ -5,14 +5,14 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const JSTransformer = require('jstransformer')(require('jstransformer-scss'));
+const JSTransformer = require("jstransformer")(require("jstransformer-scss"));
 //const CopyWebpackPlugin = require("copy-webpack-plugin");
 const getLogger = require("webpack-log");
 const log = getLogger({ name: "file" });
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const MinifyHtmlWebpackPlugin = require('minify-html-webpack-plugin');
-const fs = require('fs');
+const MinifyHtmlWebpackPlugin = require("minify-html-webpack-plugin");
+const HtmlWebpackCssInlinerPlugin = require("html-webpack-css-inliner-plugin");
 
 const config = require("./config/main");
 
@@ -24,8 +24,8 @@ const config = require("./config/main");
 module.exports = (env, option) => {
   const production = option.mode === "production";
   const entry = production ? { main: path.resolve(__dirname, config.folders.input.base + "/" + config.scripts.entry_name + ".js") } : {};
-  let pluginsOptions = [];
-  let minimizer = [];
+  const pluginsOptions = [];
+  const minimizer = [];
 
 
 
@@ -37,7 +37,6 @@ module.exports = (env, option) => {
       new CleanWebpackPlugin()
     );
   }
-
 
   // Поиск страниц PUG
   {
@@ -66,6 +65,7 @@ module.exports = (env, option) => {
 
       if (production && config.pages.minify) {
         const file = path.join(__dirname, config.folders.output.base);
+        // Минифакция
         pluginsOptions.push(new MinifyHtmlWebpackPlugin({
           src: file,
           dest: file,
@@ -73,16 +73,22 @@ module.exports = (env, option) => {
           rules: {
             minifyJS: true,
             minifyCSS: true
-          }
+          },
+          searchAndReplace: [
+            // Удаление атрибутов
+            (config.pages.removeAttrs.length > 0 ?
+              {
+                search: new RegExp("(" + config.pages.removeAttrs.join("|") + ")=('|\")([a-z0-9\-_\\s]*)('|\")", "gmi"),
+                replace: ""
+              } : {})
+          ]
         }));
       }
     });
   }
 
-
   // Минификация
   {
-
     // Java Script
     if (production === true & config.scripts.minify === true) {
       minimizer.push(new UglifyJsPlugin({
@@ -115,7 +121,7 @@ module.exports = (env, option) => {
 
 
   // Базовые настройки WebPack
-  let webpack_config = {
+  return {
     entry,
     output: {
       path: path.resolve(__dirname, "./" + config.folders.output.base),
@@ -128,8 +134,14 @@ module.exports = (env, option) => {
         {
           test: /\.(css|scss|sass)$/,
           use: [
-            MiniCssExtractPlugin.loader,
+            // MiniCssExtractPlugin.loader,
+            {
+              loader: "style-loader",
+              options: {
+              }
+            },
             "css-loader",
+            "postcss-loader",
             "sass-loader",
           ]
         },
@@ -140,7 +152,7 @@ module.exports = (env, option) => {
             {
               loader: "html-loader",
               options: {
-                minimize: false
+                minimize: true
               }
             }, {
               loader: "pug-html-loader",
@@ -186,6 +198,7 @@ module.exports = (env, option) => {
         filename: config.folders.output.styles + "/" + config.styles.export_name + ".css"
       }),
       ...pluginsOptions,
+      new HtmlWebpackCssInlinerPlugin(),
     ],
     optimization: {
       minimizer: [
@@ -202,6 +215,7 @@ module.exports = (env, option) => {
       compress: true,
       inline: true,
       open: true,
+      host: "localhost",
       port: config.server.port,
       watchOptions: {
         poll: true,
@@ -214,11 +228,5 @@ module.exports = (env, option) => {
         ]
       }
     }
-  }
-
-
-
-
-
-  return webpack_config;
+  };
 };
