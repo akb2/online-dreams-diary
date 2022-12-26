@@ -1,4 +1,5 @@
 module.exports = {
   "minify": true,
-  "ext": "html"
+  "ext": "html",
+  "removeAttrs": ["class", "id"]
 };
