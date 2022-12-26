@@ -2,6 +2,7 @@
 
 namespace Services;
 
+use DateTime;
 use PDO;
 use Libs\Thumbs;
 use Services\ReCaptchaService;
@@ -16,6 +17,7 @@ class UserService
   private DataBaseService $dataBaseService;
   private ReCaptchaService $reCaptchaService;
   private TokenService $tokenService;
+  private MailService $mailService;
 
   private string $avatarRelativeDir = 'images/user_avatars';
   private string $avatarDir = 'images/user_avatars';
@@ -33,6 +35,7 @@ class UserService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->reCaptchaService = new ReCaptchaService('', $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->mailService = new MailService($this->config);
     // Данные
     $this->avatarDir = $this->config['mediaPath'] . $this->avatarRelativeDir;
   }
@@ -158,14 +161,17 @@ class UserService
     if (strlen($data['login']) > 0 && strlen($data['email']) > 0) {
       $this->reCaptchaService->setCaptchaCode($data['captcha']);
       // Данные
+      $login = $data['login'];
+      $password = $this->hashPassword($data['password']);
       $sqlData = array(
-        $data['login'],
-        $this->hashPassword($data['password']),
+        $login,
+        $password,
         $data['name'],
         $data['lastName'],
         date('Y-m-d', strtotime($data['birthDate'])),
         $data['sex'],
         $data['email'],
+        json_encode(array()),
         json_encode(array()),
         json_encode(array()),
         json_encode(array())
@@ -178,8 +184,25 @@ class UserService
         if (count($checkLogin) == 0) {
           // Регистрация пользователя
           if ($this->dataBaseService->executeFromFile('account/registerUser.sql', $sqlData)) {
-            // TODO: Добавить отправку письма на почту
-            $code = '0001';
+            $sqlData = array($login, $password);
+            // Запрос авторизации
+            $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
+            $code = "9018";
+            // Проверить авторизацию
+            if (count($auth) > 0) {
+              if (strlen($auth[0]['id']) > 0) {
+                $aKey = $this->createActivationKey($auth[0]['id']);
+                $mailParams = array(
+                  'name' => $data['name'],
+                  'email' => $data['email'],
+                  'confirmationLink' => $this->config['appDomain'] . '/account-confirmation/' . $aKey,
+                );
+                // Попытка отправить письмо
+                if ($this->mailService->send('account/email-confirmation', $data['email'], 'Подтверждение регистрации', $mailParams)) {
+                  $code = "0001";
+                }
+              }
+            }
           }
           // Регистрация неудалась
           else {
@@ -217,7 +240,6 @@ class UserService
       'message' => $message,
       'data' => array(
         'id' => $id,
-        'input' => $sqlData,
         'result' => $code == '0001'
       )
     );
@@ -283,6 +305,38 @@ class UserService
     }
     // Нет доступа
     return false;
+  }
+
+  // Создания кода активации
+  public function createActivationKey(int $id): string
+  {
+    if ($id > 0) {
+      $user = $this->getUser($id);
+      // Пользователь найден
+      if ($user['id'] > 0) {
+        ['id' => $id, 'status' => $status, 'activation_key' => $aKey, 'activation_key_expire' => $aKeyDate] = $user;
+        $aKeyDate = strtotime($aKeyDate);
+        $cDate = strtotime((new DateTime())->format(DateTime::ISO8601));
+        // Ключ активации можно создать только для нового пользователя
+        if ($status == '0') {
+          if ($aKeyDate <= $cDate || strlen($aKey) === 0) {
+            $aKey = hash('sha512', $this->config['hashSecret'] . $id . $cDate);
+            $aKeyDate = $cDate + $this->config['user']['activationExpire'];
+            $sqlData = array($aKey, date('Y-m-d H:i:s', $aKeyDate), $id);
+            // Сохранение данных
+            if ($this->dataBaseService->executeFromFile('account/saveUserActivationKey.sql', $sqlData)) {
+              return $aKey;
+            }
+          }
+          // Ключ активации еще действующий
+          else if ($aKeyDate > $cDate && strlen($aKey) > 0) {
+            return $aKey;
+          }
+        }
+      }
+    }
+    // Ключ не создан
+    return "";
   }
 
 
@@ -638,7 +692,7 @@ class UserService
   {
     $count = 0;
     $result = array();
-    $limit = $search['limit'] > 0 & $search['limit'] <= 500 ? $search['limit'] : $this->config["dreams"]["limit"];
+    $limit = $search['limit'] > 0 & $search['limit'] <= 500 ? $search['limit'] : $this->config['dreams']['limit'];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     // Отфильтровать поиск по ФИО
     if (strlen($search['q']) > 0) {
@@ -734,6 +788,9 @@ class UserService
     // Вернуть данные
     return array(
       'id' => $user['id'],
+      'status' => $user['status'],
+      'activation_key' => $user['activation_key'],
+      'activation_key_expire' => $user['activation_key_expire'],
       'name' => $user['name'],
       'pageStatus' => $user['page_status'],
       'lastName' => $user['last_name'],
