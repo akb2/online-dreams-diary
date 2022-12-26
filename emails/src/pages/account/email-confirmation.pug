@@ -12,7 +12,7 @@ block vars
       confirmationLink = siteLink + "/account-confirmation/TEST_CODE_EXAMPLE";
     }
 block content
-  section.section--white
+  .section--white
     .container
       p
         | Здравствуйте, <b>!{name}</b>. Адрес вашей электронной почты (<b>!{email}</b>) был указан на сайте
@@ -23,7 +23,7 @@ block content
         |
         a(href = siteLink + "/register") регистрации
         | .
-  section.section
+  .section
     .container--middle
       h1.h1--middle Это были вы?
       p.
@@ -32,7 +32,7 @@ block content
         указанные при регистрации.
       p.center
         a.button--big--primary( href = confirmationLink ) Окончить регистрацию
-  section.section--white
+  .section--white
     .container
       h2 Это были не вы?
       p.

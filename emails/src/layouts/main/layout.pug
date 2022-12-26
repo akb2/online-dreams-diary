@@ -6,8 +6,8 @@
 	footerSmallText = ""
 	siteLink = "https://dreams-diary.ru";
 block vars
-doctype html
-html
+doctype html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+html(xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office")
 	head
 		title= title
 		meta( name = "viewport", content = "width=device-width, initial-scale=1.0" )
@@ -15,7 +15,7 @@ html
 		style=renderScss("src/layouts/main/styles.scss")
 		link( href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@100;300;400;600&display=swap" rel="stylesheet" )
 	body
-		main#page
+		#page
 			block header
 				include header
 			#all-content
