@@ -7,6 +7,8 @@
     "**/CVS/": true,
     "**/node_modules/": true,
     "app/": true,
+    "email-templates/": true,
+    "db_backup/": true,
     "media/images": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true
