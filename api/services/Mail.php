@@ -52,7 +52,7 @@ class MailService
   {
     $templatePath = $this->config['mail']['templateDir'] . $template . '.html';
     // Todo: удалить сохранение обработанного письма
-    $templateTempPath = $this->config['mail']['templateDir'] . $template . '.test.html';
+    // $templateTempPath = $this->config['mail']['templateDir'] . $template . '.test.html';
     // Проверка пути шаблона
     if (file_exists($templatePath)) {
       $content = file_get_contents($templatePath);
@@ -67,7 +67,7 @@ class MailService
         }
       }
       // Todo: удалить сохранение обработанного письма
-      file_put_contents($templateTempPath, $content);
+      // file_put_contents($templateTempPath, $content);
       // Вернуть текст шаблона
       return $content;
     }
