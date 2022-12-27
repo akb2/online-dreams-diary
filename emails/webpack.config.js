@@ -13,6 +13,7 @@ const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MinifyHtmlWebpackPlugin = require("minify-html-webpack-plugin");
 const HtmlWebpackCssInlinerPlugin = require("html-webpack-css-inliner-plugin");
+const fs = require("fs");
 
 const config = require("./config/main");
 
@@ -25,6 +26,7 @@ module.exports = (env, option) => {
   const production = option.mode === "production";
   const entry = production ? { main: path.resolve(__dirname, config.folders.input.base + "/" + config.scripts.entry_name + ".js") } : {};
   const pluginsOptions = [];
+  const pluginsAfterOptions = [];
   const minimizer = [];
 
 
@@ -59,32 +61,57 @@ module.exports = (env, option) => {
         })
       );
 
+      // Добавление точки входа для dev
       if (!production) {
         entry[entryKey] = path.resolve(__dirname, entryFile);
       }
 
-      if (production && config.pages.minify) {
-        const file = path.join(__dirname, config.folders.output.base);
-        // Минифакция
-        pluginsOptions.push(new MinifyHtmlWebpackPlugin({
-          src: file,
-          dest: file,
-          afterBuild: true,
-          rules: {
-            minifyJS: true,
-            minifyCSS: true
-          },
-          searchAndReplace: [
+      // Удаление дубликатов стилей
+      else {
+        pluginsAfterOptions.push({
+          apply: () => {
+            const outFile = path.join(__dirname, config.folders.output.base, filename);
+            const source = fs.readFileSync(outFile, "utf-8");
+            // Удаление дубликатов стилей
+            const search = new RegExp("style=('|\")([a-z0-9\-_\\s:;\.,\#\%]*)('|\")", "gmi");
+            const saveValue = v => v === "0" ? v + "px" : v;
+            const styles = source.match(search)
+              .map(f => {
+                o = f.replace(search, "$2");
+                n = o.split(";");
+                n = n.map(sf => sf.split(":")).reduce((o, [k, v]) => ({ ...o, [k.trim()]: saveValue((v + "").trim()) }), {});
+                return [o, Object.entries(n).map(([k, v]) => k + ":" + v).join(";") + ";"];
+              });
+            styles.forEach(([o, n]) => source.replace(o, n));
             // Удаление атрибутов
-            (config.pages.removeAttrs.length > 0 ?
-              {
-                search: new RegExp("(" + config.pages.removeAttrs.join("|") + ")=('|\")([a-z0-9\-_\\s]*)('|\")", "gmi"),
-                replace: ""
-              } : {})
-          ]
-        }));
+            if (config.pages.removeAttrs.length) {
+              source.replace(new RegExp("(" + config.pages.removeAttrs.join("|") + ")=('|\")([a-z0-9\-_\\s:;\.,\#\%]*)('|\")", "gmi"), "");
+            }
+            // Замена doctype
+            source.replace(
+              new RegExp("(<\!doctype html>)", "i"),
+              '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+            );
+            // Сохранить изменения
+            fs.writeFileSync(outFile, source);
+          }
+        });
       }
     });
+
+    if (production && config.pages.minify) {
+      const file = path.join(__dirname, config.folders.output.base);
+      // Минифакция
+      pluginsAfterOptions.push(new MinifyHtmlWebpackPlugin({
+        src: file,
+        dest: file,
+        afterBuild: true,
+        rules: {
+          minifyJS: true,
+          minifyCSS: true
+        }
+      }));
+    }
   }
 
   // Минификация
@@ -152,7 +179,7 @@ module.exports = (env, option) => {
             {
               loader: "html-loader",
               options: {
-                minimize: true
+                minimize: config.pages.minify
               }
             }, {
               loader: "pug-html-loader",
@@ -199,6 +226,7 @@ module.exports = (env, option) => {
       }),
       ...pluginsOptions,
       new HtmlWebpackCssInlinerPlugin(),
+      ...pluginsAfterOptions
     ],
     optimization: {
       minimizer: [
