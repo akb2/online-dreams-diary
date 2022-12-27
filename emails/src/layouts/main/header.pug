@@ -1,6 +1,5 @@
-.section.header
-  .container--no-v-spacing
-    a.header__left(href=siteLink)
-      .header__title=headerTitle
-      if (!!headerSubTitle)
-        .header__subtitle=headerSubTitle
++container("no-v-spacing", 60).header
+  a.header__title(href=siteLink)=headerTitle
+  if (!!headerSubTitle)
+    br
+    a.header__subtitle(href=siteLink)=headerSubTitle

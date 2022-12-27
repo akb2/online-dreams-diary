@@ -3,7 +3,7 @@
 $hSpacing: 30px;
 $vSpacings: (
   default: 45px,
-  "no-v-spacing": 0,
+  "no-v-spacing": 0px,
   middle: 60px,
   large: 90px,
 );
@@ -17,9 +17,7 @@ $vSpacings: (
     }
 
     &#{$vSpacingClass} {
-      width: vars.$pageWidth + ($hSpacing * 2);
-      max-width: 100%;
-      margin: 0 auto;
+      width: 100%;
       padding: #{$vSpacing} #{$hSpacing};
     }
   }

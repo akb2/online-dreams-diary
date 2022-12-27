@@ -8,11 +8,6 @@ $footerBottomColumnSize: 100%;
 
 .footer {
   background-color: #111;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: $footerGap;
 
   &__left {
     width: $footerLeftColumnSize;
@@ -29,7 +24,6 @@ $footerBottomColumnSize: 100%;
   &__small-text {
     font-size: 11px;
     line-height: 1.2;
-    letter-spacing: 0;
     font-weight: 100;
     opacity: 0.7;
   }

@@ -12,19 +12,17 @@ block vars
       confirmationLink = siteLink + "/account-confirmation/TEST_CODE_EXAMPLE";
     }
 block content
-  .section--white
-    .container
-      p
-        | Здравствуйте, <b>!{name}</b>. Адрес вашей электронной почты (<b>!{email}</b>) был указан на сайте
-        |
-        a(href=siteLink)=headerTitle
-        |
-        | на странице
-        |
-        a(href = siteLink + "/register") регистрации
-        | .
-  .section
-    .container--middle
+  +container.section--white
+    p
+      | Здравствуйте, <b>!{name}</b>. Адрес вашей электронной почты (<b>!{email}</b>) был указан на сайте
+      |
+      a(href=siteLink)=headerTitle
+      |
+      | на странице
+      |
+      a(href = siteLink + "/register") регистрации
+      | .
+  +container("middle").section
       h1.h1--middle Это были вы?
       p.
         Если это были вы, тогда перейдите, пожалуйста, по ссылке ниже, чтобы окончить регистрацию на сайте
@@ -32,8 +30,7 @@ block content
         указанные при регистрации.
       p.center
         a.button--big--primary( href = confirmationLink ) Окончить регистрацию
-  .section--white
-    .container
-      h2 Это были не вы?
-      p.
-        Ничего страшного, если это были не вы. Тогда просто проигнорируйте данное письмо.
+  +container.section--white
+    h2 Это были не вы?
+    p.
+      Ничего страшного, если это были не вы. Тогда просто проигнорируйте данное письмо.

@@ -3,20 +3,20 @@
 @use "../../styles/settings/colors";
 
 .header {
-  height: vars.$headerSize;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: center;
+  width: 100%;
   background-color: map.get(colors.$mat-primary, 500);
 
+  &__filler {
+    width: 50%;
+  }
+
   &__left {
-    text-decoration: none;
   }
 
   &__title,
   &__subtitle {
     color: map.get(colors.$mat-primary, contrast, 500);
+    text-decoration: none;
   }
 
   &__title {

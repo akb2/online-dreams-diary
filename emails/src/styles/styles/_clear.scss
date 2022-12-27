@@ -2,34 +2,21 @@
 @use "../settings/vars";
 @use "../settings/colors";
 
-* {
-  &,
-  &:before,
-  &:after {
+html,
+body {
+  & {
     box-sizing: border-box;
-    outline: none;
     margin: 0;
     padding: 0;
-    z-index: 1;
   }
 }
 
 html {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  position: static;
-
-  &,
-  * {
-    &,
-    &:before,
-    &:after {
-      font-size: vars.$defaultTextSize;
-      line-height: vars.$defaultTextHeight;
-      font-weight: 400;
-      font-family: Open Sans, Arial, sans-serif;
-      letter-spacing: 0.02em;
-    }
+  & {
+    font-size: vars.$defaultTextSize;
+    line-height: vars.$defaultTextHeight;
+    font-weight: 400;
+    font-family: Open Sans, Arial, sans-serif;
   }
 
   b {
@@ -38,6 +25,9 @@ html {
 
   p {
     text-indent: 0;
+    line-height: vars.$defaultTextHeight;
+    margin-top: 0;
+    margin-bottom: 0;
 
     @each $align in left, center, right, justify {
       &.#{$align} {
@@ -51,16 +41,23 @@ html {
   }
 }
 
-body,
-html,
-header,
-section,
-main {
-  display: block;
-}
-
 a {
   text-decoration: underline;
   color: map.get(colors.$mat-secondary, 500);
-  cursor: pointer;
+  line-height: vars.$defaultTextHeight;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+
+  > tbody {
+    width: 100%;
+  }
+
+  td {
+    padding: 0;
+  }
 }

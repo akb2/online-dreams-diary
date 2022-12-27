@@ -23,8 +23,6 @@
     }
 
     &#{$colorClass} {
-      display: block;
-      width: 100%;
       background-color: map.get($color, back);
 
       &,
