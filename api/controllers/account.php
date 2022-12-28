@@ -73,7 +73,7 @@ class Account
           $code = '0001';
         }
         // Доступ не разрешен
-        else{
+        else {
           $code = '8100';
         }
       }
@@ -95,6 +95,12 @@ class Account
     );
   }
 
+  // Создание ключа активации аккаунта
+  public function createActivationCode(array $data): array
+  {
+    return $this->userService->createActivationCodeApi($data);
+  }
+
 
 
   // Поиск
@@ -110,8 +116,8 @@ class Account
       "birth_year" => $data["search_birthYear"] ?? null,
       "birth_month" => $data["search_birthMonth"] ?? null,
       "birth_day" => $data["search_birthDay"] ?? null,
-      "ids" => strlen($data["search_ids"]) > 0? explode(",", $data["search_ids"]): array(),
-      "exclude_ids" => strlen($data["search_excludeIds"]) > 0? explode(",", $data["search_excludeIds"]): array(),
+      "ids" => strlen($data["search_ids"]) > 0 ? explode(",", $data["search_ids"]) : array(),
+      "exclude_ids" => strlen($data["search_excludeIds"]) > 0 ? explode(",", $data["search_excludeIds"]) : array(),
       "page" => $data["search_page"] ?? 1,
       "limit" => $data["search_limit"] ?? null
     );
@@ -151,6 +157,9 @@ class Account
       $code = "9013";
       // Запрос данных о пользователе
       $user = $this->userService->getUser($data["id"]);
+      // Удалить секретные данные
+      unset($user['activation_key']);
+      unset($user['activation_key_expire']);
       // Проверить авторизацию
       if ($user) {
         $code = "0001";
@@ -173,7 +182,8 @@ class Account
 
   // Изменение пароля
   // * POST
-  public function changePassword($data): array {
+  public function changePassword($data): array
+  {
     $code = "0000";
     $message = "";
     $id = $_GET["id"];

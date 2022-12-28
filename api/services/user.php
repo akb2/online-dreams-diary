@@ -109,6 +109,7 @@ class UserService
     $id = '';
     $token = '';
     $sqlData = array();
+    $activateIsAvail = false;
 
     // Если получены данные
     if (strlen($data['login']) > 0 && strlen($data['password']) > 0) {
@@ -122,10 +123,23 @@ class UserService
       $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
       // Проверить авторизацию
       if (count($auth) > 0) {
-        if (strlen($auth[0]['id']) > 0) {
-          $id = $auth[0]['id'];
-          $token = $this->tokenService->createToken($id);
-          $code = strlen($token) > 0 ? '0001' : '9014';
+        $user = $auth[0];
+        // Проверка пользователя
+        if (strlen($user['id']) > 0) {
+          // Авторизация
+          if ($user['status'] == '1') {
+            $id = $user['id'];
+            $token = $this->tokenService->createToken($id);
+            $code = strlen($token) > 0 ? '0001' : '9014';
+          }
+          // Требуется активация акааунта
+          else if ($user['status'] == '0') {
+            $aKeyDate = strtotime($user['activation_key_expire']);
+            $cDate = strtotime((new DateTime())->format(DateTime::ISO8601));
+            $id = $user['id'];
+            $code = '9019';
+            $activateIsAvail = strlen($user['activation_key']) > 0 && $aKeyDate > $cDate;
+          }
         }
       }
       // Убрать метку пароля
@@ -144,7 +158,8 @@ class UserService
         'id' => $id,
         'token' => $token,
         'input' => $sqlData,
-        'result' => $code == '0001'
+        'result' => $code == '0001',
+        'activateIsAvail' => $activateIsAvail
       )
     );
   }
@@ -160,25 +175,23 @@ class UserService
     // Если получены данные
     if (strlen($data['login']) > 0 && strlen($data['email']) > 0) {
       $this->reCaptchaService->setCaptchaCode($data['captcha']);
-      // Данные
-      $login = $data['login'];
-      $password = $this->hashPassword($data['password']);
-      $sqlData = array(
-        $login,
-        $password,
-        $data['name'],
-        $data['lastName'],
-        date('Y-m-d', strtotime($data['birthDate'])),
-        $data['sex'],
-        $data['email'],
-        json_encode(array()),
-        json_encode(array()),
-        json_encode(array()),
-        json_encode(array())
-      );
-
       // Проверить капчу
       if ($this->reCaptchaService->checkCaptcha()) {
+        $login = $data['login'];
+        $password = $this->hashPassword($data['password']);
+        $sqlData = array(
+          $login,
+          $password,
+          $data['name'],
+          $data['lastName'],
+          date('Y-m-d', strtotime($data['birthDate'])),
+          $data['sex'],
+          $data['email'],
+          json_encode(array()),
+          json_encode(array()),
+          json_encode(array()),
+          json_encode(array())
+        );
         $checkLogin = $this->dataBaseService->getDatasFromFile('account/checkLoginEmail.sql', array($data['login'], $data['email']));
         // Проверить логин
         if (count($checkLogin) == 0) {
@@ -244,6 +257,75 @@ class UserService
       )
     );
   }
+
+  // Создание ключа активации
+  public function createActivationCodeApi(array $data): array
+  {
+    $code = '9018';
+    $message = '';
+
+    // Если получены данные
+    if (strlen($data['login']) > 0 && strlen($data['password']) > 0) {
+      $this->reCaptchaService->setCaptchaCode($data['captcha']);
+      // Проверить капчу
+      if ($this->reCaptchaService->checkCaptcha()) {
+        $code = '9013';
+        // Данные
+        $sqlData = array(
+          $data['login'],
+          $this->hashPassword($data['password'])
+        );
+        // Запрос авторизации
+        $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
+        // Проверить авторизацию
+        if (count($auth) > 0) {
+          $user = $this->getUser($auth[0]['id']);
+          // Проверка пользователя
+          if (strlen($user['id']) > 0) {
+            // Создать код только для неактивированного аккаунта
+            if ($user['status'] == '0') {
+              $aKey = $this->createActivationKey($user['id']);
+              $mailParams = array(
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'confirmationLink' => $this->config['appDomain'] . '/account-confirmation/' . $aKey,
+              );
+              // Попытка отправить письмо
+              if ($this->mailService->send('account/email-confirmation', $user['email'], 'Подтверждение регистрации', $mailParams)) {
+                $code = "0001";
+              }
+            }
+            // Аккаунт уже активирован
+            else {
+              $code = '9022';
+            }
+          }
+        }
+        // Убрать метку пароля
+        unset($sqlData[1]);
+      }
+      // Ошибка капчи
+      else {
+        $code = '9010';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => $message,
+      'data' => array(
+        'input' => $sqlData,
+        'result' => $code == '0001'
+      )
+    );
+  }
+
+
 
   // Проверка пароля
   public function checkUserPassword(array $data): bool
