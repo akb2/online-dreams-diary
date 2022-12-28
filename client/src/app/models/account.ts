@@ -6,18 +6,12 @@ import { NavMenuType } from "@_models/nav-menu";
 
 
 // Интерфейс данных о пользователе
-export interface User {
+export interface User extends UserSave {
   id: number;
   pageStatus: string;
   settings: UserSettings;
   private: UserPrivate;
-  name: string;
-  lastName: string;
-  patronymic: string;
-  birthDate: Date;
   registerDate: Date;
-  sex: UserSex;
-  email: string;
   roles: UserRoles[];
   avatars: UserAvatars;
   avatarCropData: UserAvatarCropData;
@@ -79,25 +73,30 @@ export interface UserAvatarCropDataElement {
 }
 
 // Интерфейс данных для регистрации
-export interface UserRegister {
+export interface UserRegister extends UserBase {
   login: string;
   password: string;
-  name: string;
-  lastName: string;
-  birthDate: string;
-  sex: number;
-  email: string;
   captcha: string;
 }
 
 // Интерфейс данных для обновления аккаунта
-export interface UserSave {
+export interface UserSave extends UserBase {
+  patronymic: string;
+}
+
+// Базовые параметры о пользователе
+interface UserBase {
   name: string;
   lastName: string;
-  patronymic: string;
   birthDate: string;
   sex: number;
   email: string;
+}
+
+// Интерфейс авторизации
+export interface AuthResponce {
+  code: string;
+  activateIsAvail: boolean;
 }
 
 
