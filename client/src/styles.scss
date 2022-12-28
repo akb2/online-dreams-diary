@@ -97,6 +97,7 @@ html {
 
 // Базовые настройки
 @include material.mat-snack-bar;
+@include material.mat-button;
 
 // Выделение элементов
 *[unselectable="on"] {
