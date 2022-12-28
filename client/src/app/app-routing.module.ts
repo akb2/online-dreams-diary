@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core";
 import { PreloadAllModules, RouterModule } from "@angular/router";
 import { AuthGuard } from "@_helpers/auth-guard";
+import { AuthRules } from "@_models/menu";
 
 
 
@@ -9,91 +10,90 @@ import { AuthGuard } from "@_helpers/auth-guard";
 @NgModule({
   imports: [RouterModule.forRoot(
     [
-      // ! Информация о ключе authRule см. в типе AuthRules файла menu.ts в моделях
       // * Для неавторизованных пользователей
       // Главная страница
       {
         path: "home",
         loadChildren: () => import("@_pages/home/home.module").then(m => m.HomeModule),
-        data: { authRule: -1 },
+        data: { authRule: AuthRules.notAuth },
         canActivate: [AuthGuard]
       },
       // Авторизация
       {
         path: "auth",
         loadChildren: () => import("@_pages/auth/auth.module").then(m => m.AuthModule),
-        data: { authRule: -1 },
+        data: { authRule: AuthRules.notAuth },
         canActivate: [AuthGuard]
       },
       // Регистрация
       {
         path: "register",
         loadChildren: () => import("@_pages/register/register.module").then(m => m.RegisterModule),
-        data: { authRule: -1 },
+        data: { authRule: AuthRules.notAuth },
+        canActivate: [AuthGuard]
+      },
+      // Активация аккаунта
+      {
+        path: "account-confirmation/:activationCode",
+        loadChildren: () => import("@_pages/account-confirmation/account-confirmation.module").then(m => m.AccountConfirmationModule),
+        data: { authRule: AuthRules.notAuth },
         canActivate: [AuthGuard]
       },
       // * Для авторизованных пользователей
-      // Профиль: моя страница
-      {
-        path: "profile",
-        loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
-        data: { authRule: 1, userId: -1 },
-        canActivate: [AuthGuard]
-      },
       // Настройки
       {
         path: "profile/settings",
         loadChildren: () => import("@_pages/profile-settings/profile-settings.module").then(m => m.ProfileSettingsModule),
-        data: { authRule: 1 },
+        data: { authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Настройки: Перснальные данные
       {
         path: "profile/settings/person",
         loadChildren: () => import("@_pages/profile-settings-person/profile-settings-person.module").then(m => m.ProfileSettingsPersonModule),
-        data: { authRule: 1 },
+        data: { authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Настройки: Приватность
       {
         path: "profile/settings/private",
         loadChildren: () => import("@_pages/profile-settings-private/profile-settings-private.module").then(m => m.ProfileSettingsPrivateModule),
-        data: { authRule: 1 },
+        data: { authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Настройки: Персонализация
       {
         path: "profile/settings/appearance",
         loadChildren: () => import("@_pages/profile-settings-appearance/profile-settings-appearance.module").then(m => m.ProfileSettingsAppearanceModule),
-        data: { authRule: 1 },
+        data: { authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Настройки: Безопасность
       {
         path: "profile/settings/security",
         loadChildren: () => import("@_pages/profile-settings-security/profile-settings-security.module").then(m => m.ProfileSettingsSecurityModule),
-        data: { authRule: 1 },
+        data: { authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Дневник: Мои сновидения
       {
         path: "diary/my",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { userId: -1, authRule: 1 },
+        data: { userId: -1, authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Дневник: Редактор: новый сон
       {
         path: "diary/editor",
         loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
-        data: { userId: 0, authRule: 1 },
+        data: { userId: 0, authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // Дневник: Редактор: редактирование сна
       {
         path: "diary/editor/:dreamId",
         loadChildren: () => import("@_pages/diary-editor/diary-editor.module").then(m => m.DiaryEditorModule),
-        data: { userId: 0, authRule: 1 },
+        data: { userId: 0, authRule: AuthRules.auth },
         canActivate: [AuthGuard]
       },
       // * Страницы, не имеющие значения авторизации
@@ -102,8 +102,8 @@ import { AuthGuard } from "@_helpers/auth-guard";
         path: "",
         children: [],
         data: {
-          authRule: 0,
-          redirectAuth: "/profile",
+          authRule: AuthRules.anyWay,
+          redirectAuth: "/profile/:userId",
           redirectNotAuth: "/home",
         },
         canActivate: [AuthGuard]
@@ -112,7 +112,7 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "profile/:user_id",
         loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
-        data: { authRule: 0, userId: -2 },
+        data: { authRule: AuthRules.anyWay, userId: -1 },
         canActivate: [AuthGuard]
       },
       // Дневник
@@ -120,7 +120,7 @@ import { AuthGuard } from "@_helpers/auth-guard";
         path: "diary",
         children: [],
         data: {
-          authRule: 0,
+          authRule: AuthRules.anyWay,
           redirectAuth: "/diary/my",
           redirectNotAuth: "/diary/all",
         },
@@ -130,42 +130,42 @@ import { AuthGuard } from "@_helpers/auth-guard";
       {
         path: "diary/all",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { userId: 0, authRule: 0 },
+        data: { userId: 0, authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Дневник: Сновидения определенного пользователя
       {
         path: "diary/:user_id",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { userId: -2, authRule: 0 },
+        data: { userId: -2, authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Дневник: Просмотр
       {
         path: "diary/viewer",
         loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
-        data: { userId: 0, from: "", authRule: 0 },
+        data: { userId: 0, from: "", authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Дневник: Просмотр
       {
         path: "diary/viewer/:dreamId",
         loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
-        data: { userId: 0, from: "", authRule: 0 },
+        data: { userId: 0, from: "", authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Поиск: пользователи
       {
         path: "people",
         loadChildren: () => import("@_pages/people/people.module").then(m => m.PeopleModule),
-        data: { authRule: 0 },
+        data: { authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Ошибка 404
       {
         path: "**",
         loadChildren: () => import("@_pages/404/404.module").then(m => m.Page404Module),
-        data: { authRule: 0 },
+        data: { authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
     ],
