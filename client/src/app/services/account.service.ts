@@ -1,18 +1,19 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
-import { environment } from '@_environments/environment';
-import { PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
 import { UserPrivateNames } from "@_datas/account";
+import { BackgroundImageDatas } from "@_datas/appearance";
+import { environment } from '@_environments/environment';
+import { CompareObjects } from "@_helpers/objects";
+import { AuthResponce, PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { BackgroundImageDatas } from "@_datas/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { catchError, filter, map, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, filter, map, mergeMap, pairwise, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -31,7 +32,7 @@ export class AccountService implements OnDestroy {
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
 
-  private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+  readonly user: BehaviorSubject<User> = new BehaviorSubject(null);
   readonly user$: Observable<User>;
   readonly destroy$: Subject<void> = new Subject<void>();
 
@@ -96,7 +97,10 @@ export class AccountService implements OnDestroy {
     // Подписка на текущего пользователя, изменения только когда значение соответсвует текущей авторизации
     this.user$ = this.user.asObservable().pipe(
       takeUntil(this.destroy$),
-      filter(user => (!this.checkAuth && !user) || (this.checkAuth && !!user))
+      startWith(null),
+      pairwise(),
+      filter(([prev, curr]) => !CompareObjects(prev, curr) || !this.checkAuth),
+      map(([, curr]) => curr),
     );
   }
 
@@ -111,21 +115,28 @@ export class AccountService implements OnDestroy {
 
 
   // Авторизация
-  auth(login: string, password: string, codes: string[] = []): Observable<string> {
+  auth(login: string, password: string, codes: string[] = []): Observable<AuthResponce> {
     const formData: FormData = new FormData();
     formData.append("login", login);
     formData.append("password", password);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/auth", formData, this.httpHeader).pipe(switchMap(result => {
-      const code: ApiResponseCodes = result.result.code;
-      // Сохранить токен
-      if (code === "0001") {
-        this.tokenService.saveAuth(result.result.data.token, result.result.data.id);
-        this.router.navigate([""]);
-      }
-      // Обработка ошибки
-      return this.apiService.checkResponse(code, codes);
-    }));
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/auth", formData, this.httpHeader)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(result => {
+          const code: ApiResponseCodes = result.result.code.toString();
+          // Сохранить токен
+          if (code === "0001") {
+            this.tokenService.saveAuth(result.result.data.token, result.result.data.id);
+            this.router.navigate([""]);
+          }
+          // Обработка ошибки
+          return of({
+            code,
+            activateIsAvail: !!result?.result?.data?.activateIsAvail
+          });
+        })
+      );
   }
 
   // Регистрация
@@ -133,14 +144,29 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     Object.entries(data).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader).pipe(
-      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
-    );
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+      );
+  }
+
+  // Создание ключа активации аккаунта
+  createActivationCode(login: string, password: string, captcha: string, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("login", login);
+    formData.append("password", password);
+    formData.append("captcha", captcha);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/createActivationCode", formData, this.httpHeader)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+      );
   }
 
   // Выйти из аккаунта
   quit(): void {
-    this.user.next(null);
     this.saveCurrentUser(null);
     this.tokenService.deleteAuth();
   }
@@ -170,7 +196,6 @@ export class AccountService implements OnDestroy {
   // Обновить анонимного пользователя
   syncAnonymousUser(): void {
     this.saveCurrentUser(null);
-    this.user.next(null);
   }
 
   // Информация о пользователе
@@ -184,7 +209,6 @@ export class AccountService implements OnDestroy {
             const user: User = this.userConverter(result.result.data);
             // Сохранить данные
             this.saveCurrentUser(user);
-            this.user.next(user);
           }
           // Вернуть данные пользователя
           if (result.result.code === "0001" || codes.some(testCode => testCode === result.result.code)) {
@@ -363,6 +387,7 @@ export class AccountService implements OnDestroy {
   private saveCurrentUser(user: User): void {
     this.configLocalStorage();
     this.localStorageService.setCookie("current_user", !!user ? JSON.stringify(user) : "");
+    this.user.next(user);
   }
 
   // Преобразовать данные с сервера

@@ -1,11 +1,12 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { Router } from "@angular/router";
+import { NavigationEnd, Router } from "@angular/router";
+import { MenuItems } from "@_datas/menu";
+import { CompareArrays, CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
-import { MenuItems } from "@_datas/menu";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, filter, map, Observable, pairwise, startWith, Subject, takeUntil } from "rxjs";
 
 
 
@@ -37,8 +38,13 @@ export class MenuService implements OnDestroy {
     private screenService: ScreenService
   ) {
     // Подписка на пункты меню
-    this.menuItems$ = this.menuItems.asObservable()
-      .pipe(takeUntil(this.destroy$));
+    this.menuItems$ = this.menuItems.asObservable().pipe(
+      takeUntil(this.destroy$),
+      startWith(undefined),
+      pairwise(),
+      filter(([prev, next]) => !CompareArrays(prev, next)),
+      map(([, next]) => next)
+    );
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
@@ -53,6 +59,13 @@ export class MenuService implements OnDestroy {
         this.user = user;
         this.createMenuItems();
       });
+    // Подписка на изменение роута
+    this.router.events
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(event => event instanceof NavigationEnd)
+      )
+      .subscribe(e => this.createMenuItems());
   }
 
   ngOnDestroy(): void {

@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { ElmSize, LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
 import { BehaviorSubject, fromEvent, Observable, Subject, Subscriber, timer } from "rxjs";
-import { map, skipWhile, takeUntil, takeWhile } from "rxjs/operators";
+import { filter, map, pairwise, skipWhile, startWith, takeUntil, takeWhile } from "rxjs/operators";
 
 
 
@@ -26,10 +26,10 @@ export class ScreenService implements OnDestroy {
   private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
 
   private isMobile: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  readonly isMobile$: Observable<boolean> = this.isMobile.asObservable();
+  readonly isMobile$: Observable<boolean>;
 
   private breakpoint: BehaviorSubject<ScreenKeys> = new BehaviorSubject<ScreenKeys>("default");
-  readonly breakpoint$: Observable<ScreenKeys> = this.breakpoint.asObservable();
+  readonly breakpoint$: Observable<ScreenKeys>;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -41,10 +41,26 @@ export class ScreenService implements OnDestroy {
     this.updateIsMobile();
     // Обновить метку о типе интерфейса
     fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(() => this.updateIsMobile());
+    // Подписки
+    this.isMobile$ = this.isMobile.asObservable().pipe(
+      takeUntil(this.destroy$),
+      startWith(undefined),
+      pairwise(),
+      filter(([prev, next]) => prev !== next),
+      map(([, next]) => next)
+    );
+    this.breakpoint$ = this.breakpoint.asObservable().pipe(
+      takeUntil(this.destroy$),
+      startWith(undefined),
+      pairwise(),
+      filter(([prev, next]) => prev !== next),
+      map(([, next]) => next)
+    );
   }
 
   ngOnDestroy(): void {
     this.isMobile.complete();
+    this.breakpoint.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
