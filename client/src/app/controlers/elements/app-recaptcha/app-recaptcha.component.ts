@@ -1,5 +1,9 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
+import { NgControl } from "@angular/forms";
 import { BaseInputDirective } from "@_directives/base-input.directive";
+import { environment } from "@_environments/environment";
+import { ScreenService } from "@_services/screen.service";
+import { mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -8,7 +12,8 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
 @Component({
   selector: "app-recaptcha",
   templateUrl: "./app-recaptcha.component.html",
-  styleUrls: ["./app-recaptcha.component.scss"]
+  styleUrls: ["./app-recaptcha.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class AppRecaptchaComponent extends BaseInputDirective implements OnInit, OnDestroy {
@@ -16,41 +21,60 @@ export class AppRecaptchaComponent extends BaseInputDirective implements OnInit,
 
   @ViewChild('container') layout: ElementRef;
 
-  public siteKey: string = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+  siteKey: string = environment.reCaptchaKey;
 
-  public scale: number = 0;
-  public baseWidth: number = 304;
-  public baseHeight: number = 78;
-  public layoutWidth: number = 0;
-  public layoutHeight: number = 0;
+  scale: number = 0;
+  baseWidth: number = 304;
+  baseHeight: number = 78;
+  layoutWidth: number = 0;
+  layoutHeight: number = 0;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
 
 
-  // Конструктор
-  public ngOnInit(): void {
-    window.addEventListener("resize", this.onResize.bind(this), true);
-    setTimeout(() => this.calculateWidth());
+  constructor(
+    @Optional() @Self() controlDir: NgControl,
+    private screenService: ScreenService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
+    super(controlDir);
   }
 
-  // Конец класса
-  public ngOnDestroy(): void {
-    window.removeEventListener("resize", this.onResize.bind(this), true);
+  ngOnInit(): void {
+    timer(0, 100)
+      .pipe(
+        takeUntil(this.destroyed$),
+        takeWhile(() => !this.layout.nativeElement, true),
+        skipWhile(() => !this.layout.nativeElement),
+        mergeMap(() => this.screenService.elmResize(this.layout.nativeElement))
+      )
+      .subscribe(() => this.onResize());
   }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
+
+
+
+
 
   // Капча пройдена
-  public onResolved(code: string): void {
+  onResolved(code: string): void {
     this.control.setValue(code);
   }
 
   // Капча непройдена
-  public onError(): void {
+  onError(): void {
     this.control.setValue(null);
   }
 
   // Изменение размеров экрана
-  public onResize(event?: Event): void {
+  private onResize(): void {
     this.calculateWidth();
   }
 
@@ -59,9 +83,10 @@ export class AppRecaptchaComponent extends BaseInputDirective implements OnInit,
 
 
   // Подсчитать ширину капчи
-  public calculateWidth(): void {
+  private calculateWidth(): void {
     this.layoutWidth = this.layout.nativeElement.clientWidth;
     this.scale = this.layoutWidth / this.baseWidth;
     this.layoutHeight = this.baseHeight * this.scale;
+    this.changeDetectorRef.detectChanges();
   }
 }
