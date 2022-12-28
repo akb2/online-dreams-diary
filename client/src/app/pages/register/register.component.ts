@@ -141,16 +141,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Ответ от капчи
-  captchaResolved(code: string): void {
-    // * Secret key
-    // * 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
-    code = code ? code : "";
-
-    this.form[2].get("captcha").setValue(code);
-    this.form[2].updateValueAndValidity();
-  }
-
 
 
 
@@ -229,10 +219,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Следующая форма
     if (this.step < this.form.length - 1 && this.form[this.step].valid) {
       this.step++;
-      // Если есть капча
-      if (this.step == 2) {
-        setTimeout(() => this.appRecaptchaComponent.calculateWidth());
-      }
     }
     // Отправка формы
     else if (this.step === this.form.length - 1 && this.form[this.step].valid) {
