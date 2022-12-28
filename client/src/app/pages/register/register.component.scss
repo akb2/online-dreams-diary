@@ -1,9 +1,6 @@
 @use "sass:map";
 @use "sass:math";
 @use "../../../assets/styles/screens";
-@use "../../../assets/styles/material";
-
-@include material.mat-button;
 
 $tab-padding: 15px;
 

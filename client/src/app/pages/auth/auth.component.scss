@@ -1,9 +1,11 @@
 @use "sass:map";
 @use "sass:math";
+@use "../../../assets/styles/colors";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/material";
+@use "../../../assets/styles/containers";
 
-@include material.mat-button;
+@include material.mat-form-field;
 
 // Контейнер
 .container {
@@ -17,9 +19,9 @@
 
   display: flex;
   gap: 15px;
-  flex-flow: row wrap;
-  justify-content: center;
-  align-items: flex-start;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center;
 
   @each $screen, $resolution in screens.$breakpoints {
     @media (min-width: #{screens.min_resolution( $screen )}px) and (max-width: #{screens.max_resolution( $screen )}px) {
