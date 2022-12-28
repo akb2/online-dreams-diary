@@ -7,19 +7,40 @@
 
 // Кнопки
 @mixin mat-button {
-  *.mat-button-base {
-    &.mat-stroked-button,
-    &.mat-flat-button {
-      $height: 44px;
+  .mat-button {
+    // Текст
+    &-wrapper {
+      line-height: 1;
+      vertical-align: middle;
 
-      height: $height;
-      line-height: $height;
-      padding: 0 24px;
+      > .mat-icon {
+        margin-right: 9px;
+        margin-left: -9px;
+      }
+    }
 
-      &,
-      * {
-        font-family: "Roboto", open-sans;
-        font-weight: 600;
+    // Прочее
+    &-base {
+      &.mat-stroked-button,
+      &.mat-flat-button {
+        $height: 40px;
+
+        height: $height;
+        line-height: $height;
+        padding: 0 24px;
+
+        &,
+        *:not(.mat-icon) {
+          font-family: "Roboto", open-sans;
+          font-weight: 400;
+        }
+      }
+
+      &.mat-mini-fab {
+        .mat-icon {
+          margin-right: 0;
+          margin-left: 0;
+        }
       }
     }
   }
