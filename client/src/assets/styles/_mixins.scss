@@ -1,5 +1,7 @@
 @use "sass:map";
 @use "sass:math";
+@use "colors";
+@use "containers";
 
 // Повторить строку
 @function str-repeat($string, $count: 1, $implementer: "") {
@@ -111,4 +113,14 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+}
+
+// Свойства контейнера
+@mixin imageContainer($height: 10px, $padding: 280px) {
+  overflow: hidden;
+  border-radius: containers.$cardBorderRadius;
+  background-color: colors.$background;
+  height: $height;
+  padding: $padding;
+  cursor: pointer;
 }

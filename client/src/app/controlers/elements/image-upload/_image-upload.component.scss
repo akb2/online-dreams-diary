@@ -2,20 +2,10 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/containers";
-@use "../card/card.component" as card;
+@use "../../../../assets/styles/mixins";
 
 $padding: 10px;
 $height: 280px;
-
-// Свойства контейнера
-@mixin image-container {
-  overflow: hidden;
-  border-radius: containers.$cardBorderRadius;
-  background-color: colors.$background;
-  height: $height;
-  padding: $padding;
-  cursor: pointer;
-}
 
 // Поле файла
 .file-input {
@@ -24,7 +14,7 @@ $height: 280px;
 
 // Картинка
 .image {
-  @include image-container;
+  @include mixins.imageContainer($padding);
   // Картинка
   > img {
     width: 100%;
@@ -56,7 +46,7 @@ $height: 280px;
     justify-content: space-between;
   }
   // Адаптив отступов
-  @include screens.adaptiveFor(card.$paddings) using($padding) {
+  @include screens.adaptiveFor(containers.$cardPaddings) using($padding) {
     margin-top: map.get($padding, y);
   }
 }

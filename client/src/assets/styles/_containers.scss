@@ -23,6 +23,28 @@ $cardBoxShadow: 1px 1px 10px 1px #{colors.$shadow};
 $cardBorderRadius: 5px;
 $cardPaddingY: 15px;
 $cardPaddingX: 22px;
+$cardPaddings: (
+  xsmall: (
+    x: 15px,
+    y: 15px,
+  ),
+  small: (
+    x: 20px,
+    y: 20px,
+  ),
+  middle: (
+    x: 25px,
+    y: 25px,
+  ),
+  large: (
+    x: 30px,
+    y: 30px,
+  ),
+  xlarge: (
+    x: 30px,
+    y: 30px,
+  ),
+);
 
 $mobileMenuWidth: 280px;
 $mobileMenuHeight: 240px;

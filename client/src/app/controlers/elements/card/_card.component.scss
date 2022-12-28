@@ -5,28 +5,6 @@
 @use "../../../../assets/styles/mixins";
 
 $base_elm: ".mat-card";
-$paddings: (
-  xsmall: (
-    x: 15px,
-    y: 15px,
-  ),
-  small: (
-    x: 20px,
-    y: 20px,
-  ),
-  middle: (
-    x: 25px,
-    y: 25px,
-  ),
-  large: (
-    x: 30px,
-    y: 30px,
-  ),
-  xlarge: (
-    x: 30px,
-    y: 30px,
-  ),
-);
 $image-color: 500;
 // Цвета
 $colors: (
@@ -196,7 +174,7 @@ $colors: (
   }
 
   // Адаптив
-  @include screens.adaptiveFor($paddings) using($padding) {
+  @include screens.adaptiveFor(containers.$cardPaddings) using($padding) {
     padding: #{map.get($padding, y)} #{map.get($padding, x)};
     gap: #{map.get($padding, y)} #{map.get($padding, x)};
   }
