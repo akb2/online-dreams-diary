@@ -1,9 +1,10 @@
-import { Component, OnInit } from "@angular/core";
-import { FormControl, FormGroup } from "@angular/forms";
-import { AccountErrorMessages, FormData, AccountValidatorData } from "@_datas/form";
-import { FormDataType, ErrorMessagesType } from "@_models/form";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
+import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { of, Subject, takeUntil, timer } from "rxjs";
 
 
 
@@ -12,10 +13,11 @@ import { AccountService } from "@_services/account.service";
 @Component({
   selector: "app-auth",
   templateUrl: "./auth.component.html",
-  styleUrls: ["./auth.component.scss"]
+  styleUrls: ["./auth.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnDestroy {
 
 
   form: FormGroup;
@@ -29,27 +31,31 @@ export class AuthComponent implements OnInit {
   passwordMaxLength: number = 50;
 
   loading: boolean = false;
+  showActivate: boolean = false;
+  activateIsAvail: boolean = false;
+  endActivation: boolean = false;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
 
 
-  // Конструктор
   constructor(
-    private accountService: AccountService
+    private accountService: AccountService,
+    private changeDetectorRef: ChangeDetectorRef,
+    private formBuilder: FormBuilder
   ) {
-    this.form = new FormGroup({
-      login: new FormControl(null, AccountValidatorData.login),
-      password: new FormControl(null, AccountValidatorData.password)
+    this.form = this.formBuilder.group({
+      login: ["", AccountValidatorData.login],
+      password: ["", AccountValidatorData.password],
+      captcha: ["", Validators.required]
     });
   }
 
-
-
-
-
-  // Запуск класса
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -58,26 +64,81 @@ export class AuthComponent implements OnInit {
 
   // Попытка авторизации
   tryLogin(): void {
+    const loginControl: FormControl = this.form.get("login") as FormControl;
+    const passwordControl: FormControl = this.form.get("password") as FormControl;
     // Форма без ошибок
-    if (this.form.valid) {
-      const login: string = this.form.get("login").value;
-      const password: string = this.form.get("password").value;
+    if (!!loginControl?.valid && !!passwordControl?.valid) {
+      const login: string = loginControl.value;
+      const password: string = passwordControl.value;
+      // Обновить данные
       this.loading = true;
+      this.showActivate = false;
       // Авторизация
-      this.accountService.auth(login, password).subscribe(
-        code => {
-          this.loading = false;
-          // Успешная авторизация
-          if (code == "0001") {
+      this.accountService.auth(login, password, ["9019"])
+        .subscribe(
+          ({ code, activateIsAvail }) => {
+            this.loading = false;
+            // Требуется активация аккаунта
+            if (code === "9019") {
+              this.showActivate = true;
+              this.activateIsAvail = activateIsAvail;
+            }
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
+            this.loading = false;
+            this.showActivate = false;
+            this.changeDetectorRef.detectChanges();
           }
-        },
-        () => this.loading = false
-      );
+        );
     }
-
     // Есть ошибки
     else {
-      this.form.markAllAsTouched();
+      loginControl.markAllAsTouched();
+      passwordControl.markAllAsTouched();
+    }
+  }
+
+  // Отрпавить код активации аккаунта
+  sendActivationCode(): void {
+    const loginControl: FormControl = this.form.get("login") as FormControl;
+    const passwordControl: FormControl = this.form.get("password") as FormControl;
+    const captchaControl: FormControl = this.form.get("captcha") as FormControl;
+    // Форма без ошибок
+    if (!!passwordControl?.valid && !!passwordControl?.valid && !!captchaControl?.valid) {
+      const login: string = loginControl.value;
+      const password: string = passwordControl.value;
+      const captcha: string = captchaControl.value;
+      // Обновить данные
+      this.loading = true;
+      this.changeDetectorRef.detectChanges();
+      // Запрос на новый код активации
+      this.accountService.createActivationCode(login, password, captcha)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(
+          () => {
+            this.loading = false;
+            this.endActivation = true;
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
+            this.loading = false;
+            captchaControl.setValue(null);
+            this.changeDetectorRef.detectChanges();
+          }
+        );
+    }
+    // Ошибка в логине и пароле
+    else if (!passwordControl?.valid || !passwordControl?.valid) {
+      loginControl.markAllAsTouched();
+      passwordControl.markAllAsTouched();
+      this.showActivate = false;
+      this.changeDetectorRef.detectChanges();
+    }
+    // Заполнить капчу
+    else {
+      captchaControl.markAllAsTouched();
     }
   }
 }

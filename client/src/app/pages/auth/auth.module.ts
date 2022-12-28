@@ -2,6 +2,7 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
+import { AppRecaptchaModule } from "@_controlers/app-recaptcha/app-recaptcha.module";
 import { CardModule } from "@_controlers/card/card.module";
 import { InformModule } from "@_controlers/inform/inform.module";
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -28,7 +29,8 @@ import { AuthComponent } from "./auth.component";
     ReactiveFormsModule,
     CommonModule,
     NavMenuModule,
-    InformModule
+    InformModule,
+    AppRecaptchaModule
   ]
 })
 

@@ -6,27 +6,29 @@
                floatButtonIcon="person_add"
                floatButtonLink="/register"></app-main-menu>
 
-
-
-
-
+<!-- Содержимое страницы -->
 <div class="root-section">
   <div class="container">
     <!-- Форма входа -->
-    <app-card title="Авторизация на сайте"
-              *ngIf="!loading">
-      <!-- Контент -->
-      <ng-container content>
-        <form [formGroup]="form">
+    <ng-container *ngIf="!loading; else authLoader">
+      <app-card title="Авторизация на сайте"
+                *ngIf="!showActivate; else accauntActivateTemplate">
+        <!-- Контент -->
+        <form [formGroup]="form"
+              content>
           <!-- Логин -->
-          <app-text-input label="Логин"
+          <app-text-input required
+                          label="Логин"
                           formControlName="login"
+                          autocomplete="login"
                           [errors]="errors.login"
                           [maxLength]="formData.loginMaxLength"
                           (submit)="tryLogin()"></app-text-input>
           <!-- Пароль -->
-          <app-text-input label="Пароль"
+          <app-text-input required
+                          label="Пароль"
                           formControlName="password"
+                          autocomplete="password"
                           [errors]="errors.password"
                           [maxLength]="formData.passwordMaxLength"
                           type="password"
@@ -36,20 +38,65 @@
             <a routerLink="/restore">Забыли пароль?</a>
           </div>
         </form>
-      </ng-container>
-      <!-- Действия -->
-      <ng-container actions>
-        <a mat-stroked-button
-           color="basic"
-           routerLink="/register">Регистрация</a>
-        <a mat-flat-button
-           color="primary"
-           (click)="tryLogin()">Вход</a>
-      </ng-container>
-    </app-card>
-    <!-- Загрузка регистрации -->
-    <app-inform *ngIf="loading"
-                title="Авторизация"
-                subTitle="Пожалуйста подождите"></app-inform>
+        <!-- Действия -->
+        <ng-container actions>
+          <a mat-stroked-button
+             color="basic"
+             routerLink="/register">Регистрация</a>
+          <a mat-flat-button
+             color="primary"
+             (click)="tryLogin()">Вход</a>
+        </ng-container>
+      </app-card>
+    </ng-container>
   </div>
 </div>
+
+<!-- Активация аккаунта -->
+<ng-template #accauntActivateTemplate>
+  <app-card title="Активация аккаунта"
+            *ngIf="!endActivation; else activationCodeSended">
+    <form [formGroup]="form"
+          content>
+      <!-- Блок информации -->
+      <div class="mat-form-field">
+        <ng-container [ngTemplateOutlet]="activateIsAvail? activationTextAvail: activationTextNonAvail"></ng-container>
+      </div>
+      <!-- Капча -->
+      <div class="mat-form-field">
+        <app-recaptcha formControlName="captcha"
+                       [errors]="errors.captcha"></app-recaptcha>
+      </div>
+    </form>
+    <!-- Действия -->
+    <ng-container actions>
+      <a mat-flat-button
+         color="primary"
+         (click)="sendActivationCode()">Выслать код</a>
+    </ng-container>
+  </app-card>
+
+  <!-- Код уже есть -->
+  <ng-template #activationTextAvail>
+    Пожалуйста, перейдите по ссылке из письма. Если письмо не пришло, проверьте папку спам.
+    Если в папке спам нет письма, то нажмите на кнопку ниже.
+  </ng-template>
+  <!-- Требуется новый код -->
+  <ng-template #activationTextNonAvail>
+    Ваш аккаунт требует активации. Нажмите на кнопку ниже, чтобы мы отправили
+    письмо для активации аккаунта на почту, которую вы указали при регистрации.
+  </ng-template>
+</ng-template>
+
+<!-- Загрузка авторизации / отправки письма -->
+<ng-template #authLoader>
+  <app-inform [title]="showActivate? 'Отправка письма': 'Авторизация'"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Письмо отправлено -->
+<ng-template #activationCodeSended>
+  <app-inform icon="done"
+              title="Код выслан"
+              description="Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке в письме чтобы выполнить вход на сайт."></app-inform>
+</ng-template>
