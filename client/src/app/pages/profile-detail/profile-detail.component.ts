@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppComponent } from '@app/app.component';
+import { BackgroundImageDatas } from '@_datas/appearance';
+import { DreamPlural } from '@_datas/dream';
 import { User } from '@_models/account';
 import { RouteData, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
-import { BackgroundImageDatas } from '@_datas/appearance';
 import { Dream } from '@_models/dream';
-import { DreamPlural } from '@_datas/dream';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
@@ -106,12 +106,18 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   private defineData(): void {
     this.accountService.user$.pipe(
       takeUntil(this.destroy$),
-      switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
+      map(user => ({ user })),
       mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
       filter(({ params }) => !!params),
-      switchMap(r => parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id) ? of(r) : throwError(r)),
-      map(o => ({ ...o, userId: parseInt(o.params.user_id) })),
-      map(o => ({ ...o, isCurrentUser: !((!!o.user && o.user.id !== o.userId) || (!o.user && this.pageData.userId === -2)) })),
+      map(r => {
+        let userId: number = parseInt(r.params.user_id);
+        userId = isNaN(userId) ? 0 : userId;
+        userId = userId > 0 ? userId : (!!r.user ? r.user.id : 0);
+        // Вернуть данные
+        return { ...r, userId };
+      }),
+      switchMap(r => r.userId > 0 ? of(r) : throwError(r)),
+      map(o => ({ ...o, isCurrentUser: !((!!o.user && o.user.id !== o.userId) || (!o.user && this.pageData.userId === -1)) })),
       mergeMap(
         ({ userId, isCurrentUser }) => isCurrentUser ? of(true) : this.accountService.checkPrivate("myPage", userId),
         (o, hasAccess) => ({ ...o, hasAccess })
@@ -122,15 +128,17 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       )
     )
       .subscribe(
-        ({ user, visitedUser, hasAccess }) => {
+        ({ user, visitedUser, hasAccess, userId, params }) => {
+          if (userId === user?.id && params.user_id == "0") {
+            this.router.navigate(["/profile/" + user.id], { replaceUrl: true });
+          }
+          // Остальные данные
           this.userHasAccess = hasAccess;
           this.user = user;
           this.visitedUser = visitedUser;
           this.setPageData();
         },
-        ({ user }) => !!user && this.pageData.userId === -1 ?
-          this.router.navigate(["profile", user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true }) :
-          this.onUserFail()
+        () => this.onUserFail()
       );
   }
 
@@ -176,12 +184,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       this.itsMyPage = false;
     }
     // Готово к загрузке
-    if (this.ready) {
-      this.titleService.setTitle(this.pageTitle);
-      this.changeDetectorRef.detectChanges();
-      // Прочие действия
-      this.onUserLoaded();
-    }
+    this.titleService.setTitle(this.pageTitle);
+    this.changeDetectorRef.detectChanges();
+    // Прочие действия
+    this.onUserLoaded();
   }
 
   // Загрузить список сновидний
