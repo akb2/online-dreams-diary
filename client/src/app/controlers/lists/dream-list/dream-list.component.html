@@ -62,19 +62,21 @@
       <a class="dream__author"
          routerLink="/profile/{{dream.user.id}}"
          [ngClass]="{ 'no-subtitle': dream.user.pageStatus.length === 0 }">
-        <!-- Аватарка -->
-        <div class="dream__author-icon">
-          <!-- Картинка -->
-          <img [src]="dream.user.avatars.small"
-               *ngIf="dream.user.avatars.small.length > 0" />
-          <!-- Иконка -->
-          <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
-        </div>
-        <!-- Имя -->
-        <div class="dream__author-title">{{dream.user.name}} {{dream.user.lastName}}</div>
-        <!-- Статус -->
-        <div class="dream__author-subtitle"
-             *ngIf="dream.user.pageStatus.length > 0">{{dream.user.pageStatus}}</div>
+        <ng-container *ngIf="showProfile">
+          <!-- Аватарка -->
+          <div class="dream__author-icon">
+            <!-- Картинка -->
+            <img [src]="dream.user.avatars.small"
+                 *ngIf="dream.user.avatars.small.length > 0" />
+            <!-- Иконка -->
+            <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
+          </div>
+          <!-- Имя -->
+          <div class="dream__author-title">{{dream.user.name}} {{dream.user.lastName}}</div>
+          <!-- Статус -->
+          <div class="dream__author-subtitle"
+               *ngIf="dream.user.pageStatus.length > 0">{{dream.user.pageStatus}}</div>
+        </ng-container>
       </a>
       <!-- Кнопка просмотра -->
       <a mat-flat-button

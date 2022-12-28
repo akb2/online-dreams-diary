@@ -36,6 +36,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   pageData: RouteData;
   ready: boolean = false;
   loading: boolean = true;
+  showProfile: boolean = false;
 
   title: string = "Общий дневник";
   subTitle: string = "Все публичные сновидения";
@@ -202,6 +203,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.floatButtonIcon = "add";
       this.floatButtonLink = "/diary/editor";
       this.diaryTypeByUser = DiaryTypeByUser.my;
+      this.showProfile = false;
       // Установить посещаемого пользователя из текущего
       this.visitedUser = this.user;
       // Готово
@@ -217,6 +219,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.menuAvatarIcon = "person";
       this.backButtonLink = "/profile/" + this.visitedUser.id;
       this.diaryTypeByUser = DiaryTypeByUser.user;
+      this.showProfile = false;
       // Готово
       this.ready = true;
     }
@@ -235,6 +238,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.pageTitle = AppComponent.createTitle(this.title);
       this.menuAvatarIcon = "content_paste_search";
       this.diaryTypeByUser = DiaryTypeByUser.all;
+      this.showProfile = true;
       // Готово
       this.ready = true;
     }
