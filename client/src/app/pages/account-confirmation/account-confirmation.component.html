@@ -1,0 +1,47 @@
+<app-main-menu [autoCollapse]="true"
+               [type]="navMenuType"
+               title="Активация аккаунта"
+               subTitle="Online Dreams Map"
+               backButtonLink="/auth"></app-main-menu>
+
+<!-- Содержимое страницы -->
+<div class="root-section">
+  <div class="container">
+    <!-- Проверка активации -->
+    <ng-container [ngTemplateOutlet]="activationLoader? activationLoaderTemplate: activationMessage"></ng-container>
+  </div>
+</div>
+
+<!-- Проверка активации -->
+<ng-template #activationLoaderTemplate>
+  <app-inform title="Активация аккаунта"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
+
+<!-- Сообщение о статусе активации -->
+<ng-template #activationMessage>
+  <app-inform *ngIf="activationSuccess; else activationMessageError"
+              [aboveIcon]="true"
+              icon="close"
+              title="Добро пожаловать в команду!"
+              subTitle="Ваш аккаунт успешно активирован, вам доступны все возможности сервиса. Теперь вы можете перейти на страницу авторизации и войти с помощью ваших логина и пароля.">
+    <div class="buttons">
+      <a mat-flat-button
+         color="primary"
+         routerLink="/auth"><mat-icon>lock</mat-icon>Авторизация</a>
+    </div>
+  </app-inform>
+  <!-- Ошибка активации -->
+  <ng-template #activationMessageError>
+    <app-inform [aboveIcon]="true"
+                icon="close"
+                title="Ошибка активации аккаунта"
+                subTitle="Нам не удалось активировать ваш аккаунт. Возможно, что ссылка в письме устарела. Перейдите на страницу авторизации, введите логин и пароль и следуйте дальнейшим инструкциям.">
+      <div class="buttons">
+        <a mat-flat-button
+           color="primary"
+           routerLink="/auth"><mat-icon>lock</mat-icon>Авторизация</a>
+      </div>
+    </app-inform>
+  </ng-template>
+</ng-template>
