@@ -20,11 +20,11 @@ export interface MenuItem {
 }
 
 // Тип способа авторизации
-// * Ключ auth отвечает за показ пунктов:
-// * -1: Только неавторизованным
-// * 0: Всегда
-// * 1: Только авторизованным
-export type AuthRules = -1 | 0 | 1;
+export enum AuthRules {
+  notAuth,
+  auth,
+  anyWay
+};
 
 // Интерфейс списка пунктов меню по статусу авторизации
 export interface MenuItemsListAuth {
