@@ -34,7 +34,7 @@ import { AuthRules } from "@_models/menu";
       },
       // Активация аккаунта
       {
-        path: "account-confirmation/:activationCode",
+        path: "account-confirmation/:userId/:activationCode",
         loadChildren: () => import("@_pages/account-confirmation/account-confirmation.module").then(m => m.AccountConfirmationModule),
         data: { authRule: AuthRules.notAuth },
         canActivate: [AuthGuard]
