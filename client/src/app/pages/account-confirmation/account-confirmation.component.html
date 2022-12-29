@@ -20,28 +20,41 @@
 
 <!-- Сообщение о статусе активации -->
 <ng-template #activationMessage>
-  <app-inform *ngIf="activationSuccess; else activationMessageError"
-              [aboveIcon]="true"
-              icon="close"
+  <app-inform [aboveIcon]="true"
+              icon="check"
               title="Добро пожаловать в команду!"
-              subTitle="Ваш аккаунт успешно активирован, вам доступны все возможности сервиса. Теперь вы можете перейти на страницу авторизации и войти с помощью ваших логина и пароля.">
-    <div class="buttons">
-      <a mat-flat-button
-         color="primary"
-         routerLink="/auth"><mat-icon>lock</mat-icon>Авторизация</a>
-    </div>
+              subTitle="Ваш аккаунт успешно активирован. Вам доступны все возможности сервиса. Теперь вы можете перейти на страницу авторизации и войти с помощью ваших логина и пароля."
+              *ngIf="activationSuccess; else activationMessageError">
+    <ng-container [ngTemplateOutlet]="authButton"></ng-container>
   </app-inform>
-  <!-- Ошибка активации -->
-  <ng-template #activationMessageError>
-    <app-inform [aboveIcon]="true"
-                icon="close"
-                title="Ошибка активации аккаунта"
-                subTitle="Нам не удалось активировать ваш аккаунт. Возможно, что ссылка в письме устарела. Перейдите на страницу авторизации, введите логин и пароль и следуйте дальнейшим инструкциям.">
-      <div class="buttons">
-        <a mat-flat-button
-           color="primary"
-           routerLink="/auth"><mat-icon>lock</mat-icon>Авторизация</a>
-      </div>
-    </app-inform>
-  </ng-template>
+</ng-template>
+
+<!-- Ошибка активации -->
+<ng-template #activationMessageError>
+  <app-inform [aboveIcon]="true"
+              icon="close"
+              title="Ошибка активации аккаунта"
+              subTitle="Нам не удалось активировать ваш аккаунт. Возможно, что ссылка в письме устарела. Перейдите на страницу авторизации, введите логин и пароль и следуйте дальнейшим инструкциям."
+              *ngIf="!alreadyActivate; else accountAlreadyActivated">
+    <ng-container [ngTemplateOutlet]="authButton"></ng-container>
+  </app-inform>
+</ng-template>
+
+<!-- Аккаунт уже активирован -->
+<ng-template #accountAlreadyActivated>
+  <app-inform [aboveIcon]="true"
+              icon="check"
+              title="Аккаунт уже активирован"
+              subTitle="Ваш аккаунт уже активирован. Можете перейти на страницу авторизации и войти с помощью ваших логина и пароля.">
+    <ng-container [ngTemplateOutlet]="authButton"></ng-container>
+  </app-inform>
+</ng-template>
+
+<!-- Кнопка входа -->
+<ng-template #authButton>
+  <div class="buttons">
+    <a mat-flat-button
+       color="primary"
+       routerLink="/auth"><mat-icon>lock</mat-icon>Авторизация</a>
+  </div>
 </ng-template>
