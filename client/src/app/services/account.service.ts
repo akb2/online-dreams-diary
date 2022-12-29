@@ -151,6 +151,19 @@ export class AccountService implements OnDestroy {
       );
   }
 
+  // Активация аккаунта
+  activateAccount(user: number, code: string, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("user", user.toString());
+    formData.append("code", code);
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/activate", formData, this.httpHeader)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(r => this.apiService.checkResponse(r.result.code, codes))
+      );
+  }
+
   // Создание ключа активации аккаунта
   createActivationCode(login: string, password: string, captcha: string, codes: string[] = []): Observable<string> {
     const formData: FormData = new FormData();
