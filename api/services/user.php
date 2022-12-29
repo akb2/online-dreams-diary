@@ -204,15 +204,14 @@ class UserService
             // Проверить авторизацию
             if (count($auth) > 0) {
               if (strlen($auth[0]['id']) > 0) {
-                $aKey = $this->createActivationKey($auth[0]['id']);
-                $mailParams = array(
+                $user = array(
+                  'id' => $auth[0]['id'],
                   'name' => $data['name'],
-                  'email' => $data['email'],
-                  'confirmationLink' => $this->config['appDomain'] . '/account-confirmation/' . $aKey,
+                  'email' => $data['email']
                 );
-                // Попытка отправить письмо
-                if ($this->mailService->send('account/email-confirmation', $data['email'], 'Подтверждение регистрации', $mailParams)) {
-                  $code = "0001";
+                // Отправка письма
+                if ($this->sendActivationCode($user)) {
+                  $code = '0001';
                 }
               }
             }
@@ -284,15 +283,8 @@ class UserService
           if (strlen($user['id']) > 0) {
             // Создать код только для неактивированного аккаунта
             if ($user['status'] == '0') {
-              $aKey = $this->createActivationKey($user['id']);
-              $mailParams = array(
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'confirmationLink' => $this->config['appDomain'] . '/account-confirmation/' . $aKey,
-              );
-              // Попытка отправить письмо
-              if ($this->mailService->send('account/email-confirmation', $user['email'], 'Подтверждение регистрации', $mailParams)) {
-                $code = "0001";
+              if ($this->sendActivationCode($user)) {
+                $code = '0001';
               }
             }
             // Аккаунт уже активирован
@@ -320,6 +312,66 @@ class UserService
       'message' => $message,
       'data' => array(
         'input' => $sqlData,
+        'result' => $code == '0001'
+      )
+    );
+  }
+
+  // Активация аккаунта пользователя
+  public function accountActivateApi(array $data): array
+  {
+    $code = '9023';
+    $message = '';
+
+    // Если получены данные
+    if (strlen($data['user']) > 0 && strlen($data['code']) > 0) {
+      $user = $this->getUser($data['user']);
+      // Проверка пользователя
+      if (strlen($user['id']) > 0) {
+        // Проверка статуса пользователя
+        if ($user['status'] == '0') {
+          // Проверка кода активации
+          if ($user['activation_key'] === $data['code']) {
+            $aKeyDate = strtotime($user['activation_key_expire']);
+            $cDate = strtotime((new DateTime())->format(DateTime::ISO8601));
+            // Проверка даты кода активации
+            if ($aKeyDate > $cDate) {
+              $sqlData = array($data['user']);
+              // Активация аккаунта
+              if ($this->dataBaseService->executeFromFile('account/activate.sql', $sqlData)) {
+                $code = '0001';
+              }
+            }
+            // Код активации истек
+            else {
+              $code = '9025';
+            }
+          }
+          // Неверный код активации
+          else {
+            $code = '9024';
+          }
+        }
+        // Пользователь уже активирован
+        else {
+          $code = '9026';
+        }
+      }
+      // Пользователь не найден
+      else {
+        $code = '9013';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => $message,
+      'data' => array(
         'result' => $code == '0001'
       )
     );
@@ -1002,5 +1054,22 @@ class UserService
     }
     // Неудалось создать набор аватарок
     return false;
+  }
+
+
+
+
+
+  // Отправить письмо с кодом активации
+  private function sendActivationCode(array $user): bool
+  {
+    $aKey = $this->createActivationKey($user['id']);
+    $mailParams = array(
+      'name' => $user['name'],
+      'email' => $user['email'],
+      'confirmationLink' => $this->config['appDomain'] . '/account-confirmation/' . $user['id'] . '/' . $aKey,
+    );
+    // Попытка отправить письмо
+    return $this->mailService->send('account/email-confirmation', $user['email'], 'Подтверждение регистрации', $mailParams);
   }
 }

@@ -54,6 +54,13 @@ class Account
     return $this->userService->registerUserApi($data);
   }
 
+  // Активация аккаунта
+  // * POST
+  public function activate($data): array
+  {
+    return $this->userService->accountActivateApi($data);
+  }
+
   // Проверить настройку приватности
   // * POST
   public function checkPrivate(array $dataIn): array
