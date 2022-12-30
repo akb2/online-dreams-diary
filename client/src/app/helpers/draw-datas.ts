@@ -451,7 +451,9 @@ export class DrawDatas {
       // Позиция справа
       {
         property: "right",
-        data: this.valueArrayToDrawData(this.floatButtonSizes, v => -(v + this.defaultSpacing), v => -(v + this.defaultSpacing))
+        data: {
+          default: { min: -this.defaultSpacing, max: -this.defaultSpacing, unit: "px" }
+        }
       }
     ];
     // Главное меню: с плавающей кнопкой
