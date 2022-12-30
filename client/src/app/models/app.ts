@@ -34,6 +34,13 @@ export interface RouteData {
   redirectNotAuth?: string;
 }
 
+// Информация о браузере
+export interface BrowserInfo {
+  os: string;
+  name: string;
+  version: string;
+}
+
 // Цветовые схемы всплывающих сообщений
 type SnackbarPropMode = "success" | "error" | "info";
 
@@ -43,9 +50,5 @@ export type IconColor = "primary" | "accent" | "warn" | "disabled";
 // Интерфейс цветов фона
 export type IconBackground = "fill" | "transparent";
 
-// Информация о браузере
-export interface BrowserInfo {
-  os: string;
-  name: string;
-  version: string;
-}
+// Допустимые типы файлов
+export type FileTypes = "image/gif" | "image/jpeg" | "image/png";

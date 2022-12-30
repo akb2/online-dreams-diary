@@ -4,6 +4,7 @@ import { UserAvatarCropDataElement } from "@_models/account";
 import { AppMatDialogConfig } from "@_datas/app";
 import { ScreenService } from "@_services/screen.service";
 import { fromEvent, Subject, takeUntil } from "rxjs";
+import { SimpleObject } from "@_models/app";
 
 
 
@@ -33,10 +34,44 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   private mouseMoveStart: [number, number] = [0, 0];
   private moveDirection: MoveDirection[] = [];
 
+  lineKeys: MoveDirection[] = ["top", "right", "bottom", "left"];
+  cornerKeys: MoveDirection[][] = [
+    ...this.lineKeys.map(key => ([key])),
+    ["top", "left"],
+    ["top", "right"],
+    ["bottom", "left"],
+    ["bottom", "right"]
+  ];
+
   position: Coords;
   previewPosition: PreviewCoords;
 
   private destroy$: Subject<void> = new Subject<void>()
+
+
+
+
+
+  // Определить миниатюру
+  get isMiddle(): boolean {
+    const [x, y]: [number, number] = this.data?.aspectRatio ?? [0, 0];
+    return x === y && (x > 0 && y > 0);
+  }
+
+  // Стили картинки
+  get getPreviewPositionCss(): SimpleObject {
+    return {
+      top: (this.previewPosition?.top ?? 0) + 'px',
+      left: (this.previewPosition?.left ?? 0) + 'px',
+      width: (this.previewPosition?.width ?? 0) + 'px',
+      height: (this.previewPosition?.height ?? 0) + 'px'
+    };
+  }
+
+  // Проверка сенсорного экрана
+  private get isTouchDevice(): boolean {
+    return "ontouchstart" in window || !!navigator?.maxTouchPoints;
+  }
 
 
 
@@ -52,8 +87,11 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   }
 
   ngOnInit(): void {
-    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
-    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
+    const moveEvent = this.isTouchDevice ? "touchmove" : "mousemove";
+    const outEvent = this.isTouchDevice ? "touchend" : "mouseup";
+    // События
+    fromEvent(window, moveEvent).pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
+    fromEvent(window, outEvent).pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
     // Данные фотки
     this.screenService.loadImage(this.data.image)
       .pipe(takeUntil(this.destroy$))
@@ -97,25 +135,31 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
 
   // Начало удержания мышкой
-  onMouseDown(event: MouseEvent, direction: MoveDirection[]): void {
+  onMouseDown(event: MouseEvent | TouchEvent, direction: MoveDirection[]): void {
+    const clientX: number = event instanceof MouseEvent ? event.clientX : event.touches.item(0).clientX;
+    const clientY: number = event instanceof MouseEvent ? event.clientY : event.touches.item(0).clientY;
+    // Свойства
     this.mouseListener = true;
     this.moveDirection = direction;
-    this.mouseMoveStart = [event.pageX, event.pageY];
+    this.mouseMoveStart = [clientX, clientY];
     // Переписать значения
     this.cropSizesToCoords();
   }
 
   // Передвижение мышкой
-  onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent | TouchEvent): void {
     if (this.mouseListener) {
-      this.drawCrop(event.pageX, event.pageY);
+      const clientX: number = event instanceof MouseEvent ? event.clientX : event.touches.item(0).clientX;
+      const clientY: number = event instanceof MouseEvent ? event.clientY : event.touches.item(0).clientY;
+      // Свойства
+      this.drawCrop(clientX, clientY);
       // Отрисовка позиций
       this.drawPreview();
     }
   }
 
   // Конец удержания мышкой
-  onMouseUp(event: MouseEvent): void {
+  onMouseUp(event: MouseEvent | TouchEvent): void {
     this.mouseListener = false;
     // Переписать значения
     this.cropCoordsToSizes();

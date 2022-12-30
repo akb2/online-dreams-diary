@@ -162,6 +162,10 @@ $height: 540px;
     &-overlay {
       width: 100%;
       overflow: hidden;
+      // Круглая картинка
+      &.circle {
+        border-radius: 50%;
+      }
       // Картинка
       > img {
         display: block;

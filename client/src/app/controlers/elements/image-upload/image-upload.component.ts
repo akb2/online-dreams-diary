@@ -1,7 +1,9 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { AvatarMaxSize, ConvertFileSize, FileTypesDefault } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
+import { FileTypes } from "@_models/app";
 import { SnackbarService } from "@_services/snackbar.service";
 
 
@@ -17,21 +19,21 @@ import { SnackbarService } from "@_services/snackbar.service";
 export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 
-  @Input() public appearance: MatFormFieldAppearance = "fill";
-  @Input() public fileTypes: FileTypes[] = FileTypesDefault;
-  @Input() public fileSize: number = 10485760;
-  @Input() public autoUpload: boolean = false;
+  @Input() appearance: MatFormFieldAppearance = "fill";
+  @Input() fileTypes: FileTypes[] = FileTypesDefault;
+  @Input() fileSize: number = AvatarMaxSize;
+  @Input() autoUpload: boolean = false;
 
-  @Output() public beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
-  @Output() public afterGetFile: EventEmitter<File> = new EventEmitter<File>();
-  @Output() public upload: EventEmitter<File> = new EventEmitter<File>();
+  @Output() beforeGetFile: EventEmitter<File> = new EventEmitter<File>();
+  @Output() afterGetFile: EventEmitter<File> = new EventEmitter<File>();
+  @Output() upload: EventEmitter<File> = new EventEmitter<File>();
 
-  @ViewChild("fileInput") public fileInput: ElementRef;
+  @ViewChild("fileInput") fileInput: ElementRef;
 
-  public newValue: string;
+  newValue: string;
   private defaultValue: string = "";
 
-  public get imageUrl(): string {
+  get imageUrl(): string {
     if (this.newValue?.length > 0) {
       return this.newValue;
     }
@@ -43,12 +45,12 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
     return "";
   }
 
-  public get availSave(): boolean {
+  get availSave(): boolean {
     return this.newValue?.length > 0;
   }
 
   constructor(
-    public ngControl: NgControl,
+    ngControl: NgControl,
     private snackbarService: SnackbarService
   ) {
     super(ngControl);
@@ -59,12 +61,12 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 
   // Запуск класса
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.defaultValue = this.control.value;
   }
 
   // Выбор файла
-  public onSelectFiles(files: FileList): void {
+  onSelectFiles(files: FileList): void {
     if (files?.length > 0) {
       const file: File = files[0];
       const fileReader: FileReader = new FileReader();
@@ -88,7 +90,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
         this.clearInput();
         // Сообщение
         this.snackbarService.open({
-          message: "Превышен допустимый размер файла в " + this.convertSize(this.fileSize),
+          message: "Превышен допустимый размер файла в " + ConvertFileSize(this.fileSize),
           mode: "error"
         });
       }
@@ -96,7 +98,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
   }
 
   // Загрузка файла
-  public onUpload(): void {
+  onUpload(): void {
     if (this.control.value && typeof this.control.value === "object") {
       this.upload.emit(this.control.value);
     }
@@ -107,7 +109,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 
   // Сбросить значение
-  public clearInput(value: string | null = this.defaultValue): void {
+  clearInput(value: string | null = this.defaultValue): void {
     this.defaultValue = value;
     this.control.setValue(value);
     this.newValue = "";
@@ -116,30 +118,4 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
       this.fileInput.nativeElement.value = "";
     }
   }
-
-  // Получить размер файла
-  private convertSize(size: number): string {
-    const strings: string[] = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
-    let key: number = 0;
-    // Преобразовать данные
-    while (size > 1024 && key < strings.length) {
-      size = size / 1024;
-      key++;
-    }
-    // Преобразование неудалось
-    return Math.round(size) + " " + strings[key];
-  }
 }
-
-
-
-
-
-// Допустимые типы файлов
-type FileTypes = "image/gif" | "image/jpeg" | "image/png";
-
-// Типы файлов по умолчанию
-export const FileTypesDefault: FileTypes[] = [
-  "image/jpeg",
-  "image/png"
-];

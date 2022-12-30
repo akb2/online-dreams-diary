@@ -1,6 +1,6 @@
 import { MatDialogConfig } from "@angular/material/dialog";
-import { Random } from "@_helpers/math";
-import { SimpleObject } from "@_models/app";
+import { MathRound, Random } from "@_helpers/math";
+import { FileTypes, SimpleObject } from "@_models/app";
 
 
 
@@ -58,3 +58,29 @@ export const CreateArray: (length: number) => number[] = (length: number) => Arr
 
 // Случайный элемент массива
 export const ArrayRandom: <T>(data: T[]) => T = <T>(data: T[]) => data[Random(0, data.length - 1, false, 0)];
+
+// Типы файлов по умолчанию
+export const FileTypesDefault: FileTypes[] = [
+  "image/jpeg",
+  "image/png"
+];
+
+// Минимальный размер аватара
+export const AvatarMaxSize: number = 10485760;
+
+
+
+
+
+// Получить размер файла
+export const ConvertFileSize = (size: number) => {
+  const strings: string[] = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+  let key: number = 0;
+  // Преобразовать данные
+  while (size > 1024 && key < strings.length) {
+    size = size / 1024;
+    key++;
+  }
+  // Преобразование неудалось
+  return MathRound(size) + " " + strings[key];
+}
