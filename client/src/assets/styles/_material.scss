@@ -36,7 +36,8 @@
         }
       }
 
-      &.mat-mini-fab {
+      &.mat-mini-fab,
+      &.mat-icon-button {
         .mat-icon {
           margin-right: 0;
           margin-left: 0;
