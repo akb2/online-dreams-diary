@@ -293,6 +293,21 @@ export class AccountService implements OnDestroy {
     );
   }
 
+  // Обновить статус
+  savePageStatus(pageStatus: string, codes: string[] = []): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("pageStatus", pageStatus ?? "");
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>(
+      this.baseUrl + "account/savePageStatus?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
+      formData,
+      this.httpHeader
+    ).pipe(
+      mergeMap(() => this.syncCurrentUser(), r => r),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+    );
+  }
+
   // Сохранить настройки аккаунта
   saveUserSettings(settings: UserSettings, codes: string[] = []): Observable<string> {
     const settingsDto: UserSettingsDto = {

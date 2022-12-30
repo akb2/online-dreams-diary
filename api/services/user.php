@@ -522,6 +522,40 @@ class UserService
     );
   }
 
+  // Сохранить статус
+  public function savePageStatusApi(string $id, array $data): array
+  {
+    $code = '0000';
+
+    // Проверка ID
+    if (strlen($id) > 0) {
+      // Данные
+      $sqlData = array(
+        $data['pageStatus'],
+        $id
+      );
+      // Сохранение данных
+      if ($this->dataBaseService->executeFromFile('account/saveUserPageStatus.sql', $sqlData)) {
+        $code = '0001';
+      }
+      // Регистрация неудалась
+      else {
+        $code = '9021';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => '',
+      'data' => array()
+    );
+  }
+
   // Сохранить настройки
   public function saveUserSettingsApi(string $id, array $data): array
   {
