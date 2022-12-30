@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
-import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { User } from "@_models/account";
 import { AccountService } from "@_services/account.service";
-import { Subject, takeUntil } from "rxjs";
+import { skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -20,6 +20,8 @@ export class UserStatusComponent implements OnChanges {
 
   @Input() user: User;
   @Input() itsMyPage: boolean;
+
+  @ViewChild("inputField") inputField!: ElementRef;
 
   statusForm: FormGroup;
   placeholderText: string = "Напишите, что у вас нового...";
@@ -55,10 +57,25 @@ export class UserStatusComponent implements OnChanges {
 
 
 
+  // Сохранение статуса по нажатию Enter
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === "Enter" || event.key === "NumPadEnter") {
+      this.onSaveStatus();
+    }
+  }
+
   // Открыть редактор
   onOpenEdit(): void {
     this.editStatus = true;
     this.changeDetectorRef.detectChanges();
+    // Фокус на элементе
+    timer(0, 1)
+      .pipe(
+        takeUntil(this.destroyed$),
+        takeWhile(() => !this.inputField?.nativeElement, true),
+        skipWhile(() => !this.inputField?.nativeElement)
+      )
+      .subscribe(() => this.inputField?.nativeElement.focus());
   }
 
   // Закрыть редактор

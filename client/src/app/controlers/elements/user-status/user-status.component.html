@@ -12,13 +12,17 @@
 <ng-template #statusText>
   <form class="status"
         [formGroup]="statusForm"
-        [ngClass]="{ edit: !loader && editStatus }">
+        [ngClass]="{ edit: !loader && editStatus }"
+        (click)="inputField?.nativeElement?.focus()">
     <!-- Редактирование -->
-    <input formControlName="status"
+    <input #inputField
+           formControlName="status"
            type="text"
            autocomplete="off"
            class="status__editor"
            [placeholder]="placeholderText"
+           (keydown)="onKeyDown($event)"
+           (blur)="onCloseEdit()"
            *ngIf="!loader && editStatus; else statusTextViewer">
     <!-- Просмотр -->
     <ng-template #statusTextViewer>
