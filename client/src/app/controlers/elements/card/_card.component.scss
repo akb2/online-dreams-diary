@@ -26,7 +26,11 @@ $colors: (
   justify-content: space-between;
   background-color: colors.$card;
   border-radius: containers.$cardBorderRadius;
-  box-shadow: containers.$cardBoxShadow;
+
+  // Тени
+  &:not([class*="mat-elevation-z"]) {
+    box-shadow: containers.$cardBoxShadow;
+  }
 
   // Полная высота
   &.full-height {
