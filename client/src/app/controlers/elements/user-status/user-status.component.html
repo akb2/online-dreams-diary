@@ -1,0 +1,58 @@
+<div class="status__overlay"
+     *ngIf="!!user.pageStatus || itsMyPage">
+  <ng-container [ngTemplateOutlet]="statusText"></ng-container>
+  <!-- Редактирование статуса -->
+  <ng-container [ngTemplateOutlet]="statusEdit"
+                *ngIf="itsMyPage"></ng-container>
+</div>
+
+
+
+<!-- Текст статуса -->
+<ng-template #statusText>
+  <form class="status"
+        [formGroup]="statusForm"
+        [ngClass]="{ edit: !loader && editStatus }">
+    <!-- Редактирование -->
+    <input formControlName="status"
+           type="text"
+           autocomplete="off"
+           class="status__editor"
+           [placeholder]="placeholderText"
+           *ngIf="!loader && editStatus; else statusTextViewer">
+    <!-- Просмотр -->
+    <ng-template #statusTextViewer>
+      <div class="status__content"
+           [ngClass]="{ default: !user.pageStatus }">{{!!user.pageStatus? user.pageStatus: placeholderText}}</div>
+    </ng-template>
+  </form>
+</ng-template>
+
+<!-- Управление -->
+<ng-template #statusEdit>
+  <div class="loader"
+       *ngIf="loader; else statusEditTrue"></div>
+  <!-- Редактирование -->
+  <ng-template #statusEditTrue>
+    <ng-container *ngIf="editStatus; else statusEditFalse">
+      <!-- Сохранить -->
+      <button mat-mini-fab
+              color="primary"
+              matTooltip="Сохранить"
+              (click)="onSaveStatus()"><mat-icon>save</mat-icon></button>
+      <!-- Отменить -->
+      <button mat-mini-fab
+              color="basic"
+              matTooltip="Отмена"
+              (click)="onCloseEdit()"><mat-icon>close</mat-icon></button>
+    </ng-container>
+  </ng-template>
+  <!-- Открыть редактирование -->
+  <ng-template #statusEditFalse>
+    <!-- Открыть редактирование -->
+    <button mat-mini-fab
+            color="primary"
+            matTooltip="Изменить статус"
+            (click)="onOpenEdit()"><mat-icon>edit</mat-icon></button>
+  </ng-template>
+</ng-template>

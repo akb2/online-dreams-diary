@@ -1,0 +1,166 @@
+@use "sass:map";
+@use "sass:math";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+
+$columnTemplates: (
+  default: true,
+  small: false,
+  xsmall: false,
+);
+
+// Статус
+.status {
+  $arrowSize: 8px;
+  $textPaddingX: 30px;
+  $textPaddingY: 15px;
+  $textFontSize: 15px;
+  $textLines: 4;
+  $textLineHeight: 22px;
+  $borderRadius: $textPaddingY + math.div($textLineHeight, 2);
+  // Свойства
+  position: relative;
+  width: auto;
+  // Настройки фигуры
+  &::before,
+  &::after {
+    content: "";
+    display: block;
+    position: absolute;
+  }
+  // Тело облака
+  &::before {
+    @include mixins.inset;
+    // Свойства
+    border-radius: $borderRadius;
+    box-shadow: containers.$cardBoxShadow;
+    background-color: colors.$card;
+    z-index: 0;
+  }
+  // Стрелочка
+  &::after {
+    z-index: 1;
+    width: $arrowSize * 2;
+    height: $arrowSize * 2;
+    top: calc(50% - #{$arrowSize});
+    left: ($arrowSize * -2) + 2px;
+    border: #{$arrowSize} solid transparent;
+    border-right-color: colors.$card;
+  }
+  // Обертка
+  &__overlay {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+  }
+  // Содержимое
+  &__content {
+    @include mixins.lineClamp($textLines, $textLineHeight, $textFontSize);
+    // Свойства
+    position: relative;
+    margin: #{$textPaddingY} #{$textPaddingX};
+    z-index: 2;
+    color: colors.$title;
+    // Пустой статус
+    &.default {
+      color: colors.$text;
+    }
+  }
+  // Редактирование
+  &__editor {
+    position: relative;
+    border: none;
+    outline: none;
+    z-index: 2;
+    margin: #{$textPaddingY} #{$textPaddingX};
+    line-height: $textLineHeight;
+    font-size: $textFontSize;
+    height: $textLineHeight;
+    padding: 0;
+    resize: none;
+    width: calc(100% - #{$textPaddingX * 2});
+    display: block;
+  }
+
+  // Редактирование
+  &.edit {
+    flex-grow: 1;
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor($columnTemplates) using($column) {
+    // Стрелочка
+    &::after {
+      @if ($column==false) {
+        top: $arrowSize * -2;
+        left: $borderRadius;
+        border-bottom-color: colors.$card;
+        border-right-color: transparent;
+      }
+    }
+  }
+}
+
+// Лоадер
+.loader {
+  $size-1: 40px;
+  $size-2: 30px;
+  $line-1: 2px;
+  $line-2: 1px;
+  $time-1: 0.5s;
+  $time-2: 1s;
+  // Свойства
+  position: relative;
+  width: math.max($size-1, $size-2);
+  height: math.max($size-1, $size-2);
+  flex-basis: math.max($size-1, $size-2);
+  // Общие правила
+  &:before,
+  &:after {
+    display: block;
+    position: absolute;
+    content: "";
+    border-radius: 50%;
+    border-color: transparent;
+    border-style: solid;
+  }
+  // Лоадер
+  &:before {
+    width: $size-1;
+    height: $size-1;
+    border-width: #{$line-1};
+    border-top-color: map.get(colors.$mat-primary, 500);
+    top: math.div(math.max($size-1, $size-2) - $size-1, 2);
+    left: math.div(math.max($size-1, $size-2) - $size-1, 2);
+    animation: loader-animation #{$time-1} linear infinite;
+  }
+  // Лоадер
+  &:after {
+    width: $size-2;
+    height: $size-2;
+    border-width: #{$line-2};
+    border-top-color: map.get(colors.$mat-primary, 400);
+    top: math.div(math.max($size-1, $size-2) - $size-2, 2);
+    left: math.div(math.max($size-1, $size-2) - $size-2, 2);
+    animation: loader-animation #{$time-2} linear infinite;
+  }
+}
+
+// Правила анимации
+@keyframes loader-animation {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 1;
+  }
+}
