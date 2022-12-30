@@ -1,0 +1,111 @@
+@use "sass:map";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/colors";
+
+// Аватарка
+.avatar {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+
+  // Картинка
+  > img {
+    border-radius: containers.$cardBorderRadius;
+    box-shadow: containers.$cardBoxShadow;
+    display: block;
+    width: 100%;
+    height: auto;
+
+    // Выделение
+    &.hover-avail {
+      cursor: pointer;
+    }
+  }
+
+  // Замещение аватарки
+  &__placeholder {
+    $height: 420px;
+    // Свойства
+    width: 100%;
+    height: $height;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    // Иконка
+    > mat-icon {
+      background-color: map.get(colors.$mat-disabled, 600);
+      color: map.get(colors.$mat-disabled, contrast, 600);
+      width: 100%;
+      height: $height;
+      line-height: $height;
+      font-size: $height * 0.5;
+      text-align: center;
+      border-radius: containers.$cardBorderRadius;
+      box-shadow: containers.$cardBoxShadow;
+    }
+
+    // Доступно выделение
+    &.hover-avail {
+      // Иконка
+      > mat-icon {
+        cursor: pointer;
+        transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
+
+        // Выделение
+        &:hover {
+          background-color: map.get(colors.$mat-primary, 600);
+          color: map.get(colors.$mat-primary, contrast, 600);
+        }
+      }
+    }
+  }
+
+  //Кнопки
+  &__buttons {
+    width: 100%;
+    justify-content: space-between;
+
+    &,
+    &-left,
+    &-center,
+    &-right {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      gap: 5px;
+      flex-grow: 1;
+    }
+
+    &-left {
+      justify-content: flex-start;
+    }
+
+    &-center {
+      justify-content: center;
+    }
+
+    &-right {
+      justify-content: flex-end;
+    }
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor(containers.$cardPaddings) using($gap) {
+    gap: #{map.get($gap, y)} #{map.get($gap, x)};
+  }
+}
+
+// Скрыть элемент
+*[hidden] {
+  display: block;
+  position: fixed;
+  left: 200%;
+  top: 200%;
+}
+
+// Поле загрузки файла
+.file-input {
+  display: none;
+}

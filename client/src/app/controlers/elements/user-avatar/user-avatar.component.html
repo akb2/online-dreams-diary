@@ -1,0 +1,100 @@
+<div class="avatar"
+     *ngIf="!!user">
+  <!-- Аватарка -->
+  <ng-container [ngTemplateOutlet]="getVisitedUserHasAvatar? avatarImage: avatarImageDefault"></ng-container>
+  <!-- Управление -->
+  <ng-container [ngTemplateOutlet]="avatarControls"
+                *ngIf="itsMyPage && !loadingAvatar"></ng-container>
+</div>
+
+
+
+<!-- Выбор файла-->
+<input #fileInput
+       class="file-input"
+       type="file"
+       [accept]="fileTypes.join(',')"
+       (change)="onSelectFiles($event.target['files'])">
+
+<!-- Аватарка -->
+<ng-template #avatarImage>
+  <img [ngClass]="{ 'hover-avail': itsMyPage }"
+       [src]="user.avatars.crop"
+       [hidden]="loadingAvatar"
+       (load)="onAvatarLoadSuccess()"
+       (error)="onAvatarLoadError()"
+       (click)="itsMyPage? fileInput.click(): null" />
+  <!-- Загрузчик -->
+  <ng-container [ngTemplateOutlet]="avatarImageLoader"
+                *ngIf="loadingAvatar"></ng-container>
+</ng-template>
+
+<!-- Аватарка по умолчанию -->
+<ng-template #avatarImageDefault>
+  <div class="avatar__placeholder"
+       [ngClass]="{ 'hover-avail': itsMyPage }"
+       (click)="itsMyPage? fileInput.click(): null"
+       *ngIf="!loadingAvatar; else avatarImageLoader">
+    <mat-icon>person</mat-icon>
+  </div>
+</ng-template>
+
+<!-- Загрузка аватарки -->
+<ng-template #avatarImageLoader>
+  <div class="avatar__placeholder">
+    <app-inform></app-inform>
+  </div>
+</ng-template>
+
+
+
+<!-- Управление -->
+<ng-template #avatarControls>
+  <div class="avatar__buttons">
+    <!-- Показать в случае наличия аватарки -->
+    <ng-container *ngIf="getVisitedUserHasAvatar">
+      <!-- Контейнер слева -->
+      <div class="avatar__buttons-left">
+        <!-- Загрузить аватарку -->
+        <button mat-mini-fab
+                matTooltip="Загрузить аватарку"
+                color="primary"
+                (click)="fileInput.click()"><mat-icon>upload</mat-icon></button>
+        <!-- Обрезка -->
+        <ng-container>
+          <!-- Обрезать аватарку -->
+          <button mat-mini-fab
+                  matTooltip="Обрезать аватарку"
+                  color="basic"
+                  (click)="onOpenCrop('crop')"><mat-icon>crop</mat-icon></button>
+          <!-- Обрезать миниатюру -->
+          <button mat-mini-fab
+                  matTooltip="Обрезать миниатюру"
+                  color="basic"
+                  (click)="onOpenCrop('middle')"><mat-icon>crop</mat-icon></button>
+        </ng-container>
+      </div>
+      <!-- Контейнер справа -->
+      <div class="avatar__buttons-right">
+        <!-- Удалить -->
+        <button mat-mini-fab
+                color="warn"
+                matTooltip="Удалить аватарку"
+                (click)="onDeleteAvatar()"><mat-icon>delete</mat-icon></button>
+      </div>
+    </ng-container>
+    <!-- Аватарки нет -->
+    <ng-container *ngIf="!getVisitedUserHasAvatar">
+      <!-- Контейнер слева -->
+      <div class="avatar__buttons-center">
+        <!-- Загрузить аватарку -->
+        <button mat-flat-button
+                color="primary"
+                (click)="fileInput.click()">
+          <mat-icon>upload</mat-icon>
+          Загрузить аватарку
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</ng-template>
