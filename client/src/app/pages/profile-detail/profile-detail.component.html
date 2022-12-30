@@ -32,16 +32,10 @@
             <!-- Сведения -->
             <div class="information__data">
               <!-- Статус пользователя -->
-              <div class="information__data-item status__overlay"
-                   *ngIf="!!visitedUser.pageStatus?.length">
-                <div class="status">
-                  <div class="status__content">{{visitedUser.pageStatus}}</div>
-                </div>
-                <!-- Редактирование статуса -->
-                <button mat-mini-fab
-                        matTooltip="Изменить статус"
-                        color="primary"
-                        *ngIf="itsMyPage"><mat-icon>edit</mat-icon></button>
+              <div class="information__data-item"
+                   *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
+                <app-user-status [user]="visitedUser"
+                                 [itsMyPage]="itsMyPage"></app-user-status>
               </div>
               <!-- Остальные сведения -->
               <div class="information__data-item">

@@ -1,9 +1,6 @@
 @use "sass:map";
-@use "sass:math";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/containers";
-@use "../../../assets/styles/mixins";
-@use "../../../assets/styles/colors";
 
 $mainAvatarSizes: (
   default: 340px,
@@ -65,74 +62,6 @@ $columnTemplates: (
       @else {
         grid-template-columns: 1fr;
         justify-content: center;
-      }
-    }
-  }
-}
-
-// Статус
-.status {
-  $arrowSize: 8px;
-  $textPaddingX: 30px;
-  $textPaddingY: 15px;
-  $textFontSize: 15px;
-  $textLineHeight: 22px;
-  $borderRadius: $textPaddingY + math.div($textLineHeight, 2);
-  // Свойства
-  position: relative;
-  width: auto;
-  // Настройки фигуры
-  &::before,
-  &::after {
-    content: "";
-    display: block;
-    position: absolute;
-  }
-  // Тело облака
-  &::before {
-    @include mixins.inset;
-    // Свойства
-    border-radius: $borderRadius;
-    box-shadow: containers.$cardBoxShadow;
-    background-color: colors.$card;
-    z-index: 0;
-  }
-  // Стрелочка
-  &::after {
-    z-index: 1;
-    width: $arrowSize * 2;
-    height: $arrowSize * 2;
-    top: calc(50% - #{$arrowSize});
-    left: ($arrowSize * -2) + 2px;
-    border: #{$arrowSize} solid transparent;
-    border-right-color: colors.$card;
-  }
-  // Обертка
-  &__overlay {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 15px;
-  }
-  // Содержимое
-  &__content {
-    @include mixins.lineClamp(4, $textLineHeight, $textFontSize);
-    // Свойства
-    position: relative;
-    margin: #{$textPaddingY} #{$textPaddingX};
-    z-index: 2;
-  }
-
-  // Адаптив
-  @include screens.adaptiveFor($columnTemplates) using($column) {
-    // Стрелочка
-    &::after {
-      @if ($column==false) {
-        top: $arrowSize * -2;
-        left: $borderRadius;
-        border-bottom-color: colors.$card;
-        border-right-color: transparent;
       }
     }
   }
