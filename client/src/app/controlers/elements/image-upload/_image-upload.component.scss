@@ -14,7 +14,7 @@ $height: 280px;
 
 // Картинка
 .image {
-  @include mixins.imageContainer($padding);
+  @include mixins.imageContainer($height, $padding);
   // Картинка
   > img {
     width: 100%;
