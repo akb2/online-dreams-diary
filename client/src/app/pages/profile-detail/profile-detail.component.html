@@ -23,12 +23,11 @@
       <!-- Сведения аккаунта -->
       <div class="section">
         <div class="container">
-          <div class="information"
-               [ngClass]="{ 'with-ava': getVisitedUserHasAvatar }">
+          <div class="information with-ava">
             <!-- Аватарка -->
-            <div class="information__avatar"
-                 *ngIf="getVisitedUserHasAvatar">
-              <img [src]="visitedUser.avatars.crop" />
+            <div class="information__avatar">
+              <app-user-avatar [user]="visitedUser"
+                               [itsMyPage]="itsMyPage"></app-user-avatar>
             </div>
             <!-- Сведения -->
             <div class="information__data">

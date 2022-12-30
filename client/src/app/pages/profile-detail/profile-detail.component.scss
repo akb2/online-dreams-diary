@@ -43,16 +43,6 @@ $columnTemplates: (
     #{$__elm} {
       // Аватарка
       &__avatar {
-        overflow: hidden;
-        border-radius: containers.$cardBorderRadius;
-        box-shadow: containers.$cardBoxShadow;
-
-        > img {
-          display: block;
-          width: 100%;
-          height: auto;
-        }
-
         // Адаптив
         @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates) using($mainAvatarSize, $column) {
           width: $mainAvatarSize;
