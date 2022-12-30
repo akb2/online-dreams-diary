@@ -20,8 +20,51 @@
        [ngClass]="{ center: !userHasAccess }">
     <!-- Данные о пользователе -->
     <ng-container *ngIf="userHasAccess; else AccessDeniedByPrivate">
-      <!-- Сновидения -->
+      <!-- Сведения аккаунта -->
       <div class="section">
+        <div class="container">
+          <div class="information"
+               [ngClass]="{ 'with-ava': getVisitedUserHasAvatar }">
+            <!-- Аватарка -->
+            <div class="information__avatar"
+                 *ngIf="getVisitedUserHasAvatar">
+              <img [src]="visitedUser.avatars.crop" />
+            </div>
+            <!-- Сведения -->
+            <div class="information__data">
+              <!-- Статус пользователя -->
+              <div class="information__data-item status__overlay"
+                   *ngIf="!!visitedUser.pageStatus?.length">
+                <div class="status">
+                  <div class="status__content">{{visitedUser.pageStatus}}</div>
+                </div>
+                <!-- Редактирование статуса -->
+                <button mat-mini-fab
+                        matTooltip="Изменить статус"
+                        color="primary"
+                        *ngIf="itsMyPage"><mat-icon>edit</mat-icon></button>
+              </div>
+              <!-- Остальные сведения -->
+              <div class="information__data-item">
+                <app-card title="Общие данные">
+                  <div content>123</div>
+                  <ng-container menus
+                                *ngIf="itsMyPage">
+                    <!-- Настройки персональных данных -->
+                    <a mat-menu-item
+                       routerLink="/profile/settings/person">
+                      <mat-icon>edit</mat-icon>
+                      Изменить данные
+                    </a>
+                  </ng-container>
+                </app-card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Сновидения -->
+      <div class="section white">
         <div class="container">
           <!-- Список сновидений -->
           <ng-container *ngIf="userHasDiaryAccess; else DiaryAccessDeniedByPrivate">

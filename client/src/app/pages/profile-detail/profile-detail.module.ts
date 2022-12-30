@@ -2,7 +2,9 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { CardModule } from '@_controlers/card/card.module';
 import { DreamListModule } from '@_controlers/dream-list/dream-list.module';
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -27,7 +29,11 @@ import { ProfileDetailComponent } from '@_pages/profile-detail/profile-detail.co
     InformModule,
     TitleModule,
     MatButtonModule,
-    DreamListModule
+    DreamListModule,
+    MatIconModule,
+    MatTooltipModule,
+    CardModule,
+    MatMenuModule
   ]
 })
 

@@ -36,8 +36,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   ready: boolean = false;
   dreamsLoading: boolean = false;
 
-  title: string = "Общий дневник";
-  subTitle: string = "Все публичные сновидения";
+  title: string = "Страница пользователя";
+  subTitle: string = "";
   private pageTitle: string;
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 1);
   navMenuType: NavMenuType = NavMenuType.short;
@@ -47,7 +47,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   floatButtonLink: string;
   backButtonLink: string;
 
-  user: User;
+  private user: User;
   visitedUser: User;
   dreams: Dream[];
 
@@ -58,6 +58,22 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   dreamPlural: SimpleObject = DreamPlural;
 
   private destroy$: Subject<void> = new Subject<void>();
+
+
+
+
+
+  // У пользователя есть аватарка
+  get getVisitedUserHasAvatar(): boolean {
+    return (
+      !!this.visitedUser &&
+      !!this.visitedUser.avatars &&
+      !!this.visitedUser.avatars.full &&
+      !!this.visitedUser.avatars.middle &&
+      !!this.visitedUser.avatars.crop &&
+      !!this.visitedUser.avatars.small
+    );
+  }
 
 
 
@@ -148,7 +164,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     if (this.user?.id === this.visitedUser.id) {
       this.visitedUser = this.user;
       this.title = this.user.name + " " + this.user.lastName;
-      this.subTitle = this.user.pageStatus;
+      // this.subTitle = this.user.pageStatus;
       this.pageTitle = AppComponent.createTitle("Моя страница");
       this.backgroundImageData = this.user.settings.profileBackground;
       this.menuAvatarImage = this.user.avatars.middle;
@@ -164,13 +180,13 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     else {
       // Страница доступна
       if (this.userHasAccess) {
-        this.subTitle = this.visitedUser.pageStatus;
+        // this.subTitle = this.visitedUser.pageStatus;
         this.backgroundImageData = this.visitedUser.settings.profileBackground;
         this.navMenuType = this.visitedUser.settings.profileHeaderType;
       }
       // Скрыто настройками приватности
       else {
-        this.subTitle = "";
+        // this.subTitle = "";
         this.backgroundImageData = BackgroundImageDatas.find(({ id }) => id === 1);
         this.navMenuType = NavMenuType.collapse;
       }
