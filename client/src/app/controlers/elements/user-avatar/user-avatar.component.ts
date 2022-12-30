@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { FormBuilder, FormControl } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
@@ -8,6 +8,7 @@ import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys } from "@_model
 import { FileTypes } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
+import { Subject, takeUntil } from "rxjs";
 
 @Component({
   selector: "app-user-avatar",
@@ -16,7 +17,7 @@ import { SnackbarService } from "@_services/snackbar.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserAvatarComponent implements OnChanges {
+export class UserAvatarComponent implements OnChanges, OnDestroy {
 
 
   @Input() user: User;
@@ -30,6 +31,8 @@ export class UserAvatarComponent implements OnChanges {
 
   loadingAvatar: boolean = true;
   private showDefaultAva: boolean = false;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -68,13 +71,17 @@ export class UserAvatarComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.avatarForm.setValue(this.user.avatars.full);
-    this.loadingAvatar = true;
     this.showDefaultAva = false;
     // Остановить загрузчик при отсутствии аватарки
     if (!this.getCheckVisitedUserHasAvatar) {
       this.loadingAvatar = false;
       this.showDefaultAva = true;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -142,7 +149,9 @@ export class UserAvatarComponent implements OnChanges {
       }
       // Диалог
       const dialog = PopupCropImageComponent.open(this.matDialog, data);
-      dialog.afterClosed().subscribe((position: UserAvatarCropDataElement | null) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
+      dialog.afterClosed()
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe((position: UserAvatarCropDataElement | null) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
     }
   }
 
@@ -152,32 +161,36 @@ export class UserAvatarComponent implements OnChanges {
       title: "Удаление аватарки",
       text: "Вы действительно хотите удалить свою аватарку с сайта?"
     });
-    dialog.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadingAvatar = true;
-        this.changeDetectorRef.detectChanges();
-        // Запрос на сервер
-        this.accountService.deleteAvatar().subscribe(
-          code => {
-            this.loadingAvatar = false;
-            // Успешная обрезка аватарки
-            if (code == "0001") {
-              this.clearInput();
-              this.snackbarService.open({
-                message: "Ваша аватарка успешно удалена",
-                mode: "success"
-              });
-            }
-            // Изменения
-            this.changeDetectorRef.detectChanges();
-          },
-          () => {
-            this.loadingAvatar = false;
-            this.changeDetectorRef.detectChanges();
-          }
-        );
-      }
-    });
+    dialog.afterClosed()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(result => {
+        if (result) {
+          this.loadingAvatar = true;
+          this.changeDetectorRef.detectChanges();
+          // Запрос на сервер
+          this.accountService.deleteAvatar()
+            .pipe(takeUntil(this.destroyed$))
+            .subscribe(
+              code => {
+                this.loadingAvatar = false;
+                // Успешная обрезка аватарки
+                if (code == "0001") {
+                  this.clearInput();
+                  this.snackbarService.open({
+                    message: "Ваша аватарка успешно удалена",
+                    mode: "success"
+                  });
+                }
+                // Изменения
+                this.changeDetectorRef.detectChanges();
+              },
+              () => {
+                this.loadingAvatar = false;
+                this.changeDetectorRef.detectChanges();
+              }
+            );
+        }
+      });
   }
 
   // Загрузка аватарки
@@ -187,30 +200,32 @@ export class UserAvatarComponent implements OnChanges {
       this.loadingAvatar = true;
       this.changeDetectorRef.detectChanges();
       // Загрузка аватарки
-      this.accountService.uploadAvatar(file).subscribe(
-        code => {
-          // Успешная загрузка аватарки
-          if (code == "0001") {
-            this.snackbarService.open({
-              message: "Аватарка успешно загружена",
-              mode: "success"
-            });
-            // Обрезать аватарку
-            this.onOpenCrop("crop");
-          }
-          // Ощибка загрузки
-          else {
+      this.accountService.uploadAvatar(file)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(
+          code => {
+            // Успешная загрузка аватарки
+            if (code == "0001") {
+              this.snackbarService.open({
+                message: "Аватарка успешно загружена",
+                mode: "success"
+              });
+              // Обрезать аватарку
+              this.onOpenCrop("crop");
+            }
+            // Ощибка загрузки
+            else {
+              this.loadingAvatar = false;
+            }
+            // Изменения
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
             this.loadingAvatar = false;
+            this.clearInput();
+            this.changeDetectorRef.detectChanges();
           }
-          // Изменения
-          this.changeDetectorRef.detectChanges();
-        },
-        () => {
-          this.loadingAvatar = false;
-          this.clearInput();
-          this.changeDetectorRef.detectChanges();
-        }
-      );
+        );
     }
     // Ошибка файла
     else {
@@ -227,28 +242,30 @@ export class UserAvatarComponent implements OnChanges {
       this.loadingAvatar = true;
       this.changeDetectorRef.detectChanges();
       // Запрос на сервер
-      this.accountService.cropAvatar(type, position).subscribe(
-        code => {
-          this.loadingAvatar = false;
-          // Успешная обрезка аватарки
-          if (code == "0001") {
-            this.snackbarService.open({
-              message: type === "crop" ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
-              mode: "success"
-            });
-            // Открыть изменение миниатюры
-            if (type === "crop") {
-              this.onOpenCrop("middle");
+      this.accountService.cropAvatar(type, position)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(
+          code => {
+            this.loadingAvatar = false;
+            // Успешная обрезка аватарки
+            if (code == "0001") {
+              this.snackbarService.open({
+                message: type === "crop" ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
+                mode: "success"
+              });
+              // Открыть изменение миниатюры
+              if (type === "crop") {
+                this.onOpenCrop("middle");
+              }
             }
+            // Изменения
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
+            this.loadingAvatar = false;
+            this.changeDetectorRef.detectChanges();
           }
-          // Изменения
-          this.changeDetectorRef.detectChanges();
-        },
-        () => {
-          this.loadingAvatar = false;
-          this.changeDetectorRef.detectChanges();
-        }
-      );
+        );
     }
   }
 
