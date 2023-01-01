@@ -5,9 +5,9 @@ import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
 import { ImageUploadComponent } from "@_controlers/image-upload/image-upload.component";
+import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserSave } from "@_models/account";
-import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -63,7 +63,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   // Подписка на пользователя
   private get subscribeUser(): Observable<User> {
-    return this.accountService.user$.pipe(
+    return this.accountService.user$().pipe(
       takeUntil(this.destroy$),
       map(user => {
         if (user) {

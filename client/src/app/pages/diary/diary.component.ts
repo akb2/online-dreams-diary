@@ -1,18 +1,18 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AppComponent } from "@app/app.component";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
+import { BackgroundImageDatas } from "@_datas/appearance";
+import { DreamPlural } from "@_datas/dream";
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
-import { BackgroundImageDatas } from "@_datas/appearance";
 import { Dream } from "@_models/dream";
-import { DreamPlural } from "@_datas/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
+import { GlobalService } from "@_services/global.service";
 import { of, Subject, throwError } from "rxjs";
 import { filter, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
@@ -102,11 +102,12 @@ export class DiaryComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private titleService: Title,
-    private router: Router
+    private router: Router,
+    private globalService: GlobalService
   ) { }
 
   ngOnInit() {
-    this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
+    this.pageData = this.globalService.getPageData;
     // Текущий пользователь и параметры URL
     this.defineData();
   }
@@ -160,24 +161,25 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    this.accountService.user$.pipe(
-      takeUntil(this.destroy$),
-      switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
-      mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
-      filter(({ params }) => !!params),
-      switchMap(r => (parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id)) || this.pageData.userId === 0 ?
-        of(r) :
-        throwError(r)
-      ),
-      mergeMap(({ params, user }) =>
-        (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
-          this.pageData.userId === 0 ?
-            of(null) :
-            this.accountService.getUser(parseInt(params.user_id)) :
-          of(user),
-        (o, visitedUser) => ({ ...o, visitedUser })
+    this.accountService.user$()
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
+        mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
+        filter(({ params }) => !!params),
+        switchMap(r => (parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id)) || this.pageData.userId === 0 ?
+          of(r) :
+          throwError(r)
+        ),
+        mergeMap(({ params, user }) =>
+          (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
+            this.pageData.userId === 0 ?
+              of(null) :
+              this.accountService.getUser(parseInt(params.user_id)) :
+            of(user),
+          (o, visitedUser) => ({ ...o, visitedUser })
+        )
       )
-    )
       .subscribe(
         ({ user, visitedUser }) => {
           this.user = user;
@@ -196,7 +198,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     if (this.isMyDiary) {
       this.title = this.user.name + " " + this.user.lastName;
       this.subTitle = "Мой дневник сновидений";
-      this.pageTitle = AppComponent.createTitle(this.subTitle);
+      this.pageTitle = this.globalService.createTitle(this.subTitle);
       this.backgroundImageData = this.user.settings.profileBackground;
       this.menuAvatarImage = this.user.avatars.middle;
       this.menuAvatarIcon = "person";
@@ -213,7 +215,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     else if (!!this.visitedUser && this.user?.id !== this.visitedUser.id) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.subTitle = "Дневник сновидений";
-      this.pageTitle = AppComponent.createTitle([this.subTitle, this.title]);
+      this.pageTitle = this.globalService.createTitle([this.subTitle, this.title]);
       this.backgroundImageData = this.visitedUser.settings.profileBackground;
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.menuAvatarIcon = "person";
@@ -235,7 +237,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
         this.floatButtonLink = "";
       }
       // Название страницы
-      this.pageTitle = AppComponent.createTitle(this.title);
+      this.pageTitle = this.globalService.createTitle(this.title);
       this.menuAvatarIcon = "content_paste_search";
       this.diaryTypeByUser = DiaryTypeByUser.all;
       this.showProfile = true;

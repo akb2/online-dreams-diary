@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@ang
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AppComponent } from "@app/app.component";
 import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
 import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
@@ -10,17 +9,18 @@ import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.c
 import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map-editor.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
-import { User } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { Dream, DreamMode, DreamStatus } from "@_models/dream";
 import { DreamModes, DreamStatuses } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
-import { ErrorMessagesType } from "@_models/form";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
+import { User } from "@_models/account";
+import { SimpleObject } from "@_models/app";
+import { Dream, DreamMode, DreamStatus } from "@_models/dream";
+import { ErrorMessagesType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
+import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { of, Subject, throwError } from "rxjs";
 import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
@@ -118,7 +118,8 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private globalService: GlobalService
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -230,7 +231,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(
         takeUntil(this.destroy$),
         switchMap(user => !!user ? of(user) : throwError(null)),
@@ -280,7 +281,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Установить название страницы
   private setTitle(): void {
-    this.titleService.setTitle(AppComponent.createTitle([
+    this.titleService.setTitle(this.globalService.createTitle([
       this.dream.title,
       this.pageTitle[!!this.dream.id ? 1 : 0]
     ]));

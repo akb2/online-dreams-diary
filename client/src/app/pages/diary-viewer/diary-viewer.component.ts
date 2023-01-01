@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AppComponent } from "@app/app.component";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
+import { DreamTitle } from "@_datas/dream-map-settings";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode } from "@_models/dream";
-import { DreamTitle } from "@_datas/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
+import { GlobalService } from "@_services/global.service";
 import { mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 
 
@@ -108,7 +108,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private globalService: GlobalService
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -129,7 +130,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(
         takeUntil(this.destroy$),
         mergeMap(
@@ -159,7 +160,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Установить название страницы
   private setTitle(): void {
-    this.titleService.setTitle(AppComponent.createTitle([
+    this.titleService.setTitle(this.globalService.createTitle([
       this.dream.title,
       this.pageTitle
     ]));

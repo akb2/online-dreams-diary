@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, In
 import { MatDialog } from "@angular/material/dialog";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
+import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { User } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
-import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
@@ -77,7 +77,7 @@ export class DreamListComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     // Текущий пользователь
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;

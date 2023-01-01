@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { BrowserNames, OsNames } from "@_datas/app";
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { BrowserNames, OsNames } from "@_datas/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
@@ -72,7 +72,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild } from "@angular/core";
 import { FormBuilder, FormControl } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
@@ -70,7 +70,7 @@ export class UserAvatarComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(): void {
-    this.avatarForm.setValue(this.user.avatars.full);
+    this.avatarForm.setValue(this.user?.avatars?.full);
     this.showDefaultAva = false;
     // Остановить загрузчик при отсутствии аватарки
     if (!this.getCheckVisitedUserHasAvatar) {

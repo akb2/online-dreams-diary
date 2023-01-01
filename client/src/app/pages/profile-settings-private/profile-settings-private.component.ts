@@ -3,8 +3,8 @@ import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PopupSearchUsersComponent } from '@_controlers/search-users/search-users.component';
-import { PrivateType, User, UserPrivate, UserPrivateItem, UserPrivateNameItem, } from '@_models/account';
 import { PeoplePlural, PrivateTypes, UserPrivateNames } from "@_datas/account";
+import { PrivateType, User, UserPrivate, UserPrivateItem, UserPrivateNameItem } from '@_models/account';
 import { CustomObjectKey, SimpleObject } from '@_models/app';
 import { NavMenuType } from '@_models/nav-menu';
 import { ScreenBreakpoints, ScreenKeys } from '@_models/screen';
@@ -99,7 +99,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;

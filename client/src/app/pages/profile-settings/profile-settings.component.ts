@@ -38,7 +38,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;

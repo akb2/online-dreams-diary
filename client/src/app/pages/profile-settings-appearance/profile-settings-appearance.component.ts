@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { NavMenuSettingData } from '@_controlers/nav-menu-settings/nav-menu-settings.component';
-import { User, UserSettings } from '@_models/account';
 import { BackgroundImageDatas } from '@_datas/appearance';
+import { User, UserSettings } from '@_models/account';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
@@ -45,7 +45,7 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;

@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { MenuItems } from "@_datas/menu";
-import { CompareArrays, CompareObjects } from "@_helpers/objects";
+import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
@@ -53,7 +53,7 @@ export class MenuService implements OnDestroy {
         this.createMenuItems();
       });
     // Подписка на текущего пользователя
-    this.accountService.user$
+    this.accountService.user$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;
@@ -141,7 +141,7 @@ export class MenuService implements OnDestroy {
     const currentUserIDRegExp: RegExp = new RegExp("(:currentUserID)", "gm");
     // Выставить текущий URL
     if (currentUserIDRegExp.test(item.link)) {
-      item.link = item.link.replace(currentUserIDRegExp, this.user?.id.toString() ?? "0");
+      item.link = item.link.replace(currentUserIDRegExp, this.user?.id?.toString() ?? "0");
     }
     // Выход
     else if (item.id === "quit") {

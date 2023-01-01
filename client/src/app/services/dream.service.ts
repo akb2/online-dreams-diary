@@ -1,20 +1,20 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy, OnInit } from "@angular/core";
+import { BackgroundImageDatas } from "@_datas/appearance";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { BackgroundImageDatas } from "@_datas/appearance";
 import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { forkJoin, Observable, of } from "rxjs";
-import { map, mergeMap, switchMap, tap } from "rxjs/operators";
+import { forkJoin, Observable, of, Subject } from "rxjs";
+import { map, mergeMap, switchMap, take, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -24,7 +24,7 @@ import { map, mergeMap, switchMap, tap } from "rxjs/operators";
   providedIn: "root"
 })
 
-export class DreamService {
+export class DreamService implements OnInit, OnDestroy {
 
 
   private baseUrl: string = environment.baseUrl;
@@ -32,6 +32,8 @@ export class DreamService {
   private cookieLifeTime: number = 60 * 60 * 24 * 365;
 
   private user: User;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -85,6 +87,15 @@ export class DreamService {
     return { detalization };
   }
 
+  // Сведения о владельце сновидения
+  private getDreamUser(userId: number): Observable<User> {
+    const observable: Observable<User> = !!this.user && userId === this.user.id ?
+      of(this.user) :
+      this.accountService.user$(userId).pipe(take(1), map(u => u as User));
+    // Вернуть подписчик
+    return observable.pipe(takeUntil(this.destroyed$));
+  }
+
 
 
 
@@ -95,10 +106,18 @@ export class DreamService {
     private apiService: ApiService,
     private tokenService: TokenService,
     private localStorageService: LocalStorageService
-  ) {
-    this.user = this.accountService.getCurrentUser();
+  ) { }
+
+  ngOnInit(): void {
     // Подписка на актуальные сведения о пользователе
-    this.accountService.user$.subscribe(user => this.user = user);
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(user => this.user = user);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -125,7 +144,7 @@ export class DreamService {
           if (dreams?.length > 0) {
             const users: number[] = Array.from(new Set(dreams.map((dream: DreamDto) => dream.userId)));
             // Найдены уникальные ID пользователей
-            return forkJoin(users.map(u => !!this.user && u === this.user.id ? of(this.user) : this.accountService.getUser(u)));
+            return forkJoin(users.map(u => this.getDreamUser(u)));
           }
           // Не искать пользователей
           return of([]);
@@ -155,7 +174,7 @@ export class DreamService {
           this.apiService.checkResponse(result.result.code, codes)
       ),
       mergeMap(
-        (d: DreamDto) => !!this.user && d.userId === this.user.id ? of(this.user) : this.accountService.getUser(d.userId),
+        (d: DreamDto) => this.getDreamUser(d.userId),
         (dreamDto, user) => ({ dreamDto, user })
       ),
       map(({ dreamDto, user }) => ({ ...this.dreamConverter(dreamDto), user })),
