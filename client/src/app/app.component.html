@@ -1,2 +1,5 @@
-<router-outlet></router-outlet>
-<app-page-loader *ngIf="showPreLoader && validToken"></app-page-loader>
+<router-outlet *ngIf="!showPreLoader; else loader"></router-outlet>
+
+<ng-template #loader>
+  <app-page-loader></app-page-loader>
+</ng-template>
