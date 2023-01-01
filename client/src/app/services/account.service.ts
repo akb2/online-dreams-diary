@@ -13,7 +13,7 @@ import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { catchError, filter, map, mergeMap, pairwise, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, filter, finalize, map, mergeMap, pairwise, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -31,9 +31,12 @@ export class AccountService implements OnDestroy {
 
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
+  private usersCookieKey: string = "users";
 
-  readonly user: BehaviorSubject<User> = new BehaviorSubject(null);
-  readonly user$: Observable<User>;
+  private syncUser: [number, number] = [-1, 0];
+  private userSubscritionCounter: [number, number][] = [];
+
+  readonly users: BehaviorSubject<User[]> = new BehaviorSubject([]);
   readonly destroy$: Subject<void> = new Subject<void>();
 
 
@@ -82,6 +85,64 @@ export class AccountService implements OnDestroy {
     return age;
   }
 
+  // Получить подписку на данные о пользователе
+  user$(userId: number = 0, sync: boolean = false): Observable<User> {
+    let currentUserId: number = parseInt(this.tokenService.id);
+    currentUserId = isNaN(currentUserId) ? 0 : currentUserId;
+    userId = userId > 0 ? userId : currentUserId;
+    // Обновить счетчик
+    const counter: number = this.updateUserCounter(userId, 1);
+    // Подписки
+    const observable: Observable<User> = this.users.asObservable().pipe(
+      takeUntil(this.destroy$),
+      startWith(undefined),
+      pairwise(),
+      map(([prev, next]) => ([prev ?? [], next ?? []])),
+      map(([prev, next]) => ([prev, next].map(us => us?.find(({ id }) => id === userId) ?? null))),
+      filter(([prev, next]) => !CompareObjects(prev, next) || this.syncUser[0] === userId),
+      map(([, next]) => next)
+    );
+    const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
+    const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId) : of(null))).pipe(
+      takeUntil(this.destroy$),
+      mergeMap(() => observable),
+      tap(() => {
+        const [id, i] = this.syncUser;
+        if (id === userId) {
+          if (i < counter) {
+            this.syncUser[1]++;
+          }
+          // Очистить
+          else {
+            this.syncUser = [-1, 0];
+          }
+        }
+      }),
+      finalize(() => this.updateUserCounter(userId, -1))
+    );
+    // Вернуть подписки
+    return userObservable;
+  }
+
+  // Загрузить пользоватлей из стора
+  getUsersFromStore(): void {
+    this.configLocalStorage();
+    // Данные
+    let users: User[] = [];
+    // Попытка получения из стора
+    try {
+      const stringUsers: string = this.localStorageService.getCookie(this.usersCookieKey);
+      const mixedUsers: any = JSON.parse(stringUsers);
+      const arrayUsers: any[] = Array.isArray(mixedUsers) ? mixedUsers : [];
+      // Проверить данные
+      users = arrayUsers.map(u => u as User).filter(u => !!u);
+    }
+    // Ошибка
+    catch (e: any) { }
+    // Добавить в наблюдение
+    this.users.next(users);
+  }
+
 
 
 
@@ -93,19 +154,11 @@ export class AccountService implements OnDestroy {
     private localStorageService: LocalStorageService,
     private tokenService: TokenService
   ) {
-    this.configLocalStorage();
-    // Подписка на текущего пользователя, изменения только когда значение соответсвует текущей авторизации
-    this.user$ = this.user.asObservable().pipe(
-      takeUntil(this.destroy$),
-      startWith(null),
-      pairwise(),
-      filter(([prev, curr]) => !CompareObjects(prev, curr) || !this.checkAuth),
-      map(([, curr]) => curr),
-    );
+    this.getUsersFromStore();
   }
 
   ngOnDestroy(): void {
-    this.user.complete();
+    this.users.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -180,8 +233,8 @@ export class AccountService implements OnDestroy {
 
   // Выйти из аккаунта
   quit(): void {
-    this.saveCurrentUser(null);
     this.tokenService.deleteAuth();
+    this.clearUsersFromStore();
   }
 
   // Проверка настроек приватности
@@ -206,9 +259,16 @@ export class AccountService implements OnDestroy {
     return this.getUser(this.tokenService.id, codes);
   }
 
-  // Обновить анонимного пользователя
-  syncAnonymousUser(): void {
-    this.saveCurrentUser(null);
+  // Обновить подписчик анонимного пользователя
+  syncAnonymousUser(): Observable<User> {
+    return of(true).pipe(
+      takeUntil(this.destroy$),
+      tap(() => {
+        this.syncUser = [0, 0];
+        this.users.next([...this.users.getValue()]);
+      }),
+      map(() => null)
+    );
   }
 
   // Информация о пользователе
@@ -217,23 +277,17 @@ export class AccountService implements OnDestroy {
     return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(
       switchMap(
         result => {
-          // Сохранить данные текущего пользователя
-          if (result.result.code === "0001" && result.result.data?.id.toString() === this.tokenService.id.toString()) {
-            const user: User = this.userConverter(result.result.data);
-            // Сохранить данные
-            this.saveCurrentUser(user);
+          const user: User = this.userConverter(result.result.data);
+          // Сохранить данные пользователя
+          if (result.result.code === "0001") {
+            this.saveUserToStore(user);
           }
           // Вернуть данные пользователя
-          if (result.result.code === "0001" || codes.some(testCode => testCode === result.result.code)) {
-            return of(result.result.data);
-          }
-          // Вернуть обработку кодов
-          else {
-            return this.apiService.checkResponse(result.result.code, codes);
-          }
+          return result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
+            of(user) :
+            this.apiService.checkResponse(result.result.code, codes);
         }
-      ),
-      map(user => this.userConverter(user))
+      )
     );
   }
 
@@ -377,7 +431,7 @@ export class AccountService implements OnDestroy {
       formData,
       this.httpHeader
     ).pipe(
-      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -398,36 +452,16 @@ export class AccountService implements OnDestroy {
 
 
 
-  // Сведения о текущем пользователе
-  getCurrentUser(): User {
-    if (this.checkAuth) {
-      this.configLocalStorage();
-      const userString: string = this.localStorageService.getCookie("current_user");
-      if (userString) {
-        return JSON.parse(userString) as User;
-      }
-    }
-    // Пользователь не найден
-    return null;
-  }
-
-  // Сведения о текущем пользователе
-  private saveCurrentUser(user: User): void {
-    this.configLocalStorage();
-    this.localStorageService.setCookie("current_user", !!user ? JSON.stringify(user) : "");
-    this.user.next(user);
-  }
-
   // Преобразовать данные с сервера
   userConverter(data: any): User {
-    const background: number = parseInt(data.settings?.profileBackground as unknown as string);
-    const headerType: NavMenuType = data.settings.profileHeaderType as NavMenuType;
+    const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
+    const headerType: NavMenuType = data?.settings.profileHeaderType as NavMenuType;
     // Права доступа
     const privateRules: UserPrivate = this.userPrivateConverter(data?.private);
     // Данные пользователя
     const user: User = {
       ...data,
-      id: parseInt(data.id) || 0,
+      id: parseInt(data?.id) ?? 0,
       settings: {
         profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
         profileHeaderType: headerType ? headerType : NavMenuType.short
@@ -446,6 +480,54 @@ export class AccountService implements OnDestroy {
       .map(({ rule }) => rule)
       .map(rule => ({ rule, data: data[rule] ?? this.getDefaultUserPrivateItem }))
       .reduce((o, { rule: k, data: v }) => ({ ...o, [k as keyof UserPrivate]: v }), {} as UserPrivate);
+  }
+
+  // Сохранить данные о пользователе в стор
+  private saveUserToStore(user: User): void {
+    const users: User[] = [...(this.users.getValue() ?? [])];
+    const index: number = users.findIndex(({ id }) => id === user.id);
+    // Обновить запись
+    if (index >= 0) {
+      users[index] = user;
+    }
+    // Добавить новую
+    else {
+      users.push(user);
+    }
+    // Обновить
+    this.configLocalStorage();
+    this.localStorageService.setCookie(this.usersCookieKey, !!users ? JSON.stringify(users) : "");
+    this.users.next(users);
+  }
+
+  // Очистить данные о пользователях в сторе
+  private clearUsersFromStore(): void {
+    this.configLocalStorage();
+    this.localStorageService.setCookie(this.usersCookieKey, "");
+    this.users.next([]);
+  }
+
+  // Обновить счетчик подписок на пользователей
+  private updateUserCounter(userId: number, eventType: -1 | 1): number {
+    const counterIndex: number = this.userSubscritionCounter.findIndex(([id]) => id === userId);
+    // Для существующего счетчика
+    if (counterIndex >= 0) {
+      this.userSubscritionCounter[counterIndex][1] += eventType;
+      // Удалить
+      if (this.userSubscritionCounter[counterIndex][1] <= 0) {
+        this.userSubscritionCounter.splice(counterIndex, 1);
+        // Вернуть ноль
+        return 0;
+      }
+      // Вернуть количество
+      return this.userSubscritionCounter[counterIndex][1];
+    }
+    // Для несуществующего
+    else if (eventType === 1) {
+      this.userSubscritionCounter.push([userId, 1]);
+    }
+    // Вернуть ноль
+    return 0;
   }
 }
 
