@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppComponent } from '@app/app.component';
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { DreamPlural } from '@_datas/dream';
 import { User } from '@_models/account';
@@ -11,7 +10,8 @@ import { Dream } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
-import { filter, map, mergeMap, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
+import { GlobalService } from '@_services/global.service';
+import { mergeMap, Observable, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
 
 
 
@@ -33,7 +33,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
   userHasDiaryAccess: boolean = false;
-  ready: boolean = false;
+
+  pageLoading: boolean = false;
   dreamsLoading: boolean = false;
 
   title: string = "Страница пользователя";
@@ -46,6 +47,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   floatButtonIcon: string;
   floatButtonLink: string;
   backButtonLink: string;
+
+  private visitedUserId: number = 0;
 
   private user: User;
   visitedUser: User;
@@ -85,13 +88,14 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
     private titleService: Title,
-    private dreamService: DreamService
+    private dreamService: DreamService,
+    private globalService: GlobalService
   ) { }
 
   ngOnInit() {
-    this.pageData = AppComponent.getPageData(this.activatedRoute.snapshot);
-    // Текущий пользователь и параметры URL
-    this.defineData();
+    this.pageData = this.globalService.getPageData;
+    // Запуск определения данных
+    this.defineCurrentUser();
   }
 
   ngOnDestroy(): void {
@@ -108,9 +112,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(["404"]);
   }
 
-  // После успешной загрузки сведений о пользователе
+  // Все данные загружены
   private onUserLoaded(): void {
-    // Загрузить сновидения
     this.loadDreams();
   }
 
@@ -118,40 +121,82 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
 
 
-  // Определить данные
-  private defineData(): void {
-    this.accountService.user$.pipe(
-      takeUntil(this.destroy$),
-      map(user => ({ user })),
-      mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
-      filter(({ params }) => !!params),
-      map(r => {
-        let userId: number = parseInt(r.params.user_id);
-        userId = isNaN(userId) ? 0 : userId;
-        userId = userId > 0 ? userId : (!!r.user ? r.user.id : 0);
-        // Вернуть данные
-        return { ...r, userId };
-      }),
-      switchMap(r => r.userId > 0 ? of(r) : throwError(r)),
-      map(o => ({ ...o, isCurrentUser: !((!!o.user && o.user.id !== o.userId) || (!o.user && this.pageData.userId === -1)) })),
-      mergeMap(
-        ({ userId, isCurrentUser }) => isCurrentUser ? of(true) : this.accountService.checkPrivate("myPage", userId),
-        (o, hasAccess) => ({ ...o, hasAccess })
-      ),
-      mergeMap(
-        ({ user, userId, isCurrentUser }) => isCurrentUser ? of(user) : this.accountService.getUser(userId, ["8101"]),
-        (o, visitedUser) => ({ ...o, visitedUser })
-      )
-    )
+  // Определение текущего пользователя
+  private defineCurrentUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroy$))
       .subscribe(
-        ({ user, visitedUser, hasAccess, userId, params }) => {
-          if (userId === user?.id && params.user_id == "0") {
-            this.router.navigate(["/profile/" + user.id], { replaceUrl: true });
-          }
-          // Остальные данные
-          this.userHasAccess = hasAccess;
+        user => {
           this.user = user;
-          this.visitedUser = visitedUser;
+          // Параметры URL
+          this.defineUrlParams();
+        }
+      );
+  }
+
+  // Определение параметров URL
+  private defineUrlParams(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
+    this.activatedRoute.params
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(params => {
+          if (params?.user_id === "0") {
+            this.router.navigate(["/profile/" + this.user.id], { replaceUrl: true });
+            return throwError("");
+          }
+          // Определить ID просматриваемого пользователя
+          else {
+            let userId: number = parseInt(params?.user_id);
+            userId = isNaN(userId) ? (!!this.user ? this.user.id : 0) : userId;
+            return of(userId);
+          }
+        })
+      )
+      .subscribe(visitedUserId => {
+        this.visitedUserId = visitedUserId;
+        this.itsMyPage = visitedUserId === this.user?.id;
+        // Параметры URL
+        this.defineHasProfileAccess();
+      });
+  }
+
+  // Определение доступа к странице
+  private defineHasProfileAccess(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Параметры
+    const observable: Observable<boolean> = this.itsMyPage ?
+      of(true) :
+      this.accountService.checkPrivate("myPage", this.visitedUserId);
+    // Подписка на доступ к данным
+    observable
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userHasAccess => {
+        this.userHasAccess = userHasAccess;
+        this.defineVisitingUser();
+      });
+  }
+
+  // Определение просматриваемого пользователя
+  private defineVisitingUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Параметры
+    const observable: Observable<User> = this.itsMyPage ?
+      of(this.user) :
+      this.accountService.user$(this.visitedUserId, true);
+    // Подписка на данные пользователя
+    observable
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        user => {
+          this.visitedUser = user;
           this.setPageData();
         },
         () => this.onUserFail()
@@ -165,16 +210,13 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       this.visitedUser = this.user;
       this.title = this.user.name + " " + this.user.lastName;
       // this.subTitle = this.user.pageStatus;
-      this.pageTitle = AppComponent.createTitle("Моя страница");
+      this.pageTitle = this.globalService.createTitle("Моя страница");
       this.backgroundImageData = this.user.settings.profileBackground;
       this.menuAvatarImage = this.user.avatars.middle;
       this.navMenuType = this.user.settings.profileHeaderType;
       this.menuAvatarIcon = "person";
       this.floatButtonIcon = "book";
       this.floatButtonLink = "/diary/" + this.user.id;
-      // Готово
-      this.ready = true;
-      this.itsMyPage = true;
     }
     // Профиль другого пользователя
     else {
@@ -192,14 +234,12 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       }
       // Общие настройки
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
-      this.pageTitle = AppComponent.createTitle(this.title);
+      this.pageTitle = this.globalService.createTitle(this.title);
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.menuAvatarIcon = "person";
-      // Готово
-      this.ready = true;
-      this.itsMyPage = false;
     }
     // Готово к загрузке
+    this.pageLoading = false;
     this.titleService.setTitle(this.pageTitle);
     this.changeDetectorRef.detectChanges();
     // Прочие действия

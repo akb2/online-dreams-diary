@@ -1,4 +1,4 @@
-<ng-container *ngIf="ready">
+<ng-container *ngIf="!pageLoading; else pageLoader">
   <!-- Шапка -->
   <app-main-menu [autoCollapse]="true"
                  [imageFullShow]="true"
@@ -122,4 +122,6 @@
 
 
 <!-- Лоадер страницы -->
-<app-page-loader *ngIf="!ready"></app-page-loader>
+<ng-template #pageLoader>
+  <app-page-loader></app-page-loader>
+</ng-template>
