@@ -165,13 +165,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
 
 
-  // Определение брейкпоинта
-  private defineScreenBreakPoint(): void {
-    this.screenService.breakpoint$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe();
-  }
-
   // Определение текущего пользователя
   private defineCurrentUser(): void {
     this.pageLoading = true;
