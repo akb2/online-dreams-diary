@@ -388,7 +388,7 @@ export class DreamMapTerrainService implements OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
     // Очистить объекты
-    this.displacementTexture.dispose();
+    this.displacementTexture?.dispose();
     delete this.displacementTexture;
   }
 
