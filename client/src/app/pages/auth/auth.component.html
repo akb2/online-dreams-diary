@@ -70,6 +70,11 @@
     </form>
     <!-- Действия -->
     <ng-container actions>
+      <!-- Отмена -->
+      <a mat-stroked-button
+         color="basic"
+         (click)="onActivationCancel()">Отмена</a>
+      <!-- Выслать код -->
       <a mat-flat-button
          color="primary"
          (click)="sendActivationCode()">Выслать код</a>

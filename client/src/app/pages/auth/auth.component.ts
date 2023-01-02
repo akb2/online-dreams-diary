@@ -62,6 +62,17 @@ export class AuthComponent implements OnDestroy {
 
 
 
+  // Отмена активации
+  onActivationCancel(): void {
+    this.showActivate = false;
+    this.endActivation = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+
+
+
+
   // Попытка авторизации
   tryLogin(): void {
     const loginControl: FormControl = this.form.get("login") as FormControl;
