@@ -4,8 +4,9 @@ import { Router } from "@angular/router";
 import { UserPrivateNames } from "@_datas/account";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { environment } from '@_environments/environment';
+import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { AuthResponce, PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto } from "@_models/account";
+import { AuthResponce, PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { NavMenuType } from "@_models/nav-menu";
@@ -87,9 +88,7 @@ export class AccountService implements OnDestroy {
 
   // Получить подписку на данные о пользователе
   user$(userId: number = 0, sync: boolean = false): Observable<User> {
-    let currentUserId: number = parseInt(this.tokenService.id);
-    currentUserId = isNaN(currentUserId) ? 0 : currentUserId;
-    userId = userId > 0 ? userId : currentUserId;
+    userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
     // Обновить счетчик
     let counter: number = this.updateUserCounter(userId, 1);
     // Подписки
@@ -464,7 +463,8 @@ export class AccountService implements OnDestroy {
     // Данные пользователя
     const user: User = {
       ...data,
-      id: parseInt(data?.id) ?? 0,
+      id: ParseInt(data?.id),
+      sex: ParseInt(data?.sex) as UserSex,
       settings: {
         profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
         profileHeaderType: headerType ? headerType : NavMenuType.short

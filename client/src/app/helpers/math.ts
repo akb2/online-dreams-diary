@@ -4,6 +4,14 @@ import { XYCoord } from "@_models/dream-map";
 
 
 
+// Преобразовать данные в число
+export const ParseInt = (value: any) => {
+  let num: number = parseInt(value);
+  num = isNaN(num) ? 0 : num;
+  // Вернуть число
+  return num;
+};
+
 // Проверка числа на четность
 export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
 
