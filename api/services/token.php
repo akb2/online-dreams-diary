@@ -1,4 +1,5 @@
 <?
+
 namespace Services;
 
 use PDO;
@@ -66,7 +67,7 @@ class TokenService
     if (strlen($token) > 0) {
       $test = $this->getToken($token);
       // Токен существует
-      if($test['token'] === $token){
+      if ($test['token'] === $token) {
         // Удаление токена
         if ($this->dataBaseService->executeFromFile('token/deleteToken.sql', array($token))) {
           $code = '0001';
@@ -118,7 +119,10 @@ class TokenService
           // Проверка времени жизни токена
           if (gmdate('U') - $this->tokenLifeTime < strtotime($auth[0]['last_action_date'])) {
             // Обновить токен
-            if ($this->dataBaseService->executeFromFile('token/updateLastAction.sql', array($auth[0]['id']))) {
+            if (
+              $this->dataBaseService->executeFromFile('token/updateLastAction.sql', array($auth[0]['id'])) &&
+              $this->dataBaseService->executeFromFile('account/updateLastAction.sql', array($auth[0]['user_id']))
+            ) {
               $tokenData = $auth[0];
               $code = '0001';
             }
@@ -369,10 +373,10 @@ class TokenService
       // Данные
       $sqlData = array($id, $token);
       // Запрос проверки токена
-      $auth = $this->dataBaseService->getDatasFromFile('token/getTokens.sql', $sqlData);
+      $tokens = $this->dataBaseService->getDatasFromFile('token/getTokens.sql', $sqlData);
       // Проверить авторизацию
-      if (count($auth) > 0) {
-        return $auth;
+      if (count($tokens) > 0) {
+        return $tokens;
       }
     }
     // Токен не валидный

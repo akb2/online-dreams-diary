@@ -11,6 +11,7 @@ SELECT
   `last_name`,
   `patronymic`,
   `register_date`,
+  `last_action_date`,
   `birth_date`,
   `sex`,
   `email`,

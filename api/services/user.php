@@ -200,7 +200,7 @@ class UserService
             $sqlData = array($login, $password);
             // Запрос авторизации
             $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
-            $code = "9018";
+            $code = '9018';
             // Проверить авторизацию
             if (count($auth) > 0) {
               if (strlen($auth[0]['id']) > 0) {
@@ -470,7 +470,7 @@ class UserService
       }
     }
     // Ключ не создан
-    return "";
+    return '';
   }
 
 
@@ -916,6 +916,7 @@ class UserService
   // Преобразовать данные
   private function getUserData(array $user): array
   {
+    // Определение аватарок
     $avatars = array();
     foreach ($this->avatarKeys as $key) {
       $avatars[$key] = '';
@@ -965,6 +966,7 @@ class UserService
       'patronymic' => $user['patronymic'],
       'birthDate' => $user['birth_date'],
       'registerDate' => $user['register_date'],
+      'lastActionDate' => $user['last_action_date'],
       'sex' => $user['sex'],
       'email' => $user['email'],
       'roles' => json_decode($user['roles']),
