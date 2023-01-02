@@ -123,7 +123,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   // Все данные загружены
   private onUserLoaded(): void {
     // Мой профиль
-    if (this.user?.id === this.visitedUser.id) {
+    if (!!this.user && !!this.visitedUser && this.user.id === this.visitedUser.id) {
       this.visitedUser = this.user;
       this.title = this.user.name + " " + this.user.lastName;
       // this.subTitle = this.user.pageStatus;
@@ -136,7 +136,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       this.floatButtonLink = "/diary/" + this.user.id;
     }
     // Профиль другого пользователя
-    else {
+    else if (!!this.visitedUser) {
       // Страница доступна
       if (this.userHasAccess) {
         // this.subTitle = this.visitedUser.pageStatus;
@@ -220,7 +220,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         takeWhile(() => this.visitedUserId === -1, true),
         skipWhile(() => this.visitedUserId === -1),
-        mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId)),
+        mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId, ["8100"])),
         mergeMap(
           () => this.accountService.user$(this.visitedUserId, !this.itsMyPage),
           (userHasAccess, user) => ({ userHasAccess, user })
@@ -268,6 +268,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
           // Не обновлять
           return false;
         }),
+        filter(() => this.userHasAccess),
         mergeMap(
           () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.visitedUser.id),
           (limit, hasAccess) => ({ limit, hasAccess })
@@ -279,7 +280,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
       )
       .subscribe(
-        ({ hasAccess, dreams, count }) => {
+        ({ hasAccess, dreams, count }: any) => {
           this.userHasDiaryAccess = hasAccess;
           this.dreams = dreams;
           this.dreamsCount = count;
