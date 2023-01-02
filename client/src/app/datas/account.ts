@@ -6,6 +6,9 @@ import { SimpleObject } from "@_models/app";
 
 
 
+// Период статуса онлайн для последней активности
+export const OnlinePeriod: number = 60 * 5;
+
 // Склонение слова: человек
 export const PeoplePlural: SimpleObject = {
   "=0": "",

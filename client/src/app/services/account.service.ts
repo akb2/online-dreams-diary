@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
-import { UserPrivateNames } from "@_datas/account";
+import { OnlinePeriod, UserPrivateNames } from "@_datas/account";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { environment } from '@_environments/environment';
 import { ParseInt } from "@_helpers/math";
@@ -98,6 +98,10 @@ export class AccountService implements OnDestroy {
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
       map(([prev, next]) => ([prev, next].map(us => us?.find(({ id }) => id === userId) ?? null))),
+      map(([prev, next]) => ([
+        !!prev ? { ...prev, isOnline: this.isOnlineByDate(prev.lastActionDate) } : prev,
+        !!next ? { ...next, isOnline: this.isOnlineByDate(next.lastActionDate) } : next
+      ])),
       filter(([prev, next]) => !CompareObjects(prev, next) || this.syncUser[0] === userId),
       map(([, next]) => next)
     );
@@ -142,6 +146,15 @@ export class AccountService implements OnDestroy {
     catch (e: any) { }
     // Добавить в наблюдение
     this.users.next(users);
+  }
+
+  // Проверить статус онлайн
+  private isOnlineByDate(mixedDate: Date | string): boolean {
+    const now: Date = new Date();
+    const date: Date = typeof mixedDate === "string" ? new Date(!!mixedDate ? mixedDate : 0) : mixedDate;
+    const period: number = Math.round((now.getTime() - date.getTime()) / 1000);
+    // Вернуть результат
+    return period < OnlinePeriod;
   }
 
 
@@ -466,6 +479,7 @@ export class AccountService implements OnDestroy {
       ...data,
       id: ParseInt(data?.id),
       sex: ParseInt(data?.sex) as UserSex,
+      online: this.isOnlineByDate(data?.lastActionDate),
       settings: {
         profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
         profileHeaderType: headerType ? headerType : NavMenuType.short

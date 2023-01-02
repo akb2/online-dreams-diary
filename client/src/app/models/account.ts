@@ -8,10 +8,12 @@ import { NavMenuType } from "@_models/nav-menu";
 // Интерфейс данных о пользователе
 export interface User extends UserSave {
   id: number;
+  online: boolean;
   pageStatus: string;
   settings: UserSettings;
   private: UserPrivate;
   registerDate: Date;
+  lastActionDate: Date;
   roles: UserRoles[];
   avatars: UserAvatars;
   avatarCropData: UserAvatarCropData;
