@@ -34,7 +34,6 @@ import { ProfileDetailComponent } from '@_pages/profile-detail/profile-detail.co
     DreamListModule,
     MatIconModule,
     MatTooltipModule,
-    CardModule,
     MatMenuModule,
     UserAvatarModule,
     UserStatusModule

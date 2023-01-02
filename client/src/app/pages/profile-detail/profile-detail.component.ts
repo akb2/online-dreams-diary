@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { DreamPlural } from '@_datas/dream';
-import { User } from '@_models/account';
+import { User, UserSex } from '@_models/account';
 import { Search } from '@_models/api';
 import { RouteData, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
@@ -80,6 +80,11 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       !!this.visitedUser.avatars.crop &&
       !!this.visitedUser.avatars.small
     );
+  }
+
+  // Название поля
+  get getVisitingUserSexLabel(): string {
+    return this.visitedUser?.sex === UserSex.Male ? "Мужской" : "Женский";
   }
 
 

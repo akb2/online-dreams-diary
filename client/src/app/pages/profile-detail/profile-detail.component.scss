@@ -1,29 +1,34 @@
 @use "sass:map";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/containers";
-
-$mainAvatarSizes: (
-  default: 340px,
-  large: 300px,
-  middle: 270px,
-  small: 250px,
-  xsmall: 290px,
-);
-$columnTemplates: (
-  default: true,
-  small: false,
-  xsmall: false,
-);
+@use "../../../assets/styles/vars";
+@use "../../../assets/styles/colors";
 
 // Блок информации
 .information {
   $__elm: &;
+  $mainAvatarSizes: (
+    default: 300px,
+    large: 280px,
+    middle: 250px,
+    small: 230px,
+    xsmall: 230px,
+  );
+  $columnTemplates: (
+    default: true,
+    small: false,
+    xsmall: false,
+  );
   // Свойства
   display: block;
 
   // Данные
   &__data {
     &-item {
+      &.center {
+        text-align: center;
+      }
+      // Последующие блоки
       & + & {
         // Адаптив
         @include screens.adaptiveFor(containers.$cardPaddings) using($margin) {
@@ -62,6 +67,88 @@ $columnTemplates: (
       @else {
         grid-template-columns: 1fr;
         justify-content: center;
+      }
+    }
+  }
+}
+
+// Данные пользователя
+.user-data {
+  $labelWidths: (
+    default: 100%,
+    xlarge: 240px,
+    large: 210px,
+    middle: 200px,
+  );
+  // Свойства
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  // Последующие блоки
+  & + & {
+    margin-top: 10px;
+  }
+
+  // Обертка
+  &__overlay {
+    display: block;
+    // Последующие блоки
+    & + & {
+      border-top: 1px dotted #{rgba(colors.$text, 0.6)};
+    }
+  }
+  // Название поля
+  &__label {
+    text-align: right;
+    font-size: 14px;
+    font-weight: 300;
+    // Адаптив
+    @include screens.adaptiveFor($labelWidths) using($width) {
+      @if ($width != 100%) {
+        width: $width;
+      }
+    }
+  }
+  // Значение
+  &__value {
+    font-size: 17px;
+    font-weight: 400;
+  }
+
+  // Адаптив
+  @include screens.adaptiveFor(containers.$cardPaddings, $labelWidths) using($gap, $width) {
+    gap: 2px #{map.get($gap, x)};
+    // Перенос на новую строку
+    @if ($width == 100%) {
+      flex-direction: column;
+      align-items: flex-start;
+      // Обертка
+      &__overlay {
+        $spacingY: 10px;
+        // Свойства
+        padding: #{$spacingY} #{vars.$userStatusPaddingX};
+        // Последующие блоки
+        & + & {
+          padding-top: $spacingY + map.get($gap, y);
+          margin-top: map.get($gap, y);
+        }
+      }
+      // Название поля
+      &__label {
+        width: auto;
+        text-align: left;
+      }
+    }
+    // Без переноса
+    @else {
+      // Обертка
+      &__overlay {
+        // Последующие блоки
+        & + & {
+          padding-top: map.get($gap, y);
+          margin-top: map.get($gap, y);
+        }
       }
     }
   }

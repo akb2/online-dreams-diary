@@ -19,7 +19,7 @@
   <div class="root-section"
        [ngClass]="{ center: !userHasAccess }">
     <!-- Данные о пользователе -->
-    <ng-container *ngIf="userHasAccess; else AccessDeniedByPrivate">
+    <ng-container *ngIf="userHasAccess; else accessDeniedByPrivate">
       <!-- Сведения аккаунта -->
       <div class="section">
         <div class="container">
@@ -39,18 +39,7 @@
               </div>
               <!-- Остальные сведения -->
               <div class="information__data-item">
-                <app-card title="Общие данные">
-                  <div content>123</div>
-                  <ng-container menus
-                                *ngIf="itsMyPage">
-                    <!-- Настройки персональных данных -->
-                    <a mat-menu-item
-                       routerLink="/profile/settings/person">
-                      <mat-icon>edit</mat-icon>
-                      Изменить данные
-                    </a>
-                  </ng-container>
-                </app-card>
+                <ng-container [ngTemplateOutlet]="userGeneralData"></ng-container>
               </div>
             </div>
           </div>
@@ -60,22 +49,28 @@
       <div class="section white">
         <div class="container">
           <!-- Список сновидений -->
-          <ng-container *ngIf="userHasDiaryAccess; else DiaryAccessDeniedByPrivate">
+          <ng-container *ngIf="userHasDiaryAccess; else diaryaccessDeniedByPrivate">
             <ng-container *ngIf="!dreamsLoading">
               <ng-container *ngIf="!!dreamsCount">
                 <!-- Заголовок -->
-                <app-title [type]="1"
+                <app-title [type]="5"
                            [title]="itsMyPage? 'Мои сновидения': 'Сновидения пользователя'"
                            [subTitle]="dreamsCount | i18nPlural: dreamPlural">
                   <!-- Все сновидения -->
                   <a mat-stroked-button
                      color="basic"
-                     routerLink="/diary/{{visitedUser.id}}">Все сны</a>
+                     routerLink="/diary/{{visitedUser.id}}">
+                    <mat-icon>book</mat-icon>
+                    Все сны
+                  </a>
                   <!-- Новое сновидение -->
                   <a mat-flat-button
                      color="primary"
                      routerLink="/diary/editor"
-                     *ngIf="itsMyPage">Новый сон</a>
+                     *ngIf="itsMyPage">
+                    <mat-icon>add</mat-icon>
+                    Новый сон
+                  </a>
                 </app-title>
                 <!-- Список сновидений -->
                 <app-dream-list [dreams]="dreams"
@@ -104,7 +99,7 @@
 
 
 <!-- Недоступно настройками приватности -->
-<ng-template #AccessDeniedByPrivate>
+<ng-template #accessDeniedByPrivate>
   <app-inform [aboveIcon]="true"
               icon="policy"
               title="Страница недоступна"
@@ -112,11 +107,58 @@
 </ng-template>
 
 <!-- Недоступно настройками приватности -->
-<ng-template #DiaryAccessDeniedByPrivate>
+<ng-template #diaryaccessDeniedByPrivate>
   <app-inform [aboveIcon]="true"
               icon="policy"
               title="Дневник недоступен"
               subTitle="Пользователь предпочел скрыть свой дневник сновидений настройками приватности"></app-inform>
+</ng-template>
+
+
+
+<!-- Основные данные о пользователе -->
+<ng-template #userGeneralData>
+  <!-- Общие данные -->
+  <div class="user-data__overlay">
+    <!-- Имя -->
+    <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                  [ngTemplateOutletContext]="{
+                                  $implicit: 'Имя',
+                                  value: visitedUser.name + ' ' + visitedUser.lastName }"></ng-container>
+    <!-- Никнейм -->
+    <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                  [ngTemplateOutletContext]="{
+                                  $implicit: 'Отчество (никнейм)',
+                                  value: visitedUser.patronymic }"
+                  *ngIf="!!visitedUser.patronymic?.length"></ng-container>
+    <!-- Пол -->
+    <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                  [ngTemplateOutletContext]="{
+                                  $implicit: 'Пол',
+                                  value: getVisitingUserSexLabel }"></ng-container>
+    <!-- День рождения -->
+    <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                  [ngTemplateOutletContext]="{
+                                  $implicit: 'День рождения',
+                                  value: visitedUser.birthDate | date: 'd MMMM y' }"></ng-container>
+  </div>
+  <!-- Технические данные -->
+  <div class="user-data__overlay">
+    <!-- Дата регистрации -->
+    <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                  [ngTemplateOutletContext]="{
+                                  $implicit: 'Дата регистрации',
+                                  value: visitedUser.registerDate | date: 'd MMMM y' }"></ng-container>
+  </div>
+  <!-- Поле данных о пользователе -->
+  <ng-template #userGeneralDataField
+               let-label
+               let-value="value">
+    <div class="user-data">
+      <div class="user-data__label">{{label}}</div>
+      <div class="user-data__value">{{value}}</div>
+    </div>
+  </ng-template>
 </ng-template>
 
 
