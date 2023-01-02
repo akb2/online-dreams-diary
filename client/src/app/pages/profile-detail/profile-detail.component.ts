@@ -14,7 +14,7 @@ import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
 import { GlobalService } from '@_services/global.service';
 import { ScreenService } from '@_services/screen.service';
-import { mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, tap, throwError, timer } from 'rxjs';
+import { filter, map, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -252,6 +252,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       large: 3,
       middle: 2
     };
+    let prevLimit: number = limits.default;
     // Настройки
     this.dreamsLoading = true;
     // Поиск сновидений
@@ -261,13 +262,22 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         takeWhile(() => !this.visitedUser, true),
         skipWhile(() => !this.visitedUser),
         mergeMap(() => this.screenService.breakpoint$),
-        tap(() => {
-          this.dreamsLoading = true;
-          this.changeDetectorRef.detectChanges();
+        map(breakPoint => limits[breakPoint] ?? limits.default),
+        filter(limit => {
+          if (limit !== prevLimit) {
+            prevLimit = limit;
+            // Запустить загрузчик
+            this.dreamsLoading = true;
+            this.changeDetectorRef.detectChanges();
+            // Обновить
+            return true;
+          }
+          // Не обновлять
+          return false;
         }),
         mergeMap(
           () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.visitedUser.id),
-          (breakpoint, hasAccess) => ({ limit: limits[breakpoint] ?? limits.default, hasAccess })
+          (limit, hasAccess) => ({ limit, hasAccess })
         ),
         mergeMap(
           ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.visitedUser.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
