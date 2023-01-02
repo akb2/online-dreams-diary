@@ -4,6 +4,7 @@
 @use "../../../../assets/styles/mixins";
 @use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/vars";
 
 $columnTemplates: (
   default: true,
@@ -14,7 +15,7 @@ $columnTemplates: (
 // Статус
 .status {
   $arrowSize: 8px;
-  $textPaddingX: 30px;
+  $textPaddingX: vars.$userStatusPaddingX;
   $textPaddingY: 15px;
   $textFontSize: 15px;
   $textLines: 4;
