@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { User } from "@_models/account";
 import { AccountService } from "@_services/account.service";
-import { skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { fromEvent, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -15,13 +15,17 @@ import { skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserStatusComponent implements OnChanges {
+export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
 
 
   @Input() user: User;
   @Input() itsMyPage: boolean;
 
   @ViewChild("inputField") inputField!: ElementRef;
+  @ViewChild("statusBlock") statusBlock!: ElementRef;
+  @ViewChild("saveButton", { read: ElementRef }) saveButton!: ElementRef;
+  @ViewChild("cancelButton", { read: ElementRef }) cancelButton!: ElementRef;
+  @ViewChild("editButton", { read: ElementRef }) editButton!: ElementRef;
 
   statusForm: FormGroup;
   placeholderText: string = "Напишите, что у вас нового...";
@@ -30,6 +34,25 @@ export class UserStatusComponent implements OnChanges {
   editStatus: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
+
+
+
+
+
+  // Пересечение элемента
+  private compareElement(target: any, elements: any[]): boolean {
+    if (!!target && !!elements?.length) {
+      let element: any = target;
+      // Поиск пересечения
+      while (element.parentNode && !elements.includes(element)) {
+        element = element.parentNode;
+      }
+      // Проверка
+      return elements.includes(element);
+    }
+    // Нет пересечения
+    return false;
+  }
 
 
 
@@ -47,6 +70,12 @@ export class UserStatusComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.statusForm.get("status").setValue(this.user.pageStatus);
+  }
+
+  ngOnInit(): void {
+    fromEvent(document.body, "mousedown")
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(e => this.onCloseEdit(e as PointerEvent));
   }
 
   ngOnDestroy(): void {
@@ -79,9 +108,15 @@ export class UserStatusComponent implements OnChanges {
   }
 
   // Закрыть редактор
-  onCloseEdit(): void {
-    this.editStatus = false;
-    this.changeDetectorRef.detectChanges();
+  onCloseEdit(event: PointerEvent): void {
+    const elements = [this.statusBlock, this.saveButton, this.cancelButton, this.editButton]
+      .filter(e => !!e && !!e?.nativeElement)
+      .map(e => e.nativeElement);
+    // Вызов события
+    if (!event || (!!event && !this.compareElement(event.target, elements))) {
+      this.editStatus = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   // Сохранить статус

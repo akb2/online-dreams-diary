@@ -10,7 +10,8 @@
 
 <!-- Текст статуса -->
 <ng-template #statusText>
-  <form class="status"
+  <form #statusBlock
+        class="status"
         [formGroup]="statusForm"
         [ngClass]="{ edit: !loader && editStatus }"
         (click)="inputField?.nativeElement?.focus()">
@@ -22,7 +23,6 @@
            class="status__editor"
            [placeholder]="placeholderText"
            (keydown)="onKeyDown($event)"
-           (blur)="onCloseEdit()"
            *ngIf="!loader && editStatus; else statusTextViewer">
     <!-- Просмотр -->
     <ng-template #statusTextViewer>
@@ -40,21 +40,24 @@
   <ng-template #statusEditTrue>
     <ng-container *ngIf="editStatus; else statusEditFalse">
       <!-- Сохранить -->
-      <button mat-mini-fab
+      <button #saveButton
+              mat-mini-fab
               color="primary"
               matTooltip="Сохранить"
               (click)="onSaveStatus()"><mat-icon>save</mat-icon></button>
       <!-- Отменить -->
-      <button mat-mini-fab
+      <button #cancelButton
+              mat-mini-fab
               color="basic"
               matTooltip="Отмена"
-              (click)="onCloseEdit()"><mat-icon>close</mat-icon></button>
+              (click)="onCloseEdit(null)"><mat-icon>close</mat-icon></button>
     </ng-container>
   </ng-template>
   <!-- Открыть редактирование -->
   <ng-template #statusEditFalse>
     <!-- Открыть редактирование -->
-    <button mat-mini-fab
+    <button #editButton
+            mat-mini-fab
             color="primary"
             matTooltip="Изменить статус"
             (click)="onOpenEdit()"><mat-icon>edit</mat-icon></button>
