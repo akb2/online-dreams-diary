@@ -91,7 +91,7 @@ export class AccountService implements OnDestroy {
     currentUserId = isNaN(currentUserId) ? 0 : currentUserId;
     userId = userId > 0 ? userId : currentUserId;
     // Обновить счетчик
-    const counter: number = this.updateUserCounter(userId, 1);
+    let counter: number = this.updateUserCounter(userId, 1);
     // Подписки
     const observable: Observable<User> = this.users.asObservable().pipe(
       takeUntil(this.destroy$),
@@ -109,6 +109,8 @@ export class AccountService implements OnDestroy {
       tap(() => {
         const [id, i] = this.syncUser;
         if (id === userId) {
+          counter = this.updateUserCounter(userId);
+          // Обновить счетчик
           if (i < counter) {
             this.syncUser[1]++;
           }
@@ -508,7 +510,7 @@ export class AccountService implements OnDestroy {
   }
 
   // Обновить счетчик подписок на пользователей
-  private updateUserCounter(userId: number, eventType: -1 | 1): number {
+  private updateUserCounter(userId: number, eventType: -1 | 1 | 0 = 0): number {
     const counterIndex: number = this.userSubscritionCounter.findIndex(([id]) => id === userId);
     // Для существующего счетчика
     if (counterIndex >= 0) {
