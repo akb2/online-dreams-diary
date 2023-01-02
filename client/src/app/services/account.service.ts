@@ -248,6 +248,7 @@ export class AccountService implements OnDestroy {
         of(r.result.code) :
         this.apiService.checkResponse(r.result.code, codes)
       ),
+      map(code => code === "0001"),
       catchError(code => of(code === "0001")),
     );
   }
