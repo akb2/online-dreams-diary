@@ -89,7 +89,7 @@ interface UserBase {
   name: string;
   lastName: string;
   birthDate: string;
-  sex: number;
+  sex: UserSex;
   email: string;
 }
 
