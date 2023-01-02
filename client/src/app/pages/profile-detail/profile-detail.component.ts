@@ -4,14 +4,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { DreamPlural } from '@_datas/dream';
 import { User } from '@_models/account';
+import { Search } from '@_models/api';
 import { RouteData, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { Dream } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
+import { ScreenBreakpoints } from '@_models/screen';
 import { AccountService } from '@_services/account.service';
 import { DreamService } from '@_services/dream.service';
 import { GlobalService } from '@_services/global.service';
-import { mergeMap, Observable, of, Subject, switchMap, takeUntil, throwError } from 'rxjs';
+import { ScreenService } from '@_services/screen.service';
+import { mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, tap, throwError, timer } from 'rxjs';
 
 
 
@@ -33,6 +36,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
   userHasDiaryAccess: boolean = false;
+  private userReady: boolean = false;
 
   pageLoading: boolean = false;
   dreamsLoading: boolean = false;
@@ -48,7 +52,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   floatButtonLink: string;
   backButtonLink: string;
 
-  private visitedUserId: number = 0;
+  private visitedUserId: number = -1;
 
   private user: User;
   visitedUser: User;
@@ -87,6 +91,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
+    private screenService: ScreenService,
     private titleService: Title,
     private dreamService: DreamService,
     private globalService: GlobalService
@@ -96,6 +101,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageData = this.globalService.getPageData;
     // Запуск определения данных
     this.defineCurrentUser();
+    this.defineUrlParams();
+    this.defineVisitingUser();
+    this.defineDreams();
   }
 
   ngOnDestroy(): void {
@@ -114,97 +122,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   // Все данные загружены
   private onUserLoaded(): void {
-    this.loadDreams();
-  }
-
-
-
-
-
-  // Определение текущего пользователя
-  private defineCurrentUser(): void {
-    this.pageLoading = true;
-    this.changeDetectorRef.detectChanges();
-    // Подписка
-    this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        user => {
-          this.user = user;
-          // Параметры URL
-          this.defineUrlParams();
-        }
-      );
-  }
-
-  // Определение параметров URL
-  private defineUrlParams(): void {
-    this.pageLoading = true;
-    this.changeDetectorRef.detectChanges();
-    // Подписка
-    this.activatedRoute.params
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap(params => {
-          if (params?.user_id === "0") {
-            this.router.navigate(["/profile/" + this.user.id], { replaceUrl: true });
-            return throwError("");
-          }
-          // Определить ID просматриваемого пользователя
-          else {
-            let userId: number = parseInt(params?.user_id);
-            userId = isNaN(userId) ? (!!this.user ? this.user.id : 0) : userId;
-            return of(userId);
-          }
-        })
-      )
-      .subscribe(visitedUserId => {
-        this.visitedUserId = visitedUserId;
-        this.itsMyPage = visitedUserId === this.user?.id;
-        // Параметры URL
-        this.defineHasProfileAccess();
-      });
-  }
-
-  // Определение доступа к странице
-  private defineHasProfileAccess(): void {
-    this.pageLoading = true;
-    this.changeDetectorRef.detectChanges();
-    // Параметры
-    const observable: Observable<boolean> = this.itsMyPage ?
-      of(true) :
-      this.accountService.checkPrivate("myPage", this.visitedUserId);
-    // Подписка на доступ к данным
-    observable
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(userHasAccess => {
-        this.userHasAccess = userHasAccess;
-        this.defineVisitingUser();
-      });
-  }
-
-  // Определение просматриваемого пользователя
-  private defineVisitingUser(): void {
-    this.pageLoading = true;
-    this.changeDetectorRef.detectChanges();
-    // Параметры
-    const observable: Observable<User> = this.itsMyPage ?
-      of(this.user) :
-      this.accountService.user$(this.visitedUserId, true);
-    // Подписка на данные пользователя
-    observable
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        user => {
-          this.visitedUser = user;
-          this.setPageData();
-        },
-        () => this.onUserFail()
-      );
-  }
-
-  // Установить параметры страницы
-  private setPageData(): void {
     // Мой профиль
     if (this.user?.id === this.visitedUser.id) {
       this.visitedUser = this.user;
@@ -242,23 +159,119 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageLoading = false;
     this.titleService.setTitle(this.pageTitle);
     this.changeDetectorRef.detectChanges();
-    // Прочие действия
-    this.onUserLoaded();
+  }
+
+
+
+
+
+  // Определение брейкпоинта
+  private defineScreenBreakPoint(): void {
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+  }
+
+  // Определение текущего пользователя
+  private defineCurrentUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.userReady = true;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Определение параметров URL
+  private defineUrlParams(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroy$),
+        takeWhile(() => !this.userReady, true),
+        skipWhile(() => !this.userReady),
+        mergeMap(() => this.activatedRoute.params),
+        switchMap(params => {
+          if (params?.user_id === "0") {
+            this.router.navigate(["/profile/" + this.user.id], { replaceUrl: true });
+            return throwError("");
+          }
+          // Определить ID просматриваемого пользователя
+          else {
+            let userId: number = parseInt(params?.user_id);
+            userId = isNaN(userId) ? (!!this.user ? this.user.id : 0) : userId;
+            return of(userId);
+          }
+        })
+      )
+      .subscribe(visitedUserId => {
+        this.visitedUserId = visitedUserId;
+        this.itsMyPage = visitedUserId === this.user?.id;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Определение просматриваемого пользователя
+  private defineVisitingUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка на данные пользователя
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroy$),
+        takeWhile(() => this.visitedUserId === -1, true),
+        skipWhile(() => this.visitedUserId === -1),
+        mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId)),
+        mergeMap(
+          () => this.accountService.user$(this.visitedUserId, !this.itsMyPage),
+          (userHasAccess, user) => ({ userHasAccess, user })
+        )
+      )
+      .subscribe(
+        ({ userHasAccess, user }) => {
+          this.visitedUser = user;
+          this.userHasAccess = userHasAccess;
+          this.onUserLoaded();
+        },
+        () => this.onUserFail()
+      );
   }
 
   // Загрузить список сновидний
-  private loadDreams(): void {
-    const user: number = this.visitedUser.id;
-    const limit: number = 4;
+  private defineDreams(): void {
+    const defaultDreamsResult: Search<Dream> = { count: 0, result: [], limit: 1 };
+    const limits: Partial<ScreenBreakpoints> = {
+      default: 1,
+      xlarge: 4,
+      large: 3,
+      middle: 2
+    };
     // Настройки
     this.dreamsLoading = true;
     // Поиск сновидений
-    (!!this.user?.id && this.user.id === user ? of(true) : this.accountService.checkPrivate("myDreamList", user))
+    timer(0, 50)
       .pipe(
         takeUntil(this.destroy$),
+        takeWhile(() => !this.visitedUser, true),
+        skipWhile(() => !this.visitedUser),
+        mergeMap(() => this.screenService.breakpoint$),
+        tap(() => {
+          this.dreamsLoading = true;
+          this.changeDetectorRef.detectChanges();
+        }),
         mergeMap(
-          hasAccess => hasAccess ? this.dreamService.search({ user, limit }, ["0002", "8100"]) : of({ count: 0, result: [], limit: 1 }),
-          (hasAccess, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
+          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.visitedUser.id),
+          (breakpoint, hasAccess) => ({ limit: limits[breakpoint] ?? limits.default, hasAccess })
+        ),
+        mergeMap(
+          ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.visitedUser.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
+          ({ hasAccess }, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
         ),
         switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
       )
