@@ -1,5 +1,5 @@
 import { formatDate } from "@angular/common";
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
 import { CustomValidators } from "@app/helpers/custom-validators";
@@ -20,6 +20,7 @@ import { takeUntil } from "rxjs/operators";
   selector: "app-register",
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     LocalStorageService
   ]
@@ -42,21 +43,29 @@ export class RegisterComponent implements OnInit, OnDestroy {
   registed: boolean = false;
   registerEmail: string;
 
-  private destroyed$: Subject<any> = new Subject();
+  private destroyed$: Subject<void> = new Subject();
 
 
 
 
 
-  // Конструктор
+  // Возраст до даты
+  ageToDate(age: number): Date {
+    return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
+  }
+
+
+
+
+
   constructor(
     private formBuilder: FormBuilder,
     private localStorage: LocalStorageService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.localStorage.cookieKey = this.cookieKey;
     this.localStorage.cookieLifeTime = this.cookieLifeTime;
-
     // Данные формы
     this.form = [
       // Данные входа
@@ -91,11 +100,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     ];
   }
 
-
-
-
-
-  // Запуск класса
   ngOnInit(): void {
     // Переключить на нужную форму, если есть заполненные данные
     let skipForm: boolean = false;
@@ -107,16 +111,18 @@ export class RegisterComponent implements OnInit, OnDestroy {
         }
       }
     });
-
     // Изменение формы
     this.form.map(group => group.valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(data => this.onChange(data)));
   }
 
-  // Завершение класса
   ngOnDestroy(): void {
-    this.destroyed$.next(true);
+    this.destroyed$.next();
     this.destroyed$.complete();
   }
+
+
+
+
 
   // Изменение формы
   private onChange(datas: CookieFormDatas): void {
@@ -195,6 +201,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
               this.setStep(2);
             }
           }
+          // Обновить
+          this.changeDetectorRef.detectChanges();
         },
         () => {
           this.loading = false;
@@ -209,6 +217,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         if (!group.valid) {
           this.step = index;
           group.markAllAsTouched();
+          this.changeDetectorRef.detectChanges();
         }
       });
     }
@@ -219,6 +228,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Следующая форма
     if (this.step < this.form.length - 1 && this.form[this.step].valid) {
       this.step++;
+      this.changeDetectorRef.detectChanges();
     }
     // Отправка формы
     else if (this.step === this.form.length - 1 && this.form[this.step].valid) {
@@ -227,6 +237,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Отобразить ошибки
     else {
       this.form[this.step].markAllAsTouched();
+      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -235,12 +246,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
     // Предыдущая форма
     if (this.step > 0) {
       this.step--;
+      this.changeDetectorRef.detectChanges();
     }
   }
 
   // Установить конкретный шаг
   private setStep(step: number): void {
     const maxStep: number = Math.min(step, this.form.length - 1);
+    // Цикл по шагам
     for (let iStep = 0; iStep <= maxStep; iStep++) {
       // Проверяем валидны ли предыдущие шаги
       if (this.form[iStep].valid) {
@@ -254,12 +267,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
         this.step = iStep;
         this.form[this.step].markAllAsTouched();
       }
+      // Обновить
+      this.changeDetectorRef.detectChanges();
     }
-  }
-
-  // Возраст до даты
-  ageToDate(age: number): Date {
-    return new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000));
   }
 }
 
