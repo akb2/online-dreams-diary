@@ -170,6 +170,7 @@ export class AccountService implements OnDestroy {
 
   // Авторизация
   auth(login: string, password: string, codes: string[] = []): Observable<AuthResponce> {
+    let activateIsAvail: boolean = false;
     const formData: FormData = new FormData();
     formData.append("login", login);
     formData.append("password", password);
@@ -179,17 +180,17 @@ export class AccountService implements OnDestroy {
         takeUntil(this.destroy$),
         switchMap(result => {
           const code: ApiResponseCodes = result.result.code.toString();
+          // Доступна ли активация
+          activateIsAvail = !!result?.result?.data?.activateIsAvail;
           // Сохранить токен
           if (code === "0001") {
             this.tokenService.saveAuth(result.result.data.token, result.result.data.id);
             this.router.navigate([""]);
           }
           // Обработка ошибки
-          return of({
-            code,
-            activateIsAvail: !!result?.result?.data?.activateIsAvail
-          });
-        })
+          return this.apiService.checkResponse(code, codes);
+        }),
+        map(code => ({ code, activateIsAvail }))
       );
   }
 
