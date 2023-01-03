@@ -10,7 +10,7 @@
 </div>
 
 <!-- Содержимое -->
-<ng-container mat-dialog-content>
+<div mat-dialog-content>
   <div class="images"
        *ngIf="!loading && !!position; else loader">
     <!-- Интерфейс обрезки -->
@@ -19,18 +19,30 @@
         <img #scaledImage
              [src]="data.image" />
         <div class="cropper"
-             style.left="{{position.x1 * sizeKoof}}px"
-             style.top="{{position.y1 * sizeKoof}}px"
-             style.width="{{(position.x2 - position.x1) * sizeKoof}}px"
-             style.height="{{(position.y2 - position.y1) * sizeKoof}}px">
+             [ngClass]="{ circle: isMiddle }"
+             [style]="{
+               left: (position.x1 * sizeKoof) + 'px',
+               top: (position.y1 * sizeKoof) + 'px',
+               width: ((position.x2 - position.x1) * sizeKoof) + 'px',
+               height: ((position.y2 - position.y1) * sizeKoof) + 'px'
+             }">
           <div class="area"
                (mousedown)="onMouseDown($event, ['move'])"
                (touchstart)="onMouseDown($event, ['move'])"></div>
-          <!-- Точки -->
-          <div class="point {{cornerKey.join(' ')}}"
-               (mousedown)="onMouseDown($event, cornerKey)"
-               (touchstart)="onMouseDown($event, cornerKey)"
-               *ngFor="let cornerKey of cornerKeys"></div>
+          <!-- Точки для прямоугольного превью -->
+          <ng-container *ngIf="!isMiddle">
+            <div class="point {{cornerKey.join(' ')}}"
+                 (mousedown)="onMouseDown($event, cornerKey)"
+                 (touchstart)="onMouseDown($event, cornerKey)"
+                 *ngFor="let cornerKey of cornerKeys"></div>
+          </ng-container>
+          <!-- Точки для круглого превью -->
+          <ng-container *ngIf="isMiddle">
+            <div class="point {{cornerKey}}"
+                 (mousedown)="onMouseDown($event, [cornerKey])"
+                 (touchstart)="onMouseDown($event, [cornerKey])"
+                 *ngFor="let cornerKey of lineKeys"></div>
+          </ng-container>
           <!-- Линии -->
           <div class="line {{lineKey}}"
                (mousedown)="onMouseDown($event, [lineKey])"
@@ -41,7 +53,8 @@
     </div>
     <!-- Превью -->
     <div #previewElement
-         class="images__preview">
+         class="images__preview"
+         *ngIf="showPreview">
       <!-- Аватарка -->
       <div class="images__preview-overlay"
            [ngClass]="{ circle: isMiddle }"
@@ -52,7 +65,7 @@
       </div>
     </div>
   </div>
-</ng-container>
+</div>
 
 <!-- Панель действия -->
 <div mat-dialog-actions>

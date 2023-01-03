@@ -2,6 +2,7 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/material";
 @use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/vars";
 
 $win-width: 800px - (24px * 2);
 $preview-width: 200px;
@@ -37,15 +38,15 @@ $height: 540px;
       // Картинка
       > img {
         display: block;
-        max-width: $win-width - $preview-width - $gap;
-        max-height: $height;
+        max-width: min(100%, #{$win-width - $preview-width - $gap});
+        max-height: min(#{$height}, #{vars.$dialogContentMaxHeight});
       }
       // Резчик
       > .cropper {
         $size: 18px;
         // Свойства
         position: absolute;
-        outline: 100vw solid colors.$overlay-color;
+        outline: 1000vw solid colors.$overlay-color;
         border: 1px dotted colors.$border-light;
         // Вся область
         > .area {
@@ -150,6 +151,44 @@ $height: 540px;
             width: 100%;
             top: 100%;
             cursor: s-resize;
+          }
+        }
+
+        // Круглый
+        &.circle {
+          $circleSize: 25%;
+          // Свойства
+          border-radius: 50%;
+          // Линии
+          > .line {
+            // Левая и правая
+            &.left,
+            &.right {
+              width: $circleSize;
+              height: 100%;
+            }
+            // Верхняя и нижняя
+            &.top,
+            &.bottom {
+              width: 100%;
+              height: $circleSize;
+            }
+            // Левая
+            &.left {
+              left: calc(#{math.div($circleSize, 2)} - #{math.div($size, 2)});
+            }
+            // Правая
+            &.right {
+              left: calc(100% - #{math.div($circleSize, 2)} + #{math.div($size, 2)});
+            }
+            // Верхняя
+            &.top {
+              top: calc(#{math.div($circleSize, 2)} - #{math.div($size, 2)});
+            }
+            // Нижняя
+            &.bottom {
+              top: calc(100% - #{math.div($circleSize, 2)} + #{math.div($size, 2)});
+            }
           }
         }
       }

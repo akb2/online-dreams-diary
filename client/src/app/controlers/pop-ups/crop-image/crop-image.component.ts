@@ -3,8 +3,9 @@ import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angu
 import { UserAvatarCropDataElement } from "@_models/account";
 import { AppMatDialogConfig } from "@_datas/app";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, Subject, takeUntil } from "rxjs";
+import { forkJoin, fromEvent, mergeMap, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 import { SimpleObject } from "@_models/app";
+import { ScreenKeys } from "@_models/screen";
 
 
 
@@ -30,6 +31,9 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   imageHeight: number = 0;
   sizeKoof: number = 0;
 
+  showPreview: boolean = true;
+  private hidePreviewBreakpoints: ScreenKeys[] = ["xsmall"];
+
   private mouseListener: boolean;
   private mouseMoveStart: [number, number] = [0, 0];
   private moveDirection: MoveDirection[] = [];
@@ -46,7 +50,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   position: Coords;
   previewPosition: PreviewCoords;
 
-  private destroy$: Subject<void> = new Subject<void>()
+  private destroyed$: Subject<void> = new Subject<void>()
 
 
 
@@ -90,11 +94,24 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     const moveEvent = this.isTouchDevice ? "touchmove" : "mousemove";
     const outEvent = this.isTouchDevice ? "touchend" : "mouseup";
     // События
-    fromEvent(window, moveEvent).pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
-    fromEvent(window, outEvent).pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
+    forkJoin([
+      fromEvent(window, moveEvent).pipe(tap(e => this.onMouseMove(e as MouseEvent))),
+      fromEvent(window, outEvent).pipe(tap(e => this.onMouseUp(e as MouseEvent))),
+      timer(0, 50).pipe(
+        takeWhile(() => !this.scaledImage, true),
+        skipWhile(() => !this.scaledImage),
+        mergeMap(() => this.screenService.elmResize(this.scaledImage.nativeElement)),
+        tap(() => {
+          this.drawCrop(0, 0);
+          this.cropCoordsToSizes();
+        })
+      )
+    ])
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
     // Данные фотки
     this.screenService.loadImage(this.data.image)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(
         image => {
           this.loading = false;
@@ -110,6 +127,13 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
           this.cropSizesToCoords();
         }
       );
+    // Брейкпоинт
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.showPreview = !this.hidePreviewBreakpoints.includes(breakpoint);
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewChecked(): void {
@@ -126,8 +150,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -161,6 +185,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   // Конец удержания мышкой
   onMouseUp(event: MouseEvent | TouchEvent): void {
     this.mouseListener = false;
+    this.mouseMoveStart = [0, 0];
     // Переписать значения
     this.cropCoordsToSizes();
   }
@@ -314,18 +339,20 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Отрисовка превью
   private drawPreview(): void {
-    const blockWidth: number = this.previewElement.nativeElement.getBoundingClientRect().width | 0;
-    // Координация превью
-    if (blockWidth > 0) {
-      const koof: number = blockWidth / Math.abs(this.position.x2 - this.position.x1);
-      // Итоговые размеры превью
-      this.previewPosition = {
-        top: -(this.position.y1 * koof),
-        left: -(this.position.x1 * koof),
-        width: this.imageWidth * koof,
-        height: this.imageHeight * koof,
-        blockHeight: Math.abs(this.position.y2 - this.position.y1) * koof
-      };
+    if (!!this.previewElement) {
+      const blockWidth: number = this.previewElement.nativeElement.getBoundingClientRect().width ?? 0;
+      // Координация превью
+      if (blockWidth > 0) {
+        const koof: number = blockWidth / Math.abs(this.position.x2 - this.position.x1);
+        // Итоговые размеры превью
+        this.previewPosition = {
+          top: -(this.position.y1 * koof),
+          left: -(this.position.x1 * koof),
+          width: this.imageWidth * koof,
+          height: this.imageHeight * koof,
+          blockHeight: Math.abs(this.position.y2 - this.position.y1) * koof
+        };
+      }
     }
   }
 
