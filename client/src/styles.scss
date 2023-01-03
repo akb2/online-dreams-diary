@@ -37,10 +37,6 @@ html {
   background-color: colors.$background;
   top: 0 !important;
   position: static !important;
-  // Скролл запрещен
-  &.no-scroll {
-    overflow-y: hidden;
-  }
   // Свойства потомков
   &,
   * {
@@ -91,6 +87,15 @@ html {
     // Ссылка
     a {
       color: map.get(colors.$mat-primary, 500);
+    }
+  }
+
+  // Скролл запрещен
+  &.cdk-global-scrollblock,
+  &.no-scroll {
+    &,
+    > body {
+      overflow-y: hidden;
     }
   }
 }
