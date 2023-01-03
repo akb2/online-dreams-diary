@@ -124,3 +124,25 @@
   padding: $padding;
   cursor: pointer;
 }
+
+// Отметка онлайн
+@mixin onlineBlinkPoint($size: 6px, $pos: 5px) {
+  position: absolute;
+  display: block;
+  right: $pos;
+  bottom: $pos;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  background-color: map.get(colors.$mat-status-warn, A700);
+  animation: onlineBlinkPointAnimation 0.5s ease infinite alternate;
+  // Правила анимации
+  @keyframes onlineBlinkPointAnimation {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
