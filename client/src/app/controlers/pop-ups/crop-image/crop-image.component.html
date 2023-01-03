@@ -70,15 +70,15 @@
 <!-- Панель действия -->
 <div mat-dialog-actions>
   <div class="buttons">
+    <!-- Закрыть окно -->
+    <a mat-stroked-button
+       color="basic"
+       mat-dialog-close>Отмена</a>
     <!-- Сохранить изменения -->
     <a mat-flat-button
        color="primary"
        (click)="onSaveCrop()"
        *ngIf="!loading && !!position">Сохранить</a>
-    <!-- Закрыть окно -->
-    <a mat-stroked-button
-       color="basic"
-       mat-dialog-close>Отмена</a>
   </div>
 </div>
 
