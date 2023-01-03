@@ -90,10 +90,14 @@ export class DreamService implements OnInit, OnDestroy {
   // Сведения о владельце сновидения
   private getDreamUser(userId: number): Observable<User> {
     const observable: Observable<User> = !!this.user && userId === this.user.id ?
-      of(this.user) :
-      this.accountService.user$(userId).pipe(take(1), map(u => u as User));
+      this.accountService.user$(this.user.id, false) :
+      this.accountService.user$(userId, true);
     // Вернуть подписчик
-    return observable.pipe(takeUntil(this.destroyed$));
+    return observable.pipe(
+      takeUntil(this.destroyed$),
+      take(1),
+      map(u => u as User)
+    );
   }
 
 
