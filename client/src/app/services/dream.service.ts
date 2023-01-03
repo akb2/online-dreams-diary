@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, OnDestroy, OnInit } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { environment } from "@_environments/environment";
@@ -24,7 +24,7 @@ import { map, mergeMap, switchMap, take, takeUntil, tap } from "rxjs/operators";
   providedIn: "root"
 })
 
-export class DreamService implements OnInit, OnDestroy {
+export class DreamService implements OnDestroy {
 
 
   private baseUrl: string = environment.baseUrl;
@@ -89,15 +89,12 @@ export class DreamService implements OnInit, OnDestroy {
 
   // Сведения о владельце сновидения
   private getDreamUser(userId: number): Observable<User> {
-    const observable: Observable<User> = !!this.user && userId === this.user.id ?
-      this.accountService.user$(this.user.id, false) :
-      this.accountService.user$(userId, true);
-    // Вернуть подписчик
-    return observable.pipe(
-      takeUntil(this.destroyed$),
-      take(1),
-      map(u => u as User)
-    );
+    return this.accountService.user$(userId, false)
+      .pipe(
+        takeUntil(this.destroyed$),
+        take(1),
+        map(u => u as User)
+      );
   }
 
 
@@ -110,9 +107,7 @@ export class DreamService implements OnInit, OnDestroy {
     private apiService: ApiService,
     private tokenService: TokenService,
     private localStorageService: LocalStorageService
-  ) { }
-
-  ngOnInit(): void {
+  ) {
     // Подписка на актуальные сведения о пользователе
     this.accountService.user$()
       .pipe(takeUntil(this.destroyed$))
