@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -99,7 +100,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private screenService: ScreenService,
     private titleService: Title,
     private dreamService: DreamService,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private datePipe: DatePipe
   ) { }
 
   ngOnInit() {
@@ -127,38 +129,34 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   // Все данные загружены
   private onUserLoaded(): void {
-    // Мой профиль
-    if (!!this.user && !!this.visitedUser && this.user.id === this.visitedUser.id) {
-      this.visitedUser = this.user;
-      this.title = this.user.name + " " + this.user.lastName;
-      // this.subTitle = this.user.pageStatus;
-      this.pageTitle = this.globalService.createTitle("Моя страница");
-      this.backgroundImageData = this.user.settings.profileBackground;
-      this.menuAvatarImage = this.user.avatars.middle;
-      this.navMenuType = this.user.settings.profileHeaderType;
+    const isMyProfile: boolean = !!this.user && !!this.visitedUser && this.user.id === this.visitedUser.id;
+    const isOtherProfile: boolean = !isMyProfile && !!this.visitedUser;
+    // Для обоих типов просмотра
+    if (isMyProfile || isOtherProfile) {
+      this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
+      this.subTitle = this.visitedUser.online ?
+        "В сети" :
+        (this.visitedUser.sex === UserSex.Male ? "Был" : "Была") + " " + this.datePipe.transform(this.visitedUser.lastActionDate, "d MMMM y - H:mm");
       this.menuAvatarIcon = "person";
+      this.menuAvatarImage = this.visitedUser.avatars.middle;
+      this.backgroundImageData = this.visitedUser.settings.profileBackground;
+      this.navMenuType = this.visitedUser.settings.profileHeaderType;
+    }
+    // Мой профиль
+    if (isMyProfile) {
+      this.pageTitle = this.globalService.createTitle("Моя страница");
       this.floatButtonIcon = "book";
-      this.floatButtonLink = "/diary/" + this.user.id;
+      this.floatButtonLink = "/diary/" + this.visitedUser.id;
     }
     // Профиль другого пользователя
-    else if (!!this.visitedUser) {
-      // Страница доступна
-      if (this.userHasAccess) {
-        // this.subTitle = this.visitedUser.pageStatus;
-        this.backgroundImageData = this.visitedUser.settings.profileBackground;
-        this.navMenuType = this.visitedUser.settings.profileHeaderType;
-      }
+    else if (isOtherProfile) {
       // Скрыто настройками приватности
-      else {
-        // this.subTitle = "";
+      if (!this.userHasAccess) {
         this.backgroundImageData = BackgroundImageDatas.find(({ id }) => id === 1);
         this.navMenuType = NavMenuType.collapse;
       }
       // Общие настройки
-      this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
       this.pageTitle = this.globalService.createTitle(this.title);
-      this.menuAvatarImage = this.visitedUser.avatars.middle;
-      this.menuAvatarIcon = "person";
     }
     // Готово к загрузке
     this.pageLoading = false;
