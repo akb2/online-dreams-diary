@@ -5,6 +5,7 @@ import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamPlural } from "@_datas/dream";
+import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
@@ -184,6 +185,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
         ({ user, visitedUser }) => {
           this.user = user;
           this.visitedUser = visitedUser;
+          this.pageCurrent = ParseInt(this.activatedRoute.snapshot?.queryParams?.p);
           this.setPageData();
         },
         ({ user }) => !!user && this.pageData.userId === -1 ?
