@@ -248,7 +248,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       large: 3,
       middle: 2
     };
-    let prevLimit: number = limits.default;
+    let prevLimit: number = 0;
     // Настройки
     this.dreamsLoading = true;
     // Поиск сновидений
