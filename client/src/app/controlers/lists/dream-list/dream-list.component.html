@@ -60,8 +60,7 @@
     <div class="dream__text actions">
       <!-- Автор -->
       <a class="dream__author"
-         routerLink="/profile/{{dream.user.id}}"
-         [ngClass]="{ 'no-subtitle': dream.user.pageStatus.length === 0 }">
+         routerLink="/profile/{{dream.user.id}}">
         <ng-container *ngIf="showProfile">
           <!-- Аватарка -->
           <div class="dream__author-icon">
@@ -70,12 +69,22 @@
                  *ngIf="dream.user.avatars.small.length > 0" />
             <!-- Иконка -->
             <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
+            <!-- Метка онлайн -->
+            <div class="dream__author-icon-online"
+                 *ngIf="dream.user.online"></div>
           </div>
           <!-- Имя -->
           <div class="dream__author-title">{{dream.user.name}} {{dream.user.lastName}}</div>
-          <!-- Статус -->
-          <div class="dream__author-subtitle"
-               *ngIf="dream.user.pageStatus.length > 0">{{dream.user.pageStatus}}</div>
+          <!-- Статус онлайн -->
+          <div class="dream__author-subtitle">
+            <!-- В сети -->
+            <ng-container *ngIf="dream.user.online; else userlastVisitDate">Онлайн</ng-container>
+            <!-- Последний визит -->
+            <ng-template #userlastVisitDate>
+              {{userIsMale(dream.user)? 'Был': 'Была'}}
+              {{dream.user.lastActionDate | date: 'd.M.y - H:mm'}}
+            </ng-template>
+          </div>
         </ng-container>
       </a>
       <!-- Кнопка просмотра -->

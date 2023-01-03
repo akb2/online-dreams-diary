@@ -10,12 +10,23 @@
       <!-- Картинка -->
       <img [src]="user.avatars.middle"
            *ngIf="!!user.avatars.middle.length; else noUserAvatar" />
+      <!-- Метка онлайн -->
+      <div class="user__image-online"
+           *ngIf="user.online"></div>
     </a>
     <!-- Имя пользователя -->
     <a class="user__text"
        [routerLink]="baseLink + user.id">
-      <div class="user__text-title">{{user.name}}</div>
-      <div class="user__text-subtitle">{{user.lastName}}</div>
+      <div class="user__text-title">{{user.name}} {{user.lastName}}</div>
+      <div class="user__text-subtitle">
+        <!-- В сети -->
+        <ng-container *ngIf="user.online; else userlastVisitDate">Онлайн</ng-container>
+        <!-- Последний визит -->
+        <ng-template #userlastVisitDate>
+          {{userIsMale(user)? 'Был': 'Была'}}
+          {{user.lastActionDate | date: 'd.M.y - H:mm'}}
+        </ng-template>
+      </div>
     </a>
     <!-- Действия -->
     <div class="user__action">

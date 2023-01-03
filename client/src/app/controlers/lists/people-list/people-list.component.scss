@@ -83,6 +83,10 @@
       font-size: 100px;
       color: inherit;
     }
+    // Метка онлайн
+    &-online {
+      @include mixins.onlineBlinkPoint(10px);
+    }
   }
   // Название
   &__text {

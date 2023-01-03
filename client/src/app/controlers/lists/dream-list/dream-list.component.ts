@@ -3,7 +3,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
-import { User } from "@_models/account";
+import { User, UserSex } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
@@ -61,6 +61,11 @@ export class DreamListComponent implements OnInit, OnChanges {
     }
     // Вернуть объект
     return data;
+  }
+
+  // Проверка пола
+  userIsMale(user: User): boolean {
+    return user.sex === UserSex.Male;
   }
 
 

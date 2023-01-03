@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
-import { User } from "@_models/account";
+import { User, UserSex } from "@_models/account";
 
 
 
@@ -18,6 +18,15 @@ export class PeopleListComponent {
   @Input() people: User[];
 
   baseLink: string = "/profile/";
+
+
+
+
+
+  // Проверка пола
+  userIsMale(user: User): boolean {
+    return user.sex === UserSex.Male;
+  }
 
 
 
