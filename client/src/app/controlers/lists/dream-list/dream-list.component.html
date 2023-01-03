@@ -59,34 +59,8 @@
     <!-- Автор и действие -->
     <div class="dream__text actions">
       <!-- Автор -->
-      <a class="dream__author"
-         routerLink="/profile/{{dream.user.id}}">
-        <ng-container *ngIf="showProfile">
-          <!-- Аватарка -->
-          <div class="dream__author-icon">
-            <!-- Картинка -->
-            <img [src]="dream.user.avatars.small"
-                 *ngIf="dream.user.avatars.small.length > 0" />
-            <!-- Иконка -->
-            <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
-            <!-- Метка онлайн -->
-            <div class="dream__author-icon-online"
-                 *ngIf="dream.user.online"></div>
-          </div>
-          <!-- Имя -->
-          <div class="dream__author-title">{{dream.user.name}} {{dream.user.lastName}}</div>
-          <!-- Статус онлайн -->
-          <div class="dream__author-subtitle">
-            <!-- В сети -->
-            <ng-container *ngIf="dream.user.online; else userlastVisitDate">Онлайн</ng-container>
-            <!-- Последний визит -->
-            <ng-template #userlastVisitDate>
-              {{userIsMale(dream.user)? 'Был': 'Была'}}
-              {{dream.user.lastActionDate | date: 'd.M.y - H:mm'}}
-            </ng-template>
-          </div>
-        </ng-container>
-      </a>
+      <ng-container [ngTemplateOutlet]="dreamAuthor"
+                    [ngTemplateOutletContext]="{ $implicit: showProfile, user: dream.user }"></ng-container>
       <!-- Кнопка просмотра -->
       <a mat-flat-button
          color="primary"
@@ -95,3 +69,40 @@
     </div>
   </div>
 </div>
+
+
+
+<!-- автор сновидения -->
+<ng-template #dreamAuthor
+             let-showProfile
+             let-user="user">
+  <a class="dream__author"
+     routerLink="/profile/{{user.id}}"
+     *ngIf="showProfile">
+    <!-- Аватарка -->
+    <div class="dream__author-icon">
+      <!-- Картинка -->
+      <img [src]="user.avatars.small"
+           *ngIf="user.avatars.small.length > 0" />
+      <!-- Иконка -->
+      <mat-icon *ngIf="user.avatars.small.length === 0">person</mat-icon>
+      <!-- Метка онлайн -->
+      <div class="dream__author-icon-online"
+           *ngIf="user.online"></div>
+    </div>
+    <!-- Имя -->
+    <div class="dream__author-title">{{user.name}} {{user.lastName}}</div>
+    <!-- Статус онлайн -->
+    <div class="dream__author-subtitle">
+      <!-- В сети -->
+      <ng-container *ngIf="user.online; else userlastVisitDate">Онлайн</ng-container>
+      <!-- Последний визит -->
+      <ng-template #userlastVisitDate>
+        {{userIsMale(user)? 'Был': 'Была'}}
+        {{user.lastActionDate | date: 'd.M.y - H:mm'}}
+      </ng-template>
+    </div>
+  </a>
+  <!-- Пустой блок -->
+  <div *ngIf="!showProfile"></div>
+</ng-template>
