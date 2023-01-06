@@ -114,7 +114,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
   private getTokens(): void {
     this.loadingTokensInfo = true;
     // Загрузка информации о токене
-    this.tokenService.getTokens(true, this.tokenService.id, ["0002"]).subscribe(
+    this.tokenService.getTokens(true, ["0002"]).subscribe(
       tokensInfo => {
         this.loadingTokensInfo = false;
         this.tokensInfo = tokensInfo.map(tokenInfo => ({ ...tokenInfo, loading: false }));
@@ -142,7 +142,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
       tokenInfo.loading = true;
       // Запрос
       this.tokenService.deleteTokenById(tokenId)
-        .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
+        .pipe(switchMap(d => d ? this.tokenService.getTokens(true, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
         .subscribe(
           (response) => {
             const [del, tokensInfo] = response as [boolean, TokenInfo[]];
@@ -179,7 +179,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
     this.loadingTokensInfo = true;
     // Запрос
     this.tokenService.deleteTokensByUser(true)
-      .pipe(switchMap(d => d ? this.tokenService.getTokens(true, this.tokenService.id, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
+      .pipe(switchMap(d => d ? this.tokenService.getTokens(true, ["0002"]) : of([] as TokenInfo[]), (d, u) => [d, u]))
       .subscribe(
         (response) => {
           const [del, tokensInfo] = response as [boolean, TokenInfo[]];
