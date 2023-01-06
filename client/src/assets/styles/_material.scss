@@ -24,12 +24,10 @@
     &-base {
       &.mat-stroked-button,
       &.mat-flat-button {
-        $height: 40px;
-
-        height: $height;
-        line-height: $height;
+        height: vars.$buttonSize;
+        line-height: vars.$buttonSize;
         padding: 0 24px;
-
+        // Стили иконок
         &,
         *:not(.mat-icon) {
           font-family: "Roboto", open-sans;
