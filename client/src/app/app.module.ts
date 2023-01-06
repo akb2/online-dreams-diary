@@ -1,10 +1,11 @@
-import { HttpClientModule } from "@angular/common/http";
+import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { PageLoaderModule } from "@_controlers/page-loader/page-loader.module";
 import { CoreModule } from "@_modules/core.module";
+import { ApiInterceptorService } from "@_services/api-interceptor.service";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 
@@ -28,6 +29,13 @@ import { AppComponent } from "./app.component";
   ],
   bootstrap: [
     AppComponent
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ApiInterceptorService,
+      multi: true,
+    },
   ]
 })
 
