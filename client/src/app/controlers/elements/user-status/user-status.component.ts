@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { User } from "@_models/account";
+import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
-import { fromEvent, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { ScreenService } from "@_services/screen.service";
+import { delay, filter, fromEvent, map, merge, mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -15,14 +17,17 @@ import { fromEvent, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
+export class UserStatusComponent implements OnChanges, OnInit, AfterContentInit, OnDestroy {
 
 
   @Input() user: User;
   @Input() itsMyPage: boolean;
 
   @ViewChild("inputField") inputField!: ElementRef;
+  @ViewChild("inputHelper") inputHelper!: ElementRef;
+  @ViewChild("inputHelperText") inputHelperText!: ElementRef;
   @ViewChild("statusBlock") statusBlock!: ElementRef;
+  @ViewChild("statusOverlay") statusOverlay!: ElementRef;
   @ViewChild("saveButton", { read: ElementRef }) saveButton!: ElementRef;
   @ViewChild("cancelButton", { read: ElementRef }) cancelButton!: ElementRef;
   @ViewChild("editButton", { read: ElementRef }) editButton!: ElementRef;
@@ -31,8 +36,11 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
   placeholderText: string = "Напишите, что у вас нового...";
 
   loader: boolean = false;
-  editStatus: boolean = false;
+  editHelperStyles: SimpleObject = {};
+  editHelperTextStyles: SimpleObject = {};
+  editInputStyles: SimpleObject = {};
 
+  editStatus$: Subject<boolean> = new Subject();
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -54,6 +62,13 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
     return false;
   }
 
+  // Текст для помощника редактора
+  get getEditorText(): string {
+    const text: string = this.statusForm?.get('status')?.value;
+    // Вернуть текст
+    return !!text ? text : this.placeholderText;
+  }
+
 
 
 
@@ -61,7 +76,8 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private screenService: ScreenService
   ) {
     this.statusForm = this.formBuilder.group({
       status: null
@@ -76,6 +92,30 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
     fromEvent(document.body, "mousedown")
       .pipe(takeUntil(this.destroyed$))
       .subscribe(e => this.onCloseEdit(e as PointerEvent));
+  }
+
+  ngAfterContentInit(): void {
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroyed$),
+        takeWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status"), true),
+        skipWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status")),
+        mergeMap(() => merge(
+          this.editStatus$.asObservable(),
+          this.statusForm.get("status").valueChanges.pipe(delay(1)),
+          this.screenService.elmResize([this.statusOverlay.nativeElement])
+        )),
+        map(() => ([this.inputHelperText?.nativeElement])),
+        filter(elms => elms.every(e => !!e))
+      )
+      .subscribe(([helperText]) => {
+        this.editInputStyles = {
+          width: (helperText.getBoundingClientRect().width) + "px",
+          height: (helperText.getBoundingClientRect().height) + "px"
+        };
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      })
   }
 
   ngOnDestroy(): void {
@@ -95,7 +135,7 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
 
   // Открыть редактор
   onOpenEdit(): void {
-    this.editStatus = true;
+    this.editStatus$.next(true);
     this.changeDetectorRef.detectChanges();
     // Фокус на элементе
     timer(0, 1)
@@ -114,7 +154,8 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
       .map(e => e.nativeElement);
     // Вызов события
     if (!event || (!!event && !this.compareElement(event.target, elements))) {
-      this.editStatus = false;
+      this.editStatus$.next(false);
+      this.statusForm.get("status").setValue(this.user.pageStatus);
       this.changeDetectorRef.detectChanges();
     }
   }
@@ -124,8 +165,7 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
     const pageStatus: string = this.statusForm?.get("status")?.value ?? "";
     // Обновить состояния
     this.loader = true;
-    this.editStatus = false;
-    this.user.pageStatus = pageStatus;
+    this.editStatus$.next(false);
     this.changeDetectorRef.detectChanges();
     // Сохранение статуса
     this.accountService.savePageStatus(pageStatus)
@@ -133,6 +173,7 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
       .subscribe(
         code => {
           if (code === "0001") {
+            this.user.pageStatus = pageStatus;
             this.statusForm.get("status").setValue(pageStatus);
           }
           // Убрать лоадер
@@ -145,7 +186,7 @@ export class UserStatusComponent implements OnChanges, OnInit, OnDestroy {
   // Ошибка сохранения статуса
   private onSaveStatusError(): void {
     this.loader = false;
-    this.editStatus = false;
+    this.editStatus$.next(false);
     this.changeDetectorRef.detectChanges();
   }
 }

@@ -1,4 +1,5 @@
-<div class="status__overlay"
+<div #statusOverlay
+     class="status__overlay"
      *ngIf="!!user.pageStatus || itsMyPage">
   <ng-container [ngTemplateOutlet]="statusText"></ng-container>
   <!-- Редактирование статуса -->
@@ -13,23 +14,33 @@
   <form #statusBlock
         class="status"
         [formGroup]="statusForm"
-        [ngClass]="{ edit: !loader && editStatus }"
+        [ngClass]="{ edit: !loader && (editStatus$ | async) }"
         (click)="inputField?.nativeElement?.focus()">
     <!-- Редактирование -->
-    <input #inputField
-           formControlName="status"
-           type="text"
-           autocomplete="off"
-           class="status__editor"
-           [placeholder]="placeholderText"
-           (keydown)="onKeyDown($event)"
-           *ngIf="!loader && editStatus; else statusTextViewer">
+    <ng-container *ngIf="!loader && (editStatus$ | async); else statusTextViewer">
+      <textarea #inputField
+                formControlName="status"
+                type="text"
+                autocomplete="off"
+                class="status__editor"
+                maxlength="128"
+                [placeholder]="placeholderText"
+                [ngStyle]="editInputStyles"
+                (keydown)="onKeyDown($event)"></textarea>
+    </ng-container>
     <!-- Просмотр -->
     <ng-template #statusTextViewer>
       <div class="status__content"
            [ngClass]="{ default: !user.pageStatus }">{{!!user.pageStatus? user.pageStatus: placeholderText}}</div>
     </ng-template>
   </form>
+  <!-- Помощник для автоматического размера -->
+  <div #inputHelper
+       class="status__editor-helper"
+       *ngIf="!loader && (editStatus$ | async)">
+    <div #inputHelperText
+         class="status__editor-helper-text">{{getEditorText}}</div>
+  </div>
 </ng-template>
 
 <!-- Управление -->
@@ -38,7 +49,7 @@
        *ngIf="loader; else statusEditTrue"></div>
   <!-- Редактирование -->
   <ng-template #statusEditTrue>
-    <ng-container *ngIf="editStatus; else statusEditFalse">
+    <ng-container *ngIf="(editStatus$ | async); else statusEditFalse">
       <!-- Сохранить -->
       <button #saveButton
               mat-mini-fab
