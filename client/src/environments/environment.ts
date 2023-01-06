@@ -6,11 +6,7 @@ export const environment = {
   production: false,
   baseUrl: "https://api-test.dreams-diary.ru/",
   reCaptchaKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
-  httpHeader: {
-    "Access-Control-Allow-Origin": "*",
-    "Content-Type": "application/json",
-    Authorization: "token"
-  }
+  httpHeader: {}
 };
 
 /*
