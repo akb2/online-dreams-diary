@@ -46,11 +46,11 @@ class Dream
   {
     $id = 0;
     $code = "7001";
-    $userId = $_GET["user_id"];
+    $userId = $_GET["token_user_id"];
     $token = $_GET["token"];
-    $dream = $this->dreamService->getById($data["id"], $userId);
     // Проверка доступности
     if ($this->tokenService->checkToken($userId, $token)) {
+      $dream = $this->dreamService->getById($data["id"], $userId);
       // Переписать старое
       if (isset($dream["id"]) && $dream["id"] > 0) {
         $id = $this->dreamService->updateDream($data);
@@ -78,13 +78,13 @@ class Dream
   public function getList($data): array
   {
     $code = "0002";
-    $userId = $_GET["user_id"];
+    $userId = $_GET["token_user_id"];
     $token = $_GET["token"];
     $search = array(
-      "page" => isset($data["search_page"]) && strlen($data["search_page"]) > 0? $data["search_page"]: "",
-      "user" => isset($data["search_user"]) && strlen($data["search_user"]) > 0? $data["search_user"]: "",
-      "limit" => isset($data["search_limit"]) && strlen($data["search_limit"]) > 0? $data["search_limit"]: "",
-      "status" => isset($data["search_status"]) && strlen($data["search_status"])>0? $data["search_status"]: ""
+      "page" => isset($data["search_page"]) && strlen($data["search_page"]) > 0 ? $data["search_page"] : "",
+      "user" => isset($data["search_user"]) && strlen($data["search_user"]) > 0 ? $data["search_user"] : "",
+      "limit" => isset($data["search_limit"]) && strlen($data["search_limit"]) > 0 ? $data["search_limit"] : "",
+      "status" => isset($data["search_status"]) && strlen($data["search_status"]) > 0 ? $data["search_status"] : ""
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();
@@ -102,10 +102,10 @@ class Dream
           "title" => $dream["title"],
           "description" => $dream["description"],
           "keywords" => $dream["keywords"],
-          "text" => $dream["text"],
-          "places" => $dream["places"],
-          "members" => $dream["members"],
-          "map" => $dream["map"],
+          "text" => isset($dream["text"]) ? $dream["text"] : "",
+          "places" => isset($dream["places"]) ? $dream["places"] : "",
+          "members" => isset($dream["members"]) ? $dream["members"] : "",
+          "map" => isset($dream["map"]) ? $dream["map"] : "",
           "mode" => intval($dream["mode"]),
           "status" => intval($dream["status"]),
           "headerType" => $dream["header_type"],
@@ -133,7 +133,7 @@ class Dream
   public function getById($data): array
   {
     $code = "0002";
-    $userId = $_GET["user_id"];
+    $userId = $_GET["token_user_id"];
     $token = $_GET["token"];
     $edit = $_GET["edit"] === "true";
     $testDream = $this->dreamService->getById($data["id"]);
@@ -190,7 +190,7 @@ class Dream
   {
     $code = "7004";
     $isDelete = false;
-    $userId = $_GET["user_id"];
+    $userId = $_GET["token_user_id"];
     $token = $_GET["token"];
     // Проверка доступности
     if ($this->tokenService->checkToken($userId, $token)) {

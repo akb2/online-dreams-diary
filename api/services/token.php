@@ -67,7 +67,7 @@ class TokenService
     if (strlen($token) > 0) {
       $test = $this->getToken($token);
       // Токен существует
-      if ($test['token'] === $token) {
+      if (isset($test['token']) && $test['token'] === $token) {
         // Удаление токена
         if ($this->dataBaseService->executeFromFile('token/deleteToken.sql', array($token))) {
           $code = '0001';
@@ -203,8 +203,8 @@ class TokenService
     $tokenDatas = array();
 
     // Если получены данные
-    if (strlen($data['token']) > 0 && strlen($data['id']) > 0) {
-      $token = $this->getTokens($data['id'], $data['hideCurrent'] ? $data['token'] : '');
+    if (strlen($data['token']) > 0 && strlen($data['token_user_id']) > 0) {
+      $token = $this->getTokens($data['token_user_id'], $data['hideCurrent'] ? $data['token'] : '');
       // Проверить токен
       if (count($token) > 0) {
         $tokenDatas = $token;

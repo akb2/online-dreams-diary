@@ -66,7 +66,7 @@ class Account
   public function checkPrivate(array $dataIn): array
   {
     $code = "0000";
-    $id = $_GET["user_id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
     $dataOut = false;
 
@@ -115,7 +115,7 @@ class Account
   public function search($data): array
   {
     $code = "0002";
-    $userId = $_GET["user_id"];
+    $userId = $_GET["token_user_id"];
     $token = $_GET["token"];
     $search = array(
       "q" => $data["search_q"] ?? null,
@@ -193,7 +193,7 @@ class Account
   {
     $code = "0000";
     $message = "";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверка входящих данных
@@ -245,7 +245,7 @@ class Account
   public function saveUserData($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -277,7 +277,7 @@ class Account
   public function savePageStatus($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -309,7 +309,7 @@ class Account
   public function saveUserSettings($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -341,7 +341,7 @@ class Account
   public function saveUserPrivate($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -375,7 +375,7 @@ class Account
   public function uploadAvatar($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -409,7 +409,7 @@ class Account
   public function cropAvatar($data): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен
@@ -442,7 +442,7 @@ class Account
   public function deleteAvatar(): array
   {
     $code = "0000";
-    $id = $_GET["id"];
+    $id = $_GET["token_user_id"];
     $token = $_GET["token"];
 
     // Проверить токен

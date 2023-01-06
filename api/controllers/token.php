@@ -70,7 +70,7 @@ class Token
   public function deleteTokenById($data): array
   {
     $code = "0000";
-    $id = $data["id"];
+    $id = $data["token_user_id"];
     $token = $data["token"];
 
     // Проверить токен
@@ -102,7 +102,7 @@ class Token
   public function deleteTokensByUser($data): array
   {
     $code = "0000";
-    $id = $data["id"];
+    $id = $data["token_user_id"];
     $token = $data["token"];
     $hideCurrent = !!$data["hideCurrent"];
 
