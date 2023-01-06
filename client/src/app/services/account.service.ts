@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { OnlinePeriod, UserPrivateNames } from "@_datas/account";
+import { ObjectToParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { environment } from '@_environments/environment';
 import { ParseInt } from "@_helpers/math";
@@ -26,9 +27,6 @@ import { catchError, filter, finalize, map, mergeMap, pairwise, startWith, switc
 
 export class AccountService implements OnDestroy {
 
-
-  private baseUrl: string = environment.baseUrl;
-  private httpHeader: SimpleObject = environment.httpHeader;
 
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
@@ -188,7 +186,7 @@ export class AccountService implements OnDestroy {
     formData.append("login", login);
     formData.append("password", password);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/auth", formData, this.httpHeader)
+    return this.httpClient.post<ApiResponse>("account/auth", formData)
       .pipe(
         takeUntil(this.destroy$),
         switchMap(result => {
@@ -212,7 +210,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     Object.entries(data).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/register", formData, this.httpHeader)
+    return this.httpClient.post<ApiResponse>("account/register", formData)
       .pipe(
         takeUntil(this.destroy$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -225,7 +223,7 @@ export class AccountService implements OnDestroy {
     formData.append("user", user.toString());
     formData.append("code", code);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/activate", formData, this.httpHeader)
+    return this.httpClient.post<ApiResponse>("account/activate", formData)
       .pipe(
         takeUntil(this.destroy$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -239,7 +237,7 @@ export class AccountService implements OnDestroy {
     formData.append("password", password);
     formData.append("captcha", captcha);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(this.baseUrl + "account/createActivationCode", formData, this.httpHeader)
+    return this.httpClient.post<ApiResponse>("account/createActivationCode", formData)
       .pipe(
         takeUntil(this.destroy$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -254,9 +252,7 @@ export class AccountService implements OnDestroy {
 
   // Проверка настроек приватности
   checkPrivate(rule: keyof UserPrivate, user: number, codes: string[] = []): Observable<boolean> {
-    const url: string = this.baseUrl + "account/checkPrivate";
-    // Вернуть запрос
-    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader({ rule, user })).pipe(
+    return this.httpClient.get<ApiResponse>("account/checkPrivate", { params: ObjectToParams({ rule, user }) }).pipe(
       switchMap(r => r.result.code === "0001" || codes.some(testCode => testCode === r.result.code) ?
         of(r.result.code) :
         this.apiService.checkResponse(r.result.code, codes)
@@ -290,7 +286,7 @@ export class AccountService implements OnDestroy {
   // Информация о пользователе
   getUser(id: string | number, codes: string[] = []): Observable<User> {
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(this.baseUrl + "account/getUser?id=" + id, this.httpHeader).pipe(
+    return this.httpClient.get<ApiResponse>("account/getUser?id=" + id).pipe(
       switchMap(
         result => {
           const user: User = this.userConverter(result.result.data);
@@ -309,11 +305,10 @@ export class AccountService implements OnDestroy {
 
   // Поиск пользоватлей
   search(search: SearchUser, codes: string[] = []): Observable<Search<User>> {
-    const url: string = this.baseUrl + "account/search";
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(search, "search_")).pipe(
+    return this.httpClient.get<ApiResponse>("account/search", { params: ObjectToParams(search, "search_") }).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
           of(result.result.data) :
@@ -338,11 +333,7 @@ export class AccountService implements OnDestroy {
     formData.append("current_password", currentPassword);
     formData.append("new_password", newPassword);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/changePassword?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/changePassword", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(r => this.apiService.checkResponse(r.result.code, codes))
     );
@@ -353,11 +344,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     Object.entries(userSave).map(([key, value]) => formData.append(key, value));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/saveUserData?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/saveUserData", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -368,11 +355,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     formData.append("pageStatus", pageStatus ?? "");
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/savePageStatus?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/savePageStatus", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -388,11 +371,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
     // Запрос
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/saveUserSettings?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/saveUserSettings", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -404,11 +383,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     formData.append("private", JSON.stringify(privateDatas));
     // Запрос
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/saveUserPrivate?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/saveUserPrivate", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -423,11 +398,7 @@ export class AccountService implements OnDestroy {
     const formData: FormData = new FormData();
     formData.append("file", file);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/uploadAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/uploadAvatar", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -442,11 +413,7 @@ export class AccountService implements OnDestroy {
     formData.append("width", coords.width.toString());
     formData.append("height", coords.height.toString());
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(
-      this.baseUrl + "account/cropAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      formData,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.post<ApiResponse>("account/cropAvatar", formData).pipe(
       mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
@@ -454,11 +421,7 @@ export class AccountService implements OnDestroy {
 
   // Удалить аватарку
   deleteAvatar(codes: string[] = []): Observable<string> {
-    // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(
-      this.baseUrl + "account/deleteAvatar?id=" + this.tokenService.id + "&token=" + this.tokenService.token,
-      this.httpHeader
-    ).pipe(
+    return this.httpClient.delete<ApiResponse>("account/deleteAvatar").pipe(
       mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );

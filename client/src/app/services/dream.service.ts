@@ -1,8 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
+import { ObjectToParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { environment } from "@_environments/environment";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -12,7 +12,6 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { TokenService } from "@_services/token.service";
 import { forkJoin, Observable, of, Subject } from "rxjs";
 import { map, mergeMap, switchMap, take, takeUntil, tap } from "rxjs/operators";
 
@@ -27,7 +26,6 @@ import { map, mergeMap, switchMap, take, takeUntil, tap } from "rxjs/operators";
 export class DreamService implements OnDestroy {
 
 
-  private baseUrl: string = environment.baseUrl;
   private cookieKey: string = "dream_service";
   private cookieLifeTime: number = 60 * 60 * 24 * 365;
 
@@ -105,7 +103,6 @@ export class DreamService implements OnDestroy {
     private accountService: AccountService,
     private httpClient: HttpClient,
     private apiService: ApiService,
-    private tokenService: TokenService,
     private localStorageService: LocalStorageService
   ) {
     // Подписка на актуальные сведения о пользователе
@@ -125,19 +122,16 @@ export class DreamService implements OnDestroy {
 
   // Список сновидений
   search(search: SearchDream, codes: string[] = []): Observable<Search<Dream>> {
-    const url: string = this.baseUrl + "dream/getList";
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(search, "search_")).pipe(
+    return this.httpClient.get<ApiResponse>("dream/getList", { params: ObjectToParams(search, "search_") }).pipe(
       switchMap(result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
         of(result.result.data) :
         this.apiService.checkResponse(result.result.code, codes)
       ),
-      tap(r => {
-        count = r.count ?? 0;
-        limit = r.limit ?? 0;
-      }),
+      tap(r => count = r.count ?? 0),
+      tap(r => limit = r.limit ?? 0),
       mergeMap(
         ({ dreams }: any) => {
           if (dreams?.length > 0) {
@@ -160,13 +154,12 @@ export class DreamService implements OnDestroy {
 
   // Данные о сновидении
   getById(id: number, edit: boolean = true, codes: string[] = []): Observable<Dream> {
-    const url: string = this.baseUrl + "dream/getById";
     const params: SimpleObject = {
       id: id.toString(),
       edit: edit ? "true" : "false"
     };
     // Вернуть подписку
-    return this.httpClient.get<ApiResponse>(url, this.tokenService.getHttpHeader(params)).pipe(
+    return this.httpClient.get<ApiResponse>("dream/getById", { params: ObjectToParams(params) }).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data) :
@@ -182,11 +175,10 @@ export class DreamService implements OnDestroy {
 
   // Сохранить сновидение
   save(dream: Dream, codes: string[] = []): Observable<number> {
-    const url: string = this.baseUrl + "dream/save";
     const formData: FormData = new FormData();
     Object.entries(this.dreamConverterDto(dream)).map(([k, v]) => formData.append(k, v));
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(url, formData, this.tokenService.getHttpHeader()).pipe(
+    return this.httpClient.post<ApiResponse>("dream/save", formData).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data || 0) :
@@ -197,10 +189,9 @@ export class DreamService implements OnDestroy {
 
   // Удалить сновидение
   delete(dreamId: number, codes: string[] = []): Observable<boolean> {
-    const url: string = this.baseUrl + "dream/delete";
     const params: SimpleObject = { id: dreamId.toString() };
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(url, this.tokenService.getHttpHeader(params)).pipe(
+    return this.httpClient.delete<ApiResponse>("dream/delete", { params: ObjectToParams(params) }).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :
