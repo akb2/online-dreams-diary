@@ -253,10 +253,7 @@ export class AccountService implements OnDestroy {
   // Проверка настроек приватности
   checkPrivate(rule: keyof UserPrivate, user: number, codes: string[] = []): Observable<boolean> {
     return this.httpClient.get<ApiResponse>("account/checkPrivate", { params: ObjectToParams({ rule, user }) }).pipe(
-      switchMap(r => r.result.code === "0001" || codes.some(testCode => testCode === r.result.code) ?
-        of(r.result.code) :
-        this.apiService.checkResponse(r.result.code, codes)
-      ),
+      switchMap(r => this.apiService.checkResponse(r.result.code, codes)),
       map(code => code === "0001"),
       catchError(code => of(code === "0001")),
     );
