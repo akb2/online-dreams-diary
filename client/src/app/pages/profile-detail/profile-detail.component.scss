@@ -61,7 +61,7 @@
       grid-gap: #{map.get($gap, y)} #{map.get($gap, x)};
       // Горизонтальные колонки
       @if ($column == true) {
-        grid-template-columns: #{$mainAvatarSize} 1fr;
+        grid-template-columns: #{$mainAvatarSize} minmax(1px, 1fr);
       }
       // Сброс колонок
       @else {
