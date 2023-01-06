@@ -1,8 +1,14 @@
-import { SimpleObject } from "@_models/app";
+import { HttpParams } from "@angular/common/http";
+import { CustomObject, SimpleObject } from "@_models/app";
 
 
 
 
+
+// Преобразование объекта в параметры
+export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "") => Object.entries(params)
+  .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v]))
+  .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
 
 // Тип сообщений об ошибках
 export const ApiResponseMessages: SimpleObject = {
