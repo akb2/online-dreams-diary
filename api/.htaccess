@@ -27,6 +27,7 @@ AddDefaultCharset UTF-8
   Header set Content-Type "application/json; charset=utf-8"
   Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE"
   Header set Access-Control-Allow-Headers "X-Requested-With, content-type, Authorization"
+  Header set Authorization "token"
 </IfModule>
 
 <IfModule mod_gzip.c>
