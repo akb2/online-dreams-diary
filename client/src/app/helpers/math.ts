@@ -5,9 +5,9 @@ import { XYCoord } from "@_models/dream-map";
 
 
 // Преобразовать данные в число
-export const ParseInt = (value: any) => {
+export const ParseInt = (value: any, defaultValue: number = 0) => {
   let num: number = parseInt(value);
-  num = isNaN(num) ? 0 : num;
+  num = isNaN(num) ? defaultValue : num;
   // Вернуть число
   return num;
 };
