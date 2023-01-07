@@ -128,5 +128,6 @@ export type UserAvatarCropDataKeys = "crop" | "middle";
 // Перечисления пола пользователей
 export enum UserSex {
   Male,
-  Female
+  Female,
+  UnDetected
 };
