@@ -10,10 +10,14 @@ import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { TitleModule } from '@_controlers/title/title.module';
 import { CoreModule } from '@_modules/core.module';
-import { AvatarBlockComponent } from '@_pages/profile-detail/avatar-block/avatar-block.component';
-import { ProfileDetailRoutingModule } from '@_pages/profile-detail/profile-detail-routing.module';
-import { ProfileDetailComponent } from '@_pages/profile-detail/profile-detail.component';
-import { StatusBlockComponent } from '@_pages/profile-detail/status-block/status-block.component';
+import { GeneralInfoBlockComponent } from './general-info-block/general-info-block.component';
+import { ActionBlockComponent } from './action-block/action-block.component';
+import { AvatarBlockComponent } from './avatar-block/avatar-block.component';
+import { ProfileDetailRoutingModule } from './profile-detail-routing.module';
+import { ProfileDetailComponent } from './profile-detail.component';
+import { StatusBlockComponent } from './status-block/status-block.component';
+import { CardModule } from '@_controlers/card/card.module';
+import { DreamsBlockComponent } from '@_pages/profile-detail/dreams-block/dreams-block.component';
 
 
 
@@ -23,7 +27,10 @@ import { StatusBlockComponent } from '@_pages/profile-detail/status-block/status
   declarations: [
     ProfileDetailComponent,
     AvatarBlockComponent,
-    StatusBlockComponent
+    StatusBlockComponent,
+    ActionBlockComponent,
+    GeneralInfoBlockComponent,
+    DreamsBlockComponent
   ],
   imports: [
     CommonModule,
@@ -37,7 +44,8 @@ import { StatusBlockComponent } from '@_pages/profile-detail/status-block/status
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
-    CoreModule
+    CoreModule,
+    CardModule
   ]
 })
 

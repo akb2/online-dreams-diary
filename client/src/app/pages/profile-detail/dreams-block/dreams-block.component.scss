@@ -1,0 +1,12 @@
+@use "../../../../assets/styles/vars";
+@use "../../../../assets/styles/screens";
+
+// Обертка
+.overlay {
+  > * + * {
+    // Адаптив
+    @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+      margin-top: $gap;
+    }
+  }
+}

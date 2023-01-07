@@ -3,19 +3,13 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
-import { DreamPlural } from '@_datas/dream';
 import { User, UserSex } from '@_models/account';
-import { Search } from '@_models/api';
-import { RouteData, SimpleObject } from '@_models/app';
+import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
-import { Dream } from '@_models/dream';
 import { NavMenuType } from '@_models/nav-menu';
-import { ScreenBreakpoints } from '@_models/screen';
 import { AccountService } from '@_services/account.service';
-import { DreamService } from '@_services/dream.service';
 import { GlobalService } from '@_services/global.service';
-import { ScreenService } from '@_services/screen.service';
-import { filter, map, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -36,11 +30,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
-  userHasDiaryAccess: boolean = false;
   private userReady: boolean = false;
 
   pageLoading: boolean = false;
-  dreamsLoading: boolean = false;
 
   title: string = "Страница пользователя";
   subTitle: string = "";
@@ -57,13 +49,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   private user: User;
   visitedUser: User;
-  dreams: Dream[];
-
-  dreamsCount: number = 0;
 
   navMenuTypes: typeof NavMenuType = NavMenuType;
-
-  dreamPlural: SimpleObject = DreamPlural;
 
   private destroy$: Subject<void> = new Subject<void>();
 
@@ -83,16 +70,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Название поля
-  get getVisitingUserSexLabel(): string {
-    return this.visitedUser?.sex === UserSex.Male ? "Мужской" : "Женский";
-  }
-
-  // Проверка пола
-  get userIsMale(): boolean {
-    return this.visitedUser.sex === UserSex.Male;
-  }
-
 
 
 
@@ -102,9 +79,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
-    private screenService: ScreenService,
     private titleService: Title,
-    private dreamService: DreamService,
     private globalService: GlobalService,
     private datePipe: DatePipe
   ) { }
@@ -115,7 +90,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.defineCurrentUser();
     this.defineUrlParams();
     this.defineVisitingUser();
-    this.defineDreams();
   }
 
   ngOnDestroy(): void {
@@ -241,67 +215,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
           this.onUserLoaded();
         },
         () => this.onUserFail()
-      );
-  }
-
-  // Загрузить список сновидний
-  private defineDreams(): void {
-    const defaultDreamsResult: Search<Dream> = { count: 0, result: [], limit: 1 };
-    const limits: Partial<ScreenBreakpoints> = {
-      default: 1,
-      xlarge: 4,
-      large: 3,
-      middle: 2
-    };
-    let prevLimit: number = 0;
-    // Настройки
-    this.dreamsLoading = true;
-    // Поиск сновидений
-    timer(0, 50)
-      .pipe(
-        takeUntil(this.destroy$),
-        takeWhile(() => !this.visitedUser, true),
-        skipWhile(() => !this.visitedUser),
-        mergeMap(() => this.screenService.breakpoint$),
-        map(breakPoint => limits[breakPoint] ?? limits.default),
-        filter(limit => {
-          if (limit !== prevLimit) {
-            prevLimit = limit;
-            // Запустить загрузчик
-            this.dreamsLoading = true;
-            this.changeDetectorRef.detectChanges();
-            // Обновить
-            return true;
-          }
-          // Не обновлять
-          return false;
-        }),
-        filter(() => this.userHasAccess),
-        mergeMap(
-          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.visitedUser.id),
-          (limit, hasAccess) => ({ limit, hasAccess })
-        ),
-        mergeMap(
-          ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.visitedUser.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
-          ({ hasAccess }, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
-        ),
-        switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
-      )
-      .subscribe(
-        ({ hasAccess, dreams, count }: any) => {
-          this.userHasDiaryAccess = hasAccess;
-          this.dreams = dreams;
-          this.dreamsCount = count;
-          this.dreamsLoading = false;
-          this.changeDetectorRef.detectChanges();
-        },
-        hasAccess => {
-          this.userHasDiaryAccess = hasAccess;
-          this.dreams = [];
-          this.dreamsCount = 0;
-          this.dreamsLoading = false;
-          this.changeDetectorRef.detectChanges();
-        }
       );
   }
 }

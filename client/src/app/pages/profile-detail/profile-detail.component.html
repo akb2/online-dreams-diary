@@ -22,76 +22,40 @@
       <!-- Сведения аккаунта -->
       <div class="section">
         <div class="container">
-          <div class="information with-ava">
-            <!-- Аватарка -->
-            <div class="information__avatar">
-              <app-avatar-block [user]="visitedUser"
-                                [itsMyPage]="itsMyPage"></app-avatar-block>
+          <div class="information">
+            <!-- Левая колонка -->
+            <div class="information__left">
+              <div class="information__left-helper">
+                <!-- Аватарка -->
+                <app-avatar-block [user]="visitedUser"
+                                  [itsMyPage]="itsMyPage"></app-avatar-block>
+              </div>
             </div>
-            <!-- Сведения -->
-            <div class="information__data">
+            <!-- Правая колонка -->
+            <div class="information__right">
               <!-- Статус пользователя -->
-              <div class="information__data-item"
+              <div class="status"
                    *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
                 <app-status-block [user]="visitedUser"
                                   [itsMyPage]="itsMyPage"></app-status-block>
               </div>
-              <!-- Блок действий -->
-              <div class="information__data-item">
-              </div>
               <!-- Остальные сведения -->
-              <div class="information__data-item">
-                <ng-container [ngTemplateOutlet]="userGeneralData"></ng-container>
+              <div class="general">
+                <app-general-info-block [user]="visitedUser"></app-general-info-block>
+              </div>
+              <!-- Блок действий -->
+              <div class="actions">
+                <app-action-block [user]="visitedUser"
+                                  [itsMyPage]="itsMyPage"></app-action-block>
+              </div>
+              <!-- Список сновидений -->
+              <div class="dreams"
+                   *ngIf="userHasAccess">
+                <app-dreams-block [user]="visitedUser"
+                                  [itsMyPage]="itsMyPage"></app-dreams-block>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <!-- Сновидения -->
-      <div class="section white">
-        <div class="container">
-          <!-- Список сновидений -->
-          <ng-container *ngIf="userHasDiaryAccess; else diaryaccessDeniedByPrivate">
-            <ng-container *ngIf="!dreamsLoading">
-              <ng-container *ngIf="!!dreamsCount">
-                <!-- Заголовок -->
-                <app-title [type]="5"
-                           [title]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (visitedUser | petrovich)"
-                           [subTitle]="dreamsCount | i18nPlural: dreamPlural">
-                  <!-- Все сновидения -->
-                  <a mat-stroked-button
-                     color="basic"
-                     routerLink="/diary/{{visitedUser.id}}">
-                    <mat-icon>book</mat-icon>
-                    Все сны
-                  </a>
-                  <!-- Новое сновидение -->
-                  <a mat-flat-button
-                     color="primary"
-                     routerLink="/diary/editor"
-                     *ngIf="itsMyPage">
-                    <mat-icon>add</mat-icon>
-                    Новый сон
-                  </a>
-                </app-title>
-                <!-- Список сновидений -->
-                <app-dream-list [dreams]="dreams"
-                                sourcePlace="profile"
-                                [oneLine]="true"
-                                [showProfile]="false"></app-dream-list>
-              </ng-container>
-              <!-- Нет сновидений -->
-              <app-inform icon="close"
-                          [aboveIcon]="true"
-                          title="Нет сновидений"
-                          [subTitle]="itsMyPage? 'Вы еще не записали ни одного сновидения': (visitedUser.name) + ' еще не записал' + (userIsMale? '': 'а') + ' ни одного сновидения'"
-                          *ngIf="!dreamsCount"></app-inform>
-            </ng-container>
-            <!-- Лоадер сновидений -->
-            <app-inform title="Загрузка сновидений"
-                        subTitle="Пожалуйста подождите"
-                        *ngIf="dreamsLoading"></app-inform>
-          </ng-container>
         </div>
       </div>
     </ng-container>
@@ -100,67 +64,12 @@
 
 
 
-<!-- Недоступно настройками приватности -->
+<!-- Недоступно настройками приватности: страница -->
 <ng-template #accessDeniedByPrivate>
   <app-inform [aboveIcon]="true"
               icon="policy"
               title="Страница недоступна"
               subTitle="Пользователь предпочел скрыть свою страницу настройками приватности"></app-inform>
-</ng-template>
-
-<!-- Недоступно настройками приватности -->
-<ng-template #diaryaccessDeniedByPrivate>
-  <app-inform [aboveIcon]="true"
-              icon="policy"
-              title="Дневник недоступен"
-              subTitle="Пользователь предпочел скрыть свой дневник сновидений настройками приватности"></app-inform>
-</ng-template>
-
-
-
-<!-- Основные данные о пользователе -->
-<ng-template #userGeneralData>
-  <!-- Общие данные -->
-  <div class="user-data__overlay">
-    <!-- Имя -->
-    <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                  [ngTemplateOutletContext]="{
-                                  $implicit: 'Имя',
-                                  value: visitedUser.name + ' ' + visitedUser.lastName }"></ng-container>
-    <!-- Никнейм -->
-    <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                  [ngTemplateOutletContext]="{
-                                  $implicit: 'Отчество (никнейм)',
-                                  value: visitedUser.patronymic }"
-                  *ngIf="!!visitedUser.patronymic?.length"></ng-container>
-    <!-- Пол -->
-    <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                  [ngTemplateOutletContext]="{
-                                  $implicit: 'Пол',
-                                  value: getVisitingUserSexLabel }"></ng-container>
-    <!-- День рождения -->
-    <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                  [ngTemplateOutletContext]="{
-                                  $implicit: 'День рождения',
-                                  value: visitedUser.birthDate | date: 'd MMMM y' }"></ng-container>
-  </div>
-  <!-- Технические данные -->
-  <div class="user-data__overlay">
-    <!-- Дата регистрации -->
-    <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                  [ngTemplateOutletContext]="{
-                                  $implicit: 'Дата регистрации',
-                                  value: visitedUser.registerDate | date: 'd MMMM y' }"></ng-container>
-  </div>
-  <!-- Поле данных о пользователе -->
-  <ng-template #userGeneralDataField
-               let-label
-               let-value="value">
-    <div class="user-data">
-      <div class="user-data__label">{{label}}</div>
-      <div class="user-data__value">{{value}}</div>
-    </div>
-  </ng-template>
 </ng-template>
 
 

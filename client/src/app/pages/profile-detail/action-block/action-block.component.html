@@ -1,0 +1,49 @@
+<app-card *ngIf="user">
+  <div content
+       class="overlay__center">
+    <div class="overlay">
+      <!-- Блок слева -->
+      <div class="overlay__left">
+        <ng-container [ngTemplateOutlet]="itsMyPage? leftMyPage: leftOtherPage"></ng-container>
+      </div>
+      <!-- Блок справа -->
+      <div class="overlay__right"
+           *ngIf="!itsMyPage">
+        <ng-container [ngTemplateOutlet]="itsMyPage? rightMyPage: rightOtherPage"></ng-container>
+      </div>
+    </div>
+  </div>
+</app-card>
+
+
+
+<!-- Моя страница: левый блок -->
+<ng-template #leftMyPage>
+  <!-- Настройки -->
+  <a mat-flat-button
+     color="primary"
+     routerLink="/profile/settings">
+    <mat-icon>settings</mat-icon>Настройки
+  </a>
+</ng-template>
+
+<!-- Моя страница: правый блок -->
+<ng-template #rightMyPage></ng-template>
+
+<!-- Чужая страница: левый блок -->
+<ng-template #leftOtherPage>
+  <!-- Добавить в друзья -->
+  <button mat-flat-button
+          color="primary">
+    <mat-icon>person_add</mat-icon>Добавить в друзья
+  </button>
+</ng-template>
+
+<!-- Чужая страница: правый блок -->
+<ng-template #rightOtherPage>
+  <!-- Написать сообщение -->
+  <button mat-stroked-button
+          color="basic">
+    <mat-icon>forum</mat-icon>Написать
+  </button>
+</ng-template>

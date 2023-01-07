@@ -1,155 +1,96 @@
 @use "sass:map";
+@use "sass:math";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/containers";
 @use "../../../assets/styles/vars";
-@use "../../../assets/styles/colors";
 
 // Блок информации
 .information {
   $__elm: &;
   $mainAvatarSizes: (
-    default: 300px,
-    large: 280px,
-    middle: 250px,
-    small: 230px,
-    xsmall: 230px,
+    default: 20%,
+    large: 30%,
+    middle: 40%,
+    small: 290px,
+    xsmall: 290px,
   );
   $columnTemplates: (
     default: true,
     small: false,
     xsmall: false,
   );
-  // Свойства
-  display: block;
-
-  // Данные
-  &__data {
-    &-item {
-      &.center {
-        text-align: center;
-      }
-      // Последующие блоки
-      & + & {
-        // Адаптив
-        @include screens.adaptiveFor(containers.$cardPaddings) using($margin) {
-          margin-top: map.get($margin, y);
-        }
-      }
-    }
-  }
-
-  // С аватаркой
-  &.with-ava {
-    display: grid;
-
-    #{$__elm} {
-      // Аватарка
-      &__avatar {
-        // Адаптив
-        @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates) using($mainAvatarSize, $column) {
-          width: $mainAvatarSize;
-          // Сброс колонок
-          @if ($column == false) {
-            margin: 0 auto;
-          }
-        }
-      }
-    }
-
-    // Адаптив
-    @include screens.adaptiveFor($mainAvatarSizes, containers.$cardPaddings, $columnTemplates) using($mainAvatarSize, $gap, $column) {
-      grid-gap: #{map.get($gap, y)} #{map.get($gap, x)};
-      // Горизонтальные колонки
-      @if ($column == true) {
-        grid-template-columns: #{$mainAvatarSize} minmax(1px, 1fr);
-      }
-      // Сброс колонок
-      @else {
-        grid-template-columns: 1fr;
-        justify-content: center;
-      }
-    }
-  }
-}
-
-// Данные пользователя
-.user-data {
-  $labelWidths: (
-    default: 100%,
-    xlarge: 240px,
-    large: 210px,
-    middle: 200px,
+  $rightColumnItems: "status" "general" "actions" "dreams";
+  $rightColumnData: (
+    default: (
+      areas: "status" "actions" "general" "dreams",
+      columns: repeat(1, minmax(1px, 1fr)),
+    ),
+    xlarge: (
+      areas: "status status status" "actions general general" "dreams dreams dreams",
+      columns: repeat(3, minmax(1px, 1fr)),
+    ),
   );
   // Свойства
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-start;
-  align-items: center;
-  // Последующие блоки
-  & + & {
-    margin-top: 10px;
-  }
-
-  // Обертка
-  &__overlay {
-    display: block;
-    // Последующие блоки
-    & + & {
-      border-top: 1px dotted #{rgba(colors.$text, 0.6)};
+  display: grid;
+  align-items: start;
+  // Аватарка
+  &__left {
+    position: relative;
+    // Помощник
+    &-helper {
+      position: sticky;
+      bottom: 0;
     }
-  }
-  // Название поля
-  &__label {
-    text-align: right;
-    font-size: 14px;
-    font-weight: 300;
     // Адаптив
-    @include screens.adaptiveFor($labelWidths) using($width) {
-      @if ($width != 100%) {
-        width: $width;
+    @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates, containers.$cardPaddings) using($mainAvatarSize, $column, $cardPadding) {
+      // Сброс колонок
+      @if ($column == false) {
+        margin: 0 auto;
+        width: $mainAvatarSize;
+      }
+      // Помощник
+      &-helper {
+        top: vars.$headerHeight + map.get($cardPadding, y);
+        bottom: map.get($cardPadding, y);
       }
     }
   }
-  // Значение
-  &__value {
-    font-size: 17px;
-    font-weight: 400;
+  // Данные
+  &__right {
+    display: grid;
+    // Свложения
+    @each $item in $rightColumnItems {
+      > #{"." + $item} {
+        grid-area: #{$item};
+      }
+    }
+    // Адаптив
+    @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $rightColumnData) using($gap, $data) {
+      width: calc(100% + #{$gap});
+      margin-top: -$gap;
+      margin-right: -$gap;
+      grid-template-columns: map.get($data, columns);
+      grid-template-areas: map.get($data, areas);
+      // Потомки
+      @each $item in $rightColumnItems {
+        > #{"." + $item} {
+          margin-top: $gap;
+          margin-right: $gap;
+        }
+      }
+    }
   }
-
   // Адаптив
-  @include screens.adaptiveFor(containers.$cardPaddings, $labelWidths) using($gap, $width) {
-    gap: 2px #{map.get($gap, x)};
-    // Перенос на новую строку
-    @if ($width == 100%) {
-      flex-direction: column;
-      align-items: flex-start;
-      // Обертка
-      &__overlay {
-        $spacingY: 10px;
-        // Свойства
-        padding: #{$spacingY} #{vars.$userStatusPaddingX};
-        // Последующие блоки
-        & + & {
-          padding-top: $spacingY + map.get($gap, y);
-          margin-top: map.get($gap, y);
-        }
-      }
-      // Название поля
-      &__label {
-        width: auto;
-        text-align: left;
-      }
+  @include screens.adaptiveFor($mainAvatarSizes, vars.$userProfileBlocksGaps, $columnTemplates) using($mainAvatarSize, $gap, $column) {
+    grid-gap: $gap;
+    // Горизонтальные колонки
+    @if ($column == true) {
+      grid-template-columns: #{$mainAvatarSize} minmax(1px, 1fr);
     }
-    // Без переноса
+    // Сброс колонок
     @else {
-      // Обертка
-      &__overlay {
-        // Последующие блоки
-        & + & {
-          padding-top: map.get($gap, y);
-          margin-top: map.get($gap, y);
-        }
-      }
+      grid-template-columns: 1fr;
+      justify-content: center;
     }
   }
 }

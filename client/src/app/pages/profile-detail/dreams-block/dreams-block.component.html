@@ -1,0 +1,53 @@
+<ng-container [ngTemplateOutlet]="userHasDiaryAccess? userDreamsList: diaryaccessDeniedByPrivate"></ng-container>
+
+
+
+<!-- Дневник сновидений -->
+<ng-template #userDreamsList>
+  <ng-container *ngIf="!dreamsLoading">
+    <div class="overlay"
+         *ngIf="!!dreamsCount">
+      <!-- Заголовок -->
+      <app-title [type]="5"
+                 [noMargin]="true"
+                 [title]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (user | petrovich)"
+                 [subTitle]="dreamsCount | i18nPlural: dreamPlural">
+        <!-- Все сновидения -->
+        <a mat-stroked-button
+           color="basic"
+           routerLink="/diary/{{user.id}}">
+          <mat-icon>book</mat-icon>
+          Все сны
+        </a>
+        <!-- Новое сновидение -->
+        <a mat-flat-button
+           color="primary"
+           routerLink="/diary/editor"
+           *ngIf="itsMyPage">
+          <mat-icon>add</mat-icon>
+          Новый сон
+        </a>
+      </app-title>
+      <!-- Список сновидений -->
+      <app-dream-list [elmsPerLine]="3"
+                      [dreams]="dreams"
+                      sourcePlace="profile"
+                      [oneLine]="true"
+                      [showProfile]="false"></app-dream-list>
+    </div>
+  </ng-container>
+  <!-- Лоадер сновидений -->
+  <app-inform title="Загрузка сновидений"
+              subTitle="Пожалуйста подождите"
+              *ngIf="dreamsLoading"></app-inform>
+</ng-template>
+
+
+
+<!-- Недоступно настройками приватности: дневник -->
+<ng-template #diaryaccessDeniedByPrivate>
+  <app-inform [aboveIcon]="true"
+              icon="policy"
+              title="Дневник недоступен"
+              subTitle="Пользователь предпочел скрыть свой дневник сновидений настройками приватности"></app-inform>
+</ng-template>

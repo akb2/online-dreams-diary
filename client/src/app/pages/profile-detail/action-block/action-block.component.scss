@@ -1,0 +1,60 @@
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/vars";
+
+$gap: 5px;
+
+// Обертка
+.overlay {
+  display: inline-flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: $gap;
+  // Обертка
+  &__center {
+    text-align: center;
+  }
+  // Левая и правая колонка
+  &__left,
+  &__right {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: $gap;
+    // Кнопки
+    > .mat-button-base {
+      width: 100%;
+    }
+  }
+  // Левая колонка
+  &__left {
+  }
+  // Правая колонка
+  &__right {
+  }
+  // Адаптив
+  @include screens.adaptive(large, large) {
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    // Левая и правая колонка
+    &__left,
+    &__right {
+      flex-direction: row;
+      // Кнопки
+      > .mat-button-base {
+        width: auto;
+      }
+    }
+    // Левая колонка
+    &__left {
+      justify-content: flex-start;
+    }
+    // Правая колонка
+    &__right {
+      justify-content: flex-end;
+    }
+  }
+}
