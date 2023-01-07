@@ -191,6 +191,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e as Event));
     fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
     fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
+    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(() => this.onResize());
     // Пункты меню
     this.menuService.menuItems$
       .pipe(takeUntil(this.destroy$))

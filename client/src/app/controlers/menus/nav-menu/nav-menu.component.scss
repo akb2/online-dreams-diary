@@ -450,8 +450,8 @@ $breakpointMobile: small;
       }
       // Активный элемент
       &.active #{$__elm}-line {
-        background-color: map.get(colors.$mat-secondary, 500);
-        color: map.get(colors.$mat-secondary, contrast, 500);
+        background-color: map.get(colors.$mat-secondary, 700);
+        color: map.get(colors.$mat-secondary, contrast, 700);
       }
     }
     // Список

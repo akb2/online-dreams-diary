@@ -1,8 +1,8 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { SimpleObject } from "@_models/app";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, Subject, timer } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { forkJoin, fromEvent, merge, Subject } from "rxjs";
+import { takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -15,7 +15,7 @@ import { takeUntil } from "rxjs/operators";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnDestroy {
+export class ScrollComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @Input() styles: SimpleObject;
@@ -44,17 +44,21 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
 
   // Высота документа для скролла
-  get scrollHeight(): number {
-    return Math.max(
-      document.body.scrollHeight, document.documentElement.scrollHeight,
-      document.body.offsetHeight, document.documentElement.offsetHeight,
-      document.body.clientHeight, document.documentElement.clientHeight
-    ) - this.headerHeight;
+  private get scrollHeight(): number {
+    return this.getCurrentScroll.maxY - this.headerHeight;
   }
 
-  // Текущий скролл
-  private get getCurrentScroll(): number {
-    return document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0;
+  // Текущий скролл по оси Y
+  private get getCurrentScroll(): ScrollData {
+    const x: number = Math.ceil(document?.scrollingElement?.scrollLeft ?? window.scrollX ?? 0);
+    const y: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+    const maxElms: HTMLElement[] = [document.body, document.documentElement];
+    const maxKeysX: (keyof HTMLElement)[] = ["scrollWidth", "offsetWidth", "clientWidth"];
+    const maxKeysY: (keyof HTMLElement)[] = ["scrollHeight", "offsetHeight", "clientHeight"];
+    const maxX = Math.max(...maxElms.map(e => maxKeysX.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    const maxY = Math.max(...maxElms.map(e => maxKeysY.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    // Скролл
+    return { x, y, maxX, maxY };
   }
 
 
@@ -73,14 +77,15 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   ngOnInit() {
     this.onWindowScroll();
     // События
-    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e));
-    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e));
-    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
-    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
-    // Проверка изменений скролла
-    timer(0, this.checkInterval)
+    forkJoin([
+      this.screenService.elmResize(document.body).pipe(tap(() => this.onWindowScroll())),
+      fromEvent(window, "scroll").pipe(tap(() => this.onWindowScroll())),
+      fromEvent(window, "resize").pipe(tap(() => this.onWindowScroll())),
+      fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
+      fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
+    ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onWindowScroll());
+      .subscribe();
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
@@ -88,11 +93,6 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
-  }
-
-  ngAfterViewChecked() {
-    this.onWindowScroll();
-    this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy() {
@@ -105,14 +105,14 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
 
 
   // Скролл страницы
-  onWindowScroll(event?: Event): void {
+  onWindowScroll(): void {
     this.scrollActive = window.innerHeight < this.scrollHeight + this.headerHeight;
     // Отрисовка позиций скролла
     if (this.scrollActive && !this.isMobile) {
-      const trackHeight: number = this.track?.nativeElement.getBoundingClientRect().height || 0;
-      const screenHeight: number = this.layout?.nativeElement.getBoundingClientRect().height || 0;
+      const trackHeight: number = this.track?.nativeElement.getBoundingClientRect().height ?? 0;
+      const screenHeight: number = this.layout?.nativeElement.getBoundingClientRect().height ?? 0;
       this.sliderHeight = (screenHeight / this.scrollHeight) * trackHeight;
-      this.sliderPosition = (this.getCurrentScroll / this.scrollHeight) * trackHeight;
+      this.sliderPosition = (this.getCurrentScroll.y / this.scrollHeight) * trackHeight;
     }
     // Обновить
     this.changeDetectorRef.detectChanges();
@@ -138,7 +138,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
   onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
     if (
       window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height ||
-      (this.getCurrentScroll == 0 && direction > 0)
+      (this.getCurrentScroll.y == 0 && direction > 0)
     ) {
       // Установить индикатор нажатия
       if (setIndicator) {
@@ -146,7 +146,7 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
       }
       // Прокрутить
       if (this.buttonMousePress) {
-        window.scroll(0, this.getCurrentScroll + (this.scrollStep * direction));
+        window.scroll(0, this.getCurrentScroll.y + (this.scrollStep * direction));
         setTimeout(() => this.onButtonMouseDown(direction), 80);
       }
     }
@@ -157,4 +157,16 @@ export class ScrollComponent implements OnInit, AfterViewChecked, OnChanges, OnD
     this.sliderMousePress = false;
     this.buttonMousePress = false;
   }
+}
+
+
+
+
+
+// Интерфейс данных скролла
+interface ScrollData {
+  x: number;
+  y: number;
+  maxX: number;
+  maxY: number;
 }
