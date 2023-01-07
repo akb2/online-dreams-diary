@@ -30,6 +30,7 @@ export class DreamListComponent implements OnInit, OnChanges {
   @Input() sourcePlace: string = "";
   @Input() oneLine: boolean = false;
   @Input() showProfile: boolean = true;
+  @Input() elmsPerLine: number = 4;
 
   @Output() dreamDelete: EventEmitter<void> = new EventEmitter<void>();
 

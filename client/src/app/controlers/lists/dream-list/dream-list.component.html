@@ -1,6 +1,7 @@
 <!-- Список сновидений -->
 <div class="list"
      [ngClass]="{ oneLine }"
+     [attr.items]="elmsPerLine"
      *ngIf="dreams?.length > 0">
   <!-- Блок сновидения -->
   <div class="list__item dream"

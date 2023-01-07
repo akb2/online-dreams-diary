@@ -3,35 +3,63 @@
 @use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/mixins";
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/vars";
+
+:host {
+  display: block;
+}
 
 // Список
 .list {
-  $counts: (
-    xsmall: 1,
-    small: 1,
-    middle: 2,
-    large: 3,
-    xlarge: 4,
+  $__elm: &;
+  $itemCounts: (
+    default: (
+      default: 1,
+      xlarge: 4,
+      large: 3,
+      middle: 2,
+    ),
+    3: (
+      default: 1,
+      xlarge: 3,
+      large: 2,
+    ),
+    2: (
+      default: 1,
+      xlarge: 2,
+    ),
+    1: (
+      default: 1,
+    ),
   );
-  $gapX: 30px;
-  $gapY: 30px;
   // Свойства
   width: 100%;
   display: flex;
   flex-flow: row wrap;
   justify-content: flex-start;
   align-items: stretch;
-  gap: #{$gapY} #{$gapX};
-  // Адаптив сетки
-  @include screens.adaptiveFor($counts) using($count) {
+  // Цикл по элементам
+  @each $itemCount, $counts in $itemCounts {
+    $attribute: "";
+    // Добавить аттрибут счетчика
+    @if ($itemCount!= "default") {
+      $attribute: "[items='" + $itemCount + "']";
+    }
     // Элемент
-    &__item {
-      width: calc((100% - #{$gapX * ($count - 1)}) / #{$count});
-      // Скрыть в режиме одной линии
-      .oneLine > &:nth-child(#{$count}) ~ & {
-        display: none;
+    &#{$attribute} > #{$__elm}__item {
+      // Адаптив сетки
+      @include screens.adaptiveFor($counts, vars.$userProfileBlocksGaps) using($count, $gap) {
+        width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
+        // Скрыть в режиме одной линии
+        .oneLine > &:nth-child(#{$count}) ~ & {
+          display: none;
+        }
       }
     }
+  }
+  // Адаптив сетки
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    gap: $gap;
   }
 }
 
