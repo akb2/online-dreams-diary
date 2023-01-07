@@ -1,4 +1,5 @@
-<div class="user-data__overlay">
+<div class="user-data__overlay"
+     *ngIf="!!user">
   <!-- Общие данные -->
   <app-card>
     <div content>
@@ -23,6 +24,14 @@
       <!-- Дата регистрации -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
                     [ngTemplateOutletContext]="{ $implicit: 'Дата регистрации', value: user.registerDate | date: 'd MMMM y' }"></ng-container>
+      <!-- Последний визит: онлайн -->
+      <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                    [ngTemplateOutletContext]="{ $implicit: 'Последний визит', value: 'Сейчас на сайте' }"
+                    *ngIf="user.online"></ng-container>
+      <!-- Последний визит: дата -->
+      <ng-container [ngTemplateOutlet]="userGeneralDataField"
+                    [ngTemplateOutletContext]="{ $implicit: 'Последний визит', value: user.lastActionDate | date: 'd MMMM y - hh:mm' }"
+                    *ngIf="!user.online"></ng-container>
     </div>
   </app-card>
 </div>
