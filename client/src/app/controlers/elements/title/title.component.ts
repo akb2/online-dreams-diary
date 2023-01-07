@@ -17,6 +17,7 @@ export class TitleComponent implements AfterViewChecked {
   @Input() icon: string;
   @Input() title: string = "Заголовок";
   @Input() subTitle: string;
+  @Input() noMargin: boolean = false;
 
   @ViewChild("actionsPanel") private actionsPanel: ElementRef;
 
@@ -29,6 +30,7 @@ export class TitleComponent implements AfterViewChecked {
   // Класс поля
   get getClass(): CustomObject<boolean> {
     return {
+      "no-margin": this.noMargin,
       image: !!this.icon,
       subtitle: !!this.subTitle,
       actions: this.showActionsPanel
