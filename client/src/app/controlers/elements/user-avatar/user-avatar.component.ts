@@ -137,7 +137,9 @@ export class UserAvatarComponent implements OnChanges, OnDestroy {
         title: "Обрезка аватарки",
         image: this.user.avatars.full,
         coords: this.user.avatarCropData.crop,
-        minimal: [400, 400]
+        minimal: [400, 400],
+        verticalAspectRatio: [1, 2],
+        horizontalAspectRatio: [4, 3]
       };
       // Для обрезки основной фотки
       if (type === "middle") {
@@ -146,9 +148,13 @@ export class UserAvatarComponent implements OnChanges, OnDestroy {
         data.coords = this.user.avatarCropData.middle;
         data.aspectRatio = [1, 1];
         data.minimal = [180, 180];
+        // Удалить параметры
+        data.verticalAspectRatio = null;
+        data.horizontalAspectRatio = null;
       }
       // Диалог
       const dialog = PopupCropImageComponent.open(this.matDialog, data);
+      // Открыть диалог
       dialog.afterClosed()
         .pipe(takeUntil(this.destroyed$))
         .subscribe((position: UserAvatarCropDataElement | null) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));

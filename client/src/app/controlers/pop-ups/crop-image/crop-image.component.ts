@@ -6,6 +6,7 @@ import { ScreenService } from "@_services/screen.service";
 import { forkJoin, fromEvent, mergeMap, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 import { SimpleObject } from "@_models/app";
 import { ScreenKeys } from "@_models/screen";
+import { CheckInRange } from "@_helpers/math";
 
 
 
@@ -205,118 +206,54 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     const moveY: number = (pageY - this.mouseMoveStart[1]) / this.sizeKoof;
     // Перемещение всего блока
     if (this.moveDirection.includes("move")) {
-      let width: number = this.position.x2 - this.position.x1;
-      let height: number = this.position.y2 - this.position.y1;
-      width = width > this.imageWidth ? this.imageWidth : width;
-      height = height > this.imageHeight ? this.imageHeight : height;
-      // Левый край
-      this.position.x1 = this.data.coords.startX + moveX;
-      this.position.x1 = this.position.x1 < 0 ? 0 : this.position.x1;
-      this.position.x1 = this.position.x1 + width > this.imageWidth ? this.imageWidth - width : this.position.x1;
-      // Правый край
-      this.position.x2 = this.data.coords.startX + this.data.coords.width + moveX;
-      this.position.x2 = this.position.x2 > this.imageWidth ? this.imageWidth : this.position.x2;
-      this.position.x2 = this.position.x2 < width ? width : this.position.x2;
-      // Верхний край
-      this.position.y1 = this.data.coords.startY + moveY;
-      this.position.y1 = this.position.y1 < 0 ? 0 : this.position.y1;
-      this.position.y1 = this.position.y1 + height > this.imageHeight ? this.imageHeight - height : this.position.y1;
-      // Нижний край
-      this.position.y2 = this.data.coords.startY + this.data.coords.height + moveY;
-      this.position.y2 = this.position.y2 > this.imageHeight ? this.imageHeight : this.position.y2;
-      this.position.y2 = this.position.y2 < height ? height : this.position.y2;
+      const width: number = CheckInRange(this.position.x2 - this.position.x1, this.imageWidth);
+      const height: number = CheckInRange(this.position.y2 - this.position.y1, this.imageHeight);
+      // Границы краев выделения
+      this.position.x1 = CheckInRange(this.data.coords.startX + moveX, this.imageWidth - width);
+      this.position.x2 = CheckInRange(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, width);
+      this.position.y1 = CheckInRange(this.data.coords.startY + moveY, this.imageHeight - height);
+      this.position.y2 = CheckInRange(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, height);
     }
     // Перемещение сторон
     else {
       // Передвижение влево
       if (this.moveDirection.includes("left")) {
-        this.position.x1 = this.data.coords.startX + moveX;
-        this.position.x1 = this.position.x1 < 0 ? 0 : this.position.x1;
-        this.position.x1 = this.position.x1 > this.position.x2 - this.data.minimal[0] ? this.position.x2 - this.data.minimal[0] : this.position.x1;
-        // Корректировка правого края
-        this.position.x2 = this.position.x2 > this.imageWidth ? this.imageWidth : this.position.x2;
+        this.position.x1 = CheckInRange(this.data.coords.startX + moveX, this.position.x2 - this.data.minimal[0]);
+        this.position.x2 = CheckInRange(this.position.x2, this.imageWidth);
       }
       // Передвижение вправо
       else if (this.moveDirection.includes("right")) {
-        this.position.x2 = this.data.coords.startX + this.data.coords.width + moveX;
-        this.position.x2 = this.position.x2 > this.imageWidth ? this.imageWidth : this.position.x2;
-        this.position.x2 = this.position.x2 < this.position.x1 + this.data.minimal[0] ? this.position.x1 + this.data.minimal[0] : this.position.x2;
+        this.position.x2 = CheckInRange(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, this.position.x1 + this.data.minimal[0]);
       }
       // Передвижение вверх
       if (this.moveDirection.includes("top")) {
-        this.position.y1 = this.data.coords.startY + moveY;
-        this.position.y1 = this.position.y1 < 0 ? 0 : this.position.y1;
-        this.position.y1 = this.position.y1 > this.position.y2 - this.data.minimal[1] ? this.position.y2 - this.data.minimal[1] : this.position.y1;
-        // Корректировка нижнего края
-        this.position.y2 = this.position.y2 > this.imageHeight ? this.imageHeight : this.position.y2;
+        this.position.y1 = CheckInRange(this.data.coords.startY + moveY, this.position.y2 - this.data.minimal[1]);
+        this.position.y2 = CheckInRange(this.position.y2, this.imageHeight);
       }
       // Передвижение вниз
       else if (this.moveDirection.includes("bottom")) {
-        this.position.y2 = this.data.coords.startY + this.data.coords.height + moveY;
-        this.position.y2 = this.position.y2 > this.imageHeight ? this.imageHeight : this.position.y2;
-        this.position.y2 = this.position.y2 < this.position.y1 + this.data.minimal[1] ? this.position.y1 + this.data.minimal[1] : this.position.y2;
+        this.position.y2 = CheckInRange(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, this.position.y1 + this.data.minimal[1]);
+      }
+      // Корректировка для предела соотношений сторон по вертикали
+      if (!!this.data?.verticalAspectRatio || !!this.data?.horizontalAspectRatio) {
+        // Корректировка в пределах соотношения сторон
+        if (!!this.data?.verticalAspectRatio && !!this.data?.horizontalAspectRatio) {
+          this.rangeAspectCorrect(this.data.verticalAspectRatio, this.data.horizontalAspectRatio);
+        }
+        // Корректировка в строгом режиме
+        else {
+          this.strictAspectCorrect(!!this.data?.verticalAspectRatio ? this.data.verticalAspectRatio : this.data.horizontalAspectRatio);
+        }
       }
       // Корректировка для строгозаданного значения
-      if (this.data.aspectRatio) {
-        let width: number = this.position.x2 - this.position.x1;
-        let height: number = this.position.y2 - this.position.y1;
-        width = width > this.imageWidth ? this.imageWidth : width;
-        height = height > this.imageHeight ? this.imageHeight : height;
-        // Передвижение по горизонтали
-        if (this.moveDirection.includes("left") || this.moveDirection.includes("right")) {
-          this.position.y2 = this.position.y1 + ((width / this.data.aspectRatio[0]) * this.data.aspectRatio[1]);
-          // Корректировка по минимальным размерам
-          if (Math.abs(this.position.y2 - this.position.y1) < this.data.minimal[1]) {
-            this.position.y2 = this.position.y1 + this.data.minimal[1];
-          }
-          // Корректировка перепендикулярной оси
-          if (this.position.y2 > this.imageHeight) {
-            this.position.y1 = this.position.y1 - this.position.y2 + this.imageHeight;
-            this.position.y1 = this.position.y1 < 0 ? 0 : this.position.y1;
-            this.position.y2 = this.imageHeight;
-          }
-          height = Math.abs(this.position.y2 - this.position.y1);
-          width = (height / this.data.aspectRatio[1]) * this.data.aspectRatio[0];
-          // Корректировка левой стороны
-          if (this.moveDirection.includes("left")) {
-            this.position.x1 = Math.abs(this.position.x1 - this.position.x2) != width ? this.position.x2 - width : this.position.x1;
-          }
-          // Корректировка правой стороны
-          else {
-            this.position.x2 = Math.abs(this.position.x1 - this.position.x2) != width ? this.position.x1 + width : this.position.x2;
-          }
-        }
-        // Передвижение по вертикали
-        if (this.moveDirection.includes("top") || this.moveDirection.includes("bottom")) {
-          this.position.x2 = this.position.x1 + ((height / this.data.aspectRatio[1]) * this.data.aspectRatio[0]);
-          // Корректировка по минимальным размерам
-          if (Math.abs(this.position.x2 - this.position.x1) < this.data.minimal[0]) {
-            this.position.x2 = this.position.x1 + this.data.minimal[0];
-          }
-          // Корректировка перепендикулярной оси
-          if (this.position.x2 > this.imageWidth) {
-            this.position.x1 = this.position.x1 - this.position.x2 + this.imageWidth;
-            this.position.x1 = this.position.x1 < 0 ? 0 : this.position.x1;
-            this.position.x2 = this.imageWidth;
-          }
-          width = this.position.x2 - this.position.x1;
-          height = (width / this.data.aspectRatio[0]) * this.data.aspectRatio[1];
-          // Корректировка верхней стороны
-          if (this.moveDirection.includes("top")) {
-            this.position.y1 = Math.abs(this.position.y1 - this.position.y2) != height ? this.position.y2 - height : this.position.y1;
-          }
-          // Корректировка нижней стороны
-          else {
-            this.position.y2 = Math.abs(this.position.y1 - this.position.y2) != height ? this.position.y1 + height : this.position.y2;
-          }
-        }
+      if (!!this.data.aspectRatio) {
+        this.strictAspectCorrect(this.data.aspectRatio);
       }
     }
   }
 
   // Преобразовать входящие данные в локальные
   private cropSizesToCoords(): void {
-    // Определить координаты
     const x1: number = this.data.coords?.startX || 0;
     const x2: number = x1 + (this.data.coords?.width || this.imageWidth);
     const y1: number = this.data.coords?.startY || 0;
@@ -356,6 +293,165 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     }
   }
 
+  // Корректировка в строгом соответсвии соотношении сторон
+  private strictAspectCorrect([aspectX, aspectY]: [number, number]): void {
+    let width: number = CheckInRange(this.position.x2 - this.position.x1, this.imageWidth);
+    let height: number = CheckInRange(this.position.y2 - this.position.y1, this.imageHeight);
+    // Передвижение по горизонтали
+    if (this.moveDirection.includes("left") || this.moveDirection.includes("right")) {
+      this.position.y2 = this.position.y1 + ((width / aspectX) * aspectY);
+      // Корректировка высоты
+      if (Math.abs(this.position.y2 - this.position.y1) < this.data.minimal[1]) {
+        this.position.y2 = this.position.y1 + this.data.minimal[1];
+      }
+      // Корректировка перепендикулярной оси
+      if (this.position.y2 > this.imageHeight) {
+        this.position.y1 = CheckInRange(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - height);
+        this.position.y2 = this.imageHeight;
+      }
+      // Обновить высоту и ширину
+      height = Math.abs(this.position.y2 - this.position.y1);
+      width = (height / aspectY) * aspectX;
+      // Текущая ширина
+      const currentWidth: number = Math.abs(this.position.x1 - this.position.x2);
+      // Корректировка левой стороны
+      if (this.moveDirection.includes("left") && currentWidth != width) {
+        this.position.x1 = this.position.x2 - width;
+      }
+      // Корректировка правой стороны
+      else if (this.moveDirection.includes("right") && currentWidth != width) {
+        this.position.x2 = this.position.x1 + width;
+      }
+    }
+    // Передвижение по вертикали
+    if (this.moveDirection.includes("top") || this.moveDirection.includes("bottom")) {
+      this.position.x2 = this.position.x1 + ((height / aspectY) * aspectX);
+      // Корректировка ширины
+      if (Math.abs(this.position.x2 - this.position.x1) < this.data.minimal[0]) {
+        this.position.x2 = this.position.x1 + this.data.minimal[0];
+      }
+      // Корректировка перепендикулярной оси
+      if (this.position.x2 > this.imageWidth) {
+        this.position.x1 = CheckInRange(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - width);
+        this.position.x2 = this.imageWidth;
+      }
+      // Обновить высоту и ширину
+      width = this.position.x2 - this.position.x1;
+      height = (width / aspectX) * aspectY;
+      // Текущая высота
+      const currentHeight: number = Math.abs(this.position.y1 - this.position.y2);
+      // Корректировка верхней стороны
+      if (this.moveDirection.includes("top") && currentHeight != height) {
+        this.position.y1 = this.position.y2 - height;
+      }
+      // Корректировка нижней стороны
+      else if (this.moveDirection.includes("bottom") && currentHeight != height) {
+        this.position.y2 = this.position.y1 + height;
+      }
+    }
+  }
+
+  // Корректировка в пределах соотношения сторон
+  private rangeAspectCorrect([vAspectX, vAspectY]: [number, number], [hAspectX, hAspectY]: [number, number]): void {
+    let width: number = 0;
+    let height: number = 0;
+    let minWidth: number = 0;
+    let maxWidth: number = 0;
+    let minHeight: number = 0;
+    let maxHeight: number = 0;
+    let currentWidth: number = 0;
+    let currentHeight: number = 0;
+    // Функция обновления параметров
+    const updateData = () => {
+      width = CheckInRange(Math.abs(this.position.x2 - this.position.x1), this.imageWidth);
+      height = CheckInRange(Math.abs(this.position.y2 - this.position.y1), this.imageHeight);
+      minWidth = (height / vAspectY) * vAspectX;
+      maxWidth = (height / hAspectY) * hAspectX;
+      minHeight = (width / hAspectX) * hAspectY;
+      maxHeight = (width / vAspectX) * vAspectY;
+      currentWidth = Math.abs(this.position.x1 - this.position.x2);
+      currentHeight = Math.abs(this.position.y1 - this.position.y2);
+    };
+    // Передвижение по горизонтали
+    if (this.moveDirection.includes("left") || this.moveDirection.includes("right")) {
+      updateData();
+      // Корректировка перпендикулярной оси по максимальной ширине
+      if (currentWidth > maxWidth) {
+        const newHeight: number = ((width / hAspectX) * hAspectY);
+        // Нижний край
+        this.position.y2 = this.position.y1 + newHeight;
+        // Корректировка за пределами
+        if (this.position.y2 > this.imageHeight) {
+          this.position.y1 = CheckInRange(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - newHeight);
+          this.position.y2 = this.imageHeight;
+        }
+        // Обновить данные
+        updateData();
+      }
+      // Корректировка сторон по максимальной ширине
+      if (currentWidth > maxWidth) {
+        // Корректировка левой стороны
+        if (this.moveDirection.includes("left")) {
+          this.position.x1 = this.position.x2 - maxWidth;
+        }
+        // Корректировка правой стороны
+        else if (this.moveDirection.includes("right")) {
+          this.position.x2 = this.position.x1 + maxWidth;
+        }
+      }
+      // Корректировка сторон по минимальной ширине
+      if (currentWidth < minWidth) {
+        // Корректировка левой стороны
+        if (this.moveDirection.includes("left")) {
+          this.position.x1 = this.position.x2 - minWidth;
+        }
+        // Корректировка правой стороны
+        else if (this.moveDirection.includes("right")) {
+          this.position.x2 = this.position.x1 + minWidth;
+        }
+      }
+    }
+    // Передвижение по вертикали
+    if (this.moveDirection.includes("top") || this.moveDirection.includes("bottom")) {
+      updateData();
+      // Корректировка перпендикулярной оси по максимальной ширине
+      if (currentHeight > maxHeight) {
+        const newWidth: number = ((height / vAspectY) * vAspectX);
+        // Нижний край
+        this.position.x2 = this.position.x1 + newWidth;
+        // Корректировка за пределами
+        if (this.position.x2 > this.imageWidth) {
+          this.position.x1 = CheckInRange(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - newWidth);
+          this.position.x2 = this.imageWidth;
+        }
+        // Обновить данные
+        updateData();
+      }
+      // Корректировка сторон по максимальной высоте
+      if (currentHeight > maxHeight) {
+        // Корректировка верхней стороны
+        if (this.moveDirection.includes("top")) {
+          this.position.y1 = this.position.y2 - maxHeight;
+        }
+        // Корректировка нижней стороны
+        else if (this.moveDirection.includes("bottom")) {
+          this.position.y2 = this.position.y1 + maxHeight;
+        }
+      }
+      // Корректировка сторон по минимальной высоте
+      if (currentHeight < minHeight) {
+        // Корректировка верхней стороны
+        if (this.moveDirection.includes("top")) {
+          this.position.y1 = this.position.y2 - minHeight;
+        }
+        // Корректировка нижней стороны
+        else if (this.moveDirection.includes("bottom")) {
+          this.position.y2 = this.position.y1 + minHeight;
+        }
+      }
+    }
+  }
+
 
 
 
@@ -381,6 +477,8 @@ export interface PopupCropImageData {
   image: string;
   coords: UserAvatarCropDataElement;
   aspectRatio?: [number, number];
+  verticalAspectRatio?: [number, number];
+  horizontalAspectRatio?: [number, number];
   minimal: [number, number];
 }
 
