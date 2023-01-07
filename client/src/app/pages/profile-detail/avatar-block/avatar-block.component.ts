@@ -11,13 +11,13 @@ import { SnackbarService } from "@_services/snackbar.service";
 import { Subject, takeUntil } from "rxjs";
 
 @Component({
-  selector: "app-user-avatar",
-  templateUrl: "./user-avatar.component.html",
-  styleUrls: ["./user-avatar.component.scss"],
+  selector: "app-avatar-block",
+  templateUrl: "./avatar-block.component.html",
+  styleUrls: ["./avatar-block.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserAvatarComponent implements OnChanges, OnDestroy {
+export class AvatarBlockComponent implements OnChanges, OnDestroy {
 
 
   @Input() user: User;

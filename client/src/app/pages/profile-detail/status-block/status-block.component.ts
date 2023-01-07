@@ -11,13 +11,13 @@ import { delay, filter, fromEvent, map, merge, mergeMap, skipWhile, Subject, tak
 
 
 @Component({
-  selector: "app-user-status",
-  templateUrl: "user-status.component.html",
-  styleUrls: ["user-status.component.scss"],
+  selector: "app-status-block",
+  templateUrl: "status-block.component.html",
+  styleUrls: ["status-block.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserStatusComponent implements OnChanges, OnInit, AfterContentInit, OnDestroy {
+export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit, OnDestroy {
 
 
   @Input() user: User;

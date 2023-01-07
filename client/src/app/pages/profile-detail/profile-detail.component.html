@@ -25,16 +25,19 @@
           <div class="information with-ava">
             <!-- Аватарка -->
             <div class="information__avatar">
-              <app-user-avatar [user]="visitedUser"
-                               [itsMyPage]="itsMyPage"></app-user-avatar>
+              <app-avatar-block [user]="visitedUser"
+                                [itsMyPage]="itsMyPage"></app-avatar-block>
             </div>
             <!-- Сведения -->
             <div class="information__data">
               <!-- Статус пользователя -->
               <div class="information__data-item"
                    *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
-                <app-user-status [user]="visitedUser"
-                                 [itsMyPage]="itsMyPage"></app-user-status>
+                <app-status-block [user]="visitedUser"
+                                  [itsMyPage]="itsMyPage"></app-status-block>
+              </div>
+              <!-- Блок действий -->
+              <div class="information__data-item">
               </div>
               <!-- Остальные сведения -->
               <div class="information__data-item">
