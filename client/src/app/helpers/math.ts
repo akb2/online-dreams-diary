@@ -12,6 +12,14 @@ export const ParseInt = (value: any, defaultValue: number = 0) => {
   return num;
 };
 
+// Проверить число в пределах и вернуть новое значение
+export const CheckInRange = (value: number, max: number, min: number = 0) => {
+  value = value < min ? min : value;
+  value = value > max ? max : value;
+  // Вернуть значение
+  return value;
+};
+
 // Проверка числа на четность
 export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
 
