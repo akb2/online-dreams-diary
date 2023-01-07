@@ -20,7 +20,6 @@ $columnTemplates: (
   $textFontSize: 15px;
   $textLines: 4;
   $textLineHeight: 22px;
-  $borderRadius: $textPaddingY + math.div($textLineHeight, 2);
   $overlayGap: 15px;
   // Свойства
   position: relative;
@@ -36,7 +35,7 @@ $columnTemplates: (
   &::before {
     @include mixins.inset;
     // Свойства
-    border-radius: $borderRadius;
+    border-radius: containers.$cardBorderRadius;
     box-shadow: containers.$cardBoxShadow;
     background-color: colors.$card;
     z-index: 0;
@@ -68,6 +67,7 @@ $columnTemplates: (
     margin: #{$textPaddingY} #{$textPaddingX};
     z-index: 2;
     color: colors.$title;
+    letter-spacing: 0;
     // Пустой статус
     &.default {
       color: colors.$text;
@@ -127,7 +127,7 @@ $columnTemplates: (
     &::after {
       @if ($column==false) {
         top: $arrowSize * -2;
-        left: $borderRadius;
+        left: containers.$cardBorderRadius;
         border-bottom-color: colors.$card;
         border-right-color: transparent;
       }
