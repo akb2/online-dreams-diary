@@ -53,7 +53,7 @@
               <ng-container *ngIf="!!dreamsCount">
                 <!-- Заголовок -->
                 <app-title [type]="5"
-                           [title]="itsMyPage? 'Мои сновидения': 'Сновидения пользователя'"
+                           [title]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (visitedUser | petrovich)"
                            [subTitle]="dreamsCount | i18nPlural: dreamPlural">
                   <!-- Все сновидения -->
                   <a mat-stroked-button
@@ -81,7 +81,7 @@
               <app-inform icon="close"
                           [aboveIcon]="true"
                           title="Нет сновидений"
-                          [subTitle]="itsMyPage? 'Вы еще не записали ни одного сновидения': 'ПОльзователь еще не записал ни одного сновидения'"
+                          [subTitle]="itsMyPage? 'Вы еще не записали ни одного сновидения': (visitedUser.name) + ' еще не записал' + (userIsMale? '': 'а') + ' ни одного сновидения'"
                           *ngIf="!dreamsCount"></app-inform>
             </ng-container>
             <!-- Лоадер сновидений -->

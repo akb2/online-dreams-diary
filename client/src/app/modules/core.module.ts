@@ -4,6 +4,7 @@ import { RouterModule } from "@angular/router";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import "@angular/common/locales/global/ru";
+import { PetrovichPipe } from "@_pipes/petrovich.pipe";
 
 
 
@@ -19,6 +20,7 @@ const directives = [
 
 // Пайпы
 const pipes = [
+  PetrovichPipe
 ];
 
 // Модули

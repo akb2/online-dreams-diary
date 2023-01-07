@@ -12,6 +12,7 @@ import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { TitleModule } from '@_controlers/title/title.module';
 import { UserAvatarModule } from '@_controlers/user-avatar/user-avatar.module';
 import { UserStatusModule } from '@_controlers/user-status/user-status.module';
+import { CoreModule } from '@_modules/core.module';
 import { ProfileDetailRoutingModule } from '@_pages/profile-detail/profile-detail-routing.module';
 import { ProfileDetailComponent } from '@_pages/profile-detail/profile-detail.component';
 
@@ -36,7 +37,8 @@ import { ProfileDetailComponent } from '@_pages/profile-detail/profile-detail.co
     MatTooltipModule,
     MatMenuModule,
     UserAvatarModule,
-    UserStatusModule
+    UserStatusModule,
+    CoreModule
   ]
 })
 

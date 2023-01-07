@@ -88,6 +88,11 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     return this.visitedUser?.sex === UserSex.Male ? "Мужской" : "Женский";
   }
 
+  // Проверка пола
+  get userIsMale(): boolean {
+    return this.visitedUser.sex === UserSex.Male;
+  }
+
 
 
 

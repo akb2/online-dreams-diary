@@ -28,6 +28,7 @@
     "@ckeditor/ckeditor5-angular": "^2.0.2",
     "@ckeditor/ckeditor5-build-classic": "^31.1.0",
     "ng-recaptcha": "^9.0.0",
+    "petrovich": "^0.2.1",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
