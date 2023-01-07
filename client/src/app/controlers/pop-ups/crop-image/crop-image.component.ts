@@ -385,9 +385,17 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
           this.position.y1 = CheckInRange(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - newHeight);
           this.position.y2 = this.imageHeight;
         }
-        // Обновить данные
-        updateData();
       }
+      // Обновить данные
+      updateData();
+      // Корректировка перпендикулярной оси по минимальной ширине
+      if (currentWidth < minWidth) {
+        const newHeight: number = Math.min(height, ((width / vAspectX) * vAspectY));
+        // Нижний край
+        this.position.y2 = CheckInRange(this.position.y1 + newHeight, this.imageHeight, this.position.y1 + this.data.minimal[1]);
+      }
+      // Обновить данные
+      updateData();
       // Корректировка сторон по максимальной ширине
       if (currentWidth > maxWidth) {
         // Корректировка левой стороны
@@ -399,6 +407,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
           this.position.x2 = this.position.x1 + maxWidth;
         }
       }
+      // Обновить данные
+      updateData();
       // Корректировка сторон по минимальной ширине
       if (currentWidth < minWidth) {
         // Корректировка левой стороны
@@ -424,9 +434,17 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
           this.position.x1 = CheckInRange(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - newWidth);
           this.position.x2 = this.imageWidth;
         }
-        // Обновить данные
-        updateData();
       }
+      // Обновить данные
+      updateData();
+      // Корректировка перпендикулярной оси по минимальной высоте
+      if (currentHeight < minHeight) {
+        const newWidth: number = Math.min(width, ((height / hAspectY) * hAspectX));
+        // Правый край
+        this.position.x2 = CheckInRange(this.position.x1 + newWidth, this.imageWidth, this.position.x1 + this.data.minimal[0]);
+      }
+      // Обновить данные
+      updateData();
       // Корректировка сторон по максимальной высоте
       if (currentHeight > maxHeight) {
         // Корректировка верхней стороны
@@ -438,6 +456,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
           this.position.y2 = this.position.y1 + maxHeight;
         }
       }
+      // Обновить данные
+      updateData();
       // Корректировка сторон по минимальной высоте
       if (currentHeight < minHeight) {
         // Корректировка верхней стороны
