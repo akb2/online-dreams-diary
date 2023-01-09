@@ -28,6 +28,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   pageData: RouteData;
 
+  isAutorizedUser: boolean = false;
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
   private userReady: boolean = false;
@@ -47,7 +48,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   private visitedUserId: number = -1;
 
-  private user: User;
+  user: User;
   visitedUser: User;
 
   navMenuTypes: typeof NavMenuType = NavMenuType;
@@ -156,6 +157,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;
+        this.isAutorizedUser = !!this.user;
         this.userReady = true;
         this.changeDetectorRef.detectChanges();
       });

@@ -44,7 +44,8 @@
                 <app-general-info-block [user]="visitedUser"></app-general-info-block>
               </div>
               <!-- Блок действий -->
-              <div class="actions">
+              <div class="actions"
+                   *ngIf="isAutorizedUser">
                 <app-action-block [user]="visitedUser"
                                   [itsMyPage]="itsMyPage"></app-action-block>
               </div>
