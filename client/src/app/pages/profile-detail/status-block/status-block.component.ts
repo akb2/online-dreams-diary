@@ -85,7 +85,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
   }
 
   ngOnChanges(): void {
-    this.statusForm.get("status").setValue(this.user.pageStatus);
+    this.statusForm.get("status").setValue(this.user?.pageStatus ?? null);
   }
 
   ngOnInit(): void {

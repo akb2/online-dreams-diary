@@ -1,6 +1,6 @@
 <div #statusOverlay
      class="status__overlay"
-     *ngIf="!!user.pageStatus || itsMyPage">
+     *ngIf="!!user?.pageStatus?.length || itsMyPage">
   <ng-container [ngTemplateOutlet]="statusText"></ng-container>
   <!-- Редактирование статуса -->
   <ng-container [ngTemplateOutlet]="statusEdit"
