@@ -7,8 +7,7 @@ CREATE TABLE `friends`
     `out_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `in_date` TIMESTAMP NULL,
     PRIMARY KEY (`id`),
-    INDEX `out_user_id` (`out_user_id`),
-    INDEX `in_user_id` (`in_user_id`),
+    UNIQUE `users` (`out_user_id`, `in_user_id`),
     INDEX `out_date` (`out_date`),
     INDEX `in_date` (`in_date`)
   )
