@@ -146,3 +146,52 @@
     }
   }
 }
+
+// Лоадер
+@mixin loader($size: 24px, $line: 2px, $speed: 1s, $color: map.get(colors.$mat-primary, 500)) {
+  $lineB: math.round($line * 0.7);
+  $spacing: math.clamp(2px, $lineB, 5px);
+  $sizeB: $size - (($line + $spacing) * 2);
+  $speedB: $speed * 0.7;
+  // Свойства
+  position: relative;
+  // Полосы
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    display: block;
+    border: 0 solid transparent;
+    border-top-color: $color;
+    border-radius: 50%;
+  }
+  // Внешняя полоса
+  &::before {
+    @include inset(calc(50% - #{math.div($size, 2)}));
+    // Свойства
+    border-width: $line;
+    animation: mixinsLoaderAnimation #{$speed} linear infinite;
+  }
+  // Внутренняя полоса
+  &::after {
+    @include inset(calc(50% - #{math.div($sizeB, 2)}));
+    // Свойства
+    border-width: $lineB;
+    opacity: 0.8;
+    animation: mixinsLoaderAnimation #{$speedB} linear infinite;
+  }
+  // Правила анимации
+  @keyframes mixinsLoaderAnimation {
+    0% {
+      transform: rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      transform: rotate(360deg);
+      opacity: 1;
+    }
+  }
+}
