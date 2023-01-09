@@ -204,6 +204,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         takeWhile(() => this.visitedUserId === -1, true),
         skipWhile(() => this.visitedUserId === -1),
+        mergeMap(() => this.accountService.user$()),
         mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId, ["8100"])),
         mergeMap(
           () => this.accountService.user$(this.visitedUserId, !this.itsMyPage),
