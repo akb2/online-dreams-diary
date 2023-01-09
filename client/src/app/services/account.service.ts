@@ -35,8 +35,8 @@ export class AccountService implements OnDestroy {
   private syncUser: [number, number] = [-1, 0];
   private userSubscritionCounter: [number, number][] = [];
 
-  readonly users: BehaviorSubject<User[]> = new BehaviorSubject([]);
-  readonly destroy$: Subject<void> = new Subject<void>();
+  private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -45,12 +45,6 @@ export class AccountService implements OnDestroy {
   // Проверить авторизацию
   get checkAuth(): boolean {
     return this.tokenService.checkAuth;
-  }
-
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
   }
 
   // Настройки приватности по умолчанию
@@ -91,7 +85,7 @@ export class AccountService implements OnDestroy {
     let counter: number = this.updateUserCounter(userId, 1);
     // Подписки
     const observable: Observable<User> = this.users.asObservable().pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
@@ -105,7 +99,7 @@ export class AccountService implements OnDestroy {
     );
     const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
     const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId) : of(null))).pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroyed$),
       mergeMap(() => observable),
       tap(() => {
         const [id, i] = this.syncUser;
@@ -128,7 +122,7 @@ export class AccountService implements OnDestroy {
   }
 
   // Загрузить пользоватлей из стора
-  getUsersFromStore(): void {
+  private getUsersFromStore(): void {
     this.configLocalStorage();
     // Данные
     let users: User[] = [];
@@ -171,8 +165,8 @@ export class AccountService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.users.complete();
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -188,7 +182,7 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/auth", formData)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         switchMap(result => {
           const code: ApiResponseCodes = result.result.code.toString();
           // Доступна ли активация
@@ -212,7 +206,7 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/register", formData)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -225,7 +219,7 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/activate", formData)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -239,7 +233,7 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/createActivationCode", formData)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -271,7 +265,7 @@ export class AccountService implements OnDestroy {
   // Обновить подписчик анонимного пользователя
   syncAnonymousUser(): Observable<User> {
     return of(true).pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroyed$),
       tap(() => {
         this.syncUser = [0, 0];
         this.users.next([...this.users.getValue()]);
@@ -427,6 +421,12 @@ export class AccountService implements OnDestroy {
 
 
 
+
+  // Инициализация Local Storage
+  private configLocalStorage(): void {
+    this.localStorageService.cookieKey = this.cookieKey;
+    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+  }
 
   // Преобразовать данные с сервера
   userConverter(data: any): User {
