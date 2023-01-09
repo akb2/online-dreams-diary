@@ -111,7 +111,6 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
           })
         )
         .subscribe(friend => {
-          console.log(friend);
           this.friendStatus = friend.status;
           this.friendLoader = false;
           this.changeDetectorRef.detectChanges();
