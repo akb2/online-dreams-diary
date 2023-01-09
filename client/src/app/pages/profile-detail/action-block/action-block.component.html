@@ -1,6 +1,9 @@
 <app-card *ngIf="user">
   <div content
        class="overlay__center">
+    <!-- Блок сообщения -->
+    <ng-container [ngTemplateOutlet]="friendMessage"></ng-container>
+    <!-- блоки действий -->
     <div class="overlay">
       <!-- Блок слева -->
       <div class="overlay__left">
@@ -34,16 +37,79 @@
 <ng-template #leftOtherPage>
   <!-- Добавить в друзья -->
   <button mat-flat-button
-          color="primary">
+          color="primary"
+          [attr.button-loader]="friendLoader"
+          (click)="onAddToFriend()"
+          *ngIf="friendStatus === friendStatuses.NotExists">
     <mat-icon>person_add</mat-icon>Добавить в друзья
+  </button>
+  <!-- Исходящая заявка -->
+  <button mat-flat-button
+          class="mat-elevation-z"
+          color="warn"
+          *ngIf="friendStatus === friendStatuses.OutSubscribe">
+    <mat-icon>close</mat-icon>Отменить заявку
+  </button>
+  <!-- Входящая заявка -->
+  <div class="overlay__group"
+       *ngIf="friendStatus === friendStatuses.InSubscribe">
+    <!-- Сообщение о заявке -->
+    <button mat-flat-button
+            color="primary"
+            [attr.button-loader]="friendLoader">
+      <mat-icon>check</mat-icon>Принять
+    </button>
+    <!-- Отменить заявку -->
+    <button mat-mini-fab
+            class="mat-elevation-z"
+            color="basic"
+            matTooltip="Отклонить заявку"><mat-icon>close</mat-icon></button>
+  </div>
+  <!-- В друзьях -->
+  <button mat-stroked-button
+          class="mat-elevation-z"
+          color="warn"
+          *ngIf="friendStatus === friendStatuses.Friends">
+    <mat-icon>close</mat-icon>Удалить из друзей
   </button>
 </ng-template>
 
 <!-- Чужая страница: правый блок -->
 <ng-template #rightOtherPage>
-  <!-- Написать сообщение -->
+  <!-- Написать сообщение: не друзья -->
   <button mat-stroked-button
-          color="basic">
+          color="basic"
+          *ngIf="friendStatus !== friendStatuses.Friends">
     <mat-icon>forum</mat-icon>Написать
   </button>
+  <!-- Написать сообщение: друзья -->
+  <button mat-flat-button
+          color="primary"
+          *ngIf="friendStatus === friendStatuses.Friends">
+    <mat-icon>forum</mat-icon>Написать
+  </button>
+</ng-template>
+
+
+
+<!-- Сообщение о статусе заявки в друзья -->
+<ng-template #friendMessage>
+  <!-- Чужая страница -->
+  <ng-container *ngIf="!itsMyPage">
+    <!-- Исходящая заявка -->
+    <div class="overlay__message"
+         *ngIf="friendStatus === friendStatuses.OutSubscribe">
+      Вы отправили {{user | petrovich: 3}} заявку в друзья
+    </div>
+    <!-- Входящая заявка -->
+    <div class="overlay__message"
+         *ngIf="friendStatus === friendStatuses.InSubscribe">
+      {{user.name}} отправил{{userIsMale? '': 'а'}} вам заявку в друзья
+    </div>
+    <!-- В друзьях -->
+    <div class="overlay__message"
+         *ngIf="friendStatus === friendStatuses.Friends">
+      {{user.name}} у вас в друзьях
+    </div>
+  </ng-container>
 </ng-template>

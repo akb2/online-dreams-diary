@@ -1,13 +1,13 @@
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/vars";
 
-$gap: 5px;
+$gap: 6px;
 
 // Обертка
 .overlay {
   display: inline-flex;
   flex-flow: column nowrap;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: stretch;
   gap: $gap;
   // Обертка
@@ -27,11 +27,19 @@ $gap: 5px;
       width: 100%;
     }
   }
-  // Левая колонка
-  &__left {
+  // Группа кнопок
+  &__group {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    gap: $gap;
   }
-  // Правая колонка
-  &__right {
+  // Сообщение
+  &__message {
+    min-width: 100%;
+    text-align: center;
+    padding-bottom: 15px;
   }
   // Адаптив
   @include screens.adaptive(large, large) {
@@ -55,6 +63,10 @@ $gap: 5px;
     // Правая колонка
     &__right {
       justify-content: flex-end;
+    }
+    // Сообщение
+    &__message {
+      text-align: left;
     }
   }
 }
