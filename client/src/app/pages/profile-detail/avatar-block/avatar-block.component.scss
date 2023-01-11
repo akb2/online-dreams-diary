@@ -2,27 +2,28 @@
 @use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/vars";
 
 // Аватарка
 .avatar {
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
-
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: containers.$cardBorderRadius;
+  background-color: colors.$card;
   // Картинка
   > img {
-    border-radius: containers.$cardBorderRadius;
-    box-shadow: containers.$cardBoxShadow;
     display: block;
     width: 100%;
     height: auto;
     background-color: #fff;
+    border-radius: #{containers.$cardBorderRadius} #{containers.$cardBorderRadius} 0 0;
     // Выделение
     &.hover-avail {
       cursor: pointer;
     }
   }
-
   // Замещение аватарки
   &__placeholder {
     $height: 420px;
@@ -42,8 +43,7 @@
       line-height: $height;
       font-size: $height * 0.5;
       text-align: center;
-      border-radius: containers.$cardBorderRadius;
-      box-shadow: containers.$cardBoxShadow;
+      border-radius: #{containers.$cardBorderRadius} #{containers.$cardBorderRadius} 0 0;
     }
 
     // Доступно выделение
@@ -61,12 +61,13 @@
       }
     }
   }
-
   //Кнопки
   &__buttons {
     width: 100%;
     justify-content: space-between;
-
+    border-radius: 0 0 #{containers.$cardBorderRadius} #{containers.$cardBorderRadius};
+    padding: #{vars.$dreamCardSpacingY} #{vars.$dreamCardSpacingX};
+    // Общий стиль контейнеров
     &,
     &-left,
     &-center,
@@ -77,23 +78,18 @@
       gap: 5px;
       flex-grow: 1;
     }
-
+    // Контейнер слева
     &-left {
       justify-content: flex-start;
     }
-
+    // Контейнер по середине
     &-center {
       justify-content: center;
     }
-
+    // Контейнер справа
     &-right {
       justify-content: flex-end;
     }
-  }
-
-  // Адаптив
-  @include screens.adaptiveFor(containers.$cardPaddings) using($gap) {
-    gap: #{map.get($gap, y)} #{map.get($gap, x)};
   }
 }
 
