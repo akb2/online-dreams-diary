@@ -13,8 +13,7 @@
       </div>
       <!-- Блок справа -->
       <div class="overlay__right"
-           [ngClass]="{ shortenForm }"
-           *ngIf="!itsMyPage">
+           [ngClass]="{ shortenForm }">
         <ng-container [ngTemplateOutlet]="itsMyPage? rightMyPage: rightOtherPage"></ng-container>
       </div>
     </div>
@@ -25,16 +24,35 @@
 
 <!-- Моя страница: левый блок -->
 <ng-template #leftMyPage>
-  <!-- Настройки -->
+  <!-- Мой дневник -->
   <a mat-flat-button
      color="primary"
-     routerLink="/profile/settings">
-    <mat-icon>settings</mat-icon>Настройки
+     routerLink="/diary/{{user.id}}">
+    <mat-icon>book</mat-icon>Дневник снов
   </a>
 </ng-template>
 
 <!-- Моя страница: правый блок -->
-<ng-template #rightMyPage></ng-template>
+<ng-template #rightMyPage>
+  <!-- Мои данные -->
+  <a mat-stroked-button
+     color="primary"
+     routerLink="/profile/settings/person">
+    <mat-icon>badge</mat-icon>Мои данные
+  </a>
+  <!-- Безопасность -->
+  <a mat-stroked-button
+     color="primary"
+     routerLink="/profile/settings/security">
+    <mat-icon>lock</mat-icon>Безопасность
+  </a>
+  <!-- Приватность -->
+  <a mat-stroked-button
+     color="primary"
+     routerLink="/profile/settings/private">
+    <mat-icon>admin_panel_settings</mat-icon>Приватность
+  </a>
+</ng-template>
 
 <!-- Чужая страница: левый блок -->
 <ng-template #leftOtherPage>

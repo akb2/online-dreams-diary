@@ -126,8 +126,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     // Мой профиль
     if (isMyProfile) {
       this.pageTitle = this.globalService.createTitle("Моя страница");
-      this.floatButtonIcon = "book";
-      this.floatButtonLink = "/diary/" + this.visitedUser.id;
+      this.floatButtonIcon = "palette";
+      this.floatButtonLink = "/profile/settings/appearance";
     }
     // Профиль другого пользователя
     else if (isOtherProfile) {
