@@ -42,27 +42,6 @@ class UserService
 
 
 
-  // Настройки приватности по умолчанию
-  private function getDefaultUserPrivate(): array
-  {
-    return array(
-      'myPage' => $this->getDefaultUserPrivateItem(),
-      'myDreamList' => $this->getDefaultUserPrivateItem()
-    );
-  }
-
-  // Настройки правила приватности по умолчанию
-  private function getDefaultUserPrivateItem(): array
-  {
-    return array(
-      'type' => 3,
-      'blackList' => array(),
-      'whiteList' => array()
-    );
-  }
-
-
-
   // Пересобрать таблицы БД
   public function createTableApi(string $password): bool
   {
@@ -403,42 +382,6 @@ class UserService
   private function hashPassword(string $password): string
   {
     return hash('sha512', $this->config['hashSecret'] . $password);
-  }
-
-  // Проверить настройку приватности
-  public function checkPrivate(string $rule, int $userId, int $currentUser): bool
-  {
-    $user = $this->getUser($userId);
-    $rules = is_array($user['private']) && count($user['private']) > 0 ? $user['private'] : $this->getDefaultUserPrivate();
-    $ruleData = is_array($rules[$rule]) && count($rules[$rule]) > 0 ? $rules[$rule] : $this->getDefaultUserPrivateItem();
-    // Правило существует
-    if (!!$ruleData) {
-      // Привести к типам
-      $ruleData['type'] = intval($ruleData['type']);
-      // Пользователь в белом списке
-      if (array_search($currentUser, $ruleData['whiteList'])) {
-        return true;
-      }
-      // Пользователя нет в черном списке
-      elseif (array_search($currentUser, $ruleData['blackList']) === false) {
-        // Публичное правило
-        // ? 3
-        if ($ruleData['type'] === 3) {
-          return true;
-        }
-        // Публичное правило в пределах участников сайта
-        // ? 2
-        elseif ($ruleData['type'] === 2 && $currentUser > 0) {
-          return true;
-        }
-        // Пользователя являются друзьями
-        // ? 1
-        elseif ($ruleData['type'] === 1) {
-        }
-      }
-    }
-    // Нет доступа
-    return false;
   }
 
   // Создания кода активации

@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Services\UserService;
+use Services\UserSettingsService;
 use Services\TokenService;
 use PDO;
 
@@ -16,6 +17,7 @@ class Account
 
   private UserService $userService;
   private TokenService $tokenService;
+  private UserSettingsService $userSettingsService;
 
 
 
@@ -36,6 +38,7 @@ class Account
   {
     $this->userService = new UserService($this->pdo, $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
   }
 
 
@@ -74,7 +77,7 @@ class Account
     if (strlen($dataIn['rule']) > 0 & strlen($dataIn['user']) > 0) {
       // Проверка токена
       if ($this->tokenService->checkToken($id, $token) || (!strlen($id) && !strlen($token))) {
-        $dataOut = $this->userService->checkPrivate($dataIn['rule'], $dataIn['user'], intval($id) ?? 0);
+        $dataOut = $this->userSettingsService->checkPrivate($dataIn['rule'], $dataIn['user'], intval($id) ?? 0);
         // Доступ разрешен
         if ($dataOut) {
           $code = '0001';
