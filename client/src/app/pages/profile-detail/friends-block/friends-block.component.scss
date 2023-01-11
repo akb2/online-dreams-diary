@@ -1,0 +1,128 @@
+@use "sass:map";
+@use "../../../../assets/styles/vars";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
+
+$friendsLimit: 6;
+
+// Контейнер
+.block {
+  padding: #{vars.$dreamCardSpacingY} #{vars.$dreamCardSpacingX};
+  background-color: colors.$card;
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: containers.$cardBorderRadius;
+  // Заголовок
+  &__title {
+    padding: #{vars.$dreamCardSpacingY} 0;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    // Основной текст
+    &-text {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 17px;
+    }
+    // Выделенный текст
+    &-highlight {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 16px;
+      text-transform: uppercase;
+    }
+  }
+  // Список
+  &__list {
+    display: grid;
+    align-items: start;
+    gap: vars.$dreamCardSpacingX;
+    margin-top: vars.$dreamCardSpacingY;
+    // Количество элементов
+    @for $limit from 1 to $friendsLimit {
+      &[items="#{$limit}"] {
+        grid-template-columns: repeat(#{$limit}, minmax(1px, 1fr));
+      }
+    }
+  }
+  // Адаптив
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    margin-top: $gap;
+  }
+}
+
+// Блок друга
+.friend {
+  $__elm: &;
+  // Свойства
+  display: block;
+  text-decoration: none;
+  // Аватарка
+  &__avatar {
+    width: 100%;
+    padding-bottom: 100%;
+    position: relative;
+    // Картинка и иконка
+    > img,
+    > mat-icon {
+      @include mixins.inset;
+      // Свойства
+      position: absolute;
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+    // Картинка
+    > img {
+      filter: grayscale(40%);
+      transition: filter #{screens.$animation-time};
+    }
+    // Иконка
+    > mat-icon {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      background-color: map.get(colors.$mat-disabled, 500);
+      color: map.get(colors.$mat-disabled, contrast, 500);
+      transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
+    }
+    // Метка онлайн
+    &-online {
+      @include mixins.onlineBlinkPoint(11%, 9%);
+    }
+  }
+  // Заголовок
+  &__title {
+    @include mixins.lineClamp(1, 1.2, 13px);
+    // Свойства
+    text-align: center;
+    display: block;
+    margin-top: 5px;
+    color: colors.$text;
+    transition: color #{screens.$animation-time};
+  }
+  // Выделение
+  &:hover #{$__elm} {
+    // Аватарка
+    &__avatar {
+      // Картинка
+      > img {
+        filter: grayscale(0);
+      }
+      // Иконка
+      > mat-icon {
+        background-color: map.get(colors.$mat-primary, 500);
+        color: map.get(colors.$mat-primary, contrast, 500);
+      }
+    }
+    // Заголовок
+    &__title {
+      color: map.get(colors.$mat-primary, 500);
+    }
+  }
+}

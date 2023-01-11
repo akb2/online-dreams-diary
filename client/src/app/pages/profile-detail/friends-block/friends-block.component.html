@@ -1,0 +1,31 @@
+<div class="block"
+     *ngIf="friendsCount > 0">
+  <!-- Заголовок -->
+  <div class="block__title">
+    <div class="block__title-text">{{title}} {{itsMyPage? '': (user | petrovich)}}</div>
+    <div class="block__title-highlight">{{friendsCount}}</div>
+  </div>
+  <!-- Список друзей -->
+  <div class="block__list"
+       [attr.items]="friendLimit">
+    <!-- Блок пользователя -->
+    <a class="friend"
+       routerLink="/profile/{{friend.id}}"
+       *ngFor="let friend of friends">
+      <!-- Аватарка -->
+      <div class="friend__avatar">
+        <!-- Картинка -->
+        <img [src]="friend.avatars.small"
+             (error)="onUserAvatarError(friend)"
+             *ngIf="friend.avatars.small.length > 0" />
+        <!-- Иконка -->
+        <mat-icon *ngIf="friend.avatars.small.length === 0">person</mat-icon>
+        <!-- Метка онлайн -->
+        <div class="friend__avatar-online"
+             *ngIf="friend.online"></div>
+      </div>
+      <!-- Имя -->
+      <div class="friend__title">{{friend.name}}</div>
+    </a>
+  </div>
+</div>
