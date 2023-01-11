@@ -26,35 +26,12 @@
             <!-- Левая колонка -->
             <div class="information__left">
               <div class="information__left-helper">
-                <!-- Аватарка -->
-                <app-avatar-block [user]="visitedUser"
-                                  [itsMyPage]="itsMyPage"></app-avatar-block>
+                <ng-container [ngTemplateOutlet]="leftContent"></ng-container>
               </div>
             </div>
             <!-- Правая колонка -->
             <div class="information__right">
-              <!-- Статус пользователя -->
-              <div class="status"
-                   *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
-                <app-status-block [user]="visitedUser"
-                                  [itsMyPage]="itsMyPage"></app-status-block>
-              </div>
-              <!-- Остальные сведения -->
-              <div class="general">
-                <app-general-info-block [user]="visitedUser"></app-general-info-block>
-              </div>
-              <!-- Блок действий -->
-              <div class="actions"
-                   *ngIf="isAutorizedUser">
-                <app-action-block [user]="visitedUser"
-                                  [itsMyPage]="itsMyPage"></app-action-block>
-              </div>
-              <!-- Список сновидений -->
-              <div class="dreams"
-                   *ngIf="userHasAccess">
-                <app-dreams-block [user]="visitedUser"
-                                  [itsMyPage]="itsMyPage"></app-dreams-block>
-              </div>
+              <ng-container [ngTemplateOutlet]="rightContent"></ng-container>
             </div>
           </div>
         </div>
@@ -62,6 +39,41 @@
     </ng-container>
   </div>
 </ng-container>
+
+
+
+<!-- Левая колонка -->
+<ng-template #leftContent>
+  <!-- Аватарка -->
+  <app-avatar-block [user]="visitedUser"
+                    [itsMyPage]="itsMyPage"></app-avatar-block>
+</ng-template>
+
+<!-- Правая колонка -->
+<ng-template #rightContent>
+  <!-- Статус пользователя -->
+  <div class="status"
+       *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
+    <app-status-block [user]="visitedUser"
+                      [itsMyPage]="itsMyPage"></app-status-block>
+  </div>
+  <!-- Остальные сведения -->
+  <div class="general">
+    <app-general-info-block [user]="visitedUser"></app-general-info-block>
+  </div>
+  <!-- Блок действий -->
+  <div class="actions"
+       *ngIf="isAutorizedUser">
+    <app-action-block [user]="visitedUser"
+                      [itsMyPage]="itsMyPage"></app-action-block>
+  </div>
+  <!-- Список сновидений -->
+  <div class="dreams"
+       *ngIf="userHasAccess">
+    <app-dreams-block [user]="visitedUser"
+                      [itsMyPage]="itsMyPage"></app-dreams-block>
+  </div>
+</ng-template>
 
 
 
@@ -76,8 +88,6 @@
                       [shortenForm]="true"></app-action-block>
   </app-inform>
 </ng-template>
-
-
 
 <!-- Лоадер страницы -->
 <ng-template #pageLoader>
