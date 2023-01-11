@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestro
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { AppMatDialogConfig } from "@_datas/app";
-import { User, UserPrivate, UserPrivateItem } from "@_models/account";
+import { SearchUser, User, UserPrivate, UserPrivateItem } from "@_models/account";
 import { ScreenKeys } from "@_models/screen";
-import { AccountService, SearchUser } from "@_services/account.service";
+import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { Subject, takeUntil } from "rxjs";
 
@@ -91,7 +91,7 @@ export class PopupSearchUsersComponent implements OnInit, OnDestroy {
     const searchId: number = parseInt(search);
     const q: string = searchId > 0 && !isNaN(searchId) ? "" : search;
     const ids: number[] = searchId > 0 && !isNaN(searchId) ? [searchId] : [];
-    const searchData: SearchUser = {
+    const searchData: Partial<SearchUser> = {
       q,
       ids,
       excludeIds: [this.user.id, ...rule.whiteList, ...rule.blackList],

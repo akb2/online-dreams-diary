@@ -5,14 +5,14 @@ import { DefaultExtraDatas, ExtraDatas as ExtraDatasApp } from '@app/app.compone
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
-import { User, UserSex } from '@_models/account';
 import { PeoplePlural } from "@_datas/account";
-import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
-import { BackgroundImageData } from '@_models/appearance';
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { FormData, MonthPlural } from '@_datas/form';
+import { SearchUser, User, UserSex } from '@_models/account';
+import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
+import { BackgroundImageData } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
-import { AccountService, SearchUser } from '@_services/account.service';
+import { AccountService } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
 import { merge, Subject, takeUntil } from 'rxjs';
 
@@ -72,7 +72,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   // Данные поиска
-  private get getSearch(): SearchUser {
+  private get getSearch(): Partial<SearchUser> {
     const page: number = this.pageCurrent > 0 ? this.pageCurrent : 1;
     const fromForm: CustomObjectKey<keyof SearchUser, string | number> = Object.entries(this.getDefaultSearch)
       .filter(([k]) => k !== "page")
@@ -86,7 +86,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   // Текущие данные из URL
-  private get getCurrentSearch(): SearchUser {
+  private get getCurrentSearch(): Partial<SearchUser> {
     const page: number = parseInt(this.queryParams.page) > 0 ? parseInt(this.queryParams.page) : 1;
     const fromForm: CustomObjectKey<keyof SearchUser, string | number> = Object.entries(this.getDefaultSearch)
       .filter(([k]) => k !== "page")
@@ -99,7 +99,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   // Пустые данные
-  private get getDefaultSearch(): SearchUser {
+  private get getDefaultSearch(): Partial<SearchUser> {
     return {
       q: "",
       sex: "",
@@ -302,7 +302,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   // Записать параметры в URL
-  private urlSet(datas: SearchUser | CustomObject<string | number>, noUpdateSearch: boolean = false): void {
+  private urlSet(datas: Partial<SearchUser>, noUpdateSearch: boolean = false): void {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
     const queryParams: CustomObject<string | number | null> = Object.entries({ ...this.queryParams, ...datas })
       .map(([k, v]) => ([k, !!v ? v : null]))

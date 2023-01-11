@@ -101,6 +101,19 @@ export interface AuthResponce {
   activateIsAvail: boolean;
 }
 
+// Поиск: входящие данные
+export interface SearchUser {
+  q: string;
+  sex: string;
+  birthDay: string;
+  birthMonth: string;
+  birthYear: string;
+  page: number;
+  limit: number;
+  ids: number[];
+  excludeIds: number[];
+}
+
 
 
 

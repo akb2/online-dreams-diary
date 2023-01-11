@@ -7,7 +7,7 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { environment } from '@_environments/environment';
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { AuthResponce, PrivateType, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto, UserSex } from "@_models/account";
+import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { NavMenuType } from "@_models/nav-menu";
@@ -295,7 +295,7 @@ export class AccountService implements OnDestroy {
   }
 
   // Поиск пользоватлей
-  search(search: SearchUser, codes: string[] = []): Observable<Search<User>> {
+  search(search: Partial<SearchUser>, codes: string[] = []): Observable<Search<User>> {
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку
@@ -507,21 +507,4 @@ export class AccountService implements OnDestroy {
     // Вернуть ноль
     return 0;
   }
-}
-
-
-
-
-
-// Поиск: входящие данные
-export interface SearchUser {
-  q?: string;
-  sex?: string;
-  birthDay?: string;
-  birthMonth?: string;
-  birthYear?: string;
-  page?: number;
-  limit?: number;
-  ids?: number[];
-  excludeIds?: number[];
 }
