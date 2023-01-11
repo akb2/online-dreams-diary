@@ -53,11 +53,37 @@ class DataBaseService
       $sql = $this->pdo->prepare($sqlText);
       $sql->execute($this->checkInputParams($sqlText, $params));
       $count = $sql->fetch(PDO::FETCH_NUM);
-      return intval(!!$count? reset($count): 0);
+      return intval(!!$count ? reset($count) : 0);
     }
     // Запрос неудался
     return 0;
   }
+
+  // Получить текст запроса для теста
+  public function interpolateQuery(string $fileName, array $params = array())
+  {
+    $query = $this->getSqlFromFile($fileName, $params);
+    // Цикл по данным
+    foreach ($params as $key => $value) {
+      $assoc = is_string($key);
+      $key = $assoc ? '/:' . $key . '/' : '/[\?]+/';
+      // Параметры: строка
+      if (is_string($value))
+        $value = '"' . $value . '"';
+      // Параметры: массив
+      if (is_array($value))
+        $value = '"' . implode('","', $value) . '"';
+      // Параметры: NULL
+      if (is_null($value))
+        $value = 'NULL';
+      // Заменить данные
+      $query = preg_replace($key, $value, $query, $assoc ? -1 : 1);
+    }
+    // Текст запроса
+    return $query;
+  }
+
+
 
   // Получить содержимое запроса
   private function getSqlFromFile(string $fileName, array $params = array()): string
@@ -65,13 +91,13 @@ class DataBaseService
     $sqlText = '';
     $file = new File('Config/mysql_tables/' . $fileName);
     // Файл существует
-    if($file->exists()) {
+    if ($file->exists()) {
       // Текст запроса из файла с выполнением кода PHP
-      if($file->extension() === 'php') {
+      if ($file->extension() === 'php') {
         $sqlText = $file->eval($params);
       }
       // Текст запроса из файла
-      else{
+      else {
         $sqlText = $file->content();
       }
     }
@@ -88,44 +114,21 @@ class DataBaseService
     $findAsArrayCount = count($findAsArray[1]);
     $newParams = array();
     // Корректировка для порядкого перечисления
-    for($k = 0; $k < $findAsArrayCount; $k++) {
-      $newParams[$k] = isset($params[$k])? $params[$k]: "";
+    for ($k = 0; $k < $findAsArrayCount; $k++) {
+      $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
     }
     // Корректировка для параметров с ключами
-    foreach($findAsObject[1] as $k) {
-      $newParams[$k] = isset($params[$k])? $params[$k]: "";
+    foreach ($findAsObject[1] as $k) {
+      $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
     }
     // Корректировать тип данных
-    foreach($newParams as $k => $v) {
+    foreach ($newParams as $k => $v) {
       $types = array('boolean', 'integer', 'double', 'string');
-      if(!in_array(gettype($v), $types)) {
+      if (!in_array(gettype($v), $types)) {
         $newParams[$k] = strval($v);
       }
     }
     // Вернуть корректный массив данных
     return $newParams;
-  }
-
-  // Получить текст запроса для теста
-  public function interpolateQuery(string $fileName, array $params = array())
-  {
-    $query = $this->getSqlFromFile($fileName, $params);
-    // Цикл по данным
-    foreach ($params as $key => $value) {
-      $key = is_string($key) ? '/:' . $key . '/' : '/[\?]+/';
-      // Параметры: строка
-      if (is_string($value))
-        $value = '"' . $value . '"';
-      // Параметры: массив
-      if (is_array($value))
-        $value = '"' . implode('","', $value) . '"';
-      // Параметры: NULL
-      if (is_null($value))
-        $value = 'NULL';
-      // Заменить данные
-      $query = preg_replace($key, $value, $query, 1);
-    }
-    // Текст запроса
-    return $query;
   }
 }

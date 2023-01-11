@@ -38,7 +38,7 @@ class Token
 
 
   // Проверка токена
-  // * POST
+  // * GET
   public function checkToken($data): array
   {
     return $this->tokenService->checkTokenApi($data);
