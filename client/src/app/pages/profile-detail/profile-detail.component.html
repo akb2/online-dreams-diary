@@ -47,8 +47,17 @@
   <!-- Аватарка -->
   <app-avatar-block [user]="visitedUser"
                     [itsMyPage]="itsMyPage"></app-avatar-block>
-  <!-- Мои друзья -->
+  <!-- Друзья -->
   <friends-block [user]="visitedUser"
+                 friendType="friends"
+                 [itsMyPage]="itsMyPage"></friends-block>
+  <!-- Подписчики -->
+  <friends-block [user]="visitedUser"
+                 friendType="subscribers"
+                 [itsMyPage]="itsMyPage"></friends-block>
+  <!-- Подписки -->
+  <friends-block [user]="visitedUser"
+                 friendType="subscribe"
                  [itsMyPage]="itsMyPage"></friends-block>
 </ng-template>
 
