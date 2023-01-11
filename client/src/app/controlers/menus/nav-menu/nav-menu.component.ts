@@ -395,6 +395,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.floatButtonCallback.emit();
   }
 
+  // Ошибка загрузки аватарки
+  onAvatarError(): void {
+    this.avatarImage = null;
+    this.avatarIcon = this.avatarIcon ?? "hide_image";
+  }
+
 
 
 
@@ -520,10 +526,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // По умолчанию
     return value.default;
   }
-
-
-
-
 
   // Переключить меню
   toggleMobileMenu(action: -1 | 1): void {

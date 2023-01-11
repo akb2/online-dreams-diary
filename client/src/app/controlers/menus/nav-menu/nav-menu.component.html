@@ -66,6 +66,7 @@
              [ngStyle]="css.avatar"
              *ngIf="avatarImage || avatarIcon">
           <img [src]="avatarImage"
+               (error)="onAvatarError()"
                *ngIf="avatarImage" />
           <mat-icon *ngIf="!avatarImage && avatarIcon">{{avatarIcon}}</mat-icon>
         </div>
