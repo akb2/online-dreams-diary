@@ -12,8 +12,7 @@ class FriendService
   private array $config;
 
   private DataBaseService $dataBaseService;
-  private MailService $mailService;
-  private UserService $userService;
+  private TokenService $tokenService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -21,8 +20,7 @@ class FriendService
     $this->config = $config;
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
-    $this->mailService = new MailService($this->config);
-    $this->userService = new UserService($this->pdo, $this->config);
+    $this->tokenService = new TokenService($this->pdo, $this->config);
   }
 
 
@@ -45,6 +43,41 @@ class FriendService
     }
     // Заявки не существует
     return null;
+  }
+
+  // Получить список сновидений
+  public function getList(array $search): array
+  {
+    $count = 0;
+    $result = array();
+    $limit = $search['limit'] > 0 && $search['limit'] <= 100 ? $search['limit'] : $this->config["friends"]["limit"];
+    // Допустимые типы
+    $types = array("friends", "subscribers", "subscribe");
+    // Данные для поиска
+    $sqlData = array(
+      // Значения полей
+      "type" => array_search($search["type"], $types) ? $search["type"] : $types[0],
+      "user_id" => intval($search["user"])
+    );
+    // Запрос
+    $count = $this->dataBaseService->getCountFromFile("friend/getFriendsCount.php", $sqlData);
+    $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
+    // Друзья найдены
+    if ($count > 0) {
+      $maxPage = ceil($count / $limit);
+      $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
+      // Настройки ограничения данных
+      $sqlData['limit_start'] = intval(($page * $limit) - $limit);
+      $sqlData['limit_length'] = intval($limit);
+      // Список данных
+      $result = $this->dataBaseService->getDatasFromFile("friend/getFriendsList.php", $sqlData);
+    }
+    // Сон не найден
+    return array(
+      "count" => $count,
+      "limit" => $limit,
+      "result" => $result
+    );
   }
 
 

@@ -42,6 +42,35 @@ class Friend
 
 
 
+  // Конвертировать данные для API
+  private function convertFriendData(array $friend, bool $userDatas = false): array
+  {
+    $result = array(
+      'id' => intval($friend['id']),
+      'inUserId' => intval($friend['in_user_id']),
+      'outUserId' => intval($friend['out_user_id']),
+      'inDate' => $friend['in_date'],
+      'outDate' => $friend['out_date'],
+      'status' => intval($friend['status'])
+    );
+    // Добавить данные о пользователях
+    if ($userDatas) {
+      $usersKey = array('inUser' => $result['inUserId'], 'outUser' => $result['outUserId']);
+      // Цикл по данным
+      foreach ($usersKey as $key => $userId) {
+        $user = $this->userService->getUser($userId);
+        // ПОльзователь найден
+        if (isset($user['id'])) {
+          $result[$key] = $user;
+        }
+      }
+    }
+    // Вернуть данные
+    return $result;
+  }
+
+
+
   // Статус дружбы между пользователями
   // * GET
   public function getFriendStatus($data): array
@@ -61,14 +90,7 @@ class Friend
         // Запись найдена
         if (is_array($mixedFriend)) {
           $code = '0001';
-          $friend = array(
-            'id' => $mixedFriend['id'],
-            'inUserId' => $mixedFriend['in_user_id'],
-            'outUserId' => $mixedFriend['out_user_id'],
-            'inDate' => $mixedFriend['in_date'],
-            'outDate' => $mixedFriend['out_date'],
-            'status' => $mixedFriend['status']
-          );
+          $friend = $this->convertFriendData($mixedFriend['id']);
         }
         // Запись не найдена
         else {
@@ -90,6 +112,43 @@ class Friend
       'code' => $code,
       'message' => '',
       'data' => $friend
+    );
+  }
+
+  // Список друзей/подписок/подписчиков
+  // * GET
+  public function getList($data): array
+  {
+    $code = "0002";
+    $search = array(
+      "page" => isset($data["search_page"]) && intval($data["search_page"]) ? intval($data["search_page"]) : "",
+      "user" => isset($data["search_user"]) && intval($data["search_user"]) ? intval($data["search_user"]) : "",
+      "limit" => isset($data["search_limit"]) && intval($data["search_limit"]) ? intval($data["search_limit"]) : "",
+      "type" => isset($data["search_type"]) && strlen($data["search_type"]) > 0 ? $data["search_type"] : ""
+    );
+    $testFriends = $this->friendService->getList($search);
+    $friends = array();
+    // Сновидение найдено
+    if ($testFriends["count"] > 0) {
+      // Доступность для просмотра или редактирования
+      $code = "0001";
+      // Обработка списка
+      foreach ($testFriends["result"] as $friend) {
+        $friends[] = $this->convertFriendData($friend['id'], true);
+      }
+    }
+    // Сновидение не найдено
+    else {
+      $code = "0002";
+    }
+    // Вернуть результат
+    return array(
+      "data" => array(
+        "count" => $testFriends["count"],
+        "limit" => $testFriends["limit"],
+        "dreams" => $friends
+      ),
+      "code" => $code
     );
   }
 
