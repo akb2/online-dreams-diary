@@ -109,6 +109,10 @@
       transition: color #{screens.$animation-time};
       text-decoration: none;
     }
+    // Без блока действий
+    &.not-action {
+      padding-bottom: $spacingY;
+    }
   }
   // Действия
   &__action {
