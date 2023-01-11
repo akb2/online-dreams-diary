@@ -1,3 +1,4 @@
+import { BaseSearch } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
@@ -102,16 +103,12 @@ export interface AuthResponce {
 }
 
 // Поиск: входящие данные
-export interface SearchUser {
+export interface SearchUser extends BaseSearch {
   q: string;
   sex: string;
   birthDay: string;
   birthMonth: string;
   birthYear: string;
-  page: number;
-  limit: number;
-  ids: number[];
-  excludeIds: number[];
 }
 
 

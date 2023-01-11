@@ -33,3 +33,11 @@ export interface Search<T> {
   limit: number;
   result: T[];
 }
+
+// Базовый интерфейс поиска
+export interface BaseSearch {
+  page: number;
+  limit: number;
+  ids: number[];
+  excludeIds: number[];
+}
