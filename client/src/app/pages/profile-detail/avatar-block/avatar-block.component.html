@@ -18,7 +18,7 @@
 
 <!-- Аватарка -->
 <ng-template #avatarImage>
-  <img [ngClass]="{ 'hover-avail': itsMyPage }"
+  <img [ngClass]="{ 'hover-avail': itsMyPage, 'has-control': !itsMyPage }"
        [src]="user.avatars.crop"
        [hidden]="loadingAvatar"
        (load)="onAvatarLoadSuccess()"
@@ -32,7 +32,7 @@
 <!-- Аватарка по умолчанию -->
 <ng-template #avatarImageDefault>
   <div class="avatar__placeholder"
-       [ngClass]="{ 'hover-avail': itsMyPage }"
+       [ngClass]="{ 'hover-avail': itsMyPage, 'has-control': !itsMyPage }"
        (click)="itsMyPage? fileInput.click(): null"
        *ngIf="!loadingAvatar; else avatarImageLoader">
     <mat-icon>person</mat-icon>

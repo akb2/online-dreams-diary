@@ -23,6 +23,10 @@
     &.hover-avail {
       cursor: pointer;
     }
+    // Без панели управления
+    &.has-control {
+      border-radius: containers.$cardBorderRadius;
+    }
   }
   // Замещение аватарки
   &__placeholder {
@@ -45,7 +49,6 @@
       text-align: center;
       border-radius: #{containers.$cardBorderRadius} #{containers.$cardBorderRadius} 0 0;
     }
-
     // Доступно выделение
     &.hover-avail {
       // Иконка
@@ -59,6 +62,10 @@
           color: map.get(colors.$mat-primary, contrast, 600);
         }
       }
+    }
+    // Без панели управления
+    &.has-control > mat-icon {
+      border-radius: containers.$cardBorderRadius;
     }
   }
   //Кнопки
