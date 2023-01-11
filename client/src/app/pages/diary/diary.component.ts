@@ -264,7 +264,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     };
     // Загрузка списка
     (this.diaryTypeByUser === DiaryTypeByUser.user ?
-      this.accountService.checkPrivate("myDreamList", this.visitedUser.id) :
+      this.accountService.checkPrivate("myDreamList", this.visitedUser.id, ["8100"]) :
       of(true))
       .pipe(
         takeUntil(this.destroy$),
