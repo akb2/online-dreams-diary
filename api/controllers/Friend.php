@@ -61,7 +61,14 @@ class Friend
         $user = $this->userService->getUser($userId);
         // ПОльзователь найден
         if (isset($user['id'])) {
-          $result[$key] = $user;
+          $result[$key] = array(
+            'id' => $user['id'],
+            'name' => $user['name'],
+            'lastName' => $user['lastName'],
+            'avatars' => $user['avatars'],
+            'lastActionDate' => $user['lastActionDate'],
+            'sex' => $user['sex'],
+          );
         }
       }
     }
@@ -90,7 +97,7 @@ class Friend
         // Запись найдена
         if (is_array($mixedFriend)) {
           $code = '0001';
-          $friend = $this->convertFriendData($mixedFriend['id']);
+          $friend = $this->convertFriendData($mixedFriend);
         }
         // Запись не найдена
         else {
@@ -134,7 +141,7 @@ class Friend
       $code = "0001";
       // Обработка списка
       foreach ($testFriends["result"] as $friend) {
-        $friends[] = $this->convertFriendData($friend['id'], true);
+        $friends[] = $this->convertFriendData($friend, true);
       }
     }
     // Сновидение не найдено
@@ -146,7 +153,7 @@ class Friend
       "data" => array(
         "count" => $testFriends["count"],
         "limit" => $testFriends["limit"],
-        "dreams" => $friends
+        "friends" => $friends
       ),
       "code" => $code
     );
