@@ -7,8 +7,9 @@ import { Dream } from "@_models/dream";
 import { ScreenBreakpoints } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
+import { FriendService } from "@_services/friend.service";
 import { ScreenService } from "@_services/screen.service";
-import { filter, map, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
+import { catchError, filter, map, mergeMap, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -53,6 +54,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
   constructor(
     private screenService: ScreenService,
     private accountService: AccountService,
+    private friendService: FriendService,
     private dreamService: DreamService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
@@ -88,6 +90,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
         mergeMap(() => this.screenService.breakpoint$),
+        mergeMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
         map(breakPoint => limits[breakPoint] ?? limits.default),
         filter(limit => {
           if (limit !== prevLimit) {
@@ -102,34 +105,21 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
           return false;
         }),
         mergeMap(
-          () => this.accountService.user$(),
-          (limit, currentUser) => ({ limit, currentUser })
-        ),
-        mergeMap(
-          ({ currentUser }) => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", currentUser.id),
-          (data, hasAccess) => ({ ...data, hasAccess })
+          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.user.id, ["8100"]),
+          (limit, hasAccess) => ({ limit, hasAccess })
         ),
         mergeMap(
           ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.user.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
           ({ hasAccess }, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
         ),
-        switchMap(r => r.count > 0 ? of(r) : throwError(r.hasAccess))
+        catchError(() => of({ hasAccess: false, dreams: [], count: 0 }))
       )
-      .subscribe(
-        ({ hasAccess, dreams, count }: any) => {
-          this.userHasDiaryAccess = hasAccess;
-          this.dreams = dreams;
-          this.dreamsCount = count;
-          this.dreamsLoading = false;
-          this.changeDetectorRef.detectChanges();
-        },
-        hasAccess => {
-          this.userHasDiaryAccess = hasAccess;
-          this.dreams = [];
-          this.dreamsCount = 0;
-          this.dreamsLoading = false;
-          this.changeDetectorRef.detectChanges();
-        }
-      );
+      .subscribe(({ hasAccess, dreams, count }: any) => {
+        this.userHasDiaryAccess = hasAccess;
+        this.dreams = dreams;
+        this.dreamsCount = count;
+        this.dreamsLoading = false;
+        this.changeDetectorRef.detectChanges();
+      }, e => console.log(e));
   }
 }
