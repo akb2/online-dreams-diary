@@ -10,8 +10,8 @@ CREATE TABLE `friends`
     UNIQUE `users` (`out_user_id`, `in_user_id`),
     INDEX `out_date` (`out_date`),
     INDEX `in_date` (`in_date`),
-    FOREIGN KEY (`out_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-    FOREIGN KEY (`in_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+    FOREIGN KEY (`out_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`in_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
   )
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci

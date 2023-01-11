@@ -14,7 +14,7 @@ CREATE TABLE `tokens`
     INDEX `user_id` (`user_id`),
     INDEX `create_date` (`create_date`),
     INDEX `last_action_date` (`last_action_date`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
   )
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci

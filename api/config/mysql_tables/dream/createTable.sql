@@ -21,7 +21,7 @@ CREATE TABLE `dreams`
     INDEX `create_date` (`create_date`),
     INDEX `date` (`date`),
     INDEX `status` (`status`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
     FULLTEXT (`title`, `description`, `keywords`, `text`)
   )
 ENGINE = InnoDB
