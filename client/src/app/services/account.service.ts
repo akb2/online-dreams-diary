@@ -431,7 +431,7 @@ export class AccountService implements OnDestroy {
   // Преобразовать данные с сервера
   userConverter(data: any): User {
     const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
-    const headerType: NavMenuType = data?.settings.profileHeaderType as NavMenuType;
+    const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
     // Права доступа
     const privateRules: UserPrivate = this.userPrivateConverter(data?.private);
     // Данные пользователя
@@ -441,8 +441,8 @@ export class AccountService implements OnDestroy {
       sex: ParseInt(data?.sex) as UserSex,
       online: this.isOnlineByDate(data?.lastActionDate),
       settings: {
-        profileBackground: BackgroundImageDatas.some(d => d.id === background) ? BackgroundImageDatas.find(d => d.id == background) : BackgroundImageDatas[0],
-        profileHeaderType: headerType ? headerType : NavMenuType.short
+        profileBackground: BackgroundImageDatas.find(d => d.id == background) ?? BackgroundImageDatas[0],
+        profileHeaderType: headerType ?? NavMenuType.short
       },
       private: privateRules
     } as User;
