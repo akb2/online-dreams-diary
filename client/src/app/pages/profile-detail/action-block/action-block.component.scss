@@ -20,7 +20,7 @@ $gap: 6px;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: center;
+    align-items: space-between;
     gap: $gap;
     // Кнопки
     > .mat-button-base {
@@ -34,6 +34,10 @@ $gap: 6px;
     justify-content: center;
     align-items: center;
     gap: $gap;
+    // Растянуть элемент
+    &-grow {
+      flex-grow: 1;
+    }
   }
   // Сообщение
   &__message {
@@ -43,30 +47,36 @@ $gap: 6px;
   }
   // Адаптив
   @include screens.adaptive(large, large) {
-    flex-direction: row;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    // Левая и правая колонка
-    &__left,
-    &__right {
-      flex-direction: row;
-      // Кнопки
-      > .mat-button-base {
-        width: auto;
+    & {
+      &:not(.shortenForm) {
+        flex-direction: row;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
-    }
-    // Левая колонка
-    &__left {
-      justify-content: flex-start;
-    }
-    // Правая колонка
-    &__right {
-      justify-content: flex-end;
-    }
-    // Сообщение
-    &__message {
-      text-align: left;
+      // Левая и правая колонка
+      &__left,
+      &__right {
+        &:not(.shortenForm) {
+          flex-direction: row;
+          // Кнопки
+          > .mat-button-base {
+            width: auto;
+          }
+        }
+      }
+      // Левая колонка
+      &__left:not(.shortenForm) {
+        justify-content: flex-start;
+      }
+      // Правая колонка
+      &__right:not(.shortenForm) {
+        justify-content: flex-end;
+      }
+      // Сообщение
+      &__message:not(.shortenForm) {
+        text-align: left;
+      }
     }
   }
 }

@@ -4,13 +4,16 @@
     <!-- Блок сообщения -->
     <ng-container [ngTemplateOutlet]="friendMessage"></ng-container>
     <!-- блоки действий -->
-    <div class="overlay">
+    <div class="overlay"
+         [ngClass]="{ shortenForm }">
       <!-- Блок слева -->
-      <div class="overlay__left">
+      <div class="overlay__left"
+           [ngClass]="{ shortenForm }">
         <ng-container [ngTemplateOutlet]="itsMyPage? leftMyPage: leftOtherPage"></ng-container>
       </div>
       <!-- Блок справа -->
       <div class="overlay__right"
+           [ngClass]="{ shortenForm }"
            *ngIf="!itsMyPage">
         <ng-container [ngTemplateOutlet]="itsMyPage? rightMyPage: rightOtherPage"></ng-container>
       </div>
@@ -44,9 +47,11 @@
     <mat-icon>person_add</mat-icon>Добавить в друзья
   </button>
   <!-- Исходящая заявка -->
-  <button mat-flat-button
+  <button mat-stroked-button
           class="mat-elevation-z"
           color="warn"
+          [attr.button-loader]="friendLoader"
+          (click)="onRejectFriends()"
           *ngIf="friendStatus === friendStatuses.OutSubscribe">
     <mat-icon>close</mat-icon>Отменить заявку
   </button>
@@ -56,19 +61,27 @@
     <!-- Сообщение о заявке -->
     <button mat-flat-button
             color="primary"
-            [attr.button-loader]="friendLoader">
+            class="overlay__group-grow"
+            [attr.button-loader]="friendLoader"
+            (click)="onConfirmFriends()">
       <mat-icon>check</mat-icon>Принять
     </button>
     <!-- Отменить заявку -->
     <button mat-mini-fab
             class="mat-elevation-z"
             color="basic"
-            matTooltip="Отклонить заявку"><mat-icon>close</mat-icon></button>
+            matTooltip="Отклонить заявку"
+            [attr.button-loader]="friendLoader"
+            (click)="onRejectFriends()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
   <!-- В друзьях -->
   <button mat-stroked-button
           class="mat-elevation-z"
           color="warn"
+          [attr.button-loader]="friendLoader"
+          (click)="onCancelFromFriends()"
           *ngIf="friendStatus === friendStatuses.Friends">
     <mat-icon>close</mat-icon>Удалить из друзей
   </button>
@@ -79,13 +92,13 @@
   <!-- Написать сообщение: не друзья -->
   <button mat-stroked-button
           color="basic"
-          *ngIf="friendStatus !== friendStatuses.Friends">
+          *ngIf="!highLightMessageButton">
     <mat-icon>forum</mat-icon>Написать
   </button>
   <!-- Написать сообщение: друзья -->
   <button mat-flat-button
           color="primary"
-          *ngIf="friendStatus === friendStatuses.Friends">
+          *ngIf="highLightMessageButton">
     <mat-icon>forum</mat-icon>Написать
   </button>
 </ng-template>
@@ -98,16 +111,19 @@
   <ng-container *ngIf="!itsMyPage">
     <!-- Исходящая заявка -->
     <div class="overlay__message"
+         [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.OutSubscribe">
       Вы отправили {{user | petrovich: 3}} заявку в друзья
     </div>
     <!-- Входящая заявка -->
     <div class="overlay__message"
+         [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.InSubscribe">
       {{user.name}} отправил{{userIsMale? '': 'а'}} вам заявку в друзья
     </div>
     <!-- В друзьях -->
     <div class="overlay__message"
+         [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.Friends">
       {{user.name}} у вас в друзьях
     </div>

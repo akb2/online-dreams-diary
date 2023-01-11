@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { ApiResponseMessages, ObjectToParams } from "@_datas/api";
+import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -187,10 +187,44 @@ export class FriendService implements OnDestroy {
 
   // Отправить заявку в друзья
   addToFriends(userId: number, codes: string[] = []): Observable<string> {
-    return this.httpClient.get<ApiResponse>("friend/addToFriends", { params: ObjectToParams({ "user_id": userId }) }).pipe(
+    return this.httpClient.post<ApiResponse>("friend/addToFriends", ObjectToFormData({ user_id: userId })).pipe(
       takeUntil(this.destroyed$),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
+      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
+      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+    );
+  }
+
+  // Отменить заявку в друзья
+  rejectFriends(userId: number, codes: string[] = []): Observable<string> {
+    return this.httpClient.post<ApiResponse>("friend/rejectFriends", ObjectToFormData({ user_id: userId })).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
+      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
+      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+    );
+  }
+
+  // Подтвердить заявку в друзья
+  confirmFriends(userId: number, codes: string[] = []): Observable<string> {
+    return this.httpClient.post<ApiResponse>("friend/confirmFriends", ObjectToFormData({ user_id: userId })).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
+      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
+      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+    );
+  }
+
+  // Удалить из друзей
+  cancelFromFriends(userId: number, codes: string[] = []): Observable<string> {
+    return this.httpClient.post<ApiResponse>("friend/cancelFromFriends", ObjectToFormData({ user_id: userId })).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
+      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
       mergeMap(() => this.accountService.syncCurrentUser(), r => r)
     );
   }
