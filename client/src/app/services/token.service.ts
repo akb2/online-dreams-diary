@@ -74,9 +74,7 @@ export class TokenService {
 
   // Проверить токен
   checkToken(codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("token/checkToken", formData).pipe(switchMap(
+    return this.httpClient.get<ApiResponse>("token/checkToken").pipe(switchMap(
       result => {
         const code: ApiResponseCodes = result.result.code;
         // Сохранить токен

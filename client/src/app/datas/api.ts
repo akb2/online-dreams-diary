@@ -10,6 +10,17 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
   .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v]))
   .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
 
+// Преобразование объекта в FormControl
+export const ObjectToFormData = (params: CustomObject<any>, keyPreffix: string = "") => {
+  const formData: FormData = new FormData();
+  // Добавить параметры в форму
+  Object.entries(params)
+    .map(([k, v]) => ([keyPreffix + k, v]))
+    .forEach(([k, v]) => formData.append(k, v));
+  // Вернуть форму
+  return formData;
+};
+
 // Тип сообщений об ошибках
 export const ApiResponseMessages: SimpleObject = {
   "0000": "Пустой ответ сервера, состояние выполнения запроса неизвестно",
@@ -20,6 +31,9 @@ export const ApiResponseMessages: SimpleObject = {
   "1000": "Получены пустые данные",
 
   "6001": "Не удалось отправить заявку в друзья",
+  "6002": "Не удалось отклонить заявку в друзья",
+  "6003": "Не удалось подтвердить заявку в друзья",
+  "6004": "Не удалось удалить пользователя из друзей",
 
   "7001": "Сновидение не сохранено",
   "7002": "Это сновидение скрыто от вас настройками приватности",

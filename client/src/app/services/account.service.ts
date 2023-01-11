@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { OnlinePeriod, UserPrivateNames } from "@_datas/account";
-import { ObjectToParams } from "@_datas/api";
+import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { environment } from '@_environments/environment';
 import { ParseInt } from "@_helpers/math";
@@ -246,7 +246,7 @@ export class AccountService implements OnDestroy {
 
   // Проверка настроек приватности
   checkPrivate(rule: keyof UserPrivate, user: number, codes: string[] = []): Observable<boolean> {
-    return this.httpClient.get<ApiResponse>("account/checkPrivate", { params: ObjectToParams({ rule, user }) }).pipe(
+    return this.httpClient.post<ApiResponse>("account/checkPrivate", ObjectToFormData({ rule, user })).pipe(
       switchMap(r => this.apiService.checkResponse(r.result.code, codes)),
       map(code => code === "0001"),
       catchError(code => of(code === "0001")),
