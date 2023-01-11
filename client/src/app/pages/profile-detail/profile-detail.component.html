@@ -70,7 +70,11 @@
   <app-inform [aboveIcon]="true"
               icon="policy"
               title="Страница недоступна"
-              subTitle="Пользователь предпочел скрыть свою страницу настройками приватности"></app-inform>
+              subTitle="Пользователь предпочел скрыть свою страницу настройками приватности">
+    <app-action-block [user]="visitedUser"
+                      [itsMyPage]="itsMyPage"
+                      [shortenForm]="true"></app-action-block>
+  </app-inform>
 </ng-template>
 
 

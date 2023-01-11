@@ -8,6 +8,7 @@ import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
+import { FriendService } from '@_services/friend.service';
 import { GlobalService } from '@_services/global.service';
 import { mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
@@ -32,7 +33,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
   private userReady: boolean = false;
-
   pageLoading: boolean = false;
 
   title: string = "Страница пользователя";
@@ -53,7 +53,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   navMenuTypes: typeof NavMenuType = NavMenuType;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -80,6 +80,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
+    private friendService: FriendService,
     private titleService: Title,
     private globalService: GlobalService,
     private datePipe: DatePipe
@@ -94,8 +95,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -154,7 +155,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Подписка
     this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
         this.isAutorizedUser = !!this.user;
@@ -170,7 +171,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     // Подписка
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         takeWhile(() => !this.userReady, true),
         skipWhile(() => !this.userReady),
         mergeMap(() => this.activatedRoute.params),
@@ -201,14 +202,18 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     // Подписка на данные пользователя
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         takeWhile(() => this.visitedUserId === -1, true),
         skipWhile(() => this.visitedUserId === -1),
         mergeMap(() => this.accountService.user$()),
-        mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId, ["8100"])),
+        mergeMap(() => this.itsMyPage ? of(null) : this.friendService.friends$(this.visitedUserId, 0, true)),
+        mergeMap(
+          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId, ["8100"]),
+          (friend, userHasAccess) => ({ userHasAccess, friend })
+        ),
         mergeMap(
           () => this.accountService.user$(this.visitedUserId, !this.itsMyPage),
-          (userHasAccess, user) => ({ userHasAccess, user })
+          (data, user) => ({ ...data, user })
         )
       )
       .subscribe(
