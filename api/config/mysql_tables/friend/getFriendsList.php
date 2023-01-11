@@ -1,5 +1,3 @@
-<? $sortField = 'out_date'; ?>
-
 SELECT
 `id`,
 `out_user_id`,
@@ -19,7 +17,7 @@ WHERE
   `in_user_id` = :user_id
   )
 
-<? else if ($input['type'] == 'subscribers') : ?>
+<? elseif ($input['type'] == 'subscribers') : ?>
   <?/* // ? Подписчики */ ?>
   ((
   `in_user_id` = :user_id AND
@@ -29,7 +27,7 @@ WHERE
   `status` = 2
   ))
 
-<? else if ($input['type'] == 'subscribe') : ?>
+<? elseif ($input['type'] == 'subscribe') : ?>
   <?/* // ? Подписки */ ?>
   ((
   `out_user_id` = :user_id AND
@@ -40,5 +38,5 @@ WHERE
   ))
 <? endif; ?>
 
-ORDER BY `<?= $sortField; ?>` DESC
+ORDER BY RAND()
 LIMIT <?= $input['limit_start']; ?>, <?= $input['limit_length']; ?>

@@ -10,7 +10,7 @@ WHERE
   `in_user_id` = :user_id
   )
 
-<? else if ($input['type'] == 'subscribers') : ?>
+<? elseif ($input['type'] == 'subscribers') : ?>
   <?/* // ? Подписчики */ ?>
   (
   (
@@ -22,7 +22,7 @@ WHERE
   )
   )
 
-<? else if ($input['type'] == 'subscribe') : ?>
+<? elseif ($input['type'] == 'subscribe') : ?>
   <?/* // ? Подписки */ ?>
   (
   (
