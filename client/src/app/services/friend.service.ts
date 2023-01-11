@@ -4,8 +4,8 @@ import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/a
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
-import { ApiResponse } from "@_models/api";
-import { Friend, FriendStatus } from "@_models/friend";
+import { ApiResponse, Search } from "@_models/api";
+import { Friend, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
@@ -185,6 +185,24 @@ export class FriendService implements OnDestroy {
     return of(EmptyFriend(inUser, outUser));
   }
 
+  // Поиск пользоватлей
+  getList(search: Partial<FriendSearch>, codes: string[] = []): Observable<Search<FriendWithUsers>> {
+    let count: number = 0;
+    let limit: number = 0;
+    // Вернуть подписку
+    return this.httpClient.get<ApiResponse>("friend/getList", { params: ObjectToParams(search, "search_") }).pipe(
+      switchMap(result => result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)),
+      tap(r => {
+        count = r.count ?? 0;
+        limit = r.limit ?? 0;
+      }),
+      map(({ friends }) => !!friends?.length ? friends.map(u => this.friendWithUsersConverter(u)) : []),
+      mergeMap((result: FriendWithUsers[]) => of({ count, result, limit }))
+    );
+  }
+
   // Отправить заявку в друзья
   addToFriends(userId: number, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("friend/addToFriends", ObjectToFormData({ user_id: userId })).pipe(
@@ -234,7 +252,7 @@ export class FriendService implements OnDestroy {
 
 
   // Конвертация заявки в друзья
-  private friendConverter(data: any, userId: number): Friend {
+  private friendConverter(data: any, userId: number = 0): Friend {
     const inUserId: number = ParseInt(data?.inUserId) ?? userId;
     const outUserId: number = ParseInt(data?.outUserId) ?? this.user?.id;
     const checkUserId: number = inUserId === userId ? outUserId : inUserId;
@@ -247,6 +265,17 @@ export class FriendService implements OnDestroy {
       outUserId,
       inDate: !!data?.inDate ? new Date(data.inDate) : null,
       outDate: !!data?.outDate ? new Date(data.outDate) : null
+    };
+  }
+
+  // Конвертация заявки в друзья
+  private friendWithUsersConverter(data: any, userId: number = 0): FriendWithUsers {
+    const friend: Friend = this.friendConverter(data, userId);
+    // Вернуть данные
+    return {
+      ...friend,
+      inUser: this.accountService.userConverter(data?.inUser),
+      outUser: this.accountService.userConverter(data?.outUser)
     };
   }
 
