@@ -66,9 +66,7 @@
 // Элемент
 .dream {
   $borderRadius: containers.$cardBorderRadius;
-  $spacingX: 18px;
   $spacingXMenu: 8px;
-  $spacingY: 10px;
   $descriptionCount: 4;
   $keywordsCount: 2;
   $descriptionLineHeight: 15px;
@@ -76,7 +74,7 @@
   $menuSize: 40px;
   $titleSize: 22px;
   $subTitleSize: $menuSize - $titleSize;
-  $imageHeight: ($spacingY * 6) + $menuSize + ($descriptionCount * $descriptionLineHeight)+ ($keywordsCount * $descriptionLineHeight);
+  $imageHeight: (vars.$dreamCardSpacingY * 6) + $menuSize + ($descriptionCount * $descriptionLineHeight)+ ($keywordsCount * $descriptionLineHeight);
   // Свойства
   border-radius: $borderRadius;
   background-color: colors.$card;
@@ -123,7 +121,7 @@
       }
       // Описание
       > .description {
-        bottom: ($keywordsCount * $descriptionLineHeight) + ($spacingY * 2);
+        bottom: ($keywordsCount * $descriptionLineHeight) + (vars.$dreamCardSpacingY * 2);
         // Без ключевых слов
         &.no-keywords {
           bottom: 0;
@@ -159,7 +157,7 @@
   }
   // Контейнер текста
   &__text {
-    padding: #{$spacingY} #{$spacingX};
+    padding: #{vars.$dreamCardSpacingY} #{vars.$dreamCardSpacingX};
     // Заголовок
     &-title {
       @include mixins.lineClamp(1, $titleSize, 15px);
@@ -272,7 +270,7 @@
       display: grid;
       grid-template-columns: minmax(auto, 1fr) auto;
       align-items: center;
-      grid-gap: 0 #{$spacingX};
+      grid-gap: 0 #{vars.$dreamCardSpacingX};
       border-radius: 0 0 #{$borderRadius} #{$borderRadius};
       // Разделитель сверху
       *:not(.no-content.no-image) + & {
