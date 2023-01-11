@@ -152,7 +152,7 @@
   $lineB: math.round($line * 0.7);
   $spacing: math.clamp(2px, $lineB, 5px);
   $sizeB: $size - (($line + $spacing) * 2);
-  $speedB: $speed * 0.7;
+  $speedB: $speed * 0.6;
   // Свойства
   position: relative;
   // Полосы
@@ -162,7 +162,6 @@
     position: absolute;
     display: block;
     border: 0 solid transparent;
-    border-top-color: $color;
     border-radius: 50%;
   }
   // Внешняя полоса
@@ -180,18 +179,24 @@
     opacity: 0.8;
     animation: mixinsLoaderAnimation #{$speedB} linear infinite;
   }
+  // Расскрасить лоадер
+  @include loaderColors($color);
   // Правила анимации
   @keyframes mixinsLoaderAnimation {
     0% {
       transform: rotate(0deg);
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
     }
     100% {
       transform: rotate(360deg);
-      opacity: 1;
     }
+  }
+}
+
+// Цвета лоадера
+@mixin loaderColors($color: map.get(colors.$mat-primary, 500)) {
+  // Полосы
+  &::before,
+  &::after {
+    border-top-color: $color;
   }
 }

@@ -56,6 +56,26 @@
           // Полосы
           @include mixins.loader($iconSize, 2px, 1s, #fff);
         }
+        // Расскрасить кнопки
+        &.mat-stroked-button,
+        &.mat-mini-fab {
+          // Общий цвет
+          .mat-icon {
+            @include mixins.loaderColors(colors.$text);
+          }
+          // Статус: warn
+          &.mat-warn .mat-icon {
+            @include mixins.loaderColors(map.get(colors.$mat-status-warn, 500));
+          }
+          // Статус: accent
+          &.mat-accent .mat-icon {
+            @include mixins.loaderColors(map.get(colors.$mat-secondary, 500));
+          }
+          // Статус: primary
+          &.mat-primary .mat-icon {
+            @include mixins.loaderColors(map.get(colors.$mat-primary, 500));
+          }
+        }
       }
     }
   }
