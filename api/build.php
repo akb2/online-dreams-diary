@@ -4,7 +4,7 @@ spl_autoload_register(function ($name) {
   $file = $_SERVER['DOCUMENT_ROOT'] . '/' . $name . '.php';
   $file = preg_replace('/([\/\\\]+)/i', '/', $file);
   // Подключить файл
-  if(file_exists($file)) {
+  if (file_exists($file)) {
     include_once $file;
   }
 });
@@ -32,6 +32,7 @@ $result = array(
   "method" => $methodParam,
   "queryParams" => array(
     "post" => $_POST,
+    "request" => $_REQUEST,
     "get" => $_GET,
   ),
   "result" => $controller,
