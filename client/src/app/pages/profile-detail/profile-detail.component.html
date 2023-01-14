@@ -97,7 +97,8 @@
               subTitle="Пользователь предпочел скрыть свою страницу настройками приватности">
     <app-action-block [user]="visitedUser"
                       [itsMyPage]="itsMyPage"
-                      [shortenForm]="true"></app-action-block>
+                      [shortenForm]="true"
+                      *ngIf="isAutorizedUser"></app-action-block>
   </app-inform>
 </ng-template>
 
