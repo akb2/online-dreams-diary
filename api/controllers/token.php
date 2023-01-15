@@ -45,7 +45,7 @@ class Token
   }
 
   // Удалить токен
-  // * DELETE
+  // * POST
   public function deleteToken($data): array
   {
     return $this->tokenService->deleteTokenApi($data["token"]);
@@ -66,7 +66,7 @@ class Token
   }
 
   // Удалить токен по ID токена
-  // * DELETE
+  // * POST
   public function deleteTokenById($data): array
   {
     $code = "0000";
@@ -98,7 +98,7 @@ class Token
   }
 
   // Удалить токен по ID пользователя
-  // * DELETE
+  // * POST
   public function deleteTokensByUser($data): array
   {
     $code = "0000";

@@ -185,7 +185,7 @@ class Dream
   }
 
   // Удалить сновидение
-  // * DELETE
+  // * POST
   public function delete($data): array
   {
     $code = "7004";
