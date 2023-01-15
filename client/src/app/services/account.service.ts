@@ -1,21 +1,20 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { OnlinePeriod, UserPrivateNames } from "@_datas/account";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
+import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { environment } from '@_environments/environment';
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
-import { SimpleObject } from "@_models/app";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { catchError, filter, finalize, map, mergeMap, pairwise, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of, Subject, timer } from "rxjs";
+import { catchError, concatMap, filter, finalize, map, mergeMap, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -83,6 +82,7 @@ export class AccountService implements OnDestroy {
     userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
     // Обновить счетчик
     let counter: number = this.updateUserCounter(userId, 1);
+    const codes: string[] = ["8100"];
     // Подписки
     const observable: Observable<User> = this.users.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -98,7 +98,7 @@ export class AccountService implements OnDestroy {
       map(([, next]) => next)
     );
     const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
-    const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId) : of(null))).pipe(
+    const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId, codes) : of(null))).pipe(
       takeUntil(this.destroyed$),
       mergeMap(() => observable),
       tap(() => {
@@ -132,7 +132,7 @@ export class AccountService implements OnDestroy {
       const mixedUsers: any = JSON.parse(stringUsers);
       const arrayUsers: any[] = Array.isArray(mixedUsers) ? mixedUsers : [];
       // Проверить данные
-      users = arrayUsers.map(u => u as User).filter(u => !!u);
+      users = arrayUsers.map(this.userConverter).filter(u => !!u);
     }
     // Ошибка
     catch (e: any) { }
@@ -143,7 +143,7 @@ export class AccountService implements OnDestroy {
   // Проверить статус онлайн
   private isOnlineByDate(mixedDate: Date | string): boolean {
     const now: Date = new Date();
-    const date: Date = typeof mixedDate === "string" ? new Date(!!mixedDate ? mixedDate : 0) : mixedDate;
+    const date: Date = typeof mixedDate === "string" ? new Date(!!mixedDate ? mixedDate : 0) : (!!mixedDate ? mixedDate : new Date(0));
     const period: number = Math.round((now.getTime() - date.getTime()) / 1000);
     // Вернуть результат
     return period < OnlinePeriod;
@@ -240,8 +240,9 @@ export class AccountService implements OnDestroy {
 
   // Выйти из аккаунта
   quit(): void {
-    this.tokenService.deleteAuth();
-    this.clearUsersFromStore();
+    this.tokenService.deleteAuth()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.clearUsersFromStore());
   }
 
   // Проверка настроек приватности
@@ -256,6 +257,49 @@ export class AccountService implements OnDestroy {
 
 
 
+
+  // Автополучение данных о пользователе
+  syncUserData(id: string | number = 0, lastEditDate: Date = null): Observable<User> {
+    let connect: boolean = false;
+    const observable = (id: string | number = 0, lastEditDate: Date = null) => {
+      const user: User = this.users.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.id));
+      // Параметры
+      id = user?.id ?? id ?? 0;
+      lastEditDate = user?.lastEditDate ?? lastEditDate ?? new Date(0);
+      connect = true;
+      // Параметры
+      const params: HttpParams = ObjectToParams({ id, lastEditDate: lastEditDate.toISOString() });
+      // Подписка
+      return id > 0 ?
+        this.httpClient.get<ApiResponse>("account/syncUser", { params }) :
+        of({ result: { code: "XXXX" } } as ApiResponse);
+    };
+    // Вернуть подписку
+    return timer(0, 1000).pipe(
+      share(),
+      takeUntil(this.destroyed$),
+      filter(() => !connect),
+      concatMap(() => observable(id, lastEditDate).pipe(catchError(e => of(e))
+      )),
+      catchError(() => of(null)),
+      map(result => {
+        const code: string = result?.result?.code.toString();
+        const user: User = this.userConverter(result?.result?.data);
+        const codes: string[] = ["0001", "8100"];
+        // Сохранить данные пользователя
+        if (codes.includes(code)) {
+          this.saveUserToStore(user);
+          // Обновить данные
+          id = user?.id ?? id;
+          lastEditDate = user?.lastEditDate ?? lastEditDate;
+        }
+        // Обновить данные
+        connect = false;
+        // Вернуть данные
+        return user;
+      })
+    );
+  }
 
   // Информация о текущем пользователе
   syncCurrentUser(codes: string[] = []): Observable<User> {
@@ -276,7 +320,6 @@ export class AccountService implements OnDestroy {
 
   // Информация о пользователе
   getUser(id: string | number, codes: string[] = []): Observable<User> {
-    // Вернуть подписку
     return this.httpClient.get<ApiResponse>("account/getUser?id=" + id).pipe(
       switchMap(
         result => {
@@ -325,7 +368,6 @@ export class AccountService implements OnDestroy {
     formData.append("new_password", newPassword);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/changePassword", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(r => this.apiService.checkResponse(r.result.code, codes))
     );
   }
@@ -336,7 +378,6 @@ export class AccountService implements OnDestroy {
     Object.entries(userSave).map(([key, value]) => formData.append(key, value));
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/saveUserData", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -347,7 +388,6 @@ export class AccountService implements OnDestroy {
     formData.append("pageStatus", pageStatus ?? "");
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/savePageStatus", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -363,7 +403,6 @@ export class AccountService implements OnDestroy {
     Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
     // Запрос
     return this.httpClient.post<ApiResponse>("account/saveUserSettings", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -375,7 +414,6 @@ export class AccountService implements OnDestroy {
     formData.append("private", JSON.stringify(privateDatas));
     // Запрос
     return this.httpClient.post<ApiResponse>("account/saveUserPrivate", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -390,7 +428,6 @@ export class AccountService implements OnDestroy {
     formData.append("file", file);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/uploadAvatar", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -405,15 +442,13 @@ export class AccountService implements OnDestroy {
     formData.append("height", coords.height.toString());
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/cropAvatar", formData).pipe(
-      mergeMap(() => this.syncCurrentUser(), r => r),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
 
   // Удалить аватарку
   deleteAvatar(codes: string[] = []): Observable<string> {
-    return this.httpClient.delete<ApiResponse>("account/deleteAvatar").pipe(
-      mergeMap(() => this.syncCurrentUser(), (r1, r2) => r1),
+    return this.httpClient.post<ApiResponse>("account/deleteAvatar", new FormData()).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes))
     );
   }
@@ -439,7 +474,10 @@ export class AccountService implements OnDestroy {
       ...data,
       id: ParseInt(data?.id),
       sex: ParseInt(data?.sex) as UserSex,
-      online: this.isOnlineByDate(data?.lastActionDate),
+      online: this.isOnlineByDate(ToDate(data?.lastActionDate)),
+      lastActionDate: ToDate(data?.lastActionDate),
+      lastEditDate: ToDate(data?.lastEditDate),
+      hasAccess: !!data?.hasAccess,
       settings: {
         profileBackground: BackgroundImageDatas.find(d => d.id == background) ?? BackgroundImageDatas[0],
         profileHeaderType: headerType ?? NavMenuType.short
@@ -462,7 +500,7 @@ export class AccountService implements OnDestroy {
 
   // Сохранить данные о пользователе в стор
   private saveUserToStore(user: User): void {
-    const users: User[] = [...(this.users.getValue() ?? [])];
+    const users: User[] = [...(this.users?.getValue() ?? [])];
     const index: number = users.findIndex(({ id }) => id === user.id);
     // Обновить запись
     if (index >= 0) {
