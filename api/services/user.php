@@ -798,6 +798,22 @@ class UserService
     return null;
   }
 
+  // Данные о пользователе для синхронизации
+  public function syncUser($id, $lastEditDate)
+  {
+    $sqlData = array($id, $lastEditDate);
+    $users = $this->dataBaseService->getDatasFromFile('account/syncUser.sql', $sqlData);
+    // Проверить авторизацию
+    if (count($users) > 0) {
+      if (strlen($users[0]['id']) > 0) {
+        // Данные пользователя
+        return $this->getUserData($users[0]);
+      }
+    }
+    // Пользователь не найден
+    return null;
+  }
+
   // Получить список пользователей
   public function getList(array $search, string $token, string $userId): array
   {
@@ -805,6 +821,7 @@ class UserService
     $result = array();
     $limit = $search['limit'] > 0 & $search['limit'] <= 500 ? $search['limit'] : $this->config['dreams']['limit'];
     $checkToken = $this->tokenService->checkToken($userId, $token);
+    $statuses = array(-1, 0, 1);
     // Отфильтровать поиск по ФИО
     if (strlen($search['q']) > 0) {
       $q = array();
@@ -826,6 +843,7 @@ class UserService
       'birth_year' => $search['birth_year'],
       'birth_month' => $search['birth_month'],
       'birth_day' => $search['birth_day'],
+      'status' => array_search($search['status'] ?? 1, $statuses) ? $search['status'] : $statuses[0],
       // Параметры
       'check_token' => $checkToken,
       'current_user' => intval($userId),
@@ -859,6 +877,8 @@ class UserService
   // Преобразовать данные
   private function getUserData(array $user): array
   {
+    $defaultDate = date('Y-m-d\TH:i:s\ZO', 0);
+
     // Определение аватарок
     $avatars = array();
     foreach ($this->avatarKeys as $key) {
@@ -878,38 +898,33 @@ class UserService
     }
 
     // Данные об обрезке аватарки
-    $avatarCropData = array();
-    if ($avatarCropData = @json_decode($user['avatar_crop_data'], true)) {
-      foreach ($this->avatarKeysCrop as $value) {
-        $avatarCropData[$value] = isset($avatarCropData[$value]) ? $avatarCropData[$value] : array();
-        $avatarCropData[$value] = $this->checkUserAvatarCropDatas($avatarCropData[$value]);
-      }
+    $avatarCropData = @json_decode($user['avatar_crop_data'], true) ?? array();
+    foreach ($this->avatarKeysCrop as $value) {
+      $avatarCropData[$value] = $avatarCropData[$value] ?? array();
+      $avatarCropData[$value] = $this->checkUserAvatarCropDatas($avatarCropData[$value]);
     }
 
     // Данные о настройках
-    $settings = array();
-    if ($settings = @json_decode($user['settings'], true)) {
-      $settings['profileBackground'] = isset($settings['profileBackground']) ? $settings['profileBackground'] : 0;
-    }
+    $settings = @json_decode($user['settings'], true) ?? array();
+    $settings['profileBackground'] = $settings['profileBackground'] ?? 0;
 
     // Натсройки приватности
-    $private = array();
-    if ($private = @json_decode($user['private'], true)) {
-    }
+    $private = @json_decode($user['private'], true) ?? array();
 
     // Вернуть данные
     return array(
       'id' => $user['id'],
       'status' => $user['status'],
-      'activation_key' => $user['activation_key'],
-      'activation_key_expire' => $user['activation_key_expire'],
+      'activation_key' => $user['activation_key'] ?? "",
+      'activation_key_expire' => $user['activation_key_expire'] ?? $defaultDate,
       'name' => $user['name'],
       'pageStatus' => $user['page_status'],
       'lastName' => $user['last_name'],
       'patronymic' => $user['patronymic'],
       'birthDate' => $user['birth_date'],
       'registerDate' => $user['register_date'],
-      'lastActionDate' => $user['last_action_date'],
+      'lastEditDate' => $user['last_edit_date'] ?? $defaultDate,
+      'lastActionDate' => $user['last_action_date'] ?? $defaultDate,
       'sex' => $user['sex'],
       'email' => $user['email'],
       'roles' => json_decode($user['roles']),
