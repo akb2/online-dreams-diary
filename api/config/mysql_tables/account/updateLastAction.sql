@@ -1,5 +1,6 @@
 UPDATE `users`
 SET
-  `last_action_date` = CURRENT_TIMESTAMP
+  `last_action_date` = CURRENT_TIMESTAMP,
+  `last_edit_date` = CURRENT_TIMESTAMP
 WHERE
   `id` = ?

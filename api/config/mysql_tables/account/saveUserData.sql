@@ -5,6 +5,7 @@ SET
   `patronymic` = ?,
   `birth_date` = ?,
   `sex` = ?,
-  `email` = ?
+  `email` = ?,
+  `last_edit_date` = CURRENT_TIMESTAMP
 WHERE
   `id` = ?

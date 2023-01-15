@@ -1,5 +1,6 @@
 UPDATE `users`
 SET
-  `private` = ?
+  `private` = ?,
+  `last_edit_date` = CURRENT_TIMESTAMP
 WHERE
   `id` = ?
