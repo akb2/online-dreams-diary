@@ -20,6 +20,12 @@ export const AppMatDialogConfig: MatDialogConfig = {
 // Пустая функция
 export const VoidFunctionVar: VoidFunction = () => { };
 
+// Преобразовать в дату
+export const ToDate = (mixedDate: any, defaultDate: Date = new Date()) => typeof mixedDate === "string" || typeof mixedDate === "number" ?
+  new Date(mixedDate) : typeof mixedDate === "object" && mixedDate instanceof Date ?
+    mixedDate :
+    defaultDate;
+
 // Данные об операционных системах
 export const OsNames: SimpleObject = {
   Win7: "Windows 7",
