@@ -5,6 +5,7 @@ namespace Controllers;
 use Services\UserService;
 use Services\UserSettingsService;
 use Services\TokenService;
+use Services\LongPollingService;
 use PDO;
 
 
@@ -18,6 +19,10 @@ class Account
   private UserService $userService;
   private TokenService $tokenService;
   private UserSettingsService $userSettingsService;
+  private LongPollingService $longPollingService;
+
+  private int $longPollingTime = 150;
+  private int $longPollingWait = 1;
 
 
 
@@ -39,6 +44,7 @@ class Account
     $this->userService = new UserService($this->pdo, $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
+    $this->longPollingService = new LongPollingService();
   }
 
 
@@ -68,9 +74,9 @@ class Account
   // * POST
   public function checkPrivate(array $dataIn): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
     $dataOut = false;
 
     // Проверка входящих данных
@@ -89,19 +95,19 @@ class Account
       }
       // Неверный токен
       else {
-        $code = "9015";
+        $code = '9015';
       }
     }
     // Переданы пустые/неполные данные
     else {
-      $code = "1000";
+      $code = '1000';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => $dataOut
+      'code' => $code,
+      'message' => '',
+      'data' => $dataOut
     );
   }
 
@@ -117,41 +123,45 @@ class Account
   // * GET
   public function search($data): array
   {
-    $code = "0002";
-    $userId = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $data['search_ids'] = isset($data['search_ids']) && strlen($data['search_ids']) > 0 ? explode(',', $data['search_ids']) : array();
+    $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
+    // Параметры
+    $code = '0002';
+    $userId = $_GET['token_user_id'];
+    $token = $_GET['token'];
     $search = array(
-      "q" => $data["search_q"] ?? null,
-      "sex" => $data["search_sex"] ?? null,
-      "birth_year" => $data["search_birthYear"] ?? null,
-      "birth_month" => $data["search_birthMonth"] ?? null,
-      "birth_day" => $data["search_birthDay"] ?? null,
-      "ids" => strlen($data["search_ids"]) > 0 ? explode(",", $data["search_ids"]) : array(),
-      "exclude_ids" => strlen($data["search_excludeIds"]) > 0 ? explode(",", $data["search_excludeIds"]) : array(),
-      "page" => $data["search_page"] ?? 1,
-      "limit" => $data["search_limit"] ?? null
+      'q' => $data['search_q'] ?? null,
+      'sex' => $data['search_sex'] ?? null,
+      'birth_year' => $data['search_birthYear'] ?? null,
+      'birth_month' => $data['search_birthMonth'] ?? null,
+      'birth_day' => $data['search_birthDay'] ?? null,
+      'ids' => $data['search_ids'],
+      'exclude_ids' => $data['search_excludeIds'],
+      'page' => $data['search_page'] ?? 1,
+      'limit' => $data['search_limit'] ?? null,
+      'status' => $data['search_status'] ?? 1
     );
     $testUsers = $this->userService->getList($search, $token, $userId);
     $people = array();
     // Сновидение найдено
-    if ($testUsers["count"] > 0) {
+    if ($testUsers['count'] > 0) {
       // Доступность для просмотра или редактирования
-      $code = "0001";
+      $code = '0001';
       // Список пользователей
-      $people = $testUsers["result"];
+      $people = $testUsers['result'];
     }
     // Сновидение не найдено
     else {
-      $code = "0002";
+      $code = '0002';
     }
     // Вернуть результат
     return array(
-      "data" => array(
-        "count" => $testUsers["count"],
-        "limit" => $testUsers["limit"],
-        "people" => $people
+      'data' => array(
+        'count' => $testUsers['count'],
+        'limit' => $testUsers['limit'],
+        'people' => $people
       ),
-      "code" => $code
+      'code' => $code
     );
   }
 
@@ -159,32 +169,74 @@ class Account
   // * GET
   public function getUser($data): array
   {
-    $code = "0000";
+    $code = '0000';
     $user = array();
+    $currentUserId = $_GET['token_user_id'];
 
     // Проверка ID
-    if (strlen($data["id"]) > 0) {
-      $code = "9013";
+    if (strlen($data['id']) > 0) {
+      $code = '9013';
       // Запрос данных о пользователе
-      $user = $this->userService->getUser($data["id"]);
-      // Удалить секретные данные
-      unset($user['activation_key']);
-      unset($user['activation_key_expire']);
+      $user = $this->userService->getUser($data['id']);
       // Проверить авторизацию
       if ($user) {
-        $code = "0001";
+        ['code' => $code, 'user' => $user] = $this->checkUserDataPrivate($user, $currentUserId);
       }
     }
     // Получены пустые данные
     else {
-      $code = "9030";
+      $code = '9030';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => $user
+      'code' => $code,
+      'message' => '',
+      'data' => $user
+    );
+  }
+
+  // Синхронизация данных о пользователе
+  // * GET
+  // * LONG_POLLING
+  public function syncUser($data): array
+  {
+    $code = '0000';
+    $user = array();
+    $currentUserId = $_GET['token_user_id'];
+    $defaultDate = date('Y-m-d\TH:i:s\ZO', 0);
+
+    // Проверка ID
+    if (strlen($data['id']) > 0) {
+      $code = '9013';
+      $data['lastEditDate'] = isset($data['lastEditDate']) && strlen($data['lastEditDate']) > 0 ? $data['lastEditDate'] : $defaultDate;
+      // Задача на получение данных
+      $user = $this->longPollingService->run($this->longPollingWait, $this->longPollingTime, $data, function ($data) {
+        $userData = $this->userService->syncUser($data['id'], $data['lastEditDate']);
+        // Данные обнаружены
+        if (!!$userData) {
+          return $userData;
+        }
+      });
+      // Данные обнаружены
+      if (!!$user) {
+        ['code' => $code, 'user' => $user] = $this->checkUserDataPrivate($user, $currentUserId);
+      }
+      // Пользователь не найден
+      else {
+        $code = '0002';
+      }
+    }
+    // Получены пустые данные
+    else {
+      $code = '9030';
+    }
+
+    // Вернуть массив
+    return array(
+      'code' => $code,
+      'message' => '',
+      'data' => $user
     );
   }
 
@@ -194,10 +246,10 @@ class Account
   // * POST
   public function changePassword($data): array
   {
-    $code = "0000";
-    $message = "";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $message = '';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверка входящих данных
     if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
@@ -222,24 +274,24 @@ class Account
         }
         // Ошибка доступа
         else {
-          $code = "9040";
+          $code = '9040';
         }
       }
       // Неверный токен
       else {
-        $code = "9015";
+        $code = '9015';
       }
     }
     // Переданы пустые/неполные данные
     else {
-      $code = "1000";
+      $code = '1000';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => $message,
-      "data" => array()
+      'code' => $code,
+      'message' => $message,
+      'data' => array()
     );
   }
 
@@ -247,9 +299,9 @@ class Account
   // * POST
   public function saveUserData($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -259,19 +311,19 @@ class Account
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
@@ -279,9 +331,9 @@ class Account
   // * POST
   public function savePageStatus($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -291,19 +343,19 @@ class Account
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
@@ -311,9 +363,9 @@ class Account
   // * POST
   public function saveUserSettings($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -323,19 +375,19 @@ class Account
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
@@ -343,31 +395,31 @@ class Account
   // * POST
   public function saveUserPrivate($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
       if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->userService->saveUserPrivateApi($id, $data["private"]);
+        return $this->userService->saveUserPrivateApi($id, $data['private']);
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
@@ -377,33 +429,33 @@ class Account
   // * POST
   public function uploadAvatar($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
       // Проверка доступа
       if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        $data["file"] = $_FILES["file"];
+        $data['file'] = $_FILES['file'];
         // Загрузка
         return $this->userService->uploadAvatarApi($id, $data);
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
@@ -411,9 +463,9 @@ class Account
   // * POST
   public function cropAvatar($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -424,29 +476,29 @@ class Account
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
     );
   }
 
   // Удалить аватарку
-  // * DELETE
+  // * POST
   public function deleteAvatar(): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0000';
+    $id = $_GET['token_user_id'];
+    $token = $_GET['token'];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -457,19 +509,60 @@ class Account
       }
       // Ошибка доступа
       else {
-        $code = "9040";
+        $code = '9040';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
 
     // Вернуть массив
     return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
+      'code' => $code,
+      'message' => '',
+      'data' => array()
+    );
+  }
+
+
+
+  // Проверка доступа к странице пользователя
+  private function checkUserDataPrivate(array $userData, $currentUserId): array
+  {
+    $code = '8100';
+    $user = null;
+    // Данные определены
+    if (isset($userData['id'])) {
+      unset($userData['activation_key']);
+      unset($userData['activation_key_expire']);
+      // Проверка данных
+      if ($this->userSettingsService->checkPrivate("myPage", $userData['id'], intval($currentUserId))) {
+        $code = '0001';
+        $user = $userData;
+        // Отметка о доступе
+        $user['hasAccess'] = true;
+      }
+      // Краткие сведения
+      else {
+        $code = '8100';
+        $user = array(
+          'id' => $userData['id'],
+          'sex' => $userData['sex'],
+          'name' => $userData['name'],
+          'lastName' => $userData['lastName'],
+          'lastActionDate' => $userData['lastActionDate'],
+          'lastEditDate' => $userData['lastEditDate'],
+          'avatars' => $userData['avatars'],
+          'private' => $userData['private'],
+          'hasAccess' => false
+        );
+      }
+    }
+    // Ошибка
+    return array(
+      'code' => $code,
+      'user' => $user
     );
   }
 }
