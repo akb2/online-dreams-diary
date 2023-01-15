@@ -191,7 +191,7 @@ export class DreamService implements OnDestroy {
   delete(dreamId: number, codes: string[] = []): Observable<boolean> {
     const params: SimpleObject = { id: dreamId.toString() };
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>("dream/delete", { params: ObjectToParams(params) }).pipe(
+    return this.httpClient.post<ApiResponse>("dream/delete", new FormData(), { params: ObjectToParams(params) }).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :

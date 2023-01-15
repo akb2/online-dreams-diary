@@ -8,7 +8,7 @@ import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { BehaviorSubject, Observable } from "rxjs";
-import { map, switchMap } from "rxjs/operators";
+import { map, switchMap, tap } from "rxjs/operators";
 
 
 
@@ -124,7 +124,7 @@ export class TokenService {
   deleteTokenById(id: number, codes: string[] = []): Observable<boolean> {
     const url: string = "token/deleteTokenById?tokenId=" + id;
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(url).pipe(
+    return this.httpClient.post<ApiResponse>(url, new FormData()).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
       map(result => result.result.code === "0001")
     );
@@ -134,27 +134,26 @@ export class TokenService {
   deleteTokensByUser(hideCurrent: boolean = false, codes: string[] = []): Observable<boolean> {
     const url: string = "token/deleteTokensByUser?hideCurrent=" + (hideCurrent ? 1 : 0);
     // Вернуть подписку
-    return this.httpClient.delete<ApiResponse>(url).pipe(
+    return this.httpClient.post<ApiResponse>(url, new FormData()).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
       map(result => result.result.code === "0001")
     );
   }
 
   // Сбросить авторизацию
-  deleteAuth(): void {
-    this.httpClient.delete<ApiResponse>("token/deleteToken").pipe(switchMap(
-      result => {
-        this.deleteCurrentUser();
-        return this.apiService.checkResponse(result.result.code);
-      }
-    )).subscribe(code => {
-      this.id = "";
-      this.token = "";
-      this.configLocalStorage();
-      this.localStorageService.deleteCookie("token");
-      this.localStorageService.deleteCookie("current_user");
-      this.router.navigate([""]);
-    });
+  deleteAuth(): Observable<string> {
+    return this.httpClient.post<ApiResponse>("token/deleteToken", new FormData()).pipe(
+      tap(() => this.deleteCurrentUser()),
+      switchMap(result => this.apiService.checkResponse(result.result.code)),
+      tap(() => {
+        this.id = "";
+        this.token = "";
+        this.configLocalStorage();
+        this.localStorageService.deleteCookie("token");
+        this.localStorageService.deleteCookie("current_user");
+        this.router.navigate([""]);
+      })
+    );
   }
 
 
