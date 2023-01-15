@@ -9,7 +9,7 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
 import { ScreenService } from "@_services/screen.service";
-import { catchError, filter, map, mergeMap, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { catchError, filter, map, concatMap, of, skipWhile, Subject, takeUntil, takeWhile, timer, tap } from "rxjs";
 
 
 
@@ -89,8 +89,8 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$),
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
-        mergeMap(() => this.screenService.breakpoint$),
-        mergeMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
+        concatMap(() => this.screenService.breakpoint$),
+        concatMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
         map(breakPoint => limits[breakPoint] ?? limits.default),
         filter(limit => {
           if (limit !== prevLimit) {
@@ -104,11 +104,11 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
           // Не обновлять
           return false;
         }),
-        mergeMap(
+        concatMap(
           () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.user.id, ["8100"]),
           (limit, hasAccess) => ({ limit, hasAccess })
         ),
-        mergeMap(
+        concatMap(
           ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.user.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
           ({ hasAccess }, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
         ),

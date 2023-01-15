@@ -3,7 +3,7 @@ import { User, UserSex } from "@_models/account";
 import { FriendStatus } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
-import { mergeMap, Observable, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { concatMap, Observable, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -125,9 +125,9 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
           takeUntil(this.destroyed$),
           takeWhile(() => this.user === undefined, true),
           skipWhile(() => this.user === undefined),
-          mergeMap(() => this.accountService.user$()),
-          mergeMap(() => this.accountService.user$(this.user.id)),
-          mergeMap(() => this.friendService.friends$(this.user.id, 0, false)),
+          concatMap(() => this.accountService.user$()),
+          concatMap(() => this.accountService.user$(this.user.id)),
+          concatMap(() => this.friendService.friends$(this.user.id, 0, false)),
           tap(() => {
             this.friendLoader = true;
             this.changeDetectorRef.detectChanges();

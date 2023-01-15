@@ -4,7 +4,7 @@ import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { delay, filter, fromEvent, map, merge, mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { delay, filter, fromEvent, map, merge, concatMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -100,7 +100,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
         takeUntil(this.destroyed$),
         takeWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status"), true),
         skipWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status")),
-        mergeMap(() => merge(
+        concatMap(() => merge(
           this.editStatus$.asObservable(),
           this.statusForm.get("status").valueChanges.pipe(delay(1)),
           this.screenService.elmResize([this.statusOverlay.nativeElement])

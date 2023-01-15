@@ -10,7 +10,7 @@ import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { FriendService } from '@_services/friend.service';
 import { GlobalService } from '@_services/global.service';
-import { mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { concatMap, map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -32,8 +32,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   isAutorizedUser: boolean = false;
   itsMyPage: boolean = false;
   userHasAccess: boolean = false;
-  private userReady: boolean = false;
   pageLoading: boolean = false;
+  private userReady: boolean = false;
+  private visitedUserSync: boolean = false;
 
   title: string = "Страница пользователя";
   subTitle: string = "";
@@ -68,6 +69,16 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       !!this.visitedUser.avatars.middle &&
       !!this.visitedUser.avatars.crop &&
       !!this.visitedUser.avatars.small
+    );
+  }
+
+  // Подписка на ожидание данных0
+  private waitObservable(callback: () => boolean): Observable<void> {
+    return timer(1, 50).pipe(
+      takeUntil(this.destroyed$),
+      takeWhile(callback, true),
+      skipWhile(callback),
+      map(() => { })
     );
   }
 
@@ -153,6 +164,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   private defineCurrentUser(): void {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
+    // Синхронизация данных пользователя
+    this.accountService.syncUserData()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
     // Подписка
     this.accountService.user$()
       .pipe(takeUntil(this.destroyed$))
@@ -169,12 +184,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка
-    timer(0, 50)
+    this.waitObservable(() => !this.userReady)
       .pipe(
-        takeUntil(this.destroyed$),
-        takeWhile(() => !this.userReady, true),
-        skipWhile(() => !this.userReady),
-        mergeMap(() => this.activatedRoute.params),
+        concatMap(() => this.activatedRoute.params),
         switchMap(params => {
           if (params?.user_id === "0") {
             this.router.navigate(["/profile/" + this.user.id], { replaceUrl: true });
@@ -200,29 +212,33 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка на данные пользователя
-    timer(0, 50)
-      .pipe(
-        takeUntil(this.destroyed$),
-        takeWhile(() => this.visitedUserId === -1, true),
-        skipWhile(() => this.visitedUserId === -1),
-        mergeMap(() => this.accountService.user$()),
-        mergeMap(() => this.itsMyPage || !this.isAutorizedUser ? of(null) : this.friendService.friends$(this.visitedUserId, 0, true)),
-        mergeMap(
-          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.visitedUserId, ["8100"]),
-          (friend, userHasAccess) => ({ userHasAccess, friend })
-        ),
-        mergeMap(
-          () => this.accountService.user$(this.visitedUserId, !this.itsMyPage),
-          (data, user) => ({ ...data, user })
-        )
-      )
-      .subscribe(
-        ({ userHasAccess, user }) => {
-          this.visitedUser = user;
-          this.userHasAccess = userHasAccess;
-          this.onUserLoaded();
-        },
-        () => this.onUserFail()
-      );
+    this.waitObservable(() => this.visitedUserId === -1 || !this.userReady)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => {
+        if (!!this.user && this.visitedUserId === this.user.id) {
+          this.visitedUserSync = true;
+        }
+        // Чужая страница
+        else {
+          this.accountService.syncUserData(this.visitedUserId)
+            .pipe(takeUntil(this.destroyed$))
+            .subscribe(() => this.visitedUserSync = true);
+        }
+        // Подписка
+        this.waitObservable(() => !this.visitedUserSync)
+          .pipe(
+            concatMap(() => this.accountService.user$(this.visitedUserId, false)),
+            takeUntil(this.destroyed$)
+          )
+          .subscribe(
+            user => {
+              this.visitedUser = user;
+              this.userHasAccess = !!user?.hasAccess;
+              // Отрисовка сведений
+              this.onUserLoaded();
+            },
+            () => this.onUserFail()
+          );
+      });
   }
 }

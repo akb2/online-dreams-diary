@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
 import { User } from "@_models/account";
 import { Search } from "@_models/api";
-import { CustomObject, CustomObjectKey, SimpleObject } from "@_models/app";
+import { CustomObjectKey } from "@_models/app";
 import { FriendSearch, FriendSearchType, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
-import { catchError, map, mergeMap, of, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { catchError, concatMap, map, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -52,10 +52,10 @@ export class FriendsBlockComponent implements OnChanges, OnInit, OnDestroy {
         takeUntil(this.destroyed$),
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
-        mergeMap(() => this.itsMyPage ? of(this.user) : this.accountService.user$()),
-        mergeMap(() => this.accountService.user$(this.user.id)),
-        mergeMap(() => this.itsMyPage ? of({}) : this.friendService.friends$(this.user.id)),
-        mergeMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.user.id)),
+        concatMap(() => this.itsMyPage ? of(this.user) : this.accountService.user$()),
+        concatMap(() => this.accountService.user$(this.user.id)),
+        concatMap(() => this.itsMyPage ? of({}) : this.friendService.friends$(this.user.id)),
+        concatMap(() => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myPage", this.user.id)),
         map(hasAccess => ({
           hasAccess,
           search: {
@@ -64,7 +64,7 @@ export class FriendsBlockComponent implements OnChanges, OnInit, OnDestroy {
             limit: this.friendLimit
           } as Partial<FriendSearch>
         })),
-        mergeMap(({ hasAccess, search }) => hasAccess ? this.friendService.getList(search, ["0002", "8100"]) : []),
+        concatMap(({ hasAccess, search }) => hasAccess ? this.friendService.getList(search, ["0002", "8100"]) : []),
         catchError(() => of({
           count: 0,
           limit: this.friendLimit,
