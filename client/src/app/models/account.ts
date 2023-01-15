@@ -15,6 +15,7 @@ export interface User extends UserSave {
   private: UserPrivate;
   registerDate: Date;
   lastActionDate: Date;
+  lastEditDate: Date;
   roles: UserRoles[];
   avatars: UserAvatars;
   avatarCropData: UserAvatarCropData;
@@ -94,6 +95,7 @@ interface UserBase {
   birthDate: string;
   sex: UserSex;
   email: string;
+  hasAccess?: boolean;
 }
 
 // Интерфейс авторизации
