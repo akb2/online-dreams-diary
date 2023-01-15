@@ -83,7 +83,7 @@ export class GlobalService implements OnDestroy {
       observable = this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
         switchMap(code => {
           if (code === "0001") {
-            return this.accountService.syncCurrentUser();
+            return this.accountService.syncCurrentUser().pipe(takeUntil(this.destroyed$));
           }
           // Ошибка проверки токена
           else {
