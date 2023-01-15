@@ -11,7 +11,7 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
   .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
 
 // Преобразование объекта в FormControl
-export const ObjectToFormData = (params: CustomObject<any>, keyPreffix: string = "") => {
+export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix: string = "") => {
   const formData: FormData = new FormData();
   // Добавить параметры в форму
   Object.entries(params)
@@ -23,6 +23,8 @@ export const ObjectToFormData = (params: CustomObject<any>, keyPreffix: string =
 
 // Тип сообщений об ошибках
 export const ApiResponseMessages: SimpleObject = {
+  "XXXX": "Запрос был заблокирован на уровне приложения",
+
   "0000": "Пустой ответ сервера, состояние выполнения запроса неизвестно",
   "0001": "Успешное выполнение запроса",
   "0002": "Данные не найдены",
