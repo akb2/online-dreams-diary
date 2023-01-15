@@ -45,16 +45,19 @@ export class ApiService {
   }
 
   // Функция обработки ошибок
-  checkResponse(code: ApiResponseCodes, codes: string[] = []): Observable<any> {
+  checkResponse(mixedCode: ApiResponseCodes, codes: string[] = []): Observable<any> {
+    const code: string = mixedCode.toString();
     // Обработать ошибку внутри подписчика
-    if (code === "0001" || codes.some(testCode => testCode === code)) {
+    if (code === "0001" || codes.includes(code)) {
       return of(code);
     }
     // Ошибка
     else {
       const message: string = "Ошибка " + code + ": " + this.getMessageByCode(code);
       // Сообщение с ошибкой
-      this.snackbarService.open({ message, mode: "error" });
+      if (code !== "XXXX") {
+        this.snackbarService.open({ message, mode: "error" });
+      }
       // Вернуть ошибку
       return throwError(message);
     }
