@@ -68,5 +68,10 @@ WHERE
   AND EXTRACT(day FROM `birth_date`) = :birth_day
 <? endif; ?>
 
+<?/* Поиск по статусу пользователя */ ?>
+<? if ($input['status'] > 0) : ?>
+  AND `status` = :status
+<? endif; ?>
+
 ORDER BY <? if (strlen($input["q"]) > 0) : ?>`q` DESC,<? endif; ?> `id` ASC
 LIMIT <?= $input['limit_start']; ?>, <?= $input['limit_length']; ?>
