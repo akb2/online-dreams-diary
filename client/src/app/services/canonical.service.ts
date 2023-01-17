@@ -27,9 +27,7 @@ export class CanonicalService {
     canURL = canURL.replace(new RegExp("^([http?:\/\/]+)([\/]+)", "gi"), "$1/");
     // Добавить параметры
     if (!!params) {
-      console.log(params);
       const stringParams: string = ObjectToStringParams(params, "", excludeParams);
-      console.log(stringParams);
       const hasParams: boolean = (new RegExp("([\?])", "i")).test(stringParams);
       // Добавить параметры
       if (!!stringParams) {
