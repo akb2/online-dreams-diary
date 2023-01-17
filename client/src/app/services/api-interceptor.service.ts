@@ -36,7 +36,7 @@ export class ApiInterceptorService implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     this.updateState();
     // Параметры
-    let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : environment.baseUrl + req.url;
+    let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : environment.baseApiUrl + req.url;
     const paramsData: SimpleObject = { "token_user_id": this.id, "token": this.token };
     const headers: HttpHeaders = !!environment.httpHeader ?
       Object.entries(environment.httpHeader as SimpleObject).reduce((o, [k, v]) => o.set(k, v), req.headers) :
