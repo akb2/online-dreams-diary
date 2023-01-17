@@ -49,22 +49,24 @@ class App
     // Подключение контроллера
     if (file_exists($file)) {
       $controller = include $file;
-      // Передать настройки
-      if (method_exists($controller, "setConfig")) {
-        $controller->setConfig($this->config);
-      }
-      // Передать контекст БД
-      if (method_exists($controller, "setDbContext")) {
-        $controller->setDbContext($this->pdo);
-      }
-      // Запуск сервисов
-      if (method_exists($controller, "setServices")) {
-        $controller->setServices();
-      }
-
-      // Выполнить нужный метод
+      $method = strtolower($_SERVER['REQUEST_METHOD']);
+      $params = array('default' => $_REQUEST, 'get' => $_GET, 'post' => $_POST);
+      // Выполнение
       if (method_exists($controller, $methodName)) {
-        return $controller->$methodName($_REQUEST);
+        // Передать настройки
+        if (method_exists($controller, "setConfig")) {
+          $controller->setConfig($this->config);
+        }
+        // Передать контекст БД
+        if (method_exists($controller, "setDbContext")) {
+          $controller->setDbContext($this->pdo);
+        }
+        // Запуск сервисов
+        if (method_exists($controller, "setServices")) {
+          $controller->setServices();
+        }
+        // Выполнить нужный метод
+        return $controller->$methodName($params[$method] ?? $params['default']);
       }
     }
     // Контроллер не найден
