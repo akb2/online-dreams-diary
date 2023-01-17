@@ -3,12 +3,13 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
+import { environment } from '@_environments/environment';
 import { User, UserSex } from '@_models/account';
 import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
-import { FriendService } from '@_services/friend.service';
+import { CanonicalService } from '@_services/canonical.service';
 import { GlobalService } from '@_services/global.service';
 import { concatMap, map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
@@ -91,10 +92,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
-    private friendService: FriendService,
     private titleService: Title,
     private globalService: GlobalService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private canonicalService: CanonicalService
   ) { }
 
   ngOnInit() {
@@ -153,6 +154,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     // Готово к загрузке
     this.pageLoading = false;
     this.titleService.setTitle(this.pageTitle);
+    this.canonicalService.setURL("profile/" + this.visitedUser.id);
     this.changeDetectorRef.detectChanges();
   }
 
