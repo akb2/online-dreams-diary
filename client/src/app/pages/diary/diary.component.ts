@@ -3,6 +3,7 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
+import { ObjectToStringParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamPlural } from "@_datas/dream";
 import { ParseInt } from "@_helpers/math";
@@ -12,6 +13,7 @@ import { BackgroundImageData } from "@_models/appearance";
 import { Dream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { CanonicalService } from "@_services/canonical.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { of, Subject, throwError } from "rxjs";
@@ -104,7 +106,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
     private dreamService: DreamService,
     private titleService: Title,
     private router: Router,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private canonicalService: CanonicalService
   ) { }
 
   ngOnInit() {
@@ -208,6 +211,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.floatButtonLink = "/diary/editor";
       this.diaryTypeByUser = DiaryTypeByUser.my;
       this.showProfile = false;
+      this.canonicalService.setURL("diary/" + this.user.id, { p: this.pageCurrent }, { p: [0, 1] });
       // Установить посещаемого пользователя из текущего
       this.visitedUser = this.user;
       // Готово
@@ -224,6 +228,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.backButtonLink = "/profile/" + this.visitedUser.id;
       this.diaryTypeByUser = DiaryTypeByUser.user;
       this.showProfile = false;
+      this.canonicalService.setURL("diary/" + this.visitedUser.id, { p: this.pageCurrent }, { p: [0, 1] });
       // Готово
       this.ready = true;
     }
@@ -243,6 +248,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.menuAvatarIcon = "content_paste_search";
       this.diaryTypeByUser = DiaryTypeByUser.all;
       this.showProfile = true;
+      this.canonicalService.setURL("diary/all", { p: this.pageCurrent }, { p: [0, 1] });
       // Готово
       this.ready = true;
     }

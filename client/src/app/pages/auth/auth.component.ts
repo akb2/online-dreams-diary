@@ -4,6 +4,7 @@ import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/fo
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { CanonicalService } from "@_services/canonical.service";
 import { of, Subject, takeUntil, timer } from "rxjs";
 
 
@@ -44,13 +45,15 @@ export class AuthComponent implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private canonicalService: CanonicalService
   ) {
     this.form = this.formBuilder.group({
       login: ["", AccountValidatorData.login],
       password: ["", AccountValidatorData.password],
       captcha: ["", Validators.required]
     });
+    this.canonicalService.setURL("auth");
   }
 
   ngOnDestroy(): void {

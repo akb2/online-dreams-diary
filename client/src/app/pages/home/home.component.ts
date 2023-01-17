@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DreamMap } from '@_models/dream-map';
 import { NavMenuType } from '@_models/nav-menu';
+import { CanonicalService } from '@_services/canonical.service';
 import { DreamService } from '@_services/dream.service';
 
 
@@ -25,8 +26,10 @@ export class HomeComponent {
 
 
   constructor(
-    private dreamService: DreamService
+    private dreamService: DreamService,
+    private canonicalService: CanonicalService
   ) {
     this.dreamMap = this.dreamService.dreamMapConverter(null);
+    this.canonicalService.setURL("home");
   }
 }

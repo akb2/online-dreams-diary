@@ -11,6 +11,7 @@ import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/fo
 import { NavMenuType } from "@_models/nav-menu";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { CanonicalService } from "@_services/canonical.service";
 
 
 
@@ -62,7 +63,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private localStorage: LocalStorageService,
     private accountService: AccountService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private canonicalService: CanonicalService
   ) {
     this.localStorage.cookieKey = this.cookieKey;
     this.localStorage.cookieLifeTime = this.cookieLifeTime;
@@ -98,6 +100,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         ]
       })
     ];
+    this.canonicalService.setURL("register");
   }
 
   ngOnInit(): void {

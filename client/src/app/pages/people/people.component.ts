@@ -13,6 +13,7 @@ import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
+import { CanonicalService } from '@_services/canonical.service';
 import { ScreenService } from '@_services/screen.service';
 import { merge, Subject, takeUntil } from 'rxjs';
 
@@ -46,6 +47,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   pageCurrent: number = 1;
   pageLimit: number = 24;
+  private defaultPageLimit: number = 24;
   pageCount: number = 1;
 
   searchForm: FormGroup;
@@ -129,7 +131,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private accountService: AccountService,
     private screenService: ScreenService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private canonicalService: CanonicalService
   ) {
     this.searchForm = this.formBuilder.group(Object.entries(this.getDefaultSearch)
       .filter(([k]) => k !== "page")
@@ -274,6 +277,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   private search(): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
+    this.canonicalService.setURL("diary/all", this.getSearch, { page: [0, 1], limit: [this.defaultPageLimit] });
     // Загрузка списка
     this.accountService.search(this.getSearch, ["0002"]).subscribe(
       ({ count, result: people, limit }) => {
