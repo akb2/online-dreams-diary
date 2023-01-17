@@ -1,6 +1,8 @@
-import { Injectable, Inject } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
+import { Inject, Injectable } from "@angular/core";
+import { ObjectToStringParams } from "@_datas/api";
 import { environment } from "@_environments/environment";
+import { CustomObject } from "@_models/app";
 
 
 
@@ -17,12 +19,23 @@ export class CanonicalService {
 
 
   // Установить URL
-  setURL(url: string = this.dom.URL) {
+  setURL(url: string = this.dom.URL, params: CustomObject<any> = {}, excludeParams: CustomObject<(string | number)[]> = {}) {
     let canURL: string = /^http(s)?/i.test(url) || /^(\/)?assets(s)?/i.test(url) ? url : environment.baseUrl + url;
     let link: HTMLLinkElement = document.querySelector("link[rel=canonical]");
     let linkExists: boolean = true;
     // URL
-    url = url.replace(new RegExp("([^https?:\/\/]+)([\/]+)", "gi"), "$1/");
+    canURL = canURL.replace(new RegExp("^([http?:\/\/]+)([\/]+)", "gi"), "$1/");
+    // Добавить параметры
+    if (!!params) {
+      console.log(params);
+      const stringParams: string = ObjectToStringParams(params, "", excludeParams);
+      console.log(stringParams);
+      const hasParams: boolean = (new RegExp("([\?])", "i")).test(stringParams);
+      // Добавить параметры
+      if (!!stringParams) {
+        canURL = canURL + (hasParams ? "&" : "?") + stringParams;
+      }
+    }
     // Ссылки не существует
     if (!link) {
       link = this.dom.createElement("link");
