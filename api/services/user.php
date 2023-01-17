@@ -18,6 +18,7 @@ class UserService
   private ReCaptchaService $reCaptchaService;
   private TokenService $tokenService;
   private MailService $mailService;
+  private LongPollingService $longPollingService;
 
   private string $avatarRelativeDir = 'images/user_avatars';
   private string $avatarDir = 'images/user_avatars';
@@ -36,6 +37,7 @@ class UserService
     $this->reCaptchaService = new ReCaptchaService('', $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->mailService = new MailService($this->config);
+    $this->longPollingService = new LongPollingService($this->config);
     // Данные
     $this->avatarDir = $this->config['mediaPath'] . $this->avatarRelativeDir;
   }
@@ -441,6 +443,8 @@ class UserService
         // Сохранение данных
         if ($this->dataBaseService->executeFromFile('account/saveUserData.sql', $sqlData)) {
           $code = '0001';
+          // Отправить изменения в Long Polling подписчики
+          $this->sendUserToLongPolling($id);
         }
         // Регистрация неудалась
         else {
@@ -480,6 +484,8 @@ class UserService
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile('account/saveUserPageStatus.sql', $sqlData)) {
         $code = '0001';
+        // Отправить изменения в Long Polling подписчики
+        $this->sendUserToLongPolling($id);
       }
       // Регистрация неудалась
       else {
@@ -513,6 +519,8 @@ class UserService
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile('account/saveUserSettings.sql', array(json_encode($sqlData), $id))) {
         $code = '0001';
+        // Отправить изменения в Long Polling подписчики
+        $this->sendUserToLongPolling($id);
       }
       // Регистрация неудалась
       else {
@@ -543,6 +551,8 @@ class UserService
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile('account/saveUserPrivate.sql', array($sqlData, $id))) {
         $code = '0001';
+        // Отправить изменения в Long Polling подписчики
+        $this->sendUserToLongPolling($id);
       }
       // Регистрация неудалась
       else {
@@ -581,6 +591,8 @@ class UserService
             // Созданы дополнительные аватарки
             if ($this->createDefaultAvatars($id)) {
               $code = '0001';
+              // Отправить изменения в Long Polling подписчики
+              $this->sendUserToLongPolling($id);
             }
             // Дополнительные аватарки не созданы
             else {
@@ -694,6 +706,8 @@ class UserService
                 // Сохранить массив в БД
                 if ($this->dataBaseService->executeFromFile('account/saveAvatarCrop.sql', array(json_encode($avatarCropData), $id))) {
                   $code = '0001';
+                  // Отправить изменения в Long Polling подписчики
+                  $this->sendUserToLongPolling($id);
                 }
               }
             }
@@ -735,6 +749,8 @@ class UserService
     if (strlen($id) > 0) {
       if ($this->deleteUserAvatars($id)) {
         $code = '0001';
+        // Отправить изменения в Long Polling подписчики
+        $this->sendUserToLongPolling($id);
       }
     }
     // Получены пустые данные
@@ -1065,5 +1081,12 @@ class UserService
     );
     // Попытка отправить письмо
     return $this->mailService->send('account/email-confirmation', $user['email'], 'Подтверждение регистрации', $mailParams);
+  }
+
+  // Отправить данные подписчикам LongPolling
+  private function sendUserToLongPolling(int $userId): void
+  {
+    $user = $this->getUser($userId);
+    $this->longPollingService->send('account/syncUser/' . $userId, $user);
   }
 }

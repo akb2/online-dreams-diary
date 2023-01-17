@@ -21,9 +21,6 @@ class Account
   private UserSettingsService $userSettingsService;
   private LongPollingService $longPollingService;
 
-  private int $longPollingTime = 150;
-  private int $longPollingWait = 1;
-
 
 
   // Получить настройки БД
@@ -44,7 +41,7 @@ class Account
     $this->userService = new UserService($this->pdo, $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
-    $this->longPollingService = new LongPollingService();
+    $this->longPollingService = new LongPollingService($this->config);
   }
 
 
@@ -201,30 +198,33 @@ class Account
   // * LONG_POLLING
   public function syncUser($data): array
   {
+    $data['id'] = $data['id'] ?? 0;
+    $data['lastEditDate'] = isset($data['lastEditDate']) && strlen($data['lastEditDate']) > 0 ? $data['lastEditDate'] : date('Y-m-d\TH:i:s\ZO', 0);
+    // Параметры
     $code = '0000';
     $user = array();
+    $userId = $data['id'];
     $currentUserId = $_GET['token_user_id'];
-    $defaultDate = date('Y-m-d\TH:i:s\ZO', 0);
 
     // Проверка ID
-    if (strlen($data['id']) > 0) {
+    if (strlen($userId) > 0) {
       $code = '9013';
-      $data['lastEditDate'] = isset($data['lastEditDate']) && strlen($data['lastEditDate']) > 0 ? $data['lastEditDate'] : $defaultDate;
-      // Задача на получение данных
-      $user = $this->longPollingService->run($this->longPollingWait, $this->longPollingTime, $data, function ($data) {
-        $userData = $this->userService->syncUser($data['id'], $data['lastEditDate']);
-        // Данные обнаружены
-        if (!!$userData) {
-          return $userData;
-        }
-      });
-      // Данные обнаружены
-      if (!!$user) {
-        ['code' => $code, 'user' => $user] = $this->checkUserDataPrivate($user, $currentUserId);
+      $tetUser = $this->userService->syncUser($userId, $data['lastEditDate']);
+      // Данные получены из базы без Long Polling
+      if (!!$tetUser) {
+        ['code' => $code, 'user' => $user] = $this->checkUserDataPrivate($tetUser, $currentUserId);
       }
-      // Пользователь не найден
+      // Задача на получение данных через Long Polling
       else {
-        $code = '0002';
+        $longUser = $this->longPollingService->get('account/syncUser/' . $userId);
+        // Данные обнаружены
+        if (!!$longUser && is_array($longUser) && strtotime($longUser['lastEditDate']) > strtotime($data['lastEditDate'])) {
+          ['code' => $code, 'user' => $user] = $this->checkUserDataPrivate($longUser, $currentUserId);
+        }
+        // Пользователь не найден
+        else {
+          $code = '0002';
+        }
       }
     }
     // Получены пустые данные
@@ -232,7 +232,7 @@ class Account
       $code = '9030';
     }
 
-    // Вернуть массив
+    // Скрипт не выполнен
     return array(
       'code' => $code,
       'message' => '',
