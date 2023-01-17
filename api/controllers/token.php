@@ -4,8 +4,7 @@ namespace Controllers;
 
 use Services\TokenService;
 use PDO;
-
-
+use Services\UserService;
 
 class Token
 {
@@ -14,6 +13,7 @@ class Token
   private PDO $pdo;
 
   private TokenService $tokenService;
+  private UserService $userService;
 
 
 
@@ -33,6 +33,7 @@ class Token
   public function setServices(): void
   {
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->userService = new UserService($this->pdo, $this->config);
   }
 
 
@@ -41,7 +42,15 @@ class Token
   // * GET
   public function checkToken($data): array
   {
-    return $this->tokenService->checkTokenApi($data);
+    $response = $this->tokenService->checkTokenApi($data);
+    ['code' => $code] = $response;
+    // Отправить данные о пользователе подписчикам Long Polling
+    if ($code === '0001') {
+      ['data' => ['tokenData' => ['user_id' => $userId]]] = $response;
+      $this->userService->sendUserToLongPolling($userId);
+    }
+    // Вернуть данные
+    return $response;
   }
 
   // Удалить токен

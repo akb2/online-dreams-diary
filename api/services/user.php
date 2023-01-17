@@ -1084,7 +1084,7 @@ class UserService
   }
 
   // Отправить данные подписчикам LongPolling
-  private function sendUserToLongPolling(int $userId): void
+  public function sendUserToLongPolling(int $userId): void
   {
     $user = $this->getUser($userId);
     $this->longPollingService->send('account/syncUser/' . $userId, $user);
