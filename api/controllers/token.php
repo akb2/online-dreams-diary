@@ -48,7 +48,7 @@ class Token
   // * POST
   public function deleteToken($data): array
   {
-    return $this->tokenService->deleteTokenApi($data["token"]);
+    return $this->tokenService->deleteTokenApi($_GET["token"]);
   }
 
   // Сведения о токене
@@ -70,8 +70,8 @@ class Token
   public function deleteTokenById($data): array
   {
     $code = "0000";
-    $id = $data["token_user_id"];
-    $token = $data["token"];
+    $id = $_GET["token_user_id"];
+    $token = $_GET["token"];
 
     // Проверить токен
     if ($this->tokenService->checkToken($id, $token)) {
@@ -102,8 +102,8 @@ class Token
   public function deleteTokensByUser($data): array
   {
     $code = "0000";
-    $id = $data["token_user_id"];
-    $token = $data["token"];
+    $id = $_GET["token_user_id"];
+    $token = $_GET["token"];
     $hideCurrent = !!$data["hideCurrent"];
 
     // Проверить токен
