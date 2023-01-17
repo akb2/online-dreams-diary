@@ -10,6 +10,17 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
   .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v]))
   .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
 
+// Преобразование объекта в параметры в виде строки
+export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: CustomObject<(string | number)[]>) => Object.entries(params)
+  .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v.toString()]))
+  .filter(([k, v]) => {
+    const hasInExclude: boolean = excludeParams.hasOwnProperty(k) && excludeParams[k].map(e => e.toString()).includes(v);
+    // Вернуть результат
+    return !!k && !!v && !hasInExclude;
+  })
+  .map(([k, v]) => (keyPreffix + k) + "=" + (Array.isArray(v) ? v.join(",") : v))
+  .join('&');
+
 // Преобразование объекта в FormControl
 export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix: string = "") => {
   const formData: FormData = new FormData();
