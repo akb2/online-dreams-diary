@@ -11,7 +11,6 @@
 
 // Список
 .list {
-  $__elm: &;
   $itemCounts: (
     default: (
       default: 1,
@@ -45,15 +44,15 @@
     @if ($itemCount!= "default") {
       $attribute: "[items='" + $itemCount + "']";
     }
-    // Элемент
-    &#{$attribute} > #{$__elm}__item {
-      // Адаптив сетки
-      @include screens.adaptiveFor($counts, vars.$userProfileBlocksGaps) using($count, $gap) {
+    // Адаптив сетки
+    @include screens.adaptiveFor($counts, vars.$userProfileBlocksGaps) using($count, $gap) {
+      // Элемент
+      &#{$attribute} > &__item {
         width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
-        // Скрыть в режиме одной линии
-        .oneLine > &:nth-child(#{$count}) ~ & {
-          display: none;
-        }
+      }
+      // Скрыть в режиме одной линии
+      &#{$attribute}.oneLine > &__item:nth-child(#{$count}) ~ &__item {
+        display: none;
       }
     }
   }

@@ -1,19 +1,19 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { ObjectToParams } from "@_datas/api";
+import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { User } from "@_models/account";
-import { ApiResponse, Search } from "@_models/api";
+import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { Dream, DreamDto, DreamMode, DreamStatus } from "@_models/dream";
+import { Dream, DreamDto, DreamMode, DreamStatus, SearchRequestDream } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { forkJoin, Observable, of, Subject } from "rxjs";
-import { map, mergeMap, switchMap, take, takeUntil, tap } from "rxjs/operators";
+import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/operators";
 
 
 
@@ -121,18 +121,12 @@ export class DreamService implements OnDestroy {
 
 
   // Список сновидений
-  search(search: SearchDream, codes: string[] = []): Observable<Search<Dream>> {
-    let count: number = 0;
-    let limit: number = 0;
-    // Вернуть подписку
+  search(search: SearchDream, codes: string[] = []): Observable<SearchRequestDream> {
     return this.httpClient.get<ApiResponse>("dream/getList", { params: ObjectToParams(search, "search_") }).pipe(
-      switchMap(result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
-        of(result.result.data) :
-        this.apiService.checkResponse(result.result.code, codes)
-      ),
-      tap(r => count = r.count ?? 0),
-      tap(r => limit = r.limit ?? 0),
-      mergeMap(
+      switchMap(result => result.result.code === "0001" || codes.some(code => result.result.code === code) ?
+        of({ ...result.result.data }) :
+        this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(
         ({ dreams }: any) => {
           if (dreams?.length > 0) {
             const users: number[] = Array.from(new Set(dreams.map((dream: DreamDto) => dream.userId)));
@@ -142,13 +136,15 @@ export class DreamService implements OnDestroy {
           // Не искать пользователей
           return of([]);
         },
-        ({ dreams }: any, users: User[]) => ({ dreams: dreams as DreamDto[], users })
+        ({ dreams, count, limit, hasAccess }: any, users: User[]) => ({ dreams: dreams as DreamDto[], count, limit, hasAccess, users })
       ),
-      map(({ dreams, users }) => dreams?.length > 0 ? dreams.map(d => ({
-        ...this.dreamConverter(d as DreamDto),
-        user: users.find(u => u.id === d.userId)!
-      })) : []),
-      mergeMap((result: Dream[]) => of({ count, result, limit }))
+      map(response => ({
+        ...response,
+        result: response?.dreams?.length > 0 ? response.dreams.map(d => ({
+          ...this.dreamConverter(d as DreamDto),
+          user: response.users.find(u => u.id === d.userId)!
+        })) : []
+      }))
     );
   }
 
@@ -189,9 +185,9 @@ export class DreamService implements OnDestroy {
 
   // Удалить сновидение
   delete(dreamId: number, codes: string[] = []): Observable<boolean> {
-    const params: SimpleObject = { id: dreamId.toString() };
+    const formData: FormData = ObjectToFormData({ id: dreamId });
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("dream/delete", new FormData(), { params: ObjectToParams(params) }).pipe(
+    return this.httpClient.post<ApiResponse>("dream/delete", formData).pipe(
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :

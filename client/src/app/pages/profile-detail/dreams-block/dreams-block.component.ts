@@ -1,15 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { DreamPlural } from "@_datas/dream";
 import { User, UserSex } from "@_models/account";
-import { Search } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
-import { ScreenBreakpoints } from "@_models/screen";
-import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
-import { ScreenService } from "@_services/screen.service";
-import { catchError, filter, map, concatMap, of, skipWhile, Subject, takeUntil, takeWhile, timer, tap } from "rxjs";
+import { catchError, concatMap, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -33,6 +29,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
   dreams: Dream[];
   dreamsCount: number = 0;
+  dreamLimit: number = 3;
 
   dreamPlural: SimpleObject = DreamPlural;
 
@@ -52,8 +49,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    private screenService: ScreenService,
-    private accountService: AccountService,
     private friendService: FriendService,
     private dreamService: DreamService,
     private changeDetectorRef: ChangeDetectorRef
@@ -74,14 +69,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
   // Загрузить список сновидний
   private defineDreams(): void {
-    const defaultDreamsResult: Search<Dream> = { count: 0, result: [], limit: 1 };
-    const limits: Partial<ScreenBreakpoints> = {
-      default: 1,
-      xlarge: 3,
-      large: 2
-    };
-    let prevLimit: number = 0;
-    // Настройки
     this.dreamsLoading = true;
     // Поиск сновидений
     timer(0, 50)
@@ -89,32 +76,14 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$),
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
-        concatMap(() => this.screenService.breakpoint$),
         concatMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
-        map(breakPoint => limits[breakPoint] ?? limits.default),
-        filter(limit => {
-          if (limit !== prevLimit) {
-            prevLimit = limit;
-            // Запустить загрузчик
-            this.dreamsLoading = true;
-            this.changeDetectorRef.detectChanges();
-            // Обновить
-            return true;
-          }
-          // Не обновлять
-          return false;
-        }),
         concatMap(
-          () => this.itsMyPage ? of(true) : this.accountService.checkPrivate("myDreamList", this.user.id, ["8100"]),
-          (limit, hasAccess) => ({ limit, hasAccess })
-        ),
-        concatMap(
-          ({ hasAccess, limit }) => hasAccess ? this.dreamService.search({ user: this.user.id, limit }, ["0002", "8100"]) : of(defaultDreamsResult),
-          ({ hasAccess }, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
+          () => this.dreamService.search({ user: this.user.id, limit: this.dreamLimit }, ["0002", "8100"]),
+          (friend, { count, result: dreams, limit, hasAccess }) => ({ count, dreams, limit, friend, hasAccess })
         ),
         catchError(() => of({ hasAccess: false, dreams: [], count: 0 }))
       )
-      .subscribe(({ hasAccess, dreams, count }: any) => {
+      .subscribe(({ dreams, count, hasAccess }: any) => {
         this.userHasDiaryAccess = hasAccess;
         this.dreams = dreams;
         this.dreamsCount = count;

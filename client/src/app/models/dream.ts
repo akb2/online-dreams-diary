@@ -1,4 +1,5 @@
 import { User } from "@_models/account";
+import { Search } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { DreamMap } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
@@ -52,6 +53,11 @@ export interface Place {
   name: string;
   description: string;
   isReal: boolean;
+}
+
+// Интерфейс ответа поиска сновидений
+export interface SearchRequestDream extends Search<Dream> {
+  hasAccess: boolean;
 }
 
 

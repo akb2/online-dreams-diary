@@ -13,6 +13,7 @@ class DreamService
 
   private DataBaseService $dataBaseService;
   private TokenService $tokenService;
+  private FriendService $friendService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -21,6 +22,7 @@ class DreamService
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->friendService = new FriendService($this->pdo, $this->config);
   }
 
 
@@ -114,12 +116,25 @@ class DreamService
     $result = array();
     $limit = $search['limit'] > 0 & $search['limit'] <= 100 ? $search['limit'] : $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
+    $areFriends = false;
+    // Проверка статуса в друзьях
+    if (intval($search['user']) > 0 && intval($userId) > 0 && intval($search['user']) != intval($userId)) {
+      $friend = $this->friendService->getFriendStatus($userId, $search['user']);
+      // Заявка существует
+      if (!!$friend) {
+        $areFriends = ($friend['status'] == 1 ||
+          ($userId == $friend['in_user_id'] && $friend['status'] == 0) ||
+          ($userId == $friend['out_user_id'] && $friend['status'] == 2)
+        );
+      }
+    }
     // Данные для поиска
     $sqlData = array(
       // Значения полей
       "status" => intval($search["status"]),
       "user_id" => intval($search["user"]),
       // Параметры
+      "are_friends" => $areFriends,
       "check_token" => $checkToken,
       "current_user" => intval($userId),
     );

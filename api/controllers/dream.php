@@ -4,6 +4,7 @@ namespace Controllers;
 
 use Services\DreamService;
 use Services\TokenService;
+use Services\UserSettingsService;
 use PDO;
 
 
@@ -16,6 +17,7 @@ class Dream
 
   private DreamService $dreamService;
   private TokenService $tokenService;
+  private UserSettingsService $userSettingsService;
 
 
 
@@ -36,6 +38,7 @@ class Dream
   {
     $this->dreamService = new DreamService($this->pdo, $this->config);
     $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
   }
 
 
@@ -45,14 +48,14 @@ class Dream
   public function save($data): array
   {
     $id = 0;
-    $code = "7001";
-    $userId = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '7001';
+    $userId = $_GET['token_user_id'];
+    $token = $_GET['token'];
     // Проверка доступности
     if ($this->tokenService->checkToken($userId, $token)) {
-      $dream = $this->dreamService->getById($data["id"], $userId);
+      $dream = $this->dreamService->getById($data['id'], $userId);
       // Переписать старое
-      if (isset($dream["id"]) && $dream["id"] > 0) {
+      if (isset($dream['id']) && $dream['id'] > 0) {
         $id = $this->dreamService->updateDream($data);
       }
       // Новое сновидение
@@ -62,14 +65,14 @@ class Dream
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
     // Обновить код
-    $code = $id > 0 ? "0001" : $code;
+    $code = $id > 0 ? '0001' : $code;
     // Сновидение не сохранено
     return array(
-      "code" => $code,
-      "data" => $id
+      'code' => $code,
+      'data' => $id
     );
   }
 
@@ -77,54 +80,38 @@ class Dream
   // * GET
   public function getList($data): array
   {
-    $code = "0002";
-    $userId = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $code = '0002';
+    $userId = $_GET['token_user_id'];
+    $token = $_GET['token'];
     $search = array(
-      "page" => isset($data["search_page"]) && strlen($data["search_page"]) > 0 ? $data["search_page"] : "",
-      "user" => isset($data["search_user"]) && strlen($data["search_user"]) > 0 ? $data["search_user"] : "",
-      "limit" => isset($data["search_limit"]) && strlen($data["search_limit"]) > 0 ? $data["search_limit"] : "",
-      "status" => isset($data["search_status"]) && strlen($data["search_status"]) > 0 ? $data["search_status"] : ""
+      'page' => isset($data['search_page']) && strlen($data['search_page']) > 0 ? $data['search_page'] : '',
+      'user' => isset($data['search_user']) && strlen($data['search_user']) > 0 ? $data['search_user'] : '',
+      'limit' => isset($data['search_limit']) && strlen($data['search_limit']) > 0 ? $data['search_limit'] : '',
+      'status' => isset($data['search_status']) && strlen($data['search_status']) > 0 ? $data['search_status'] : ''
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();
+    $hasAccess = false;
     // Сновидение найдено
-    if ($testDreams["count"] > 0) {
-      // Доступность для просмотра или редактирования
-      $code = "0001";
-      // Обработка списка
-      foreach ($testDreams["result"] as $dream) {
-        $dreams[] = array(
-          "id" => intval($dream["id"]),
-          "userId" => intval($dream["user_id"]),
-          "createDate" => $dream["create_date"],
-          "date" => $dream["date"],
-          "title" => $dream["title"],
-          "description" => $dream["description"],
-          "keywords" => $dream["keywords"],
-          "text" => isset($dream["text"]) ? $dream["text"] : "",
-          "places" => isset($dream["places"]) ? $dream["places"] : "",
-          "members" => isset($dream["members"]) ? $dream["members"] : "",
-          "map" => isset($dream["map"]) ? $dream["map"] : "",
-          "mode" => intval($dream["mode"]),
-          "status" => intval($dream["status"]),
-          "headerType" => $dream["header_type"],
-          "headerBackgroundId" => intval($dream["header_background"])
-        );
-      }
+    if ($testDreams['count'] > 0) {
+      ['code' => $code, 'dreams' => $dreams] = $this->checkUserDataPrivate($testDreams['result'], intval($search['user']), $userId);
     }
     // Сновидение не найдено
     else {
-      $code = "0002";
+      $code = '0002';
     }
+    // Обработка данных
+    $testDreams['count'] = $code !== '8100' && isset($testDreams['count']) ? $testDreams['count'] : 0;
+    $hasAccess = $code !== '8100';
     // Вернуть результат
     return array(
-      "data" => array(
-        "count" => $testDreams["count"],
-        "limit" => $testDreams["limit"],
-        "dreams" => $dreams
+      'data' => array(
+        'count' => $testDreams['count'],
+        'limit' => $testDreams['limit'],
+        'dreams' => $dreams,
+        'hasAccess' => $hasAccess
       ),
-      "code" => $code
+      'code' => $code
     );
   }
 
@@ -132,55 +119,55 @@ class Dream
   // * GET
   public function getById($data): array
   {
-    $code = "0002";
-    $userId = $_GET["token_user_id"];
-    $token = $_GET["token"];
-    $edit = $_GET["edit"] === "true";
-    $testDream = $this->dreamService->getById($data["id"]);
+    $code = '0002';
+    $userId = $_GET['token_user_id'];
+    $token = $_GET['token'];
+    $edit = $_GET['edit'] === 'true';
+    $testDream = $this->dreamService->getById($data['id']);
     $dream = array();
     // Проверка токена
     if (($this->tokenService->checkToken($userId, $token) && !!$userId && !!$token) || !$userId || !$token) {
       // Сновидение найдено
-      if (isset($testDream["id"]) && $testDream["id"] > 0) {
+      if (isset($testDream['id']) && $testDream['id'] > 0) {
         // Доступность для просмотра или редактирования
-        if ($this->dreamService->checkAvail($testDream["id"], $userId, $edit)) {
-          $code = "0001";
+        if ($this->dreamService->checkAvail($testDream['id'], $userId, $edit)) {
+          $code = '0001';
           $dream = array(
-            "id" => intval($testDream["id"]),
-            "userId" => intval($testDream["user_id"]),
-            "createDate" => $testDream["create_date"],
-            "date" => $testDream["date"],
-            "title" => $testDream["title"],
-            "description" => $testDream["description"],
-            "keywords" => $testDream["keywords"],
-            "text" => $testDream["text"],
-            "places" => $testDream["places"],
-            "members" => $testDream["members"],
-            "map" => $testDream["map"],
-            "mode" => intval($testDream["mode"]),
-            "status" => intval($testDream["status"]),
-            "headerType" => $testDream["header_type"],
-            "headerBackgroundId" => intval($testDream["header_background"])
+            'id' => intval($testDream['id']),
+            'userId' => intval($testDream['user_id']),
+            'createDate' => $testDream['create_date'],
+            'date' => $testDream['date'],
+            'title' => $testDream['title'],
+            'description' => $testDream['description'],
+            'keywords' => $testDream['keywords'],
+            'text' => $testDream['text'],
+            'places' => $testDream['places'],
+            'members' => $testDream['members'],
+            'map' => $testDream['map'],
+            'mode' => intval($testDream['mode']),
+            'status' => intval($testDream['status']),
+            'headerType' => $testDream['header_type'],
+            'headerBackgroundId' => intval($testDream['header_background'])
           );
         }
         // Нельяз смотреть
         else {
-          $code = "7002";
+          $code = '7002';
         }
       }
       // Сновидение не найдено
       else {
-        $code = "0002";
+        $code = '0002';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
     // Вернуть результат
     return array(
-      "data" => $dream,
-      "code" => $code
+      'data' => $dream,
+      'code' => $code
     );
   }
 
@@ -188,32 +175,74 @@ class Dream
   // * POST
   public function delete($data): array
   {
-    $code = "7004";
+    $code = '7004';
     $isDelete = false;
-    $userId = $_GET["token_user_id"];
-    $token = $_GET["token"];
+    $userId = $_GET['token_user_id'];
+    $token = $_GET['token'];
     // Проверка доступности
     if ($this->tokenService->checkToken($userId, $token)) {
       // Проверка идентификатора
-      if (isset($data["id"]) && $data["id"] > 0) {
-        $isDelete = $this->dreamService->delete($data["id"], $userId);
-        $code = $isDelete ? "0001" : "7005";
+      if (isset($data['id']) && $data['id'] > 0) {
+        $isDelete = $this->dreamService->delete($data['id'], $userId);
+        $code = $isDelete ? '0001' : '7005';
       }
       // Сон не найден
       else {
-        $code = "0002";
+        $code = '0002';
       }
     }
     // Неверный токен
     else {
-      $code = "9015";
+      $code = '9015';
     }
     // Вернуть результат
     return array(
-      "data" => array(
-        "isDelete" => $isDelete
+      'data' => array(
+        'isDelete' => $isDelete
       ),
-      "code" => $code
+      'code' => $code
+    );
+  }
+
+
+
+  // Проверка доступа к дневнику пользователя
+  private function checkUserDataPrivate(array $dreamsData, int $userId, $currentUserId): array
+  {
+    $code = '8100';
+    $dreams = null;
+    // Данные определены
+    if (is_array($dreamsData)) {
+      // Проверка данных
+      if ($userId <= 0 || $this->userSettingsService->checkPrivate('myDreamList', $userId, intval($currentUserId))) {
+        $code = '0001';
+        $dreams = array();
+        // Обработать список сновидений
+        foreach ($dreamsData as $dream) {
+          $dreams[] = array(
+            'id' => intval($dream['id']),
+            'userId' => intval($dream['user_id']),
+            'createDate' => $dream['create_date'],
+            'date' => $dream['date'],
+            'title' => $dream['title'],
+            'description' => $dream['description'],
+            'keywords' => $dream['keywords'],
+            'text' => isset($dream['text']) ? $dream['text'] : '',
+            'places' => isset($dream['places']) ? $dream['places'] : '',
+            'members' => isset($dream['members']) ? $dream['members'] : '',
+            'map' => isset($dream['map']) ? $dream['map'] : '',
+            'mode' => intval($dream['mode']),
+            'status' => intval($dream['status']),
+            'headerType' => $dream['header_type'],
+            'headerBackgroundId' => intval($dream['header_background'])
+          );
+        }
+      }
+    }
+    // Ошибка
+    return array(
+      'code' => $code,
+      'dreams' => $dreams
     );
   }
 }
