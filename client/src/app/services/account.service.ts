@@ -78,11 +78,11 @@ export class AccountService implements OnDestroy {
   }
 
   // Получить подписку на данные о пользователе
-  user$(userId: number = 0, sync: boolean = false): Observable<User> {
+  user$(userId: number = 0, sync: boolean = false, codes: string[] = []): Observable<User> {
     userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
+    codes.push("8100");
     // Обновить счетчик
     let counter: number = this.updateUserCounter(userId, 1);
-    const codes: string[] = ["8100"];
     // Подписки
     const observable: Observable<User> = this.users.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -323,14 +323,15 @@ export class AccountService implements OnDestroy {
       switchMap(
         result => {
           const user: User = this.userConverter(result.result.data);
+          const code: string = result?.result?.code?.toString() ?? "";
           // Сохранить данные пользователя
-          if (result.result.code === "0001") {
+          if (code === "0001" || code === "8100") {
             this.saveUserToStore(user);
           }
           // Вернуть данные пользователя
-          return result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
+          return code === "0001" || codes.some(testCode => testCode === code) ?
             of(user) :
-            this.apiService.checkResponse(result.result.code, codes);
+            this.apiService.checkResponse(code, codes);
         }
       )
     );
