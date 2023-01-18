@@ -1,4 +1,4 @@
-<ng-container *ngIf="ready">
+<ng-container *ngIf="!pageLoading; else pageLoader">
   <!-- Шапка -->
   <app-main-menu #mainMenu
                  [autoCollapse]="true"
@@ -31,7 +31,7 @@
             <!-- Список сновидений -->
             <app-dream-list [dreams]="dreams"
                             [sourcePlace]="!!visitedUser? '': 'diary-all'"
-                            [showProfile]="showProfile"
+                            [showProfile]="itsAllPage"
                             (dreamDelete)="search()"></app-dream-list>
             <!-- Пагинатор -->
             <ng-container [ngTemplateOutlet]="pagination"
@@ -45,8 +45,8 @@
   <!-- Фильтры для поиска -->
   <app-search-panel #searchPanel
                     [backgroundImageId]="backgroundImageData.id"
-                    headerTitle="Настройки фильтров"
-                    headerSubTitle="Поиска сновидений"
+                    headerTitle="Поиск"
+                    headerSubTitle="Настройки и фильтры"
                     avatarIcon="content_paste_search"
                     *ngIf="!loading"></app-search-panel>
 </ng-container>
@@ -54,7 +54,9 @@
 
 
 <!-- Лоадер страницы -->
-<app-page-loader *ngIf="!ready"></app-page-loader>
+<ng-template #pageLoader>
+  <app-page-loader></app-page-loader>
+</ng-template>
 
 
 
@@ -77,12 +79,12 @@
   <app-inform [aboveIcon]="true"
               icon="close"
               title="Ошибка поиска"
-              subTitle="Сновидения не найдены. Измените условия поиска или {{isMyDiary? 'запишите новое сновидение': 'повторите позже'}}">
+              subTitle="Сновидения не найдены. Измените условия поиска или {{itsMyPage? 'запишите новое сновидение': 'повторите позже'}}">
     <div class="buttons">
       <a mat-flat-button
          color="primary"
          (click)="openSearch()"
-         *ngIf="!isMyDiary; else listNotFoundMyButtons">
+         *ngIf="!itsMyPage; else listNotFoundMyButtons">
         <mat-icon>search</mat-icon>Открыть поиск
       </a>
       <!-- Кнопки для моего дневника -->

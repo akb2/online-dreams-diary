@@ -3,7 +3,6 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
-import { ObjectToStringParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamPlural } from "@_datas/dream";
 import { ParseInt } from "@_helpers/math";
@@ -16,8 +15,8 @@ import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService, SearchDream } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
-import { of, Subject, throwError } from "rxjs";
-import { filter, mergeMap, switchMap, takeUntil } from "rxjs/operators";
+import { Observable, of, Subject, throwError, timer } from "rxjs";
+import { concatMap, map, skipWhile, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 
 
 
@@ -37,13 +36,18 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   pageData: RouteData;
-  ready: boolean = false;
-  loading: boolean = true;
-  showProfile: boolean = false;
 
-  title: string = "Общий дневник";
-  subTitle: string = "Все публичные сновидения";
-  private pageTitle: string;
+  itsMyPage: boolean = false;
+  itsAllPage: boolean = false;
+  pageLoading: boolean = false;
+  loading: boolean = true;
+  private userReady: boolean = false;
+  bottomPaginationIsAvail: boolean = false;
+
+  private visitedUserId: number = -1;
+
+  title: string = "";
+  subTitle: string = "";
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 11);
   menuAvatarImage: string = "";
   menuAvatarIcon: string = "";
@@ -51,24 +55,23 @@ export class DiaryComponent implements OnInit, OnDestroy {
   floatButtonLink: string;
   backButtonLink: string;
 
-  user: User;
+  private user: User;
   visitedUser: User;
   dreams: Dream[];
   dreamsCount: number = 0;
 
   pageCurrent: number = 1;
   pageLimit: number = 1;
-  pageCount: number = 1;
+  private pageCount: number = 1;
 
   isMobile: boolean = false;
   userHasAccess: boolean = false;
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
-  private diaryTypeByUser: DiaryTypeByUser;
 
   dreamPlural: SimpleObject = DreamPlural;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -85,14 +88,14 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return data;
   }
 
-  // Показывать ли нижний пагинатор
-  get bottomPaginationIsAvail(): boolean {
-    return this.pageCount > this.pageLimit / 2;
-  }
-
-  // Мой дневник
-  get isMyDiary(): boolean {
-    return !!this.user && !!this.visitedUser && this.user?.id === this.visitedUser?.id;
+  // Подписка на ожидание данных0
+  private waitObservable(callback: () => boolean): Observable<void> {
+    return timer(1, 50).pipe(
+      takeUntil(this.destroyed$),
+      takeWhile(callback, true),
+      skipWhile(callback),
+      map(() => { })
+    );
   }
 
 
@@ -112,13 +115,16 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.pageData = this.globalService.getPageData;
-    // Текущий пользователь и параметры URL
-    this.defineData();
+    // Запуск определения данных
+    this.defineCurrentUser();
+    this.defineUrlParams();
+    this.defineVisitingUser();
+    this.defineDreamsList();
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -130,12 +136,54 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.router.navigate(["404"]);
   }
 
+  // Установить параметры страницы
+  private onUserLoaded(): void {
+    let pageTitle: string;
+    // Общее для дневника пользователя
+    if (!this.itsAllPage) {
+      this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
+      this.subTitle = "Дневник сновидений";
+      this.backgroundImageData = this.visitedUser.settings.profileBackground;
+      this.menuAvatarImage = this.visitedUser.avatars.middle;
+      this.menuAvatarIcon = "person";
+      this.backButtonLink = "/profile/" + this.visitedUser.id;
+    }
+    // Мой дневник
+    if (this.itsMyPage) {
+      this.floatButtonIcon = "add";
+      this.floatButtonLink = "/diary/editor";
+      this.canonicalService.setURL("diary/" + this.user.id, { p: this.pageCurrent }, { p: [0, 1] });
+      // Заголовок вкладки
+      pageTitle = this.globalService.createTitle("Мой дневник сновидений");
+    }
+    // Дневник другого пользователя
+    else if (!this.itsAllPage) {
+      this.canonicalService.setURL("diary/" + this.visitedUser.id, { p: this.pageCurrent }, { p: [0, 1] });
+      // Заголовок вкладки
+      pageTitle = this.globalService.createTitle([this.subTitle, this.title]);
+    }
+    // Общий дневник
+    else {
+      this.title = "Общий дневник";
+      this.subTitle = "Все публичные сновидения";
+      this.floatButtonIcon = !!this.user ? "add" : "";
+      this.floatButtonLink = !!this.user ? "/diary/editor" : "";
+      this.menuAvatarIcon = "content_paste_search";
+      this.canonicalService.setURL("diary/all", { p: this.pageCurrent }, { p: [0, 1] });
+      // Заголовок вкладки
+      pageTitle = this.globalService.createTitle("Общий дневник");
+    }
+    // Готово к загрузке
+    this.pageLoading = false;
+    this.titleService.setTitle(pageTitle);
+    this.changeDetectorRef.detectChanges();
+  }
+
   // Сновидения не найдены
   private onNotDreamsFound(): void {
     this.dreamsCount = 0;
     this.dreams = [];
     this.loading = false;
-    this.titleService.setTitle(this.pageTitle);
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -163,133 +211,128 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
 
 
-  // Определить данные
-  private defineData(): void {
+  // Определение текущего пользователя
+  private defineCurrentUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
     this.accountService.user$()
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap(user => this.pageData.userId === -1 ? throwError({ user }) : of({ user })),
-        mergeMap(() => this.activatedRoute.params, (o, params) => ({ ...o, params })),
-        filter(({ params }) => !!params),
-        switchMap(r => (parseInt(r.params.user_id) > 0 && !isNaN(r.params.user_id)) || this.pageData.userId === 0 ?
-          of(r) :
-          throwError(r)
-        ),
-        mergeMap(({ params, user }) =>
-          (!!user && user.id !== parseInt(params.user_id)) || (!user && this.pageData.userId === -2) ?
-            this.pageData.userId === 0 ?
-              of(null) :
-              this.accountService.getUser(parseInt(params.user_id)) :
-            of(user),
-          (o, visitedUser) => ({ ...o, visitedUser })
-        )
-      )
-      .subscribe(
-        ({ user, visitedUser }) => {
-          this.user = user;
-          this.visitedUser = visitedUser;
-          this.pageCurrent = ParseInt(this.activatedRoute.snapshot?.queryParams?.p);
-          this.setPageData();
-        },
-        ({ user }) => !!user && this.pageData.userId === -1 ?
-          this.router.navigate(["profile", user.id.toString()], { queryParamsHandling: "merge", replaceUrl: true }) :
-          this.onUserFail()
-      );
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(user => {
+        this.user = user;
+        this.userReady = true;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
-  // Установить параметры страницы
-  private setPageData(): void {
-    // Мой дневник
-    if (this.isMyDiary) {
-      this.title = this.user.name + " " + this.user.lastName;
-      this.subTitle = "Мой дневник сновидений";
-      this.pageTitle = this.globalService.createTitle(this.subTitle);
-      this.backgroundImageData = this.user.settings.profileBackground;
-      this.menuAvatarImage = this.user.avatars.middle;
-      this.menuAvatarIcon = "person";
-      this.floatButtonIcon = "add";
-      this.floatButtonLink = "/diary/editor";
-      this.diaryTypeByUser = DiaryTypeByUser.my;
-      this.showProfile = false;
-      this.canonicalService.setURL("diary/" + this.user.id, { p: this.pageCurrent }, { p: [0, 1] });
-      // Установить посещаемого пользователя из текущего
-      this.visitedUser = this.user;
-      // Готово
-      this.ready = true;
-    }
-    // Дневник другого пользователя
-    else if (!!this.visitedUser && this.user?.id !== this.visitedUser.id) {
-      this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
-      this.subTitle = "Дневник сновидений";
-      this.pageTitle = this.globalService.createTitle([this.subTitle, this.title]);
-      this.backgroundImageData = this.visitedUser.settings.profileBackground;
-      this.menuAvatarImage = this.visitedUser.avatars.middle;
-      this.menuAvatarIcon = "person";
-      this.backButtonLink = "/profile/" + this.visitedUser.id;
-      this.diaryTypeByUser = DiaryTypeByUser.user;
-      this.showProfile = false;
-      this.canonicalService.setURL("diary/" + this.visitedUser.id, { p: this.pageCurrent }, { p: [0, 1] });
-      // Готово
-      this.ready = true;
-    }
-    // Общий дневник
-    else {
-      if (!!this.user) {
-        this.floatButtonIcon = "add";
-        this.floatButtonLink = "/diary/editor";
-      }
-      // Для неавторизованного пользователя
-      else {
-        this.floatButtonIcon = "";
-        this.floatButtonLink = "";
-      }
-      // Название страницы
-      this.pageTitle = this.globalService.createTitle(this.title);
-      this.menuAvatarIcon = "content_paste_search";
-      this.diaryTypeByUser = DiaryTypeByUser.all;
-      this.showProfile = true;
-      this.canonicalService.setURL("diary/all", { p: this.pageCurrent }, { p: [0, 1] });
-      // Готово
-      this.ready = true;
-    }
-    // Готово к загрузке
+  // Определение параметров URL
+  private defineUrlParams(): void {
+    this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
-    this.search();
+    // Подписка
+    this.waitObservable(() => !this.userReady)
+      .pipe(
+        concatMap(() => this.activatedRoute.params),
+        switchMap(params => {
+          if (ParseInt(this.pageData.userId) === -1) {
+            if (params?.user_id === "0") {
+              this.router.navigate(["/diary/" + this.user.id], { replaceUrl: true });
+              return throwError("");
+            }
+            // Определить ID просматриваемого пользователя
+            else {
+              return of(ParseInt(params?.user_id, !!this.user ? this.user.id : 0));
+            }
+          }
+          // Общий дневник сновидений
+          return of(0);
+        })
+      )
+      .subscribe(visitedUserId => {
+        this.visitedUserId = visitedUserId;
+        this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
+        this.itsAllPage = visitedUserId === 0;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Определение просматриваемого пользователя
+  private defineVisitingUser(): void {
+    this.pageLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Подписка на данные пользователя
+    this.waitObservable(() => this.visitedUserId === -1 || !this.userReady)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => {
+        if (this.itsAllPage) {
+          this.visitedUser = null;
+          this.userHasAccess = true;
+          // Отрисовка сведений
+          this.onUserLoaded();
+        }
+        // Чужая страница
+        else {
+          let visitedUserSync: boolean = false;
+          // Моя страница
+          if (this.itsMyPage) {
+            visitedUserSync = true;
+          }
+          // Чужая страница
+          else {
+            this.accountService.getUser(this.visitedUserId, ["8100"])
+              .pipe(takeUntil(this.destroyed$))
+              .subscribe(() => visitedUserSync = true);
+          }
+          // Подписка
+          this.waitObservable(() => !visitedUserSync)
+            .pipe(
+              concatMap(() => this.accountService.user$(this.visitedUserId, false)),
+              takeUntil(this.destroyed$)
+            )
+            .subscribe(
+              user => {
+                this.visitedUser = user;
+                this.userHasAccess = !!user?.hasAccess;
+                // Отрисовка сведений
+                this.onUserLoaded();
+              },
+              () => this.onUserFail()
+            );
+        }
+      });
+  }
+
+  // Определение списка сновидений
+  private defineDreamsList(): void {
+    this.waitObservable(() => this.visitedUserId === -1 || (this.visitedUserId > 0 && !this.visitedUser))
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.search())
   }
 
   // Загрузка списка сновидений
   search(): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
-    this.titleService.setTitle(this.pageTitle);
     // Поиск по сновидениям
     const search: SearchDream = {
       page: this.pageCurrent > 0 ? this.pageCurrent : 1,
       user: this.visitedUser?.id ?? 0,
       status: -1
     };
-    // Загрузка списка
-    (this.diaryTypeByUser === DiaryTypeByUser.user ?
-      this.accountService.checkPrivate("myDreamList", this.visitedUser.id, ["8100"]) :
-      of(true))
-      .pipe(
-        takeUntil(this.destroy$),
-        mergeMap(
-          hasAccess => hasAccess ? this.dreamService.search(search, ["0002"]) : of({ count: 0, result: [], limit: 1 }),
-          (hasAccess, { count, result: dreams, limit }) => ({ hasAccess, count, dreams, limit })
-        )
-      )
+    // Запрос
+    this.dreamService.search(search, ["0002"])
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(
-        ({ hasAccess, count, dreams, limit }) => {
+        ({ result, count, limit, hasAccess }) => {
           this.userHasAccess = hasAccess;
           // Найдены сновидения
           if (count > 0) {
             this.dreamsCount = count;
             this.pageLimit = limit;
-            this.pageCount = dreams.length;
-            this.dreams = dreams;
+            this.pageCount = result.length;
+            this.bottomPaginationIsAvail = this.pageCount > this.pageLimit / 2;
+            this.dreams = result;
             this.loading = false;
-            this.titleService.setTitle(this.pageTitle);
             // Обновить
             this.changeDetectorRef.detectChanges();
           }
@@ -306,15 +349,4 @@ export class DiaryComponent implements OnInit, OnDestroy {
   openSearch(): void {
     this.searchPanel?.openPanel();
   }
-}
-
-
-
-
-
-// Тип дневника
-enum DiaryTypeByUser {
-  my,
-  user,
-  all
 }
