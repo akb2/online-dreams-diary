@@ -279,8 +279,7 @@ export class AccountService implements OnDestroy {
       share(),
       takeUntil(this.destroyed$),
       filter(() => !connect),
-      concatMap(() => observable(id, lastEditDate).pipe(catchError(e => of(e))
-      )),
+      concatMap(() => observable(id, lastEditDate).pipe(catchError(e => of(e)))),
       catchError(() => of(null)),
       map(result => {
         const code: string = result?.result?.code.toString();
