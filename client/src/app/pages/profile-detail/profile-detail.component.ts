@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
+import { ParseInt } from '@_helpers/math';
 import { User, UserSex } from '@_models/account';
 import { Search } from '@_models/api';
 import { RouteData } from '@_models/app';
@@ -37,7 +38,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   userHasAccess: boolean = false;
   pageLoading: boolean = false;
   private userReady: boolean = false;
-  private visitedUserSync: boolean = false;
 
   title: string = "Страница пользователя";
   subTitle: string = "";
@@ -198,9 +198,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
           }
           // Определить ID просматриваемого пользователя
           else {
-            let userId: number = parseInt(params?.user_id);
-            userId = isNaN(userId) ? (!!this.user ? this.user.id : 0) : userId;
-            return of(userId);
+            return of(ParseInt(params?.user_id, !!this.user ? this.user.id : 0));
           }
         })
       )
@@ -219,8 +217,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.waitObservable(() => this.visitedUserId === -1 || !this.userReady)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
-        if (!!this.user && this.visitedUserId === this.user.id) {
-          this.visitedUserSync = true;
+        let visitedUserSync: boolean = false;
+        // Моя страница
+        if (this.itsMyPage) {
+          visitedUserSync = true;
         }
         // Чужая страница
         else {
@@ -229,10 +229,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
               takeUntil(this.destroyed$),
               concatMap(() => !!this.user ? this.friendService.getFriendStatus(this.visitedUserId) : of(null))
             )
-            .subscribe(() => this.visitedUserSync = true);
+            .subscribe(() => visitedUserSync = true);
         }
         // Подписка
-        this.waitObservable(() => !this.visitedUserSync)
+        this.waitObservable(() => !visitedUserSync)
           .pipe(
             concatMap(() => this.accountService.user$(this.visitedUserId, false)),
             takeUntil(this.destroyed$)
