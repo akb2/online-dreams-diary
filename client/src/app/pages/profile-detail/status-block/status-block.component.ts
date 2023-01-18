@@ -172,10 +172,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
       this.changeDetectorRef.detectChanges();
       // Сохранение статуса
       this.accountService.savePageStatus(pageStatus)
-        .pipe(
-          takeUntil(this.destroyed$),
-          concatMap(code => code === "0001" ? this.accountService.getUser(this.user.id) : of(true), r => r)
-        )
+        .pipe(takeUntil(this.destroyed$))
         .subscribe(
           code => {
             if (code === "0001") {

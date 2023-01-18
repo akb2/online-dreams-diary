@@ -378,7 +378,8 @@ export class AccountService implements OnDestroy {
     Object.entries(userSave).map(([key, value]) => formData.append(key, value));
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/saveUserData", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
@@ -388,7 +389,8 @@ export class AccountService implements OnDestroy {
     formData.append("pageStatus", pageStatus ?? "");
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/savePageStatus", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
@@ -403,7 +405,8 @@ export class AccountService implements OnDestroy {
     Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
     // Запрос
     return this.httpClient.post<ApiResponse>("account/saveUserSettings", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
@@ -414,7 +417,8 @@ export class AccountService implements OnDestroy {
     formData.append("private", JSON.stringify(privateDatas));
     // Запрос
     return this.httpClient.post<ApiResponse>("account/saveUserPrivate", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
@@ -428,7 +432,8 @@ export class AccountService implements OnDestroy {
     formData.append("file", file);
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/uploadAvatar", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
@@ -442,14 +447,16 @@ export class AccountService implements OnDestroy {
     formData.append("height", coords.height.toString());
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/cropAvatar", formData).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
   // Удалить аватарку
   deleteAvatar(codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/deleteAvatar", new FormData()).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes))
+      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
   }
 
