@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { User, UserSex } from "@_models/account";
 import { FriendStatus } from "@_models/friend";
-import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
 import { concatMap, Observable, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
@@ -52,7 +51,6 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
 
   constructor(
     private friendService: FriendService,
-    private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
@@ -125,8 +123,6 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
           takeUntil(this.destroyed$),
           takeWhile(() => this.user === undefined, true),
           skipWhile(() => this.user === undefined),
-          concatMap(() => this.accountService.user$()),
-          concatMap(() => this.accountService.user$(this.user.id)),
           concatMap(() => this.friendService.friends$(this.user.id, 0, false)),
           tap(() => {
             this.friendLoader = true;

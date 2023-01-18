@@ -31,7 +31,8 @@
     <!-- Просмотр -->
     <ng-template #statusTextViewer>
       <div class="status__content"
-           [ngClass]="{ default: !user.pageStatus }">{{!!user.pageStatus? user.pageStatus: placeholderText}}</div>
+           [ngClass]="{ default: !user.pageStatus }"
+           (click)="onOpenEdit()">{{!!user.pageStatus? user.pageStatus: placeholderText}}</div>
     </ng-template>
   </form>
   <!-- Помощник для автоматического размера -->

@@ -23,10 +23,12 @@
   $rightColumnData: (
     default: (
       areas: "status" "actions" "general" "dreams",
+      noActionsAreas: "status" "general" "dreams",
       columns: repeat(1, minmax(1px, 1fr)),
     ),
     xlarge: (
       areas: "status status status" "actions general general" "dreams dreams dreams",
+      noActionsAreas: "status status status" "general general empty" "dreams dreams dreams",
       columns: repeat(3, minmax(1px, 1fr)),
     ),
   );
@@ -71,6 +73,10 @@
       margin-right: -$gap;
       grid-template-columns: map.get($data, columns);
       grid-template-areas: map.get($data, areas);
+      // Без блока действий
+      &.noActions {
+        grid-template-areas: map.get($data, noActionsAreas);
+      }
       // Потомки
       @each $item in $rightColumnItems {
         > #{"." + $item} {

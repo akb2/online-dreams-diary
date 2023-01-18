@@ -30,7 +30,8 @@
               </div>
             </div>
             <!-- Правая колонка -->
-            <div class="information__right">
+            <div class="information__right"
+                 [ngClass]="{ noActions: !isAutorizedUser }">
               <ng-container [ngTemplateOutlet]="rightContent"></ng-container>
             </div>
           </div>
@@ -48,17 +49,17 @@
   <app-avatar-block [user]="visitedUser"
                     [itsMyPage]="itsMyPage"></app-avatar-block>
   <!-- Друзья -->
-  <friends-block [user]="visitedUser"
-                 friendType="friends"
-                 [itsMyPage]="itsMyPage"></friends-block>
-  <!-- Подписчики -->
-  <friends-block [user]="visitedUser"
-                 friendType="subscribers"
-                 [itsMyPage]="itsMyPage"></friends-block>
-  <!-- Подписки -->
-  <friends-block [user]="visitedUser"
-                 friendType="subscribe"
-                 [itsMyPage]="itsMyPage"></friends-block>
+  <ng-container *ngIf="!!friends">
+    <ng-container *ngFor="let friend of friends">
+      <friends-block [user]="visitedUser"
+                     [friendType]="friend.type"
+                     [friends]="friend.users"
+                     [friendsCount]="friend.count"
+                     [itsMyPage]="itsMyPage"
+                     [friendLimit]="friendListLimit"
+                     *ngIf="friend.count"></friends-block>
+    </ng-container>
+  </ng-container>
 </ng-template>
 
 <!-- Правая колонка -->

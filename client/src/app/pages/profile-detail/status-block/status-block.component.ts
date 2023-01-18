@@ -4,7 +4,7 @@ import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { delay, filter, fromEvent, map, merge, concatMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { delay, filter, fromEvent, map, merge, concatMap, skipWhile, Subject, takeUntil, takeWhile, timer, of } from "rxjs";
 
 
 
@@ -135,16 +135,18 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
 
   // Открыть редактор
   onOpenEdit(): void {
-    this.editStatus$.next(true);
-    this.changeDetectorRef.detectChanges();
-    // Фокус на элементе
-    timer(0, 1)
-      .pipe(
-        takeUntil(this.destroyed$),
-        takeWhile(() => !this.inputField?.nativeElement, true),
-        skipWhile(() => !this.inputField?.nativeElement)
-      )
-      .subscribe(() => this.inputField?.nativeElement.focus());
+    if (this.itsMyPage) {
+      this.editStatus$.next(true);
+      this.changeDetectorRef.detectChanges();
+      // Фокус на элементе
+      timer(0, 1)
+        .pipe(
+          takeUntil(this.destroyed$),
+          takeWhile(() => !this.inputField?.nativeElement, true),
+          skipWhile(() => !this.inputField?.nativeElement)
+        )
+        .subscribe(() => this.inputField?.nativeElement.focus());
+    }
   }
 
   // Закрыть редактор
@@ -162,29 +164,34 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
 
   // Сохранить статус
   onSaveStatus(): void {
-    const pageStatus: string = this.statusForm?.get("status")?.value ?? "";
-    // Обновить состояния
-    this.loader = true;
-    this.editStatus$.next(false);
-    this.changeDetectorRef.detectChanges();
-    // Сохранение статуса
-    this.accountService.savePageStatus(pageStatus)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(
-        code => {
-          if (code === "0001") {
-            this.user.pageStatus = pageStatus;
-            this.statusForm.get("status").setValue(pageStatus);
-          }
-          // Убрать лоадер
-          this.onSaveStatusError();
-        },
-        () => this.onSaveStatusError()
-      );
+    if (this.itsMyPage) {
+      const pageStatus: string = this.statusForm?.get("status")?.value ?? "";
+      // Обновить состояния
+      this.loader = true;
+      this.editStatus$.next(false);
+      this.changeDetectorRef.detectChanges();
+      // Сохранение статуса
+      this.accountService.savePageStatus(pageStatus)
+        .pipe(
+          takeUntil(this.destroyed$),
+          concatMap(code => code === "0001" ? this.accountService.getUser(this.user.id) : of(true), r => r)
+        )
+        .subscribe(
+          code => {
+            if (code === "0001") {
+              this.user.pageStatus = pageStatus;
+              this.statusForm.get("status").setValue(pageStatus);
+            }
+            // Убрать лоадер
+            this.onSaveStatusEnd();
+          },
+          () => this.onSaveStatusEnd()
+        );
+    }
   }
 
   // Ошибка сохранения статуса
-  private onSaveStatusError(): void {
+  private onSaveStatusEnd(): void {
     this.loader = false;
     this.editStatus$.next(false);
     this.changeDetectorRef.detectChanges();

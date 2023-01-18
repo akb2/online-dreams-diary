@@ -3,15 +3,17 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundImageDatas } from '@_datas/appearance';
-import { environment } from '@_environments/environment';
 import { User, UserSex } from '@_models/account';
+import { Search } from '@_models/api';
 import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
+import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from '@_models/friend';
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { CanonicalService } from '@_services/canonical.service';
+import { FriendService } from '@_services/friend.service';
 import { GlobalService } from '@_services/global.service';
-import { concatMap, map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { catchError, concatMap, map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -49,9 +51,11 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   backButtonLink: string;
 
   private visitedUserId: number = -1;
+  friendListLimit: number = 4;
 
   user: User;
   visitedUser: User;
+  friends: FriendList[];
 
   navMenuTypes: typeof NavMenuType = NavMenuType;
 
@@ -92,6 +96,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
+    private friendService: FriendService,
     private titleService: Title,
     private globalService: GlobalService,
     private datePipe: DatePipe,
@@ -104,6 +109,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.defineCurrentUser();
     this.defineUrlParams();
     this.defineVisitingUser();
+    this.defineFriendList();
   }
 
   ngOnDestroy(): void {
@@ -166,10 +172,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   private defineCurrentUser(): void {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
-    // Синхронизация данных пользователя
-    this.accountService.syncUserData()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe();
     // Подписка
     this.accountService.user$()
       .pipe(takeUntil(this.destroyed$))
@@ -222,8 +224,11 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         }
         // Чужая страница
         else {
-          this.accountService.syncUserData(this.visitedUserId)
-            .pipe(takeUntil(this.destroyed$))
+          this.accountService.getUser(this.visitedUserId, ["8100"])
+            .pipe(
+              takeUntil(this.destroyed$),
+              concatMap(() => !!this.user ? this.friendService.getFriendStatus(this.visitedUserId) : of(null))
+            )
             .subscribe(() => this.visitedUserSync = true);
         }
         // Подписка
@@ -243,4 +248,47 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
           );
       });
   }
+
+  // Определение списка друзей
+  private defineFriendList(): void {
+    const emptyList: Search<FriendWithUsers> = { count: 0, limit: this.friendListLimit, result: [] };
+    const emptyLists: FriendListMixedResopnse = { friends: emptyList, subscribe: emptyList, subscribers: emptyList };
+    // Подписка
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroyed$),
+        takeWhile(() => !this.visitedUser, true),
+        skipWhile(() => !this.visitedUser),
+        concatMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.visitedUser.id, 0)),
+        map(() => ({
+          search: {
+            user: this.visitedUser.id,
+            type: "mixed",
+            limit: this.friendListLimit
+          } as Partial<FriendSearch>
+        })),
+        concatMap(({ search }) => this.friendService.getMixedList(search, ["0002", "8100"])),
+        catchError(() => of(emptyLists))
+      )
+      .subscribe((data: any) => {
+        this.friends = Object.entries(data as FriendListMixedResopnse).map(([type, { result, count }]) => ({
+          type: type as FriendSearchType,
+          count,
+          users: result.map(({ inUser, outUser }) => inUser.id === this.visitedUser.id ? outUser : inUser)
+        }));
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+}
+
+
+
+
+
+// Список данных для пользователя
+interface FriendList {
+  type: FriendSearchType;
+  users: User[];
+  count: number;
 }
