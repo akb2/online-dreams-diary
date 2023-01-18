@@ -108,7 +108,7 @@ import { AuthRules } from "@_models/menu";
         },
         canActivate: [AuthGuard]
       },
-      // Профиль: другие пользователи
+      // Профиль
       {
         path: "profile/:user_id",
         loadChildren: () => import("@_pages/profile-detail/profile-detail.module").then(m => m.ProfileDetailModule),
@@ -137,14 +137,7 @@ import { AuthRules } from "@_models/menu";
       {
         path: "diary/:user_id",
         loadChildren: () => import("@_pages/diary/diary.module").then(m => m.DiaryModule),
-        data: { userId: -2, authRule: AuthRules.anyWay },
-        canActivate: [AuthGuard]
-      },
-      // Дневник: Просмотр
-      {
-        path: "diary/viewer",
-        loadChildren: () => import("@_pages/diary-viewer/diary-viewer.module").then(m => m.DiaryViewerModule),
-        data: { userId: 0, from: "", authRule: AuthRules.anyWay },
+        data: { userId: -1, authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
       // Дневник: Просмотр
