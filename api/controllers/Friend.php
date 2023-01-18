@@ -126,36 +126,70 @@ class Friend
   // * GET
   public function getList($data): array
   {
-    $code = "0002";
+    $code = '0002';
+    $responseData = array();
+    $types = array('friends', 'subscribers', 'subscribe');
+    $searchType = isset($data['search_type']) && strlen($data['search_type']) > 0 && array_search($data['search_type'], $types) !== false ?
+      $data['search_type'] :
+      'mixed';
     $search = array(
-      "page" => isset($data["search_page"]) && intval($data["search_page"]) ? intval($data["search_page"]) : "",
-      "user" => isset($data["search_user"]) && intval($data["search_user"]) ? intval($data["search_user"]) : "",
-      "limit" => isset($data["search_limit"]) && intval($data["search_limit"]) ? intval($data["search_limit"]) : "",
-      "type" => isset($data["search_type"]) && strlen($data["search_type"]) > 0 ? $data["search_type"] : ""
+      'page' => isset($data['search_page']) && intval($data['search_page']) ? intval($data['search_page']) : '',
+      'user' => isset($data['search_user']) && intval($data['search_user']) ? intval($data['search_user']) : '',
+      'limit' => isset($data['search_limit']) && intval($data['search_limit']) ? intval($data['search_limit']) : '',
+      'type' => $searchType
     );
-    $testFriends = $this->friendService->getList($search);
-    $friends = array();
-    // Сновидение найдено
-    if ($testFriends["count"] > 0) {
-      // Доступность для просмотра или редактирования
-      $code = "0001";
-      // Обработка списка
-      foreach ($testFriends["result"] as $friend) {
-        $friends[] = $this->convertFriendData($friend, true);
+    // Общий список
+    if ($searchType == 'mixed') {
+      $code = '0002';
+      $testFriends['mixed'] = array();
+      // Поиск остальных данных
+      foreach ($types as $type) {
+        $search['type'] = $type;
+        $testFriends = $this->friendService->getList($search);
+        $friends = array();
+        // Обработка списка
+        foreach ($testFriends['result'] as $friend) {
+          $friends[] = $this->convertFriendData($friend, true);
+        }
+        // Заявки найдены
+        if ($testFriends['count'] > 0) {
+          $code = '0001';
+        }
+        // Данные
+        $responseData[$type] = array(
+          'count' => $testFriends['count'],
+          'limit' => $testFriends['limit'],
+          'friends' => $friends
+        );
       }
     }
-    // Сновидение не найдено
+    // Конкретный список
     else {
-      $code = "0002";
+      $testFriends = $this->friendService->getList($search);
+      $friends = array();
+      // Заявки найдены
+      if ($testFriends['count'] > 0) {
+        $code = '0001';
+        // Обработка списка
+        foreach ($testFriends['result'] as $friend) {
+          $friends[] = $this->convertFriendData($friend, true);
+        }
+      }
+      // Заявки не найдены
+      else {
+        $code = '0002';
+      }
+      // Данные
+      $responseData = array(
+        'count' => $testFriends['count'],
+        'limit' => $testFriends['limit'],
+        'friends' => $friends
+      );
     }
     // Вернуть результат
     return array(
-      "data" => array(
-        "count" => $testFriends["count"],
-        "limit" => $testFriends["limit"],
-        "friends" => $friends
-      ),
-      "code" => $code
+      'data' => $responseData,
+      'code' => $code
     );
   }
 

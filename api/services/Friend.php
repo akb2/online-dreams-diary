@@ -29,9 +29,9 @@ class FriendService
   public function createTableApi(string $password): bool
   {
     // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
+    if ($password == $this->config['appPassword']) {
       // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("friend/createTable.sql");
+      return $this->dataBaseService->executeFromFile('friend/createTable.sql');
     }
     // Результат работы функции
     return false;
@@ -41,9 +41,9 @@ class FriendService
   public function deleteTableApi(string $password): bool
   {
     // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
+    if ($password == $this->config['appPassword']) {
       // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("friend/deleteTable.sql");
+      return $this->dataBaseService->executeFromFile('friend/deleteTable.sql');
     }
     // Результат работы функции
     return false;
@@ -76,18 +76,18 @@ class FriendService
   {
     $count = 0;
     $result = array();
-    $limit = $search['limit'] > 0 && $search['limit'] <= 100 ? $search['limit'] : $this->config["friends"]["limit"];
+    $limit = $search['limit'] > 0 && $search['limit'] <= 100 ? $search['limit'] : $this->config['friends']['limit'];
     // Допустимые типы
-    $types = array("friends", "subscribers", "subscribe");
+    $types = array('friends', 'subscribers', 'subscribe');
     // Данные для поиска
     $sqlData = array(
       // Значения полей
-      "type" => array_search($search["type"], $types) ? $search["type"] : $types[0],
-      "user_id" => intval($search["user"])
+      'type' => array_search($search['type'], $types) ? $search['type'] : $types[0],
+      'user_id' => intval($search['user'])
     );
     // Запрос
-    $count = $this->dataBaseService->getCountFromFile("friend/getFriendsCount.php", $sqlData);
-    $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
+    $count = $this->dataBaseService->getCountFromFile('friend/getFriendsCount.php', $sqlData);
+    $page = isset($search['page']) && $search['page'] > 0 ? $search['page'] : 1;
     // Друзья найдены
     if ($count > 0) {
       $maxPage = ceil($count / $limit);
@@ -96,13 +96,13 @@ class FriendService
       $sqlData['limit_start'] = intval(($page * $limit) - $limit);
       $sqlData['limit_length'] = intval($limit);
       // Список данных
-      $result = $this->dataBaseService->getDatasFromFile("friend/getFriendsList.php", $sqlData);
+      $result = $this->dataBaseService->getDatasFromFile('friend/getFriendsList.php', $sqlData);
     }
     // Сон не найден
     return array(
-      "count" => $count,
-      "limit" => $limit,
-      "result" => $result
+      'count' => $count,
+      'limit' => $limit,
+      'result' => $result
     );
   }
 

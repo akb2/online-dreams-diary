@@ -1,5 +1,6 @@
 import { User } from "@_models/account";
-import { BaseSearch } from "@_models/api";
+import { BaseSearch, Search } from "@_models/api";
+import { CustomObjectKey } from "@_models/app";
 
 
 
@@ -31,7 +32,10 @@ export interface FriendSearch extends BaseSearch {
 
 
 // Тип заявок в друзья для поиска
-export type FriendSearchType = "friends" | "subscribers" | "subscribe";
+export type FriendSearchType = "mixed" | "friends" | "subscribers" | "subscribe";
+
+// Модель смешанного ответа списка друзей
+export type FriendListMixedResopnse = CustomObjectKey<FriendSearchType, Search<FriendWithUsers>>;
 
 
 

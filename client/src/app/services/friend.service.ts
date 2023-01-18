@@ -5,7 +5,7 @@ import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
-import { Friend, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
+import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
@@ -105,7 +105,7 @@ export class FriendService implements OnDestroy {
   private compareFriend(friend: Friend | number[], inUser: number, outUser: number = 0): boolean {
     outUser = outUser > 0 ? outUser : ParseInt(this.user?.id);
     // Проверка данных
-    if (!!friend && inUser > 0 && outUser > 0) {
+    if (!!friend && (inUser > 0 || outUser > 0)) {
       const fInUser: number = Array.isArray(friend) ? friend[0] : friend.inUserId;
       const fOutUser: number = Array.isArray(friend) ? friend[1] : friend.outUserId;
       // Проверка
@@ -182,7 +182,13 @@ export class FriendService implements OnDestroy {
         );
     }
     // Пользователь неавторизован
-    return of(EmptyFriend(inUser, outUser));
+    else {
+      const friend: Friend = EmptyFriend(inUser, outUser);
+      // Сохранить в стор
+      this.saveFriendToStore(friend);
+      // Вернуть статус
+      return of(friend);
+    }
   }
 
   // Поиск пользоватлей
@@ -200,6 +206,25 @@ export class FriendService implements OnDestroy {
       }),
       map(({ friends }) => !!friends?.length ? friends.map(u => this.friendWithUsersConverter(u)) : []),
       mergeMap((result: FriendWithUsers[]) => of({ count, result, limit }))
+    );
+  }
+
+  // Смешанный поиск пользователей
+  getMixedList(search: Partial<FriendSearch>, codes: string[] = []): Observable<FriendListMixedResopnse> {
+    search.type = "mixed";
+    // Вернуть подписку
+    return this.httpClient.get<ApiResponse>("friend/getList", { params: ObjectToParams(search, "search_") }).pipe(
+      switchMap(result => result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)),
+      map(data => Object.entries(data as any).reduce((o, [k, { count, limit, friends }]: [string, any]) => ({
+        ...o,
+        [k]: {
+          count: ParseInt(count, 0),
+          limit: ParseInt(limit, search?.limit),
+          result: !!friends?.length ? friends.map(u => this.friendWithUsersConverter(u)) : []
+        }
+      }), {}))
     );
   }
 

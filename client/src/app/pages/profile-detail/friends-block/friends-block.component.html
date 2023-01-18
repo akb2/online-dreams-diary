@@ -1,5 +1,5 @@
 <div class="block"
-     *ngIf="friendsCount > 0">
+     *ngIf="!!friendsCount">
   <!-- Заголовок -->
   <div class="block__title">
     <div class="block__title-text">{{title}} {{itsMyPage? '': (user | petrovich)}}</div>
