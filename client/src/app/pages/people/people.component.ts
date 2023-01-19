@@ -112,15 +112,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
     };
   }
 
-  // Дополнительные данные страницы
-  private get getExtraDatas(): ExtraDatas {
-    const extraDatas: CustomObject<any> = this.router.getCurrentNavigation()?.extras.state ?? {};
-    // Найти данные
-    return Object.entries({ DefaultExtraDatas, noUpdateSearch: false })
-      .map(([k, v]) => ([k, extraDatas.hasOwnProperty(k) ? !!extraDatas[k] : v]))
-      .reduce((o, [k, v]) => ({ ...o, [k as string]: !!v }), {} as ExtraDatas);
-  }
-
 
 
 
@@ -149,8 +140,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe(params => {
-      const { noUpdateSearch }: ExtraDatas = this.getExtraDatas;
-      // Данные из URL
       this.queryParams = params as SimpleObject;
       this.pageCurrent = parseInt(params.page) || 1;
       // Наполнить форму
@@ -158,9 +147,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
         .filter(([k]) => k !== "page")
         .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
       // Поиск пользователей
-      if (!noUpdateSearch) {
-        this.search();
-      }
+      this.search();
     });
     // Подписка на тип устройства
     this.screenService.isMobile$
@@ -264,7 +251,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     });
     // Изменить значение, если оно не вписывается в массив
     this.searchForm.get("birthDay").setValue(newDay);
-    this.urlSet(this.getSearch, true);
+    this.urlSet(this.getSearch);
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -306,7 +293,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   // Записать параметры в URL
-  private urlSet(datas: Partial<SearchUser>, noUpdateSearch: boolean = false): void {
+  private urlSet(datas: Partial<SearchUser>): void {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
     const queryParams: CustomObject<string | number | null> = Object.entries({ ...this.queryParams, ...datas })
       .map(([k, v]) => ([k, !!v ? v : null]))
@@ -318,20 +305,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
       replaceUrl: true,
       state: {
         changeTitle: false,
-        showPreLoader: false,
-        noUpdateSearch
+        showPreLoader: false
       }
     });
   }
-}
-
-
-
-
-
-// Интерфейс дополнительных данных страницы
-interface ExtraDatas extends ExtraDatasApp {
-  noUpdateSearch: boolean;
 }
 
 
