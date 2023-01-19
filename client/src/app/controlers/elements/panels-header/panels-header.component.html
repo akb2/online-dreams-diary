@@ -11,9 +11,14 @@
   <!-- Аватарка -->
   <div class="data__avatar"
        *ngIf="hasAvatar">
+    <!-- Картинка -->
     <img [src]="avatarImage"
          *ngIf="!!avatarImage" />
+    <!-- Иконка -->
     <mat-icon *ngIf="!avatarImage && !!avatarIcon">{{avatarIcon}}</mat-icon>
+    <!-- Метка онлайн -->
+    <div class="data__avatar-online"
+         *ngIf="avatarBlink"></div>
   </div>
   <!-- Текст -->
   <div class="data__text">

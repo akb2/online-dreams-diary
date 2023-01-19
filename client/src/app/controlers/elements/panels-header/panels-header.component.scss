@@ -64,16 +64,17 @@ $avatarSize: 48px;
   &__avatar {
     width: $avatarSize;
     height: $avatarSize;
-    border-radius: 50%;
-    overflow: hidden;
+    position: relative;
     // Картинка
     > img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 50%;
     }
     // Иконка
     > mat-icon {
+      border-radius: 50%;
       display: block;
       width: $avatarSize;
       height: $avatarSize;
@@ -82,6 +83,10 @@ $avatarSize: 48px;
       text-align: center;
       background-color: map.get(colors.$mat-primary, contrast, 500);
       color: map.get(colors.$mat-primary, 500);
+    }
+    // Метка онлайн
+    &-online {
+      @include mixins.onlineBlinkPoint(6px, 4px);
     }
   }
   // Текст

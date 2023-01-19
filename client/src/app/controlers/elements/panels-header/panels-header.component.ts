@@ -23,6 +23,7 @@ export class PanelsHeaderComponent {
   @Input() imageOverlay: boolean;
 
   @Input() avatarImage: string = "";
+  @Input() avatarBlink: boolean = false;
   @Input() avatarIcon: string = "";
   @Input() title: string = "";
   @Input() subTitle: string = "";
