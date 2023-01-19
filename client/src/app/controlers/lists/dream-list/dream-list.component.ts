@@ -156,14 +156,14 @@ export class DreamListComponent implements OnInit, OnChanges {
       // Для сновидений других пользователей
       else {
         // Профиль
-        if (this.showProfile) {
-          menuItemAdvance.push({
-            icon: "account_circle",
-            title: "Профиль автора",
-            subTitle: dream.user.name + " " + dream.user.lastName,
-            routerLink: "/profile/" + dream.user.id
-          });
-        }
+        // if (this.showProfile) {
+        //   menuItemAdvance.push({
+        //     icon: "account_circle",
+        //     title: "Профиль автора",
+        //     subTitle: dream.user.name + " " + dream.user.lastName,
+        //     routerLink: "/profile/" + dream.user.id
+        //   });
+        // }
       }
       // Объединить список пунктов
       const menuItem: CardMenuItem[] = [
