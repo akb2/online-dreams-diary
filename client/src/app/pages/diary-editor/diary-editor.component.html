@@ -95,7 +95,7 @@
           </ng-template>
         </mat-tab>
         <!-- Описание -->
-        <mat-tab label="События сновидения"
+        <mat-tab label="Текст"
                  *ngIf="dream.mode === _dreamMode.text || dream.mode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
@@ -112,7 +112,7 @@
           </ng-template>
         </mat-tab>
         <!-- Карта -->
-        <mat-tab label="Карта сновидения"
+        <mat-tab label="Карта"
                  *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
@@ -132,7 +132,7 @@
           </ng-template>
         </mat-tab>
         <!-- Оформление -->
-        <mat-tab label="Оформление">
+        <mat-tab label="Дизайн">
           <ng-template matTabContent>
             <div class="overlay">
               <div class="section root-section tabs">
