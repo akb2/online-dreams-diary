@@ -86,11 +86,11 @@ export class DreamService implements OnDestroy {
   }
 
   // Сведения о владельце сновидения
-  private getDreamUsers(userIds: number[]): Observable<User[]> {
+  private getDreamUsers(userIds: number[], userId: number = 0): Observable<User[]> {
     userIds = Array.from(new Set(userIds));
     // Текущий пользователь
-    if (!!this.user && userIds.length === 1 && this.user.id === userIds[0]) {
-      return this.accountService.user$().pipe(
+    if (userIds.length === 1 && ((!!this.user && this.user.id === userIds[0]) || userId === userIds[0])) {
+      return this.accountService.user$(userId).pipe(
         takeUntil(this.destroyed$),
         map(user => ([user]))
       );
@@ -136,7 +136,7 @@ export class DreamService implements OnDestroy {
         this.apiService.checkResponse(result.result.code, codes)),
       concatMap(
         ({ dreams }: any) => dreams?.length > 0 ?
-          this.getDreamUsers(Array.from(new Set(dreams.map((dream: DreamDto) => dream.userId)))) :
+          this.getDreamUsers(Array.from(new Set(dreams.map((dream: DreamDto) => dream.userId))), search.user ?? 0) :
           of([]),
         ({ dreams, count, limit, hasAccess }: any, users: User[]) => ({ dreams: dreams as DreamDto[], count, limit, hasAccess, users })
       ),
@@ -164,7 +164,7 @@ export class DreamService implements OnDestroy {
           this.apiService.checkResponse(result.result.code, codes)
       ),
       mergeMap(
-        (d: DreamDto) => this.getDreamUsers([d.userId]),
+        (d: DreamDto) => this.getDreamUsers([d.userId], d.userId),
         (dreamDto, user) => ({ dreamDto, user: user[0] })
       ),
       map(({ dreamDto, user }) => ({ ...this.dreamConverter(dreamDto), user })),
