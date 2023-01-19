@@ -124,7 +124,7 @@ class Account
     $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
     // Параметры
     $code = '0002';
-    $userId = $_GET['token_user_id'];
+    $currentUserId = $_GET['token_user_id'];
     $token = $_GET['token'];
     $search = array(
       'q' => $data['search_q'] ?? null,
@@ -138,14 +138,15 @@ class Account
       'limit' => $data['search_limit'] ?? null,
       'status' => $data['search_status'] ?? 1
     );
-    $testUsers = $this->userService->getList($search, $token, $userId);
+    $testUsers = $this->userService->getList($search, $token, $currentUserId);
     $people = array();
     // Сновидение найдено
     if ($testUsers['count'] > 0) {
-      // Доступность для просмотра или редактирования
       $code = '0001';
       // Список пользователей
-      $people = $testUsers['result'];
+      foreach ($testUsers['result'] as $testUser) {
+        ['user' => $people[]] = $this->checkUserDataPrivate($testUser, $currentUserId);
+      }
     }
     // Сновидение не найдено
     else {
