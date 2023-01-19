@@ -6,6 +6,7 @@
     "**/.hg/": true,
     "**/CVS/": true,
     "**/node_modules/": true,
+    "**/.angular/": true,
     "app/": true,
     "email-templates/": true,
     "db_backup/": true,
