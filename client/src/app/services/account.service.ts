@@ -7,7 +7,7 @@ import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSettingsDto, UserSex } from "@_models/account";
+import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
@@ -176,11 +176,8 @@ export class AccountService implements OnDestroy {
   // Авторизация
   auth(login: string, password: string, codes: string[] = []): Observable<AuthResponce> {
     let activateIsAvail: boolean = false;
-    const formData: FormData = new FormData();
-    formData.append("login", login);
-    formData.append("password", password);
     // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/auth", formData)
+    return this.httpClient.post<ApiResponse>("account/auth", ObjectToFormData({ login, password }))
       .pipe(
         takeUntil(this.destroyed$),
         switchMap(result => {
@@ -201,10 +198,7 @@ export class AccountService implements OnDestroy {
 
   // Регистрация
   register(data: UserRegister, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    Object.entries(data).map(([k, v]) => formData.append(k, v));
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/register", formData)
+    return this.httpClient.post<ApiResponse>("account/register", ObjectToFormData(data))
       .pipe(
         takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -213,11 +207,7 @@ export class AccountService implements OnDestroy {
 
   // Активация аккаунта
   activateAccount(user: number, code: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("user", user.toString());
-    formData.append("code", code);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/activate", formData)
+    return this.httpClient.post<ApiResponse>("account/activate", ObjectToFormData({ user, code }))
       .pipe(
         takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -226,12 +216,7 @@ export class AccountService implements OnDestroy {
 
   // Создание ключа активации аккаунта
   createActivationCode(login: string, password: string, captcha: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("login", login);
-    formData.append("password", password);
-    formData.append("captcha", captcha);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/createActivationCode", formData)
+    return this.httpClient.post<ApiResponse>("account/createActivationCode", ObjectToFormData({ login, password, captcha }))
       .pipe(
         takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
@@ -366,21 +351,15 @@ export class AccountService implements OnDestroy {
 
   // Сменить пароль
   changePassword(currentPassword: string, newPassword: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("current_password", currentPassword);
-    formData.append("new_password", newPassword);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/changePassword", formData).pipe(
-      switchMap(r => this.apiService.checkResponse(r.result.code, codes))
-    );
+    return this.httpClient.post<ApiResponse>("account/changePassword", ObjectToFormData({
+      current_password: currentPassword,
+      new_password: newPassword
+    })).pipe(switchMap(r => this.apiService.checkResponse(r.result.code, codes)));
   }
 
   // Сохранить данные аккаунта
   saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    Object.entries(userSave).map(([key, value]) => formData.append(key, value));
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/saveUserData", formData).pipe(
+    return this.httpClient.post<ApiResponse>("account/saveUserData", ObjectToFormData(userSave)).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -388,10 +367,7 @@ export class AccountService implements OnDestroy {
 
   // Обновить статус
   savePageStatus(pageStatus: string, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("pageStatus", pageStatus ?? "");
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/savePageStatus", formData).pipe(
+    return this.httpClient.post<ApiResponse>("account/savePageStatus", ObjectToFormData({ pageStatus })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -399,15 +375,10 @@ export class AccountService implements OnDestroy {
 
   // Сохранить настройки аккаунта
   saveUserSettings(settings: UserSettings, codes: string[] = []): Observable<string> {
-    const settingsDto: UserSettingsDto = {
+    return this.httpClient.post<ApiResponse>("account/saveUserSettings", ObjectToFormData({
       profileBackground: settings.profileBackground.id,
       profileHeaderType: settings.profileHeaderType as string
-    };
-    // Тело запроса
-    const formData: FormData = new FormData();
-    Object.entries(settingsDto).map(([key, value]) => formData.append(key, value));
-    // Запрос
-    return this.httpClient.post<ApiResponse>("account/saveUserSettings", formData).pipe(
+    })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -415,11 +386,7 @@ export class AccountService implements OnDestroy {
 
   // Сохранить настройки приватности
   saveUserPrivateSettings(privateDatas: UserPrivate, codes: string[] = []): Observable<string> {
-    // Тело запроса
-    const formData: FormData = new FormData();
-    formData.append("private", JSON.stringify(privateDatas));
-    // Запрос
-    return this.httpClient.post<ApiResponse>("account/saveUserPrivate", formData).pipe(
+    return this.httpClient.post<ApiResponse>("account/saveUserPrivate", ObjectToFormData({ private: JSON.stringify(privateDatas) })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -431,10 +398,7 @@ export class AccountService implements OnDestroy {
 
   // Загрузить аватарку
   uploadAvatar(file: File, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("file", file);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/uploadAvatar", formData).pipe(
+    return this.httpClient.post<ApiResponse>("account/uploadAvatar", ObjectToFormData({ file })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -442,14 +406,7 @@ export class AccountService implements OnDestroy {
 
   // Обрезать аватарку
   cropAvatar(type: UserAvatarCropDataKeys, coords: UserAvatarCropDataElement, codes: string[] = []): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("type", type);
-    formData.append("startX", coords.startX.toString());
-    formData.append("startY", coords.startY.toString());
-    formData.append("width", coords.width.toString());
-    formData.append("height", coords.height.toString());
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>("account/cropAvatar", formData).pipe(
+    return this.httpClient.post<ApiResponse>("account/cropAvatar", ObjectToFormData({ type, ...coords })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );
@@ -457,7 +414,7 @@ export class AccountService implements OnDestroy {
 
   // Удалить аватарку
   deleteAvatar(codes: string[] = []): Observable<string> {
-    return this.httpClient.post<ApiResponse>("account/deleteAvatar", new FormData()).pipe(
+    return this.httpClient.post<ApiResponse>("account/deleteAvatar", null).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
     );

@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
+import { ObjectToFormData } from "@_datas/api";
 import { User } from "@_models/account";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
@@ -121,10 +122,8 @@ export class TokenService {
   }
 
   // Удалить токен по ID
-  deleteTokenById(id: number, codes: string[] = []): Observable<boolean> {
-    const url: string = "token/deleteTokenById?tokenId=" + id;
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(url, new FormData()).pipe(
+  deleteTokenById(tokenId: number, codes: string[] = []): Observable<boolean> {
+    return this.httpClient.post<ApiResponse>("token/deleteTokenById", ObjectToFormData({ tokenId })).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
       map(result => result.result.code === "0001")
     );
@@ -132,9 +131,7 @@ export class TokenService {
 
   // Удалить все токены по ID пользователя
   deleteTokensByUser(hideCurrent: boolean = false, codes: string[] = []): Observable<boolean> {
-    const url: string = "token/deleteTokensByUser?hideCurrent=" + (hideCurrent ? 1 : 0);
-    // Вернуть подписку
-    return this.httpClient.post<ApiResponse>(url, new FormData()).pipe(
+    return this.httpClient.post<ApiResponse>("token/deleteTokensByUser", ObjectToFormData({ hideCurrent })).pipe(
       switchMap(result => this.apiService.checkSwitchMap(result, codes)),
       map(result => result.result.code === "0001")
     );
@@ -142,7 +139,7 @@ export class TokenService {
 
   // Сбросить авторизацию
   deleteAuth(): Observable<string> {
-    return this.httpClient.post<ApiResponse>("token/deleteToken", new FormData()).pipe(
+    return this.httpClient.post<ApiResponse>("token/deleteToken", null).pipe(
       tap(() => this.deleteCurrentUser()),
       switchMap(result => this.apiService.checkResponse(result.result.code)),
       tap(() => {
