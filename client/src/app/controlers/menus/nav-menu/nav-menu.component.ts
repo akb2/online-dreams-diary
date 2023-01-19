@@ -1,13 +1,15 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { DrawDatas } from "@_helpers/draw-datas";
+import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
 import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
+import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, interval, map, mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -36,6 +38,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @Input() subTitle: string = "";
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";
+  @Input() avatarBlink: boolean = false;
 
   @Input() floatButtonIcon: string = "";
   @Input() floatButtonText: string = "";
@@ -52,11 +55,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @ViewChild("contentLayerContainer") private contentLayerContainer: ElementRef;
   @ViewChild("contentLayerContainerLeft") private contentLayerContainerLeft: ElementRef;
 
+  imagePrefix: string = "/assets/images/backgrounds/";
   tempImage: string = "";
   tempImagePositionY: string = "";
   tempImagePositionX: string = "";
   tempImageOverlay: boolean = true;
   private clearTempImageTimeout: number = 300;
+
+  user: User;
 
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
@@ -170,6 +176,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     return { x, y, maxX, maxY };
   }
 
+  // Проверка пола
+  get userIsMale(): boolean {
+    return this.user.sex === UserSex.Male;
+  }
+
 
 
 
@@ -177,6 +188,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
+    private accountService: AccountService,
     private menuService: MenuService
   ) {
     DrawDatas.dataRender();
@@ -212,6 +224,13 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       .subscribe(isMobile => {
         this.isMobile = isMobile;
         this.onResize();
+      });
+    // Подписка на данные о текущем пользователей
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.changeDetectorRef.detectChanges();
       });
     // Скролл
     this.scroll = this.getCurrentScroll.y;

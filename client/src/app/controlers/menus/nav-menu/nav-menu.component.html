@@ -227,18 +227,8 @@
     <div class="mobile-menu__overlay {{showMobileMenu?'show':''}}"
          (click)="toggleMobileMenu(-1)"></div>
     <div class="mobile-menu__layout {{showMobileMenu?'show':''}}">
-
       <!-- Информация о странице -->
-      <app-panels-header [imageSrc]="image"
-                         [imageOverlay]="imageOverlay"
-                         [positionX]="imagePositionX"
-                         [positionY]="imagePositionY"
-                         [title]="title"
-                         [subTitle]="subTitle"
-                         [avatarImage]="avatarImage"
-                         [avatarIcon]="avatarIcon"
-                         (closeClick)="toggleMobileMenu(-1)"></app-panels-header>
-
+      <ng-container [ngTemplateOutlet]="mobileMenuInfo"></ng-container>
       <!-- Пункты главного меню -->
       <nav class="mobile-menu__list">
         <ul>
@@ -288,4 +278,32 @@
              let-item>
   <mat-icon>{{item.icon}}</mat-icon>
   <span>{{item.text}}</span>
+</ng-template>
+
+<!-- Информация о странице в мобильном меню -->
+<ng-template #mobileMenuInfo>
+  <!-- Информация о пользователей -->
+  <app-panels-header [imageSrc]="imagePrefix + user.settings.profileBackground.imageNameShort"
+                     [imageOverlay]="user.settings.profileBackground.imageOverlay"
+                     [positionX]="user.settings.profileBackground.positionX"
+                     [positionY]="user.settings.profileBackground.positionY"
+                     title="{{user.name}} {{user.lastName}}"
+                     [subTitle]="user.online? 'Онлайн': (userIsMale? 'Был ': 'Была ') + (user.lastActionDate | date: 'd.M.y - H:mm')"
+                     [avatarImage]="user.avatars.small"
+                     avatarIcon="profile"
+                     [avatarBlink]="user.online"
+                     (closeClick)="toggleMobileMenu(-1)"
+                     *ngIf="!!user"></app-panels-header>
+  <!-- Информация о странице -->
+  <app-panels-header [imageSrc]="image"
+                     [imageOverlay]="imageOverlay"
+                     [positionX]="imagePositionX"
+                     [positionY]="imagePositionY"
+                     [title]="title"
+                     [subTitle]="subTitle"
+                     [avatarImage]="avatarImage"
+                     [avatarIcon]="avatarIcon"
+                     [avatarBlink]="avatarBlink"
+                     (closeClick)="toggleMobileMenu(-1)"
+                     *ngIf="!user"></app-panels-header>
 </ng-template>
