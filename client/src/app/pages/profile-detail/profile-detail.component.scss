@@ -11,15 +11,15 @@
     default: 20%,
     large: 25%,
     middle: 30%,
-    small: 290px,
-    xsmall: 220px,
+    small: 100%,
+    xsmall: 290px,
   );
   $columnTemplates: (
     default: true,
     small: false,
     xsmall: false,
   );
-  $rightColumnItems: "status" "general" "actions" "dreams";
+  $rightColumnItems: "status" "general" "actions" "dreams" "avatar" "friends-friends" "friends-subscribers" "friends-subscribe";
   $rightColumnData: (
     default: (
       areas: "status" "actions" "general" "dreams",
@@ -35,13 +35,39 @@
   // Свойства
   display: grid;
   align-items: start;
-  // Аватарка
+  // Колонки
+  &__left,
+  &__right {
+    &,
+    &-helper {
+      @each $item in $rightColumnItems {
+        > #{"." + $item} {
+          grid-area: #{$item};
+        }
+      }
+    }
+  }
+  // Левая колонка
   &__left {
     position: relative;
     // Помощник
     &-helper {
       position: sticky;
       bottom: 0;
+      // Адаптив
+      @include screens.adaptive(small, small) {
+        $gap: map.get(vars.$userProfileBlocksGaps, small);
+        // Свойства
+        position: static;
+        display: grid;
+        grid-template-columns: 43% minmax(1px, 1fr);
+        grid-template-areas: "avatar friends-friends" "avatar friends-subscribers" "avatar friends-subscribe" "avatar empty";
+        grid-gap: $gap;
+        // Убрать отступы
+        ::ng-deep & > friends-block > .block {
+          margin-top: 0;
+        }
+      }
     }
     // Адаптив
     @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates, containers.$cardPaddings) using($mainAvatarSize, $column, $cardPadding) {
@@ -57,15 +83,9 @@
       }
     }
   }
-  // Данные
+  // Правая колонка
   &__right {
     display: grid;
-    // Свложения
-    @each $item in $rightColumnItems {
-      > #{"." + $item} {
-        grid-area: #{$item};
-      }
-    }
     // Адаптив
     @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $rightColumnData) using($gap, $data) {
       width: calc(100% + #{$gap});

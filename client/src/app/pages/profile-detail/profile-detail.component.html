@@ -47,12 +47,14 @@
 <!-- Левая колонка -->
 <ng-template #leftContent>
   <!-- Аватарка -->
-  <app-avatar-block [user]="visitedUser"
+  <app-avatar-block class="avatar"
+                    [user]="visitedUser"
                     [itsMyPage]="itsMyPage"></app-avatar-block>
   <!-- Друзья -->
   <ng-container *ngIf="!!friends">
     <ng-container *ngFor="let friend of friends">
-      <friends-block [user]="visitedUser"
+      <friends-block class="friends-{{friend.type}}"
+                     [user]="visitedUser"
                      [friendType]="friend.type"
                      [friends]="friend.users"
                      [friendsCount]="friend.count"
