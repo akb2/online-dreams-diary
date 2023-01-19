@@ -339,21 +339,24 @@ export class AccountService implements OnDestroy {
 
   // Поиск пользоватлей
   search(search: Partial<SearchUser>, codes: string[] = []): Observable<Search<User>> {
-    let count: number = 0;
-    let limit: number = 0;
-    // Вернуть подписку
+    search.ids = Array.from(new Set(search.ids));
+    search.limit = !!search.ids?.length ? search.ids.length : (search.limit ?? 0);
+    // Подписка
     return this.httpClient.get<ApiResponse>("account/search", { params: ObjectToParams(search, "search_") }).pipe(
-      switchMap(
-        result => result.result.code === "0001" || codes.some(testCode => testCode === result.result.code) ?
-          of(result.result.data) :
-          this.apiService.checkResponse(result.result.code, codes)
-      ),
-      tap(r => {
-        count = r.count ?? 0;
-        limit = r.limit ?? 0;
-      }),
-      mergeMap(r => of(!!r?.people?.length ? r.people.map(u => this.userConverter(u)) : [])),
-      mergeMap((result: User[]) => of({ count, result, limit }))
+      switchMap(result => {
+        const code: string = result?.result?.code?.toString() ?? "";
+        const people: User[] = !!result?.result?.data?.people?.length ? result.result.data.people.map(u => this.userConverter(u)) : [];
+        const count: number = parseInt(result?.result?.data?.count);
+        const limit: number = parseInt(result?.result?.data?.limit);
+        // Сохранить данные пользователя
+        if (code === "0001") {
+          people.forEach(user => this.saveUserToStore(user));
+        }
+        // Вернуть данные пользователей
+        return code === "0001" || codes.some(testCode => testCode === code) ?
+          of({ result: people, count, limit }) :
+          this.apiService.checkResponse(code, codes)
+      })
     );
   }
 
