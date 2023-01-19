@@ -58,7 +58,7 @@ export const DreamStatuses: OptionData[] = [
   {
     key: DreamStatus.friends.toString(),
     title: "Для друзей",
-    subTitle: "Доступно для вас и списка друзей",
+    subTitle: "Доступно для списка друзей и подписок",
     icon: "group",
     iconColor: "accent",
     iconBackground: "fill"
@@ -67,7 +67,7 @@ export const DreamStatuses: OptionData[] = [
   {
     key: DreamStatus.users.toString(),
     title: "Для сообщества",
-    subTitle: "Доступно только пользователям сервиса",
+    subTitle: "Доступно всем пользователям сервиса",
     icon: "vpn_lock",
     iconColor: "accent",
     iconBackground: "fill"
@@ -76,7 +76,7 @@ export const DreamStatuses: OptionData[] = [
   {
     key: DreamStatus.hash.toString(),
     title: "По ссылке",
-    subTitle: "Доступно для вас и всех по специальной ссылке",
+    subTitle: "Доступно по специальной ссылке",
     icon: "link",
     iconColor: "primary",
     iconBackground: "fill"
@@ -85,7 +85,7 @@ export const DreamStatuses: OptionData[] = [
   {
     key: DreamStatus.public.toString(),
     title: "Публичное сновидение",
-    subTitle: "Доступно для всех в интернете",
+    subTitle: "Доступно всем в интернете",
     icon: "travel_explore",
     iconColor: "primary",
     iconBackground: "fill"
