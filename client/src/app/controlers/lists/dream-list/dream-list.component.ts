@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
+import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
+import { DreamStatuses } from "@_datas/dream";
 import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { User, UserSex } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
@@ -67,6 +69,11 @@ export class DreamListComponent implements OnInit, OnChanges {
   // Проверка пола
   userIsMale(user: User): boolean {
     return user.sex === UserSex.Male;
+  }
+
+  // Подробные сведения о приватности сновидения
+  getDreamPrivate(dream: Dream): OptionData {
+    return DreamStatuses.find(({ key }) => key === dream.status.toString()) ?? DreamStatuses[0];
   }
 
 

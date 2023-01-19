@@ -266,10 +266,11 @@
     }
     // Действия
     &.actions {
-      display: grid;
-      grid-template-columns: minmax(auto, 1fr) auto;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
       align-items: center;
-      grid-gap: 0 #{vars.$dreamCardSpacingX};
+      gap: 0 #{vars.$dreamCardSpacingX};
       border-radius: 0 0 #{$borderRadius} #{$borderRadius};
       // Разделитель сверху
       *:not(.no-content.no-image) + & {
@@ -289,31 +290,21 @@
     }
   }
   // Контейнер автора
-  &__author {
-    $iconSize: 32px;
-    $titleSize: 18px;
-    $subTitleSize: $iconSize - $titleSize;
-    // Свойтсва
-    display: grid;
-    grid-template-columns: #{$iconSize} 1fr;
-    grid-template-rows: #{$titleSize} #{$subTitleSize};
-    grid-template-areas: "icon title" "icon subtitle";
+  &__icons {
+    display: flex;
     text-decoration: none;
-    grid-gap: 0 8px;
+    grid-gap: 6px;
     align-items: center;
-    // Без подзаголовка
-    &.no-subtitle {
-      grid-template-rows: #{$iconSize};
-    }
     // Иконка
     &-icon {
+      @include mixins.customsColors(vars.$buttonSize);
+      // Свойства
       position: relative;
-      border-radius: 50%;
-      width: $iconSize;
-      height: $iconSize;
-      background-color: map.get(colors.$mat-primary, 500);
-      color: map.get(colors.$mat-primary, contrast, 500);
+      width: vars.$buttonSize;
+      height: vars.$buttonSize;
       grid-area: icon;
+      display: block;
+      text-decoration: none;
       // Картинка
       > img {
         width: 100%;
@@ -323,34 +314,19 @@
       }
       // Иконка
       > mat-icon {
-        width: $iconSize;
-        height: $iconSize;
-        line-height: $iconSize;
-        font-size: $iconSize * 0.7;
+        width: vars.$buttonSize;
+        height: vars.$buttonSize;
+        line-height: vars.$buttonSize;
+        font-size: vars.$buttonSize * 0.7;
         display: block;
         text-align: center;
         color: inherit;
+        border-radius: 50%;
       }
       // Метка онлайн
       &-online {
         @include mixins.onlineBlinkPoint(6px, 2px);
       }
-    }
-    // Заголовок
-    &-title {
-      @include mixins.lineClamp(1, $titleSize, 14px);
-      // Свойства
-      font-weight: 400;
-      color: colors.$title;
-      grid-area: title;
-    }
-    // Подзаголовок
-    &-subtitle {
-      @include mixins.lineClamp(1, $subTitleSize, 13px);
-      // Свойства
-      font-weight: 300;
-      color: colors.$subtitle;
-      grid-area: subtitle;
     }
   }
 }

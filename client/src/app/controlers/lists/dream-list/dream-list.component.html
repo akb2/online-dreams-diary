@@ -59,9 +59,9 @@
     </div>
     <!-- Автор и действие -->
     <div class="dream__text actions">
-      <!-- Автор -->
+      <!-- Отметки -->
       <ng-container [ngTemplateOutlet]="dreamAuthor"
-                    [ngTemplateOutletContext]="{ $implicit: showProfile, user: dream.user }"></ng-container>
+                    [ngTemplateOutletContext]="{ $implicit: showProfile, user: dream.user, dream }"></ng-container>
       <!-- Кнопка просмотра -->
       <a mat-flat-button
          color="primary"
@@ -73,37 +73,38 @@
 
 
 
-<!-- автор сновидения -->
+<!-- Иконки - описания -->
 <ng-template #dreamAuthor
              let-showProfile
+             let-dream="dream"
              let-user="user">
-  <a class="dream__author"
-     routerLink="/profile/{{user.id}}"
-     *ngIf="showProfile">
-    <!-- Аватарка -->
-    <div class="dream__author-icon">
+  <div class="dream__icons">
+    <!-- Автор сновидения -->
+    <a class="dream__icons-icon"
+       routerLink="/profile/{{user.id}}"
+       matTooltip="{{user.name}} {{user.lastName}}"
+       background="fill"
+       color="primary"
+       *ngIf="showProfile">
       <!-- Картинка -->
       <img [src]="user.avatars.small"
            *ngIf="user.avatars.small.length > 0" />
       <!-- Иконка -->
       <mat-icon *ngIf="user.avatars.small.length === 0">person</mat-icon>
       <!-- Метка онлайн -->
-      <div class="dream__author-icon-online"
+      <div class="dream__icons-icon-online"
            *ngIf="user.online"></div>
+    </a>
+    <!-- Уровень доступности -->
+    <div class="dream__icons-icon"
+         [attr.color]="status.iconColor"
+         [attr.background]="status.iconBackground"
+         [attr.position]="status.imagePosition"
+         [matTooltip]="status.subTitle"
+         *ngIf="getDreamPrivate(dream) as status">
+      <mat-icon>{{status.icon}}</mat-icon>
     </div>
-    <!-- Имя -->
-    <div class="dream__author-title">{{user.name}} {{user.lastName}}</div>
-    <!-- Статус онлайн -->
-    <div class="dream__author-subtitle">
-      <!-- В сети -->
-      <ng-container *ngIf="user.online; else userlastVisitDate">Онлайн</ng-container>
-      <!-- Последний визит -->
-      <ng-template #userlastVisitDate>
-        {{userIsMale(user)? 'Был': 'Была'}}
-        {{user.lastActionDate | date: 'd.M.y - H:mm'}}
-      </ng-template>
-    </div>
-  </a>
+  </div>
   <!-- Пустой блок -->
   <div *ngIf="!showProfile"></div>
 </ng-template>
