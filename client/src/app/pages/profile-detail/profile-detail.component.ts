@@ -30,7 +30,7 @@ import { catchError, concatMap, map, Observable, of, skipWhile, Subject, switchM
 export class ProfileDetailComponent implements OnInit, OnDestroy {
 
 
-  imagePrefix: string = "../../../../assets/images/backgrounds/";
+  imagePrefix: string = "/assets/images/backgrounds/";
   pageData: RouteData;
 
   isAutorizedUser: boolean = false;
@@ -46,6 +46,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   navMenuType: NavMenuType = NavMenuType.short;
   menuAvatarImage: string = "";
   menuAvatarIcon: string = "";
+  menuAvatarBlink: boolean = false;
   floatButtonIcon: string;
   floatButtonLink: string;
   backButtonLink: string;
@@ -140,6 +141,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.backgroundImageData = this.visitedUser.settings.profileBackground;
       this.navMenuType = this.visitedUser.settings.profileHeaderType;
+      this.menuAvatarBlink = this.visitedUser.online;
     }
     // Мой профиль
     if (isMyProfile) {
