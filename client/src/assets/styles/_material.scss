@@ -86,8 +86,27 @@
   // Обертка
   .mat-form-field {
     $elm: &;
+    $padding: 12px;
     // Свойства
     width: 100%;
+    // Поле с картинкой
+    .image + & {
+      margin-left: -#{vars.$matFormFieldImageSize};
+      // Обертка поля
+      ::ng-deep #{$elm}-flex {
+        padding-left: vars.$matFormFieldImageSize + $padding;
+        padding-right: $padding;
+      }
+      // Линия
+      ::ng-deep #{$elm}-underline {
+        left: vars.$matFormFieldImageSize;
+        width: calc(100% - #{vars.$matFormFieldImageSize});
+      }
+    }
+    // Поле с картинкой
+    &.hasImage {
+      width: calc(100% - #{vars.$matFormFieldImageSize});
+    }
     // Обертка заполненного стиля
     :host ::ng-deep &-appearance-fill & {
       &-subscript-wrapper {

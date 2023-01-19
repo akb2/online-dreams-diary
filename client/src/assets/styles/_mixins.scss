@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "sass:math";
+@use "sass:list";
 @use "colors";
 @use "containers";
 
@@ -199,4 +200,58 @@
   &::after {
     border-top-color: $color;
   }
+}
+
+// Миксин цветов
+@mixin customsColors($size) {
+  $colors: (
+    primary: colors.$mat-primary 500,
+    accent: colors.$mat-secondary 500,
+    warn: colors.$mat-status-warn 500,
+    disabled: colors.$mat-disabled 500,
+  );
+  // Свойства
+  width: $size;
+  height: $size;
+  // Картинки
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  // Иконка
+  > mat-icon {
+    width: $size;
+    height: $size;
+    line-height: $size;
+    font-size: $size * 0.7;
+    text-align: center;
+  }
+
+  // Размеры картинки
+  @each $value in contain, cover {
+    &[position="#{$value}"] > img {
+      object-fit: $value;
+    }
+  }
+  // Тип заливки
+  &[background="transparent"] > mat-icon {
+    font-size: $size;
+    border-radius: 0;
+    background-color: transparent;
+  }
+  // Цвета
+  @each $colors, $value in $colors {
+    // Для закрашенных иконок
+    &[color="#{$colors}"][background="fill"] > mat-icon {
+      background-color: map.get(list.nth($value, 1), list.nth($value, 2));
+      color: map.get(list.nth($value, 1), contrast, list.nth($value, 2));
+    }
+    // Для незакрашенных иконок
+    &[color="#{$colors}"][background="transparent"] > mat-icon {
+      color: map.get(list.nth($value, 1), list.nth($value, 2));
+    }
+  }
+
+  @content;
 }

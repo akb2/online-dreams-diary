@@ -1,89 +1,12 @@
 @use "sass:map";
-@use "sass:list";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/material";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/vars";
 
-// Свойства
-$image-size: 49px;
 // Обертка поля
 @include material.mat-form-field;
 @include material.mat-option;
-
-// Миксин цветов
-@mixin customs($size) {
-  $colors: (
-    primary: colors.$mat-primary 500,
-    accent: colors.$mat-secondary 500,
-    warn: colors.$mat-status-warn 500,
-    disabled: colors.$mat-disabled 500,
-  );
-  // Свойства
-  width: $size;
-  height: $size;
-  // Картинки
-  > img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-  // Иконка
-  > mat-icon {
-    width: $size;
-    height: $size;
-    line-height: $size;
-    font-size: $size * 0.7;
-    text-align: center;
-  }
-
-  // Размеры картинки
-  @each $value in contain, cover {
-    &[position="#{$value}"] > img {
-      object-fit: $value;
-    }
-  }
-  // Тип заливки
-  &[background="transparent"] > mat-icon {
-    font-size: $size;
-    border-radius: 0;
-    background-color: transparent;
-  }
-  // Цвета
-  @each $colors, $value in $colors {
-    // Для закрашенных иконок
-    &[color="#{$colors}"][background="fill"] > mat-icon {
-      background-color: map.get(list.nth($value, 1), list.nth($value, 2));
-      color: map.get(list.nth($value, 1), contrast, list.nth($value, 2));
-    }
-    // Для незакрашенных иконок
-    &[color="#{$colors}"][background="transparent"] > mat-icon {
-      color: map.get(list.nth($value, 1), list.nth($value, 2));
-    }
-  }
-
-  @content;
-}
-
-// Миксин обертки
-@mixin mat-form-field {
-  $elm: &;
-  $padding: 12px;
-  // Свойства
-  width: 100%;
-  // Поле с картинкой
-  .image + & {
-    margin-left: -$image-size;
-    // Обертка поля
-    ::ng-deep #{$elm}-flex {
-      padding-left: $image-size + $padding;
-      padding-right: $padding;
-    }
-    // Линия
-    ::ng-deep #{$elm}-underline {
-      left: $image-size;
-      width: calc(100% - #{$image-size});
-    }
-  }
-}
 
 // Поле ввода
 .mat-input-element {
@@ -116,7 +39,7 @@ $image-size: 49px;
       border-radius: 4px;
     }
     // Кстомизация
-    @include customs($image-size) {
+    @include mixins.customsColors($image-size) {
     }
   }
 
@@ -167,18 +90,9 @@ $image-size: 49px;
   cursor: pointer;
 }
 
-// Поле
-.mat-form-field {
-  @include mat-form-field;
-  // Поле с картинкой
-  &.hasImage {
-    width: calc(100% - #{$image-size});
-  }
-}
-
 // Картинка
 .image {
-  @include customs($image-size);
+  @include mixins.customsColors(vars.$matFormFieldImageSize);
 }
 
 // Иконка отображения пароля
