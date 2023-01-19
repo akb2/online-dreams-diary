@@ -23,6 +23,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
   @Input() user: User;
   @Input() itsMyPage: boolean;
+  @Input() isAutorizedUser: boolean;
 
   userHasDiaryAccess: boolean = false;
   dreamsLoading: boolean = false;
@@ -76,7 +77,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$),
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
-        concatMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
+        concatMap(() => this.itsMyPage || !this.isAutorizedUser ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
         concatMap(
           () => this.dreamService.search({ user: this.user.id, limit: this.dreamLimit }, ["0002", "8100"]),
           (friend, { count, result: dreams, limit, hasAccess }) => ({ count, dreams, limit, friend, hasAccess })

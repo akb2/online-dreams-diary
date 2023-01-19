@@ -261,7 +261,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$),
         takeWhile(() => !this.visitedUser, true),
         skipWhile(() => !this.visitedUser),
-        concatMap(() => this.itsMyPage ? of(true) : this.friendService.friends$(this.visitedUser.id, 0)),
+        concatMap(() => this.itsMyPage || !this.isAutorizedUser ? of(true) : this.friendService.friends$(this.visitedUser.id, 0)),
         map(() => ({
           search: {
             user: this.visitedUser.id,

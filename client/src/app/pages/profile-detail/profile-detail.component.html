@@ -85,7 +85,8 @@
   <div class="dreams"
        *ngIf="userHasAccess">
     <app-dreams-block [user]="visitedUser"
-                      [itsMyPage]="itsMyPage"></app-dreams-block>
+                      [itsMyPage]="itsMyPage"
+                      [isAutorizedUser]="isAutorizedUser"></app-dreams-block>
   </div>
 </ng-template>
 
