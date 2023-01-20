@@ -24,15 +24,15 @@ class UserAgentService
       $ip = $_SERVER['REMOTE_ADDR'];
     }
     // Вернуть IP
-    return in_array($ip, $isLocalHost)? "127.0.0.1": $ip;
+    return in_array($ip, $isLocalHost) ? "127.0.0.1" : $ip;
   }
 
   // Получить UserAgent
-  public function getUserAgent(): array
+  public function getUserAgent()
   {
     $browser = get_browser(null, true);
     // Вернуть данные
-    return $browser ? $browser : array(
+    return $browser ?? array(
       "platform" => null,
       "browser" => null,
       "version" => null,
