@@ -2,6 +2,8 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { ObjectToFormData } from "@_datas/api";
+import { BrowserNames, OsNames, ToDate } from "@_datas/app";
+import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
@@ -159,18 +161,18 @@ export class TokenService {
 
   // Преобразование информации о токене
   private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
+    const os: string = OsNames.hasOwnProperty(tokenData.os) ? tokenData.os.toString() : "unknown";
+    const name: string = BrowserNames.hasOwnProperty(tokenData.browser) ? tokenData.browser.toString() : "Default Browser";
+    const version: string = ParseInt(tokenData.browser_version) > 0 ? tokenData.browser_version.toString() : "";
+    // Вернуть модель
     return {
-      id: tokenData.id as number,
-      token: tokenData.token as string,
-      createDate: new Date(tokenData.create_date),
-      lastActionDate: new Date(tokenData.last_action_date),
-      userId: tokenData.user_id as number,
-      ip: tokenData.ip as string,
-      browser: {
-        os: tokenData.os as string,
-        name: tokenData.browser as string,
-        version: parseInt(tokenData.browser_version as string) > 0 ? tokenData.browser_version as string : ""
-      }
+      id: ParseInt(tokenData.id),
+      token: tokenData.token.toString(),
+      createDate: ToDate(tokenData.create_date),
+      lastActionDate: ToDate(tokenData.last_action_date),
+      userId: ParseInt(tokenData.user_id),
+      ip: tokenData.ip.toString(),
+      browser: { os, name, version }
     };
   }
 
