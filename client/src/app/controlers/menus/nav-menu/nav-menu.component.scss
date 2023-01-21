@@ -437,7 +437,10 @@ $breakpointMobile: small;
       text-transform: uppercase;
       text-decoration: none;
       color: colors.$subtitle-dark;
-      display: block;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
       cursor: pointer;
       transition: background-color screens.$animation-time, color screens.$animation-time;
       background-color: transparent;
@@ -502,6 +505,16 @@ $breakpointMobile: small;
           height: 1px;
         }
       }
+    }
+    // Иконка
+    &-icon {
+      display: block;
+      text-align: center;
+    }
+    // Текст
+    &-text {
+      line-height: inherit;
+      font-size: inherit;
     }
 
     // Наведенный элемент

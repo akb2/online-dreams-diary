@@ -1,4 +1,5 @@
-import { CustomObject, CustomObjectKey } from "@_models/app";
+import { ParseInt } from "@_helpers/math";
+import { CustomObject } from "@_models/app";
 import { DrawData, DrawDataArray, DrawDataKeys, DrawDataPeriod, DrawInterface } from "@_models/nav-menu";
 
 
@@ -24,6 +25,8 @@ export class DrawDatas {
   static menuSubListDecorator: DrawInterface[];
   static menuListWithFloatingButton: DrawInterface[];
   static menuItem: DrawInterface[];
+  static menuItemIcon: DrawInterface[];
+  static menuItemIconAndText: DrawInterface[];
   static menuItemLine: DrawInterface[];
   static menuSubItem: DrawInterface[];
   static menuSubItemLast: DrawInterface[];
@@ -204,8 +207,8 @@ export class DrawDatas {
       .filter(screen => sizes.hasOwnProperty(screen))
       .reduce((o, screen) => {
         const unit: string = this.getValueFromArray(sizes, screen, "unit") as string;
-        let min: number = this.getValueFromArray(sizes, screen, "min") as number;
-        let max: number = this.getValueFromArray(sizes, screen, "max") as number;
+        let min: number = ParseInt(this.getValueFromArray(sizes, screen, "min"));
+        let max: number = ParseInt(this.getValueFromArray(sizes, screen, "max"));
         // Преобразовать данные
         min = !!minF ? minF(min, screen) : min;
         max = !!maxF ? maxF(max, screen) : max;
@@ -476,9 +479,9 @@ export class DrawDatas {
           large: { min: 13, max: 16, unit: "px" }
         }
       },
-      // Высота строки
+      // Высота
       {
-        property: "line-height",
+        property: ["line-height", "height"],
         data: this.valueArrayToDrawData(this.menuItemSizes)
       },
       // Отступ сверху
@@ -495,6 +498,47 @@ export class DrawDatas {
           large: { min: 16, max: 16, unit: "px" }
         }
       }
+    ];
+    // Кнопка меню: иконка
+    this.menuItemIconAndText = [
+      // Размер
+      {
+        property: ["width", "height", "line-height"],
+        data: this.valueArrayToDrawData(this.menuItemSizes)
+      },
+      // Размер шрифта
+      {
+        property: "font-size",
+        data: this.valueArrayToDrawData(this.menuItemSizes, () => this.minHeight * 0.5, v => v * 0.6)
+      },
+      // Внешний отступ слева
+      this.mixProperties({ menuItem: ["padding-left"] }, "margin-left", d => {
+        const data: CustomObject<DrawDataPeriod> = d.menuItem;
+        const min: number = -ParseInt(data["padding-left"].min);
+        const max: number = -ParseInt(data["padding-left"].max);
+        // Вернуть данные
+        return { min, max, unit: "px" };
+      }),
+      // Внешний отступ справа
+      this.mixProperties({ menuItem: ["padding-right"] }, "margin-right", d => {
+        const data: CustomObject<DrawDataPeriod> = d.menuItem;
+        const min: number = ParseInt(data["padding-right"].min) / 2;
+        const max: number = ParseInt(data["padding-right"].max) / 2;
+        // Вернуть данные
+        return { min, max, unit: "px" };
+      })
+    ];
+    // Кнопка меню: иконка без текста
+    this.menuItemIcon = [
+      ...this.getProperties("menuItemIconAndText", ["width", "height", "line-height", "font-size", "margin-left"]),
+      // Внешний отступ справа
+      this.mixProperties({ menuItem: ["padding-right"] }, "margin-right", d => {
+        const data: CustomObject<DrawDataPeriod> = d.menuItem;
+        const min: number = -ParseInt(data["padding-right"].min);
+        const max: number = -ParseInt(data["padding-right"].max);
+        // Вернуть данные
+        return { min, max, unit: "px" };
+      })
     ];
     // Кнопка меню: линия
     this.menuItemLine = [
@@ -714,8 +758,8 @@ export class DrawDatas {
         property: "margin-left",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => v + (this.getValueFromArray(this.avatarSizes, s, "min") as number),
-          (v, s) => v + (this.getValueFromArray(this.avatarSizes, s, "max") as number)
+          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "min")),
+          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "max"))
         )
       },
       // Ширина
@@ -723,8 +767,8 @@ export class DrawDatas {
         property: "width",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => this.containerLeftWidth - (v + (this.getValueFromArray(this.avatarSizes, s, "min") as number)),
-          (v, s) => this.containerWidth - (v + (this.getValueFromArray(this.avatarSizes, s, "max") as number))
+          (v, s) => this.containerLeftWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "min"))),
+          (v, s) => this.containerWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "max")))
         )
       }
     ];
@@ -734,8 +778,8 @@ export class DrawDatas {
       // Отступ слева
       this.mixProperties({ avatarWithBackButton: ["width", "left"] }, "margin-left", (d, s) => {
         const data: CustomObject<DrawDataPeriod> = d.avatarWithBackButton;
-        const min: number = (data.width.min as number) + (data.left.min as number) + (this.getValueFromArray(this.avatarSpacings, s, "min") as number);
-        const max: number = (data.width.max as number) + (data.left.max as number) + (this.getValueFromArray(this.avatarSpacings, s, "max") as number);
+        const min: number = ParseInt(data.width.min) + ParseInt(data.left.min) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, "min"));
+        const max: number = ParseInt(data.width.max) + ParseInt(data.left.max) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, "max"));
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
@@ -746,8 +790,8 @@ export class DrawDatas {
       // Ширина
       this.mixProperties({ titleWithBackButtonAndAvatar: ["margin-left"] }, "width", (d, s) => {
         const data: DrawDataPeriod = d.titleWithBackButtonAndAvatar["margin-left"];
-        const min: number = this.containerLeftWidth - (data.min as number);
-        const max: number = this.containerWidth - (data.max as number);
+        const min: number = this.containerLeftWidth - ParseInt(data.min);
+        const max: number = this.containerWidth - ParseInt(data.max);
         // Вернуть данные
         return { min, max, unit: "px" };
       })

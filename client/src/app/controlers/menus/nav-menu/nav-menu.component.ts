@@ -662,6 +662,8 @@ const CssNamesVar: SimpleObject = {
   menuSubList: "menuSubList",
   menuSubListDecorator: "menuSubListDecorator",
   menuItem: "menuItem",
+  menuItemIcon: "menuItemIcon",
+  menuItemIconAndText: "menuItemIconAndText",
   menuItemLine: "menuItemLine",
   menuSubItem: "menuSubItem",
   menuSubItemLast: "menuSubItemLast",

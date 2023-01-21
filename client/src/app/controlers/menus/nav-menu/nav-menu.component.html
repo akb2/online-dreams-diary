@@ -214,7 +214,11 @@
 <ng-template #mainMenuItemContent
              let-item
              let-lineStyle="lineStyle">
-  <span>{{item.text}}</span>
+  <mat-icon class="menu-list__item-icon"
+            [ngStyle]="css[!!item?.text? 'menuItemIconAndText': 'menuItemIcon']"
+            *ngIf="!!item?.icon">{{item.icon}}</mat-icon>
+  <span class="menu-list__item-text"
+        *ngIf="!!item?.text">{{item.text}}</span>
   <div class="menu-list__item-line"
        [ngStyle]="lineStyle"></div>
 </ng-template>
