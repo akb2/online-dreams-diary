@@ -16,12 +16,10 @@ export const MenuItems: MenuItemsListDevices = {
       // Поиск
       {
         sort: 100,
-        icon: "help_outline",
         text: "Поиск",
         children: [
           // Люди
           {
-            icon: "book",
             text: "Люди",
             link: "/people"
           },
@@ -31,7 +29,6 @@ export const MenuItems: MenuItemsListDevices = {
           },
           // Дневники
           {
-            icon: "book",
             text: "Дневники снов",
             link: "/diary/all"
           },
@@ -41,7 +38,6 @@ export const MenuItems: MenuItemsListDevices = {
           },
           // Блог
           {
-            icon: "edit_note",
             text: "Блог",
             link: "/blog"
           },
@@ -51,7 +47,6 @@ export const MenuItems: MenuItemsListDevices = {
           },
           // Форум
           {
-            icon: "forum",
             text: "Форум",
             link: "/forum"
           }
@@ -107,6 +102,12 @@ export const MenuItems: MenuItemsListDevices = {
         sort: 50,
         text: "Мой дневник",
         link: "/diary/:currentUserID"
+      },
+      // Уведомления
+      {
+        id: "notifications",
+        sort: 100,
+        icon: "notifications"
       }
     ],
     // Неавторизованных
