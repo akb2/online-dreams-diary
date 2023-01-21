@@ -114,26 +114,22 @@ export const MenuItems: MenuItemsListDevices = {
     notAuth: [
       // Главная
       {
-        icon: "home",
         text: "Главная",
         link: "/home"
       },
       // Личный кабинет
       {
         sort: 1000,
-        icon: "person",
         text: "Вход",
         link: "/auth",
         children: [
           // Вход
           {
-            icon: "lock",
             text: "Вход",
             link: "/auth"
           },
           // Регистрация
           {
-            icon: "person_add",
             text: "Регистрация",
             link: "/register"
           }
