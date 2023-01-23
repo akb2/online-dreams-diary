@@ -2,9 +2,10 @@
 
 namespace Controllers;
 
+use Decorators\CheckToken;
+use Decorators\Request;
 use Services\UserService;
 use Services\UserSettingsService;
-use Services\TokenService;
 use Services\LongPollingService;
 use PDO;
 
@@ -17,7 +18,6 @@ class Account
   private PDO $pdo;
 
   private UserService $userService;
-  private TokenService $tokenService;
   private UserSettingsService $userSettingsService;
   private LongPollingService $longPollingService;
 
@@ -39,7 +39,6 @@ class Account
   public function setServices(): void
   {
     $this->userService = new UserService($this->pdo, $this->config);
-    $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
     $this->longPollingService = new LongPollingService($this->config);
   }
@@ -47,59 +46,49 @@ class Account
 
 
   // Авторизация пользователя
-  // * POST
+  #[Request('post')]
   public function auth($data): array
   {
     return $this->userService->authUserApi($data);
   }
 
   // Регистрация пользователя
-  // * POST
+  #[Request('post')]
   public function register($data): array
   {
     return $this->userService->registerUserApi($data);
   }
 
   // Активация аккаунта
-  // * POST
+  #[Request('post')]
   public function activate($data): array
   {
     return $this->userService->accountActivateApi($data);
   }
 
   // Проверить настройку приватности
-  // * POST
+  #[Request('post'), CheckToken]
   public function checkPrivate(array $dataIn): array
   {
     $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $dataOut = false;
-
     // Проверка входящих данных
     if (strlen($dataIn['rule']) > 0 & strlen($dataIn['user']) > 0) {
-      // Проверка токена
-      if ($this->tokenService->checkToken($id, $token) || (!strlen($id) && !strlen($token))) {
-        $dataOut = $this->userSettingsService->checkPrivate($dataIn['rule'], $dataIn['user'], intval($id) ?? 0);
-        // Доступ разрешен
-        if ($dataOut) {
-          $code = '0001';
-        }
-        // Доступ не разрешен
-        else {
-          $code = '8100';
-        }
+      $dataOut = $this->userSettingsService->checkPrivate($dataIn['rule'], $dataIn['user'], intval($id) ?? 0);
+      // Доступ разрешен
+      if ($dataOut) {
+        $code = '0001';
       }
-      // Неверный токен
+      // Доступ не разрешен
       else {
-        $code = '9015';
+        $code = '8100';
       }
     }
     // Переданы пустые/неполные данные
     else {
       $code = '1000';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -117,7 +106,7 @@ class Account
 
 
   // Поиск
-  // * GET
+  #[Request('get')]
   public function search($data): array
   {
     $data['search_ids'] = isset($data['search_ids']) && strlen($data['search_ids']) > 0 ? explode(',', $data['search_ids']) : array();
@@ -164,7 +153,7 @@ class Account
   }
 
   // Получить данные о пользователе
-  // * GET
+  #[Request('get')]
   public function getUser($data): array
   {
     $code = '0000';
@@ -195,8 +184,7 @@ class Account
   }
 
   // Синхронизация данных о пользователе
-  // * GET
-  // * LONG_POLLING
+  #[Request('get')]
   public function syncUser($data): array
   {
     $data['id'] = $data['id'] ?? 0;
@@ -244,50 +232,33 @@ class Account
 
 
   // Изменение пароля
-  // * POST
+  #[Request('post'), CheckToken]
   public function changePassword($data): array
   {
     $code = '0000';
     $message = '';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
     // Проверка входящих данных
     if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
-      // Проверка токена
-      if ($this->tokenService->checkToken($id, $token)) {
-        // Проверка доступа
-        if ($id == $this->tokenService->getUserIdFromToken($token)) {
-          $sqlData = array(
-            'id' => $id,
-            'password' => $data['current_password']
-          );
-          // Проверка совпадения пароля
-          if ($this->userService->checkUserPassword($sqlData)) {
-            $sqlData['password'] = $data['new_password'];
-            // Сохранение пароля
-            return $this->userService->changePasswordApi($sqlData);
-          }
-          // Пароль неверный
-          else {
-            $code = '0002';
-          }
-        }
-        // Ошибка доступа
-        else {
-          $code = '9040';
-        }
+      $sqlData = array(
+        'id' => $id,
+        'password' => $data['current_password']
+      );
+      // Проверка совпадения пароля
+      if ($this->userService->checkUserPassword($sqlData)) {
+        $sqlData['password'] = $data['new_password'];
+        // Сохранение пароля
+        return $this->userService->changePasswordApi($sqlData);
       }
-      // Неверный токен
+      // Пароль неверный
       else {
-        $code = '9015';
+        $code = '0002';
       }
     }
     // Переданы пустые/неполные данные
     else {
       $code = '1000';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -297,233 +268,69 @@ class Account
   }
 
   // Сохранить данные пользователя
-  // * POST
+  #[Request('post'), CheckToken]
   public function saveUserData($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->userService->saveUserDataApi($id, $data);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Сохранить данные
+    return $this->userService->saveUserDataApi($id, $data);
   }
 
   // Сохранить статус пользователя
-  // * POST
+  #[Request('post'), CheckToken]
   public function savePageStatus($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->userService->savePageStatusApi($id, $data);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Обновить статус
+    return $this->userService->savePageStatusApi($id, $data);
   }
 
   // Сохранить настройки пользователя
-  // * POST
+  #[Request('post'), CheckToken]
   public function saveUserSettings($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->userService->saveUserSettingsApi($id, $data);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Сохранить настройки
+    return $this->userService->saveUserSettingsApi($id, $data);
   }
 
   // Сохранить настройки приватности пользователя
-  // * POST
+  #[Request('post'), CheckToken]
   public function saveUserPrivate($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->userService->saveUserPrivateApi($id, $data['private']);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Сохранение настроек
+    return $this->userService->saveUserPrivateApi($id, $data['private']);
   }
 
 
 
   // Загрузить аватарку
-  // * POST
+  #[Request('post'), CheckToken]
   public function uploadAvatar($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        $data['file'] = $_FILES['file'];
-        // Загрузка
-        return $this->userService->uploadAvatarApi($id, $data);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    $data['file'] = $_FILES['file'];
+    // Загрузка
+    return $this->userService->uploadAvatarApi($id, $data);
   }
 
   // Обрезать аватарку
-  // * POST
+  #[Request('post'), CheckToken]
   public function cropAvatar($data): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Загрузка
-        return $this->userService->cropAvatarApi($id, $data);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Загрузка
+    return $this->userService->cropAvatarApi($id, $data);
   }
 
   // Удалить аватарку
-  // * POST
+  #[Request('post'), CheckToken]
   public function deleteAvatar(): array
   {
-    $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Загрузка
-        return $this->userService->deleteAvatarApi($id);
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
-    }
-    // Неверный токен
-    else {
-      $code = '9015';
-    }
-
-    // Вернуть массив
-    return array(
-      'code' => $code,
-      'message' => '',
-      'data' => array()
-    );
+    // Загрузка
+    return $this->userService->deleteAvatarApi($id);
   }
 
 

@@ -2,6 +2,8 @@
 
 namespace Controllers;
 
+use Decorators\CheckToken;
+use Decorators\Request;
 use PDO;
 use Services\FriendService;
 use Services\UserService;
@@ -79,41 +81,23 @@ class Friend
 
 
   // Статус дружбы между пользователями
-  // * GET
+  #[Request('get'), CheckToken]
   public function getFriendStatus($data): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $inUserId = $data['in_user_id'];
     $outUserId = $data['out_user_id'];
     $friend = array();
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        $mixedFriend = $this->friendService->getFriendStatus($outUserId, $inUserId);
-        // Запись найдена
-        if (is_array($mixedFriend)) {
-          $code = '0001';
-          $friend = $this->convertFriendData($mixedFriend);
-        }
-        // Запись не найдена
-        else {
-          $code = '0002';
-        }
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
+    $mixedFriend = $this->friendService->getFriendStatus($outUserId, $inUserId);
+    // Запись найдена
+    if (is_array($mixedFriend)) {
+      $code = '0001';
+      $friend = $this->convertFriendData($mixedFriend);
     }
-    // Неверный токен
+    // Запись не найдена
     else {
-      $code = '9015';
+      $code = '0002';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -123,7 +107,7 @@ class Friend
   }
 
   // Список друзей/подписок/подписчиков
-  // * GET
+  #[Request('get')]
   public function getList($data): array
   {
     $code = '0002';
@@ -196,39 +180,22 @@ class Friend
 
 
   // Отправить заявку в друзья
-  // * POST
+  #[Request('post'), CheckToken]
   public function addToFriends($data): array
   {
     $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $userId = $data['user_id'];
     $result = false;
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Если заявка создана
-        if ($this->friendService->addToFriend($id, $userId)) {
-          $code = '0001';
-          $result = true;
-        }
-        // Заявка не создана
-        else {
-          $code = '6001';
-        }
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
+    // Если заявка создана
+    if ($this->friendService->addToFriend($id, $userId)) {
+      $code = '0001';
+      $result = true;
     }
-    // Неверный токен
+    // Заявка не создана
     else {
-      $code = '9015';
+      $code = '6001';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -238,38 +205,21 @@ class Friend
   }
 
   // Отменить заявку в друзья
-  // * POST
+  #[Request('post'), CheckToken]
   public function rejectFriends($data): array
   {
     $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $userId = $data['user_id'];
     $result = 152;
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Если заявка отклонена
-        if ($result = $this->friendService->rejectFriends($id, $userId)) {
-          $code = '0001';
-        }
-        // Заявка не отклонена
-        else {
-          $code = '6002';
-        }
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
+    // Если заявка отклонена
+    if ($result = $this->friendService->rejectFriends($id, $userId)) {
+      $code = '0001';
     }
-    // Неверный токен
+    // Заявка не отклонена
     else {
-      $code = '9015';
+      $code = '6002';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -279,39 +229,22 @@ class Friend
   }
 
   // Подтвердить заявку в друзья
-  // * POST
+  #[Request('post'), CheckToken]
   public function confirmFriends($data): array
   {
     $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $userId = $data['user_id'];
     $result = false;
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Если заявка создана
-        if ($this->friendService->confirmFriends($userId, $id)) {
-          $code = '0001';
-          $result = true;
-        }
-        // Заявка не подтверждена
-        else {
-          $code = '6003';
-        }
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
+    // Если заявка создана
+    if ($this->friendService->confirmFriends($userId, $id)) {
+      $code = '0001';
+      $result = true;
     }
-    // Неверный токен
+    // Заявка не подтверждена
     else {
-      $code = '9015';
+      $code = '6003';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
@@ -321,39 +254,22 @@ class Friend
   }
 
   // Удалить пользователя из друзей
-  // * POST
+  #[Request('post'), CheckToken]
   public function cancelFromFriends($data): array
   {
     $code = '0000';
     $id = $_GET['token_user_id'];
-    $token = $_GET['token'];
     $userId = $data['user_id'];
     $result = false;
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        // Если заявка создана
-        if ($this->friendService->cancelFromFriends($userId, $id)) {
-          $code = '0001';
-          $result = true;
-        }
-        // Пользователь не удален из друзей
-        else {
-          $code = '6004';
-        }
-      }
-      // Ошибка доступа
-      else {
-        $code = '9040';
-      }
+    // Если заявка создана
+    if ($this->friendService->cancelFromFriends($userId, $id)) {
+      $code = '0001';
+      $result = true;
     }
-    // Неверный токен
+    // Пользователь не удален из друзей
     else {
-      $code = '9015';
+      $code = '6004';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,

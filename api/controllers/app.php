@@ -2,6 +2,7 @@
 
 namespace Controllers;
 
+use Decorators\Request;
 use Services\DreamService;
 use Services\UserService;
 use Services\TokenService;
@@ -44,11 +45,11 @@ class App
 
 
   // Создание таблиц
-  // * GET
+  #[Request('get')]
   public function createTable($data): array
   {
     ini_set('max_execution_time', 600);
-    // ПРедварительные ответы
+    // Предварительные ответы
     $request = array(
       "code" => "9040",
       "user" => array(),

@@ -2,6 +2,8 @@
 
 namespace Controllers;
 
+use Decorators\CheckToken;
+use Decorators\Request;
 use Services\TokenService;
 use PDO;
 use Services\UserService;
@@ -39,7 +41,7 @@ class Token
 
 
   // Проверка токена
-  // * GET
+  #[Request('get')]
   public function checkToken($data): array
   {
     $response = $this->tokenService->checkTokenApi($data);
@@ -54,89 +56,42 @@ class Token
   }
 
   // Удалить токен
-  // * POST
+  #[Request('post')]
   public function deleteToken($data): array
   {
     return $this->tokenService->deleteTokenApi($_GET["token"]);
   }
 
   // Сведения о токене
-  // * GET
+  #[Request('get')]
   public function getToken($data): array
   {
     return $this->tokenService->getTokenApi($data);
   }
 
   // Сведения о токенах
-  // * GET
+  #[Request('get')]
   public function getTokens($data): array
   {
     return $this->tokenService->getTokensApi($data);
   }
 
   // Удалить токен по ID токена
-  // * POST
+  #[Request('post'), CheckToken]
   public function deleteTokenById($data): array
   {
-    $code = "0000";
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->tokenService->deleteTokenByIdApi($data["tokenId"]);
-      }
-      // Ошибка доступа
-      else {
-        $code = "9040";
-      }
-    }
-    // Неверный токен
-    else {
-      $code = "9015";
-    }
-
-    // Вернуть массив
-    return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
-    );
+    return $this->tokenService->deleteTokenByIdApi($data["tokenId"]);
   }
 
   // Удалить токен по ID пользователя
-  // * POST
+  #[Request('post'), CheckToken]
   public function deleteTokensByUser($data): array
   {
-    $code = "0000";
     $id = $_GET["token_user_id"];
     $token = $_GET["token"];
     $hideCurrent = !!$data["hideCurrent"];
-
-    // Проверить токен
-    if ($this->tokenService->checkToken($id, $token)) {
-      // Проверка доступа
-      if ($id == $this->tokenService->getUserIdFromToken($token)) {
-        return $this->tokenService->deleteTokensByUserApi($id, $hideCurrent, $token);
-      }
-      // Ошибка доступа
-      else {
-        $code = "9040";
-      }
-    }
-    // Неверный токен
-    else {
-      $code = "9015";
-    }
-
-    // Вернуть массив
-    return array(
-      "code" => $code,
-      "message" => "",
-      "data" => array()
-    );
+    // Удаление токена
+    return $this->tokenService->deleteTokensByUserApi($id, $hideCurrent, $token);
   }
 }
 
