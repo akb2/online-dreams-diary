@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import "@angular/common/locales/global/ru";
 import { PetrovichPipe } from "@_pipes/petrovich.pipe";
+import { VarDirective } from "@_directives/var.directive";
 
 
 
@@ -16,6 +17,7 @@ const components = [
 
 // Директивы
 const directives = [
+  VarDirective
 ];
 
 // Пайпы
