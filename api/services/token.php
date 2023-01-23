@@ -303,7 +303,7 @@ class TokenService
           // Проверка времени жизни токена
           if (gmdate('U') - $this->tokenLifeTime < strtotime($auth[0]['last_action_date'])) {
             // Проверка привязки пользователя
-            if ($userId === $auth[0]['user_id']) {
+            if ($userId == $auth[0]['user_id']) {
               return true;
             }
           }
