@@ -9,7 +9,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { filter, forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -52,8 +52,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
 
-  @ViewChild("contentLayerContainer") private contentLayerContainer: ElementRef;
-  @ViewChild("contentLayerContainerLeft") private contentLayerContainerLeft: ElementRef;
+  @ViewChild("contentLayerContainer", { read: ElementRef }) private contentLayerContainer: ElementRef;
+  @ViewChild("contentLayerContainerLeft", { read: ElementRef }) private contentLayerContainerLeft: ElementRef;
+  @ViewChild("notificationsBlock", { read: ElementRef }) private notificationsBlock: ElementRef;
 
   imagePrefix: string = "/assets/images/backgrounds/";
   tempImage: string = "";
@@ -61,8 +62,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   tempImagePositionX: string = "";
   tempImageOverlay: boolean = true;
   private clearTempImageTimeout: number = 300;
+  isShowNotifications: boolean = true;
 
   user: User;
+  isAutorizedUser: boolean = false;
 
   private autoCollapsed: boolean = false;
   private scroll: number = 0;
@@ -181,6 +184,21 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     return this.user.sex === UserSex.Male;
   }
 
+  // Пересечение элемента
+  private compareElement(target: any, elements: any[]): boolean {
+    if (!!target && !!elements?.length) {
+      let element: any = target;
+      // Поиск пересечения
+      while (element.parentNode && !elements.includes(element)) {
+        element = element.parentNode;
+      }
+      // Проверка
+      return elements.includes(element);
+    }
+    // Нет пересечения
+    return false;
+  }
+
 
 
 
@@ -230,8 +248,16 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;
+        this.isAutorizedUser = this.accountService.checkAuth;
         this.changeDetectorRef.detectChanges();
       });
+    // Скрыть уведомления
+    fromEvent(document, "click")
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(({ target }) => !!this.notificationsBlock && !this.compareElement(target, [this.notificationsBlock.nativeElement]))
+      )
+      .subscribe(() => this.hideNotifications());
     // Скролл
     this.scroll = this.getCurrentScroll.y;
     this.scrollTo(0);
@@ -418,6 +444,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   onAvatarError(): void {
     this.avatarImage = null;
     this.avatarIcon = this.avatarIcon ?? "hide_image";
+  }
+
+  // Наведение мышки на пункт меню без действия
+  onMenuItemClick(menuItem: MenuItem): void {
+    if (menuItem?.id === "notifications") {
+      this.isShowNotifications ?
+        this.hideNotifications() :
+        this.showNotifications();
+    }
   }
 
 
@@ -632,6 +667,22 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private startScroll(): void {
     document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
   }
+
+  // Показать уведомления
+  showNotifications(): void {
+    timer(1)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isShowNotifications = true;
+        this.changeDetectorRef.detectChanges();
+      })
+  }
+
+  // Показать уведомления
+  hideNotifications(): void {
+    this.isShowNotifications = false;
+    this.changeDetectorRef.detectChanges();
+  }
 }
 
 
@@ -669,6 +720,7 @@ const CssNamesVar: SimpleObject = {
   menuSubItemLast: "menuSubItemLast",
   menuSubItemLine: "menuSubItemLine",
   menuSubItemSeparator: "menuSubItemSeparator",
+  notificationsList: "notificationsList",
   helper: "",
   header: "header",
   image: "image",

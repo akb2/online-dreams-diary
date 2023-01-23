@@ -1,0 +1,56 @@
+<ng-container *ngIf="isAutorizedUser">
+  <div class="list"
+       [ngClass]="{ show }"
+       [ngStyle]="listStyles"
+       *ngIf="!!notifications?.length; else noNotifications">
+    <ng-container *ngFor="let notification of notifications">
+      <div class="notification"
+           [ngClass]="{ noRead: notification.status === 0 }"
+           [attr.color]="notificationAdvance.iconColor"
+           *ngVar="notificationIcon(notification) as notificationAdvance">
+        <!-- Иконка -->
+        <div class="notification__icon"
+             background="transparent"
+             [attr.color]="notificationAdvance.iconColor">
+          <mat-icon>{{notificationAdvance.icon}}</mat-icon>
+        </div>
+        <!-- Текст -->
+        <div class="notification__text"
+             [innerHTML]="notification.text"></div>
+        <!-- Управление -->
+        <ng-container [ngTemplateOutlet]="actionsBlock"
+                      [ngTemplateOutletContext]="{ notification: notification, notificationAdvance }"></ng-container>
+        <!-- Дата -->
+        <div class="notification__date">{{notification.createDate | date: 'd.M.y - H:mm'}}</div>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
+
+
+
+<!-- Действия -->
+<ng-template #actionsBlock
+             let-notification="notification"
+             let-notificationAdvance="notificationAdvance">
+  <!-- Добавить в друзья -->
+  <div class="notification__action"
+       *ngIf="notification.actionType === 'add_to_friend'">
+    <!-- Добавить -->
+    <button mat-mini-fab
+            color="primary"
+            class="mat-elevation-z"
+            matTooltip="Добавить в друзья"><mat-icon>check</mat-icon></button>
+    <!-- Удалить -->
+    <button mat-icon-button
+            color="warn"
+            class="mat-elevation-z"
+            matTooltip="Отменить заявку"><mat-icon>close</mat-icon></button>
+  </div>
+</ng-template>
+
+
+
+<!-- Уведомлений нет -->
+<ng-template #noNotifications>
+</ng-template>

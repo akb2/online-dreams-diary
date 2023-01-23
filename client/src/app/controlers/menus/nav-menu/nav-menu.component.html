@@ -139,6 +139,12 @@
 <app-scroll [styles]="css.scroll"
             [headerHeight]="headerHeight"></app-scroll>
 
+<!-- Уведомления -->
+<app-notifications #notificationsBlock
+                   [show]="isShowNotifications"
+                   [listStyles]="css.notificationsList"
+                   *ngIf="isAutorizedUser"></app-notifications>
+
 
 
 <!-- Главное меню -->
@@ -199,6 +205,7 @@
   <div class="menu-list__item-link"
        [ngClass]="{ active: item.active }"
        [ngStyle]="style"
+       (click)="onMenuItemClick(item)"
        *ngIf="!item.isSeparate && !item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
                   [ngTemplateOutletContext]="{ $implicit: item, lineStyle }"></ng-container>

@@ -32,6 +32,7 @@ export class DrawDatas {
   static menuSubItemLast: DrawInterface[];
   static menuSubItemLine: DrawInterface[];
   static menuSubItemSeparator: DrawInterface[];
+  static notificationsList: DrawInterface[];
   static helper: DrawInterface[];
   static helperWithFloatingButton: DrawInterface[];
   static header: DrawInterface[];
@@ -91,6 +92,9 @@ export class DrawDatas {
     small: [18, 30, "px"],
     middle: [18, 32, "px"],
     large: [18, 40, "px"]
+  };
+  private static notificationsListSpacing: DrawDataArray = {
+    default: [10, 10, "px"],
   };
 
 
@@ -493,7 +497,7 @@ export class DrawDatas {
       {
         property: ["padding-left", "padding-right"],
         data: {
-          default: { min: 20, max: 32, unit: "px" },
+          default: { min: 20, max: 30, unit: "px" },
           middle: { min: 16, max: 10, unit: "px" },
           large: { min: 16, max: 16, unit: "px" }
         }
@@ -532,10 +536,10 @@ export class DrawDatas {
     this.menuItemIcon = [
       ...this.getProperties("menuItemIconAndText", ["width", "height", "line-height", "font-size", "margin-left"]),
       // Внешний отступ справа
-      this.mixProperties({ menuItem: ["padding-right"] }, "margin-right", d => {
+      this.mixProperties({ menuItem: ["padding-right", "padding-left", "height"] }, "margin-right", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = -ParseInt(data["padding-right"].min);
-        const max: number = -ParseInt(data["padding-right"].max);
+        const min: number = -Math.min(ParseInt(data["padding-right"].min), ParseInt(data.height.min) - ParseInt(data["padding-left"].min));
+        const max: number = -Math.min(ParseInt(data["padding-right"].max), ParseInt(data.height.max) - ParseInt(data["padding-left"].max));
         // Вернуть данные
         return { min, max, unit: "px" };
       })
@@ -659,6 +663,34 @@ export class DrawDatas {
           default: { min: [92, 108, 192, 1], max: [255, 255, 255, 0.5], prefixUnit: "rgba(", sufixUnit: ")", separatorUnit: ", " }
         }
       }
+    ];
+
+    // Уведомления
+    this.notificationsList = [
+      // Позиция сверху
+      this.mixProperties({ menuItem: ["height", "margin-top"] }, "top", (d, s) => {
+        const data: CustomObject<DrawDataPeriod> = d.menuItem;
+        const height: DrawDataPeriod = data.height;
+        const marginTop: DrawDataPeriod = data["margin-top"];
+        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
+        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
+        const min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
+        const max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
+        // Вернуть данные
+        return { min, max, unit: "px" };
+      }),
+      // Максимальная высота
+      this.mixProperties({ menuItem: ["height", "margin-top"] }, "max-height", (d, s) => {
+        const data: CustomObject<DrawDataPeriod> = d.menuItem;
+        const height: DrawDataPeriod = data.height;
+        const marginTop: DrawDataPeriod = data["margin-top"];
+        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
+        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
+        const min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
+        const max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
+        // Вернуть данные
+        return { min, max, unit: "px" };
+      })
     ];
   }
 

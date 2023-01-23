@@ -1,0 +1,115 @@
+@use "sass:map";
+@use "sass:list";
+@use "sass:math";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/vars";
+
+$spacing: 10px;
+
+.list {
+  position: fixed;
+  display: block;
+  z-index: 10;
+  max-width: calc(100% - #{$spacing * 2});
+  width: 460px;
+  overflow: hidden scroll;
+  background-color: colors.$card;
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: containers.$cardBorderRadius;
+  opacity: 0;
+  visibility: hidden;
+  margin-top: 200px;
+  transition: opacity #{screens.$animation-time}, visibility #{screens.$animation-time}, margin-top #{screens.$animation-time};
+  // Позиция справа
+  @include screens.adaptiveFor(containers.$widths) using ($width) {
+    right: calc(50vw - #{math.div($width, 2) - containers.$paddingX});
+  }
+  // Позиция справа для телефонов
+  @include screens.adaptive(xsmall, xsmall) {
+    right: 0 !important;
+    left: 0;
+    bottom: 0;
+    top: #{vars.$headerHeight} !important;
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - #{vars.$headerHeight}) !important;
+  }
+  // Открытое состояние
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    margin-top: 0;
+  }
+}
+
+// Уведомления
+.notification {
+  $iconSize: 40px;
+  $gap: 10px;
+  // Свойства
+  padding: 15px 20px;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px #{$gap};
+  // Иконка
+  &__icon {
+    @include mixins.customsColors($iconSize, 0.6);
+    // Свойства
+    overflow: hidden;
+  }
+  // Текст
+  &__text {
+    font-size: 14px;
+    width: min-content;
+    flex-grow: 1;
+    // Ссылки
+    ::ng-deep a {
+      text-decoration: none;
+      font-size: inherit;
+    }
+  }
+  // Дата
+  &__date {
+    min-width: 100%;
+    font-size: 12px;
+    font-weight: 400;
+    color: colors.$text;
+    line-height: 15px;
+    padding-left: $iconSize + $gap;
+  }
+  // Действия
+  &__action {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+  }
+  // Непрочитанное уведомление
+  &.noRead {
+    $colors: (
+      primary: colors.$mat-primary 50,
+      accent: colors.$mat-secondary 50,
+      warn: colors.$mat-status-warn 50,
+      disabled: colors.$mat-disabled 50,
+    );
+    // Свойства
+    @each $color, $value in $colors {
+      &[color="#{$color}"] {
+        background-color: map.get(list.nth($value, 1), list.nth($value, 2));
+        color: map.get(list.nth($value, 1), contrast, list.nth($value, 2));
+      }
+    }
+  }
+  // Последующие блоки
+  & + & {
+    border-top: 1px solid colors.$border;
+  }
+}
