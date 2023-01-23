@@ -12,7 +12,7 @@ class FriendService
   private array $config;
 
   private DataBaseService $dataBaseService;
-  private TokenService $tokenService;
+  private NotificationService $notificationService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -20,7 +20,7 @@ class FriendService
     $this->config = $config;
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
-    $this->tokenService = new TokenService($this->pdo, $this->config);
+    $this->notificationService = new NotificationService($this->pdo, $this->config);
   }
 
 
@@ -98,7 +98,7 @@ class FriendService
       // Список данных
       $result = $this->dataBaseService->getDatasFromFile('friend/getFriendsList.php', $sqlData);
     }
-    // Сон не найден
+    // Список друзей
     return array(
       'count' => $count,
       'limit' => $limit,
@@ -116,8 +116,19 @@ class FriendService
       // Заявка не существует
       if (!$friend) {
         $sqlData = array($outUser, $inUser);
-        // Попытка создания заявки
-        return $this->dataBaseService->executeFromFile('friend/addToFriends.sql', $sqlData);
+        $result = $this->dataBaseService->executeFromFile('friend/addToFriends.sql', $sqlData);
+        // Отправить уведомление
+        if (!!$result) {
+          $this->notificationService->create(
+            $inUser,
+            '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> отправил${user.sexLetter} вам заявку в друзья, добавить в друзья?',
+            '',
+            array('user' => $outUser),
+            'add_to_friend'
+          );
+        }
+        // Вернуть результат
+        return $result;
       }
     }
     // Заявка не отправлена
