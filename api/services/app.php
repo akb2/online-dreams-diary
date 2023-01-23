@@ -45,7 +45,8 @@ class App
   // Подключение к контроллеру
   public function controllerConnect(string $controllerName, string $methodName)
   {
-    $file = "Controllers/" . ucfirst($controllerName) . ".php";
+    $controllerClass = "Controllers\\" . ucfirst($controllerName);
+    $file =  "Controllers/" . ucfirst($controllerName) . ".php";
     // Подключение контроллера
     if (file_exists($file)) {
       $controller = include $file;
@@ -66,10 +67,55 @@ class App
           $controller->setServices();
         }
         // Выполнить нужный метод
-        return $controller->$methodName($params[$method] ?? $params['default']);
+        $data = $params[$method] ?? $params['default'];
+        $decorators = $this->runDecorators($controllerClass, $methodName, $data);
+        // Вызов метода
+        if ($decorators === true) {
+          return $controller->$methodName($data);
+        }
+        // Вернуть данные из декораторов
+        return $decorators;
       }
     }
     // Контроллер не найден
     return null;
+  }
+
+
+
+  // Отработать декораторы
+  private function runDecorators($controllerClass, string $methodName, $data): array|true
+  {
+    $reflectionFunction = new \ReflectionMethod($controllerClass, $methodName);
+    $attributes = $reflectionFunction->getAttributes();
+    // Выполнение декораторов
+    if (count($attributes) > 0) {
+      $result = true;
+      // Цикл по декораторам
+      foreach ($attributes as $attribute) {
+        $class = $attribute->newInstance();
+        // Передать настройки
+        if (method_exists($class, "setConfig")) {
+          $class->setConfig($this->config);
+        }
+        // Передать контекст БД
+        if (method_exists($class, "setDbContext")) {
+          $class->setDbContext($this->pdo);
+        }
+        // Запуск сервисов
+        if (method_exists($class, "setServices")) {
+          $class->setServices();
+        }
+        // Выполнение кода
+        $testData = $class->execute($data);
+        $result = $testData === true ? $result : $testData;
+      }
+      // Вернуть данные
+      return $result;
+    }
+    // Без декораторов
+    else {
+      return true;
+    }
   }
 }
