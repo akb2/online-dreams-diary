@@ -203,7 +203,7 @@
 }
 
 // Миксин цветов
-@mixin customsColors($size) {
+@mixin customsColors($size, $fontSize: 0.7) {
   $colors: (
     primary: colors.$mat-primary 500,
     accent: colors.$mat-secondary 500,
@@ -213,6 +213,10 @@
   // Свойства
   width: $size;
   height: $size;
+  min-width: $size;
+  max-width: $size;
+  min-height: $size;
+  max-height: $size;
   // Картинки
   > img {
     width: 100%;
@@ -224,7 +228,7 @@
     width: $size;
     height: $size;
     line-height: $size;
-    font-size: $size * 0.7;
+    font-size: $size * $fontSize;
     text-align: center;
   }
 
