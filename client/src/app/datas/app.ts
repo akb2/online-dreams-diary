@@ -26,6 +26,9 @@ export const ToDate = (mixedDate: any, defaultDate: Date = new Date()) => typeof
     mixedDate :
     defaultDate;
 
+// Преобразовать в массив
+export const ToArray = <T>(data: any, mapCallback: (d: any) => T = d => d as T) => (Array.isArray(data) ? data : [data]).map(mapCallback);
+
 // Данные об операционных системах
 export const OsNames: SimpleObject = {
   Win7: "Windows 7",
