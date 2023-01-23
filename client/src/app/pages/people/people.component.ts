@@ -131,23 +131,27 @@ export class PeopleComponent implements OnInit, OnDestroy {
     // Заполнить списки выбора
     this.fillYearsOptionData();
     this.fillMonthsOptionData();
-    // Изменение списка дней
-    merge(this.searchForm.get("birthMonth").valueChanges, this.searchForm.get("birthYear").valueChanges)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.fillDaysOptionData());
   }
 
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(params => {
-      this.queryParams = params as SimpleObject;
-      this.pageCurrent = parseInt(params.page) || 1;
-      // Наполнить форму
-      Object.entries(this.getCurrentSearch)
-        .filter(([k]) => k !== "page")
-        .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
-      // Поиск пользователей
-      this.search();
-    });
+    this.activatedRoute.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        if (!Object.keys(params)?.length) {
+          this.urlSet(this.getSearch);
+        }
+        // Поиск
+        else {
+          this.queryParams = params as SimpleObject;
+          this.pageCurrent = parseInt(params.page) || 1;
+          // Наполнить форму
+          Object.entries(this.getCurrentSearch)
+            .filter(([k]) => k !== "page")
+            .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
+          // Поиск пользователей
+          this.search();
+        }
+      });
     // Подписка на тип устройства
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroy$))
@@ -155,6 +159,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
+    // Изменение списка дней
+    merge(this.searchForm.get("birthMonth").valueChanges, this.searchForm.get("birthYear").valueChanges)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.fillDaysOptionData());
   }
 
   ngOnDestroy() {
@@ -250,7 +258,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
     });
     // Изменить значение, если оно не вписывается в массив
     this.searchForm.get("birthDay").setValue(newDay);
-    this.urlSet(this.getSearch);
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -262,8 +269,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
   // Загрузка списка сновидений
   private search(): void {
     this.loading = true;
-    this.changeDetectorRef.detectChanges();
     this.canonicalService.setURL("diary/all", this.getSearch, { page: [0, 1], limit: [this.defaultPageLimit] });
+    this.changeDetectorRef.detectChanges();
     // Загрузка списка
     this.accountService.search(this.getSearch, ["0002"]).subscribe(
       ({ count, result: people, limit }) => {
