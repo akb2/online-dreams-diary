@@ -130,7 +130,7 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
           })
         )
         .subscribe(friend => {
-          this.friendStatus = friend.status;
+          this.friendStatus = !!friend ? friend.status : FriendStatus.NotAutorized;
           this.friendLoader = false;
           this.changeDetectorRef.detectChanges();
         });
