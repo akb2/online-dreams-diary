@@ -2,7 +2,8 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -77,12 +78,13 @@ export class DreamService implements OnDestroy {
   // Настройки редактора карт
   get getDreamMapSettings(): DreamMapSettings {
     this.configLocalStorage();
-    // Параметры
-    const detalizationString: string = this.localStorageService.getCookie("settings_detalization");
-    // Параметры
-    const detalization: DreamObjectElmsValues = parseInt(!!detalizationString ? detalizationString : DreamObjectDetalization.toString()) as DreamObjectElmsValues;
     // Настройки
-    return { detalization };
+    return {
+      detalization: this.localStorageService.getCookie(
+        "settings_detalization",
+        d => ParseInt(d) as DreamObjectElmsValues
+      )
+    };
   }
 
   // Сведения о владельце сновидения
@@ -202,7 +204,7 @@ export class DreamService implements OnDestroy {
   saveSettings(settings: DreamMapSettings): void {
     this.configLocalStorage();
     // Сохранение параметров
-    this.localStorageService.setCookie("settings_detalization", settings.detalization.toString());
+    this.localStorageService.setCookie("settings_detalization", settings.detalization);
   }
 
 

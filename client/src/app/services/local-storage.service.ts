@@ -21,12 +21,12 @@ export class LocalStorageService {
 
 
   // Записать данные в куки
-  public setCookie(key: string, value: string, ttl?: number): void {
+  public setCookie(key: string, value: any, ttl?: number): void {
     ttl = ttl ? ttl : this.cookieLifeTime;
 
     const now: number = (new Date()).getTime();
     const item: CookieInterface = {
-      value: value,
+      value,
       expiry: now + (ttl * 1000),
     };
 
@@ -34,17 +34,21 @@ export class LocalStorageService {
   }
 
   // Получить данные из куки
-  public getCookie(key: string): string {
+  public getCookie<T>(key: string, typeCallback: (d: any) => T = d => d as T): T {
     const itemStr: string = localStorage.getItem(this.systemCookieKey + this.cookieKey + key) as string;
     const now: number = (new Date()).getTime();
-
     // Если есть запись
     if (itemStr) {
       try {
         const item: CookieInterface = JSON.parse(itemStr) as CookieInterface;
         // Вернуть данные
         if (now <= item.expiry) {
-          return item.value;
+          try {
+            return typeCallback(JSON.parse(item.value));
+          }
+          catch (e: any) {
+            return typeCallback(item.value);
+          }
         }
         // Очистить куки
         else {
@@ -55,8 +59,8 @@ export class LocalStorageService {
         this.deleteCookie(key);
       }
     }
-
-    return "";
+    // Пустой ответ
+    return typeCallback("");
   }
 
   // Удалить куки

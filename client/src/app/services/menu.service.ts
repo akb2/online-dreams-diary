@@ -5,6 +5,8 @@ import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
+import { FriendService } from "@_services/friend.service";
+import { NotificationService } from "@_services/notification.service";
 import { ScreenService } from "@_services/screen.service";
 import { BehaviorSubject, filter, map, Observable, pairwise, startWith, Subject, takeUntil } from "rxjs";
 
@@ -34,6 +36,8 @@ export class MenuService implements OnDestroy {
 
   constructor(
     private accountService: AccountService,
+    private friendService: FriendService,
+    private notificationService: NotificationService,
     private router: Router,
     private screenService: ScreenService
   ) {
@@ -81,6 +85,8 @@ export class MenuService implements OnDestroy {
   // Выход из системы
   private onLogOut(): void {
     this.accountService.quit();
+    this.friendService.quit();
+    this.notificationService.quit();
   }
 
 

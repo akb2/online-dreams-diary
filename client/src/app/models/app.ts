@@ -14,7 +14,7 @@ export type CustomObjectKey<K, V> = { [key in K as string | number | symbol]: V 
 
 // Данные для Cookie
 export interface CookieInterface {
-  value: string;
+  value: any;
   expiry: number;
 }
 

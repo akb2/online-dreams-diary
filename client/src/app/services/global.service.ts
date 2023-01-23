@@ -5,6 +5,8 @@ import { User } from "@_models/account";
 import { CustomObject, RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
+import { FriendService } from "@_services/friend.service";
+import { NotificationService } from "@_services/notification.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
 import { Observable, of, Subject, switchMap, takeUntil, tap } from "rxjs";
@@ -57,6 +59,8 @@ export class GlobalService implements OnDestroy {
 
   constructor(
     private accountService: AccountService,
+    private friendService: FriendService,
+    private notificationService: NotificationService,
     private tokenService: TokenService,
     private router: Router,
     private apiService: ApiService,
@@ -83,12 +87,14 @@ export class GlobalService implements OnDestroy {
       observable = this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
         switchMap(code => {
           if (code === "0001") {
-            return this.accountService.syncCurrentUser().pipe(takeUntil(this.destroyed$));
+            return this.accountService.getUser(this.tokenService.id).pipe(takeUntil(this.destroyed$));
           }
           // Ошибка проверки токена
           else {
             this.router.navigate([""]);
             this.accountService.quit();
+            this.friendService.quit();
+            this.notificationService.quit();
             // Сообщение с ошибкой
             this.snackBar.open({
               "mode": "error",

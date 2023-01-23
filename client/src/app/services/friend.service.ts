@@ -1,14 +1,15 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/api";
+import { ToArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
+import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, catchError, filter, finalize, map, mergeMap, Observable, of, pairwise, startWith, Subject, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
@@ -26,8 +27,6 @@ export class FriendService implements OnDestroy {
   private cookieLifeTime: number = 604800;
   private friendsCookieKey: string = "friends";
 
-  private user: User;
-
   private syncFriend: [number, number, number] = [0, 0, 0];
   private firensSubscritionCounter: [number, number, number][] = [];
 
@@ -41,25 +40,16 @@ export class FriendService implements OnDestroy {
   // Загрузить статусы из стора
   private getFriendsFromStore(): void {
     this.configLocalStorage();
-    // Данные
-    let friends: Friend[] = [];
-    // Попытка получения из стора
-    try {
-      const stringFriends: string = this.localStorageService.getCookie(this.friendsCookieKey);
-      const mixedFriends: any = JSON.parse(stringFriends);
-      const arrayFriends: any[] = Array.isArray(mixedFriends) ? mixedFriends : [];
-      // Проверить данные
-      friends = arrayFriends.map(u => u as Friend).filter(u => !!u);
-    }
-    // Ошибка
-    catch (e: any) { }
     // Добавить в наблюдение
-    this.friends.next(friends);
+    this.friends.next(this.localStorageService.getCookie(
+      this.friendsCookieKey,
+      d => ToArray(d).map(u => u as Friend).filter(u => !!u)
+    ));
   }
 
   // Получить подписку на данные о статусах дружбы
   friends$(inUser: number, outUser: number = 0, sync: boolean = false): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.user?.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
     // Обновить счетчик
     let counter: number = this.updateFriendsCounter(inUser, outUser, 1);
     // Подписки
@@ -103,7 +93,7 @@ export class FriendService implements OnDestroy {
 
   // Сравнение записи о пользователе
   private compareFriend(friend: Friend | number[], inUser: number, outUser: number = 0): boolean {
-    outUser = outUser > 0 ? outUser : ParseInt(this.user?.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
     // Проверка данных
     if (!!friend && (inUser > 0 || outUser > 0)) {
       const fInUser: number = Array.isArray(friend) ? friend[0] : friend.inUserId;
@@ -125,14 +115,11 @@ export class FriendService implements OnDestroy {
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
+    private tokenService: TokenService,
     private localStorageService: LocalStorageService,
     private accountService: AccountService
   ) {
     this.getFriendsFromStore();
-    // Подписка на актуальные сведения о пользователе
-    this.accountService.user$()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(user => this.user = user);
   }
 
   ngOnDestroy(): void {
@@ -146,7 +133,7 @@ export class FriendService implements OnDestroy {
 
   // Проверка статуса в друзьях
   getFriendStatus(inUser: number, outUser: number = 0, codes: string[] = []): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.user?.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
     // Только для авторизованных пользователей
     if (outUser > 0) {
       codes = Array.from(new Set([...codes, "0002"]));
@@ -235,7 +222,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
     );
   }
 
@@ -246,7 +233,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
     );
   }
 
@@ -257,7 +244,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
     );
   }
 
@@ -268,8 +255,13 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.syncCurrentUser(), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
     );
+  }
+
+  // Выйти из аккаунта
+  quit(): void {
+    this.clearUsersFromStore();
   }
 
 
@@ -279,7 +271,7 @@ export class FriendService implements OnDestroy {
   // Конвертация заявки в друзья
   private friendConverter(data: any, userId: number = 0): Friend {
     const inUserId: number = ParseInt(data?.inUserId) ?? userId;
-    const outUserId: number = ParseInt(data?.outUserId) ?? this.user?.id;
+    const outUserId: number = ParseInt(data?.outUserId ?? this.tokenService.id);
     const checkUserId: number = inUserId === userId ? outUserId : inUserId;
     const status: FriendStatus = this.friendStatusConverter(ParseInt(data?.status, -1), inUserId, outUserId, checkUserId);
     // Вернуть массив
@@ -354,7 +346,7 @@ export class FriendService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.friendsCookieKey, !!friends ? JSON.stringify(friends) : "");
+    this.localStorageService.setCookie(this.friendsCookieKey, friends);
     this.friends.next(friends);
   }
 
@@ -368,7 +360,7 @@ export class FriendService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.friendsCookieKey, !!friends ? JSON.stringify(friends) : "");
+    this.localStorageService.setCookie(this.friendsCookieKey, friends);
     this.friends.next(friends);
   }
 
@@ -393,6 +385,13 @@ export class FriendService implements OnDestroy {
     }
     // Вернуть ноль
     return 0;
+  }
+
+  // Очистить данные о пользователях в сторе
+  private clearUsersFromStore(): void {
+    this.configLocalStorage();
+    this.localStorageService.deleteCookie(this.friendsCookieKey);
+    this.friends.next([]);
   }
 }
 
