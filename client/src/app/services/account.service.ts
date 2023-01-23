@@ -1,13 +1,13 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
-import { OnlinePeriod, UserPrivateNames } from "@_datas/account";
+import { DefaultUserPriv, DefaultUserPrivItem, OnlinePeriod, UserPrivateNames } from "@_datas/account";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
-import { ToDate } from "@_datas/app";
+import { ToArray, ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserPrivateItem, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
+import { AuthResponce, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
@@ -44,23 +44,6 @@ export class AccountService implements OnDestroy {
   // Проверить авторизацию
   get checkAuth(): boolean {
     return this.tokenService.checkAuth;
-  }
-
-  // Настройки приватности по умолчанию
-  private get getDefaultUserPrivate(): UserPrivate {
-    return {
-      myPage: this.getDefaultUserPrivateItem,
-      myDreamList: this.getDefaultUserPrivateItem
-    };
-  }
-
-  // Настройки правила приватности по умолчанию
-  get getDefaultUserPrivateItem(): UserPrivateItem {
-    return {
-      type: PrivateType.public,
-      blackList: [],
-      whiteList: []
-    };
   }
 
   // Получить возраст пользователя
@@ -124,20 +107,11 @@ export class AccountService implements OnDestroy {
   // Загрузить пользоватлей из стора
   private getUsersFromStore(): void {
     this.configLocalStorage();
-    // Данные
-    let users: User[] = [];
-    // Попытка получения из стора
-    try {
-      const stringUsers: string = this.localStorageService.getCookie(this.usersCookieKey);
-      const mixedUsers: any = JSON.parse(stringUsers);
-      const arrayUsers: any[] = Array.isArray(mixedUsers) ? mixedUsers : [];
-      // Проверить данные
-      users = arrayUsers.map(this.userConverter).filter(u => !!u);
-    }
-    // Ошибка
-    catch (e: any) { }
     // Добавить в наблюдение
-    this.users.next(users);
+    this.users.next(this.localStorageService.getCookie(
+      this.usersCookieKey,
+      d => ToArray(d).map(user => this.userConverter(user)).filter(u => !!u)
+    ));
   }
 
   // Проверить статус онлайн
@@ -285,11 +259,6 @@ export class AccountService implements OnDestroy {
     );
   }
 
-  // Информация о текущем пользователе
-  syncCurrentUser(codes: string[] = []): Observable<User> {
-    return this.getUser(this.tokenService.id, codes);
-  }
-
   // Обновить подписчик анонимного пользователя
   syncAnonymousUser(): Observable<User> {
     return of(true).pipe(
@@ -432,37 +401,54 @@ export class AccountService implements OnDestroy {
 
   // Преобразовать данные с сервера
   userConverter(data: any): User {
-    const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
-    const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
-    // Права доступа
-    const privateRules: UserPrivate = this.userPrivateConverter(data?.private);
-    // Данные пользователя
-    const user: User = {
-      ...data,
-      id: ParseInt(data?.id),
-      sex: ParseInt(data?.sex) as UserSex,
-      online: this.isOnlineByDate(ToDate(data?.lastActionDate)),
-      lastActionDate: ToDate(data?.lastActionDate),
-      lastEditDate: ToDate(data?.lastEditDate),
-      hasAccess: !!data?.hasAccess,
-      settings: {
-        profileBackground: BackgroundImageDatas.find(d => d.id == background) ?? BackgroundImageDatas[0],
-        profileHeaderType: headerType ?? NavMenuType.short
-      },
-      private: privateRules
-    } as User;
-    // Вернуть данные
-    return user;
+    try {
+      const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
+      const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
+      // Права доступа
+      const privateRules: UserPrivate = this.userPrivRulesConverter(data?.private);
+      // Данные пользователя
+      const user: User = {
+        ...data,
+        id: ParseInt(data?.id),
+        sex: ParseInt(data?.sex) as UserSex,
+        online: this.isOnlineByDate(ToDate(data?.lastActionDate)),
+        lastActionDate: ToDate(data?.lastActionDate),
+        lastEditDate: ToDate(data?.lastEditDate),
+        hasAccess: !!data?.hasAccess,
+        settings: {
+          profileBackground: BackgroundImageDatas.find(d => d.id == background) ?? BackgroundImageDatas[0],
+          profileHeaderType: headerType ?? NavMenuType.short
+        },
+        private: privateRules
+      } as User;
+      // Вернуть данные
+      return user;
+    }
+    catch (e: any) {
+      return null;
+    }
   }
 
   // Правила приватности пользователя
-  userPrivateConverter(data: any): UserPrivate {
-    data = !!data ? data : this.getDefaultUserPrivate;
-    // Вернуть данные
-    return UserPrivateNames
-      .map(({ rule }) => rule)
-      .map(rule => ({ rule, data: data[rule] ?? this.getDefaultUserPrivateItem }))
-      .reduce((o, { rule: k, data: v }) => ({ ...o, [k as keyof UserPrivate]: v }), {} as UserPrivate);
+  userPrivRulesConverter(mixedData: any = null): UserPrivate {
+    try {
+      const data: any = mixedData ?? DefaultUserPriv;
+      // Вернуть данные
+      return UserPrivateNames
+        .map(({ rule }) => rule)
+        .map(rule => ({ rule, data: data[rule] ?? DefaultUserPrivItem }))
+        .map(({ rule, data }) => ({
+          rule, data: {
+            type: ParseInt(data?.type),
+            blackList: ToArray(data?.blackList, d => ParseInt(d)),
+            whiteList: ToArray(data?.whiteList, d => ParseInt(d))
+          }
+        }))
+        .reduce((o, { rule: k, data: v }) => ({ ...o, [k as keyof UserPrivate]: v }), {} as UserPrivate);
+    }
+    catch (e: any) {
+      return DefaultUserPriv;
+    }
   }
 
   // Сохранить данные о пользователе в стор
@@ -479,14 +465,14 @@ export class AccountService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.usersCookieKey, !!users ? JSON.stringify(users) : "");
+    this.localStorageService.setCookie(this.usersCookieKey, users);
     this.users.next(users);
   }
 
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.usersCookieKey, "");
+    this.localStorageService.deleteCookie(this.usersCookieKey);
     this.users.next([]);
   }
 

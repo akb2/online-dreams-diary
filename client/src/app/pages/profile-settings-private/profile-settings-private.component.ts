@@ -3,7 +3,7 @@ import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PopupSearchUsersComponent } from '@_controlers/search-users/search-users.component';
-import { PeoplePlural, PrivateTypes, UserPrivateNames } from "@_datas/account";
+import { DefaultUserPrivItem, PeoplePlural, PrivateTypes, UserPrivateNames } from "@_datas/account";
 import { PrivateType, User, UserPrivate, UserPrivateItem, UserPrivateNameItem } from '@_models/account';
 import { CustomObjectKey, SimpleObject } from '@_models/app';
 import { NavMenuType } from '@_models/nav-menu';
@@ -203,7 +203,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     // Новая форма
     if (create) {
       const formDatas = this.ruleNames.reduce((o, r) => {
-        const ruleItem: UserPrivateItem = this.user?.private[r.rule] ?? this.accountService.getDefaultUserPrivateItem;
+        const ruleItem: UserPrivateItem = this.user?.private[r.rule] ?? DefaultUserPrivItem;
         // Вернуть модель
         return {
           ...o,
@@ -245,7 +245,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   // Заполнить список задействованных пользователей
   private defineUsers(): void {
     const limit: number = 250;
-    const privateRules: UserPrivate = this.accountService.userPrivateConverter(this.user?.private);
+    const privateRules: UserPrivate = this.accountService.userPrivRulesConverter(this.user?.private);
     const ids: number[] = Object.values(privateRules)
       .map(({ whiteList, blackList }: UserPrivateItem) => ([...whiteList, ...blackList]))
       .reduce((o, v) => ([...o, ...v]), []);

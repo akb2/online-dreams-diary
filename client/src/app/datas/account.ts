@@ -1,5 +1,5 @@
 import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
-import { PrivateType, UserPrivateNameItem } from "@_models/account";
+import { PrivateType, UserPrivate, UserPrivateItem, UserPrivateNameItem } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 
 
@@ -66,3 +66,16 @@ export const PrivateTypes: OptionData[] = [
     iconColor: "primary"
   }
 ];
+
+// Правило приватности по умолчанию
+export const DefaultUserPrivItem: UserPrivateItem = {
+  type: PrivateType.public,
+  blackList: [],
+  whiteList: []
+};
+
+// Список правил приватности по умолчанию
+export const DefaultUserPriv: UserPrivate = {
+  myPage: DefaultUserPrivItem,
+  myDreamList: DefaultUserPrivItem
+};
