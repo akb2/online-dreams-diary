@@ -26,9 +26,6 @@ export const ToDate = (mixedDate: any, defaultDate: Date = new Date()) => typeof
     mixedDate :
     defaultDate;
 
-// Преобразовать в массив
-export const ToArray = <T>(data: any, mapCallback: (d: any) => T = d => d as T) => (Array.isArray(data) ? data : [data]).map(mapCallback);
-
 // Данные об операционных системах
 export const OsNames: SimpleObject = {
   Win7: "Windows 7",
@@ -65,9 +62,6 @@ export const BrowserNames: SimpleObject = {
 // Цикл из числа
 export const CreateArray: (length: number) => number[] = (length: number) => Array.from(Array(length).keys());
 
-// Случайный элемент массива
-export const ArrayRandom: <T>(data: T[]) => T = <T>(data: T[]) => data[Random(0, data.length - 1, false, 0)];
-
 // Типы файлов по умолчанию
 export const FileTypesDefault: FileTypes[] = [
   "image/jpeg",
@@ -92,4 +86,30 @@ export const ConvertFileSize = (size: number) => {
   }
   // Преобразование неудалось
   return MathRound(size) + " " + strings[key];
+}
+
+// Случайный элемент массива
+export const ArrayRandom: <T>(data: T[]) => T = function <T>(data: T[]) {
+  return data[Random(0, data.length - 1, false, 0)];
+};
+
+// Преобразовать в массив
+export const ToArray: <T>(d: any, c?: (d: any) => T) => T[] = function <T>(data: any, mapCallback = d => d as T) {
+  return (Array.isArray(data) ? data : [data]).map(mapCallback);
+};
+
+// Пересечение элемента по селектору
+export const CompareElementBySelector = (target: any, selector: string) => {
+  if (!!target && !!selector?.length) {
+    const match = e => e !== document && !!(e as Element).matches(selector);
+    let element: any = target;
+    // Поиск пересечения
+    while (element.parentNode && !match(element)) {
+      element = element.parentNode;
+    }
+    // Проверка
+    return match(element);
+  }
+  // Нет пересечения
+  return false;
 }
