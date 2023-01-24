@@ -158,7 +158,7 @@ export class NotificationService implements OnDestroy {
       status: ParseInt(mixedData?.status) as NotificationStatus,
       createDate: ToDate(mixedData?.createDate),
       text: mixedData?.text?.toString() ?? "",
-      link: mixedData?.actionType?.toString() ?? "",
+      link: mixedData?.link?.toString() ?? "",
       actionType: mixedData?.actionType?.toString() ?? "",
       data: (mixedData?.data ?? {}) as Partial<NotificationData>
     } : null;
