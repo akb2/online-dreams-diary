@@ -5,7 +5,7 @@ namespace Models;
 
 
 // Основной класс данных
-interface User
+abstract class User
 {
   public int $id;
   public string $login;

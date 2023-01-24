@@ -5,7 +5,7 @@ namespace Models;
 
 
 // Интерфейс данных для регистрации
-interface UserRegister
+abstract class UserRegister
 {
   public string $login;
   public string $password;

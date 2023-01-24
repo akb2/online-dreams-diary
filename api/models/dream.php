@@ -5,7 +5,7 @@ namespace Models;
 
 
 // Основной класс сновидения
-interface Dream
+abstract class Dream
 {
   public int $id;
   public int $userId;
