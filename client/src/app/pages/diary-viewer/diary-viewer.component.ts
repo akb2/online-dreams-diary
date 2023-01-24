@@ -8,6 +8,7 @@ import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
@@ -109,7 +110,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     private dreamService: DreamService,
     private router: Router,
     private titleService: Title,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private canonicalService: CanonicalService
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -150,7 +152,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           this.dream = dream;
           this.ready = true;
           // Заголовок
-          this.setTitle();
+          this.setSEO();
           // Обновить
           this.changeDetectorRef.detectChanges();
         },
@@ -159,11 +161,13 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   }
 
   // Установить название страницы
-  private setTitle(): void {
+  private setSEO(): void {
     this.titleService.setTitle(this.globalService.createTitle([
       this.dream.title,
       this.pageTitle
     ]));
+    // Каноничный адрес
+    this.canonicalService.setURL("diary/viewer/" + this.dream.id);
   }
 }
 
