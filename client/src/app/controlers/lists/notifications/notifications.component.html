@@ -1,5 +1,6 @@
 <ng-container *ngIf="isAutorizedUser">
-  <div class="list"
+  <div [id]="listId"
+       class="list"
        [ngClass]="{ show }"
        [ngStyle]="listStyles"
        *ngIf="!!notifications?.length; else noNotifications">
@@ -7,13 +8,10 @@
       <div class="notification"
            [ngClass]="{ noRead: notification.status === 0 }"
            [attr.color]="notificationAdvance.iconColor"
-           *ngVar="notificationIcon(notification) as notificationAdvance">
-        <!-- Иконка -->
-        <div class="notification__icon"
-             background="transparent"
-             [attr.color]="notificationAdvance.iconColor">
-          <mat-icon>{{notificationAdvance.icon}}</mat-icon>
-        </div>
+           *ngVar="notificationAdvance(notification) as notificationAdvance">
+        <!-- Картинки или иконка -->
+        <ng-container [ngTemplateOutlet]="notificationIcon"
+                      [ngTemplateOutletContext]="{ notification, notificationAdvance, user: notificationAdvance.user | async }"></ng-container>
         <!-- Текст -->
         <div class="notification__text"
              [innerHTML]="notification.text"></div>
@@ -47,6 +45,38 @@
             class="mat-elevation-z"
             matTooltip="Отменить заявку"><mat-icon>close</mat-icon></button>
   </div>
+</ng-template>
+
+<!-- Картинка уведомления -->
+<ng-template #notificationIcon
+             let-notification="notification"
+             let-notificationAdvance="notificationAdvance"
+             let-user="user">
+  <a class="notification__icon"
+     [routerLink]="notification.link"
+     background="transparent"
+     [attr.color]="notificationAdvance.iconColor"
+     *ngIf="!!notification.link; else notificationIconNoLink">
+    <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
+  </a>
+  <!-- Без ссылки -->
+  <ng-template #notificationIconNoLink>
+    <div class="notification__icon"
+         background="transparent"
+         [attr.color]="notificationAdvance.iconColor">
+      <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
+    </div>
+  </ng-template>
+  <!-- Содержимое картинки уведомления -->
+  <ng-template #notificationIconContent>
+    <!-- Картинка -->
+    <img [src]="user.avatars.small"
+         *ngIf="!!user && !!user?.avatars?.small; else notificationIconContentIcon" />
+    <!-- Иконка -->
+    <ng-template #notificationIconContentIcon>
+      <mat-icon>{{notificationAdvance.icon}}</mat-icon>
+    </ng-template>
+  </ng-template>
 </ng-template>
 
 

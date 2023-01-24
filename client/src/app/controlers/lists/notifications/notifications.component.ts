@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { CompareElementBySelector } from "@_datas/app";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, IconColor, SimpleObject } from "@_models/app";
 import { Notification } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
 import { TokenService } from "@_services/token.service";
-import { concatMap, forkJoin, map, Observable, of, Subject, switchMap, take, takeUntil } from "rxjs";
+import { concatMap, filter, forkJoin, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil } from "rxjs";
 
 
 
@@ -24,11 +25,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   @Input() show: boolean = false;
   @Input() listStyles: SimpleObject = {};
 
+  @Output() showChange: EventEmitter<boolean> = new EventEmitter();
+
   user: User;
   notifications: Notification[];
   isAutorizedUser: boolean = false;
 
   private lastId: number = 0;
+
+  listId: string = "notification-component-list";
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -60,17 +65,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   // Иконка уведомления
-  notificationIcon(notification: Notification): NotificationAdvance {
+  notificationAdvance(notification: Notification): NotificationAdvance {
     const icon: string = NotificationIcons.hasOwnProperty(notification.actionType) ?
       NotificationIcons[notification.actionType] :
       NotificationIcons.default;
     const iconColor: IconColor = NotificationColors.hasOwnProperty(notification.actionType) ?
       NotificationColors[notification.actionType] :
       NotificationColors.default;
-    const user: Observable<User> = (!!notification?.data?.user ? this.accountService.user$(notification.data.user) : of(null))
-      .pipe(takeUntil(this.destroyed$));
+    const useImage: boolean = NotificationImages.hasOwnProperty(notification.actionType) ?
+      NotificationImages[notification.actionType] :
+      NotificationImages.default;
+    // Данные о пользователе
+    const user: Observable<User> = (!!notification?.data?.user ? this.accountService.user$(notification.data.user) : of(null)).pipe(takeUntil(this.destroyed$));
     // Вернуть данные
-    return { icon, iconColor, user };
+    return { icon, iconColor, useImage, user };
   }
 
   // Замена переменных в тексте
@@ -115,11 +123,29 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         // Обновить
         this.changeDetectorRef.detectChanges();
       });
+    // Закрытие уведомлений
+    fromEvent(document, "click")
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a"))
+      )
+      .subscribe(() => this.onClose());
   }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Закрыть уведомления
+  onClose(): void {
+    this.show = false;
+    this.showChange.emit(this.show);
+    this.changeDetectorRef.detectChanges();
   }
 
 
@@ -140,6 +166,7 @@ interface NotificationAdvance {
   icon: string;
   iconColor: IconColor;
   user?: Observable<User>;
+  useImage?: boolean;
 }
 
 // Иконка уведомления
@@ -148,8 +175,14 @@ const NotificationIcons: SimpleObject = {
   "add_to_friend": "person_add"
 };
 
-// Иконка уведомления
+// Цвет уведомления
 const NotificationColors: CustomObject<IconColor> = {
   default: "disabled",
   "add_to_friend": "primary"
+};
+
+// Картинка вместо иконки
+const NotificationImages: CustomObject<boolean> = {
+  default: false,
+  "add_to_friend": true
 };
