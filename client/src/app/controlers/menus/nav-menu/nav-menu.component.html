@@ -141,7 +141,7 @@
 
 <!-- Уведомления -->
 <app-notifications #notificationsBlock
-                   [show]="isShowNotifications"
+                   [(show)]="isShowNotifications"
                    [listStyles]="css.notificationsList"
                    *ngIf="isAutorizedUser"></app-notifications>
 

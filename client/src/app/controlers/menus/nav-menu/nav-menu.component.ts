@@ -62,7 +62,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   tempImagePositionX: string = "";
   tempImageOverlay: boolean = true;
   private clearTempImageTimeout: number = 300;
-  isShowNotifications: boolean = true;
+  isShowNotifications: boolean = false;
 
   user: User;
   isAutorizedUser: boolean = false;
