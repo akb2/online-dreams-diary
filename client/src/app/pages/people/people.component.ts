@@ -269,7 +269,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
   // Загрузка списка сновидений
   private search(): void {
     this.loading = true;
-    this.canonicalService.setURL("diary/all", this.getSearch, { page: [0, 1], limit: [this.defaultPageLimit] });
     this.changeDetectorRef.detectChanges();
     // Загрузка списка
     this.accountService.search(this.getSearch, ["0002"]).subscribe(
@@ -282,6 +281,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
           this.people = people;
           this.loading = false;
           // Обновить
+          this.canonicalService.setURL("people", this.getSearch, { page: [0, 1], limit: [this.defaultPageLimit] });
           this.changeDetectorRef.detectChanges();
         }
         // Сновидения не найдены
