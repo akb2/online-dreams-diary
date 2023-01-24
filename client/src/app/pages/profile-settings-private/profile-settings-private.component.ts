@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PopupSearchUsersComponent } from '@_controlers/search-users/search-users.component';
@@ -29,7 +29,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   settingsLoader: boolean = false;
   private firstFormUpdate: boolean = true;
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   user: User;
   users: User[];
 
@@ -58,7 +58,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   getUsers(rule: keyof UserPrivate, listType: ListType): User[] {
     const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
     // Вернуть массив
-    return ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+    return ((this.form?.get(rule)?.get(listTypeName) as UntypedFormArray)?.value ?? [])
       .map(userId => this.getUser(userId))
       .filter((user, i) => i < this.getUserInListCount || this.getUserMoreState(rule, listType));
   }
@@ -71,7 +71,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   // Оставшееся количество пользователей в списке
   getUsersMoreCount(rule: keyof UserPrivate, listType: ListType): number {
     const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
-    const count: number = ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+    const count: number = ((this.form?.get(rule)?.get(listTypeName) as UntypedFormArray)?.value ?? [])
       .map(userId => this.getUser(userId))
       .length;
     const moreCount: number = count - this.getUserInListCount > 0 ? count - this.getUserInListCount : 0;
@@ -92,7 +92,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private matDialog: MatDialog
   ) {
     this.defineData(true);
@@ -127,10 +127,10 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   onUserDelete(id: number, rule: keyof UserPrivate, listType: ListType): void {
     if (!this.settingsLoader) {
       const listTypeName: keyof UserPrivateItem = listType === ListType.white ? "whiteList" : "blackList";
-      const userListIndex: number = ((this.form?.get(rule)?.get(listTypeName) as FormArray)?.value ?? [])
+      const userListIndex: number = ((this.form?.get(rule)?.get(listTypeName) as UntypedFormArray)?.value ?? [])
         .findIndex(userId => userId === id);
       // Удалить пользователя из списка
-      (this.form?.get(rule)?.get(listTypeName) as FormArray).removeAt(userListIndex);
+      (this.form?.get(rule)?.get(listTypeName) as UntypedFormArray).removeAt(userListIndex);
       // Сохранить настройки
       this.onSave();
     }
@@ -145,7 +145,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       const privateDatas: UserPrivate = this.ruleNames
         .map(({ rule }) => rule)
         .reduce((o, rule) => {
-          const formGroup: FormGroup = this.form?.get(rule) as FormGroup;
+          const formGroup: UntypedFormGroup = this.form?.get(rule) as UntypedFormGroup;
           // Вернуть модель
           return {
             ...o,
@@ -187,7 +187,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(userId => {
         if (!!userId) {
-          (this.form?.get(rule)?.get(listTypeName) as FormArray).push(this.formBuilder.control(userId));
+          (this.form?.get(rule)?.get(listTypeName) as UntypedFormArray).push(this.formBuilder.control(userId));
           // Сохранить настройки
           this.onSave();
         }
@@ -224,13 +224,13 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
     // Обновить
     else {
       this.ruleNames
-        .map(({ rule }) => ({ formGroup: this.form?.get(rule) as FormGroup, privateItem: this.user.private[rule] }))
+        .map(({ rule }) => ({ formGroup: this.form?.get(rule) as UntypedFormGroup, privateItem: this.user.private[rule] }))
         .forEach(({ formGroup, privateItem }) => {
           formGroup?.get("type")?.setValue(privateItem.type);
           // Обновить списки
           (["whiteList", "blackList"] as (keyof UserPrivateItem)[])
             .forEach(key => {
-              const control: FormArray = (formGroup?.get(key) as FormArray);
+              const control: UntypedFormArray = (formGroup?.get(key) as UntypedFormArray);
               control.clear();
               (privateItem[key] as number[]).forEach(u => control.push(this.formBuilder.control(u)));
             });

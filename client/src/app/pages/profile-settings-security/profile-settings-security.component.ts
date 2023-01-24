@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from "@angular/forms";
 import { BrowserNames, OsNames } from "@_datas/app";
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { CustomValidators } from "@_helpers/custom-validators";
@@ -35,7 +35,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
   navMenuType: NavMenuType = NavMenuType.collapse;
 
   formData: FormDataType = FormData;
-  passForm: FormGroup;
+  passForm: UntypedFormGroup;
   passErrors: ErrorMessagesType = AccountErrorMessages;
 
   loadingTokenInfo: boolean = true;
@@ -54,7 +54,7 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
     private tokenService: TokenService,
     private accountService: AccountService,
     private snackbarService: SnackbarService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.passForm = this.formBuilder.group({
@@ -222,10 +222,10 @@ export class ProfileSettingsSecurityComponent implements OnInit, OnDestroy {
         // Пароль изменен
         if (code === "0001") {
           testPasswords = testPasswords.filter(p => p !== password);
-          const fields: FormControl[] = [
-            this.passForm.get("currentPassword") as FormControl,
-            this.passForm.get("password") as FormControl,
-            this.passForm.get("confirmPassword") as FormControl
+          const fields: UntypedFormControl[] = [
+            this.passForm.get("currentPassword") as UntypedFormControl,
+            this.passForm.get("password") as UntypedFormControl,
+            this.passForm.get("confirmPassword") as UntypedFormControl
           ];
           // Обновить данные формы
           fields.forEach(f => {

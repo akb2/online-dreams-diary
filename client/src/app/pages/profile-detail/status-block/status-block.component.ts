@@ -1,5 +1,5 @@
 import { AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup } from "@angular/forms";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
@@ -32,7 +32,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
   @ViewChild("cancelButton", { read: ElementRef }) cancelButton!: ElementRef;
   @ViewChild("editButton", { read: ElementRef }) editButton!: ElementRef;
 
-  statusForm: FormGroup;
+  statusForm: UntypedFormGroup;
   placeholderText: string = "Напишите, что у вас нового...";
 
   loader: boolean = false;
@@ -74,7 +74,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
 
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
     private accountService: AccountService,
     private screenService: ScreenService

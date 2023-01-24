@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup } from "@angular/forms";
 import { MatSliderChange } from "@angular/material/slider";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { ArrayRandom, CreateArray } from "@_datas/app";
@@ -35,7 +35,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   toolList: ToolListItem[] = Tools;
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
-  form: FormGroup;
+  form: UntypedFormGroup;
   loading: boolean = false;
 
   private startZ: number = -1;
@@ -238,7 +238,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService
   ) {

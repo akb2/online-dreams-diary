@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild } from "@angular/core";
-import { FormBuilder, FormControl } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormControl } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
@@ -26,7 +26,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
   @ViewChild("fileInput") fileInput: ElementRef;
 
   fileTypes: FileTypes[] = FileTypesDefault;
-  avatarForm: FormControl;
+  avatarForm: UntypedFormControl;
   private fileSize: number = AvatarMaxSize;
 
   loadingAvatar: boolean = true;
@@ -61,7 +61,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private snackbarService: SnackbarService,
     private accountService: AccountService,
     private matDialog: MatDialog
