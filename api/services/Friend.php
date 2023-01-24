@@ -119,10 +119,11 @@ class FriendService
         $result = $this->dataBaseService->executeFromFile('friend/addToFriends.sql', $sqlData);
         // Отправить уведомление
         if (!!$result) {
+          $link = '/profile/' . $outUser;
           $this->notificationService->create(
             $inUser,
-            '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> отправил${user.sexLetter} вам заявку в друзья, добавить в друзья?',
-            '',
+            '<a href="' . $link . '">${user.name} ${user.lastName}</a> отправил${user.sexLetter} вам заявку в друзья, добавить в друзья?',
+            $link,
             array('user' => $outUser),
             'add_to_friend'
           );
