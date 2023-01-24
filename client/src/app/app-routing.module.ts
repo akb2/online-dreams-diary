@@ -163,8 +163,7 @@ import { AuthRules } from "@_models/menu";
       },
     ],
     {
-      preloadingStrategy: PreloadAllModules,
-      relativeLinkResolution: "legacy"
+      preloadingStrategy: PreloadAllModules
     }
   )],
   exports: [RouterModule]
