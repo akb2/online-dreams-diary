@@ -71,7 +71,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.localStorage.cookieKey = this.cookieKey;
     this.localStorage.cookieLifeTime = this.cookieLifeTime;
     // Данные формы
-    console.log(this.localStorage.getCookie("sex"));
     this.form = [
       // Данные входа
       this.formBuilder.group({
