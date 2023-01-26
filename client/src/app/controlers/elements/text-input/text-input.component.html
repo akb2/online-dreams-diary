@@ -3,7 +3,7 @@
   <mat-form-field #field
                   [appearance]="appearance"
                   [class]="hasValidators? '': 'disabled-validators'">
-    <mat-label>{{label}}</mat-label>
+    <mat-label (click)="onFocus()">{{label}}</mat-label>
     <!-- Текстовое поле -->
     <input #input
            matInput
@@ -46,7 +46,7 @@
   <mat-form-field #field
                   [appearance]="appearance"
                   [class]="hasValidators? '': 'disabled-validators'">
-    <mat-label>{{label}}</mat-label>
+    <mat-label (click)="onFocus()">{{label}}</mat-label>
     <!-- Текстовое поле -->
     <input #input
            matInput

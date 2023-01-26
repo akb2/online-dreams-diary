@@ -1,8 +1,9 @@
 import { DatePipe } from "@angular/common";
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { MatFormField, MatFormFieldAppearance } from "@angular/material/form-field";
+import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { WaitObservable } from "@_datas/api";
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { filter, map, Subject, takeUntil, timer } from "rxjs";
+import { concatMap, filter, map, Subject, takeUntil, timer } from "rxjs";
 
 
 
@@ -34,8 +35,6 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   @Output() submit: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild("input", { read: ElementRef }) private input: ElementRef;
-  @ViewChild("field", { read: ElementRef }) private field: ElementRef;
-  @ViewChild("field", { read: MatFormField }) private fieldClass: MatFormField;
 
   showPassword: boolean = false;
   datePipe: DatePipe = new DatePipe('ru-RU');
@@ -108,6 +107,20 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
     else if (this.type === "date" && value && new RegExp(`(\\d{1,2})(${sep})(\\d{1,2})(${sep})(\\d{4})`, "i").test(value)) {
       this.onSubmit();
     }
+  }
+
+  // Фокус на поле
+  onFocus(): void {
+    WaitObservable(() => !this.input?.nativeElement).pipe(
+      takeUntil(this.destroyed$),
+      map(() => this.input?.nativeElement as HTMLInputElement),
+      concatMap(elm => WaitObservable(() => {
+        elm.focus();
+        // Вернуть проверку
+        return elm !== document.activeElement;
+      }), elm => elm)
+    )
+      .subscribe(elm => elm.focus());
   }
 
   // Нажатие Enter на клавиатуре
