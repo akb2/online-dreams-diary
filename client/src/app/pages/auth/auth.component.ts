@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
@@ -21,7 +21,7 @@ import { of, Subject, takeUntil, timer } from "rxjs";
 export class AuthComponent implements OnDestroy {
 
 
-  form: UntypedFormGroup;
+  form: FormGroup;
   errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -45,7 +45,7 @@ export class AuthComponent implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private canonicalService: CanonicalService
   ) {
     this.form = this.formBuilder.group({
@@ -78,8 +78,8 @@ export class AuthComponent implements OnDestroy {
 
   // Попытка авторизации
   tryLogin(): void {
-    const loginControl: UntypedFormControl = this.form.get("login") as UntypedFormControl;
-    const passwordControl: UntypedFormControl = this.form.get("password") as UntypedFormControl;
+    const loginControl: FormControl = this.form.get("login") as FormControl;
+    const passwordControl: FormControl = this.form.get("password") as FormControl;
     // Форма без ошибок
     if (!!loginControl?.valid && !!passwordControl?.valid) {
       const login: string = loginControl.value;
@@ -116,9 +116,9 @@ export class AuthComponent implements OnDestroy {
 
   // Отрпавить код активации аккаунта
   sendActivationCode(): void {
-    const loginControl: UntypedFormControl = this.form.get("login") as UntypedFormControl;
-    const passwordControl: UntypedFormControl = this.form.get("password") as UntypedFormControl;
-    const captchaControl: UntypedFormControl = this.form.get("captcha") as UntypedFormControl;
+    const loginControl: FormControl = this.form.get("login") as FormControl;
+    const passwordControl: FormControl = this.form.get("password") as FormControl;
+    const captchaControl: FormControl = this.form.get("captcha") as FormControl;
     // Форма без ошибок
     if (!!passwordControl?.valid && !!passwordControl?.valid && !!captchaControl?.valid) {
       const login: string = loginControl.value;

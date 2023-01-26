@@ -1,6 +1,6 @@
 import { DatePipe } from "@angular/common";
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { MatFormField, MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { filter, map, Subject, takeUntil, timer } from "rxjs";
 
@@ -33,7 +33,9 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
 
   @Output() submit: EventEmitter<string> = new EventEmitter<string>();
 
-  @ViewChild("input") input: ElementRef;
+  @ViewChild("input", { read: ElementRef }) private input: ElementRef;
+  @ViewChild("field", { read: ElementRef }) private field: ElementRef;
+  @ViewChild("field", { read: MatFormField }) private fieldClass: MatFormField;
 
   showPassword: boolean = false;
   datePipe: DatePipe = new DatePipe('ru-RU');
@@ -42,7 +44,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   private activityInterval: number = 100;
   private oldValue: string | null = "";
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -53,7 +55,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
     // Таймер проверки активности
     timer(this.activityInterval, this.activityInterval)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         map(() => +new Date()),
         filter(t => t - this.lastActivity > this.activityTimer && this.submitAfterActivity),
         map(() => this.input.nativeElement.value),
@@ -64,12 +66,12 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
         this.oldValue = value;
         // Сабмит
         this.onSubmit();
-      })
+      });
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
@@ -49,7 +49,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   private defaultPageLimit: number = 24;
   pageCount: number = 1;
 
-  searchForm: UntypedFormGroup;
+  searchForm: FormGroup;
   birthYears: OptionData[] = [];
   birthMonths: OptionData[] = [];
   birthDays: OptionData[] = [];
@@ -121,7 +121,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private accountService: AccountService,
     private screenService: ScreenService,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private canonicalService: CanonicalService
   ) {
     this.searchForm = this.formBuilder.group(Object.entries(this.getDefaultSearch)

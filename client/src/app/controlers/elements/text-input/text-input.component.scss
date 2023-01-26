@@ -19,12 +19,8 @@
   height: $size;
   line-height: $size;
   font-size: $size;
-  margin-top: $height - $size;
 
   > mat-icon {
-    width: inherit;
-    height: inherit;
-    line-height: inherit;
     font-size: inherit;
     display: block;
   }

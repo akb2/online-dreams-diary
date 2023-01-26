@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormGroup } from "@angular/forms";
-import { MatSliderChange } from "@angular/material/slider";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { ArrayRandom, CreateArray } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { IsMultiple, LengthByCoords, MathRound } from "@_helpers/math";
+import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
@@ -35,7 +34,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   toolList: ToolListItem[] = Tools;
   landscapeToolList: LandscapeToolListItem[] = LandscapeTools;
   toolSizeLandLength: number = ToolSizeLand.length - 1;
-  form: UntypedFormGroup;
+  form: FormGroup;
   loading: boolean = false;
 
   private startZ: number = -1;
@@ -87,7 +86,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   timeSettings: SliderSettings = { min: 0, max: 360, step: 1 };
   dreamMapSettings: DreamMapSettings;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -131,10 +130,10 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Форматирование слайдера выбора размера кисти
-  toolSizeLandFormat(key: number = -1): number {
+  toolSizeLandFormat(key: number = -1): string {
     const toolSizeLand: number = key >= 0 ? ToolSizeLand[key] : ToolSizeLand[this.getCurrentToolSizeLand];
     // Результат
-    return 1 + (toolSizeLand * 2);
+    return (1 + (toolSizeLand * 2)).toString();
   }
 
   // Форматирование слайдера выбора высоты мирового океана
@@ -238,7 +237,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService
   ) {
@@ -254,10 +253,22 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     const enterEvent = this.isTouchDevice ? "touchend" : "mouseup";
     // События
-    fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroy$)).subscribe();
+    fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroyed$)).subscribe();
     // Создать список управления рельефом
     this.createReliefData();
     this.onObjectsCategoriesChange(-1);
+    // Изменение уровня воды
+    this.form.get("worldOceanHeight").valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(value => this.onOceanHeightChange(value));
+    // Изменение размера кисти
+    this.form.get("toolSizeLand").valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(value => this.onToolSizeLandChange(value));
+    // Изменение положения солнца
+    this.form.get("currentTime").valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(value => this.onTimeChange(value));
   }
 
   ngOnChanges(): void {
@@ -266,8 +277,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -288,7 +299,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         timer(0, this.toolActionTimer)
           .pipe(
             takeWhile(() => this.toolActive),
-            takeUntil(this.destroy$),
+            takeUntil(this.destroyed$),
             tap(i => this.onToolActionCycle(i))
           )
           .subscribe();
@@ -414,13 +425,13 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Изменение размера кисти
-  onToolSizeLandChange(event: MatSliderChange): void {
-    this.toolSizeLand = ToolSizeLand[event.value] || ToolSizeLand[0];
+  onToolSizeLandChange(value: any): void {
+    this.toolSizeLand = ToolSizeLand[ParseInt(value)];
   }
 
   // Изменение высоты мирового океана
-  onOceanHeightChange(event: MatSliderChange): void {
-    this.dreamMap.ocean.z = event.value ?? DreamWaterDefHeight;
+  onOceanHeightChange(value: any): void {
+    this.dreamMap.ocean.z = ParseInt(value) ?? DreamWaterDefHeight;
     // Установить высоту
     this.setOceanHeight();
     // Обновить
@@ -428,9 +439,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Изменение времени
-  onTimeChange(event: MatSliderChange): void {
-    this.dreamMap.sky.time = event.value ?? DreamSkyTime;
-    this.form.get("currentTime").setValue(this.dreamMap.sky.time);
+  onTimeChange(value: any): void {
+    this.dreamMap.sky.time = ParseInt(value) ?? DreamSkyTime;
+    this.form.get("currentTime").setValue(this.dreamMap.sky.time, { emitEvent: false });
     // Установить высоту
     this.setSkyTime();
     // Обновить
@@ -473,7 +484,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.createReliefData();
       // Перерисовать рельеф
       this.viewer.setReliefType(type)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntil(this.destroyed$))
         .subscribe(() => {
           this.loading = false;
           this.changeDetectorRef.detectChanges();
@@ -646,7 +657,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.dreamService.saveSettings(this.dreamMapSettings);
     // Обновить объекты
     this.viewer.setDetalization(this.dreamMapSettings)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         this.loading = false;
         this.changeDetectorRef.detectChanges();

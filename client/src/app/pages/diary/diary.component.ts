@@ -88,7 +88,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return data;
   }
 
-  // Подписка на ожидание данных0
+  // Подписка на ожидание данных
   private waitObservable(callback: () => boolean): Observable<void> {
     return timer(1, 50).pipe(
       takeUntil(this.destroyed$),

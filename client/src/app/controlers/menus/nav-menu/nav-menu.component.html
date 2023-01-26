@@ -300,7 +300,7 @@
                      [positionY]="user.settings.profileBackground.positionY"
                      title="{{user.name}} {{user.lastName}}"
                      [subTitle]="user.online? 'Онлайн': (userIsMale? 'Был ': 'Была ') + (user.lastActionDate | date: 'd.M.y - H:mm')"
-                     [avatarImage]="user.avatars.small"
+                     [avatarImage]="user.avatars?.small"
                      avatarIcon="profile"
                      [avatarBlink]="user.online"
                      (closeClick)="toggleMobileMenu(-1)"

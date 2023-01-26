@@ -1,6 +1,6 @@
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
@@ -33,8 +33,8 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   @ViewChild(ImageUploadComponent) appImageUpload: ImageUploadComponent;
 
-  form: UntypedFormGroup;
-  avatar: UntypedFormControl;
+  form: FormGroup;
+  avatar: FormControl;
   errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   user: User;
@@ -91,7 +91,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
 
   constructor(
     private accountService: AccountService,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
     private matDialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef

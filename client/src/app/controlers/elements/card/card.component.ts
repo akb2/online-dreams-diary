@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
 import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 
 
@@ -12,7 +12,7 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CardComponent implements AfterViewInit, OnChanges {
+export class CardComponent implements AfterViewChecked, OnChanges {
 
 
   @Input() title: string | null;
@@ -49,10 +49,10 @@ export class CardComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  ngAfterViewInit(): void {
-    this.showContentPanel = this.contentPanel?.nativeElement?.children.length > 0;
-    this.showActionsPanel = this.actionsPanel?.nativeElement?.children.length > 0;
-    this.showMenuPanel = this.menuPanelHelper?.nativeElement?.children.length > 0;
+  ngAfterViewChecked(): void {
+    this.showContentPanel = !!this.contentPanel?.nativeElement?.children.length;
+    this.showActionsPanel = !!this.actionsPanel?.nativeElement?.children.length;
+    this.showMenuPanel = !!this.menuPanelHelper?.nativeElement?.children.length;
     this.changeDetectorRef.detectChanges();
   }
 }

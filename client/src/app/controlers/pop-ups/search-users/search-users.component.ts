@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormGroup } from "@angular/forms";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { AppMatDialogConfig } from "@_datas/app";
 import { SearchUser, User, UserPrivate, UserPrivateItem } from "@_models/account";
@@ -24,7 +24,7 @@ export class PopupSearchUsersComponent implements OnInit, OnDestroy {
 
   static popUpWidth: string = "800px";
 
-  form: UntypedFormGroup;
+  form: FormGroup;
   private user: User;
   users: User[];
   breakpoint: ScreenKeys = "default";
@@ -44,7 +44,7 @@ export class PopupSearchUsersComponent implements OnInit, OnDestroy {
     private matDialogRef: MatDialogRef<PopupSearchUsersComponent, number>,
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private screenService: ScreenService
   ) {
     this.form = this.formBuilder.group({

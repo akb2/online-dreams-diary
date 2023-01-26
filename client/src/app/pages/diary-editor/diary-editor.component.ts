@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormGroup } from "@angular/forms";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
@@ -55,7 +55,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   _navMenuType: typeof NavMenuType = NavMenuType;
   _dreamMode: typeof DreamMode = DreamMode;
 
-  dreamForm: UntypedFormGroup;
+  dreamForm: FormGroup;
   dreamId: number = 0;
   dream: Dream;
   private fromMark: string;
@@ -115,7 +115,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
     private router: Router,
     private titleService: Title,

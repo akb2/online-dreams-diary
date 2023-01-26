@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
-import { UntypedFormControl, NgControl } from "@angular/forms";
+import { FormControl, NgControl } from "@angular/forms";
 import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
@@ -34,7 +34,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   @Input() notNull: boolean = true;
 
   @Output() buttonCallback: EventEmitter<void> = new EventEmitter<void>();
-  @Output() selectItemEvent: EventEmitter<UntypedFormControl> = new EventEmitter<UntypedFormControl>();
+  @Output() selectItemEvent: EventEmitter<FormControl> = new EventEmitter<FormControl>();
 
   @ViewChild("layoutElement") layoutElement: ElementRef;
   @ViewChild("inputElement") inputElement: ElementRef;

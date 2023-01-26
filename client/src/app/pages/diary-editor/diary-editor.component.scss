@@ -14,7 +14,7 @@ $tabsHeight: 49px;
 }
 
 // Убрать лишние отступы
-::ng-deep .mat-tab {
+::ng-deep .mat-mdc-tab {
   // Шапка уппа
   &-header {
     position: sticky !important;

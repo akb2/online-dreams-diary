@@ -9,37 +9,52 @@
 
 // Кнопки
 @mixin mat-button {
-  .mat-button {
-    // Текст
-    &-wrapper {
-      line-height: 1;
-      vertical-align: middle;
-
-      > .mat-icon {
-        margin-right: 9px;
-        margin-left: -9px;
-      }
+  $iconSize: 24px;
+  // Базовые стили
+  .mdc-button {
+    line-height: 1;
+    vertical-align: middle;
+    // Иконка
+    > .mat-icon {
+      width: $iconSize;
+      height: $iconSize;
+      line-height: $iconSize;
+      font-size: $iconSize;
+      margin-right: 9px;
+      margin-left: -9px;
     }
-
+  }
+  // Остальное
+  .mat-mdc-button {
+    $__elm: &;
     // Прочее
     &-base {
+      text-decoration: none;
+      // Убрать фон
+      &.no-pointer > .mdc-fab__ripple {
+        display: none;
+      }
+      // Убрать тень
+      &.mat-elevation-z {
+        box-shadow: none !important;
+      }
       // Базовые настройки
-      &.mat-stroked-button,
-      &.mat-flat-button {
-        height: vars.$buttonSize;
+      &[mat-stroked-button],
+      &[mat-flat-button] {
         line-height: vars.$buttonSize;
         padding: 0 24px;
+        height: vars.$buttonSize;
         // Стили иконок
         &,
-        *:not(.mat-icon) {
+        > *:not(.mat-icon) {
           font-family: "Roboto", open-sans;
           font-weight: 400;
         }
       }
       // Убрать отступы иконок
-      &.mat-mini-fab,
-      &.mat-icon-button {
-        .mat-icon {
+      &[mat-mini-fab],
+      &[mat-icon-button] {
+        > .mat-icon {
           margin-right: 0;
           margin-left: 0;
         }
@@ -48,31 +63,29 @@
       &[button-loader="true"] {
         pointer-events: none;
         // Иконка
-        .mat-icon {
-          $iconSize: 24px;
-          // Свойства
+        > .mat-icon {
           font-size: 0;
           line-height: 0;
           // Полосы
           @include mixins.loader($iconSize, 2px, 1s, #fff);
         }
         // Расскрасить кнопки
-        &.mat-stroked-button,
-        &.mat-mini-fab {
+        &[mat-stroked-button],
+        &[mat-mini-fab] {
           // Общий цвет
-          .mat-icon {
+          > .mat-icon {
             @include mixins.loaderColors(colors.$text);
           }
           // Статус: warn
-          &.mat-warn .mat-icon {
+          &.mat-warn > .mat-icon {
             @include mixins.loaderColors(map.get(colors.$mat-status-warn, 500));
           }
           // Статус: accent
-          &.mat-accent .mat-icon {
+          &.mat-accent > .mat-icon {
             @include mixins.loaderColors(map.get(colors.$mat-secondary, 500));
           }
           // Статус: primary
-          &.mat-primary .mat-icon {
+          &.mat-primary > .mat-icon {
             @include mixins.loaderColors(map.get(colors.$mat-primary, 500));
           }
         }
@@ -84,7 +97,7 @@
 // Обертка поля
 @mixin mat-form-field {
   // Обертка
-  .mat-form-field {
+  .mat-mdc-form-field {
     $elm: &;
     $padding: 12px;
     // Свойства
@@ -120,22 +133,35 @@
         padding: 8px 18px 0 18px;
       }
     }
-
+    // Расположение иконок
     :host ::ng-deep &-infix {
-      display: flex;
-      flex-flow: row nowrap;
+      // display: flex;
+      // flex-flow: row nowrap;
     }
-
     // Отключение валидаторов
     :host ::ng-deep &.disabled-validators {
-      > #{$elm}-wrapper {
-        padding-bottom: 0;
-        > #{$elm}-underline {
-          bottom: 0;
-        }
+      // Убрать поле
+      > #{$elm}-subscript-wrapper {
+        display: none;
       }
     }
-
+    // Автозаполнение
+    & {
+      $__input: ".mat-mdc-input-element:autofill";
+      // Общее правило
+      #{$__input} {
+        box-shadow: 0 0 0 30px #f5f5f5 inset !important;
+      }
+      // Выделение
+      &:hover #{$__input} {
+        box-shadow: 0 0 0 30px #ececec inset !important;
+      }
+      // Выделение
+      &.mat-focused #{$__input} {
+        box-shadow: 0 0 0 30px #dcdcdc inset !important;
+      }
+    }
+    // Отступы сверху
     $__elms: app-text-input app-autocomplete-input app-toggle-input app-chips-input;
     @each $__elm in $__elms {
       #{$__elm}:not(.no-margin) + :host:not(.no-margin) > &:not(.no-margin),
@@ -144,13 +170,17 @@
         margin-top: 15px;
       }
     }
-
+    // Содержимое
     @content;
   }
 
   // Поле
-  .mat-input-element {
+  .mat-mdc-input-element {
     background-image: none !important;
+    // Курсор
+    &.mat-mdc-autocomplete-trigger[readonly] {
+      cursor: pointer;
+    }
   }
 
   // Last Pass icons
@@ -271,9 +301,13 @@
 
 // Выпадающие списки
 @mixin mat-option {
-  .mat-option {
+  .mat-mdc-option {
     line-height: 1;
     height: auto;
     padding: 0;
+    // Текст
+    ::ng-deep > .mdc-list-item__primary-text {
+      width: 100%;
+    }
   }
 }

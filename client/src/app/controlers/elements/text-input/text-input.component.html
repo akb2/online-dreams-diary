@@ -1,8 +1,10 @@
-<mat-form-field [appearance]="appearance"
-                [class]="hasValidators? '': 'disabled-validators'">
-  <mat-label>{{label}}</mat-label>
-  <!-- Текстовое поле -->
-  <ng-container *ngIf="type == 'text' || type == 'password' || type == 'email'">
+<!-- Текстовые поля -->
+<ng-container *ngIf="type == 'text' || type == 'password' || type == 'email'">
+  <mat-form-field #field
+                  [appearance]="appearance"
+                  [class]="hasValidators? '': 'disabled-validators'">
+    <mat-label>{{label}}</mat-label>
+    <!-- Текстовое поле -->
     <input #input
            matInput
            [type]="type === 'password'? (showPassword? 'text': 'password'): type"
@@ -29,13 +31,23 @@
               (keypress)="onKeyPress($event)"
               (keyup)="onKeyUp($event)"
               *ngIf="multiLine"></textarea>
-    <mat-icon class="showPassword"
-              matSuffix
-              (click)="togglePasswordVisibility()"
-              *ngIf="type=='password'">{{showPassword?'visibility_off':'visibility'}}</mat-icon>
-  </ng-container>
-  <!-- Дата -->
-  <ng-container *ngIf="type == 'date'">
+    <button mat-icon-button
+            matSuffix
+            class="showPassword"
+            (click)="togglePasswordVisibility()"
+            *ngIf="type=='password'">
+      <mat-icon>{{showPassword?'visibility_off':'visibility'}}</mat-icon>
+    </button>
+    <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+  </mat-form-field>
+</ng-container>
+<!-- Дата -->
+<ng-container *ngIf="type == 'date'">
+  <mat-form-field #field
+                  [appearance]="appearance"
+                  [class]="hasValidators? '': 'disabled-validators'">
+    <mat-label>{{label}}</mat-label>
+    <!-- Текстовое поле -->
     <input #input
            matInput
            [formControl]="control"
@@ -54,6 +66,6 @@
               (click)="datePicker.open()">today</mat-icon>
     <mat-datepicker #datePicker
                     [startAt]="control.value"></mat-datepicker>
-  </ng-container>
-  <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
-</mat-form-field>
+    <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+  </mat-form-field>
+</ng-container>

@@ -1,5 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { CustomObject, SimpleObject } from "@_models/app";
+import { map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -89,3 +90,10 @@ export const ApiResponseMessages: SimpleObject = {
 
   "9999": "Неизвестная ошибка. Повторите позже"
 } as const;
+
+// Подписка ожидания условия
+export const WaitObservable = (callback: () => boolean): Observable<void> => timer(0, 50).pipe(
+  takeWhile(callback, true),
+  skipWhile(callback),
+  map(() => { })
+);

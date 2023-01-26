@@ -1,32 +1,31 @@
 <mat-form-field [appearance]="appearance">
   <mat-label>{{label}}</mat-label>
-  <mat-chip-list #chipList
+  <mat-chip-grid #chipList
                  aria-label="label"
                  multiple
                  cdkDropList
                  [formControl]="control"
                  (cdkDropListDropped)="onDrop($event)">
-    <mat-chip cdkDrag
-              [selected]="word"
-              [value]="word"
-              (removed)="onRemoveWord(word)"
-              *ngFor="let word of words">
+    <mat-chip-row cdkDrag
+                  [value]="word"
+                  (removed)="onRemoveWord(word)"
+                  *ngFor="let word of words">
       <div class="mat-chip-elm">
         <div class="mat-chip-word">{{word}}</div>
         <div matChipRemove>
           <mat-icon>cancel</mat-icon>
         </div>
       </div>
-    </mat-chip>
-    <input #chipInput
-           [placeholder]="inputPlaceholder"
-           [matChipInputFor]="chipList"
-           [matChipInputAddOnBlur]="true"
-           [maxLength]="inputMaxLength"
-           [disabled]="inputMaxLength === 0"
-           (keyup)="onKeyUp($event)"
-           (keydown)="onKeyDown($event)"
-           (matChipInputTokenEnd)="onAddWord($event)">
-  </mat-chip-list>
+    </mat-chip-row>
+  </mat-chip-grid>
+  <input #chipInput
+         [placeholder]="inputPlaceholder"
+         [matChipInputFor]="chipList"
+         [matChipInputAddOnBlur]="true"
+         [maxLength]="inputMaxLength"
+         [disabled]="inputMaxLength === 0"
+         (keyup)="onKeyUp($event)"
+         (keydown)="onKeyDown($event)"
+         (matChipInputTokenEnd)="onAddWord($event)">
   <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
 </mat-form-field>

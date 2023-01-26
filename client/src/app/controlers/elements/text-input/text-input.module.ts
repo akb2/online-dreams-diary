@@ -2,6 +2,7 @@ import { TextFieldModule } from "@angular/cdk/text-field";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 import { DateAdapter, MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -41,7 +42,8 @@ import { TextInputComponent } from "./text-input.component";
     FormsModule,
     ReactiveFormsModule,
     MatDatepickerModule,
-    TextFieldModule
+    TextFieldModule,
+    MatButtonModule
   ]
 })
 

@@ -1,6 +1,6 @@
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
 import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister } from "@app/models/account";
@@ -32,7 +32,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   @ViewChild(AppRecaptchaComponent) appRecaptchaComponent!: AppRecaptchaComponent;
 
-  form: UntypedFormGroup[];
+  form: FormGroup[];
   errors: ErrorMessagesType = AccountErrorMessages;
   formData: FormDataType = FormData;
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -60,7 +60,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private localStorage: LocalStorageService,
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
