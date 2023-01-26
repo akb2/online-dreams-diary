@@ -13,6 +13,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "@ckeditor/ckeditor5-build-classic",
+              "petrovich"
+            ],
             "progress": true,
             "outputPath": "../app",
             "index": "src/index.html",
@@ -32,8 +36,7 @@
             "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true,
-            "outputHashing": "all"
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -56,7 +59,8 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true
+              "buildOptimizer": true,
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": ""

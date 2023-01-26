@@ -13,5 +13,9 @@
     "media/images": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true
-  }
+  },
+  "typescript.tsdk": "client\\node_modules\\typescript\\lib",
+  "files.associations": {
+    "*.ts": "typescript"
+  },
 }

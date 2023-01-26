@@ -1,6 +1,12 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "compileOnSave": false,
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  },
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -15,15 +21,22 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
     "importHelpers": true,
+    "esModuleInterop": false,
     "target": "ES2022",
-    "module": "es2020",
+    "module": "ESNext",
     "strictPropertyInitialization": false,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noUncheckedIndexedAccess": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules"
+    ],
     "lib": [
-      "es2020",
+      "ES2022",
       "dom"
     ],
     "paths": {
@@ -81,11 +94,5 @@
       ]
     },
     "useDefineForClassFields": false
-  },
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
   }
 }
