@@ -94,8 +94,10 @@
                        formControlName="sex"
                        hidden />
                 <mat-radio-group formControlName="sex">
-                  <mat-radio-button [value]="sexes.Male">Мужской</mat-radio-button>
-                  <mat-radio-button [value]="sexes.Female">Женский</mat-radio-button>
+                  <mat-radio-button color="primary"
+                                    [value]="sexes.Male">Мужской</mat-radio-button>
+                  <mat-radio-button color="primary"
+                                    [value]="sexes.Female">Женский</mat-radio-button>
                 </mat-radio-group>
               </mat-form-field>
             </form>
