@@ -2,6 +2,9 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatRadioModule } from "@angular/material/radio";
 import { MatTabsModule } from "@angular/material/tabs";
 import { AppRecaptchaModule } from "@_controlers/app-recaptcha/app-recaptcha.module";
 import { CardModule } from "@_controlers/card/card.module";
@@ -34,7 +37,10 @@ import { RegisterComponent } from "./register.component";
     ReactiveFormsModule,
     NavMenuModule,
     AppRecaptchaModule,
-    InformModule
+    InformModule,
+    MatFormFieldModule,
+    MatRadioModule,
+    MatInputModule
   ]
 })
 

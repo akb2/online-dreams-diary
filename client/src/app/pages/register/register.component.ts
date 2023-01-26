@@ -3,15 +3,15 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/app-recaptcha.component";
 import { CustomValidators } from "@app/helpers/custom-validators";
-import { UserRegister } from "@app/models/account";
+import { UserRegister, UserSex } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
-import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
+import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
+import { CanonicalService } from "@_services/canonical.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { CanonicalService } from "@_services/canonical.service";
 
 
 
@@ -44,6 +44,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
   registed: boolean = false;
   registerEmail: string;
 
+  sexes: typeof UserSex = UserSex;
+
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -69,6 +71,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.localStorage.cookieKey = this.cookieKey;
     this.localStorage.cookieLifeTime = this.cookieLifeTime;
     // Данные формы
+    console.log(this.localStorage.getCookie("sex"));
     this.form = [
       // Данные входа
       this.formBuilder.group({
@@ -87,7 +90,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         name: [this.localStorage.getCookie("name"), AccountValidatorData.name],
         lastName: [this.localStorage.getCookie("lastName"), AccountValidatorData.name],
         birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, AccountValidatorData.birthDate],
-        sex: [this.localStorage.getCookie("sex") ? this.localStorage.getCookie("sex") === "true" : false]
+        sex: [!!this.localStorage.getCookie("sex") ? UserSex.Female : UserSex.Male]
       }),
       // Контакты
       this.formBuilder.group({

@@ -88,9 +88,16 @@
                               [minDate]="ageToDate(formData.birthDateMaxAge)"
                               [maxDate]="ageToDate(formData.birthDateMinAge)"></app-text-input>
               <!-- Пол -->
-              <app-toggle-input label="Ваш пол"
-                                [values]="['Мужской','Женский']"
-                                formControlName="sex"></app-toggle-input>
+              <mat-form-field>
+                <mat-label>Ваш пол</mat-label>
+                <input matInput
+                       formControlName="sex"
+                       hidden />
+                <mat-radio-group formControlName="sex">
+                  <mat-radio-button [value]="sexes.Male">Мужской</mat-radio-button>
+                  <mat-radio-button [value]="sexes.Female">Женский</mat-radio-button>
+                </mat-radio-group>
+              </mat-form-field>
             </form>
             <!-- Действия -->
             <ng-container actions>
