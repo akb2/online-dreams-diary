@@ -26,7 +26,6 @@ export class TokenService {
 
   private cookieKey: string = "token_service_";
   private cookieLifeTime: number = 604800;
-  token: string = "";
   id: string = "";
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
@@ -38,7 +37,7 @@ export class TokenService {
 
   // Проверить авторизацию
   get checkAuth(): boolean {
-    return !!this.token && !!this.id;
+    return !!this.id;
   }
 
   // Инициализация Local Storage
@@ -67,7 +66,6 @@ export class TokenService {
   // Получить данные из Local Storage
   updateState(): void {
     this.configLocalStorage();
-    this.token = this.localStorageService.getCookie("token");
     this.id = this.localStorageService.getCookie("current_user");
   }
 
@@ -83,7 +81,7 @@ export class TokenService {
         // Сохранить токен
         if (code === "0001") {
           if (this.id === result.result.data.tokenData.user_id) {
-            this.saveAuth(result.result.data.tokenData.token, result.result.data.tokenData.user_id);
+            this.saveAuth(result.result.data.tokenData.user_id);
           }
           // Неверный токен
           else {
@@ -146,9 +144,7 @@ export class TokenService {
       switchMap(result => this.apiService.checkResponse(result.result.code)),
       tap(() => {
         this.id = "";
-        this.token = "";
         this.configLocalStorage();
-        this.localStorageService.deleteCookie("token");
         this.localStorageService.deleteCookie("current_user");
         this.router.navigate([""]);
       })
@@ -177,11 +173,9 @@ export class TokenService {
   }
 
   // Запомнить авторизацию
-  saveAuth(token: string, id: string): void {
+  saveAuth(id: string): void {
     this.id = id;
-    this.token = token;
     this.configLocalStorage();
-    this.localStorageService.setCookie("token", this.token);
     this.localStorageService.setCookie("current_user", this.id);
   }
 

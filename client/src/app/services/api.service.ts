@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { ApiResponseMessages } from "@_datas/api";
+import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { SnackbarService } from "@_services/snackbar.service";
 import { Observable, of, throwError } from "rxjs";
 
@@ -59,7 +59,7 @@ export class ApiService {
         this.snackbarService.open({ message, mode: "error" });
       }
       // Вернуть ошибку
-      return throwError(message);
+      return throwError({ message, code });
     }
   }
 }

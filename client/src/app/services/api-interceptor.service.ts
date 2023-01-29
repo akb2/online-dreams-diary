@@ -17,7 +17,6 @@ export class ApiInterceptorService implements HttpInterceptor {
   private cookieKey: string = "token_service_";
   private cookieLifeTime: number = 604800;
 
-  private token: string = "";
   private id: string = "";
 
 
@@ -37,15 +36,15 @@ export class ApiInterceptorService implements HttpInterceptor {
     this.updateState();
     // Параметры
     let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : environment.baseApiUrl + req.url;
-    const paramsData: SimpleObject = { "token_user_id": this.id, "token": this.token };
+    const paramsData: SimpleObject = { "token_user_id": this.id };
     const headers: HttpHeaders = !!environment.httpHeader ?
-      Object.entries(environment.httpHeader as SimpleObject).reduce((o, [k, v]) => o.set(k, v), req.headers) :
+      Object.entries(environment.httpHeader).reduce((o, [k, v]) => o.set(k, v?.toString() ?? ""), req.headers) :
       req.headers;
     const params: HttpParams = Object.entries(paramsData).reduce((o, [k, v]) => o.set(k, v), req.params);
     // URL
     url = url.replace(new RegExp("([^https?:\/\/]+)([\/]+)", "gi"), "$1/");
     // Новый запрос
-    const apiReq: HttpRequest<any> = req.clone({ url, headers, params });
+    const apiReq: HttpRequest<any> = req.clone({ url, headers, params, withCredentials: true });
     // Вернуть измененный запрос
     return next.handle(apiReq);
   }
@@ -59,7 +58,6 @@ export class ApiInterceptorService implements HttpInterceptor {
   // Получить данные из Local Storage
   private updateState(): void {
     this.configLocalStorage();
-    this.token = this.localStorageService.getCookie("token");
     this.id = this.localStorageService.getCookie("current_user");
   }
 }

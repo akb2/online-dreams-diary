@@ -76,7 +76,7 @@ class Dream
   {
     $code = '0002';
     $userId = $_GET['token_user_id'];
-    $token = $_GET['token'];
+    $token = $_COOKIE['api-token'];
     $search = array(
       'page' => isset($data['search_page']) && strlen($data['search_page']) > 0 ? $data['search_page'] : '',
       'user' => isset($data['search_user']) && strlen($data['search_user']) > 0 ? $data['search_user'] : '',

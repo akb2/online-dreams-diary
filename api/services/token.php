@@ -70,6 +70,7 @@ class TokenService
       if (isset($test['token']) && $test['token'] === $token) {
         // Удаление токена
         if ($this->dataBaseService->executeFromFile('token/deleteToken.sql', array($token))) {
+          $this->deleteTokenFromCookie();
           $code = '0001';
         }
         // Неудалось удалить токен
@@ -105,12 +106,13 @@ class TokenService
     $message = '';
     $sqlData = array();
     $tokenData = array();
+    $token = $_COOKIE['api-token'];
 
     // Если получены данные
-    if (strlen($data['token']) > 0) {
+    if (strlen($token) > 0) {
       $code = '9015';
       // Данные
-      $sqlData = array($data['token']);
+      $sqlData = array($token);
       // Запрос проверки токена
       $auth = $this->dataBaseService->getDatasFromFile('token/checkToken.sql', $sqlData);
       // Проверить авторизацию
@@ -121,7 +123,8 @@ class TokenService
             // Обновить токен
             if (
               $this->dataBaseService->executeFromFile('token/updateLastAction.sql', array($auth[0]['id'])) &&
-              $this->dataBaseService->executeFromFile('account/updateLastAction.sql', array($auth[0]['user_id']))
+              $this->dataBaseService->executeFromFile('account/updateLastAction.sql', array($auth[0]['user_id'])) &&
+              $this->saveTokenToCookie($token)
             ) {
               $tokenData = $auth[0];
               $code = '0001';
@@ -140,7 +143,7 @@ class TokenService
 
       // Удалить токен
       if ($code != '0001') {
-        $this->dataBaseService->executeFromFile('token/deleteToken.sql', array($data['token']));
+        $this->dataBaseService->executeFromFile('token/deleteToken.sql', array($token));
       }
     }
     // Получены пустые данные
@@ -166,15 +169,16 @@ class TokenService
     $code = '0000';
     $message = '';
     $tokenData = array();
+    $token = $_COOKIE['api-token'];
 
     // Если получены данные
-    if (strlen($data['token']) > 0) {
+    if (strlen($token) > 0) {
       $code = '9015';
       // Запрос проверки токена
-      $token = $this->getToken($data['token']);
+      $testToken = $this->getToken($token);
       // Проверить токен
-      if (count($token) > 0) {
-        $tokenData = $token;
+      if (count($testToken) > 0) {
+        $tokenData = $testToken;
         $code = '0001';
       }
     }
@@ -201,10 +205,11 @@ class TokenService
     $code = '0000';
     $message = '';
     $tokenDatas = array();
+    $token = $_COOKIE['api-token'];
 
     // Если получены данные
-    if (strlen($data['token']) > 0 && strlen($data['token_user_id']) > 0) {
-      $token = $this->getTokens($data['token_user_id'], $data['hideCurrent'] ? $data['token'] : '');
+    if (strlen($token) > 0 && strlen($data['token_user_id']) > 0) {
+      $token = $this->getTokens($data['token_user_id'], $data['hideCurrent'] ? $token : '');
       // Проверить токен
       if (count($token) > 0) {
         $tokenDatas = $token;
@@ -233,7 +238,7 @@ class TokenService
     );
   }
 
-  // Получить информацию о токене по ID
+  // Удалить информацию о токене по ID
   public function deleteTokenByIdApi(int $id): array
   {
     $code = '0000';
@@ -260,7 +265,7 @@ class TokenService
     );
   }
 
-  // Получить информацию о токенах
+  // Удалить информацию о токенах
   public function deleteTokensByUserApi(int $id, bool $hideCurrent = false, string $excludeToken = ''): array
   {
     $code = '0000';
@@ -341,7 +346,10 @@ class TokenService
     $browser = $this->userAgentService->getUserAgent();
     // Сохранить токен
     if ($this->dataBaseService->executeFromFile('token/createToken.sql', array($token, $id, $ip, $browser['platform'], $browser['browser'], $browser['version']))) {
-      return $token;
+      // Создать куку
+      if ($this->saveTokenToCookie($token)) {
+        return $token;
+      }
     }
     // Ошибка сохранения токена
     return '';
@@ -381,5 +389,35 @@ class TokenService
     }
     // Токен не валидный
     return array();
+  }
+
+
+
+  // Записать токен в куки
+  private function saveTokenToCookie(string $token): bool
+  {
+    if (strlen($token) > 0) {
+      return setcookie('api-token', $token, [
+        'expires' => time() + intval($this->config['auth']['tokenLifeTime']),
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'None',
+      ]);
+    }
+    // Ошибка
+    return false;
+  }
+
+  // Удалить токен из куки
+  private function deleteTokenFromCookie(): bool
+  {
+    return setcookie('api-token', "", [
+      'expires' => 0,
+      'path' => '/',
+      'secure' => true,
+      'httponly' => true,
+      'samesite' => 'None',
+    ]);
   }
 }

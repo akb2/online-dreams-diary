@@ -56,21 +56,21 @@ class Token
   }
 
   // Удалить токен
-  #[Request('post')]
+  #[Request('post'), CheckToken]
   public function deleteToken($data): array
   {
-    return $this->tokenService->deleteTokenApi($_GET["token"]);
+    return $this->tokenService->deleteTokenApi($_COOKIE['api-token']);
   }
 
   // Сведения о токене
-  #[Request('get')]
+  #[Request('get'), CheckToken]
   public function getToken($data): array
   {
     return $this->tokenService->getTokenApi($data);
   }
 
   // Сведения о токенах
-  #[Request('get')]
+  #[Request('get'), CheckToken]
   public function getTokens($data): array
   {
     return $this->tokenService->getTokensApi($data);
@@ -80,16 +80,16 @@ class Token
   #[Request('post'), CheckToken]
   public function deleteTokenById($data): array
   {
-    return $this->tokenService->deleteTokenByIdApi($data["tokenId"]);
+    return $this->tokenService->deleteTokenByIdApi($data['tokenId']);
   }
 
   // Удалить токен по ID пользователя
   #[Request('post'), CheckToken]
   public function deleteTokensByUser($data): array
   {
-    $id = $_GET["token_user_id"];
-    $token = $_GET["token"];
-    $hideCurrent = !!$data["hideCurrent"];
+    $id = $_GET['token_user_id'];
+    $token = $_COOKIE['api-token'];
+    $hideCurrent = !!$data['hideCurrent'];
     // Удаление токена
     return $this->tokenService->deleteTokensByUserApi($id, $hideCurrent, $token);
   }

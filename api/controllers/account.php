@@ -114,7 +114,7 @@ class Account
     // Параметры
     $code = '0002';
     $currentUserId = $_GET['token_user_id'];
-    $token = $_GET['token'];
+    $token = $_COOKIE['api-token'];
     $search = array(
       'q' => $data['search_q'] ?? null,
       'sex' => $data['search_sex'] ?? null,
@@ -345,7 +345,7 @@ class Account
       unset($userData['activation_key']);
       unset($userData['activation_key_expire']);
       // Проверка данных
-      if ($this->userSettingsService->checkPrivate("myPage", $userData['id'], intval($currentUserId))) {
+      if ($this->userSettingsService->checkPrivate('myPage', $userData['id'], intval($currentUserId))) {
         $code = '0001';
         $user = $userData;
         // Отметка о доступе

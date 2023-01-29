@@ -24,7 +24,7 @@ class CheckToken
   public function __construct()
   {
     $this->userId = $_GET['token_user_id'];
-    $this->token = $_GET['token'];
+    $this->token = $_COOKIE['api-token'];
   }
 
   // Получить настройки приложения

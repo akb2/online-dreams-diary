@@ -160,7 +160,7 @@ export class AccountService implements OnDestroy {
           activateIsAvail = !!result?.result?.data?.activateIsAvail;
           // Сохранить токен
           if (code === "0001") {
-            this.tokenService.saveAuth(result.result.data.token, result.result.data.id);
+            this.tokenService.saveAuth(result.result.data.id);
             this.router.navigate([""]);
           }
           // Обработка ошибки
