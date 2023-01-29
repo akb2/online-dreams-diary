@@ -422,7 +422,7 @@
   $templates: (
     xsmall: 1fr,
     small: 1fr 1fr,
-    default: repeat(3, 1fr) auto,
+    default: repeat(3, minmax(1px, 1fr)) auto,
   );
   $actionsAlignX: (
     xsmall: center,
