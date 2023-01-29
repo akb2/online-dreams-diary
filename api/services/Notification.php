@@ -74,6 +74,7 @@ class NotificationService
   {
     $count = 0;
     $result = array();
+    $skip = $search['skip'] > 0 ? $search['skip'] : 0;
     $limit = $search['limit'] > 0 && $search['limit'] <= 100 ? $search['limit'] : $this->config['notifications']['limit'];
     // Проверка данных
     if ($currentUserId > 0) {
@@ -89,6 +90,7 @@ class NotificationService
       $count = $this->dataBaseService->getCountFromFile('notification/getListCount.php', $sqlData);
       // Друзья найдены
       if ($count > 0) {
+        $sqlData['limit_start'] = intval($skip);
         $sqlData['limit_length'] = intval($limit);
         $testDatas = $this->dataBaseService->getDatasFromFile('notification/getList.php', $sqlData);
         // Список данных

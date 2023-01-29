@@ -11,13 +11,9 @@ FROM `notifications`
 WHERE
 `user_id` = :user_id
 
-<? if ($input['last_id'] > 0) : ?>
-  AND `id` <?= htmlspecialchars_decode('&lt;'); ?> :last_id
-<? endif; ?>
-
 <? if ($input['status'] >= 0) : ?>
   AND `status` = :status
 <? endif; ?>
 
 ORDER BY `create_date` DESC
-LIMIT <?= $input['limit_length']; ?>
+LIMIT <?= $input['limit_start'] ?>, <?= $input['limit_length']; ?>

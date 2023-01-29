@@ -52,7 +52,7 @@ class Notification
       $data['search_status'] :
       $statuses[0];
     $search = array(
-      'last_id' => isset($data['search_last_id']) && intval($data['search_last_id']) > 0 ? intval($data['search_last_id']) : 0,
+      'skip' => isset($data['search_skip']) && intval($data['search_skip']) > 0 ? intval($data['search_skip']) : 0,
       'limit' => isset($data['search_limit']) && intval($data['search_limit']) ? intval($data['search_limit']) : '',
       'status' => $searchStatus
     );

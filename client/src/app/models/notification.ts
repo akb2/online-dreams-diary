@@ -18,7 +18,7 @@ export interface NotificationData {
 // Интерфейс входных данных для поиска по уведомлениям
 export interface NotificationSearchRequest {
   status: NotificationStatus;
-  lastId: number;
+  skip: number;
   limit: number;
 }
 
