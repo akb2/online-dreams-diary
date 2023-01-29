@@ -1,10 +1,12 @@
 import { AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
+import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { delay, filter, fromEvent, map, merge, concatMap, skipWhile, Subject, takeUntil, takeWhile, timer, of } from "rxjs";
+import { transform as cssCalc } from "css-calc-transform";
+import { concatMap, delay, filter, fromEvent, map, merge, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -67,6 +69,26 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
     const text: string = this.statusForm?.get('status')?.value;
     // Вернуть текст
     return !!text ? text : this.placeholderText;
+  }
+
+  // Убрать отступ справа
+  get noPaddingRight(): boolean {
+    const overlay: HTMLElement = this.statusOverlay?.nativeElement as HTMLElement;
+    const form: HTMLElement = this.statusBlock?.nativeElement as HTMLElement;
+    const input: HTMLTextAreaElement = this.inputField?.nativeElement as HTMLTextAreaElement;
+    // Только если есть элемент
+    if (!!overlay && !!form && !!input) {
+      const maxWidth: number = cssCalc({
+        prop: "width",
+        value: getComputedStyle(form).maxWidth,
+        parent: { width: overlay.offsetWidth }
+      });
+      const width: number = ParseInt(this.editInputStyles?.width);
+      // Вернуть результат
+      return width < maxWidth;
+    }
+    // Есть отступ справа
+    return false;
   }
 
 

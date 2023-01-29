@@ -23,6 +23,7 @@
                 type="text"
                 autocomplete="off"
                 class="status__editor"
+                [ngClass]="{ noPaddingRight }"
                 maxlength="128"
                 [placeholder]="placeholderText"
                 [ngStyle]="editInputStyles"
