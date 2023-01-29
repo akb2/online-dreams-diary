@@ -5,7 +5,7 @@ import { ToArray, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
-import { ApiResponse } from "@_models/api";
+import { ApiResponse, Search } from "@_models/api";
 import { Notification, NotificationData, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
@@ -33,6 +33,9 @@ export class NotificationService implements OnDestroy {
   private notificationsSubscritionCounter: number = 0;
 
   private notifications: BehaviorSubject<any[]> = new BehaviorSubject([]);
+  private newNotificationsCount: Subject<number> = new Subject();
+
+  newNotificationsCount$: Observable<number>;
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -65,13 +68,13 @@ export class NotificationService implements OnDestroy {
       map(([, next]) => next)
     );
     const notifications: Notification[] = [...this.notifications.getValue()];
-    const friendObservable: Observable<Notification[]> = (!!notifications?.length && !sync ?
+    const notificationObservable: Observable<Notification[]> = (!!notifications?.length && !sync ?
       of(notifications) : (userId > 0 ?
-        this.getList({ status: NotificationStatus.any }, codes) :
+        this.getList({ status: NotificationStatus.any }, codes).pipe(map(({ result }) => result)) :
         of(null)
       ));
     // Вернуть подписки
-    return friendObservable
+    return notificationObservable
       .pipe(
         takeUntil(this.destroyed$),
         concatMap(() => observable),
@@ -101,6 +104,14 @@ export class NotificationService implements OnDestroy {
     private apiService: ApiService,
     private localStorageService: LocalStorageService
   ) {
+    this.newNotificationsCount$ = this.newNotificationsCount.asObservable().pipe(
+      takeUntil(this.destroyed$),
+      startWith(0),
+      pairwise(),
+      filter(([prev, next]) => prev !== next),
+      map(([, next]) => next)
+    );
+    // Загрузить уведомления из стора
     this.getNotificationsFromStore();
     // Подписка на актуальные сведения о пользователе
     this.accountService.user$()
@@ -109,6 +120,7 @@ export class NotificationService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.newNotificationsCount.complete();
     this.destroyed$.next();
     this.destroyed$.complete();
   }
@@ -118,11 +130,11 @@ export class NotificationService implements OnDestroy {
 
 
   // Получение списка
-  getList(search: Partial<NotificationSearchRequest>, codes: string[] = []): Observable<any> {
+  getList(search: Partial<NotificationSearchRequest>, codes: string[] = []): Observable<Search<Notification>> {
     return this.httpClient.get<ApiResponse>("notification/getList", {
       params: ObjectToParams({
         status: search.status ?? NotificationStatus.any,
-        last_id: search.lastId ?? 0,
+        skip: search.skip ?? 0,
         limit: search.limit ?? 0
       }, "search_")
     }).pipe(
@@ -138,6 +150,18 @@ export class NotificationService implements OnDestroy {
         // Вернуть статус
         return ({ result, count, limit });
       })
+    );
+  }
+
+  // Количество непрочитанных уведомлений
+  getNewCount(codes: string[]): Observable<number> {
+    return this.getList({
+      status: NotificationStatus.new,
+      limit: 1
+    }, codes).pipe(
+      takeUntil(this.destroyed$),
+      map(({ count }) => count),
+      tap(count => this.newNotificationsCount.next(count))
     );
   }
 

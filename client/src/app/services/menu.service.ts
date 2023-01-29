@@ -22,13 +22,14 @@ export class MenuService implements OnDestroy {
 
 
   private user: User;
-
-  private menuItems: BehaviorSubject<MenuItem[]> = new BehaviorSubject<MenuItem[]>([]);
-  readonly menuItems$: Observable<MenuItem[]>;
+  private notificationsCount: number = 0;
 
   isMobile: boolean = false;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private menuItems: BehaviorSubject<MenuItem[]> = new BehaviorSubject<MenuItem[]>([]);
+
+  readonly menuItems$: Observable<MenuItem[]>;
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -41,24 +42,30 @@ export class MenuService implements OnDestroy {
     private router: Router,
     private screenService: ScreenService
   ) {
-    // Подписка на пункты меню
     this.menuItems$ = this.menuItems.asObservable().pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
       filter(([prev, next]) => !CompareArrays(prev, next)),
       map(([, next]) => next)
     );
+    // Подписка на количество уведомлений
+    this.notificationService.newNotificationsCount$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(count => {
+        this.notificationsCount = count;
+        this.createMenuItems();
+      });
     // Подписка на тип устройства
     this.screenService.isMobile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
         this.createMenuItems();
       });
     // Подписка на текущего пользователя
     this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
         this.createMenuItems();
@@ -66,15 +73,15 @@ export class MenuService implements OnDestroy {
     // Подписка на изменение роута
     this.router.events
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         filter(event => event instanceof NavigationEnd)
       )
-      .subscribe(e => this.createMenuItems());
+      .subscribe(() => this.createMenuItems());
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
     this.menuItems.complete();
   }
 
@@ -152,6 +159,10 @@ export class MenuService implements OnDestroy {
     // Выход
     else if (item.id === "quit") {
       item.callback = this.onLogOut.bind(this);
+    }
+    // Количество уведомлений
+    else if (item.id === "notifications") {
+      item.counter = this.notificationsCount;
     }
   }
 
