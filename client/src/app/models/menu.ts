@@ -10,6 +10,7 @@ export interface MenuItem {
   isSeparate?: boolean;
   active?: boolean;
   sort?: number;
+  counter?: number;
   icon?: string;
   text?: string;
   desc?: string;
