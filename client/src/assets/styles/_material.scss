@@ -209,7 +209,7 @@
 
 // Всплывающие сообщения
 @mixin mat-snack-bar {
-  .mat-snack-bar-container.snackbar {
+  .mat-mdc-snack-bar-container.mdc-snackbar {
     // Цвета
     $colors: (
       info: colors.$mat-disabled 900,
@@ -218,12 +218,19 @@
     );
     // Цикл по стилям
     @each $class, $color in $colors {
-      &-#{$class} {
-        background: map.get(list.nth($color, 1), list.nth($color, 2));
-        color: map.get(list.nth($color, 1), contrast, list.nth($color, 2));
+      &.snackbar-#{$class} {
+        $backColor: map.get(list.nth($color, 1), list.nth($color, 2));
+        $textColor: map.get(list.nth($color, 1), contrast, list.nth($color, 2));
+        // Переменные
+        --mat-mdc-snack-bar-button-color: $textColor;
+        --mdc-snackbar-container-color: $backColor;
+        --mdc-snackbar-supporting-text-color: $textColor;
+        // Свойства
+        background-color: $backColor;
+        color: $textColor;
         // Кнопка
         .mat-simple-snackbar-action {
-          color: map.get(list.nth($color, 1), contrast, list.nth($color, 2));
+          color: $textColor;
         }
       }
     }
