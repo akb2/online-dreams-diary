@@ -1,5 +1,6 @@
 UPDATE `notifications`
 SET
+  `status` = 0,
   `text` = :text,
   `link` = :link,
   `action_type` = :action_type,
