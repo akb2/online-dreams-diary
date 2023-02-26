@@ -36,6 +36,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   notifications: Notification[];
   isAutorizedUser: boolean = false;
   private usersSubscribe: CustomObjectKey<number, User> = {};
+  private readIgnore: number[] = [];
 
   private skip: number = 0;
   private limit: number = 20;
@@ -192,6 +193,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         })
         .filter(({ top, bottom }) => top < event.y + event.viewHeight && bottom > event.y)
         .map(({ key }) => this.notifications[key])
+        .filter(({ id }) => !this.readIgnore.includes(id))
         .filter(n => !!n && n.status === NotificationStatus.new);
       // Пометить все как прочитанное
       this.onReadNotifications(notifications);
@@ -204,12 +206,22 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     const ids: number[] = notifications.map(({ id }) => id);
     // Если окно открыто
     if (this.show && !!notifications?.length) {
+      this.readIgnore.push(...ids);
+      // Подписка
       forkJoin({
         timer: timer(this.readWhaitTimer),
         responce: this.notificationService.readNotifications(ids)
       })
         .pipe(takeUntil(this.destroyed$))
-        .subscribe(({ responce: { result } }) => this.updateNotificationsList(result));
+        .subscribe(({ responce: { result } }) => {
+          this.updateNotificationsList(result);
+          // Убрать из списка игнора прочтения
+          ids.forEach(id => {
+            const index: number = this.readIgnore.findIndex(t => t === id);
+            this.readIgnore.splice(index, 1);
+            console.log(this.readIgnore);
+          });
+        });
     }
   }
 
