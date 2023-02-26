@@ -1,15 +1,19 @@
 import { HttpParams } from "@angular/common/http";
-import { CustomObject, SimpleObject } from "@_models/app";
-import { map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, timer } from "rxjs";
+import { CustomObject, MultiObject, SimpleObject } from "@_models/app";
+import { map, Observable, skipWhile, takeWhile, timer } from "rxjs";
 
 
 
 
 
 // Преобразование объекта в параметры
-export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "") => Object.entries(params)
-  .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v]))
-  .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
+export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "") => {
+  const unPreffixKeys: string[] = ["withCredentials"];
+  // Вернуть параметры
+  return Object.entries(params)
+    .map(([k, v]) => ([(unPreffixKeys.includes(k) ? "" : keyPreffix) + k, Array.isArray(v) ? v.join(",") : v]))
+    .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
+};
 
 // Преобразование объекта в параметры в виде строки
 export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: CustomObject<(string | number)[]>) => Object.entries(params)
@@ -31,6 +35,31 @@ export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix: str
     .forEach(([k, v]) => formData.append(k, v));
   // Вернуть форму
   return formData;
+};
+
+// Преобразование URL параметров из строки в объект
+export const UrlParamsStringToObject = (stringParams: string) => {
+  const searchParams: URLSearchParams = new URLSearchParams(stringParams);
+  const result: MultiObject<string | string[]> = {};
+  // Поиск данных
+  for (let k of searchParams.keys()) {
+    const keyRegExp: RegExp = new RegExp("^([a-z0-9\-_]+)\\[([a-z0-9\-_]+)\\]$", "i");
+    // Объекты
+    if (keyRegExp.test(k)) {
+      const [key, subKey]: string[] = k.replace(keyRegExp, "$1,$2").split(",");
+      // Присвоение данных
+      result[key] = result[key] ?? {};
+      result[key][subKey] = result[key][subKey] ?? searchParams.getAll(k);
+      result[key][subKey] = result[key][subKey]?.length > 1 ? result[key][subKey] : result[key][subKey][0];
+    }
+    // Обычные данные
+    else {
+      result[k] = searchParams.getAll(k);
+      result[k] = result[k]?.length > 1 ? result[k] : result[k][0];
+    }
+  }
+  // Вернуть результат
+  return result;
 };
 
 // Тип сообщений об ошибках
