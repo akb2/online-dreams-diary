@@ -251,13 +251,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         this.isAutorizedUser = this.accountService.checkAuth;
         this.changeDetectorRef.detectChanges();
       });
-    // Скрыть уведомления
-    fromEvent(document, "click")
-      .pipe(
-        takeUntil(this.destroy$),
-        filter(({ target }) => !!this.notificationsBlock && !this.compareElement(target, [this.notificationsBlock.nativeElement]))
-      )
-      .subscribe(() => this.hideNotifications());
     // Скролл
     this.scroll = this.getCurrentScroll.y;
     this.scrollTo(0);
