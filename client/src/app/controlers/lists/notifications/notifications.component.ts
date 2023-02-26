@@ -134,7 +134,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         this.isAutorizedUser = this.tokenService.checkAuth;
         this.changeDetectorRef.detectChanges();
       });
-    // Синхронизация уведомлений
+    // Загрузка уведомлений
     this.loadNotifications();
     // Поиск новых уведомлений
     this.notificationService.getNewNotifications()
@@ -254,9 +254,9 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     newNotifications
       .filter(n => !!n)
       .forEach(newNotification => {
-        const userObserveCheck = () => this.usersSubscribe.hasOwnProperty(newNotification.data.user) && !!this.usersSubscribe[newNotification.data.user];
-        // Обновить текст
         if (!!newNotification?.data?.user) {
+          const userObserveCheck = () => this.usersSubscribe.hasOwnProperty(newNotification.data.user) && !!this.usersSubscribe[newNotification.data.user];
+          // Подписка на пользователя
           if (!userObserveCheck()) {
             this.notificationConvert(newNotification);
           }
@@ -266,10 +266,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
               takeUntil(this.destroyed$),
               map(() => this.usersSubscribe[newNotification.data.user])
             )
-            .subscribe(user => {
-              console.log(user);
-              addNotification(this.notificationSearchTextReplace(newNotification, user));
-            });
+            .subscribe(user => addNotification(this.notificationSearchTextReplace(newNotification, user)));
         }
         // Без обновления текста
         else {
