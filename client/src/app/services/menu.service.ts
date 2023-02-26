@@ -22,7 +22,7 @@ export class MenuService implements OnDestroy {
 
 
   private user: User;
-  private notificationsCount: number = 0;
+  private notificationsCount: number = -1;
 
   isMobile: boolean = false;
 
@@ -53,6 +53,10 @@ export class MenuService implements OnDestroy {
     this.notificationService.newNotificationsCount$
       .pipe(takeUntil(this.destroyed$))
       .subscribe(count => {
+        if (this.notificationsCount >= 0 && this.notificationsCount < count) {
+          this.playSound();
+        }
+        // Обновить данные
         this.notificationsCount = count;
         this.createMenuItems();
       });
@@ -162,7 +166,7 @@ export class MenuService implements OnDestroy {
     }
     // Количество уведомлений
     else if (item.id === "notifications") {
-      item.counter = this.notificationsCount;
+      item.counter = Math.max(0, this.notificationsCount);
     }
   }
 
@@ -180,5 +184,13 @@ export class MenuService implements OnDestroy {
     else {
       return mixedValue;
     }
+  }
+
+  // Воспроизвести звук
+  private playSound(): void {
+    const audio: HTMLAudioElement = new Audio();
+    audio.src = "/assets/sounds/notification.mp3";
+    audio.load();
+    audio.play();
   }
 }
