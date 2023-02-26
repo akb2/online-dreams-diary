@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
@@ -11,6 +11,7 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { BehaviorSubject, catchError, concatMap, filter, finalize, map, Observable, of, pairwise, share, startWith, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
+import { TokenService } from "./token.service";
 
 
 
@@ -103,12 +104,13 @@ export class NotificationService implements OnDestroy {
   constructor(
     private httpClient: HttpClient,
     private accountService: AccountService,
+    private tokenService: TokenService,
     private apiService: ApiService,
     private localStorageService: LocalStorageService
   ) {
     this.newNotificationsCount$ = this.newNotificationsCount.asObservable().pipe(
       takeUntil(this.destroyed$),
-      startWith(0),
+      startWith(-1),
       pairwise(),
       filter(([prev, next]) => prev !== next),
       map(([, next]) => next)
@@ -171,7 +173,7 @@ export class NotificationService implements OnDestroy {
       share(),
       takeUntil(this.destroyed$),
       filter(() => !connect),
-      concatMap(() => observable(1)),
+      concatMap(() => observable(this.tokenService.id)),
       catchError(() => of({ text: "" })),
       map(r => {
         const notification: Notification = this.notificationCoverter(UrlParamsStringToObject(r?.text ?? ""));
@@ -190,9 +192,14 @@ export class NotificationService implements OnDestroy {
     return this.httpClient.post<ApiResponse>("notification/readByIds", ObjectToFormData({ ids })).pipe(
       takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
-        of(result.result.data) :
+        of(ParseInt(result.result.data)) :
         this.apiService.checkResponse(result.result.code, codes)
       ),
+      tap(readedCount => {
+        const currentCount: number = ParseInt(this.newNotificationsCount.getValue());
+        // Запомнить количество непрочитанных уведомлений
+        this.newNotificationsCount.next(CheckInRange(currentCount - readedCount));
+      }),
       concatMap(() => this.getList({ ids }))
     );
   }
