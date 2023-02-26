@@ -1,11 +1,11 @@
-import { NgModule, LOCALE_ID } from "@angular/core";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
-import { RouterModule } from "@angular/router";
+import "@angular/common/locales/global/ru";
+import { LOCALE_ID, NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
-import "@angular/common/locales/global/ru";
-import { PetrovichPipe } from "@_pipes/petrovich.pipe";
+import { RouterModule } from "@angular/router";
 import { VarDirective } from "@_directives/var.directive";
+import { PetrovichPipe } from "@_pipes/petrovich.pipe";
 
 
 
