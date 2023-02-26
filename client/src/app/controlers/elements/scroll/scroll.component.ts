@@ -1,8 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { SimpleObject } from "@_models/app";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { WaitObservable } from "@_datas/api";
+import { CheckInRange, ParseInt } from "@_helpers/math";
+import { CompareObjects } from "@_helpers/objects";
+import { CustomObject, SimpleObject } from "@_models/app";
+import { ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, merge, Subject } from "rxjs";
-import { takeUntil, tap } from "rxjs/operators";
+import { concatMap, fromEvent, Observable, of, Subject, tap, timer } from "rxjs";
+import { filter, map, takeUntil } from "rxjs/operators";
 
 
 
@@ -15,50 +19,83 @@ import { takeUntil, tap } from "rxjs/operators";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ScrollComponent implements OnInit, OnChanges, OnDestroy {
+export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
-  @Input() styles: SimpleObject;
-  @Input() headerHeight: number = 0;
+  @Input() showCorner: boolean = false;
 
-  @ViewChild("layout") layout: ElementRef;
-  @ViewChild("track") track: ElementRef;
-  @ViewChild("slider") slider: ElementRef;
+  @Output() scrollChange: EventEmitter<ScrollChangeEvent> = new EventEmitter();
 
-  sliderPosition: number = 0;
-  sliderHeight: number = 0;
-  private scrollStep: number = 20;
-  private checkInterval: number = 150;
-
-  sliderMousePosY: number = 0;
-  scrollActive: boolean = false;
-  sliderMousePress: boolean = false;
-  buttonMousePress: boolean = false;
+  @ViewChild("list") private listElm: ElementRef<HTMLElement>;
+  @ViewChild("trackH") private trackHElm: ElementRef<HTMLElement>;
+  @ViewChild("trackV") private trackVElm: ElementRef<HTMLElement>;
+  @ViewChild("sliderH") private sliderHElm: ElementRef<HTMLElement>;
+  @ViewChild("sliderV") private sliderVElm: ElementRef<HTMLElement>;
 
   isMobile: boolean = false;
+  private scrollChangeEvent: ScrollChangeEvent;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private listWidth: number = 0;
+  private listHeight: number = 0;
+  maxScrollX: number = 0;
+  maxScrollY: number = 0;
+  private scrollX: number = 0;
+  private scrollY: number = 0;
+
+  scrollAddDimension: ScrollAddDimension;
+  private scrollAddSize: number = 25;
+  private scrollAddSpeed: number = 25;
+
+  scrollMoveDimension: ScrollAddType;
+  private scrollMoveStartX: number = 0;
+  private scrollMoveStartY: number = 0;
+
+  scrollElmHSize: number = 0;
+  scrollElmHPos: number = 0;
+  scrollElmVSize: number = 0;
+  scrollElmVPos: number = 0;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
 
-
-  // Высота документа для скролла
-  private get scrollHeight(): number {
-    return this.getCurrentScroll.maxY - this.headerHeight;
-  }
 
   // Текущий скролл по оси Y
   private get getCurrentScroll(): ScrollData {
-    const x: number = Math.ceil(document?.scrollingElement?.scrollLeft ?? window.scrollX ?? 0);
-    const y: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
-    const maxElms: HTMLElement[] = [document.body, document.documentElement];
-    const maxKeysX: (keyof HTMLElement)[] = ["scrollWidth", "offsetWidth", "clientWidth"];
-    const maxKeysY: (keyof HTMLElement)[] = ["scrollHeight", "offsetHeight", "clientHeight"];
-    const maxX = Math.max(...maxElms.map(e => maxKeysX.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
-    const maxY = Math.max(...maxElms.map(e => maxKeysY.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    const elm: HTMLElement = this.listElm.nativeElement;
+    const x: number = ParseInt(elm?.scrollLeft);
+    const y: number = ParseInt(elm?.scrollTop);
+    const maxX: number = ParseInt(elm?.scrollWidth - elm?.clientWidth);
+    const maxY: number = ParseInt(elm?.scrollHeight - elm?.clientHeight);
     // Скролл
     return { x, y, maxX, maxY };
+  }
+
+  // Подписчик ожидания загрузки элемента
+  private getWaitObservable(callback: () => Observable<any> = () => of(null)): Observable<void> {
+    return WaitObservable(() => !this.hostElement?.nativeElement || !this.listElm?.nativeElement).pipe(
+      takeUntil(this.destroyed$),
+      concatMap(callback),
+      map(() => { })
+    );
+  }
+
+  // Стили панели управления
+  get listStyles(): SimpleObject {
+    return {
+      'max-width': this.listWidth + 'px',
+      'max-height': this.listHeight + 'px'
+    };
+  }
+
+  // Список классов панели управления
+  get elmsClasses(): CustomObject<boolean> {
+    return {
+      "show-corner": this.showCorner,
+      "scroll-h": this.maxScrollX > 0,
+      "scroll-v": this.maxScrollY > 0
+    };
   }
 
 
@@ -66,107 +103,170 @@ export class ScrollComponent implements OnInit, OnChanges, OnDestroy {
 
 
   constructor(
+    private hostElement: ElementRef,
     private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
-  ngOnChanges() {
-    this.onWindowScroll();
-  }
-
-  ngOnInit() {
-    this.onWindowScroll();
-    // События
-    forkJoin([
-      this.screenService.elmResize(document.body).pipe(tap(() => this.onWindowScroll())),
-      fromEvent(window, "scroll").pipe(tap(() => this.onWindowScroll())),
-      fromEvent(window, "resize").pipe(tap(() => this.onWindowScroll())),
-      fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
-      fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
-    ])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe();
-    // Подписка на тип устройства
+  ngOnInit(): void {
     this.screenService.isMobile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
+    // Передвижение мышки по странице
+    fromEvent(window, "mousemove")
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => !!this.scrollMoveDimension)
+      )
+      .subscribe(e => this.onScrollMouseMove(e as MouseEvent));
+    // Отпускание нажатия кнопок
+    fromEvent(window, "mouseup")
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.onScrollMouseUp());
+    // Мотание скролла по циклу
+    timer(0, this.scrollAddSpeed)
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => !!this.scrollAddDimension)
+      )
+      .subscribe(() => this.onAddScroll());
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  ngAfterViewInit(): void {
+    this.getWaitObservable(() => this.screenService.elmResize(this.hostElement.nativeElement).pipe(tap(([{ element }]) => {
+      const datas: DOMRect = element.getBoundingClientRect();
+      // Обновить данные
+      this.listWidth = Math.max(datas.width, ParseInt(getComputedStyle(element).maxWidth));
+      this.listHeight = Math.max(datas.height, ParseInt(getComputedStyle(element).maxHeight));
+    })))
+      .subscribe(() => this.onScrollRender());
+    // Скролл
+    this.getWaitObservable(() => fromEvent(this.listElm.nativeElement, "scroll"))
+      .subscribe(() => this.onScrollRender());
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
 
 
 
-  // Скролл страницы
-  onWindowScroll(): void {
-    this.scrollActive = window.innerHeight < this.scrollHeight + this.headerHeight;
-    // Отрисовка позиций скролла
-    if (this.scrollActive && !this.isMobile) {
-      const trackHeight: number = this.track?.nativeElement.getBoundingClientRect().height ?? 0;
-      const screenHeight: number = this.layout?.nativeElement.getBoundingClientRect().height ?? 0;
-      this.sliderHeight = (screenHeight / this.scrollHeight) * trackHeight;
-      this.sliderPosition = (this.getCurrentScroll.y / this.scrollHeight) * trackHeight;
+  // Нажатие на слайдер
+  onScrollSliderDown(dimension: ScrollAddType, event: MouseEvent): void {
+    const sliderElm: HTMLElement = (dimension === "h" ? this.sliderHElm : this.sliderVElm)?.nativeElement;
+    // Если элемент существует
+    if (!!sliderElm) {
+      const sliderData: DOMRect = sliderElm.getBoundingClientRect();
+      // Запомнить данные
+      this.scrollMoveDimension = dimension;
+      this.scrollMoveStartX = event.pageX - sliderData.x;
+      this.scrollMoveStartY = event.pageY - sliderData.y;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Нажатие на кнопку
+  onScrollButtonDown(dimension: ScrollAddDimension = null): void {
+    this.scrollAddDimension = dimension;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Отпускание кнопки
+  onScrollMouseUp(): void {
+    this.scrollAddDimension = null;
+    this.scrollMoveDimension = null;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Перемещение скролла
+  onScrollMouseMove(event: MouseEvent): void {
+    if (!!this.scrollMoveDimension) {
+      const elm: HTMLElement = this.listElm.nativeElement;
+      const scrollData: ScrollData = this.getCurrentScroll;
+      const maxScroll: number = this.scrollMoveDimension === "h" ? scrollData.maxX : scrollData.maxY;
+      const trackElm: HTMLElement = (this.scrollMoveDimension === "h" ? this.trackHElm : this.trackVElm)?.nativeElement;
+      const sliderElm: HTMLElement = (this.scrollMoveDimension === "h" ? this.sliderHElm : this.sliderVElm)?.nativeElement;
+      // Если елемент существует
+      if (!!trackElm && !!sliderElm) {
+        const trackData: DOMRect = trackElm.getBoundingClientRect();
+        const sliderData: DOMRect = sliderElm.getBoundingClientRect();
+        const shift: number = this.scrollMoveDimension === "h" ?
+          event.pageX - this.scrollMoveStartX - trackData.x :
+          event.pageY - this.scrollMoveStartY - trackData.y;
+        const trackSize: number = this.scrollMoveDimension === "h" ? trackElm.clientWidth : trackElm.clientHeight;
+        const trackAvailSize: number = trackSize - (this.scrollMoveDimension === "h" ? sliderData.width : sliderData.height);
+        const newScroll: number = CheckInRange((shift / trackAvailSize) * maxScroll, maxScroll, 0);
+        // Скроллинг
+        this.scrollMoveDimension === "h" ?
+          elm.scrollTo({ left: newScroll, behavior: "auto" }) :
+          elm.scrollTo({ top: newScroll, behavior: "auto" });
+      }
+    }
+  }
+
+  // Скролл по направлению
+  private onAddScroll(): void {
+    if (!!this.scrollAddDimension) {
+      const elm: HTMLElement = this.listElm.nativeElement;
+      const scrollType: ScrollAddType = this.scrollAddDimension === "left" || this.scrollAddDimension === "right" ? "h" : "v";
+      const scrollData: ScrollData = this.getCurrentScroll;
+      const scroll: number = scrollType === "h" ? scrollData.x : scrollData.y;
+      const maxScroll: number = scrollType === "h" ? scrollData.maxX : scrollData.maxY;
+      const addScroll: number = this.scrollAddDimension === "left" || this.scrollAddDimension === "top" ? -this.scrollAddSize : this.scrollAddSize;
+      const newScroll: number = CheckInRange(scroll + addScroll, maxScroll, 0);
+      // Скроллинг
+      scrollType === "h" ?
+        elm.scrollTo({ left: newScroll, behavior: "auto" }) :
+        elm.scrollTo({ top: newScroll, behavior: "auto" });
+    }
+  }
+
+  // Рендер скролла
+  private onScrollRender(): void {
+    const scrollData: ScrollData = this.getCurrentScroll;
+    const listElm: HTMLElement = this.listElm.nativeElement;
+    const scrollChangeEvent: ScrollChangeEvent = {
+      ...scrollData,
+      viewWidth: listElm.clientWidth,
+      viewHeight: listElm.clientHeight,
+    };
+    // Обновить переменные
+    this.maxScrollX = scrollData.maxX;
+    this.maxScrollY = scrollData.maxY;
+    this.scrollX = scrollData.x;
+    this.scrollY = scrollData.y;
+    this.scrollElmHSize = (listElm.clientWidth / listElm.scrollWidth) * 100;
+    this.scrollElmVSize = (listElm.clientHeight / listElm.scrollHeight) * 100;
+    this.scrollElmHPos = (this.scrollX / this.maxScrollX) * (100 - this.scrollElmHSize);
+    this.scrollElmVPos = (this.scrollY / this.maxScrollY) * (100 - this.scrollElmVSize);
+    // Событие изменения скролла
+    if (!CompareObjects(this.scrollChangeEvent, scrollChangeEvent)) {
+      this.scrollChangeEvent = scrollChangeEvent;
+      this.scrollChange.emit(scrollChangeEvent);
     }
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
-
-  // Фокус внутри слайдера
-  onSliderMouseDown(event: MouseEvent): void {
-    this.sliderMousePosY = event.y - this.slider.nativeElement.getBoundingClientRect().top;
-    // Включить обнаружение движения мышкой
-    this.sliderMousePress = true;
-  }
-
-  // Движение мышкой
-  onMouseMove(event: MouseEvent): void {
-    if (this.sliderMousePress) {
-      const pageY: number = event.y - this.track.nativeElement.getBoundingClientRect().top - this.sliderMousePosY;
-      const maxY: number = this.track.nativeElement.getBoundingClientRect().height;
-      window.scroll(0, (pageY / maxY) * this.scrollHeight);
-    }
-  }
-
-  // Фокус внутри кнопки
-  onButtonMouseDown(direction: -1 | 1, setIndicator?: boolean): void {
-    if (
-      window.innerHeight - this.headerHeight <= this.layout?.nativeElement.getBoundingClientRect().height ||
-      (this.getCurrentScroll.y == 0 && direction > 0)
-    ) {
-      // Установить индикатор нажатия
-      if (setIndicator) {
-        this.buttonMousePress = true;
-      }
-      // Прокрутить
-      if (this.buttonMousePress) {
-        window.scroll(0, this.getCurrentScroll.y + (this.scrollStep * direction));
-        setTimeout(() => this.onButtonMouseDown(direction), 80);
-      }
-    }
-  }
-
-  // Потеря фокуса любым элементом
-  onMouseUp(event: MouseEvent): void {
-    this.sliderMousePress = false;
-    this.buttonMousePress = false;
-  }
 }
 
 
 
 
 
-// Интерфейс данных скролла
-interface ScrollData {
-  x: number;
-  y: number;
-  maxX: number;
-  maxY: number;
+// Интерфейс состояния скролла
+export interface ScrollChangeEvent extends ScrollData {
+  viewWidth: number;
+  viewHeight: number;
 }
+
+// Направление движения скролла
+type ScrollAddDimension = "top" | "right" | "bottom" | "left";
+
+// Тип скролла
+type ScrollAddType = "v" | "h";

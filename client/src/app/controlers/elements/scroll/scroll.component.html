@@ -1,17 +1,57 @@
-<div class="layout"
-     #layout
-     [ngStyle]="styles"
-     *ngIf="scrollActive && !isMobile">
-  <div class="button top"
-       (mousedown)="onButtonMouseDown(-1, true)"></div>
-  <div class="track"
-       #track>
-    <div class="slider {{sliderMousePress? 'hover': ''}}"
-         #slider
-         [style.margin-top]="sliderPosition+'px'"
-         [style.height]="sliderHeight+'px'"
-         (mousedown)="onSliderMouseDown($event)"></div>
-  </div>
-  <div class="button bottom"
-       (mousedown)="onButtonMouseDown(1, true)"></div>
+<!-- Содержимое -->
+<div #list
+     class="list"
+     [ngStyle]="listStyles"
+     [ngClass]="elmsClasses">
+  <ng-content></ng-content>
 </div>
+<!-- Управление скроллом -->
+<ng-container *ngIf="!isMobile">
+  <!-- Горизонтальный скролл -->
+  <div class="control-h"
+       [ngClass]="elmsClasses"
+       *ngIf="maxScrollX > 0">
+    <!-- Кнопка: влево -->
+    <div class="control__button"
+         [ngClass]="{ hover: scrollAddDimension === 'left' }"
+         (mousedown)="onScrollButtonDown('left')"></div>
+    <!-- Трек -->
+    <div #trackH
+         class="control__track">
+      <div #sliderH
+           class="control__slider"
+           [ngClass]="{ hover: scrollMoveDimension === 'h' }"
+           [ngStyle]="{ width: scrollElmHSize + '%', left: scrollElmHPos + '%' }"
+           (mousedown)="onScrollSliderDown('h', $event)"></div>
+    </div>
+    <!-- Кнопка: вправо -->
+    <div class="control__button"
+         [ngClass]="{ hover: scrollAddDimension === 'right' }"
+         (mousedown)="onScrollButtonDown('right')"></div>
+  </div>
+  <!-- Вертикальный скролл -->
+  <div class="control-v"
+       [ngClass]="elmsClasses"
+       *ngIf="maxScrollY > 0">
+    <!-- Кнопка: вверх -->
+    <div class="control__button"
+         [ngClass]="{ hover: scrollAddDimension === 'top' }"
+         (mousedown)="onScrollButtonDown('top')"></div>
+    <!-- Трек -->
+    <div #trackV
+         class="control__track">
+      <div #sliderV
+           class="control__slider"
+           [ngClass]="{ hover: scrollMoveDimension === 'v' }"
+           [ngStyle]="{ height: scrollElmVSize + '%', top: scrollElmVPos + '%' }"
+           (mousedown)="onScrollSliderDown('v', $event)"></div>
+    </div>
+    <!-- Кнопка: вниз -->
+    <div class="control__button"
+         [ngClass]="{ hover: scrollAddDimension === 'bottom' }"
+         (mousedown)="onScrollButtonDown('bottom')"></div>
+  </div>
+  <!-- Уголок -->
+  <div class="control-c"
+       *ngIf="maxScrollX > 0 && maxScrollY > 0 && showCorner"></div>
+</ng-container>

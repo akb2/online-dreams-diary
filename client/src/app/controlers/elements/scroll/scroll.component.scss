@@ -1,95 +1,168 @@
 @use "sass:map";
 @use "sass:math";
+@use "../../../../assets/styles/vars";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/containers";
 
-$size: 15px;
-$spacing: 1px;
-$borderRadius: math.div($size, 2);
+$scrollWidth: vars.$scrollSize + (vars.$scrollSpacing * 2);
+$sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
 
-$sliderSize: $size * 0.6;
-$sliderMinHeight: $sliderSize * 3;
-$sliderBorderRadius: math.div($sliderSize, 2);
-
-// Оющие стили
+// Общий контейнер
 :host {
-  &,
-  * {
-    user-select: none;
+  display: block;
+  overflow: hidden;
+}
 
-    &,
-    &:before,
-    &:after {
-      box-sizing: border-box;
+// Обертка
+.list {
+  display: block;
+  overflow: scroll;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  // Убрать системный скролл
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  // Горизонтальный скролл
+  &.scroll-h {
+    padding-bottom: $scrollWidth;
+  }
+  // Вертикальный скролл
+  &.scroll-v {
+    padding-right: $scrollWidth;
+  }
+}
+
+.control {
+  $__elm: &;
+  // Трек
+  &__track {
+    cursor: pointer;
+    position: relative;
+    flex-grow: 1;
+    // Линия
+    &::before {
+      content: "";
+      display: block;
+      position: absolute;
+      background-color: map.get(colors.$mat-disabled, 300);
+      transform: translateX(-50%) translateY(-50%);
+      top: 50%;
+      left: 50%;
     }
   }
-}
-
-// Оболочка
-.layout {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  padding: $spacing;
-  display: flex;
-  flex-flow: column nowrap;
-  gap: $spacing;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-}
-
-// Кнопки
-.button {
-  width: $size;
-  height: $size;
-  border-radius: $borderRadius;
-  cursor: pointer;
-  background-color: map.get(colors.$mat-primary, 500);
-  transition: background-color screens.$animation-time;
-  box-shadow: containers.$cardBoxShadow;
-  // Выделение
-  &:hover {
-    background-color: map.get(colors.$mat-primary, 500);
+  // Кнопки
+  &__button {
+    width: vars.$scrollSize;
+    height: vars.$scrollSize;
+    border-radius: 50%;
+    background-color: map.get(colors.$mat-disabled, 500);
+    transition: background-color screens.$animation-time;
+    cursor: pointer;
+    // Выделение
+    &:hover,
+    &.hover {
+      background-color: map.get(colors.$mat-primary, 500);
+    }
   }
-}
-
-// Путь слайдера
-.track {
-  width: $sliderSize;
-  flex-grow: 1;
-  position: relative;
-  // Полоска
-  &:before {
-    content: "";
-    display: block;
-    width: 1px;
-    height: calc(100% + #{$spacing * 2});
-    z-index: 0;
+  // Слайдер
+  &__slider {
+    max-height: 100%;
+    max-width: 100%;
+    background-color: map.get(colors.$mat-disabled, 500);
+    transition: background-color screens.$animation-time;
+    border-radius: $sliderBorderRadius;
     position: absolute;
-    top: -$spacing;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: map.get(colors.$mat-primary, 300);
+    // Выделение
+    &:hover,
+    &.hover {
+      background-color: map.get(colors.$mat-primary, 500);
+    }
   }
-}
 
-// Слайдер
-.slider {
-  width: $sliderSize;
-  position: relative;
-  min-height: $sliderMinHeight;
-  max-height: 100%;
-  border-radius: $sliderBorderRadius;
-  background-color: map.get(colors.$mat-primary, 500);
-  transition: background-color screens.$animation-time;
-  z-index: 1;
-  cursor: pointer;
-  box-shadow: containers.$cardBoxShadow;
-  // Выделение
-  &:hover,
-  &.hover {
-    background-color: map.get(colors.$mat-primary, 500);
+  // Горизонтальный, вертикальный скролл и уголок
+  &-h,
+  &-v,
+  &-c {
+    user-select: none;
+    display: flex;
+    position: absolute;
+    justify-content: stretch;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: vars.$scrollSpacing;
+    bottom: 0;
+    right: 0;
+    pointer-events: all;
+    background-color: inherit;
+    gap: vars.$scrollSpacing;
+  }
+  // Горизонтальный скролл
+  &-h {
+    flex-direction: row;
+    width: 100%;
+    height: $scrollWidth;
+    left: 0;
+    // Если есть вертикальный скролл
+    &.scroll-v {
+      width: calc(100% - #{$scrollWidth});
+      right: $scrollWidth;
+    }
+    // Дочерние элементы
+    #{$__elm} {
+      // Трек
+      &__track {
+        height: 100%;
+        // Линия
+        &::before {
+          height: 1px;
+          width: calc(100% + #{vars.$scrollSpacing * 2});
+        }
+      }
+      // Слайдер
+      &__slider {
+        min-width: vars.$scrollSliderMinHeight;
+        height: vars.$scrollSliderSize;
+        left: 0;
+        top: calc(50% - #{math.div(vars.$scrollSliderSize, 2)});
+      }
+    }
+  }
+  // Вертикальный скролл
+  &-v {
+    flex-direction: column;
+    width: $scrollWidth;
+    height: 100%;
+    top: 0;
+    // Если есть горизонтальный скролл
+    &.scroll-h.show-corner {
+      height: calc(100% - #{$scrollWidth});
+      bottom: $scrollWidth;
+    }
+    // Дочерние элементы
+    #{$__elm} {
+      // Трек
+      &__track {
+        width: 100%;
+        // Линия
+        &::before {
+          width: 1px;
+          height: calc(100% + #{vars.$scrollSpacing * 2});
+        }
+      }
+      // Слайдер
+      &__slider {
+        min-height: vars.$scrollSliderMinHeight;
+        width: vars.$scrollSliderSize;
+        top: 0;
+        left: calc(50% - #{math.div(vars.$scrollSliderSize, 2)});
+      }
+    }
+  }
+  // Уголок
+  &-c {
+    width: $scrollWidth;
+    height: $scrollWidth;
   }
 }
