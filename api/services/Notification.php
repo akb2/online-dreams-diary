@@ -12,6 +12,7 @@ class NotificationService
   private array $config;
 
   private DataBaseService $dataBaseService;
+  private LongPollingService $longPollingService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -19,6 +20,7 @@ class NotificationService
     $this->config = $config;
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
+    $this->longPollingService = new LongPollingService($this->config);
   }
 
 
@@ -36,19 +38,26 @@ class NotificationService
         'diff_time' => $this->config['notifications']['noRepeatTime']
       );
       $check = $this->dataBaseService->getDatasFromFile('notification/getByData.php', $sqlData);
+      $notificationId = 0;
+      $result = false;
       // Уведомление уже есть
       if (isset($check[0]['id']) && $check[0]['id'] > 0) {
-        $sqlData['id'] = $check[0]['id'];
-        // Запрос
-        return $this->dataBaseService->executeFromFile('notification/update.sql', $sqlData);
+        $notificationId = $check[0]['id'];
+        $sqlData['id'] = $notificationId;
+        $result = $this->dataBaseService->executeFromFile('notification/update.sql', $sqlData);
       }
       // Создать запись
       else {
-        return $this->dataBaseService->executeFromFile('notification/create.sql', $sqlData);
+        $result = $this->dataBaseService->executeFromFile('notification/create.sql', $sqlData);
+        $notificationId = $this->pdo->lastInsertId();
+      }
+      // Отправить в Long Polling
+      if ($notificationId > 0) {
+        $this->sendNotificationToLongPolling($notificationId);
       }
     }
     // Уведоммление не создано
-    return false;
+    return $result;
   }
 
 
@@ -124,5 +133,12 @@ class NotificationService
       'actionType' => $data['action_type'],
       'data' => json_decode($data['data'], false)
     );
+  }
+
+  // Отправить данные подписчикам LongPolling
+  public function sendNotificationToLongPolling(int $notificationId): void
+  {
+    $notification = $this->get($notificationId);
+    $this->longPollingService->send('notification/new/' . $notification['userId'], $notification);
   }
 }
