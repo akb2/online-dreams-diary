@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
+import { WaitObservable } from "@_datas/api";
 import { CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
@@ -54,20 +55,25 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   // Преобразование данных
   private notificationConvert(notification: Notification): void {
     if (!!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user)) {
-      this.accountService.user$(notification.data.user)
-        .pipe(takeUntil(this.destroyed$))
-        .subscribe(user => {
-          if (!!user) {
-            this.notifications.forEach((notification, k) => notification?.data?.user === user.id ?
-              this.notifications[k] = this.notificationSearchTextReplace(notification, user) :
-              null
-            );
+      const userId: number = ParseInt(notification.data.user);
+      // Получен ID пользователя
+      if (userId > 0) {
+        this.accountService.user$(userId)
+          .pipe(
+            takeUntil(this.destroyed$),
+            filter(user => !!user)
+          )
+          .subscribe(user => {
+            this.usersSubscribe[userId] = user;
+            // Замена данных
+            this.notifications = [...this.notifications.map(notification => notification?.data?.user === user.id ?
+              this.notificationSearchTextReplace(notification, user) :
+              notification
+            )];
             // Обновить
             this.changeDetectorRef.detectChanges();
-          }
-          // Запомнить подписку
-          this.usersSubscribe[notification.data.user] = user;
-        });
+          });
+      }
     }
   }
 
@@ -227,31 +233,49 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   // Добавить уведомления в общий список
   private updateNotificationsList(notification: Notification | Notification[]): void {
     const newNotifications: Notification[] = Array.isArray(notification) ? notification : [notification];
+    const addNotification = (notification: Notification) => {
+      const index: number = this.notifications.findIndex(({ id }) => notification.id === id);
+      // Заменить существующий
+      if (index >= 0) {
+        this.notifications[index] = notification;
+      }
+      // Добавить новое
+      else {
+        this.notifications.push(notification);
+      }
+      // Сортировка
+      this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    };
     // Проверка массива
     this.notifications = this.notifications ?? [];
     // Добавление уведомлений в общий массив
     newNotifications
       .filter(n => !!n)
       .forEach(newNotification => {
-        const index: number = this.notifications.findIndex(({ id }) => newNotification.id === id);
-        // Обновить текст, если данные о пользователе уже доступны
-        if (!!newNotification?.data?.user && this.usersSubscribe.hasOwnProperty(newNotification.data.user)) {
-          newNotification = this.notificationSearchTextReplace(newNotification, this.usersSubscribe[newNotification.data.user]);
+        const userObserveCheck = () => this.usersSubscribe.hasOwnProperty(newNotification.data.user) && !!this.usersSubscribe[newNotification.data.user];
+        // Обновить текст
+        if (!!newNotification?.data?.user) {
+          if (!userObserveCheck()) {
+            this.notificationConvert(newNotification);
+          }
+          // Обновить текст
+          WaitObservable(() => !userObserveCheck())
+            .pipe(
+              takeUntil(this.destroyed$),
+              map(() => this.usersSubscribe[newNotification.data.user])
+            )
+            .subscribe(user => {
+              console.log(user);
+              addNotification(this.notificationSearchTextReplace(newNotification, user));
+            });
         }
-        // Заменить существующий
-        if (index >= 0) {
-          this.notifications[index] = newNotification;
-        }
-        // Добавить
+        // Без обновления текста
         else {
-          this.notifications.push(newNotification);
-          this.notificationConvert(newNotification);
+          addNotification(newNotification);
         }
       });
-    // Сортировка
-    this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
-    // Обновить
-    this.changeDetectorRef.detectChanges();
   }
 
   // События закрытия уведомлений
