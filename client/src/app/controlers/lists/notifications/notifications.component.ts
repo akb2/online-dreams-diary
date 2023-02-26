@@ -137,7 +137,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         this.updateNotificationsList(notification);
         // Прочитать уведомление
         if (this.show) {
-          this.onReadNotifications(notification);
+          this.onScrollChange(this.previousScroll);
         }
       });
     // Прослушивание закрытия уведомлений
@@ -195,14 +195,15 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   // Отметить уведомление как прочитанное
   onReadNotifications(notifications: Notification | Notification[]): void {
     notifications = Array.isArray(notifications) ? notifications : [notifications];
+    const ids: number[] = notifications.map(({ id }) => id);
     // Если окно открыто
     if (this.show && !!notifications?.length) {
       forkJoin({
         timer: timer(this.readWhaitTimer),
-        responce: of(notifications.map(n => ({ ...n, status: NotificationStatus.read })))
+        responce: this.notificationService.readNotifications(ids)
       })
         .pipe(takeUntil(this.destroyed$))
-        .subscribe(({ responce: notifications }) => this.updateNotificationsList(notifications));
+        .subscribe(({ responce: { result } }) => this.updateNotificationsList(result));
     }
   }
 
@@ -212,7 +213,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   // Загрузка уведомлений
   private loadNotifications(): void {
-    const search: NotificationSearchRequest = {
+    const search: Partial<NotificationSearchRequest> = {
       status: NotificationStatus.any,
       skip: this.skip,
       limit: this.limit

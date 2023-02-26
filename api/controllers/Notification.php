@@ -82,6 +82,45 @@ class Notification
       'code' => $code
     );
   }
+
+  // Отметить уведомления как прочитанные
+  #[Request('post'), CheckToken]
+  public function readByIds(array $data): array
+  {
+    $currentUserId = $_GET['token_user_id'];
+    $result = false;
+    $code = '0000';
+    $ids = explode(",", $data['ids']);
+    $count = is_array($ids) ? count($ids) : 0;
+    $successCount = 0;
+    // ID's уведомлений переданы
+    if ($count > 0) {
+      foreach ($ids as $id) {
+        if ($this->notificationService->read($id, $currentUserId)) {
+          $successCount += 1;
+        }
+      }
+      // Все уведомления отмечены
+      if ($successCount === $count) {
+        $code = '0001';
+        $result = true;
+      }
+      // Не все уведомления прочитаны
+      else {
+        $code = '0004';
+      }
+    }
+    // ID's не переданы
+    else {
+      $code = '1000';
+    }
+    // Вернуть результат
+    return array(
+      'data' => $result,
+      'in' => $count,
+      'code' => $code
+    );
+  }
 }
 
 

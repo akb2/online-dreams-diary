@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
+import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
@@ -182,6 +182,18 @@ export class NotificationService implements OnDestroy {
         // Вернуть данные
         return notification;
       })
+    );
+  }
+
+  // Отметить уведомления как прочитанные
+  readNotifications(ids: number[], codes: string[] = []): Observable<Search<Notification>> {
+    return this.httpClient.post<ApiResponse>("notification/readByIds", ObjectToFormData({ ids })).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)
+      ),
+      concatMap(() => this.getList({ ids }))
     );
   }
 

@@ -60,6 +60,18 @@ class NotificationService
     return $result;
   }
 
+  // Пометить как прочитанное
+  public function read(int $id, int $userId): bool
+  {
+    if ($id > 0 && $userId > 0) {
+      $sqlData = array('id' => $id, 'user_id' => $userId);
+      // Запрос
+      return $this->dataBaseService->executeFromFile('notification/setAsViewed.sql', $sqlData);
+    }
+    // Ничего не сделано
+    return false;
+  }
+
 
 
   // Информация об уведомлении
