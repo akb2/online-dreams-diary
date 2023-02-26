@@ -18,6 +18,14 @@ export interface ElmSize {
   height: number;
 }
 
+// Интерфейс данных скролла
+export interface ScrollData {
+  x: number;
+  y: number;
+  maxX: number;
+  maxY: number;
+}
+
 // Данные о загруженной картинке
 export class LoadingImageData {
   constructor(
