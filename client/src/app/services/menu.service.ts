@@ -53,7 +53,7 @@ export class MenuService implements OnDestroy {
     this.notificationService.newNotificationsCount$
       .pipe(takeUntil(this.destroyed$))
       .subscribe(count => {
-        if (this.notificationsCount >= 0 && this.notificationsCount < count) {
+        if (this.notificationsCount >= 0 && this.notificationsCount < count && count > 0) {
           this.playSound();
         }
         // Обновить данные
