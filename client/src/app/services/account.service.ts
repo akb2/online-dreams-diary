@@ -14,7 +14,7 @@ import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { BehaviorSubject, Observable, of, Subject, timer } from "rxjs";
-import { catchError, concatMap, filter, finalize, map, mergeMap, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, concatMap, filter, finalize, map, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -83,7 +83,7 @@ export class AccountService implements OnDestroy {
     const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
     const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId, codes) : of(null))).pipe(
       takeUntil(this.destroyed$),
-      mergeMap(() => observable),
+      concatMap(() => observable),
       tap(() => {
         const [id, i] = this.syncUser;
         if (id === userId) {
