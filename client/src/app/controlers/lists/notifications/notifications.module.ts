@@ -4,6 +4,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
 import { NotificationsComponent } from "@_controlers/notifications/notifications.component";
+import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { CoreModule } from "@_modules/core.module";
 
 
@@ -22,7 +23,8 @@ import { CoreModule } from "@_modules/core.module";
     CoreModule,
     MatButtonModule,
     MatTooltipModule,
-    RouterModule
+    RouterModule,
+    ScrollModule
   ]
 })
 

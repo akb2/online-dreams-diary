@@ -15,7 +15,6 @@ $spacing: 10px;
   z-index: 10;
   max-width: calc(100% - #{$spacing * 2});
   width: 460px;
-  overflow: hidden scroll;
   background-color: colors.$card;
   box-shadow: containers.$cardBoxShadow;
   border-radius: containers.$cardBorderRadius;
@@ -58,6 +57,7 @@ $spacing: 10px;
   justify-content: flex-start;
   align-items: center;
   gap: 5px #{$gap};
+  transition: background-color #{screens.$animation-time};
   // Иконка
   &__icon {
     @include mixins.customsColors($iconSize, 0.6);

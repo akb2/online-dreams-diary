@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
-import { CompareElementBySelector } from "@_datas/app";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
+import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
+import { CompareElementBySelector, CreateArray } from "@_datas/app";
+import { ParseInt } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
-import { CustomObject, IconColor, SimpleObject } from "@_models/app";
-import { Notification } from "@_models/notification";
+import { CustomObject, CustomObjectKey, IconColor, SimpleObject } from "@_models/app";
+import { Notification, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
 import { TokenService } from "@_services/token.service";
-import { concatMap, filter, forkJoin, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil } from "rxjs";
+import { filter, forkJoin, fromEvent, map, Observable, of, Subject, takeUntil, timer } from "rxjs";
 
 
 
@@ -19,7 +21,7 @@ import { concatMap, filter, forkJoin, fromEvent, map, Observable, of, Subject, s
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class NotificationsComponent implements OnInit, OnDestroy {
+export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @Input() show: boolean = false;
@@ -27,13 +29,21 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   @Output() showChange: EventEmitter<boolean> = new EventEmitter();
 
+  @ViewChildren("notificationElm") notificationElms: QueryList<ElementRef>;
+
   user: User;
   notifications: Notification[];
   isAutorizedUser: boolean = false;
+  private usersSubscribe: CustomObjectKey<number, User> = {};
 
-  private lastId: number = 0;
+  private skip: number = 0;
+  private limit: number = 20;
+  private previousScroll: ScrollChangeEvent;
 
   listId: string = "notification-component-list";
+  private outCloseAvail: boolean = false;
+
+  private readWhaitTimer: number = 2500;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -42,26 +52,23 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
 
   // Преобразование данных
-  private notificationConvert(notification: Notification): Observable<Notification> {
-    return of(notification).pipe(
-      takeUntil(this.destroyed$),
-      concatMap(
-        ({ data }) => !!data?.user ? this.accountService.user$(data.user).pipe(take(1)) : of(null),
-        (notification, user) => ({ notification, user })
-      ),
-      map(({ notification, user }) => {
-        if (!!user) {
-          Object.entries({
-            ...user,
-            sexLetter: user.sex === UserSex.Female ? "а" : ""
-          })
-            .filter(([, v]) => typeof v === "boolean" || typeof v === "string" || typeof v === "number" || v instanceof Date)
-            .forEach(([k, v]) => notification.text = this.notificationTextReplace(notification.text, "user." + k, v));
-        }
-        // Вернуть уведомление
-        return notification;
-      })
-    );
+  private notificationConvert(notification: Notification): void {
+    if (!!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user)) {
+      this.accountService.user$(notification.data.user)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(user => {
+          if (!!user) {
+            this.notifications.forEach((notification, k) => notification?.data?.user === user.id ?
+              this.notifications[k] = this.notificationSearchTextReplace(notification, user) :
+              null
+            );
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          }
+          // Запомнить подписку
+          this.usersSubscribe[notification.data.user] = user;
+        });
+    }
   }
 
   // Иконка уведомления
@@ -79,6 +86,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     const user: Observable<User> = (!!notification?.data?.user ? this.accountService.user$(notification.data.user) : of(null)).pipe(takeUntil(this.destroyed$));
     // Вернуть данные
     return { icon, iconColor, useImage, user };
+  }
+
+  // Поиск и замена всех переменных в тексте
+  private notificationSearchTextReplace(notification: Notification, user: User): Notification {
+    Object.entries({ ...user, sexLetter: user.sex === UserSex.Female ? "а" : "" })
+      .filter(([, v]) => typeof v === "boolean" || typeof v === "string" || typeof v === "number" || v instanceof Date)
+      .forEach(([k, v]) => notification.text = this.notificationTextReplace(notification.text, "user." + k, v))
+    // Вернуть уведомление
+    return notification;
   }
 
   // Замена переменных в тексте
@@ -113,23 +129,25 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       });
     // Синхронизация уведомлений
-    this.notificationService.notifications$(true)
-      .pipe(
-        takeUntil(this.destroyed$),
-        switchMap(notifications => forkJoin(notifications.map(notification => this.notificationConvert(notification))))
-      )
-      .subscribe(notifications => {
-        this.notifications = notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
-        // Обновить
-        this.changeDetectorRef.detectChanges();
+    this.loadNotifications();
+    // Поиск новых уведомлений
+    this.notificationService.getNewNotifications()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(notification => {
+        this.updateNotificationsList(notification);
+        // Прочитать уведомление
+        if (this.show) {
+          this.onReadNotifications(notification);
+        }
       });
-    // Закрытие уведомлений
-    fromEvent(document, "click")
-      .pipe(
-        takeUntil(this.destroyed$),
-        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a"))
-      )
-      .subscribe(() => this.onClose());
+    // Прослушивание закрытия уведомлений
+    this.closeEvents();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!!changes?.show && changes.show.previousValue !== changes.show.currentValue && this.show) {
+      this.onScrollChange(this.previousScroll);
+    }
   }
 
   ngOnDestroy(): void {
@@ -143,9 +161,49 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   // Закрыть уведомления
   onClose(): void {
-    this.show = false;
-    this.showChange.emit(this.show);
-    this.changeDetectorRef.detectChanges();
+    if (this.show) {
+      this.show = false;
+      this.outCloseAvail = false;
+      this.showChange.emit(this.show);
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Изменение скролла
+  onScrollChange(event: ScrollChangeEvent): void {
+    this.previousScroll = event;
+    // Список не пуст
+    if (!!this.notificationElms?.length) {
+      const notifications: Notification[] = CreateArray(this.notificationElms.length)
+        .map(key => ({ elm: this.notificationElms.get(key)?.nativeElement as HTMLElement, key }))
+        .filter(({ elm }) => !!elm)
+        .map(({ elm, key }) => {
+          const styles: CSSStyleDeclaration = getComputedStyle(elm);
+          const top: number = elm.offsetTop;
+          const bottom: number = elm.offsetTop + elm.clientHeight + ParseInt(styles.borderTopWidth) + ParseInt(styles.borderBottomWidth);
+          // Вернуть данные
+          return { elm, top, bottom, key };
+        })
+        .filter(({ top, bottom }) => top < event.y + event.viewHeight && bottom > event.y)
+        .map(({ key }) => this.notifications[key])
+        .filter(n => !!n && n.status === NotificationStatus.new);
+      // Пометить все как прочитанное
+      this.onReadNotifications(notifications);
+    }
+  }
+
+  // Отметить уведомление как прочитанное
+  onReadNotifications(notifications: Notification | Notification[]): void {
+    notifications = Array.isArray(notifications) ? notifications : [notifications];
+    // Если окно открыто
+    if (this.show && !!notifications?.length) {
+      forkJoin({
+        timer: timer(this.readWhaitTimer),
+        responce: of(notifications.map(n => ({ ...n, status: NotificationStatus.read })))
+      })
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(({ responce: notifications }) => this.updateNotificationsList(notifications));
+    }
   }
 
 
@@ -154,6 +212,75 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   // Загрузка уведомлений
   private loadNotifications(): void {
+    const search: NotificationSearchRequest = {
+      status: NotificationStatus.any,
+      skip: this.skip,
+      limit: this.limit
+    };
+    // Подписка
+    this.notificationService.getList(search, ["0002"])
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(({ result }) => this.updateNotificationsList(result));
+  }
+
+  // Добавить уведомления в общий список
+  private updateNotificationsList(notification: Notification | Notification[]): void {
+    const newNotifications: Notification[] = Array.isArray(notification) ? notification : [notification];
+    // Проверка массива
+    this.notifications = this.notifications ?? [];
+    // Добавление уведомлений в общий массив
+    newNotifications
+      .filter(n => !!n)
+      .forEach(newNotification => {
+        const index: number = this.notifications.findIndex(({ id }) => newNotification.id === id);
+        // Обновить текст, если данные о пользователе уже доступны
+        if (!!newNotification?.data?.user && this.usersSubscribe.hasOwnProperty(newNotification.data.user)) {
+          newNotification = this.notificationSearchTextReplace(newNotification, this.usersSubscribe[newNotification.data.user]);
+        }
+        // Заменить существующий
+        if (index >= 0) {
+          this.notifications[index] = newNotification;
+        }
+        // Добавить
+        else {
+          this.notifications.push(newNotification);
+          this.notificationConvert(newNotification);
+        }
+      });
+    // Сортировка
+    this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // События закрытия уведомлений
+  private closeEvents(): void {
+    // Закрытие уведомлений: мышка нажата
+    fromEvent(document, "mousedown")
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications"))
+      )
+      .subscribe(avail => this.outCloseAvail = avail);
+    // Закрытие уведомлений: мышка отпущена
+    fromEvent(document, "mouseup")
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications")),
+        filter(avail => this.outCloseAvail && avail)
+      )
+      .subscribe(() => this.onClose());
+    // Закрытие уведомлений: при нажатии на ссылки
+    fromEvent(document, "click")
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a"))
+      )
+      .subscribe(() => this.onClose());
+    // Закрытие при скролле документа
+    fromEvent(document, "scroll")
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.onClose());
   }
 }
 

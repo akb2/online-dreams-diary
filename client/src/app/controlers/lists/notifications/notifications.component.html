@@ -1,31 +1,40 @@
 <ng-container *ngIf="isAutorizedUser">
-  <div [id]="listId"
-       class="list"
-       [ngClass]="{ show }"
-       [ngStyle]="listStyles"
-       *ngIf="!!notifications?.length; else noNotifications">
+  <app-scroll [id]="listId"
+              class="list"
+              [ngClass]="{ show }"
+              [ngStyle]="listStyles"
+              (scrollChange)="onScrollChange($event)"
+              *ngIf="!!notifications?.length; else noNotifications">
     <ng-container *ngFor="let notification of notifications">
-      <div class="notification"
-           [ngClass]="{ noRead: notification.status === 0 }"
-           [attr.color]="notificationAdvance.iconColor"
-           *ngVar="notificationAdvance(notification) as notificationAdvance">
-        <!-- Картинки или иконка -->
-        <ng-container [ngTemplateOutlet]="notificationIcon"
-                      [ngTemplateOutletContext]="{ notification, notificationAdvance, user: notificationAdvance.user | async }"></ng-container>
-        <!-- Текст -->
-        <div class="notification__text"
-             [innerHTML]="notification.text"></div>
-        <!-- Управление -->
-        <ng-container [ngTemplateOutlet]="actionsBlock"
-                      [ngTemplateOutletContext]="{ notification: notification, notificationAdvance }"></ng-container>
-        <!-- Дата -->
-        <div class="notification__date">{{notification.createDate | date: 'd.M.y - H:mm'}}</div>
-      </div>
+      <ng-container [ngTemplateOutlet]="notificationTemplate"
+                    [ngTemplateOutletContext]="{ notification, notificationAdvance: notificationAdvance(notification) }"></ng-container>
     </ng-container>
-  </div>
+  </app-scroll>
 </ng-container>
 
 
+
+<!-- Шаблон уведомлений -->
+<ng-template #notificationTemplate
+             let-notification="notification"
+             let-notificationAdvance="notificationAdvance">
+  <div #notificationElm
+       class="notification"
+       [ngClass]="{ noRead: notification.status === 0 }"
+       [attr.color]="notificationAdvance.iconColor">
+    <!-- Картинки или иконка -->
+    <ng-container [ngTemplateOutlet]="notificationIcon"
+                  [ngTemplateOutletContext]="{ notification, notificationAdvance, user: notificationAdvance.user | async }"></ng-container>
+    <!-- Текст -->
+    <div class="notification__text"
+         [innerHTML]="notification.text"></div>
+    <!-- Управление -->
+    <ng-container [ngTemplateOutlet]="actionsBlock"
+                  [ngTemplateOutletContext]="{ notification: notification, notificationAdvance }"></ng-container>
+    <!-- Дата -->
+    <div class="notification__date">{{notification.createDate | date: 'd.M.y - H:mm'}}</div>
+  </div>
+</ng-template>
 
 <!-- Действия -->
 <ng-template #actionsBlock
