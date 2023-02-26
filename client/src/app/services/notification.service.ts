@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { ObjectToParams } from "@_datas/api";
+import { ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
@@ -10,7 +10,7 @@ import { Notification, NotificationData, NotificationSearchRequest, Notification
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { BehaviorSubject, concatMap, filter, finalize, map, Observable, of, pairwise, startWith, Subject, switchMap, takeUntil, tap } from "rxjs";
+import { BehaviorSubject, catchError, concatMap, filter, finalize, map, Observable, of, pairwise, share, startWith, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -33,7 +33,7 @@ export class NotificationService implements OnDestroy {
   private notificationsSubscritionCounter: number = 0;
 
   private notifications: BehaviorSubject<any[]> = new BehaviorSubject([]);
-  private newNotificationsCount: Subject<number> = new Subject();
+  private newNotificationsCount: BehaviorSubject<number> = new BehaviorSubject(0);
 
   newNotificationsCount$: Observable<number>;
   private destroyed$: Subject<void> = new Subject();
@@ -53,7 +53,7 @@ export class NotificationService implements OnDestroy {
   }
 
   // Получить подписку на данные о статусах дружбы
-  notifications$(sync: boolean = false): Observable<Notification[]> {
+  notifications$(skip: number, limit: number = 20, sync: boolean = false): Observable<Notification[]> {
     const userId: number = ParseInt(this.user?.id);
     const codes: string[] = ["0002"];
     // Обновить счетчик
@@ -65,12 +65,14 @@ export class NotificationService implements OnDestroy {
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
       filter(([prev, next]) => !CompareArrays(prev, next) || this.syncNotifications > 0),
-      map(([, next]) => next)
+      tap(([, next]) => console.log(next)),
+      map(([, next]) => next),
+      map(ns => ns.filter((n, k) => k >= skip && k < skip + limit))
     );
     const notifications: Notification[] = [...this.notifications.getValue()];
     const notificationObservable: Observable<Notification[]> = (!!notifications?.length && !sync ?
       of(notifications) : (userId > 0 ?
-        this.getList({ status: NotificationStatus.any }, codes).pipe(map(({ result }) => result)) :
+        this.getList({ status: NotificationStatus.any, limit, skip }, codes).pipe(map(({ result }) => result)) :
         of(null)
       ));
     // Вернуть подписки
@@ -154,14 +156,32 @@ export class NotificationService implements OnDestroy {
   }
 
   // Количество непрочитанных уведомлений
-  getNewCount(codes: string[]): Observable<number> {
-    return this.getList({
-      status: NotificationStatus.new,
-      limit: 1
-    }, codes).pipe(
+  getNewNotifications(codes: string[] = []): Observable<Notification> {
+    let connect: boolean = false;
+    const observable = (id: string | number = 0) => {
+      id = this.user?.id ?? id ?? 0;
+      connect = true;
+      // Подписка
+      return id > 0 ?
+        this.httpClient.get("longPolling/get/notification/new/" + id).pipe(catchError(e => of({ ...e, text: "" }))) :
+        of({ result: { code: "XXXX" } } as ApiResponse);
+    };
+    // Вернуть подписку
+    return timer(0, 1000).pipe(
+      share(),
       takeUntil(this.destroyed$),
-      map(({ count }) => count),
-      tap(count => this.newNotificationsCount.next(count))
+      filter(() => !connect),
+      concatMap(() => observable(1)),
+      catchError(() => of({ text: "" })),
+      map(r => {
+        const notification: Notification = this.notificationCoverter(UrlParamsStringToObject(r?.text ?? ""));
+        // Остановить текущее подключение
+        connect = false;
+        // Записать в стор
+        this.saveNotificationToStore(notification);
+        // Вернуть данные
+        return notification;
+      })
     );
   }
 
@@ -176,7 +196,9 @@ export class NotificationService implements OnDestroy {
 
   // Преобразование уведомлений
   private notificationCoverter(mixedData?: any): Notification {
-    return !!mixedData ? {
+    const id: number = ParseInt(mixedData?.id);
+    // Вернуть данные
+    return !!mixedData && id > 0 ? {
       id: ParseInt(mixedData?.id),
       userId: ParseInt(mixedData?.userId),
       status: ParseInt(mixedData?.status) as NotificationStatus,
@@ -190,20 +212,23 @@ export class NotificationService implements OnDestroy {
 
   // Сохранить в стор
   private saveNotificationToStore(notification: Notification): void {
-    const notifications: Notification[] = [...(this.notifications.getValue() ?? [])];
-    const index: number = notifications.findIndex(({ id }) => id === notification.id);
-    // Обновить запись
-    if (index >= 0) {
-      notifications[index] = notification;
+    if (!!notification) {
+      const notifications: Notification[] = [...(this.notifications.getValue() ?? [])];
+      const index: number = notifications.findIndex(({ id }) => id === notification.id);
+      // Обновить запись
+      if (index >= 0) {
+        notifications[index] = notification;
+      }
+      // Добавить новую
+      else {
+        notifications.push(notification);
+      }
+      // Обновить
+      this.configLocalStorage();
+      this.localStorageService.setCookie(this.notificationsCookieKey, notifications);
+      this.notifications.next(notifications);
+      this.newNotificationsCount.next(notifications?.filter(({ id, status }) => id > 0 && status === NotificationStatus.new)?.length ?? 0);
     }
-    // Добавить новую
-    else {
-      notifications.push(notification);
-    }
-    // Обновить
-    this.configLocalStorage();
-    this.localStorageService.setCookie(this.notificationsCookieKey, notifications);
-    this.notifications.next(notifications);
   }
 
   // Инициализация Local Storage
@@ -216,6 +241,7 @@ export class NotificationService implements OnDestroy {
   private clearNotificationsFromStore(): void {
     this.configLocalStorage();
     this.localStorageService.deleteCookie(this.notificationsCookieKey);
+    this.newNotificationsCount.next(0);
     this.notifications.next([]);
   }
 
