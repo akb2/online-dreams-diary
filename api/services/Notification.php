@@ -103,6 +103,8 @@ class NotificationService
       // Данные для поиска
       $sqlData = array(
         // Значения полей
+        'ids' => $search['ids'],
+        'exclude_ids' => $search['exclude_ids'],
         'status' => array_search($search['status'], $statuses) ? $search['type'] : $statuses[0],
         'last_id' => isset($search['last_id']) && intval($search['last_id']) > 0 ? $search['last_id'] : 0,
         'user_id' => $currentUserId

@@ -44,6 +44,9 @@ class Notification
   #[Request('get'), CheckToken]
   public function getList(array $data): array
   {
+    $data['search_ids'] = isset($data['search_ids']) && strlen($data['search_ids']) > 0 ? explode(',', $data['search_ids']) : array();
+    $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
+    // Параметры
     $currentUserId = $_GET['token_user_id'];
     $code = '0000';
     $responseData = array();
@@ -52,6 +55,8 @@ class Notification
       $data['search_status'] :
       $statuses[0];
     $search = array(
+      'ids' => $data['search_ids'],
+      'exclude_ids' => $data['search_excludeIds'],
       'skip' => isset($data['search_skip']) && intval($data['search_skip']) > 0 ? intval($data['search_skip']) : 0,
       'limit' => isset($data['search_limit']) && intval($data['search_limit']) ? intval($data['search_limit']) : '',
       'status' => $searchStatus

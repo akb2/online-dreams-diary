@@ -19,6 +19,7 @@ export interface NotificationData {
 export interface NotificationSearchRequest {
   status: NotificationStatus;
   ids: number[];
+  excludeIds: number[];
   skip: number;
   limit: number;
 }
