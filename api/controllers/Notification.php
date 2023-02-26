@@ -93,7 +93,6 @@ class Notification
   public function readByIds(array $data): array
   {
     $currentUserId = $_GET['token_user_id'];
-    $result = false;
     $code = '0000';
     $ids = explode(",", $data['ids']);
     $count = is_array($ids) ? count($ids) : 0;
@@ -108,7 +107,6 @@ class Notification
       // Все уведомления отмечены
       if ($successCount === $count) {
         $code = '0001';
-        $result = true;
       }
       // Не все уведомления прочитаны
       else {
@@ -121,7 +119,7 @@ class Notification
     }
     // Вернуть результат
     return array(
-      'data' => $result,
+      'data' => $successCount,
       'in' => $count,
       'code' => $code
     );
