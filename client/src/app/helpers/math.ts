@@ -13,7 +13,7 @@ export const ParseInt = (value: any, defaultValue: number = 0) => {
 };
 
 // Проверить число в пределах и вернуть новое значение
-export const CheckInRange = (value: number, max: number, min: number = 0) => {
+export const CheckInRange = (value: number, max: number = Infinity, min: number = 0) => {
   value = value < min ? min : value;
   value = value > max ? max : value;
   // Вернуть значение
