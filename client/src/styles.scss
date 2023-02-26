@@ -37,6 +37,7 @@ html {
   background-color: colors.$background;
   top: 0 !important;
   position: static !important;
+  scrollbar-width: none;
   // Свойства потомков
   &,
   * {
