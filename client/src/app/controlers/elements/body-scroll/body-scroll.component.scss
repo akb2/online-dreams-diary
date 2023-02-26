@@ -1,0 +1,93 @@
+@use "sass:map";
+@use "sass:math";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/vars";
+
+$borderRadius: math.div(vars.$scrollSize, 2);
+
+$sliderSize: vars.$scrollSize * 0.6;
+$sliderBorderRadius: math.div($sliderSize, 2);
+
+// Оющие стили
+:host {
+  &,
+  * {
+    user-select: none;
+
+    &,
+    &:before,
+    &:after {
+      box-sizing: border-box;
+    }
+  }
+}
+
+// Оболочка
+.layout {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: vars.$scrollSpacing;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: vars.$scrollSpacing;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+// Кнопки
+.button {
+  width: vars.$scrollSize;
+  height: vars.$scrollSize;
+  border-radius: $borderRadius;
+  cursor: pointer;
+  background-color: map.get(colors.$mat-primary, 500);
+  transition: background-color screens.$animation-time;
+  box-shadow: containers.$cardBoxShadow;
+  // Выделение
+  &:hover {
+    background-color: map.get(colors.$mat-primary, 500);
+  }
+}
+
+// Путь слайдера
+.track {
+  width: $sliderSize;
+  flex-grow: 1;
+  position: relative;
+  // Полоска
+  &:before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: calc(100% + #{vars.$scrollSpacing * 2});
+    z-index: 0;
+    position: absolute;
+    top: -#{vars.$scrollSpacing};
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: map.get(colors.$mat-primary, 300);
+  }
+}
+
+// Слайдер
+.slider {
+  width: $sliderSize;
+  position: relative;
+  min-height: vars.$scrollSliderMinHeight;
+  max-height: 100%;
+  border-radius: $sliderBorderRadius;
+  background-color: map.get(colors.$mat-primary, 500);
+  transition: background-color screens.$animation-time;
+  z-index: 1;
+  cursor: pointer;
+  box-shadow: containers.$cardBoxShadow;
+  // Выделение
+  &:hover,
+  &.hover {
+    background-color: map.get(colors.$mat-primary, 500);
+  }
+}
