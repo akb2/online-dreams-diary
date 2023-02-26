@@ -11,6 +11,7 @@ export type MultiArray<T> = T[] | MultiArray<T>[];
 export type SimpleObject = { [key: string]: string };
 export type CustomObject<V> = { [key: string]: V };
 export type CustomObjectKey<K, V> = { [key in K as string | number | symbol]: V };
+export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
 
 // Данные для Cookie
 export interface CookieInterface {
