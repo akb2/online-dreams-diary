@@ -53,31 +53,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-  // Преобразование данных
-  private notificationConvert(notification: Notification): void {
-    if (!!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user)) {
-      const userId: number = ParseInt(notification.data.user);
-      // Получен ID пользователя
-      if (userId > 0) {
-        this.accountService.user$(userId)
-          .pipe(
-            takeUntil(this.destroyed$),
-            filter(user => !!user)
-          )
-          .subscribe(user => {
-            this.usersSubscribe[userId] = user;
-            // Замена данных
-            this.notifications = [...this.notifications.map(notification => notification?.data?.user === user.id ?
-              this.notificationSearchTextReplace(notification, user) :
-              notification
-            )];
-            // Обновить
-            this.changeDetectorRef.detectChanges();
-          });
-      }
-    }
-  }
-
   // Иконка уведомления
   notificationAdvance(notification: Notification): NotificationAdvance {
     const icon: string = NotificationIcons.hasOwnProperty(notification.actionType) ?
@@ -315,6 +290,31 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     fromEvent(document, "scroll")
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.onClose());
+  }
+
+  // Преобразование данных
+  private notificationConvert(notification: Notification): void {
+    if (!!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user)) {
+      const userId: number = ParseInt(notification.data.user);
+      // Получен ID пользователя
+      if (userId > 0) {
+        this.accountService.user$(userId)
+          .pipe(
+            takeUntil(this.destroyed$),
+            filter(user => !!user)
+          )
+          .subscribe(user => {
+            this.usersSubscribe[userId] = user;
+            // Замена данных
+            this.notifications = [...this.notifications.map(notification => notification?.data?.user === user.id ?
+              this.notificationSearchTextReplace(notification, user) :
+              notification
+            )];
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          });
+      }
+    }
   }
 }
 
