@@ -6,9 +6,14 @@ export interface Notification {
   createDate: Date;
   text: string;
   link: string;
-  actionType: string;
+  actionType: NotificationActionType;
   data: Partial<NotificationData>;
 }
+
+// Перечисление типа уведомлений
+export enum NotificationActionType {
+  addToFriend = "add_to_friend"
+};
 
 // Дополнительные данные уведомлений
 export interface NotificationData {
