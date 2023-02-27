@@ -59,7 +59,7 @@ class Token
   #[Request('post'), CheckToken]
   public function deleteToken($data): array
   {
-    return $this->tokenService->deleteTokenApi($_COOKIE['api-token']);
+    return $this->tokenService->deleteTokenApi($_COOKIE['api-token'] ?? '');
   }
 
   // Сведения о токене
@@ -88,7 +88,7 @@ class Token
   public function deleteTokensByUser($data): array
   {
     $id = $_GET['token_user_id'];
-    $token = $_COOKIE['api-token'];
+    $token = $_COOKIE['api-token'] ?? '';
     $hideCurrent = !!$data['hideCurrent'];
     // Удаление токена
     return $this->tokenService->deleteTokensByUserApi($id, $hideCurrent, $token);

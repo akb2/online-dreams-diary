@@ -114,7 +114,7 @@ class Account
     // Параметры
     $code = '0002';
     $currentUserId = $_GET['token_user_id'];
-    $token = $_COOKIE['api-token'];
+    $token = $_COOKIE['api-token'] ?? '';
     $search = array(
       'q' => $data['search_q'] ?? null,
       'sex' => $data['search_sex'] ?? null,

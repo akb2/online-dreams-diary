@@ -106,7 +106,7 @@ class TokenService
     $message = '';
     $sqlData = array();
     $tokenData = array();
-    $token = $_COOKIE['api-token'];
+    $token = $_COOKIE['api-token'] ?? '';
 
     // Если получены данные
     if (strlen($token) > 0) {
@@ -169,7 +169,7 @@ class TokenService
     $code = '0000';
     $message = '';
     $tokenData = array();
-    $token = $_COOKIE['api-token'];
+    $token = $_COOKIE['api-token'] ?? '';
 
     // Если получены данные
     if (strlen($token) > 0) {
@@ -205,7 +205,7 @@ class TokenService
     $code = '0000';
     $message = '';
     $tokenDatas = array();
-    $token = $_COOKIE['api-token'];
+    $token = $_COOKIE['api-token'] ?? '';
 
     // Если получены данные
     if (strlen($token) > 0 && strlen($data['token_user_id']) > 0) {
