@@ -9,7 +9,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { filter, forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -182,21 +182,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   // Проверка пола
   get userIsMale(): boolean {
     return this.user.sex === UserSex.Male;
-  }
-
-  // Пересечение элемента
-  private compareElement(target: any, elements: any[]): boolean {
-    if (!!target && !!elements?.length) {
-      let element: any = target;
-      // Поиск пересечения
-      while (element.parentNode && !elements.includes(element)) {
-        element = element.parentNode;
-      }
-      // Проверка
-      return elements.includes(element);
-    }
-    // Нет пересечения
-    return false;
   }
 
 
