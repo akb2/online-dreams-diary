@@ -1,0 +1,58 @@
+<div class="notification"
+     [ngClass]="{ noRead: notification.status === 0 }"
+     color="primary"
+     *ngIf="!!user && !!notification">
+  <!-- Картинка -->
+  <notification-image [notification]="notification"
+                      icon="person_add"></notification-image>
+  <!-- Текст -->
+  <div class="notification__text"
+       [innerHTML]="notification.text | notificationText: { user }"></div>
+  <!-- Действия -->
+  <div class="notification__action"
+       *ngIf="!!friend">
+    <!-- Добавить в друзья -->
+    <button mat-mini-fab
+            color="primary"
+            class="mat-elevation-z"
+            [attr.button-loader]="friendLoader"
+            matTooltip="Добавить в друзья"
+            (click)="onAddToFriend()"
+            *ngIf="friend.status === friendStatuses.NotExists"><mat-icon>person_add</mat-icon></button>
+    <!-- Исходящая заявка -->
+    <button mat-icon-button
+            color="warn"
+            class="mat-elevation-z"
+            [attr.button-loader]="friendLoader"
+            matTooltip="Отменить заявку"
+            (click)="onRejectFriends()"
+            *ngIf="friend.status === friendStatuses.OutSubscribe"><mat-icon>close</mat-icon></button>
+    <!-- Входящая заявка -->
+    <ng-container *ngIf="friend.status === friendStatuses.InSubscribe">
+      <!-- Принять заявку -->
+      <button mat-mini-fab
+              color="primary"
+              class="mat-elevation-z"
+              [attr.button-loader]="friendLoader"
+              matTooltip="Принять заявку в друзья"
+              (click)="onConfirmFriends()"><mat-icon>check</mat-icon></button>
+      <!-- Отменить заявку -->
+      <button mat-icon-button
+              color="warn"
+              class="mat-elevation-z"
+              matTooltip="Отклонить заявку в друзья"
+              [attr.button-loader]="friendLoader"
+              (click)="onRejectFriends()"><mat-icon>close</mat-icon></button>
+    </ng-container>
+    <!-- В друзьях -->
+    <button mat-icon-button
+            class="no-pointer mat-elevation-z"
+            color="primary"
+            disableRipple
+            [attr.button-loader]="friendLoader"
+            matTooltip="Вы уже добавили {{user | petrovich }} в друзья"
+            *ngIf="friend.status === friendStatuses.Friends"><mat-icon>check</mat-icon></button>
+  </div>
+  <!-- Дата -->
+  <div class="notification__date">{{date}}</div>
+</div>

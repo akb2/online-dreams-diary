@@ -7,7 +7,7 @@
               *ngIf="!!notifications?.length; else noNotifications">
     <ng-container *ngFor="let notification of notifications">
       <ng-container [ngTemplateOutlet]="notificationTemplate"
-                    [ngTemplateOutletContext]="{ notification, notificationAdvance: notificationAdvance(notification) }"></ng-container>
+                    [ngTemplateOutletContext]="{ notification, user: notificationUser(notification) | async }"></ng-container>
     </ng-container>
   </app-scroll>
 </ng-container>
@@ -17,75 +17,14 @@
 <!-- Шаблон уведомлений -->
 <ng-template #notificationTemplate
              let-notification="notification"
-             let-notificationAdvance="notificationAdvance">
-  <div #notificationElm
-       class="notification"
-       [ngClass]="{ noRead: notification.status === 0 }"
-       [attr.color]="notificationAdvance.iconColor">
-    <!-- Картинки или иконка -->
-    <ng-container [ngTemplateOutlet]="notificationIcon"
-                  [ngTemplateOutletContext]="{ notification, notificationAdvance, user: notificationAdvance.user | async }"></ng-container>
-    <!-- Текст -->
-    <div class="notification__text"
-         [innerHTML]="notification.text"></div>
-    <!-- Управление -->
-    <ng-container [ngTemplateOutlet]="actionsBlock"
-                  [ngTemplateOutletContext]="{ notification: notification, notificationAdvance }"></ng-container>
-    <!-- Дата -->
-    <div class="notification__date">{{notification.createDate | date: 'd.M.y - H:mm'}}</div>
-  </div>
-</ng-template>
-
-<!-- Действия -->
-<ng-template #actionsBlock
-             let-notification="notification"
-             let-notificationAdvance="notificationAdvance">
-  <!-- Добавить в друзья -->
-  <div class="notification__action"
-       *ngIf="notification.actionType === 'add_to_friend'">
-    <!-- Добавить -->
-    <button mat-mini-fab
-            color="primary"
-            class="mat-elevation-z"
-            matTooltip="Добавить в друзья"><mat-icon>check</mat-icon></button>
-    <!-- Удалить -->
-    <button mat-icon-button
-            color="warn"
-            class="mat-elevation-z"
-            matTooltip="Отменить заявку"><mat-icon>close</mat-icon></button>
-  </div>
-</ng-template>
-
-<!-- Картинка уведомления -->
-<ng-template #notificationIcon
-             let-notification="notification"
-             let-notificationAdvance="notificationAdvance"
-             let-user="user">
-  <a class="notification__icon"
-     [routerLink]="notification.link"
-     background="transparent"
-     [attr.color]="notificationAdvance.iconColor"
-     *ngIf="!!notification.link; else notificationIconNoLink">
-    <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
-  </a>
-  <!-- Без ссылки -->
-  <ng-template #notificationIconNoLink>
-    <div class="notification__icon"
-         background="transparent"
-         [attr.color]="notificationAdvance.iconColor">
-      <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
-    </div>
-  </ng-template>
-  <!-- Содержимое картинки уведомления -->
-  <ng-template #notificationIconContent>
-    <!-- Картинка -->
-    <img [src]="user.avatars.small"
-         *ngIf="!!user && !!user?.avatars?.small; else notificationIconContentIcon" />
-    <!-- Иконка -->
-    <ng-template #notificationIconContentIcon>
-      <mat-icon>{{notificationAdvance.icon}}</mat-icon>
-    </ng-template>
-  </ng-template>
+             let-inUser="user">
+  <ng-container *ngIf="notification.createDate | date: 'd.M.y - H:mm' as date">
+    <!-- Заявка в друзья -->
+    <notification-add-to-friend #notificationElm
+                                [user]="inUser"
+                                [notification]="notification"
+                                [date]="date"></notification-add-to-friend>
+  </ng-container>
 </ng-template>
 
 

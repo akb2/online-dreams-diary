@@ -1,0 +1,27 @@
+<ng-container *ngIf="!!notification">
+  <a class="notification__icon"
+     [routerLink]="notification.link"
+     background="transparent"
+     [attr.color]="iconColor"
+     *ngIf="!!notification.link; else notificationIconNoLink">
+    <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
+  </a>
+  <!-- Без ссылки -->
+  <ng-template #notificationIconNoLink>
+    <div class="notification__icon"
+         background="transparent"
+         [attr.color]="iconColor">
+      <ng-container [ngTemplateOutlet]="notificationIconContent"></ng-container>
+    </div>
+  </ng-template>
+  <!-- Содержимое картинки уведомления -->
+  <ng-template #notificationIconContent>
+    <!-- Картинка -->
+    <img [src]="image"
+         *ngIf="!!image; else notificationIconContentIcon" />
+    <!-- Иконка -->
+    <ng-template #notificationIconContentIcon>
+      <mat-icon>{{icon}}</mat-icon>
+    </ng-template>
+  </ng-template>
+</ng-container>

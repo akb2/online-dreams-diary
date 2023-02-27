@@ -6,6 +6,8 @@ import { RouterModule } from "@angular/router";
 import { NotificationsComponent } from "@_controlers/notifications/notifications.component";
 import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { CoreModule } from "@_modules/core.module";
+import { NotificationAddToFriendComponent } from "./add-to-friend/add-to-friend.component";
+import { NotificationImageComponent } from "./image/image.component";
 
 
 
@@ -13,7 +15,9 @@ import { CoreModule } from "@_modules/core.module";
 
 @NgModule({
   declarations: [
-    NotificationsComponent
+    NotificationsComponent,
+    NotificationImageComponent,
+    NotificationAddToFriendComponent
   ],
   exports: [
     NotificationsComponent

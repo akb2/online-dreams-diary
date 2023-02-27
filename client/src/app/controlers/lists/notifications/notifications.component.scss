@@ -47,7 +47,7 @@ $spacing: 10px;
 }
 
 // Уведомления
-.notification {
+:host ::ng-deep .notification {
   $iconSize: 40px;
   $gap: 10px;
   // Свойства
