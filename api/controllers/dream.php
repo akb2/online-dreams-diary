@@ -110,7 +110,7 @@ class Dream
   }
 
   // Получить сновидение
-  #[Request('get'), CheckToken]
+  #[Request('get')]
   public function getById($data): array
   {
     $code = '0002';
