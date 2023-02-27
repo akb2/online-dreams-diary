@@ -125,48 +125,13 @@ $keys: full short collapse;
     }
     // Загрузчик
     &-loading {
-      $size-1: 80px;
-      $size-2: 66px;
-      $line-1: 3px;
-      $line-2: 1px;
-      $time-1: 0.5s;
-      $time-2: 1s;
-      // Свойства
+      @include mixins.loader(80px, 3px, 1s, colors.$card);
       @include mixins.inset;
+      // Свойства
       display: none;
       position: absolute;
       background-color: colors.$overlay-color;
       border-radius: containers.$cardBorderRadius;
-      // Общие правила
-      &:before,
-      &:after {
-        display: block;
-        position: absolute;
-        content: "";
-        border-radius: 50%;
-        border-color: transparent;
-        border-style: solid;
-      }
-      // Лоадер
-      &:before {
-        width: $size-1;
-        height: $size-1;
-        top: calc(50% - #{math.div($size-1, 2)});
-        left: calc(50% - #{math.div($size-1, 2)});
-        border-width: #{$line-1};
-        border-top-color: colors.$card;
-        animation: loader-animation #{$time-1} linear infinite;
-      }
-      // Лоадер
-      &:after {
-        width: $size-2;
-        height: $size-2;
-        top: calc(50% - #{math.div($size-2, 2)});
-        left: calc(50% - #{math.div($size-2, 2)});
-        border-width: #{$line-2};
-        border-top-color: colors.$background;
-        animation: loader-animation #{$time-2} linear infinite;
-      }
     }
     // Отметка о выборе
     &:before,
@@ -498,6 +463,7 @@ $keys: full short collapse;
             $subtitle-height: ($image-size - ($padding-y * 2)) - $title-height - math.div($gap-y, 2);
             // Свойства
             @include mixins.inset(calc(#{$base-height} - #{$base-image}), $data-padding-x, auto, $data-padding-x);
+            // Свойства
             grid-template-columns: #{$image-size} 1fr;
             grid-template-rows: #{$title-height + $padding-y} #{$subtitle-height + $padding-y};
             grid-gap: #{$gap-y} 10px;
