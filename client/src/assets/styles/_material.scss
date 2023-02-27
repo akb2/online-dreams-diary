@@ -31,8 +31,11 @@
     &-base {
       text-decoration: none;
       // Убрать фон
-      &.no-pointer > .mdc-fab__ripple {
-        display: none;
+      &.no-pointer {
+        > .mdc-icon-button__ripple,
+        > .mdc-fab__ripple {
+          display: none;
+        }
       }
       // Убрать тень
       &.mat-elevation-z {
@@ -40,7 +43,8 @@
       }
       // Базовые настройки
       &[mat-stroked-button],
-      &[mat-flat-button] {
+      &[mat-flat-button],
+      &[mat-icon-button] {
         line-height: vars.$buttonSize;
         padding: 0 24px;
         height: vars.$buttonSize;
@@ -54,9 +58,19 @@
       // Убрать отступы иконок
       &[mat-mini-fab],
       &[mat-icon-button] {
+        width: vars.$buttonSize;
+        text-align: center;
+        padding-left: 0;
+        padding-right: 0;
+        // Иконка
         > .mat-icon {
+          width: vars.$buttonSize;
+          height: vars.$buttonSize;
+          line-height: vars.$buttonSize;
           margin-right: 0;
           margin-left: 0;
+          padding-left: 0;
+          padding-right: 0;
         }
       }
       // Загрузчик
@@ -71,7 +85,7 @@
         }
         // Расскрасить кнопки
         &[mat-stroked-button],
-        &[mat-mini-fab] {
+        &[mat-icon-button] {
           // Общий цвет
           > .mat-icon {
             @include mixins.loaderColors(colors.$text);
