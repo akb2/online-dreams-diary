@@ -218,8 +218,8 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
           // Убрать из списка игнора прочтения
           ids.forEach(id => {
             const index: number = this.readIgnore.findIndex(t => t === id);
+            // Удалить блокировку прочтения
             this.readIgnore.splice(index, 1);
-            console.log(this.readIgnore);
           });
         });
     }
