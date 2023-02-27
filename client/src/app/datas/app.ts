@@ -1,6 +1,6 @@
 import { MatDialogConfig } from "@angular/material/dialog";
 import { MathRound, Random } from "@_helpers/math";
-import { FileTypes, SimpleObject } from "@_models/app";
+import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
 
 
 
@@ -113,3 +113,74 @@ export const CompareElementBySelector = (target: any, selector: string) => {
   // Нет пересечения
   return false;
 }
+
+// Проверка массива ключей в многомерном объекте
+export const ObjectHasValueByFields = <T>(object: T | MultiObject<T>, ...mixedFields: string[]) => {
+  const fields: string[] = mixedFields.length > 1 ? mixedFields : mixedFields[0].split(".");
+  let iObject: T | MultiObject<T> = object;
+  let result: boolean = true;
+  // Поиск значений
+  if (!!fields?.length && !!object) {
+    fields.forEach(field => {
+      if (!!iObject?.hasOwnProperty(field)) {
+        iObject = iObject[field];
+      }
+      // Ключа нет
+      else {
+        result = false;
+      }
+    });
+  }
+  // Некорректные входные данные
+  else {
+    result = false;
+  }
+  // Вернуть результат проверки
+  return result;
+}
+
+// Получение значения из многомерного объекта по массиву ключей
+export const GetObjectValueByFields = <T>(object: T | MultiObject<T>, ...mixedFields: string[]) => {
+  const fields: string[] = mixedFields.length > 1 ? mixedFields : mixedFields[0].split(".");
+  if (ObjectHasValueByFields(object, ...fields)) {
+    let target: T | MultiObject<T> = object;
+    // Поиск значения
+    fields.forEach(field => target = target[field] ?? null);
+    // Вернуть значение
+    return target as (T | MultiObject<T> | CustomObject<T>);
+  }
+  // Пустое значение
+  return null;
+}
+
+// Установить значение в многомерном объекте по массиву ключей
+export const SetObjectValueByFields = <T>(object: T | MultiObject<T>, value: T, ...mixedFields: string[]) => {
+  const fields: string[] = mixedFields.length > 1 ? mixedFields : mixedFields[0].split(".");
+  let iObject: T | MultiObject<T> = object;
+  // Поиск значения
+  fields.forEach((field, key) => {
+    iObject[field] = iObject[field] ?? (key < fields.length - 1 ? {} : value);
+    iObject = iObject[field];
+  });
+}
+
+// Сколлапсировать многомерный объект до одномерного
+export const CollapseObject = <T>(object: T | MultiObject<T>) => {
+  let targetObject: CustomObject<T> = {};
+  // Функция поиска значений
+  const getItems = (iObject: MultiObject<T> | T, keyPreffix: string = "") => {
+    const keys: string[] = Object.keys(iObject);
+    // Объект
+    if (!!keys?.length && typeof iObject === "object") {
+      keys.forEach(key => getItems(iObject[key], keyPreffix + (!!keyPreffix ? "." : "") + key));
+    }
+    // Простое значение типа T
+    else if (iObject !== undefined) {
+      targetObject[keyPreffix] = iObject as T;
+    }
+  };
+  // Начало поиска
+  getItems(object);
+  // Вернуть результат
+  return targetObject;
+};
