@@ -34,7 +34,7 @@ export class NotificationService implements OnDestroy {
   private notificationsSubscritionCounter: number = 0;
 
   private notifications: BehaviorSubject<any[]> = new BehaviorSubject([]);
-  private newNotificationsCount: BehaviorSubject<number> = new BehaviorSubject(0);
+  private newNotificationsCount: BehaviorSubject<number> = new BehaviorSubject(-1);
 
   newNotificationsCount$: Observable<number>;
   private destroyed$: Subject<void> = new Subject();
@@ -151,6 +151,7 @@ export class NotificationService implements OnDestroy {
         const result: Notification[] = ToArray(notifications, n => this.notificationCoverter(n)).filter(n => !!n);
         // Сохранить в стор
         result.forEach(n => this.saveNotificationToStore(n));
+        this.updateNoReadCounter();
         // Вернуть статус
         return ({ result, count, limit });
       })
@@ -181,6 +182,7 @@ export class NotificationService implements OnDestroy {
         connect = false;
         // Записать в стор
         this.saveNotificationToStore(notification);
+        this.updateNoReadCounter();
         // Вернуть данные
         return notification;
       })
@@ -195,11 +197,6 @@ export class NotificationService implements OnDestroy {
         of(ParseInt(result.result.data)) :
         this.apiService.checkResponse(result.result.code, codes)
       ),
-      tap(readedCount => {
-        const currentCount: number = ParseInt(this.newNotificationsCount.getValue());
-        // Запомнить количество непрочитанных уведомлений
-        this.newNotificationsCount.next(CheckInRange(currentCount - readedCount));
-      }),
       concatMap(() => this.getList({ ids }))
     );
   }
@@ -212,6 +209,13 @@ export class NotificationService implements OnDestroy {
 
 
 
+
+  // Обновить счетчик уведомлений
+  updateNoReadCounter(): void {
+    const notifications: Notification[] = [...(this.notifications.getValue() ?? [])];
+    // Добавить значение
+    this.newNotificationsCount.next(notifications?.filter(({ id, status }) => id > 0 && status === NotificationStatus.new)?.length ?? 0);
+  }
 
   // Преобразование уведомлений
   private notificationCoverter(mixedData?: any): Notification {
@@ -246,7 +250,6 @@ export class NotificationService implements OnDestroy {
       this.configLocalStorage();
       this.localStorageService.setCookie(this.notificationsCookieKey, notifications);
       this.notifications.next(notifications);
-      this.newNotificationsCount.next(notifications?.filter(({ id, status }) => id > 0 && status === NotificationStatus.new)?.length ?? 0);
     }
   }
 
