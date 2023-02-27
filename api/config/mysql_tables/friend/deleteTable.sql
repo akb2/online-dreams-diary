@@ -1,1 +1,1 @@
-DROP TABLE `friends`
+DROP TABLE IF EXISTS `friends`

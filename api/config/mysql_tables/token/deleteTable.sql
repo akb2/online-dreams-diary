@@ -1,1 +1,1 @@
-DROP TABLE `tokens`
+DROP TABLE IF EXISTS `tokens`

@@ -1,1 +1,1 @@
-DROP TABLE `dreams`
+DROP TABLE IF EXISTS `dreams`
