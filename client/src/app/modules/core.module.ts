@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { RouterModule } from "@angular/router";
 import { VarDirective } from "@_directives/var.directive";
+import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
 import { PetrovichPipe } from "@_pipes/petrovich.pipe";
 
 
@@ -22,7 +23,8 @@ const directives = [
 
 // Пайпы
 const pipes = [
-  PetrovichPipe
+  PetrovichPipe,
+  NotificationTextPipe
 ];
 
 // Модули
