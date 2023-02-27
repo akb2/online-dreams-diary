@@ -5,11 +5,13 @@ import { CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, CustomObjectKey, IconColor, SimpleObject } from "@_models/app";
-import { Notification, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
+import { Friend } from "@_models/friend";
+import { Notification, NotificationActionType, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
+import { FriendService } from "@_services/friend.service";
 import { NotificationService } from "@_services/notification.service";
 import { TokenService } from "@_services/token.service";
-import { filter, forkJoin, fromEvent, map, Observable, of, Subject, takeUntil, timer } from "rxjs";
+import { concatMap, filter, forkJoin, fromEvent, map, Observable, of, Subject, takeUntil, timer } from "rxjs";
 
 
 
@@ -35,6 +37,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   user: User;
   notifications: Notification[];
   isAutorizedUser: boolean = false;
+  friends: CustomObjectKey<number, Friend> = {};
   private usersSubscribe: CustomObjectKey<number, User> = {};
   private readIgnore: number[] = [];
 
@@ -97,6 +100,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private accountService: AccountService,
+    private friendService: FriendService,
     private tokenService: TokenService,
     private notificationService: NotificationService,
     private changeDetectorRef: ChangeDetectorRef
@@ -294,26 +298,50 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   // Преобразование данных
   private notificationConvert(notification: Notification): void {
+    // Загрузка данных о входящем пользователе
     if (!!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user)) {
       const userId: number = ParseInt(notification.data.user);
-      // Получен ID пользователя
-      if (userId > 0) {
-        this.accountService.user$(userId)
-          .pipe(
-            takeUntil(this.destroyed$),
-            filter(user => !!user)
-          )
-          .subscribe(user => {
-            this.usersSubscribe[userId] = user;
-            // Замена данных
-            this.notifications = [...this.notifications.map(notification => notification?.data?.user === user.id ?
-              this.notificationSearchTextReplace(notification, user) :
-              notification
-            )];
-            // Обновить
-            this.changeDetectorRef.detectChanges();
-          });
+      // Загрузка данных о пользователе
+      this.defineUser(userId);
+      // Загрузка данных о статусе дружбы
+      if (notification.actionType === NotificationActionType.addToFriend) {
+        this.defineFriend(userId);
       }
+    }
+  }
+
+  // Загрузка данных о пользователе
+  private defineUser(userId: number): void {
+    if (userId > 0) {
+      this.accountService.user$(userId)
+        .pipe(
+          takeUntil(this.destroyed$),
+          filter(user => !!user)
+        )
+        .subscribe(user => {
+          this.usersSubscribe[userId] = user;
+          // Замена данных
+          this.notifications = [...this.notifications.map(notification => notification?.data?.user === user.id ?
+            this.notificationSearchTextReplace(notification, user) :
+            notification
+          )];
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        });
+    }
+  }
+
+  // Загрузка данных о статусе дружбе
+  private defineFriend(userId: number) {
+    if (!this.friends.hasOwnProperty(userId)) {
+      WaitObservable(() => !(this.usersSubscribe.hasOwnProperty(userId) && !!this.usersSubscribe[userId] && !!this.user?.id))
+        .pipe(
+          takeUntil(this.destroyed$),
+          concatMap(() => this.friendService.friends$(userId, this.user.id))
+        )
+        .subscribe(friend => {
+          console.log(friend);
+        });
     }
   }
 }
