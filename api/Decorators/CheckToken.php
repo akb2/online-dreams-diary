@@ -16,15 +16,17 @@ class CheckToken
 
   private TokenService $tokenService;
 
+  private bool $anonimusAvail;
   private string $userId;
   private string $token;
 
 
 
-  public function __construct()
+  public function __construct(bool $anonimusAvail = false)
   {
-    $this->userId = $_GET['token_user_id'];
+    $this->userId = $_SERVER['TOKEN_USER_ID'];
     $this->token = $_COOKIE['api-token'] ?? '';
+    $this->anonimusAvail = !!$anonimusAvail;
   }
 
   // Получить настройки приложения
@@ -51,10 +53,11 @@ class CheckToken
   public function execute(array $data): array|true
   {
     $code = '0000';
+    $isAnonimus = $this->anonimusAvail && !$this->token;
     // Проверить токен
-    if ($this->tokenService->checkToken($this->userId, $this->token)) {
+    if ($this->tokenService->checkToken($this->userId, $this->token) || $isAnonimus) {
       // Проверка доступа
-      if ($this->userId == $this->tokenService->getUserIdFromToken($this->token)) {
+      if ($this->userId == $this->tokenService->getUserIdFromToken($this->token) || $isAnonimus) {
         return true;
       }
       // Ошибка доступа
