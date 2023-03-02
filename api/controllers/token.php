@@ -87,7 +87,7 @@ class Token
   #[Request('post'), CheckToken]
   public function deleteTokensByUser($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $token = $_COOKIE['api-token'] ?? '';
     $hideCurrent = !!$data['hideCurrent'];
     // Удаление токена

@@ -18,12 +18,12 @@ ob_start();
 
 
 
-$controllerParam = $_GET['controller'];
-$methodParam = $_GET['method'];
+$controllerParam = $_SERVER['CONTROLLER'];
+$methodParam = $_SERVER['METHOD'];
 
 $app = new App();
-$pdo = $app->dbConnect();
 $config = $app->getSecretDatas();
+$pdo = $app->dbConnect();
 $controller = $app->controllerConnect($controllerParam, $methodParam);
 
 $result = array(
@@ -33,7 +33,7 @@ $result = array(
   "queryParams" => array(
     "post" => $_POST,
     "request" => $_REQUEST,
-    "get" => $_GET,
+    "get" => $_GET
   ),
   "result" => $controller,
   "echo" => ob_get_contents()

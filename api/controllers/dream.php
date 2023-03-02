@@ -51,7 +51,7 @@ class Dream
   {
     $id = 0;
     $code = '7001';
-    $userId = $_GET['token_user_id'];
+    $userId = $_SERVER['TOKEN_USER_ID'];
     $dream = $this->dreamService->getById($data['id'], $userId);
     // Переписать старое
     if (isset($dream['id']) && $dream['id'] > 0) {
@@ -75,7 +75,7 @@ class Dream
   public function getList($data): array
   {
     $code = '0002';
-    $userId = $_GET['token_user_id'];
+    $userId = $_SERVER['TOKEN_USER_ID'];
     $token = $_COOKIE['api-token'] ?? '';
     $search = array(
       'page' => isset($data['search_page']) && strlen($data['search_page']) > 0 ? $data['search_page'] : '',
@@ -110,11 +110,11 @@ class Dream
   }
 
   // Получить сновидение
-  #[Request('get')]
+  #[Request('get'), CheckToken(true)]
   public function getById($data): array
   {
     $code = '0002';
-    $userId = $_GET['token_user_id'];
+    $userId = $_SERVER['TOKEN_USER_ID'] ?? '';
     $edit = $_GET['edit'] === 'true';
     $testDream = $this->dreamService->getById($data['id']);
     $dream = array();
@@ -163,7 +163,7 @@ class Dream
   {
     $code = '7004';
     $isDelete = false;
-    $userId = $_GET['token_user_id'];
+    $userId = $_SERVER['TOKEN_USER_ID'];
     // Проверка идентификатора
     if (isset($data['id']) && $data['id'] > 0) {
       $isDelete = $this->dreamService->delete($data['id'], $userId);

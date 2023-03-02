@@ -71,7 +71,7 @@ class Account
   public function checkPrivate(array $dataIn): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $dataOut = false;
     // Проверка входящих данных
     if (strlen($dataIn['rule']) > 0 & strlen($dataIn['user']) > 0) {
@@ -113,7 +113,7 @@ class Account
     $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
     // Параметры
     $code = '0002';
-    $currentUserId = $_GET['token_user_id'];
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
     $token = $_COOKIE['api-token'] ?? '';
     $search = array(
       'q' => $data['search_q'] ?? null,
@@ -158,7 +158,7 @@ class Account
   {
     $code = '0000';
     $user = array();
-    $currentUserId = $_GET['token_user_id'];
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
 
     // Проверка ID
     if (strlen($data['id']) > 0) {
@@ -193,7 +193,7 @@ class Account
     $code = '0000';
     $user = array();
     $userId = $data['id'];
-    $currentUserId = $_GET['token_user_id'];
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
 
     // Проверка ID
     if (strlen($userId) > 0) {
@@ -237,7 +237,7 @@ class Account
   {
     $code = '0000';
     $message = '';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Проверка входящих данных
     if (strlen($data['current_password']) > 0 & strlen($data['new_password']) > 0) {
       $sqlData = array(
@@ -271,7 +271,7 @@ class Account
   #[Request('post'), CheckToken]
   public function saveUserData($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Сохранить данные
     return $this->userService->saveUserDataApi($id, $data);
   }
@@ -280,7 +280,7 @@ class Account
   #[Request('post'), CheckToken]
   public function savePageStatus($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Обновить статус
     return $this->userService->savePageStatusApi($id, $data);
   }
@@ -289,7 +289,7 @@ class Account
   #[Request('post'), CheckToken]
   public function saveUserSettings($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Сохранить настройки
     return $this->userService->saveUserSettingsApi($id, $data);
   }
@@ -298,7 +298,7 @@ class Account
   #[Request('post'), CheckToken]
   public function saveUserPrivate($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Сохранение настроек
     return $this->userService->saveUserPrivateApi($id, $data['private']);
   }
@@ -309,7 +309,7 @@ class Account
   #[Request('post'), CheckToken]
   public function uploadAvatar($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $data['file'] = $_FILES['file'];
     // Загрузка
     return $this->userService->uploadAvatarApi($id, $data);
@@ -319,7 +319,7 @@ class Account
   #[Request('post'), CheckToken]
   public function cropAvatar($data): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Загрузка
     return $this->userService->cropAvatarApi($id, $data);
   }
@@ -328,7 +328,7 @@ class Account
   #[Request('post'), CheckToken]
   public function deleteAvatar(): array
   {
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     // Загрузка
     return $this->userService->deleteAvatarApi($id);
   }

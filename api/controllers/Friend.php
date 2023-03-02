@@ -184,7 +184,7 @@ class Friend
   public function addToFriends($data): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $userId = $data['user_id'];
     $result = false;
     // Если заявка создана
@@ -209,7 +209,7 @@ class Friend
   public function rejectFriends($data): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $userId = $data['user_id'];
     $result = 152;
     // Если заявка отклонена
@@ -233,7 +233,7 @@ class Friend
   public function confirmFriends($data): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $userId = $data['user_id'];
     $result = false;
     // Если заявка создана
@@ -258,7 +258,7 @@ class Friend
   public function cancelFromFriends($data): array
   {
     $code = '0000';
-    $id = $_GET['token_user_id'];
+    $id = $_SERVER['TOKEN_USER_ID'];
     $userId = $data['user_id'];
     $result = false;
     // Если заявка создана
