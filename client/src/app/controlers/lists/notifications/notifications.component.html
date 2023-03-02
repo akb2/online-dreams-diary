@@ -21,6 +21,7 @@
   <ng-container *ngIf="notification.createDate | date: 'd.M.y - H:mm' as date">
     <!-- Заявка в друзья -->
     <notification-add-to-friend #notificationElm
+                                class="notification__elm"
                                 [user]="inUser"
                                 [notification]="notification"
                                 [date]="date"></notification-add-to-friend>

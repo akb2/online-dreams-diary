@@ -58,6 +58,10 @@ $spacing: 10px;
   align-items: center;
   gap: 5px #{$gap};
   transition: background-color #{screens.$animation-time};
+  // Блок компонента
+  &__elm {
+    display: block;
+  }
   // Иконка
   &__icon {
     @include mixins.customsColors($iconSize, 0.6);

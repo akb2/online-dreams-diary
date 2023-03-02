@@ -4,10 +4,9 @@ import { WaitObservable } from "@_datas/api";
 import { CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
-import { CustomObjectKey, IconColor, SimpleObject } from "@_models/app";
+import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Notification, NotificationActionType, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
-import { FriendService } from "@_services/friend.service";
 import { NotificationService } from "@_services/notification.service";
 import { TokenService } from "@_services/token.service";
 import { filter, forkJoin, fromEvent, map, Observable, of, Subject, takeUntil, timer } from "rxjs";
@@ -31,7 +30,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() showChange: EventEmitter<boolean> = new EventEmitter();
 
-  @ViewChildren("notificationElm") notificationElms: QueryList<ElementRef>;
+  @ViewChildren("notificationElm", { read: ElementRef }) notificationElms: QueryList<ElementRef>;
 
   notificationActionType: typeof NotificationActionType = NotificationActionType;
 
@@ -69,7 +68,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private accountService: AccountService,
-    private friendService: FriendService,
     private tokenService: TokenService,
     private notificationService: NotificationService,
     private changeDetectorRef: ChangeDetectorRef
@@ -161,15 +159,22 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         responce: this.notificationService.readNotifications(ids)
       })
         .pipe(takeUntil(this.destroyed$))
-        .subscribe(({ responce: { result } }) => {
-          this.updateNotificationsList(result);
-          // Убрать из списка игнора прочтения
-          ids.forEach(id => {
+        .subscribe(
+          ({ responce: { result } }) => {
+            this.updateNotificationsList(result);
+            // Убрать из списка игнора прочтения
+            ids.forEach(id => {
+              const index: number = this.readIgnore.findIndex(t => t === id);
+              // Удалить блокировку прочтения
+              this.readIgnore.splice(index, 1);
+            });
+          },
+          () => ids.forEach(id => {
             const index: number = this.readIgnore.findIndex(t => t === id);
             // Удалить блокировку прочтения
             this.readIgnore.splice(index, 1);
-          });
-        });
+          })
+        );
     }
   }
 
