@@ -20,7 +20,7 @@ class App
   public function dbConnect(): PDO
   {
     $this->dataBase = new DataBase();
-    $this->pdo = $this->dataBase->getConnection();
+    $this->pdo = $this->dataBase->getConnection($this->config);
     return $this->pdo;
   }
 
