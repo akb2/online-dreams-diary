@@ -57,7 +57,7 @@ class LongPollingService
   }
 
   // Отправить данные
-  public function send(string $path, array $data)
+  public function send(string $path, mixed $data)
   {
     $curl = curl_init();
     // Настройки CURL
@@ -71,7 +71,7 @@ class LongPollingService
   }
 
   // Получить данные
-  public function get(string $path)
+  public function get(string $path): mixed
   {
     $data = null;
     $curl = curl_init();

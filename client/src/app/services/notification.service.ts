@@ -1,8 +1,8 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { ApiResponse, Search } from "@_models/api";
@@ -158,6 +158,27 @@ export class NotificationService implements OnDestroy {
     );
   }
 
+  // Получение уведомления по ID
+  getById(id: number, codes: string[] = []): Observable<Notification> {
+    const params: HttpParams = ObjectToParams({ notice_id: id });
+    // Вернуть подписчик
+    return this.httpClient.get<ApiResponse>("notification/getById", { params }).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)
+      ),
+      map(notification => {
+        const result: Notification = this.notificationCoverter(notification);
+        // Сохранить в стор
+        this.saveNotificationToStore(result);
+        this.updateNoReadCounter();
+        // Вернуть статус
+        return result;
+      })
+    );
+  }
+
   // Количество непрочитанных уведомлений
   getNewNotifications(codes: string[] = []): Observable<Notification> {
     let connect: boolean = false;
@@ -176,16 +197,9 @@ export class NotificationService implements OnDestroy {
       filter(() => !connect),
       concatMap(() => observable(this.tokenService.id)),
       catchError(() => of({ text: "" })),
-      map(r => {
-        const notification: Notification = this.notificationCoverter(UrlParamsStringToObject(r?.text ?? ""));
-        // Остановить текущее подключение
-        connect = false;
-        // Записать в стор
-        this.saveNotificationToStore(notification);
-        this.updateNoReadCounter();
-        // Вернуть данные
-        return notification;
-      })
+      map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.notificationId)),
+      concatMap(notificationId => this.getById(notificationId, codes).pipe(catchError(() => of(null)))),
+      tap(() => connect = false)
     );
   }
 

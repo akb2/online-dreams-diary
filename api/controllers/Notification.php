@@ -47,7 +47,7 @@ class Notification
     $data['search_ids'] = isset($data['search_ids']) && strlen($data['search_ids']) > 0 ? explode(',', $data['search_ids']) : array();
     $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
     // Параметры
-    $currentUserId = $_GET['token_user_id'];
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
     $code = '0000';
     $responseData = array();
     $statuses = array(-1, 0, 1);
@@ -88,11 +88,36 @@ class Notification
     );
   }
 
+  // Информация об уведомлении по ID
+  #[Request('get'), CheckToken]
+  public function getById(array $data): array
+  {
+    $noticeId = intval($data['notice_id'] ?? "0");
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
+    $code = '0000';
+    $testNotification = $this->notificationService->get($noticeId);
+    $result = array();
+    // Проверка доступа
+    if (!!$testNotification && $testNotification['userId'] == $currentUserId) {
+      $code = '0001';
+      $result = $testNotification;
+    }
+    // Попытка получения доступа к чужим уведомлениям
+    else {
+      $code = '9040';
+    }
+    // Вернуть результат
+    return array(
+      'data' => $result,
+      'code' => $code
+    );
+  }
+
   // Отметить уведомления как прочитанные
   #[Request('post'), CheckToken]
   public function readByIds(array $data): array
   {
-    $currentUserId = $_GET['token_user_id'];
+    $currentUserId = $_SERVER['TOKEN_USER_ID'];
     $code = '0000';
     $ids = explode(",", $data['ids']);
     $count = is_array($ids) ? count($ids) : 0;

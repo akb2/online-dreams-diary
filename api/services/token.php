@@ -107,6 +107,7 @@ class TokenService
     $sqlData = array();
     $tokenData = array();
     $token = $_COOKIE['api-token'] ?? '';
+    $currentUserId = $_SERVER['TOKEN_USER_ID'] ?? '';
 
     // Если получены данные
     if (strlen($token) > 0) {
@@ -118,25 +119,29 @@ class TokenService
       // Проверить авторизацию
       if (count($auth) > 0) {
         if (strlen($auth[0]['id']) > 0) {
-          // Проверка времени жизни токена
-          if (gmdate('U') - $this->tokenLifeTime < strtotime($auth[0]['last_action_date'])) {
-            // Обновить токен
-            if (
-              $this->dataBaseService->executeFromFile('token/updateLastAction.sql', array($auth[0]['id'])) &&
-              $this->dataBaseService->executeFromFile('account/updateLastAction.sql', array($auth[0]['user_id'])) &&
-              $this->saveTokenToCookie($token)
-            ) {
-              $tokenData = $auth[0];
-              $code = '0001';
+          if (strlen($currentUserId) > 0) {
+            if ($currentUserId == $auth[0]['user_id']) {
+              // Проверка времени жизни токена
+              if (gmdate('U') - $this->tokenLifeTime < strtotime($auth[0]['last_action_date'])) {
+                // Обновить токен
+                if (
+                  $this->dataBaseService->executeFromFile('token/updateLastAction.sql', array($auth[0]['id'])) &&
+                  $this->dataBaseService->executeFromFile('account/updateLastAction.sql', array($auth[0]['user_id'])) &&
+                  $this->saveTokenToCookie($token)
+                ) {
+                  $tokenData = $auth[0];
+                  $code = '0001';
+                }
+                // Ошибка сохранения токена
+                else {
+                  $code = '9014';
+                }
+              }
+              // Токен просрочен
+              else {
+                $code = '9016';
+              }
             }
-            // Ошибка сохранения токена
-            else {
-              $code = '9014';
-            }
-          }
-          // Токен просрочен
-          else {
-            $code = '9016';
           }
         }
       }
@@ -208,8 +213,8 @@ class TokenService
     $token = $_COOKIE['api-token'] ?? '';
 
     // Если получены данные
-    if (strlen($token) > 0 && strlen($data['token_user_id']) > 0) {
-      $token = $this->getTokens($data['token_user_id'], $data['hideCurrent'] ? $token : '');
+    if (strlen($token) > 0 && strlen($_SERVER['TOKEN_USER_ID']) > 0) {
+      $token = $this->getTokens($_SERVER['TOKEN_USER_ID'], $data['hideCurrent'] ? $token : '');
       // Проверить токен
       if (count($token) > 0) {
         $tokenDatas = $token;

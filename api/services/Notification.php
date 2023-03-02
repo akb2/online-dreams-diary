@@ -75,7 +75,7 @@ class NotificationService
 
 
   // Информация об уведомлении
-  public function get(int $notificationId): array
+  public function get(int $notificationId): array | null
   {
     if ($notificationId > 0) {
       $notification = $this->dataBaseService->getDatasFromFile('notification/getById.sql', array($notificationId));
@@ -153,6 +153,6 @@ class NotificationService
   public function sendNotificationToLongPolling(int $notificationId): void
   {
     $notification = $this->get($notificationId);
-    $this->longPollingService->send('notification/new/' . $notification['userId'], $notification);
+    $this->longPollingService->send('notification/new/' . $notification['userId'], array('notificationId' => $notificationId));
   }
 }
