@@ -5,7 +5,7 @@ import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamPlural } from "@_datas/dream";
-import { ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
@@ -233,22 +233,27 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.waitObservable(() => !this.userReady)
       .pipe(
         concatMap(() => this.activatedRoute.params),
-        switchMap(params => {
+        concatMap(() => this.activatedRoute.queryParams, (params, queryParams) => ({ params, queryParams })),
+        switchMap(({ params, queryParams }) => {
+          let visitedUserId: number = 0;
+          // Определение идентификатора пользователя
           if (ParseInt(this.pageData.userId) === -1) {
             if (params?.user_id === "0") {
               this.router.navigate(["/diary/" + this.user.id], { replaceUrl: true });
+              // Вернуть ошибку
               return throwError("");
             }
             // Определить ID просматриваемого пользователя
             else {
-              return of(ParseInt(params?.user_id, !!this.user ? this.user.id : 0));
+              visitedUserId = ParseInt(params?.user_id, !!this.user ? this.user.id : 0);
             }
           }
-          // Общий дневник сновидений
-          return of(0);
+          // Вернуть данные
+          return of({ params, visitedUserId, queryParams });
         })
       )
-      .subscribe(visitedUserId => {
+      .subscribe(({ visitedUserId, queryParams }) => {
+        this.pageCurrent = CheckInRange(ParseInt(queryParams?.p), Infinity, 1);
         this.visitedUserId = visitedUserId;
         this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
         this.itsAllPage = visitedUserId === 0;
