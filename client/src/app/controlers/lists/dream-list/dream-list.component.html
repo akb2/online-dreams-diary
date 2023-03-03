@@ -5,7 +5,7 @@
      *ngIf="dreams?.length > 0">
   <!-- Блок сновидения -->
   <div class="list__item dream"
-       *ngFor="let dream of dreams">
+       *ngFor="let dream of dreams; trackBy: listTrackBy">
     <!-- Обложка -->
     <div class="dream__image"
          [attr.imageOverlay]="isHasImage(dream) && dream.headerBackground.imageOverlay? 'true': 'false'"
@@ -50,9 +50,11 @@
            [ngClass]="{ 'no-content': !dream.keywords.length, 'has-image': isHasImage(dream) }">
         <div class="dream__text-keywords">
           <ng-container *ngFor="let keyword of dream.keywords; let key = index">
-            <div class="keyword_comma"
-                 *ngIf="key > 0">,</div>
-            <div class="keyword">{{keyword}}</div>
+            <div class="keyword">
+              <div class="keyword__text">{{keyword}}</div>
+              <div class="keyword__comma"
+                   *ngIf="(key + 1) < dream.keywords.length">,</div>
+            </div>
           </ng-container>
         </div>
       </div>

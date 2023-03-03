@@ -76,6 +76,24 @@ export class DreamListComponent implements OnInit, OnChanges {
     return DreamStatuses.find(({ key }) => key === dream.status.toString()) ?? DreamStatuses[0];
   }
 
+  // Функция проверки пользователя для обновления списка
+  listTrackBy(index: number, dream: Dream): string {
+    const dataStrings: string[] = [
+      dream.id.toString(),
+      dream.headerType.toString(),
+      dream.headerBackground.id.toString(),
+      (dream.headerType === NavMenuType.full || dream.headerType === NavMenuType.short) ? "true" : "false",
+      dream.title,
+      dream.createDate.toISOString(),
+      dream.description,
+      dream.keywords.join(","),
+      dream.user?.id?.toString(),
+      dream.status.toString()
+    ];
+    // Объединить данные
+    return dataStrings.join("-");
+  }
+
 
 
 

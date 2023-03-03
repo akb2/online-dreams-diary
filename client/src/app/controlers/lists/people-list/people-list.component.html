@@ -3,7 +3,7 @@
      *ngIf="!!people?.length">
   <!-- Блок сновидения -->
   <div class="list__item user"
-       *ngFor="let user of people">
+       *ngFor="let user of people; trackBy: listTrackBy">
     <!-- Аватарка -->
     <a class="user__image"
        [routerLink]="baseLink + user.id">

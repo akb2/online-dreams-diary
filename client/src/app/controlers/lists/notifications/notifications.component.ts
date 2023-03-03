@@ -62,6 +62,22 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
+  // Функция проверки уведомления для обновления списка
+  listTrackBy(index: number, notification: Notification): string {
+    const dataStrings: string[] = [
+      notification.id.toString(),
+      notification.status.toString(),
+      notification.createDate.toISOString(),
+      notification.actionType,
+      notification.link,
+      notification.text,
+      notification.userId.toString(),
+      JSON.stringify(notification.data),
+    ];
+    // Объединить данные
+    return dataStrings.join("-");
+  }
+
 
 
 
