@@ -198,7 +198,7 @@ export class NotificationService implements OnDestroy {
       concatMap(() => observable(this.tokenService.id)),
       catchError(() => of({ text: "" })),
       map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.notificationId)),
-      concatMap(notificationId => this.getById(notificationId, codes).pipe(catchError(() => of(null)))),
+      concatMap(notificationId => notificationId > 0 ? this.getById(notificationId, codes).pipe(catchError(() => of(null))) : of(null)),
       tap(() => connect = false)
     );
   }
