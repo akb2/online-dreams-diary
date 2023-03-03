@@ -222,24 +222,34 @@
     }
     // Ключевые слова
     &-keywords {
-      $spacing: 3px;
+      $spacing: 0px;
       // Миксины
       @include mixins.lineClamp($keywordsCount, $descriptionLineHeight, 13px, $spacing);
       // Свойства
-      height: ($keywordsCount * $descriptionLineHeight) + ($spacing * 2);
+      height: #{($keywordsCount * $descriptionLineHeight) + ($spacing * $keywordsCount)} !important;
+      max-height: #{($keywordsCount * $descriptionLineHeight) + ($spacing * $keywordsCount)} !important;
       margin: #{-$spacing} 0;
       color: colors.$text;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0 8px;
       // Ключевое слово
-      > .keyword {
-        font-size: 13px;
-        font-weight: 400;
+      .keyword {
         color: inherit;
-        display: inline-block;
         vertical-align: top;
-        // Запятая
-        &_comma {
-          display: inline-block;
-          margin-right: 8px;
+        display: inline-flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-flow: row nowrap;
+        // Общие правила текста
+        &__text,
+        &__comma {
+          @include mixins.lineClamp(1, $descriptionLineHeight, 13px);
+          // Свойства
+          font-weight: 400;
+          display: block;
         }
       }
       // С картинкой
