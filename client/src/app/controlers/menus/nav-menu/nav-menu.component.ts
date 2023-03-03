@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
+import { CreateArray } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
@@ -84,6 +85,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private swipeScrollPress: boolean = false;
   private scrollSmoothSpeed: number = 210;
   private scrollSmoothTimeStep: number = 30;
+
+  notificationRepeat: number[] = CreateArray(2);
+  tooManyNotificationSymbol: string = "&infin;";
 
   css: CustomObject<SimpleObject> = {};
 
@@ -693,6 +697,8 @@ const CssNamesVar: SimpleObject = {
   menuItem: "menuItem",
   menuItemIcon: "menuItemIcon",
   menuItemIconAndText: "menuItemIconAndText",
+  menuItemCounter: "menuItemCounter",
+  menuItemCounterElm: "menuItemCounterElm",
   menuItemLine: "menuItemLine",
   menuSubItem: "menuSubItem",
   menuSubItemLast: "menuSubItemLast",

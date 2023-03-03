@@ -28,6 +28,8 @@ export class DrawDatas {
   static menuItemIcon: DrawInterface[];
   static menuItemIconAndText: DrawInterface[];
   static menuItemLine: DrawInterface[];
+  static menuItemCounter: DrawInterface[];
+  static menuItemCounterElm: DrawInterface[];
   static menuSubItem: DrawInterface[];
   static menuSubItemLast: DrawInterface[];
   static menuSubItemLine: DrawInterface[];
@@ -543,6 +545,63 @@ export class DrawDatas {
         // Вернуть данные
         return { min, max, unit: "px" };
       })
+    ];
+    // Кнопка меню: счетчик
+    this.menuItemCounter = [
+      // Размеры
+      {
+        property: ["width", "height"],
+        data: {
+          default: { min: 22, max: 26, unit: "px" },
+          large: { min: 22, max: 24, unit: "px" },
+          middle: { min: 20, max: 22, unit: "px" }
+        }
+      },
+      // Позиция сверху
+      {
+        property: ["top"],
+        data: {
+          default: { min: 5, max: -13, unit: "px" },
+          large: { min: -8, max: -12, unit: "px" },
+          middle: { min: -8, max: -11, unit: "px" }
+        }
+      },
+      // Позиция справа
+      {
+        property: ["right"],
+        data: {
+          default: { min: 0, max: 0, unit: "px" }
+        }
+      }
+    ];
+    // Кнопка меню: элемент счетчика
+    this.menuItemCounterElm = [
+      ...this.getProperties("menuItemCounter", ["width"]),
+      // Высота строки
+      this.mixProperties({ menuItemCounter: ["height"] }, "line-height", d => d.menuItemCounter["height"]),
+      // Высота
+      {
+        property: "height",
+        data: {
+          default: { min: 0, max: 100, unit: "%" }
+        }
+      },
+      // Прозрачность
+      {
+        property: "opacity",
+        data: {
+          default: { min: 0.5, max: 1 }
+        }
+      },
+      // Шрифт
+      {
+        property: ["font-size"],
+        data: {
+          default: { min: 12, max: 14, unit: "px" },
+          large: { min: 12, max: 13, unit: "px" },
+          middle: { min: 11, max: 12, unit: "px" }
+        }
+      },
     ];
     // Кнопка меню: линия
     this.menuItemLine = [

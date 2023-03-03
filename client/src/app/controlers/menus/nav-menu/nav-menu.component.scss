@@ -516,6 +516,44 @@ $breakpointMobile: small;
       line-height: inherit;
       font-size: inherit;
     }
+    // Счетчик
+    &-counter {
+      position: absolute;
+      z-index: 2;
+      border-radius: 50%;
+      overflow: hidden;
+      // Текст
+      &-elm {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: flex-end;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-weight: 400;
+        text-align: center;
+        overflow: hidden;
+        z-index: 2;
+        background-color: map.get(colors.$mat-status-warn, 500);
+        color: map.get(colors.$mat-status-warn, contrast, 500);
+        // Для стиля с символом бесконечности
+        > .is-infinity {
+          font-size: 1.55rem;
+          line-height: inherit;
+        }
+        // Последующий блок
+        & + & {
+          z-index: 1;
+          height: 100% !important;
+          opacity: 1 !important;
+          background-color: map.get(colors.$mat-status-warn, 600);
+          color: map.get(colors.$mat-status-warn, contrast, 600);
+        }
+      }
+    }
 
     // Наведенный элемент
     &:hover > #{$__elm} {

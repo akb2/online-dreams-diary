@@ -224,13 +224,29 @@
 <ng-template #mainMenuItemContent
              let-item
              let-lineStyle="lineStyle">
+  <!-- Иконка -->
   <mat-icon class="menu-list__item-icon"
             [ngStyle]="css[!!item?.text? 'menuItemIconAndText': 'menuItemIcon']"
             *ngIf="!!item?.icon">{{item.icon}}</mat-icon>
+  <!-- Текст -->
   <span class="menu-list__item-text"
         *ngIf="!!item?.text">{{item.text}}</span>
+  <!-- Подчеркивание для текущего пункта меню -->
   <div class="menu-list__item-line"
        [ngStyle]="lineStyle"></div>
+  <!-- Счетчик -->
+  <div class="menu-list__item-counter"
+       [ngStyle]="css.menuItemCounter"
+       *ngIf="!!item?.counter">
+    <div class="menu-list__item-counter-elm"
+         [ngStyle]="css.menuItemCounterElm"
+         *ngFor="let i of notificationRepeat">
+      <span class="is-infinity"
+            [innerHTML]="tooManyNotificationSymbol"
+            *ngIf="item.counter > 99; else mainMenuItemContentCounterDigit"></span>
+      <ng-template #mainMenuItemContentCounterDigit>{{item.counter}}</ng-template>
+    </div>
+  </div>
 </ng-template>
 
 
