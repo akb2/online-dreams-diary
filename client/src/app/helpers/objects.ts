@@ -42,3 +42,16 @@ export const CompareArrays: <T>(arrayA: T[], arrayB: T[]) => boolean = <T>(array
     (simpleType && vA === vB)
   );
 });
+
+// Убрать повторения из массива
+export const UniqueArray: <T>(a: T[]) => T[] = <T>(a: T[]) => {
+  if (a.every(e => e?.hasOwnProperty("id"))) {
+    const ids: string[] = [];
+    // Search ID's
+    a.forEach(e => ids.includes(e["id"]) ? null : ids.push(e["id"]));
+    // Return only unique items
+    return ids.map(id => a.find(e => e["id"] === id));
+  }
+  // Simple type
+  return Array.from(new Set(a))
+};
