@@ -222,9 +222,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         // Добавить уведомления в список
         this.updateNotificationsList(result);
         // Запретить дальнейшую загрузку истории
-        if (listCount >= count) {
-          this.availToMoreLoad = false;
-        }
+        this.availToMoreLoad = listCount < count;
       });
   }
 
