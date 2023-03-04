@@ -8,7 +8,7 @@ export class CustomDateAdapter extends NativeDateAdapter {
 
 
   // Разобрать строку
-  override parse(value: any): Date | null {
+  override parse(value: any): Date {
     if ((typeof value === 'string') && (value.indexOf('/') > -1)) {
       const str: string[] = value.split('/');
 
