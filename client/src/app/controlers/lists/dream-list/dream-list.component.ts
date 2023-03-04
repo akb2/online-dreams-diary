@@ -3,11 +3,11 @@ import { MatDialog } from "@angular/material/dialog";
 import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
-import { DreamStatuses } from "@_datas/dream";
+import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { User, UserSex } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
-import { Dream } from "@_models/dream";
+import { Dream, DreamMood, DreamType } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
@@ -92,6 +92,16 @@ export class DreamListComponent implements OnInit, OnChanges {
     ];
     // Объединить данные
     return dataStrings.join("-");
+  }
+
+  // Тип сновидения
+  getDreamType(dream: Dream): OptionData {
+    return DreamTypes.find(({ key }) => key === dream.type.toString()) ?? DreamTypes.find(({ key }) => key === DreamType.Simple.toString());
+  }
+
+  // настроение сновидения
+  getDreamMood(dream: Dream): OptionData {
+    return DreamMoods.find(({ key }) => key === dream.mood.toString()) ?? DreamMoods.find(({ key }) => key === DreamMood.Nothing.toString());
   }
 
 

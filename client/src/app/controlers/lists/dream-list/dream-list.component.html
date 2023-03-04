@@ -106,6 +106,26 @@
          *ngIf="getDreamPrivate(dream) as status">
       <mat-icon>{{status.icon}}</mat-icon>
     </div>
+    <!-- Тип сновидения -->
+    <div class="dream__icons-icon"
+         [attr.color]="dreamType.iconColor"
+         [attr.background]="dreamType.iconBackground"
+         [attr.position]="dreamType.imagePosition"
+         [matTooltip]="dreamType.title"
+         *ngIf="getDreamType(dream) as dreamType">
+      <img class="no-circle"
+           [src]="dreamType.image" />
+    </div>
+    <!-- Настроение сновидения -->
+    <div class="dream__icons-icon"
+         [attr.color]="dreamMood.iconColor"
+         [attr.background]="dreamMood.iconBackground"
+         [attr.position]="dreamMood.imagePosition"
+         [matTooltip]="dreamMood.title"
+         *ngIf="getDreamMood(dream) as dreamMood">
+      <img class="no-circle"
+           [src]="dreamMood.image" />
+    </div>
   </div>
   <!-- Пустой блок -->
   <div *ngIf="!showProfile"></div>

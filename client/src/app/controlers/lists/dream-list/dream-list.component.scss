@@ -333,6 +333,13 @@
         color: inherit;
         border-radius: 50%;
       }
+      // Убрать скругление
+      & > img,
+      & > mat-icon {
+        &.no-circle {
+          border-radius: 0;
+        }
+      }
       // Метка онлайн
       &-online {
         @include mixins.onlineBlinkPoint(6px, 2px);
