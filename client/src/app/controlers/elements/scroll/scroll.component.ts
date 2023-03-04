@@ -6,7 +6,7 @@ import { CustomObject, SimpleObject } from "@_models/app";
 import { ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { concatMap, fromEvent, Observable, of, Subject, tap, timer } from "rxjs";
-import { filter, map, takeUntil } from "rxjs/operators";
+import { filter, map, pairwise, startWith, takeUntil } from "rxjs/operators";
 
 
 
@@ -122,6 +122,25 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
+    // Изменение размеров списка
+    WaitObservable(() => !this.listElm?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => this.screenService.elmResize(this.listElm.nativeElement))
+      )
+      .subscribe(() => this.onScrollRender());
+    // Изменение количества элементов списка
+    WaitObservable(() => !this.listElm?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => timer(0, this.scrollAddSpeed)),
+        map(() => this.listElm.nativeElement?.childNodes?.length),
+        startWith(0),
+        pairwise(),
+        filter(([prev, next]) => prev !== next),
+        map(([, next]) => next)
+      )
+      .subscribe(() => this.onScrollRender());
     // Передвижение мышки по странице
     fromEvent(window, "mousemove")
       .pipe(
