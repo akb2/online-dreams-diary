@@ -2,6 +2,8 @@ UPDATE `dreams`
 SET
   `mode` = :mode,
   `status` = :status,
+  `type` = :type,
+  `mood` = :mood,
   `date` = :date,
   `title` = :title,
   `description` = :description,

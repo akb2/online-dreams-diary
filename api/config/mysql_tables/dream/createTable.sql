@@ -4,6 +4,8 @@ CREATE TABLE `dreams`
     `user_id` INT,
     `mode` INT(1) NOT NULL DEFAULT 0,
     `status` INT(1) NOT NULL DEFAULT 0,
+    `type` INT(1) NOT NULL DEFAULT 0,
+    `mood` INT(1) NOT NULL DEFAULT 2,
     `create_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `edit_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,6 +23,8 @@ CREATE TABLE `dreams`
     INDEX `create_date` (`create_date`),
     INDEX `date` (`date`),
     INDEX `status` (`status`),
+    INDEX `type` (`type`),
+    INDEX `mood` (`mood`),
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
     FULLTEXT (`title`, `description`, `keywords`, `text`)
   )

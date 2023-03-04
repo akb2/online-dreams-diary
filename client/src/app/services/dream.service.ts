@@ -1,13 +1,14 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
+import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { Dream, DreamDto, DreamMode, DreamStatus, SearchRequestDream } from "@_models/dream";
+import { Dream, DreamDto, DreamMode, DreamMood, DreamStatus, DreamType, SearchRequestDream } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -54,6 +55,8 @@ export class DreamService implements OnDestroy {
       map: this.dreamMapConverter(),
       mode: DreamMode.mixed,
       status: DreamStatus.draft,
+      type: DreamType.Simple,
+      mood: DreamMood.Nothing,
       headerType: NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === 11)
     };
@@ -225,14 +228,16 @@ export class DreamService implements OnDestroy {
     catch (e) { }
     // Итоговый массив
     const dream: Dream = {
-      id: dreamDto.id,
+      id: ParseInt(dreamDto.id),
       user: null,
-      createDate: new Date(dreamDto.createDate),
-      title: dreamDto.title,
-      date: new Date(dreamDto.date),
+      createDate: ToDate(dreamDto?.createDate),
+      title: dreamDto?.title ?? "",
+      date: ToDate(dreamDto?.date),
       description: dreamDto.description,
-      mode: dreamDto.mode as DreamMode,
-      status: dreamDto.status as DreamStatus,
+      mode: (dreamDto?.mode as DreamMode) ?? DreamMode.mixed,
+      status: (dreamDto?.status as DreamStatus) ?? DreamStatus.private,
+      type: (dreamDto?.type as DreamType) ?? DreamType.Simple,
+      mood: (dreamDto?.mood as DreamMood) ?? DreamMood.Nothing,
       keywords: dreamDto.keywords?.length > 0 ? dreamDto.keywords.split(",").filter(k => !!k.trim()) : [],
       places: null,
       members: null,
@@ -261,6 +266,8 @@ export class DreamService implements OnDestroy {
       map: JSON.stringify(this.cleanMap(dream.map)),
       mode: dream.mode,
       status: dream.status,
+      type: dream.type,
+      mood: dream.mood,
       headerType: dream.headerType,
       headerBackgroundId: dream.headerBackground.id
     };

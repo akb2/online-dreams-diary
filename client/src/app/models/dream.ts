@@ -23,6 +23,8 @@ export interface DreamDto {
   map: string;
   mode: DreamMode;
   status: DreamStatus;
+  type: DreamType;
+  mood: DreamMood;
   headerType: NavMenuType;
   headerBackgroundId: number;
 }
@@ -37,6 +39,8 @@ export interface Dream {
   description: string;
   mode: DreamMode;
   status: DreamStatus;
+  type: DreamType;
+  mood: DreamMood;
   keywords: string[];
   places: Place[] | null;
   members: number[] | null;
@@ -80,4 +84,23 @@ export enum DreamStatus {
   friends, // (3) Доступен только друзьям
   users, // (4) Доступен только авторизованным пользователям
   public, // (5) Доступен всем в интернете
+}
+
+// Тип сновидения
+export enum DreamType {
+  Simple,
+  Chatter,
+  Drivel,
+  Epic,
+  Lucid
+}
+
+// Настроение сновидения
+export enum DreamMood {
+  Philosophy,
+  Joy,
+  Nothing,
+  Sad,
+  Gloomy,
+  Nightmare
 }
