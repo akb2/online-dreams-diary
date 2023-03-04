@@ -32,4 +32,13 @@
 
 <!-- Уведомлений нет -->
 <ng-template #noNotifications>
+  <div class="list no-items"
+       [ngClass]="{ show }"
+       [ngStyle]="listStyles">
+    <app-inform icon="notifications_off"
+                title="Уведомлений нет"
+                description="В этом списке будут появлятся уведомления о заявках в друзья, новых сновидениях, комментариях и других важных действиях"
+                [aboveIcon]="true"
+                [smallMargins]="true"></app-inform>
+  </div>
 </ng-template>

@@ -44,6 +44,14 @@ $spacing: 10px;
     visibility: visible;
     margin-top: 0;
   }
+  // Без уведомлений
+  &.no-items {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
 }
 
 // Уведомления
