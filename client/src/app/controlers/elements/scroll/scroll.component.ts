@@ -23,8 +23,13 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   @Input() showCorner: boolean = false;
+  @Input() scrolledDistance: number = 100;
 
   @Output() scrollChange: EventEmitter<ScrollChangeEvent> = new EventEmitter();
+  @Output() scrolledToTop: EventEmitter<ScrollChangeEvent> = new EventEmitter();
+  @Output() scrolledToBottom: EventEmitter<ScrollChangeEvent> = new EventEmitter();
+  @Output() scrolledToLeft: EventEmitter<ScrollChangeEvent> = new EventEmitter();
+  @Output() scrolledToRight: EventEmitter<ScrollChangeEvent> = new EventEmitter();
 
   @ViewChild("list") private listElm: ElementRef<HTMLElement>;
   @ViewChild("trackH") private trackHElm: ElementRef<HTMLElement>;
@@ -33,6 +38,8 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild("sliderV") private sliderVElm: ElementRef<HTMLElement>;
 
   isMobile: boolean = false;
+  scrolledX: boolean = false;
+  scrolledY: boolean = false;
   private scrollChangeEvent: ScrollChangeEvent;
 
   private listWidth: number = 0;
@@ -247,8 +254,50 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollElmVPos = (this.scrollY / this.maxScrollY) * (100 - this.scrollElmVSize);
     // Событие изменения скролла
     if (!CompareObjects(this.scrollChangeEvent, scrollChangeEvent)) {
-      this.scrollChangeEvent = scrollChangeEvent;
       this.scrollChange.emit(scrollChangeEvent);
+      // Заблокировать для инициализирующего вызова
+      if (!!this.scrollChangeEvent) {
+        const toTop: boolean = scrollChangeEvent.y <= this.scrolledDistance && scrollChangeEvent.y < this.scrollChangeEvent.y;
+        const toBottom: boolean = scrollChangeEvent.y >= scrollChangeEvent.maxY - this.scrolledDistance && scrollChangeEvent.y > this.scrollChangeEvent.y;
+        const noScrollY: boolean = !toTop && !toBottom && scrollChangeEvent.y === 0 && scrollChangeEvent.maxY === 0 && scrollChangeEvent.viewHeight > 0;
+        const toLeft: boolean = scrollChangeEvent.x <= this.scrolledDistance && scrollChangeEvent.x < this.scrollChangeEvent.x;
+        const toRight: boolean = scrollChangeEvent.x >= scrollChangeEvent.maxX - this.scrolledDistance && scrollChangeEvent.x > this.scrollChangeEvent.x;
+        const noScrollX: boolean = !toLeft && !toRight && scrollChangeEvent.x === 0 && scrollChangeEvent.maxX === 0 && scrollChangeEvent.viewWidth > 0;
+        // Достигнут предел скролла Y
+        if (!this.scrolledY && (toTop || toBottom || noScrollY)) {
+          this.scrolledY = true;
+          // Верх
+          if (toTop) {
+            this.scrolledToTop.emit(scrollChangeEvent);
+          }
+          // Низ
+          else if (toBottom || noScrollY) {
+            this.scrolledToBottom.emit(scrollChangeEvent);
+          }
+        }
+        // Сбросить отметку для X
+        else if (this.scrolledY && !toTop && !toBottom && !noScrollY) {
+          this.scrolledY = false;
+        }
+        // Достигнут предел скролла X
+        if (!this.scrolledX && (toLeft || toRight || noScrollX)) {
+          this.scrolledX = true;
+          // Верх
+          if (toLeft) {
+            this.scrolledToLeft.emit(scrollChangeEvent);
+          }
+          // Низ
+          else if (toRight || noScrollX) {
+            this.scrolledToRight.emit(scrollChangeEvent);
+          }
+        }
+        // Сбросить отметку для X
+        else if (this.scrolledX && !toLeft && !toRight && !noScrollX) {
+          this.scrolledX = false;
+        }
+      }
+      // Запомнить настройки
+      this.scrollChangeEvent = scrollChangeEvent;
     }
     // Обновить
     this.changeDetectorRef.detectChanges();
