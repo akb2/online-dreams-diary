@@ -97,6 +97,7 @@ $colors: (
       height: $image-size;
       border-radius: containers.$cardBorderRadius;
       overflow: hidden;
+      margin-bottom: 0;
 
       // С картинкой
       > img {
