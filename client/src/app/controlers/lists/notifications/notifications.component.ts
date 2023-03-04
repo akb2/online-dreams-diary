@@ -3,6 +3,7 @@ import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
+import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Notification, NotificationActionType, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
@@ -40,8 +41,9 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   private usersSubscribe: CustomObjectKey<number, User> = {};
   private readIgnore: number[] = [];
 
+  private availToMoreLoad: boolean = true;
   private skip: number = 0;
-  private limit: number = 20;
+  private limit: number = 10;
   private previousScroll: ScrollChangeEvent;
 
   listId: string = "notification-component-list";
@@ -162,6 +164,13 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // Список пролистан до низа
+  onScrolledToBottom(event: ScrollChangeEvent): void {
+    if (this.availToMoreLoad) {
+      this.loadNotifications();
+    }
+  }
+
   // Отметить уведомление как прочитанное
   onReadNotifications(notifications: Notification | Notification[]): void {
     notifications = Array.isArray(notifications) ? notifications : [notifications];
@@ -208,7 +217,15 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     // Подписка
     this.notificationService.getList(search, ["0002"])
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(({ result }) => this.updateNotificationsList(result));
+      .subscribe(({ count, result }) => {
+        const listCount: number = UniqueArray([...this.notifications ?? [], ...result ?? []]).length;
+        // Добавить уведомления в список
+        this.updateNotificationsList(result);
+        // Запретить дальнейшую загрузку истории
+        if (listCount >= count) {
+          this.availToMoreLoad = false;
+        }
+      });
   }
 
   // Добавить уведомления в общий список
@@ -219,9 +236,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     // Добавление уведомлений в общий массив
     newNotifications
       .filter(n => !!n)
-      .forEach(newNotification => {
-        this.addNotificationToList(newNotification);
-      });
+      .forEach(newNotification => this.addNotificationToList(newNotification));
   }
 
   // События закрытия уведомлений
@@ -266,6 +281,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     // Добавить новое
     else {
       this.defineNotificationData(notification).subscribe(n => {
+        this.skip += 1;
         this.notifications.push(n);
         this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
         this.changeDetectorRef.detectChanges();

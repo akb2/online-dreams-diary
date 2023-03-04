@@ -4,6 +4,7 @@
               [ngClass]="{ show }"
               [ngStyle]="listStyles"
               (scrollChange)="onScrollChange($event)"
+              (scrolledToBottom)="onScrolledToBottom($event)"
               *ngIf="!!notifications?.length; else noNotifications">
     <ng-container *ngFor="let notification of notifications; trackBy: listTrackBy">
       <ng-container [ngTemplateOutlet]="notificationTemplate"
