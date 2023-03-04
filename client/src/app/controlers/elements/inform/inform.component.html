@@ -4,22 +4,27 @@
             *ngIf="aboveIcon && icon !== 'loader'">{{icon}}</mat-icon>
   <!-- Заголовок -->
   <div class="loader__title {{color}}"
+       [ngClass]="{ smallMargins }"
        *ngIf="title">{{title}}</div>
   <!-- Подзаголовок -->
   <div class="loader__subtitle {{color}}"
+       [ngClass]="{ smallMargins }"
        *ngIf="subTitle">{{subTitle}}</div>
   <!-- Загрузчик -->
   <div class="loader"
+       [ngClass]="{ smallMargins }"
        *ngIf="icon == 'loader'">
     <div class="loader__figure loader__figure-1 {{color}}"></div>
     <div class="loader__figure loader__figure-2 {{color}}"></div>
   </div>
   <!-- Иконка -->
   <mat-icon class="loader__icon"
+            [ngClass]="{ smallMargins }"
             *ngIf="!aboveIcon && icon !== 'loader'">{{icon}}</mat-icon>
   <!-- Текст -->
   <div #descriptionPanel
        class="loader__description {{color}}"
+       [ngClass]="{ smallMargins }"
        [hidden]="!showDescriptionPanel">
     <span *ngIf="description">{{description}}</span>
     <ng-content *ngIf="!description"></ng-content>

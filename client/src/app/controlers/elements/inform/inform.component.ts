@@ -16,6 +16,7 @@ export class InformComponent implements OnInit, AfterViewInit {
 
   @Input() icon: string = "loader";
   @Input() aboveIcon: boolean = false;
+  @Input() smallMargins: boolean = false;
   @Input() color: IconColor | "white" = "primary";
   @Input() title: string;
   @Input() subTitle: string;
