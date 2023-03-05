@@ -1,6 +1,6 @@
 <app-main-menu [autoCollapse]="true"
                [type]="navMenuType"
-               title="Активация аккаунта"
+               mainTitle="Активация аккаунта"
                subTitle="Online Dreams Map"
                backButtonLink="/auth"></app-main-menu>
 
@@ -14,7 +14,7 @@
 
 <!-- Проверка активации -->
 <ng-template #activationLoaderTemplate>
-  <app-inform title="Активация аккаунта"
+  <app-inform mainTitle="Активация аккаунта"
               subTitle="Пожалуйста подождите"></app-inform>
 </ng-template>
 
@@ -22,7 +22,7 @@
 <ng-template #activationMessage>
   <app-inform [aboveIcon]="true"
               icon="check"
-              title="Добро пожаловать в команду!"
+              mainTitle="Добро пожаловать в команду!"
               subTitle="Ваш аккаунт успешно активирован. Вам доступны все возможности сервиса. Теперь вы можете перейти на страницу авторизации и войти с помощью ваших логина и пароля."
               *ngIf="activationSuccess; else activationMessageError">
     <ng-container [ngTemplateOutlet]="authButton"></ng-container>
@@ -33,7 +33,7 @@
 <ng-template #activationMessageError>
   <app-inform [aboveIcon]="true"
               icon="close"
-              title="Ошибка активации аккаунта"
+              mainTitle="Ошибка активации аккаунта"
               subTitle="Нам не удалось активировать ваш аккаунт. Возможно, что ссылка в письме устарела. Перейдите на страницу авторизации, введите логин и пароль и следуйте дальнейшим инструкциям."
               *ngIf="!alreadyActivate; else accountAlreadyActivated">
     <ng-container [ngTemplateOutlet]="authButton"></ng-container>
@@ -44,7 +44,7 @@
 <ng-template #accountAlreadyActivated>
   <app-inform [aboveIcon]="true"
               icon="check"
-              title="Аккаунт уже активирован"
+              mainTitle="Аккаунт уже активирован"
               subTitle="Ваш аккаунт уже активирован. Можете перейти на страницу авторизации и войти с помощью ваших логина и пароля.">
     <ng-container [ngTemplateOutlet]="authButton"></ng-container>
   </app-inform>

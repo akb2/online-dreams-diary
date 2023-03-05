@@ -6,7 +6,7 @@
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
-                 [title]="user.name + ' ' + user.lastName"
+                 [mainTitle]="user.name + ' ' + user.lastName"
                  subTitle="Настройки приватности"
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
@@ -17,7 +17,7 @@
     <form class="container"
           [formGroup]="form">
       <!-- Цикл по правилам приватности -->
-      <app-card [title]="rule.name"
+      <app-card [mainTitle]="rule.name"
                 [subTitle]="rule.desc"
                 [avatarIcon]="rule.icon"
                 avatarColor="primary"

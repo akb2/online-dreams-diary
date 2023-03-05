@@ -10,7 +10,7 @@
       <!-- Заголовок -->
       <app-title [type]="5"
                  [noMargin]="true"
-                 [title]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (user | petrovich)"
+                 [mainTitle]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (user | petrovich)"
                  [subTitle]="dreamsCount | i18nPlural: dreamPlural">
         <!-- Все сновидения -->
         <a mat-stroked-button
@@ -38,7 +38,7 @@
     </div>
   </ng-container>
   <!-- Лоадер сновидений -->
-  <app-inform title="Загрузка сновидений"
+  <app-inform mainTitle="Загрузка сновидений"
               subTitle="Пожалуйста подождите"
               *ngIf="dreamsLoading"></app-inform>
 </ng-template>
@@ -49,6 +49,6 @@
 <ng-template #diaryaccessDeniedByPrivate>
   <app-inform [aboveIcon]="true"
               icon="policy"
-              title="Дневник недоступен"
+              mainTitle="Дневник недоступен"
               subTitle="Пользователь предпочел скрыть свой дневник сновидений настройками приватности"></app-inform>
 </ng-template>

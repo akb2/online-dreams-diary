@@ -12,5 +12,5 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 })
 
 export class SearchGroupComponent {
-  @Input() title: string;
+  @Input() mainTitle: string;
 }

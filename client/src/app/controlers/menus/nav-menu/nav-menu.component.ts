@@ -35,7 +35,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @Input() imageOverlay: boolean = true;
   @Input() imageFullShow: boolean = false;
 
-  @Input() title: string = "";
+  @Input() mainTitle: string = "";
   @Input() subTitle: string = "";
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";

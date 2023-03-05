@@ -1,6 +1,6 @@
 <app-main-menu [autoCollapse]="true"
                [type]="navMenuType"
-               title="Регистрация на сайте"
+               mainTitle="Регистрация на сайте"
                subTitle="Online Dreams Map"
                backButtonLink="/"
                floatButtonIcon="lock"
@@ -17,7 +17,7 @@
       <!-- Данные входа -->
       <mat-tab>
         <div class="card__layout">
-          <app-card title="Данные для входа">
+          <app-card mainTitle="Данные для входа">
             <!-- Контент -->
             <form content
                   [formGroup]="form[0]">
@@ -61,7 +61,7 @@
       <!-- Сведения -->
       <mat-tab>
         <div class="card__layout">
-          <app-card title="Немного о вас">
+          <app-card mainTitle="Немного о вас">
             <!-- Контент -->
             <form content
                   [formGroup]="form[1]">
@@ -117,7 +117,7 @@
       <!-- Контакты -->
       <mat-tab>
         <div class="card__layout">
-          <app-card title="Ваши контакты">
+          <app-card mainTitle="Ваши контакты">
             <!-- Контент -->
             <form content
                   [formGroup]="form[2]">
@@ -148,12 +148,12 @@
     </mat-tab-group>
     <!-- Загрузка регистрации -->
     <app-inform *ngIf="loading"
-                title="Регистрация"
+                mainTitle="Регистрация"
                 subTitle="Пожалуйста подождите"></app-inform>
     <!-- Окончание регистрации -->
     <app-inform *ngIf="registed"
                 icon="done"
-                title="Вы зарегистрированны"
+                mainTitle="Вы зарегистрированны"
                 description="Мы отправили письмо на {{registerEmail}}. Обязательно перейдите по ссылке из письма для окончания регистрации."></app-inform>
   </div>
 </div>

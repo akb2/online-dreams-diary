@@ -16,7 +16,7 @@ import { Subject, takeUntil } from "rxjs";
 export class PaginationComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
 
 
-  @Input() title: string = "Заголовок";
+  @Input() mainTitle: string = "Заголовок";
   @Input() subTitle: string = "";
 
   @Input() pageCurrent: number = 1;

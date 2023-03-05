@@ -1,6 +1,6 @@
 <app-main-menu [autoCollapse]="true"
                [type]="navMenuType"
-               title="Вход на сайт"
+               mainTitle="Вход на сайт"
                subTitle="Online Dreams Map"
                backButtonLink="/"
                floatButtonIcon="person_add"
@@ -11,7 +11,7 @@
   <div class="container">
     <!-- Форма входа -->
     <ng-container *ngIf="!loading; else authLoader">
-      <app-card title="Авторизация на сайте"
+      <app-card mainTitle="Авторизация на сайте"
                 *ngIf="!showActivate; else accauntActivateTemplate">
         <!-- Контент -->
         <form [formGroup]="form"
@@ -54,7 +54,7 @@
 
 <!-- Активация аккаунта -->
 <ng-template #accauntActivateTemplate>
-  <app-card title="Активация аккаунта"
+  <app-card mainTitle="Активация аккаунта"
             *ngIf="!endActivation; else activationCodeSended">
     <form [formGroup]="form"
           content>
@@ -95,13 +95,13 @@
 
 <!-- Загрузка авторизации / отправки письма -->
 <ng-template #authLoader>
-  <app-inform [title]="showActivate? 'Отправка письма': 'Авторизация'"
+  <app-inform [mainTitle]="showActivate? 'Отправка письма': 'Авторизация'"
               subTitle="Пожалуйста подождите"></app-inform>
 </ng-template>
 
 <!-- Письмо отправлено -->
 <ng-template #activationCodeSended>
   <app-inform icon="done"
-              title="Код выслан"
+              mainTitle="Код выслан"
               description="Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке в письме чтобы выполнить вход на сайт."></app-inform>
 </ng-template>

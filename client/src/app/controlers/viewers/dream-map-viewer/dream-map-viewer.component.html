@@ -21,12 +21,12 @@
   <div class="map-viewer__loader"
        *ngIf="loading || !ready">
     <!-- Загрузка -->
-    <app-inform title="Загрузка 3D-просмотра"
+    <app-inform mainTitle="Загрузка 3D-просмотра"
                 subTitle="Пожалуйста подождите"
                 *ngIf="loading"></app-inform>
     <!-- Ошибка WebGL -->
     <app-inform icon="close"
-                title="Ошибка"
+                mainTitle="Ошибка"
                 subTitle="WebGL не поддерживается"
                 *ngIf="!loading && !ready">
       Похоже, что Ваш браузер не поддерживает WebGL.

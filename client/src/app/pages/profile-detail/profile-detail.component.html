@@ -7,7 +7,7 @@
                  [imagePositionX]="backgroundImageData.positionX"
                  [imagePositionY]="backgroundImageData.positionY"
                  [imageOverlay]="backgroundImageData.imageOverlay"
-                 [title]="title"
+                 [mainTitle]="title"
                  [subTitle]="subTitle"
                  [avatarImage]="menuAvatarImage"
                  [avatarIcon]="menuAvatarIcon"
@@ -98,7 +98,7 @@
 <ng-template #accessDeniedByPrivate>
   <app-inform [aboveIcon]="true"
               icon="policy"
-              title="Страница недоступна"
+              mainTitle="Страница недоступна"
               subTitle="Пользователь предпочел скрыть свою страницу настройками приватности">
     <app-action-block [user]="visitedUser"
                       [itsMyPage]="itsMyPage"

@@ -6,7 +6,7 @@
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
-                 [title]="user.name + ' ' + user.lastName"
+                 [mainTitle]="user.name + ' ' + user.lastName"
                  subTitle="Персональные данные"
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
@@ -20,7 +20,7 @@
       <!-- Форма -->
       <div class="list">
         <!-- Аватарка -->
-        <app-card [title]="fileLoading? '': 'Оригинальная аватарка'"
+        <app-card [mainTitle]="fileLoading? '': 'Оригинальная аватарка'"
                   [fullHeight]="true"
                   [avatarIcon]="fileLoading? '': 'add_a_photo'">
           <!-- Содержимое -->
@@ -35,7 +35,7 @@
             <!-- Загрузка сохранения -->
             <div class="loader"
                  *ngIf="fileLoading">
-              <app-inform [title]="fileLoaderTitles[fileLoaderKey][0]"
+              <app-inform [mainTitle]="fileLoaderTitles[fileLoaderKey][0]"
                           [subTitle]="fileLoaderTitles[fileLoaderKey][1]"></app-inform>
             </div>
           </ng-container>
@@ -63,7 +63,7 @@
           </ng-container>
         </app-card>
         <!-- Персональные данные -->
-        <app-card [title]="dataLoading? '': 'Персональные данные'"
+        <app-card [mainTitle]="dataLoading? '': 'Персональные данные'"
                   [fullHeight]="true">
           <ng-container content>
             <!-- Форма -->
@@ -91,7 +91,7 @@
             <!-- Загрузка сохранения -->
             <div class="loader"
                  *ngIf="dataLoading">
-              <app-inform title="Сохранение данных"
+              <app-inform mainTitle="Сохранение данных"
                           subTitle="Пожалуйста подождите"></app-inform>
             </div>
           </ng-container>
@@ -104,7 +104,7 @@
           </ng-container>
         </app-card>
         <!-- Контактные данные -->
-        <app-card [title]="dataLoading? '': 'Контактные данные'"
+        <app-card [mainTitle]="dataLoading? '': 'Контактные данные'"
                   [fullHeight]="true">
           <ng-container content>
             <!-- Форма -->
@@ -133,7 +133,7 @@
             <!-- Загрузка сохранения -->
             <div class="loader"
                  *ngIf="dataLoading">
-              <app-inform title="Сохранение данных"
+              <app-inform mainTitle="Сохранение данных"
                           subTitle="Пожалуйста подождите"></app-inform>
             </div>
           </ng-container>

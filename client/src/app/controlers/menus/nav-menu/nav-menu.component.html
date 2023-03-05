@@ -73,11 +73,11 @@
         <!-- Заголовок -->
         <div class="main-menu__title"
              [ngStyle]="css.title"
-             *ngIf="title">{{title}}</div>
+             *ngIf="!!mainTitle">{{mainTitle}}</div>
         <!-- Подзаголовок -->
         <div class="main-menu__subtitle"
              [ngStyle]="css.subtitle"
-             *ngIf="subTitle">{{subTitle}}</div>
+             *ngIf="!!subTitle">{{subTitle}}</div>
       </div>
       <!-- Слой посередине -->
       <div class="main-menu__layer-container_center"
@@ -312,12 +312,12 @@
 
 <!-- Информация о странице в мобильном меню -->
 <ng-template #mobileMenuInfo>
-  <!-- Информация о пользователей -->
+  <!-- Информация о пользователе -->
   <app-panels-header [imageSrc]="imagePrefix + user.settings.profileBackground.imageNameShort"
                      [imageOverlay]="user.settings.profileBackground.imageOverlay"
                      [positionX]="user.settings.profileBackground.positionX"
                      [positionY]="user.settings.profileBackground.positionY"
-                     title="{{user.name}} {{user.lastName}}"
+                     mainTitle="{{user.name}} {{user.lastName}}"
                      [subTitle]="user.online? 'Онлайн': (userIsMale? 'Был ': 'Была ') + (user.lastActionDate | date: 'd.M.y - H:mm')"
                      [avatarImage]="user.avatars?.small"
                      avatarIcon="profile"
@@ -329,7 +329,7 @@
                      [imageOverlay]="imageOverlay"
                      [positionX]="imagePositionX"
                      [positionY]="imagePositionY"
-                     [title]="title"
+                     [mainTitle]="mainTitle"
                      [subTitle]="subTitle"
                      [avatarImage]="avatarImage"
                      [avatarIcon]="avatarIcon"

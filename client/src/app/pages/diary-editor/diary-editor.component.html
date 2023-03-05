@@ -8,7 +8,7 @@
                  [imagePositionX]="dream.headerBackground.positionX"
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
-                 [title]="dream.title || defaultTitle"
+                 [mainTitle]="dream.title || defaultTitle"
                  subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
@@ -32,7 +32,7 @@
                 <div class="container">
                   <div class="cards-list">
                     <!-- Общие данные -->
-                    <app-card title="Общие данные"
+                    <app-card mainTitle="Общие данные"
                               avatarIcon="edit_calendar"
                               avatarColor="primary"
                               avatarBackground="fill"
@@ -61,7 +61,7 @@
                       </form>
                     </app-card>
                     <!-- Настройки -->
-                    <app-card title="Настройки"
+                    <app-card mainTitle="Настройки"
                               subTitle="Упоминания и поиск"
                               avatarIcon="settings"
                               avatarColor="primary"
@@ -89,7 +89,7 @@
                       </form>
                     </app-card>
                     <!-- Параметры сновидения -->
-                    <app-card title="Параметры"
+                    <app-card mainTitle="Параметры"
                               subTitle="Дополнительные сведения"
                               avatarIcon="widgets"
                               avatarColor="primary"
@@ -159,7 +159,7 @@
                 <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
                                        [navMenuType]="dream.headerType"
                                        [useAvatar]="false"
-                                       [title]="dream.title || defaultTitle"
+                                       [mainTitle]="dream.title || defaultTitle"
                                        subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
                                        (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
               </div>

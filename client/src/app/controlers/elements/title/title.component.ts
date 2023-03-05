@@ -13,9 +13,11 @@ import { CustomObject } from "@_models/app";
 })
 
 export class TitleComponent implements AfterViewChecked {
+
+
   @Input() type: TitleType = 1;
   @Input() icon: string;
-  @Input() title: string = "Заголовок";
+  @Input() mainTitle: string = "Заголовок";
   @Input() subTitle: string;
   @Input() noMargin: boolean = false;
 

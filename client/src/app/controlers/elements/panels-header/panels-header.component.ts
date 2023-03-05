@@ -25,7 +25,7 @@ export class PanelsHeaderComponent {
   @Input() avatarImage: string = "";
   @Input() avatarBlink: boolean = false;
   @Input() avatarIcon: string = "";
-  @Input() title: string = "";
+  @Input() mainTitle: string = "";
   @Input() subTitle: string = "";
 
   @Output() closeClick: EventEmitter<void> = new EventEmitter<void>();

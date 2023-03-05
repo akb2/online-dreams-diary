@@ -7,7 +7,7 @@
                [imagePositionY]="backgroundImageData.positionY"
                [imageOverlay]="backgroundImageData.imageOverlay"
                avatarIcon="person_search"
-               title="Поиск"
+               mainTitle="Поиск"
                subTitle="Людей"></app-main-menu>
 
 <!-- Контейнер с данными -->
@@ -52,7 +52,7 @@
                             (selectItemEvent)="onSearch()"></app-autocomplete-input>
   </search-group>
   <!-- Дата рождения -->
-  <search-group title="День рождения">
+  <search-group mainTitle="День рождения">
     <!-- Год рождения -->
     <app-autocomplete-input formControlName="birthYear"
                             type="autocomplete"
@@ -83,7 +83,7 @@
 
 <!-- Загрузка -->
 <ng-template #listLoader>
-  <app-inform title="Загрузка списка людей"
+  <app-inform mainTitle="Загрузка списка людей"
               subTitle="Пожалуйста подождите"></app-inform>
 </ng-template>
 
@@ -91,7 +91,7 @@
 <ng-template #listNotFound>
   <app-inform [aboveIcon]="true"
               icon="close"
-              title="Ошибка поиска"
+              mainTitle="Ошибка поиска"
               subTitle="Мы не нашли людей. Измените условия поиска или повторите попытку позже">
     <div class="buttons">
       <!-- Поиск -->
@@ -113,7 +113,7 @@
 
 <!-- Пагинатор -->
 <ng-template #pagination>
-  <app-pagination title="Поиск людей"
+  <app-pagination mainTitle="Поиск людей"
                   [subTitle]="peopleCount > 0? (peopleCount | i18nPlural: peoplePlural): ''"
                   [pageCurrent]="pageCurrent"
                   [pageLimit]="pageLimit"

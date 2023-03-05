@@ -6,7 +6,7 @@
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
-                 [title]="user.name + ' ' + user.lastName"
+                 [mainTitle]="user.name + ' ' + user.lastName"
                  subTitle="Настройки безопасности"
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
@@ -19,7 +19,7 @@
       <div class="container">
         <app-title [type]="1"
                    icon="lock_reset"
-                   title="Изменение пароля"></app-title>
+                   mainTitle="Изменение пароля"></app-title>
         <!-- Форма смены пароля -->
         <form class="pass-form"
               [formGroup]="passForm"
@@ -69,7 +69,7 @@
       <div class="container">
         <app-title [type]="2"
                    icon="lock_clock"
-                   title="Текущая авторизация"></app-title>
+                   mainTitle="Текущая авторизация"></app-title>
         <!-- Сведения о текущем токене -->
         <div class="token"
              *ngIf="!loadingTokenInfo && tokenInfo">
@@ -139,7 +139,7 @@
         <!-- Заголовок -->
         <app-title [type]="3"
                    icon="devices"
-                   title="Вход с других устройств">
+                   mainTitle="Вход с других устройств">
           <!-- Удалить все токены кроме текущего -->
           <a mat-flat-button
              color="warn"
@@ -185,7 +185,7 @@
 <ng-template #loadingData
              let-data>
   <app-inform [icon]="data.icon"
-              [title]="data.title"
+              [mainTitle]="data.title"
               [subTitle]="data.subTitle"
               [description]="data.description"></app-inform>
 </ng-template>

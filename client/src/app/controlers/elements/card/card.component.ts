@@ -15,7 +15,7 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 export class CardComponent implements AfterViewChecked, OnChanges {
 
 
-  @Input() title: string;
+  @Input() mainTitle: string;
   @Input() subTitle: string;
   @Input() avatar: string;
   @Input() avatarIcon: string;

@@ -1,7 +1,7 @@
 <!-- Карточки -->
 <mat-card [class]="fullHeight? 'full-height': ''">
   <!-- Шапка -->
-  <mat-card-header *ngIf="title || subTitle || avatar || avatarIcon"
+  <mat-card-header *ngIf="mainTitle || subTitle || avatar || avatarIcon"
                    [ngClass]="{
                      'use-avatar': avatar || avatarIcon,
                      'use-menu': showMenuPanel
@@ -18,9 +18,9 @@
       <mat-icon *ngIf="avatarIcon">{{avatarIcon}}</mat-icon>
     </a>
     <!-- Заголовок -->
-    <mat-card-title *ngIf="title">
-      <a *ngIf="routerLink || queryParams">{{title}}</a>
-      <ng-container *ngIf="!routerLink && !queryParams">{{title}}</ng-container>
+    <mat-card-title *ngIf="mainTitle">
+      <a *ngIf="routerLink || queryParams">{{mainTitle}}</a>
+      <ng-container *ngIf="!routerLink && !queryParams">{{mainTitle}}</ng-container>
     </mat-card-title>
     <!-- Подзаголовок -->
     <mat-card-subtitle *ngIf="subTitle">

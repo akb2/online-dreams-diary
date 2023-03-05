@@ -7,7 +7,7 @@
                  [imagePositionX]="user.settings.profileBackground.positionX"
                  [imagePositionY]="user.settings.profileBackground.positionY"
                  [imageOverlay]="user.settings.profileBackground.imageOverlay"
-                 [title]="user.name + ' ' + user.lastName"
+                 [mainTitle]="user.name + ' ' + user.lastName"
                  subTitle="Персонализация"
                  [avatarImage]="user.avatars.middle"
                  avatarIcon="person"
@@ -19,7 +19,7 @@
                          [loader]="backgroundImageLoader"
                          [useAvatar]="true"
                          [avatar]="user.avatars.middle"
-                         [title]="user.name + ' ' + user.lastName"
+                         [mainTitle]="user.name + ' ' + user.lastName"
                          [subTitle]="user.pageStatus"
                          floatIcon="message"
                          (changeSettings)="changeSettings($event)"></app-nav-menu-settings>

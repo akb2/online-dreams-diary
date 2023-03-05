@@ -70,13 +70,13 @@
 
 <!-- Загрузчик общих данных -->
 <ng-template #loader>
-  <app-inform title="Загрузка данных"
+  <app-inform mainTitle="Загрузка данных"
               subTitle="Пожалуйста подождите"></app-inform>
 </ng-template>
 
 <!-- Загрузчик -->
 <ng-template #loadingList>
-  <app-inform title="Поиск пользователей"
+  <app-inform mainTitle="Поиск пользователей"
               subTitle="Пожалуйста подождите"></app-inform>
 </ng-template>
 
@@ -84,7 +84,7 @@
 <ng-template #searchError
              let-q="q">
   <app-inform [icon]="!q? 'search': 'close'"
-              [title]="!q? 'Начните поиск': 'Ничего не найдено'"
+              [mainTitle]="!q? 'Начните поиск': 'Ничего не найдено'"
               [subTitle]="!q? 'Воспользуйтесь полем поиска, чтобы найти нужного пользователя': 'Попробуйте ввести запрос иначе'"></app-inform>
 </ng-template>
 

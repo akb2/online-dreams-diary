@@ -3,7 +3,7 @@
   <div class="section"
        [ngClass]="{ white: !diffBlockColor }">
     <div class="container">
-      <app-title title="Тип главного блока"></app-title>
+      <app-title mainTitle="Тип главного блока"></app-title>
       <!-- Список типов -->
       <div class="settings">
         <div class="settings__element min-height"
@@ -37,7 +37,7 @@
   <div class="section white"
        *ngIf="navMenuType === _navMenuType.full || navMenuType === _navMenuType.short">
     <div class="container">
-      <app-title title="Фоновая картинка"></app-title>
+      <app-title mainTitle="Фоновая картинка"></app-title>
       <!-- Список фонов -->
       <div class="settings">
         <div class="settings__element min-height"
@@ -99,7 +99,7 @@
         <mat-icon *ngIf="!avatar">person</mat-icon>
       </div>
       <!-- Заголовок -->
-      <div class="main-block__data-title">{{title}}</div>
+      <div class="main-block__data-title">{{mainTitle}}</div>
       <!-- Подзаголовок -->
       <div class="main-block__data-subtitle"
            *ngIf="!!status">{{status}}</div>

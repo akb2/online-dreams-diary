@@ -25,7 +25,7 @@ export class NavMenuSettingsComponent implements OnInit, OnDestroy {
   @Input() loader: boolean = false;
   @Input() diffBlockColor: boolean = true;
 
-  @Input() title: string = "Заголовок";
+  @Input() mainTitle: string = "Заголовок";
   @Input() subTitle: string = "Подзаголовок";
   @Input() avatar: string;
   @Input() useAvatar: boolean = false;
