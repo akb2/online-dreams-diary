@@ -109,7 +109,7 @@ export class ImageUploadComponent extends BaseInputDirective implements OnInit {
 
 
   // Сбросить значение
-  clearInput(value: string | null = this.defaultValue): void {
+  clearInput(value: string = this.defaultValue): void {
     this.defaultValue = value;
     this.control.setValue(value);
     this.newValue = "";

@@ -42,10 +42,10 @@ export interface Dream {
   type: DreamType;
   mood: DreamMood;
   keywords: string[];
-  places: Place[] | null;
-  members: number[] | null;
+  places: Place[];
+  members: number[];
   text: string;
-  map: DreamMap | null;
+  map: DreamMap;
   headerType: NavMenuType;
   headerBackground: BackgroundImageData;
 }

@@ -86,7 +86,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     @Inject(MAT_DIALOG_DATA) public data: PopupCropImageData,
     private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef,
-    private matDialogRef: MatDialogRef<PopupCropImageComponent, UserAvatarCropDataElement | null>
+    private matDialogRef: MatDialogRef<PopupCropImageComponent, UserAvatarCropDataElement>
   ) {
     this.data.title = this.data.title ? this.data.title : "Обрезка фотографии";
   }

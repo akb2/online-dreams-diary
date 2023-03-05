@@ -15,15 +15,15 @@ import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 export class CardComponent implements AfterViewChecked, OnChanges {
 
 
-  @Input() title: string | null;
-  @Input() subTitle: string | null;
-  @Input() avatar: string | null;
-  @Input() avatarIcon: string | null;
+  @Input() title: string;
+  @Input() subTitle: string;
+  @Input() avatar: string;
+  @Input() avatarIcon: string;
   @Input() avatarColor: IconColor = "primary";
   @Input() avatarBackground: IconBackground = "transparent";
   @Input() fullHeight: boolean = false;
-  @Input() routerLink: string | null;
-  @Input() queryParams: SimpleObject | null;
+  @Input() routerLink: string;
+  @Input() queryParams: SimpleObject;
   @Input() changeDetection: boolean;
 
   @ViewChild("contentPanel") private contentPanel: ElementRef;

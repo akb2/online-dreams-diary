@@ -10,10 +10,10 @@ import { MeshStandardMaterial, Side, Texture } from "three";
 
 // Интерфейс карты
 export interface DreamMap {
-  ceils: (DreamMapCeil | null)[];
+  ceils: (DreamMapCeil)[];
   camera: DreamMapCameraPosition;
   size: MapSize;
-  dreamerWay: DreamerWay[] | null;
+  dreamerWay: DreamerWay[];
   ocean: Water;
   land: WorldLand;
   sky: MapSkyData;
@@ -34,7 +34,7 @@ export interface DreamMapCameraPosition {
 
 // Интерфейс ячейки сновидения
 export interface DreamMapCeil {
-  place: Place | null;
+  place: Place;
   terrain: number;
   object: number;
   highlight?: boolean;
@@ -82,10 +82,10 @@ export enum MapTerrainSplatMapColor {
 
 // Интерфейс карты для сервера
 export interface DreamMapDto {
-  ceils: (DreamMapCeilDto | null)[];
+  ceils: (DreamMapCeilDto)[];
   camera?: DreamMapCameraPosition;
   size: MapSize;
-  dreamerWay: DreamerWay[] | null;
+  dreamerWay: DreamerWay[];
   ocean: WaterDto;
   sky: MapSkyData;
   relief?: DreamMapReliefSettings;
@@ -93,9 +93,9 @@ export interface DreamMapDto {
 
 // Интерфейс ячейки сновидения
 export interface DreamMapCeilDto {
-  place?: number | null;
-  terrain?: number | null;
-  object?: number | null;
+  place?: number;
+  terrain?: number;
+  object?: number;
   coord?: CoordDto;
 }
 
@@ -155,8 +155,8 @@ export interface Water {
 
 // Интерфейс воды для сервера
 export interface WaterDto {
-  z: number | null;
-  material: number | null;
+  z: number;
+  material: number;
 }
 
 // Интерфейс воды

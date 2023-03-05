@@ -157,7 +157,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
       // Открыть диалог
       dialog.afterClosed()
         .pipe(takeUntil(this.destroyed$))
-        .subscribe((position: UserAvatarCropDataElement | null) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
+        .subscribe((position: UserAvatarCropDataElement) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
     }
   }
 

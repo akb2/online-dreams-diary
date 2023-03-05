@@ -252,7 +252,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
       }
       // Диалог
       const dialog = PopupCropImageComponent.open(this.matDialog, data);
-      dialog.afterClosed().subscribe((position: UserAvatarCropDataElement | null) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
+      dialog.afterClosed().subscribe((position: UserAvatarCropDataElement) => this.onSaveCropPosition(type, position as UserAvatarCropDataElement));
     }
   }
 

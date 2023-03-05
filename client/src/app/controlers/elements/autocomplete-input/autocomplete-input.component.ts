@@ -44,7 +44,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   optionHasImage: boolean = false;
   optionDataFiltered: OptionData[] = [];
-  optionDataSelected: OptionData | null;
+  optionDataSelected: OptionData;
 
   image: string = "";
   icon: string;
@@ -66,8 +66,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Отображение в текстовом поле
-  displayWith(value: OptionData | string | null): string {
-    let optionData: OptionData | null = null;
+  displayWith(value: OptionData | string): string {
+    let optionData: OptionData = null;
     let returnValue: string = "";
     // Получена строка
     if (value && typeof value === "string") {
@@ -94,7 +94,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Текстовое представление
-  getOptionText(optionData: OptionData | null): string {
+  getOptionText(optionData: OptionData): string {
     return !!optionData ?
       optionData.title + (optionData.subTitle?.length ? this.textDelimiter + optionData.subTitle : "") :
       "";
@@ -158,8 +158,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     }
     // Выбор при нажатии стрелок
     else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-      const activeOption: MatOption | null = this.autoComplete.activeOption;
-      const optionData: OptionData | null = activeOption ? activeOption.value : null;
+      const activeOption: MatOption = this.autoComplete.activeOption;
+      const optionData: OptionData = activeOption ? activeOption.value : null;
       // Найдено значение
       if (optionData) {
         this.setValue(optionData.key);
@@ -217,8 +217,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
 
   // Установить значение
-  setValue(valueMixed: OptionData | number | string | null, setDefault: boolean = true, emitEvent: boolean = false): void {
-    let optionData: OptionData | null = null;
+  setValue(valueMixed: OptionData | number | string, setDefault: boolean = true, emitEvent: boolean = false): void {
+    let optionData: OptionData = null;
 
     // Если значение строка
     if (typeof valueMixed === "string" || typeof valueMixed === "number") {
@@ -269,7 +269,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Найти по ключу
-  private findByKey(key: string): OptionData | null {
+  private findByKey(key: string): OptionData {
     if (key && this.optionData.some(option => option.key === key)) {
       return this.optionData.find(option => option.key === key) as OptionData;
     }
@@ -278,7 +278,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Найти по ключу
-  private findByTitle(title: string): OptionData | null {
+  private findByTitle(title: string): OptionData {
     if (title && this.optionData.some(option => option.title === title || this.getOptionText(option) === title)) {
       return this.optionData.find(option => option.title === title || this.getOptionText(option) === title) as OptionData;
     }

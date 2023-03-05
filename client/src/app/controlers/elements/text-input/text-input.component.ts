@@ -41,7 +41,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
 
   private lastActivity: number = +new Date();
   private activityInterval: number = 100;
-  private oldValue: string | null = "";
+  private oldValue: string = "";
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -90,7 +90,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   // Нажатие на кнопки клавиатуры
   onKeyUp(event: KeyboardEvent): void {
     const sep: string = "\\" + DateSeparators.join("|\\");
-    const value: string | null = this.input.nativeElement.value;
+    const value: string = this.input.nativeElement.value;
     // Записать активность
     this.lastActivity = +new Date();
     // Отправка формы
@@ -125,10 +125,10 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
 
   // Нажатие Enter на клавиатуре
   private onSubmit(): void {
-    const value: string | null = this.input.nativeElement.value;
+    const value: string = this.input.nativeElement.value;
     // Для даты
     if (this.type === "date" && value) {
-      const date: Date | null = this.checkDate(value);
+      const date: Date = this.checkDate(value);
       //  Установить значение
       this.control.setValue(date ? date : "");
     }
@@ -148,7 +148,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   }
 
   // Проверка даты
-  private checkDate(value: string | null): Date | null {
+  private checkDate(value: string): Date {
     if (value) {
       let date: Date = new Date();
       // Парсинг даты

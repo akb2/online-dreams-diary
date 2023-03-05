@@ -23,7 +23,7 @@ export class PopupConfirmComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PopupConfirmData,
-    private matDialogRef: MatDialogRef<PopupConfirmComponent, boolean | null>
+    private matDialogRef: MatDialogRef<PopupConfirmComponent, boolean>
   ) {
     this.data.title = this.data.title ? this.data.title : "Подтвержение действия";
     this.data.text = this.data.text ? this.data.text : "Вы подтверждаете действие на сайте?";
