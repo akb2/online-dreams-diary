@@ -6,7 +6,7 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
-import { ApiResponse } from "@_models/api";
+import { ApiResponse, BaseSearch } from "@_models/api";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamDto, DreamMode, DreamMood, DreamStatus, DreamType, SearchRequestDream } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
@@ -134,7 +134,7 @@ export class DreamService implements OnDestroy {
 
 
   // Список сновидений
-  search(search: SearchDream, codes: string[] = []): Observable<SearchRequestDream> {
+  search(search: Partial<SearchDream>, codes: string[] = []): Observable<SearchRequestDream> {
     return this.httpClient.get<ApiResponse>("dream/getList", { params: ObjectToParams(search, "search_") }).pipe(
       switchMap(result => result.result.code === "0001" || codes.some(code => result.result.code === code) ?
         of({ ...result.result.data }) :
@@ -274,7 +274,7 @@ export class DreamService implements OnDestroy {
   }
 
   // Конвертер карты
-  dreamMapConverter(dreamMapDto: DreamMapDto | null = null): DreamMap {
+  dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
     const reliefNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
     // Преобразование карты
     if (dreamMapDto) {
@@ -408,9 +408,9 @@ export class DreamService implements OnDestroy {
 
 
 // Поиск: входящие данные
-export interface SearchDream {
-  page?: number;
-  user?: number;
-  limit?: number;
-  status?: DreamStatus;
+export interface SearchDream extends BaseSearch {
+  q: string;
+  user: number;
+  limit: number;
+  status: DreamStatus;
 }
