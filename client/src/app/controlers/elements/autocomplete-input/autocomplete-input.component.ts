@@ -222,10 +222,10 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
     // Если значение строка
     if (typeof valueMixed === "string" || typeof valueMixed === "number") {
-      optionData = this.findByKey(valueMixed + "");
+      optionData = this.findByKey(valueMixed.toString());
       // Попробовать поиск по тексту
       if (!optionData) {
-        optionData = this.findByTitle(valueMixed + "");
+        optionData = this.findByTitle(valueMixed.toString());
       }
     }
     // Если получен объект
