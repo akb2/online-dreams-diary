@@ -33,7 +33,7 @@
                   <div class="cards-list">
                     <!-- Общие данные -->
                     <app-card title="Общие данные"
-                              avatarIcon="format_list_bulleted"
+                              avatarIcon="edit_calendar"
                               avatarColor="primary"
                               avatarBackground="fill"
                               [fullHeight]="true">
@@ -86,6 +86,26 @@
                                                 label="Кому достпно сновидение"
                                                 formControlName="status"
                                                 [optionData]="dreamStatuses"></app-autocomplete-input>
+                      </form>
+                    </app-card>
+                    <!-- Параметры сновидения -->
+                    <app-card title="Параметры"
+                              subTitle="Дополнительные сведения"
+                              avatarIcon="widgets"
+                              avatarColor="primary"
+                              avatarBackground="fill"
+                              [fullHeight]="true">
+                      <form content
+                            [formGroup]="dreamForm">
+                        <!-- Тип сновидения -->
+                        <app-autocomplete-input required
+                                                label="Тип сновидения"
+                                                formControlName="type"
+                                                [optionData]="dreamTypes"></app-autocomplete-input>
+                        <!-- Атмосфера сновидения -->
+                        <app-slider-input formControlName="mood"
+                                          label="Атмосфера сновидения"
+                                          [optionData]="dreamMoods"></app-slider-input>
                       </form>
                     </app-card>
                   </div>

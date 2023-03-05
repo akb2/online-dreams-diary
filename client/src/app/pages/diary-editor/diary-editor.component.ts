@@ -5,17 +5,17 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
 import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
+import { OptionData } from "@_models/form";
 import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map-editor.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { DreamModes, DreamStatuses } from "@_datas/dream";
+import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { Dream, DreamMode, DreamStatus } from "@_models/dream";
+import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
 import { ErrorMessagesType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -71,8 +71,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   dateMax: Date = new Date();
   dreamModes: OptionData[] = DreamModes;
   dreamStatuses: OptionData[] = DreamStatuses;
+  dreamTypes: OptionData[] = DreamTypes;
+  dreamMoods: OptionData[] = DreamMoods;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -128,14 +130,16 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       title: ["", DreamValidatorData.title],
       description: [""],
       mode: [DreamMode.text],
+      type: [DreamType.Simple],
+      mood: [DreamMood.Nothing],
       status: [DreamStatus.draft],
       date: [new Date()],
       keywords: [[]],
       text: [""]
     });
     // Изменения формы
-    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeTitle(value ?? ""));
-    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => this.onChangeDate(value ?? new Date()));
+    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(value => this.onChangeTitle(value ?? ""));
+    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(value => this.onChangeDate(value ?? new Date()));
   }
 
   ngOnInit() {
@@ -143,8 +147,8 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -162,13 +166,16 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
       this.dream.description = this.dreamForm.get("description").value as string;
       this.dream.mode = parseInt(this.dreamForm.get("mode").value) as DreamMode;
+      this.dream.type = parseInt(this.dreamForm.get("type").value) as DreamType;
+      this.dream.mood = parseInt(this.dreamForm.get("mood").value) as DreamMood;
       this.dream.status = status;
       this.dream.keywords = this.dreamForm.get("keywords").value as string[];
       this.dream.text = this.dreamForm.get("text").value as string;
       this.dream.map = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
       // Сохранение
-      this.dreamService.save(this.dream).subscribe(
-        id => {
+      this.dreamService.save(this.dream)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(id => {
           this.dream.id = id;
           // Добавить ID в URL
           this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
@@ -177,8 +184,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
             message: "Сновидение успешно сохранено",
             mode: "success"
           });
-        }
-      );
+        });
     }
   }
 
@@ -233,7 +239,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   private defineData(): void {
     this.accountService.user$()
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         switchMap(user => !!user ? of(user) : throwError(null)),
         mergeMap(
           () => this.activatedRoute.queryParams,
@@ -271,6 +277,8 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     this.dreamForm.get("title").setValue(this.dream.title);
     this.dreamForm.get("description").setValue(this.dream.description);
     this.dreamForm.get("mode").setValue(this.dream.mode.toString());
+    this.dreamForm.get("type").setValue(this.dream.type.toString());
+    this.dreamForm.get("mood").setValue(this.dream.mood.toString());
     this.dreamForm.get("status").setValue(this.dream.status.toString());
     this.dreamForm.get("date").setValue(this.dream.date);
     this.dreamForm.get("keywords").setValue(this.dream.keywords);
