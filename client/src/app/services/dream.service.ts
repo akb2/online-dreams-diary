@@ -6,9 +6,9 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
-import { ApiResponse, BaseSearch } from "@_models/api";
+import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
-import { Dream, DreamDto, DreamMode, DreamMood, DreamStatus, DreamType, SearchRequestDream } from "@_models/dream";
+import { Dream, DreamDto, DreamMode, DreamMood, DreamStatus, DreamType, SearchDream, SearchRequestDream } from "@_models/dream";
 import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, DreamMapDto, DreamMapSettings, ReliefType, Water } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
@@ -401,16 +401,4 @@ export class DreamService implements OnDestroy {
     this.localStorageService.cookieKey = this.cookieKey;
     this.localStorageService.cookieLifeTime = this.cookieLifeTime;
   }
-}
-
-
-
-
-
-// Поиск: входящие данные
-export interface SearchDream extends BaseSearch {
-  q: string;
-  user: number;
-  limit: number;
-  status: DreamStatus;
 }
