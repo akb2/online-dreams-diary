@@ -1,4 +1,4 @@
-import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
+import { OptionData } from "@_models/form";
 import { PrivateType, UserPrivate, UserPrivateItem, UserPrivateNameItem } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 

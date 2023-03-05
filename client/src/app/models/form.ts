@@ -1,5 +1,5 @@
 import { AbstractControlOptions, ValidatorFn } from "@angular/forms";
-import { CustomObject } from "@_models/app";
+import { CustomObject, IconBackground, IconColor } from "@_models/app";
 
 
 
@@ -35,6 +35,23 @@ export interface FormErrorsKeys {
   captcha?: string;
 }
 
+// Тип данных для выпадающего списка
+export interface OptionData {
+  key: string;
+  title: string;
+  subTitle?: string;
+  image?: string;
+  icon?: string;
+  iconColor?: IconColor;
+  iconBackground?: IconBackground;
+  imagePosition?: AutocompleteImageSize;
+  data?: any;
+}
+
+
+
+
+
 // Значения для данных
 export type FormDataType = CustomObject<number>;
 
@@ -43,3 +60,9 @@ export type ValidatorDataType = CustomObject<ValidatorFn | ValidatorFn[] | Abstr
 
 // Тип для текстов ошибок
 export type ErrorMessagesType = CustomObject<FormErrorsKeys>;
+
+// Допустимые типы полей
+export type AutocompleteType = "autocomplete" | "select";
+
+// Допустимые значения позиции картинки
+export type AutocompleteImageSize = "cover" | "contain";

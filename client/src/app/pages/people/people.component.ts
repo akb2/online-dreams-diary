@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OptionData } from '@_controlers/autocomplete-input/autocomplete-input.component';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
 import { PeoplePlural } from "@_datas/account";
@@ -10,6 +9,7 @@ import { FormData, MonthPlural } from '@_datas/form';
 import { SearchUser, User, UserSex } from '@_models/account';
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
+import { OptionData } from "@_models/form";
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { CanonicalService } from '@_services/canonical.service';

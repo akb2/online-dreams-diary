@@ -5,6 +5,7 @@ import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { IconBackground, IconColor } from "@_models/app";
+import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
 import { fromEvent, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -312,27 +313,4 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
       };
     });
   }
-}
-
-
-
-
-
-// Допустимые типы полей
-export type AutocompleteType = "autocomplete" | "select";
-
-// Допустимые значения позиции картинки
-export type AutocompleteImageSize = "cover" | "contain";
-
-// Тип данных для выпадающего списка
-export interface OptionData {
-  key: string;
-  title: string;
-  subTitle?: string;
-  image?: string;
-  icon?: string;
-  iconColor?: IconColor;
-  iconBackground?: IconBackground;
-  imagePosition?: AutocompleteImageSize;
-  data?: any;
 }
