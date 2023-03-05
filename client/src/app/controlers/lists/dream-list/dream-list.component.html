@@ -123,6 +123,14 @@
       <div class="dream__icons-icon-online"
            *ngIf="user.online"></div>
     </a>
+    <!-- Карта сновидения -->
+    <div class="dream__icons-icon"
+         color="warn"
+         background="fill"
+         matTooltip="Есть карта сновидения"
+         *ngIf="dreamHasMap(dream)">
+      <mat-icon>explore</mat-icon>
+    </div>
     <!-- Уровень доступности -->
     <div class="dream__icons-icon"
          [attr.color]="status.iconColor"

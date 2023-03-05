@@ -7,7 +7,7 @@ import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { User, UserSex } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
-import { Dream, DreamMood, DreamType } from "@_models/dream";
+import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
@@ -100,9 +100,14 @@ export class DreamListComponent implements OnInit, OnChanges {
     return DreamTypes.find(({ key }) => key === dream.type.toString()) ?? DreamTypes.find(({ key }) => key === DreamType.Simple.toString());
   }
 
-  // настроение сновидения
+  // Настроение сновидения
   getDreamMood(dream: Dream): OptionData {
     return DreamMoods.find(({ key }) => key === dream.mood.toString()) ?? DreamMoods.find(({ key }) => key === DreamMood.Nothing.toString());
+  }
+
+  // Есть карта сновидений
+  dreamHasMap(dream: Dream): boolean {
+    return dream.mode === DreamMode.map || dream.mode === DreamMode.mixed;
   }
 
 
