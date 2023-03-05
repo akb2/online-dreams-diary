@@ -1,0 +1,55 @@
+@use "sass:map";
+@use "sass:list";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/vars";
+
+// Текст
+.text {
+  $__elm: &;
+  $colors: (
+    primary: colors.$mat-primary 500,
+    accent: colors.$mat-secondary 500,
+    warn: colors.$mat-status-warn 500,
+    disabled: colors.$mat-disabled 500,
+  );
+  // Свойства
+  line-height: inherit !important;
+  // Элемент выделения
+  ::ng-deep &__highlight {
+    display: inline-block;
+    line-height: inherit !important;
+    font: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    font-weight: inherit !important;
+    vertical-align: baseline;
+    padding: 0 6px;
+    text-indent: 0;
+    background-color: colors.$subtitle;
+    color: colors.$title-dark !important;
+    border-radius: vars.$iconsSmallBorderRadius;
+  }
+  // Инвертированные цвета
+  &.invert ::ng-deep &__highlight {
+    background-color: colors.$background;
+    color: colors.$text !important;
+  }
+  // Цвета
+  @each $colorKey, $color in $colors {
+    $colorMap: list.nth($color, 1);
+    $colorMapKey: list.nth($color, 2);
+    // определить правила цвета
+    &[color="#{$colorKey}"] {
+      // Основное правило
+      ::ng-deep #{$__elm}__highlight {
+        background-color: map.get($colorMap, $colorMapKey);
+        color: map.get($colorMap, contrast, $colorMapKey) !important;
+      }
+      // Инверсия
+      &.invert ::ng-deep #{$__elm}__highlight {
+        background-color: colors.$background;
+        color: map.get($colorMap, $colorMapKey) !important;
+      }
+    }
+  }
+}
