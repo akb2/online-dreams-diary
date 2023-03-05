@@ -247,13 +247,27 @@
   // Цвета
   @each $colors, $value in $colors {
     // Для закрашенных иконок
-    &[color="#{$colors}"][background="fill"] > mat-icon {
-      background-color: map.get(list.nth($value, 1), list.nth($value, 2));
-      color: map.get(list.nth($value, 1), contrast, list.nth($value, 2));
+    &[color="#{$colors}"][background="fill"] {
+      $background: map.get(list.nth($value, 1), list.nth($value, 2));
+      // Иконка
+      > mat-icon {
+        background-color: $background;
+        color: map.get(list.nth($value, 1), contrast, list.nth($value, 2));
+      }
+      // Картинка
+      &.colorized > img {
+        $spacing: $size * math.div(1 - $fontSize, 2);
+        // Свойства
+        background-color: $background;
+        border: #{$spacing} solid #{$background};
+      }
     }
     // Для незакрашенных иконок
-    &[color="#{$colors}"][background="transparent"] > mat-icon {
-      color: map.get(list.nth($value, 1), list.nth($value, 2));
+    &[color="#{$colors}"][background="transparent"] {
+      // Иконка
+      > mat-icon {
+        color: map.get(list.nth($value, 1), list.nth($value, 2));
+      }
     }
   }
 

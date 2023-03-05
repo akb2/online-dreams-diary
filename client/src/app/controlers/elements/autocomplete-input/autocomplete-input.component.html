@@ -45,6 +45,7 @@
 
   <!-- Картинка -->
   <div class="image"
+       [ngClass]="{ colorized: iconBackground === 'fill' }"
        [attr.position]="imagePosition"
        [attr.color]="iconColor"
        [attr.background]="iconBackground"
@@ -64,15 +65,16 @@
              let-item>
   <div class="option">
     <div class="option__image"
+         [ngClass]="{ colorized: item.iconBackground === 'fill' }"
          [attr.position]="item.imagePosition"
          [attr.color]="item.iconColor"
          [attr.background]="item.iconBackground"
          *ngIf="item.image?.length || item.icon?.length || optionHasImage">
+      <!-- Картинка -->
       <img [src]="item.image"
            *ngIf="item.image?.length && !item.icon?.length" />
-      <mat-icon *ngIf="item.icon?.length">
-        {{item.icon}}
-      </mat-icon>
+      <!-- Иконка -->
+      <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
     </div>
     <div class="option__name">
       <div class="option__name-title">{{item.title}}</div>
