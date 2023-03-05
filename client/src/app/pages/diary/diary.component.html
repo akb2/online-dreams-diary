@@ -60,6 +60,15 @@
                       label="Поиск"
                       (submit)="onSearch()"></app-text-input>
     </search-group>
+    <!-- Параметры сновидения -->
+    <search-group mainTitle="Основные параметры">
+      <!-- Статуст доступности -->
+      <app-autocomplete-input formControlName="status"
+                              type="select"
+                              [optionData]="dreamStatuses"
+                              label="Статус сновидения"
+                              (selectItemEvent)="onSearch()"></app-autocomplete-input>
+    </search-group>
   </app-search-panel>
 </ng-container>
 

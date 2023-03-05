@@ -4,18 +4,22 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
+import { WaitObservable } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { DreamPlural } from "@_datas/dream";
+import { DreamPlural, DreamStatuses } from "@_datas/dream";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { CustomObject, CustomObjectKey, RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
-import { Dream } from "@_models/dream";
+import { Dream, DreamStatus, SearchDream } from "@_models/dream";
+import { OptionData } from "@_models/form";
+import { Friend, FriendStatus } from "@_models/friend";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
-import { DreamService, SearchDream } from "@_services/dream.service";
+import { DreamService } from "@_services/dream.service";
+import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { Observable, of, Subject, throwError, timer } from "rxjs";
 import { concatMap, map, skipWhile, switchMap, takeUntil, takeWhile } from "rxjs/operators";
@@ -59,6 +63,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   private user: User;
   visitedUser: User;
+  friend: Friend;
   dreams: Dream[];
   dreamsCount: number = 0;
 
@@ -75,6 +80,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   dreamPlural: SimpleObject = DreamPlural;
 
   searchForm: FormGroup;
+  dreamStatuses: OptionData[] = [];
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -114,7 +120,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
       ...fromForm,
       page,
       user: this.visitedUser?.id ?? 0,
-      status: -1,
       limit: this.pageLimit
     };
   }
@@ -124,18 +129,16 @@ export class DiaryComponent implements OnInit, OnDestroy {
     const page: number = parseInt(this.queryParams.page) > 0 ? parseInt(this.queryParams.page) : 1;
     const fromForm: CustomObjectKey<keyof SearchDream, string | number> = Object.entries(this.getDefaultSearch)
       .filter(([k]) => k !== "page")
-      .reduce((o, [k]) => ({ ...o, [k]: this.queryParams[k]?.toString() ?? "" }), {});
+      .reduce((o, [k, defaultValue]) => ({ ...o, [k]: this.queryParams[k]?.toString() ?? defaultValue }), {});
     // Вернуть данные
-    return {
-      ...fromForm,
-      page,
-    };
+    return { ...fromForm, page };
   }
 
   // Пустые данные
   private get getDefaultSearch(): Partial<SearchDream> {
     return {
       q: "",
+      status: -1,
       page: 1
     };
   }
@@ -161,6 +164,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
+    private friendService: FriendService,
     private titleService: Title,
     private router: Router,
     private globalService: GlobalService,
@@ -232,7 +236,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     // Готово к загрузке
     this.pageLoading = false;
     this.titleService.setTitle(pageTitle);
-    this.changeDetectorRef.detectChanges();
+    this.defineDreamStatuses();
   }
 
   // Сновидения не найдены
@@ -316,8 +320,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
         Object.entries(this.getCurrentSearch)
           .filter(([k]) => k !== "page")
           .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
-        // Обновить
-        this.changeDetectorRef.detectChanges();
       });
   }
 
@@ -345,8 +347,17 @@ export class DiaryComponent implements OnInit, OnDestroy {
           // Чужая страница
           else {
             this.accountService.getUser(this.visitedUserId, ["8100"])
-              .pipe(takeUntil(this.destroyed$))
-              .subscribe(() => visitedUserSync = true);
+              .pipe(
+                takeUntil(this.destroyed$),
+                concatMap(
+                  visitedUser => !!this.user ? this.friendService.friends$(this.user.id, visitedUser.id) : of(null),
+                  (visitedUser, friend) => ({ visitedUser, friend })
+                )
+              )
+              .subscribe(({ friend }) => {
+                visitedUserSync = true;
+                this.friend = friend;
+              });
           }
           // Подписка
           this.waitObservable(() => !visitedUserSync)
@@ -375,6 +386,32 @@ export class DiaryComponent implements OnInit, OnDestroy {
         concatMap(() => this.activatedRoute.queryParams)
       )
       .subscribe(() => this.search());
+  }
+
+  // Определение доступных статусов для определения
+  private defineDreamStatuses(): void {
+    const currentStatus: -1 | DreamStatus = ParseInt(this.searchForm.get("status")?.value);
+    const isFriend: boolean = this.friend?.status === FriendStatus.Friends || this.friend?.status === FriendStatus.InSubscribe;
+    const dreamStatuses: OptionData[] = [AllDreamStatuses, ...DreamStatuses];
+    const availAllUnAuth: (-1 | DreamStatus)[] = [-1, DreamStatus.public];
+    const availAllAuth: (-1 | DreamStatus)[] = [...availAllUnAuth, DreamStatus.users];
+    const availFriend: (-1 | DreamStatus)[] = [...availAllAuth, DreamStatus.friends];
+    const availMy: (-1 | DreamStatus)[] = [...availFriend, DreamStatus.draft, DreamStatus.hash, DreamStatus.private];
+    const availStatuses: (-1 | DreamStatus)[] = this.itsMyPage ?
+      availMy : this.itsAllPage ?
+        (!!this.user ? availAllAuth : availAllUnAuth) :
+        (!!this.user ? (isFriend ? availFriend : availAllAuth) : availAllUnAuth);
+    // Фильтрация опций
+    if (dreamStatuses.length > 2) {
+      this.dreamStatuses = availStatuses
+        .map(status => dreamStatuses.find(({ key }) => key === status.toString()))
+        .filter(s => !!s)
+        .map(status => ({ ...status, subTitle: "" }));
+    }
+    // Проверка текущего значения
+    this.searchForm.get("status")?.setValue(this.dreamStatuses.some(({ key }) => key === currentStatus.toString()) ? currentStatus : -1);
+    // Обновить
+    this.changeDetectorRef.detectChanges();
   }
 
   // Загрузка списка сновидений
@@ -433,3 +470,15 @@ export class DiaryComponent implements OnInit, OnDestroy {
     });
   }
 }
+
+
+
+
+
+// Все типы сновидений
+const AllDreamStatuses: OptionData = {
+  key: "-1",
+  icon: "widgets",
+  iconColor: "disabled",
+  title: "Любой уровень",
+};

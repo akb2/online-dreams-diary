@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { AutocompleteInputModule } from "@_controlers/autocomplete-input/autocomplete-input.module";
 import { DreamListModule } from '@_controlers/dream-list/dream-list.module';
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -33,7 +34,8 @@ import { DiaryComponent } from '@_pages/diary/diary.component';
     SearchPanelModule,
     SearchGroupModule,
     TextInputModule,
-    MatTooltipModule
+    MatTooltipModule,
+    AutocompleteInputModule
   ]
 })
 
