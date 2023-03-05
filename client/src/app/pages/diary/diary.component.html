@@ -45,10 +45,21 @@
   <!-- Фильтры для поиска -->
   <app-search-panel #searchPanel
                     [backgroundImageId]="backgroundImageData.id"
-                    headerTitle="Поиск"
-                    headerSubTitle="Настройки и фильтры"
+                    headerTitle="Настройки фильтров"
+                    headerSubTitle="Поиска сновидений"
                     avatarIcon="content_paste_search"
-                    *ngIf="!loading"></app-search-panel>
+                    [formGroup]="searchForm"
+                    (clear)="onClear()"
+                    (submit)="onSearch()"
+                    *ngIf="!loading">
+    <!-- Базовый поиск -->
+    <search-group>
+      <!-- Поиск по ФИО -->
+      <app-text-input formControlName="q"
+                      label="Поиск"
+                      (submit)="onSearch()"></app-text-input>
+    </search-group>
+  </app-search-panel>
 </ng-container>
 
 
@@ -81,21 +92,41 @@
               title="Ошибка поиска"
               subTitle="Сновидения не найдены. Измените условия поиска или {{itsMyPage? 'запишите новое сновидение': 'повторите позже'}}">
     <div class="buttons">
-      <a mat-flat-button
-         color="primary"
-         (click)="openSearch()"
-         *ngIf="!itsMyPage; else listNotFoundMyButtons">
-        <mat-icon>search</mat-icon>Открыть поиск
-      </a>
+      <ng-container *ngIf="!itsMyPage; else listNotFoundMyButtons">
+        <!-- Поиск -->
+        <a mat-flat-button
+           color="primary"
+           (click)="openSearch()">
+          <mat-icon>search</mat-icon>Открыть поиск
+        </a>
+        <!-- Сброс -->
+        <button mat-stroked-button
+                color="basic"
+                (click)="onClear()"
+                *ngIf="getIsSearch">
+          <mat-icon>close</mat-icon>Сбросить
+        </button>
+      </ng-container>
       <!-- Кнопки для моего дневника -->
       <ng-template #listNotFoundMyButtons>
-        <a mat-stroked-button
-           color="basic"
-           (click)="openSearch()">Открыть поиск</a>
         <!-- Новый сон -->
         <a mat-flat-button
            color="primary"
-           routerLink="/diary/editor">Новый сон</a>
+           routerLink="/diary/editor">
+          <mat-icon>add</mat-icon>Новый сон
+        </a>
+        <!-- Поиск -->
+        <a mat-stroked-button
+           color="basic"
+           (click)="openSearch()">
+          <mat-icon>search</mat-icon>Открыть поиск
+        </a>
+        <!-- Сброс -->
+        <button mat-icon-button
+                color="warn"
+                matTooltip="Сброс фильтров"
+                (click)="onClear()"
+                *ngIf="getIsSearch"><mat-icon>close</mat-icon></button>
       </ng-template>
     </div>
   </app-inform>
