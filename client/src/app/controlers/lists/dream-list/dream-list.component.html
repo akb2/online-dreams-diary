@@ -108,23 +108,23 @@
     </div>
     <!-- Тип сновидения -->
     <div class="dream__icons-icon"
-         [attr.color]="dreamType.iconColor"
-         [attr.background]="dreamType.iconBackground"
-         [attr.position]="dreamType.imagePosition"
-         [matTooltip]="dreamType.title"
-         *ngIf="getDreamType(dream) as dreamType">
-      <img class="no-circle"
-           [src]="dreamType.image" />
+         [ngClass]="{ colorized: item.iconBackground === 'fill' }"
+         [attr.color]="item.iconColor"
+         [attr.background]="item.iconBackground"
+         [attr.position]="item.imagePosition"
+         [matTooltip]="item.title"
+         *ngIf="getDreamType(dream) as item">
+      <img [src]="item.image" />
     </div>
     <!-- Настроение сновидения -->
     <div class="dream__icons-icon"
-         [attr.color]="dreamMood.iconColor"
-         [attr.background]="dreamMood.iconBackground"
-         [attr.position]="dreamMood.imagePosition"
-         [matTooltip]="dreamMood.title"
-         *ngIf="getDreamMood(dream) as dreamMood">
-      <img class="no-circle"
-           [src]="dreamMood.image" />
+         [ngClass]="{ colorized: item.iconBackground === 'fill' }"
+         [attr.color]="item.iconColor"
+         [attr.background]="item.iconBackground"
+         [attr.position]="item.imagePosition"
+         [matTooltip]="item.title"
+         *ngIf="getDreamMood(dream) as item">
+      <img [src]="item.image" />
     </div>
   </div>
   <!-- Пустой блок -->

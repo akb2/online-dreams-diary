@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { OptionData } from "@_controlers/autocomplete-input/autocomplete-input.component";
+import { OptionData } from "@_models/form";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";

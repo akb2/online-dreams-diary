@@ -165,11 +165,13 @@ class DreamService
   public function createDream($data): int
   {
     $sqlData = array(
-      "user_id" => strval($data["userId"]),
-      "mode" => strval($data["mode"]),
-      "status" => strval($data["status"]),
+      "user_id" => intval($data["userId"]),
+      "mode" => intval($data["mode"]),
+      "status" => intval($data["status"]),
+      "type" => intval($data["type"]),
+      "mood" => intval($data["mood"]),
       "date" => date("Y-m-d", strtotime($data["date"])),
-      "title" => $data["title"],
+      "title" => strval($data["title"]),
       "description" => $data["description"],
       "keywords" => $data["keywords"],
       "text" => $data["text"],
@@ -191,9 +193,11 @@ class DreamService
   public function updateDream($data): string
   {
     $sqlData = array(
-      "id" => $data["id"],
-      "mode" => $data["mode"],
-      "status" => $data["status"],
+      "id" => intval($data["id"]),
+      "mode" => intval($data["mode"]),
+      "status" => intval($data["status"]),
+      "type" => intval($data["type"]),
+      "mood" => intval($data["mood"]),
       "date" => date("Y-m-d", strtotime($data["date"])),
       "title" => $data["title"],
       "description" => $data["description"],

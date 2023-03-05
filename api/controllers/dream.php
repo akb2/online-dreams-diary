@@ -136,6 +136,8 @@ class Dream
           'members' => $testDream['members'],
           'map' => $testDream['map'],
           'mode' => intval($testDream['mode']),
+          'type' => intval($testDream['type']),
+          'mood' => intval($testDream['mood']),
           'status' => intval($testDream['status']),
           'headerType' => $testDream['header_type'],
           'headerBackgroundId' => intval($testDream['header_background'])
@@ -210,6 +212,8 @@ class Dream
             'members' => isset($dream['members']) ? $dream['members'] : '',
             'map' => isset($dream['map']) ? $dream['map'] : '',
             'mode' => intval($dream['mode']),
+            'type' => intval($dream['type']),
+            'mood' => intval($dream['mood']),
             'status' => intval($dream['status']),
             'headerType' => $dream['header_type'],
             'headerBackgroundId' => intval($dream['header_background'])
