@@ -130,7 +130,10 @@ class DreamService
     }
     // Данные для поиска
     $sqlData = array(
+      'ids' => $search['ids'],
+      'exclude_ids' => $search['exclude_ids'],
       // Значения полей
+      "q" => strval($search["q"]),
       "status" => intval($search["status"]),
       "user_id" => intval($search["user"]),
       // Параметры

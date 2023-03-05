@@ -16,6 +16,30 @@ FROM `dreams`
 WHERE
 `id` > 0
 
+<?/* Поиск по списку IDs */ ?>
+<? if (count($input['ids']) > 0) : ?>
+  <? $i = 0; ?>
+  AND (
+  <? foreach ($input['ids'] as $id) : ?>
+    <? if ($i > 0) : ?> OR <? endif; ?>
+    `id` = "<?= intval($id); ?>"
+    <? $i += 1; ?>
+  <? endforeach; ?>
+  )
+<? endif; ?>
+
+<?/* Исключение IDs из поиска */ ?>
+<? if (count($input['exclude_ids']) > 0) : ?>
+  <? foreach ($input['exclude_ids'] as $id) : ?>
+    AND `id` != "<?= intval($id); ?>"
+  <? endforeach; ?>
+<? endif; ?>
+
+<?/* Поиск по поисковому запросу */ ?>
+<? if (strlen($input['q']) > 0) : ?>
+  AND MATCH (`title`, `description`, `keywords`, `text`) AGAINST (:q IN BOOLEAN MODE)
+<? endif; ?>
+
 <?/* Фильтр по пользователю */ ?>
 <? if ($input['user_id'] > 0) : ?>
   AND `user_id` = :user_id

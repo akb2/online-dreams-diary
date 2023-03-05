@@ -74,14 +74,20 @@ class Dream
   #[Request('get')]
   public function getList($data): array
   {
+    $data['search_ids'] = isset($data['search_ids']) && strlen($data['search_ids']) > 0 ? explode(',', $data['search_ids']) : array();
+    $data['search_excludeIds'] = isset($data['search_excludeIds']) && strlen($data['search_excludeIds']) > 0 ? explode(',', $data['search_excludeIds']) : array();
+    // Параметры
     $code = '0002';
     $userId = $_SERVER['TOKEN_USER_ID'];
     $token = $_COOKIE['api-token'] ?? '';
     $search = array(
-      'page' => isset($data['search_page']) && strlen($data['search_page']) > 0 ? $data['search_page'] : '',
-      'user' => isset($data['search_user']) && strlen($data['search_user']) > 0 ? $data['search_user'] : '',
-      'limit' => isset($data['search_limit']) && strlen($data['search_limit']) > 0 ? $data['search_limit'] : '',
-      'status' => isset($data['search_status']) && strlen($data['search_status']) > 0 ? $data['search_status'] : ''
+      'ids' => $data['search_ids'] ?? null,
+      'exclude_ids' => $data['search_excludeIds'] ?? null,
+      'q' => $data['search_q'] ?? null,
+      'page' => $data['search_page'] ?? 1,
+      'user' => $data['search_user'] ?? null,
+      'limit' => $data['search_limit'] ?? null,
+      'status' => $data['search_status'] ?? -1
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();
