@@ -5,6 +5,8 @@ $dialogTitleSize: 46px;
 $dialogContentMaxHeight: calc(100vh - #{($dialogPadding * 2) + ($dialogPadding + 20px) + (52px + (16px * 2) - $dialogPadding)});
 
 $buttonSize: 40px;
+$iconsSmallBorderRadius: 3px;
+$iconsMediumBorderRadius: 6px;
 
 $headerHeight: 60px;
 
