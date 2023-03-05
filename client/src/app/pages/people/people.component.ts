@@ -6,6 +6,7 @@ import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.com
 import { PeoplePlural } from "@_datas/account";
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { FormData, MonthPlural } from '@_datas/form';
+import { CompareObjects } from "@_helpers/objects";
 import { SearchUser, User, UserSex } from '@_models/account';
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
@@ -109,6 +110,11 @@ export class PeopleComponent implements OnInit, OnDestroy {
       birthYear: "",
       page: 1
     };
+  }
+
+  // Задействован поиск
+  get getIsSearch(): boolean {
+    return !CompareObjects(this.getDefaultSearch, this.getCurrentSearch);
   }
 
 
@@ -281,7 +287,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
           this.people = people;
           this.loading = false;
           // Обновить
-          this.canonicalService.setURL("people", this.getSearch, { page: [0, 1], limit: [this.defaultPageLimit] });
+          this.canonicalService.setURL("people", this.getSearch, { page: [0, 1], limit: [0, this.defaultPageLimit] });
           this.changeDetectorRef.detectChanges();
         }
         // Сновидения не найдены
@@ -301,7 +307,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   // Записать параметры в URL
   private urlSet(datas: Partial<SearchUser>): void {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
-    const queryParams: CustomObject<string | number | null> = Object.entries({ ...this.queryParams, ...datas })
+    const queryParams: CustomObject<string | number> = Object.entries({ ...this.queryParams, ...datas })
       .map(([k, v]) => ([k, !!v ? v : null]))
       .reduce((o, [k, v]) => ({ ...o, [k as string]: v }), {});
     // Перейти к новой странице

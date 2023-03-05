@@ -8,9 +8,7 @@
                [imageOverlay]="backgroundImageData.imageOverlay"
                avatarIcon="person_search"
                title="Поиск"
-               subTitle="Людей"
-               floatButtonIcon="search"
-               (floatButtonCallback)="openSearch()"></app-main-menu>
+               subTitle="Людей"></app-main-menu>
 
 <!-- Контейнер с данными -->
 <div class="root-section"
@@ -95,11 +93,21 @@
               icon="close"
               title="Ошибка поиска"
               subTitle="Мы не нашли людей. Измените условия поиска или повторите попытку позже">
-    <a mat-flat-button
-       color="primary"
-       (click)="openSearch()">
-      <mat-icon>search</mat-icon>Открыть поиск
-    </a>
+    <div class="buttons">
+      <!-- Поиск -->
+      <button mat-flat-button
+              color="primary"
+              (click)="openSearch()">
+        <mat-icon>search</mat-icon>Открыть поиск
+      </button>
+      <!-- Сброс -->
+      <button mat-stroked-button
+              color="basic"
+              (click)="onClear()"
+              *ngIf="getIsSearch">
+        <mat-icon>close</mat-icon>Сбросить
+      </button>
+    </div>
   </app-inform>
 </ng-template>
 
