@@ -54,7 +54,7 @@ export const DreamStatuses: OptionData[] = [
   // Личное сновидение
   {
     key: DreamStatus.private.toString(),
-    title: "Личное сновидение",
+    title: "Личное",
     subTitle: "Доступно только для вас",
     icon: "lock",
     iconColor: "warn",
@@ -90,7 +90,7 @@ export const DreamStatuses: OptionData[] = [
   // Публичное сновидение
   {
     key: DreamStatus.public.toString(),
-    title: "Публичное сновидение",
+    title: "Публичное",
     subTitle: "Доступно всем в интернете",
     icon: "travel_explore",
     iconColor: "primary",
