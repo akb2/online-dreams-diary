@@ -7,6 +7,7 @@ import { RouterModule } from "@angular/router";
 import { CardMenuModule } from "@_controlers/card-menu/card-menu.module";
 import { PopupConfirmModule } from "@_controlers/confirm/confirm.module";
 import { DreamListComponent } from "@_controlers/dream-list/dream-list.component";
+import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
 import { CoreModule } from "@_modules/core.module";
 
 
@@ -28,7 +29,8 @@ import { CoreModule } from "@_modules/core.module";
     RouterModule,
     CardMenuModule,
     PopupConfirmModule,
-    MatTooltipModule
+    MatTooltipModule,
+    HighlightKeywordsModule
   ]
 })
 

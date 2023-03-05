@@ -145,6 +145,13 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return !CompareObjects(this.getDefaultSearch, this.getCurrentSearch);
   }
 
+  // Список поисковых фраз
+  get getSearchWords(): string[] {
+    const search: string = this.searchForm.get("q")?.value ?? "";
+    // Вернуть значение
+    return !!search ? search.split(" ").filter(w => !!w) : [];
+  }
+
 
 
 

@@ -32,6 +32,7 @@
             <app-dream-list [dreams]="dreams"
                             [sourcePlace]="!!visitedUser? '': 'diary-all'"
                             [showProfile]="itsAllPage"
+                            [highlightWords]="getSearchWords"
                             (dreamDelete)="search()"></app-dream-list>
             <!-- Пагинатор -->
             <ng-container [ngTemplateOutlet]="pagination"

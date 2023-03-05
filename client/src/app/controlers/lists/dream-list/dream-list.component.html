@@ -25,7 +25,16 @@
         <div class="dream__text-title"
              [ngClass]="{ 'default-title': !dream.title?.length }"
              routerLink="/diary/viewer/{{dream.id}}"
-             [queryParams]="viewerQueryParams(dream)">{{dream.title || defaultTitle}}</div>
+             [queryParams]="viewerQueryParams(dream)">
+          <!-- Обычное название -->
+          <ng-container *ngIf="!highlightWords?.length">{{dream.title ?? defaultTitle}}</ng-container>
+          <!-- Подсветка -->
+          <app-highlight-keywords color="primary"
+                                  [text]="dream.title ?? defaultTitle"
+                                  [invert]="!isHasImage(dream)"
+                                  [keywords]="highlightWords"
+                                  *ngIf="!!highlightWords?.length"></app-highlight-keywords>
+        </div>
         <!-- Когда приснился -->
         <div class="dream__text-subtitle"
              routerLink="/diary/viewer/{{dream.id}}"
@@ -43,7 +52,15 @@
              'has-image': isHasImage(dream),
              'no-keywords': !dream.keywords.length
            }">
-        <div class="dream__text-description">{{dream.description}}</div>
+        <!-- Обычное описание -->
+        <div class="dream__text-description"
+             *ngIf="!highlightWords?.length">{{dream.description}}</div>
+        <!-- Подсветка -->
+        <app-highlight-keywords class="dream__text-description"
+                                color="primary"
+                                [text]="dream.description"
+                                [keywords]="highlightWords"
+                                *ngIf="!!highlightWords?.length"></app-highlight-keywords>
       </div>
       <!-- Ключевые слова -->
       <div class="dream__text keywords"
@@ -51,7 +68,16 @@
         <div class="dream__text-keywords">
           <ng-container *ngFor="let keyword of dream.keywords; let key = index">
             <div class="keyword">
-              <div class="keyword__text">{{keyword}}</div>
+              <!-- Обычное ключевое слово -->
+              <div class="keyword__text"
+                   *ngIf="!highlightWords?.length">{{keyword}}</div>
+              <!-- Подсветка -->
+              <app-highlight-keywords class="keyword__text"
+                                      color="primary"
+                                      [text]="keyword"
+                                      [keywords]="highlightWords"
+                                      *ngIf="!!highlightWords?.length"></app-highlight-keywords>
+              <!-- Запятая -->
               <div class="keyword__comma"
                    *ngIf="(key + 1) < dream.keywords.length">,</div>
             </div>
