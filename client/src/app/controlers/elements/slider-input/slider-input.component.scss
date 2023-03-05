@@ -1,0 +1,56 @@
+@use "sass:math";
+@use "../../../../assets/styles/mixins";
+@use "../../../../assets/styles/vars";
+
+// Слайдер
+.slider {
+  display: block;
+  // Для списка значений
+  &.option-data {
+    width: calc(100% - #{vars.$buttonSize});
+    margin: 0 #{math.div(vars.$buttonSize, 2)};
+  }
+}
+
+// Список элементов
+.list {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  // Элемент
+  &__item {
+    @include mixins.customsColors(vars.$buttonSize);
+    // Свойства
+    opacity: 0.5;
+    filter: grayscale(0.4);
+    cursor: pointer;
+    // Иконка и картинка
+    > img,
+    mat-icon {
+      border-radius: vars.$iconsMediumBorderRadius;
+    }
+    // Активный элемент
+    &.current {
+      opacity: 1;
+      filter: grayscale(0);
+    }
+  }
+}
+
+// Обозначение
+.label {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  // Главный подзаголовок
+  &__title {
+    flex-grow: 1;
+    text-align: center;
+    // Выделение
+    > b {
+      font-weight: 500;
+    }
+  }
+}
