@@ -244,8 +244,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Заполнить список месяцев
-  private fillDaysOptionData(): void {
+  // Заполнить список дней
+  fillDaysOptionData(): void {
     const year: number = parseInt(this.getSearch.birthYear) || 0;
     const month: number = (parseInt(this.getSearch.birthMonth) || 0);
     const days: number = year === 0 && month === 2 ? 29 : new Date(year, month, 0).getDate();

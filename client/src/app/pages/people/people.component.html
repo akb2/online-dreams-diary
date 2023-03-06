@@ -48,8 +48,7 @@
     <!-- Пол пользователя -->
     <app-autocomplete-input formControlName="sex"
                             label="Пол"
-                            [optionData]="sexes"
-                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+                            [optionData]="sexes"></app-autocomplete-input>
   </search-group>
   <!-- Дата рождения -->
   <search-group mainTitle="День рождения">
@@ -60,22 +59,21 @@
                             defaultIcon="cake"
                             defaultIconColor="disabled"
                             [optionData]="birthYears"
-                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+                            (selectItemEvent)="fillDaysOptionData()"></app-autocomplete-input>
     <!-- Месяц рождения -->
     <app-autocomplete-input formControlName="birthMonth"
                             label="Месяц"
                             defaultIcon="cake"
                             defaultIconColor="disabled"
                             [optionData]="birthMonths"
-                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+                            (selectItemEvent)="fillDaysOptionData()"></app-autocomplete-input>
     <!-- День рождения -->
     <app-autocomplete-input formControlName="birthDay"
                             type="autocomplete"
                             label="День"
                             defaultIcon="cake"
                             defaultIconColor="disabled"
-                            [optionData]="birthDays"
-                            (selectItemEvent)="onSearch()"></app-autocomplete-input>
+                            [optionData]="birthDays"></app-autocomplete-input>
   </search-group>
 </app-search-panel>
 
