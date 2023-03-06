@@ -1,5 +1,5 @@
 import { ApiResponseMessages } from "@_datas/api";
-import { SimpleObject } from "@_models/app";
+import { CustomObject, SimpleObject } from "@_models/app";
 
 
 
@@ -7,6 +7,13 @@ import { SimpleObject } from "@_models/app";
 
 // Коды ответа
 export type ApiResponseCodes = keyof typeof ApiResponseMessages;
+
+// Тип объекта для URL параметров
+export type UrlObject = CustomObject<string | number | boolean>;
+
+// Тип объекта для значений URL параметров для исключения
+export type ExcludeUrlObjectParams = (string | number | boolean)[];
+export type ExcludeUrlObjectValues = CustomObject<ExcludeUrlObjectParams | boolean>;
 
 // Интерфейс ответа сервера
 export interface ApiResponse {

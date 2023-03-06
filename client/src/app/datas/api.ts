@@ -1,4 +1,5 @@
 import { HttpParams } from "@angular/common/http";
+import { ExcludeUrlObjectParams, ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject, MultiObject, SimpleObject } from "@_models/app";
 import { map, Observable, skipWhile, takeWhile, timer } from "rxjs";
 
@@ -15,16 +16,28 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
     .reduce((o, [k, v]) => o.set(k, v), new HttpParams());
 };
 
-// Преобразование объекта в параметры в виде строки
-export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: CustomObject<(string | number)[]>) => Object.entries(params)
+// Подготовка объекта как параметры URL
+export const ObjectToUrlObject = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: ExcludeUrlObjectValues) => Object.entries(params)
   .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v.toString()]))
-  .filter(([k, v]) => {
-    const hasInExclude: boolean = excludeParams.hasOwnProperty(k) && excludeParams[k].map(e => e.toString()).includes(v);
+  .map(([k, v]) => {
+    const hasInExclude: boolean = excludeParams.hasOwnProperty(k) && (
+      excludeParams[k] === true ||
+      (Array.isArray(excludeParams[k]) && (excludeParams[k] as ExcludeUrlObjectParams).map(e => e.toString()).includes(v))
+    );
     // Вернуть результат
-    return !!k && !!v && !hasInExclude;
+    return !!k && !!v && !hasInExclude ? [k, v] : [k, null];
   })
-  .map(([k, v]) => (keyPreffix + k) + "=" + (Array.isArray(v) ? v.join(",") : v))
-  .join('&');
+  .reduce((o, [k, v]) => ({
+    ...o,
+    [keyPreffix + k.toString()]: (Array.isArray(v) ? v.join(",") : v?.toString())
+  }), {} as SimpleObject);
+
+// Преобразование объекта в параметры в виде строки
+export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: ExcludeUrlObjectValues) =>
+  Object.entries(ObjectToUrlObject(params, keyPreffix, excludeParams))
+    .filter(([, v]) => !!v)
+    .map(([k, v]) => (keyPreffix + k) + "=" + v)
+    .join('&');
 
 // Преобразование объекта в FormControl
 export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix: string = "") => {
