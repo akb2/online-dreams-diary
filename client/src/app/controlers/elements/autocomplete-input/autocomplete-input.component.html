@@ -2,7 +2,8 @@
      class="layout"
      (click)="autoComplete.openPanel()">
   <!-- Поле ввода -->
-  <mat-form-field [appearance]="appearance"
+  <mat-form-field #field
+                  [appearance]="appearance"
                   [ngClass]="{ hasImage: image || icon, 'disabled-validators': !hasValidators }">
     <!-- Заголовок -->
     <mat-label>{{label}}</mat-label>
@@ -39,7 +40,9 @@
     <mat-error *ngIf="control?.invalid">{{getErrorMessageKey()}}</mat-error>
 
     <!-- Отвлекающее поле -->
-    <input type="hidden"
+    <input #hiddenInput
+           readonly
+           type="hidden"
            [formControl]="control" />
   </mat-form-field>
 

@@ -3,10 +3,11 @@ import { FormControl, NgControl } from "@angular/forms";
 import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { WaitObservable } from "@_datas/api";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { IconBackground, IconColor } from "@_models/app";
 import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
-import { fromEvent, Subject } from "rxjs";
+import { fromEvent, Subject, timer } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -38,6 +39,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   @Output() selectItemEvent: EventEmitter<FormControl> = new EventEmitter<FormControl>();
 
   @ViewChild("layoutElement") layoutElement: ElementRef;
+  @ViewChild("field", { read: ElementRef }) field: ElementRef;
   @ViewChild("inputElement") inputElement: ElementRef;
   @ViewChild("autocompleteElement") autocompleteElement: ElementRef;
   @ViewChild("inputElement", { read: MatAutocompleteTrigger }) autoComplete: MatAutocompleteTrigger;
@@ -53,8 +55,9 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   imagePosition: AutocompleteImageSize = "cover";
 
   private focusTempValue: string;
+  private focusClass: string = "mat-focused";
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -118,13 +121,13 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   ngOnInit(): void {
     this.control.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(value => {
         this.setValue(value);
         this.optionDataFilter();
       });
     // События
-    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onScroll(e));
+    fromEvent(window, "scroll").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onScroll(e));
   }
 
   ngAfterViewInit(): void {
@@ -132,8 +135,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -219,7 +222,6 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   // Установить значение
   setValue(valueMixed: OptionData | number | string, setDefault: boolean = true, emitEvent: boolean = false): void {
     let optionData: OptionData = null;
-
     // Если значение строка
     if (typeof valueMixed === "string" || typeof valueMixed === "number") {
       optionData = this.findByKey(valueMixed.toString());
@@ -236,7 +238,6 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     if (!optionData && setDefault && this.notNull) {
       optionData = this.optionData[0];
     }
-
     // Настройка поля с учетом значения
     if (optionData) {
       this.image = optionData.image ? optionData.image : "";
@@ -252,18 +253,22 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
       this.iconColor = this.defaultIconColor;
       this.iconBackground = this.defaultIconBackground;
     }
-
     // Установить значение
     if (optionData || (setDefault && this.notNull)) {
       this.control.setValue(optionData ? optionData.key : null, { emitEvent: false });
       this.optionDataSelected = optionData;
     }
-
     // Вызвать событие
     if (emitEvent) {
       this.selectItemEvent.emit(this.control);
+      // Убрать фокус
+      WaitObservable(() => document.activeElement !== this.inputElement.nativeElement)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(() => {
+          this.field.nativeElement.classList.remove(this.focusClass);
+          this.inputElement.nativeElement.blur();
+        });
     }
-
     // Оновить
     this.changeDetectorRef.detectChanges();
   }
