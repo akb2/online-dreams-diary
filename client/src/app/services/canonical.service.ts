@@ -2,6 +2,7 @@ import { DOCUMENT } from "@angular/common";
 import { Inject, Injectable } from "@angular/core";
 import { ObjectToStringParams } from "@_datas/api";
 import { environment } from "@_environments/environment";
+import { ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject } from "@_models/app";
 
 
@@ -19,7 +20,7 @@ export class CanonicalService {
 
 
   // Установить URL
-  setURL(url: string = this.dom.URL, params: CustomObject<any> = {}, excludeParams: CustomObject<(string | number)[]> = {}) {
+  setURL(url: string = this.dom.URL, params: CustomObject<any> = {}, excludeParams: ExcludeUrlObjectValues = {}) {
     let canURL: string = /^http(s)?/i.test(url) || /^(\/)?assets(s)?/i.test(url) ? url : environment.baseUrl + url;
     let link: HTMLLinkElement = document.querySelector("link[rel=canonical]");
     let linkExists: boolean = true;
