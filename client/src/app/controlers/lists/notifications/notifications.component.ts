@@ -43,7 +43,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   private availToMoreLoad: boolean = true;
   private skip: number = 0;
-  private limit: number = 10;
+  private limit: number = 15;
   private previousScroll: ScrollChangeEvent;
 
   listId: string = "notification-component-list";
