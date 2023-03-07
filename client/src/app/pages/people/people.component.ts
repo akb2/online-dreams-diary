@@ -4,10 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
 import { PeoplePlural } from "@_datas/account";
+import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { FormData, MonthPlural } from '@_datas/form';
 import { CompareObjects } from "@_helpers/objects";
 import { SearchUser, User, UserSex } from '@_models/account';
+import { ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { OptionData } from "@_models/form";
@@ -117,6 +119,14 @@ export class PeopleComponent implements OnInit, OnDestroy {
     return !CompareObjects(this.getDefaultSearch, this.getCurrentSearch);
   }
 
+  // Значения для URl подлежащие сключению
+  private get getExcludeParams(): ExcludeUrlObjectValues {
+    return {
+      page: [0, 1],
+      limit: true
+    };
+  }
+
 
 
 
@@ -143,20 +153,14 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.activatedRoute.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
-        if (!Object.keys(params)?.length) {
-          this.urlSet(this.getSearch);
-        }
-        // Поиск
-        else {
-          this.queryParams = params as SimpleObject;
-          this.pageCurrent = parseInt(params.page) || 1;
-          // Наполнить форму
-          Object.entries(this.getCurrentSearch)
-            .filter(([k]) => k !== "page")
-            .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
-          // Поиск пользователей
-          this.search();
-        }
+        this.queryParams = params as SimpleObject;
+        this.pageCurrent = parseInt(params.page) || 1;
+        // Наполнить форму
+        Object.entries(this.getCurrentSearch)
+          .filter(([k]) => k !== "page")
+          .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
+        // Поиск пользователей
+        this.search();
       });
     // Подписка на тип устройства
     this.screenService.isMobile$
@@ -268,10 +272,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
-
-
-
-
   // Загрузка списка сновидений
   private search(): void {
     this.loading = true;
@@ -287,7 +287,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
           this.people = people;
           this.loading = false;
           // Обновить
-          this.canonicalService.setURL("people", this.getSearch, { page: [0, 1], limit: [0, this.defaultPageLimit] });
+          this.canonicalService.setURL("people", this.getSearch, this.getExcludeParams);
           this.changeDetectorRef.detectChanges();
         }
         // Сновидения не найдены
@@ -307,7 +307,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   // Записать параметры в URL
   private urlSet(datas: Partial<SearchUser>): void {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
-    const queryParams: CustomObject<string | number> = Object.entries({ ...this.queryParams, ...datas })
+    const queryParams: CustomObject<string | number> = Object.entries(ObjectToUrlObject({ ...this.queryParams, ...datas }, "", this.getExcludeParams))
       .map(([k, v]) => ([k, !!v ? v : null]))
       .reduce((o, [k, v]) => ({ ...o, [k as string]: v }), {});
     // Перейти к новой странице
