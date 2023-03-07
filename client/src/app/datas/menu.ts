@@ -32,24 +32,24 @@ export const MenuItems: MenuItemsListDevices = {
             text: "Дневники снов",
             link: "/diary/all"
           },
-          // Разделитель
-          {
-            isSeparate: true
-          },
-          // Блог
-          {
-            text: "Блог",
-            link: "/blog"
-          },
-          // Разделитель
-          {
-            isSeparate: true
-          },
-          // Форум
-          {
-            text: "Форум",
-            link: "/forum"
-          }
+          // // Разделитель
+          // {
+          //   isSeparate: true
+          // },
+          // // Блог
+          // {
+          //   text: "Блог",
+          //   link: "/blog"
+          // },
+          // // Разделитель
+          // {
+          //   isSeparate: true
+          // },
+          // // Форум
+          // {
+          //   text: "Форум",
+          //   link: "/forum"
+          // }
         ]
       }
     ],
@@ -158,18 +158,18 @@ export const MenuItems: MenuItemsListDevices = {
             text: "Дневники снов",
             link: "/diary/all"
           },
-          // Блог
-          {
-            icon: "edit_note",
-            text: "Блог",
-            link: "/blog"
-          },
-          // Форум
-          {
-            icon: "forum",
-            text: "Форум",
-            link: "/forum"
-          }
+          // // Блог
+          // {
+          //   icon: "edit_note",
+          //   text: "Блог",
+          //   link: "/blog"
+          // },
+          // // Форум
+          // {
+          //   icon: "forum",
+          //   text: "Форум",
+          //   link: "/forum"
+          // }
         ]
       }
     ],
