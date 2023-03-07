@@ -86,6 +86,8 @@ class Dream
       'q' => $data['search_q'] ?? null,
       'page' => $data['search_page'] ?? 1,
       'user' => $data['search_user'] ?? null,
+      'withMap' => ($data['search_withMap'] ?? 'false') === 'true',
+      'withText' => ($data['search_withText'] ?? 'false') === 'true',
       'limit' => $data['search_limit'] ?? null,
       'status' => $data['search_status'] ?? -1
     );

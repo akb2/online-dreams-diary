@@ -136,6 +136,8 @@ class DreamService
       "q" => strval($search["q"]),
       "status" => intval($search["status"]),
       "user_id" => intval($search["user"]),
+      "withMap" => boolval($search["withMap"]),
+      "withText" => boolval($search["withText"]),
       // Параметры
       "are_friends" => $areFriends,
       "check_token" => $checkToken,

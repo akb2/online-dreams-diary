@@ -4,12 +4,13 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
-import { WaitObservable } from "@_datas/api";
+import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamPlural, DreamStatuses } from "@_datas/dream";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
+import { ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject, CustomObjectKey, RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { Dream, DreamStatus, SearchDream } from "@_models/dream";
@@ -69,7 +70,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   pageCurrent: number = 1;
   pageLimit: number = 12;
-  private defaultPageLimit: number = 12;
   private pageCount: number = 1;
 
   isMobile: boolean = false;
@@ -118,6 +118,9 @@ export class DiaryComponent implements OnInit, OnDestroy {
     // Вернуть данные
     return {
       ...fromForm,
+      status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
+      withMap: !!fromForm.withMap && fromForm.withMap !== "false",
+      withText: !!fromForm.withText && fromForm.withText !== "false",
       page,
       user: this.visitedUser?.id ?? 0,
       limit: this.pageLimit
@@ -131,7 +134,13 @@ export class DiaryComponent implements OnInit, OnDestroy {
       .filter(([k]) => k !== "page")
       .reduce((o, [k, defaultValue]) => ({ ...o, [k]: this.queryParams[k]?.toString() ?? defaultValue }), {});
     // Вернуть данные
-    return { ...fromForm, page };
+    return {
+      q: fromForm.q.toString() ?? "",
+      status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
+      withMap: !!fromForm.withMap && fromForm.withMap !== "false",
+      withText: !!fromForm.withText && fromForm.withText !== "false",
+      page
+    };
   }
 
   // Пустые данные
@@ -139,6 +148,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return {
       q: "",
       status: -1,
+      withMap: false,
+      withText: false,
       page: 1
     };
   }
@@ -150,9 +161,26 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Список поисковых фраз
   get getSearchWords(): string[] {
-    const search: string = this.searchForm.get("q")?.value ?? "";
+    const search: string = this.getCurrentSearch?.q ?? "";
     // Вернуть значение
     return !!search ? search.split(" ").filter(w => !!w) : [];
+  }
+
+  // Проверка доступности фильтра по статусам
+  get getDreamStatusesFieldAvail(): boolean {
+    return this.dreamStatuses?.length > 2;
+  }
+
+  // Значения для URl подлежащие сключению
+  private get getExcludeParams(): ExcludeUrlObjectValues {
+    return {
+      page: [0, 1],
+      limit: true,
+      status: [-1],
+      withMap: [false],
+      withText: [false],
+      user: true
+    };
   }
 
 
@@ -316,10 +344,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
         this.visitedUserId = visitedUserId;
         this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
         this.itsAllPage = visitedUserId === 0;
-        // Наполнить форму
-        Object.entries(this.getCurrentSearch)
-          .filter(([k]) => k !== "page")
-          .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
       });
   }
 
@@ -390,7 +414,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Определение доступных статусов для определения
   private defineDreamStatuses(): void {
-    const currentStatus: -1 | DreamStatus = ParseInt(this.searchForm.get("status")?.value);
     const isFriend: boolean = this.friend?.status === FriendStatus.Friends || this.friend?.status === FriendStatus.InSubscribe;
     const dreamStatuses: OptionData[] = [AllDreamStatuses, ...DreamStatuses];
     const availAllUnAuth: (-1 | DreamStatus)[] = [-1, DreamStatus.public];
@@ -408,7 +431,12 @@ export class DiaryComponent implements OnInit, OnDestroy {
         .filter(s => !!s)
         .map(status => ({ ...status, subTitle: "" }));
     }
+    // Наполнить форму
+    Object.entries(this.getCurrentSearch)
+      .filter(([k]) => k !== "page")
+      .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
     // Проверка текущего значения
+    const currentStatus: -1 | DreamStatus = ParseInt(this.searchForm.get("status")?.value);
     this.searchForm.get("status")?.setValue(this.dreamStatuses.some(({ key }) => key === currentStatus.toString()) ? currentStatus : -1);
     // Обновить
     this.changeDetectorRef.detectChanges();
@@ -419,13 +447,14 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Запрос
+    console.log(this.getSearch);
     this.dreamService.search(this.getSearch, ["0002"])
       .pipe(takeUntil(this.destroyed$))
       .subscribe(
         ({ result, count, limit, hasAccess }) => {
           const subPage: string = this.itsMyPage ? this.user.id.toString() : (this.itsAllPage ? "all" : this.visitedUser.id.toString());
           // Отметка доступа
-          this.canonicalService.setURL("diary/" + subPage, this.getSearch, { p: [0, 1], limit: [0, this.defaultPageLimit] });
+          this.canonicalService.setURL("diary/" + subPage, this.getSearch, this.getExcludeParams);
           this.userHasAccess = hasAccess;
           // Найдены сновидения
           if (count > 0) {
@@ -455,7 +484,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   // Записать параметры в URL
   private urlSet(datas: Partial<SearchDream>): void {
     const path: string[] = (this.router.url.split("?")[0]).split("/").filter(v => v.length > 0);
-    const queryParams: CustomObject<string | number> = Object.entries({ ...this.queryParams, ...datas })
+    const queryParams: CustomObject<string | number> = Object.entries(ObjectToUrlObject({ ...this.queryParams, ...datas }, "", this.getExcludeParams))
       .map(([k, v]) => ([k, !!v ? v : null]))
       .reduce((o, [k, v]) => ({ ...o, [k as string]: v }), {});
     // Перейти к новой странице

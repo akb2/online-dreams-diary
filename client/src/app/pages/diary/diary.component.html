@@ -67,7 +67,17 @@
                               type="select"
                               [optionData]="dreamStatuses"
                               label="Статус сновидения"
-                              (selectItemEvent)="onSearch()"></app-autocomplete-input>
+                              *ngIf="getDreamStatusesFieldAvail"></app-autocomplete-input>
+      <!-- Показать сновидения с картой -->
+      <div class="input-field">
+        <mat-checkbox formControlName="withMap"
+                      color="primary">Сновидения с картой</mat-checkbox>
+      </div>
+      <!-- Показать сновидения с текстом -->
+      <div class="input-field no-margin">
+        <mat-checkbox formControlName="withText"
+                      color="primary">Сновидения с текстом</mat-checkbox>
+      </div>
     </search-group>
   </app-search-panel>
 </ng-container>
