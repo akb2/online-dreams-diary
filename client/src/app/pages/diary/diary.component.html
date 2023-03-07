@@ -79,6 +79,19 @@
                       color="primary">Сновидения с текстом</mat-checkbox>
       </div>
     </search-group>
+    <!-- Доп. параметры сновидения -->
+    <search-group mainTitle="Дополнительные параметры">
+      <!-- Типы сновидений -->
+      <app-autocomplete-input formControlName="type"
+                              type="select"
+                              [optionData]="dreamTypes"
+                              label="Тип сновидений"></app-autocomplete-input>
+      <!-- Настроения сновидений -->
+      <app-autocomplete-input formControlName="mood"
+                              type="select"
+                              [optionData]="dreamMoods"
+                              label="Настроения сновидений"></app-autocomplete-input>
+    </search-group>
   </app-search-panel>
 </ng-container>
 

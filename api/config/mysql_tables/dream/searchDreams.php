@@ -56,6 +56,16 @@ elseif (!!$input['withText']) : ?>
   AND (`mode` = 2 OR `mode` = 0)
 <? endif; ?>
 
+<? // Поиск по типу сновидений
+if ($input['type'] >= 0) : ?>
+  AND `type` = :type
+<? endif; ?>
+
+<? // Поиск по настроению сновидений
+if ($input['mood'] >= 0) : ?>
+  AND `mood` = :mood
+<? endif; ?>
+
 <? // Фильтр по статусам: собственные сновидения */
 // ? draft(0), private(1), hash(2), friends(3), users(4), public(5) */
 if ($input['user_id'] > 0 && $input['check_token'] && $input["user_id"] === $input["current_user"]) : ?>

@@ -6,7 +6,7 @@ import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { DreamPlural, DreamStatuses } from "@_datas/dream";
+import { DreamMoods, DreamPlural, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -81,6 +81,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   searchForm: FormGroup;
   dreamStatuses: OptionData[] = [];
+  dreamTypes: OptionData[] = [AllDreamTypes, ...DreamTypes].map(type => ({ ...type, subTitle: "" }));
+  dreamMoods: OptionData[] = [AllDreamMoods, ...DreamMoods].map(mood => ({ ...mood, subTitle: "" }));
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -119,6 +121,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return {
       ...fromForm,
       status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
+      type: ParseInt(fromForm.type) ?? -1,
+      mood: ParseInt(fromForm.mood) ?? -1,
       withMap: !!fromForm.withMap && fromForm.withMap !== "false",
       withText: !!fromForm.withText && fromForm.withText !== "false",
       page,
@@ -137,6 +141,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
     return {
       q: fromForm.q.toString() ?? "",
       status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
+      type: ParseInt(fromForm.type) ?? -1,
+      mood: ParseInt(fromForm.mood) ?? -1,
       withMap: !!fromForm.withMap && fromForm.withMap !== "false",
       withText: !!fromForm.withText && fromForm.withText !== "false",
       page
@@ -150,6 +156,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
       status: -1,
       withMap: false,
       withText: false,
+      type: -1,
+      mood: -1,
       page: 1
     };
   }
@@ -177,6 +185,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
       page: [0, 1],
       limit: true,
       status: [-1],
+      type: [-1],
+      mood: [-1],
       withMap: [false],
       withText: [false],
       user: true
@@ -344,6 +354,10 @@ export class DiaryComponent implements OnInit, OnDestroy {
         this.visitedUserId = visitedUserId;
         this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
         this.itsAllPage = visitedUserId === 0;
+        // Наполнить форму
+        Object.entries(this.getCurrentSearch)
+          .filter(([k]) => k !== "page")
+          .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
       });
   }
 
@@ -447,7 +461,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Запрос
-    console.log(this.getSearch);
     this.dreamService.search(this.getSearch, ["0002"])
       .pipe(takeUntil(this.destroyed$))
       .subscribe(
@@ -507,7 +520,25 @@ export class DiaryComponent implements OnInit, OnDestroy {
 // Все типы сновидений
 const AllDreamStatuses: OptionData = {
   key: "-1",
-  icon: "widgets",
+  icon: "lock_open",
   iconColor: "disabled",
   title: "Любой уровень",
+};
+
+// Все типы сновидений
+const AllDreamTypes: OptionData = {
+  key: "-1",
+  icon: "auto_awesome_motion",
+  iconColor: "disabled",
+  iconBackground: "fill",
+  title: "Все типы"
+};
+
+// Все настроения сновидений
+const AllDreamMoods: OptionData = {
+  key: "-1",
+  icon: "auto_awesome_motion",
+  iconColor: "disabled",
+  iconBackground: "fill",
+  title: "Все настроения"
 };

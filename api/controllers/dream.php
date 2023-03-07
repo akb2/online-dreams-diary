@@ -89,7 +89,9 @@ class Dream
       'withMap' => ($data['search_withMap'] ?? 'false') === 'true',
       'withText' => ($data['search_withText'] ?? 'false') === 'true',
       'limit' => $data['search_limit'] ?? null,
-      'status' => $data['search_status'] ?? -1
+      'status' => $data['search_status'] ?? -1,
+      'type' => $data['search_type'] ?? -1,
+      'mood' => $data['search_mood'] ?? -1
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();

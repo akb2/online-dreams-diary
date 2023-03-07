@@ -135,6 +135,8 @@ class DreamService
       // Значения полей
       "q" => strval($search["q"]),
       "status" => intval($search["status"]),
+      "type" => intval($search["type"]),
+      "mood" => intval($search["mood"]),
       "user_id" => intval($search["user"]),
       "withMap" => boolval($search["withMap"]),
       "withText" => boolval($search["withText"]),

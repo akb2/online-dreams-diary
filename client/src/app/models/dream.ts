@@ -69,6 +69,8 @@ export interface SearchDream extends BaseSearch {
   q: string;
   user: number;
   status: -1 | DreamStatus;
+  type: -1 | DreamType;
+  mood: -1 | DreamMood;
   withMap: boolean;
   withText: boolean;
   limit: number;
