@@ -110,6 +110,8 @@
 
 // Обертка поля
 @mixin mat-form-field {
+  $__marginMainElm: ".mat-mdc-form-field";
+  $__marginElms: "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
   // Обертка
   .mat-mdc-form-field {
     $elm: &;
@@ -175,20 +177,28 @@
         box-shadow: 0 0 0 30px #dcdcdc inset !important;
       }
     }
-    // Отступы сверху
-    $__elms: app-text-input app-autocomplete-input app-toggle-input app-chips-input mat-radio-group;
-    @each $__elm in $__elms {
-      &:not(.no-margin) + &:not(.no-margin),
-      &:not(.no-margin) + #{$__elm}:not(.no-margin),
-      #{$__elm}:not(.no-margin) + &:not(.no-margin),
-      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > &:not(.no-margin),
-      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > &:not(.no-margin),
-      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > &:not(.no-margin) + .image:not(.no-margin) {
-        margin-top: 15px;
-      }
-    }
     // Содержимое
     @content;
+  }
+  // Отступы сверху
+  ::ng-deep {
+    @each $__elm in $__marginElms {
+      #{$__marginMainElm}:not(.no-margin) + #{$__marginMainElm}:not(.no-margin),
+      #{$__marginMainElm}:not(.no-margin) + #{$__elm}:not(.no-margin),
+      #{$__elm} + #{$__marginMainElm}:not(.no-margin),
+      #{$__elm}:not(.no-margin) + #{$__marginMainElm}:not(.no-margin),
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > #{$__marginMainElm}:not(.no-margin),
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > #{$__marginMainElm}:not(.no-margin),
+      #{$__elm}:not(.no-margin) + :host:not(.no-margin) > .layout:not(.no-margin) > #{$__marginMainElm}:not(.no-margin) + .image:not(.no-margin) {
+        margin-top: 15px;
+      }
+      // Отступы между элементами из списка
+      @each $__elmB in $__marginElms {
+        #{$__elm} + #{$__elmB}:not(.no-margin) {
+          margin-top: 15px;
+        }
+      }
+    }
   }
 
   // Поле
