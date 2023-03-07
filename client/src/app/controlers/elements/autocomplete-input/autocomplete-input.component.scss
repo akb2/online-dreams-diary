@@ -8,6 +8,11 @@
 @include material.mat-form-field;
 @include material.mat-option;
 
+// Общий стиль
+:host {
+  display: block;
+}
+
 // Поле ввода
 .mat-input-element {
   font-weight: 400;
