@@ -68,8 +68,10 @@ export interface SearchRequestDream extends Search<Dream> {
 export interface SearchDream extends BaseSearch {
   q: string;
   user: number;
-  limit: number;
   status: -1 | DreamStatus;
+  withMap: boolean;
+  withText: boolean;
+  limit: number;
 }
 
 
