@@ -7,6 +7,14 @@ $tab-padding: 15px;
 
 @include material.matFormField;
 
+// Общий блок
+.root-section {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
 // Контейнер
 .container {
   $counts: (
