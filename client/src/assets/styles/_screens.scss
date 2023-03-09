@@ -47,21 +47,21 @@ $animationTime: 0.3s;
 @mixin adaptive($min_screen: auto, $max_screen: auto) {
   // От нуля до нужного экрана
   @if ($min_screen==auto and map.has-key($breakpoints, $max_screen)) {
-    @media (max-width: #{max_resolution( $max_screen )}px) {
+    @media (max-width: #{maxResolution( $max_screen )}px) {
       @content;
     }
   }
 
   // От нужного экрана до бесконечности
   @else if (map.has-key($breakpoints, $min_screen) and $max_screen==auto) {
-    @media (min-width: #{max_resolution( $min_screen )}px) {
+    @media (min-width: #{maxResolution( $min_screen )}px) {
       @content;
     }
   }
 
   // Определенный диапазон
   @else if (map.has-key($breakpoints, $min_screen) and map.has-key($breakpoints, $max_screen)) {
-    @media (min-width: #{min_resolution( $min_screen )}px) and (max-width: #{max_resolution( $max_screen )}px) {
+    @media (min-width: #{minResolution( $min_screen )}px) and (max-width: #{maxResolution( $max_screen )}px) {
       @content;
     }
   }
