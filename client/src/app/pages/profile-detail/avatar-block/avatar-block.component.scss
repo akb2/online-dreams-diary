@@ -98,6 +98,15 @@
       justify-content: flex-end;
     }
   }
+  // Для мобильного телефона
+  @include screens.adaptive(xsmall, xsmall) {
+    padding-top: containers.$paddingX;
+    // Картинка
+    > img {
+      max-width: 260px;
+      border-radius: 0;
+    }
+  }
 }
 
 // Скрыть элемент
