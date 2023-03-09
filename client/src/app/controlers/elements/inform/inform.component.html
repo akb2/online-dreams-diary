@@ -8,8 +8,13 @@
        *ngIf="mainTitle">{{mainTitle}}</div>
   <!-- Подзаголовок -->
   <div class="loader__subtitle {{color}}"
-       [ngClass]="{ smallMargins }"
-       *ngIf="subTitle">{{subTitle}}</div>
+       [ngClass]="{ smallMargins, waitPointers }"
+       *ngIf="subTitle">
+    <span class="text">
+      {{subTitle}}
+      <span *ngIf="waitPointers">{{' .'.repeat(currentPointers)}}</span>
+    </span>
+  </div>
   <!-- Загрузчик -->
   <div class="loader"
        [ngClass]="{ smallMargins }"

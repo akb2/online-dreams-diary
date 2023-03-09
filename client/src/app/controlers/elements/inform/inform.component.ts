@@ -1,5 +1,6 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { IconColor } from "@_models/app";
+import { filter, Subject, takeUntil, timer } from "rxjs";
 
 
 
@@ -11,7 +12,7 @@ import { IconColor } from "@_models/app";
   styleUrls: ["./inform.component.scss"]
 })
 
-export class InformComponent implements OnInit, AfterViewInit {
+export class InformComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   @Input() icon: string = "loader";
@@ -21,10 +22,17 @@ export class InformComponent implements OnInit, AfterViewInit {
   @Input() mainTitle: string;
   @Input() subTitle: string;
   @Input() description: string;
+  @Input() waitPointers: boolean = false;
 
   @ViewChild("descriptionPanel") private descriptionPanel: ElementRef;
 
   showDescriptionPanel: boolean = false;
+
+  currentPointers: number = 0;
+  private maxPointers: number = 3;
+  private pointersTimer: number = 450;
+
+  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -35,11 +43,26 @@ export class InformComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    this.icon = this.icon ? this.icon : "loader"
+    this.icon = this.icon ? this.icon : "loader";
+    // Анимация точек
+    timer(0, this.pointersTimer)
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => this.waitPointers)
+      )
+      .subscribe(() => {
+        this.currentPointers = this.currentPointers < this.maxPointers ? this.currentPointers + 1 : 0;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewInit(): void {
     this.showDescriptionPanel = !!this.descriptionPanel?.nativeElement?.children?.length;
     this.changeDetectorRef.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 }

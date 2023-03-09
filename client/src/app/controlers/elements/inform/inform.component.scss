@@ -67,7 +67,6 @@ $figure-time-2: $figure-time-1 * 2;
       }
     }
   }
-
   // Иконка
   &__icon {
     width: $figure-size;
@@ -78,7 +77,6 @@ $figure-time-2: $figure-time-1 * 2;
     text-align: center;
     position: static;
   }
-
   // Слой
   &__layout {
     display: flex;
@@ -89,7 +87,6 @@ $figure-time-2: $figure-time-1 * 2;
     line-height: 1.12;
     overflow: hidden;
   }
-
   // Размеры
   &__title,
   &__subtitle,
@@ -101,7 +98,6 @@ $figure-time-2: $figure-time-1 * 2;
       width: $size;
     }
   }
-
   // Заголовок
   &__title {
     font-size: 24px;
@@ -112,9 +108,11 @@ $figure-time-2: $figure-time-1 * 2;
       color: #fff;
     }
   }
-
   // Подзаголовок
   &__subtitle {
+    $fontSize: 14px;
+    $lineHeight: 1.2;
+    // Свойства
     font-size: 14px;
     font-weight: 300;
     margin-top: 3px;
@@ -123,12 +121,29 @@ $figure-time-2: $figure-time-1 * 2;
     &.white {
       color: #eee;
     }
+    // Точки
+    &.waitPointers > .text {
+      @include mixins.lineClamp(1, $lineHeight, $fontSize);
+      // Свойства
+      position: relative;
+      width: auto;
+      display: inline-block;
+      overflow: unset;
+      // Точки
+      > span {
+        @include mixins.lineClamp(1, $lineHeight, $fontSize);
+        // Свойства
+        position: absolute;
+        left: calc(100% + 5px);
+        top: 0;
+        display: block;
+      }
+    }
     // Отступ
     #{$elm} + & {
       margin-top: 5px;
     }
   }
-
   // Описание
   &__description {
     font-size: 14px;
@@ -138,7 +153,6 @@ $figure-time-2: $figure-time-1 * 2;
       color: #ddd;
     }
   }
-
   // Адаптив
   @include screens.adaptiveFor(containers.$paddingsY) using($padding) {
     // Отступы
