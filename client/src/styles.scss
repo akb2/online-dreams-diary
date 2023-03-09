@@ -198,3 +198,14 @@ pre {
   max-width: 100%;
   white-space: pre-wrap;
 }
+
+// Всплывающие уведомления
+.mat-mdc-snack-bar-container {
+  $spacing: 8px;
+  // Свойства
+  margin: $spacing;
+  // Для телефонов
+  @include screens.adaptive(xsmall, small) {
+    margin-bottom: $spacing + vars.$mobileMenuBottomHeight;
+  }
+}
