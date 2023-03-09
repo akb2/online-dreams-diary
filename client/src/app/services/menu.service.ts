@@ -161,12 +161,16 @@ export class MenuService implements OnDestroy {
       item.link = item.link.replace(currentUserIDRegExp, this.user?.id?.toString() ?? "0");
     }
     // Выход
-    else if (item.id === "quit") {
+    if (!!item?.id && item.id === "quit") {
       item.callback = this.onLogOut.bind(this);
     }
     // Количество уведомлений
-    else if (item.id === "notifications") {
+    else if (!!item?.id && item.id === "notifications") {
       item.counter = Math.max(0, this.notificationsCount);
+    }
+    // Моя страница
+    else if (!!item?.id && item.id === "my-profie" && !!this.user?.avatars?.small) {
+      item.image = this.user.avatars.small;
     }
   }
 

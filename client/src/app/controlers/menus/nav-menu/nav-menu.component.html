@@ -315,7 +315,11 @@
 <!-- Соджержимое пункта мобильного меню -->
 <ng-template #mobileMenuItemContent
              let-item>
-  <mat-icon>{{item.icon}}</mat-icon>
+  <mat-icon *ngIf="!item?.image">{{item.icon}}</mat-icon>
+  <!-- Картинка -->
+  <img [src]="item.image"
+       *ngIf="!!item?.image" />
+  <!-- Текст -->
   <span>{{item.text}}</span>
 </ng-template>
 
@@ -405,7 +409,10 @@
 <!-- Содержимое пункта меню для нижнего меню -->
 <ng-template #mobileMenuBottomItemContent
              let-item>
-  <mat-icon>{{item.id !== 'notifications' || !isShowNotifications? item.icon: 'close'}}</mat-icon>
+  <mat-icon *ngIf="!item?.image">{{item.id !== 'notifications' || !isShowNotifications? item.icon: 'close'}}</mat-icon>
+  <!-- Картинка -->
+  <img [src]="item.image"
+       *ngIf="!!item?.image" />
   <!-- Счетчик -->
   <div class="bottom-menu__item-counter"
        *ngIf="!!item?.counter">
