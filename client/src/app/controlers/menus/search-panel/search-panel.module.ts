@@ -3,6 +3,7 @@ import { NgModule } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { PanelsHeaderModule } from "@_controlers/panels-header/panels-header.module";
+import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 
 
@@ -20,7 +21,8 @@ import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.com
     CommonModule,
     PanelsHeaderModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    ScrollModule
   ]
 })
 

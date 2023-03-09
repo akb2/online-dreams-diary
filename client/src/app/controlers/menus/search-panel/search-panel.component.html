@@ -14,9 +14,9 @@
                        [avatarIcon]="avatarIcon"
                        (closeClick)="closePanel()"></app-panels-header>
     <!-- Элементы управления -->
-    <div class="search-panel__content">
+    <app-scroll class="search-panel__content">
       <ng-content></ng-content>
-    </div>
+    </app-scroll>
     <!-- Действия -->
     <div class="search-panel__actions">
       <!-- Сбросить форму -->
