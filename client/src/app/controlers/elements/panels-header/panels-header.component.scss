@@ -127,6 +127,9 @@ $avatarSize: 48px;
   cursor: pointer;
   // Размеры
   > mat-icon {
+    width: inherit;
+    height: inherit;
+    text-align: center;
     line-height: 60px;
     font-size: 24px;
   }
