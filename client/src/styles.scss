@@ -4,6 +4,7 @@
 @use "./assets/styles/colors";
 @use "./assets/styles/containers";
 @use "./assets/styles/material";
+@use "./assets/styles/screens";
 
 @include mat.core();
 $mat-theme: mat.define-light-theme(
@@ -131,7 +132,7 @@ html {
   // Основная секция
   &.root-#{$_elm} {
     width: 100%;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - #{vars.$headerHeight});
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -143,6 +144,10 @@ html {
     // По середине
     &.center {
       justify-content: center;
+    }
+    // Для телефона
+    @include screens.adaptive(xsmall, small) {
+      min-height: calc(100vh - #{vars.$headerHeight + vars.$mobileMenuBottomHeight});
     }
   }
   // Цвета
