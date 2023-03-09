@@ -733,8 +733,13 @@ export class DrawDatas {
         const marginTop: DrawDataPeriod = data["margin-top"];
         const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
         const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
-        const min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
-        const max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
+        let min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
+        let max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
+        // Для мобильного меню
+        if (s === "small" || s === "xsmall") {
+          min = ParseInt(height.min);
+          max = ParseInt(height.max);
+        }
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
@@ -745,8 +750,13 @@ export class DrawDatas {
         const marginTop: DrawDataPeriod = data["margin-top"];
         const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
         const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
-        const min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
-        const max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
+        let min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
+        let max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
+        // Для мобильного меню
+        if (s === "small" || s === "xsmall") {
+          min = this.screenHeight - (ParseInt(height.min) * 2);
+          max = this.screenHeight - (ParseInt(height.max) * 2);
+        }
         // Вернуть данные
         return { min, max, unit: "px" };
       })
