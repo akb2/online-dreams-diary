@@ -5,7 +5,7 @@
 @use "containers";
 
 // Повторить строку
-@function str-repeat($string, $count: 1, $implementer: "") {
+@function strRepeat($string, $count: 1, $implementer: "") {
   $return: "";
 
   @for $i from 1 through $count {
@@ -20,7 +20,7 @@
 }
 
 // Получить переменную
-@function map-get($map, $key) {
+@function mapGet($map, $key) {
   @if (map.has-key($map, $key)) {
     @return map.get($map, $key);
   }

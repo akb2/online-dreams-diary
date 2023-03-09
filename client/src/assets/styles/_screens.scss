@@ -13,7 +13,7 @@ $breakpoints: (
 $animation-time: 0.3s;
 
 // Максимальное разрешение брейкпоинта
-@function max_resolution($screen) {
+@function maxResolution($screen) {
   @if (map.has-key($breakpoints, $screen)) {
     @return map.get($breakpoints, $screen);
   }
@@ -22,7 +22,7 @@ $animation-time: 0.3s;
 }
 
 // Минимальное разрешение брейкпоинта
-@function min_resolution($screen) {
+@function minResolution($screen) {
   @if (map.has-key($breakpoints, $screen)) {
     $prev_screen: none;
     $continue: true;
