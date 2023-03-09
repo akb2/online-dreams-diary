@@ -11,6 +11,7 @@ $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
 :host {
   display: block;
   overflow: hidden;
+  position: relative;
 }
 
 // Обертка
@@ -24,13 +25,16 @@ $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
     width: 0;
     height: 0;
   }
-  // Горизонтальный скролл
-  &.scroll-h {
-    padding-bottom: $scrollWidth;
-  }
-  // Вертикальный скролл
-  &.scroll-v {
-    padding-right: $scrollWidth;
+  // Отступы
+  @include screens.adaptive(middle, xlarge) {
+    // Горизонтальный скролл
+    &.scroll-h {
+      padding-bottom: $scrollWidth;
+    }
+    // Вертикальный скролл
+    &.scroll-v {
+      padding-right: $scrollWidth;
+    }
   }
 }
 
