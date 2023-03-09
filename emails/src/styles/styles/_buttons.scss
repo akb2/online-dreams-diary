@@ -22,8 +22,8 @@
       text: #fff,
     ),
     primary: (
-      back: map.get(colors.$mat-primary, 500),
-      text: map.get(colors.$mat-primary, contrast, 500),
+      back: map.get(colors.$matPrimary, 500),
+      text: map.get(colors.$matPrimary, contrast, 500),
     ),
   );
 

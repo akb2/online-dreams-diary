@@ -162,7 +162,7 @@
       @include mixins.lineClamp(1, $titleSize, 15px);
       // Свойства
       font-weight: 400;
-      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
+      color: map.get(colors.$matPrimary, contrast, $primaryColorKey);
       grid-area: title;
       cursor: pointer;
       // Заголовок по умолчанию
@@ -171,7 +171,7 @@
       }
       // С картинкой
       .has-image > & {
-        color: colors.$title-dark;
+        color: colors.$titleDark;
       }
     }
     // Подзаголовок
@@ -179,23 +179,23 @@
       @include mixins.lineClamp(1, $subTitleSize, 12px);
       // Свойства
       font-weight: 300;
-      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
+      color: map.get(colors.$matPrimary, contrast, $primaryColorKey);
       opacity: 0.9;
       grid-area: subtitle;
       cursor: pointer;
       // С картинкой
       .has-image > & {
-        color: colors.$subtitle-dark;
+        color: colors.$subTitleDark;
         opacity: 1;
       }
     }
     // Меню
     &-menu {
       grid-area: menu;
-      color: map.get(colors.$mat-primary, contrast, $primaryColorKey);
+      color: map.get(colors.$matPrimary, contrast, $primaryColorKey);
       // С картинкой
       .has-image > & {
-        color: colors.$title-dark;
+        color: colors.$titleDark;
       }
     }
     // Описание
@@ -207,12 +207,12 @@
       height: $descriptionCount * $descriptionLineHeight;
       // С картинкой
       .has-image > & {
-        color: colors.$text-dark;
+        color: colors.$textDark;
         min-height: 0;
         max-height: 0;
         opacity: 0;
         height: auto;
-        transition: max-height #{screens.$animation-time}, opacity #{screens.$animation-time};
+        transition: max-height #{screens.$animationTime}, opacity #{screens.$animationTime};
         // Выделение
         .dream:hover & {
           max-height: $descriptionCount * $descriptionLineHeight;
@@ -254,13 +254,13 @@
       }
       // С картинкой
       .has-image > & {
-        color: colors.$text-dark;
+        color: colors.$textDark;
       }
     }
 
     // Заголовок
     &.title {
-      background-color: map.get(colors.$mat-primary, $primaryColorKey);
+      background-color: map.get(colors.$matPrimary, $primaryColorKey);
       // С картинкой
       &.has-image {
         background-color: transparent;

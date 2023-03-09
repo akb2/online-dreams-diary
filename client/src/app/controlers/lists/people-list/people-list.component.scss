@@ -47,7 +47,7 @@
   display: flex;
   flex-flow: column nowrap;
   gap: #{$spacingY} 0;
-  transition: background-color #{screens.$animation-time};
+  transition: background-color #{screens.$animationTime};
   text-decoration: none;
   // Аватарка
   &__image {
@@ -57,9 +57,9 @@
     position: relative;
     border-radius: #{$borderRadius} #{$borderRadius} 0 0;
     overflow: hidden;
-    transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
-    background-color: map.get(colors.$mat-disabled, 600);
-    color: map.get(colors.$mat-disabled, contrast, 600);
+    transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
+    background-color: map.get(colors.$matDisabled, 600);
+    color: map.get(colors.$matDisabled, contrast, 600);
     // Дочерние элементы
     > img,
     > mat-icon {
@@ -97,7 +97,7 @@
       // Свойства
       font-weight: 400;
       color: colors.$title;
-      transition: color #{screens.$animation-time};
+      transition: color #{screens.$animationTime};
       text-decoration: none;
     }
     // Фамилия
@@ -106,7 +106,7 @@
       // Свойства
       font-weight: 300;
       color: colors.$subtitle;
-      transition: color #{screens.$animation-time};
+      transition: color #{screens.$animationTime};
       text-decoration: none;
     }
     // Без блока действий
@@ -145,8 +145,8 @@
   &:hover #{$__elm} {
     // Аватарка
     &__image {
-      background-color: map.get(colors.$mat-primary, 500);
-      color: map.get(colors.$mat-primary, contrast, 500);
+      background-color: map.get(colors.$matPrimary, 500);
+      color: map.get(colors.$matPrimary, contrast, 500);
     }
   }
 }

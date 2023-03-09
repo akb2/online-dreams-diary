@@ -10,7 +10,7 @@ $preview-width: 200px;
 $height: 540px;
 
 // Базовый стиль окна
-@include material.mat-dialog;
+@include material.matDialog;
 
 // Картинки
 .images {
@@ -46,8 +46,8 @@ $height: 540px;
         $size: 18px;
         // Свойства
         position: absolute;
-        outline: 1000vw solid colors.$overlay-color;
-        border: 1px dotted colors.$border-light;
+        outline: 1000vw solid colors.$overlayColor;
+        border: 1px dotted colors.$borderLight;
         // Вся область
         > .area {
           @include mixins.inset;
@@ -75,7 +75,7 @@ $height: 540px;
             position: inherit;
             width: $v-size;
             height: $v-size;
-            border: #{$v-line} solid colors.$border-light;
+            border: #{$v-line} solid colors.$borderLight;
             transform: translateX(-50%) translateY(-50%);
             background-color: rgba(255, 255, 255, 0.5);
           }

@@ -2,7 +2,7 @@
 @use "../../../../assets/styles/mixins";
 
 // Обертка поля
-@include material.mat-form-field;
+@include material.matFormField;
 
 // Список
 mat-chip-list {

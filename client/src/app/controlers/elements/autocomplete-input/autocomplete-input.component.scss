@@ -5,8 +5,8 @@
 @use "../../../../assets/styles/vars";
 
 // Обертка поля
-@include material.mat-form-field;
-@include material.mat-option;
+@include material.matFormField;
+@include material.matOption;
 
 // Общий стиль
 :host {

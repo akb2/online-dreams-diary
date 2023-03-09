@@ -43,7 +43,7 @@ html {
 
 a {
   text-decoration: underline;
-  color: map.get(colors.$mat-secondary, 500);
+  color: map.get(colors.$matSecondary, 500);
   line-height: vars.$defaultTextHeight;
 }
 

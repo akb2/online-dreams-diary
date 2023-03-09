@@ -16,8 +16,8 @@
     @include mixins.inset;
     // Свойтсва
     position: absolute;
-    background-color: colors.$overlay-color;
-    transition: opacity screens.$animation-time;
+    background-color: colors.$overlayColor;
+    transition: opacity screens.$animationTime;
     opacity: 0;
     // Статус: открыто
     &.open {
@@ -34,7 +34,7 @@
     width: containers.$mobileMenuWidth;
     background-color: colors.$card;
     right: -#{containers.$mobileMenuWidth};
-    transition: right screens.$animation-time;
+    transition: right screens.$animationTime;
     pointer-events: auto;
     display: grid;
     grid-template-rows: #{containers.$mobileMenuHeight} minmax(0, 1fr) auto;

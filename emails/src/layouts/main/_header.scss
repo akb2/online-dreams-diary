@@ -4,7 +4,7 @@
 
 .header {
   width: 100%;
-  background-color: map.get(colors.$mat-primary, 500);
+  background-color: map.get(colors.$matPrimary, 500);
 
   &__filler {
     width: 50%;
@@ -15,7 +15,7 @@
 
   &__title,
   &__subtitle {
-    color: map.get(colors.$mat-primary, contrast, 500);
+    color: map.get(colors.$matPrimary, contrast, 500);
     text-decoration: none;
   }
 

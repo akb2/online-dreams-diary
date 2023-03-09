@@ -74,7 +74,7 @@ $keys: full short collapse;
     background-color: colors.$card;
     color: colors.$title;
     overflow: hidden;
-    transition: transform #{screens.$animation-time};
+    transition: transform #{screens.$animationTime};
 
     // Картинка
     &-avatar {
@@ -110,7 +110,7 @@ $keys: full short collapse;
         height: 100%;
         object-fit: cover;
         filter: $filter;
-        transition: filter #{screens.$animation-time};
+        transition: filter #{screens.$animationTime};
       }
     }
     // Описание
@@ -130,7 +130,7 @@ $keys: full short collapse;
       // Свойства
       display: none;
       position: absolute;
-      background-color: colors.$overlay-color;
+      background-color: colors.$overlayColor;
       border-radius: containers.$cardBorderRadius;
     }
     // Отметка о выборе
@@ -145,7 +145,7 @@ $keys: full short collapse;
       display: block;
       z-index: 2;
       opacity: 0;
-      transition: opacity #{screens.$animation-time};
+      transition: opacity #{screens.$animationTime};
     }
 
     // Наведенный элемент
@@ -180,8 +180,8 @@ $keys: full short collapse;
         width: $size;
         height: $size;
         border: #{math.div($size, 2)} solid transparent;
-        border-top-color: map.get(colors.$mat-primary, 500);
-        border-left-color: map.get(colors.$mat-primary, 500);
+        border-top-color: map.get(colors.$matPrimary, 500);
+        border-left-color: map.get(colors.$matPrimary, 500);
       }
       // Текст отметки о выборе
       &:after {
@@ -191,7 +191,7 @@ $keys: full short collapse;
         font-size: $size * $size-k * 0.6;
         content: "check";
         text-align: center;
-        color: map.get(colors.$mat-primary, contrast, 500);
+        color: map.get(colors.$matPrimary, contrast, 500);
       }
     }
     // Загрузка
@@ -281,8 +281,8 @@ $keys: full short collapse;
   position: relative;
   width: 100%;
   filter: $filter;
-  transition: filter #{screens.$animation-time};
-  background-color: map.get(colors.$mat-primary, 500);
+  transition: filter #{screens.$animationTime};
+  background-color: map.get(colors.$matPrimary, 500);
 
   // Фон
   &__image {
@@ -348,8 +348,8 @@ $keys: full short collapse;
         font-size: inherit;
         display: block;
         text-align: center;
-        background-color: map.get(colors.$mat-primary, contrast, 500);
-        color: map.get(colors.$mat-primary, 500);
+        background-color: map.get(colors.$matPrimary, contrast, 500);
+        color: map.get(colors.$matPrimary, 500);
       }
     }
     // Текст
@@ -358,7 +358,7 @@ $keys: full short collapse;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      color: map.get(colors.$mat-primary, contrast, 500);
+      color: map.get(colors.$matPrimary, contrast, 500);
     }
     // Заголовок
     &-title {
@@ -401,8 +401,8 @@ $keys: full short collapse;
     display: block;
     text-align: center;
     border-radius: 50%;
-    background-color: map.get(colors.$mat-primary, 500);
-    color: map.get(colors.$mat-primary, contrast, 500);
+    background-color: map.get(colors.$matPrimary, 500);
+    color: map.get(colors.$matPrimary, contrast, 500);
   }
   // Главное меню
   &__menu {
@@ -415,7 +415,7 @@ $keys: full short collapse;
     // Кнопки
     &-item {
       text-transform: uppercase;
-      color: map-get(colors.$mat-primary, contrast, 500);
+      color: map-get(colors.$matPrimary, contrast, 500);
     }
 
     // Плавающее меню
@@ -444,16 +444,16 @@ $keys: full short collapse;
     // По типам
     @each $key in $keys {
       &.type-#{$key} {
-        $header-height: mixins.map-get($height-list, $key);
+        $header-height: mixins.mapGet($height-list, $key);
         // Свойства
         height: $header-height;
         // Потомки
         #{$_elm} {
           // Данные
           &__data {
-            $gap-y: mixins.map-get($data-gap-y, $key);
-            $image-size: mixins.map-get($data-image-size, $key);
-            $padding-y: mixins.map-get($data-padding-y, $key);
+            $gap-y: mixins.mapGet($data-gap-y, $key);
+            $image-size: mixins.mapGet($data-image-size, $key);
+            $padding-y: mixins.mapGet($data-padding-y, $key);
             $title-koof: 0.65;
             $font-koof: 0.94;
             // Расчеты
@@ -494,7 +494,7 @@ $keys: full short collapse;
           }
           // Кнопка
           &__button {
-            $button-size: mixins.map-get($data-button-size, $key);
+            $button-size: mixins.mapGet($data-button-size, $key);
             // Свойства
             width: $button-size;
             height: $button-size;
@@ -507,8 +507,8 @@ $keys: full short collapse;
           }
           // Меню
           &__menu {
-            $size: mixins.map-get($data-menu-size, $key);
-            $spacing: mixins.map-get($data-menu-spacing, $key);
+            $size: mixins.mapGet($data-menu-size, $key);
+            $spacing: mixins.mapGet($data-menu-spacing, $key);
             // Кнопки
             &-item {
               font-size: $size * 0.8;
@@ -540,9 +540,9 @@ $keys: full short collapse;
         #{$_elm} {
           // Данные
           &__data {
-            $header-height: mixins.map-get($height-list, collapse);
-            $image-size: mixins.map-get($data-image-size, collapse);
-            $button-size: mixins.map-get($data-button-size, collapse);
+            $header-height: mixins.mapGet($height-list, collapse);
+            $image-size: mixins.mapGet($data-image-size, collapse);
+            $button-size: mixins.mapGet($data-button-size, collapse);
             // Расчеты
             $base-height: math.div($header-height, 2);
             $base-image: math.div($image-size, 2);

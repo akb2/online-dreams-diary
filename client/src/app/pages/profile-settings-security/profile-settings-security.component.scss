@@ -66,7 +66,7 @@
       > mat-icon {
         width: inherit;
         height: inherit;
-        color: map.get(colors.$mat-secondary, 500);
+        color: map.get(colors.$matSecondary, 500);
         text-align: center;
       }
       // Картинка
@@ -175,8 +175,8 @@
     }
     // Заголовок
     > .title {
-      background-color: map.get(colors.$mat-primary, 500);
-      color: map.get(colors.$mat-primary, contrast, 500);
+      background-color: map.get(colors.$matPrimary, 500);
+      color: map.get(colors.$matPrimary, contrast, 500);
       display: none;
       // Закругление первой ячейки
       &.create-date {
@@ -199,8 +199,8 @@
     }
     // Четные линии
     &:nth-child(2n) {
-      background-color: map.get(colors.$mat-primary, 50);
-      color: map.get(colors.$mat-primary, contrast, 50);
+      background-color: map.get(colors.$matPrimary, 50);
+      color: map.get(colors.$matPrimary, contrast, 50);
     }
     // Первая линия
     &:first-child {
@@ -308,8 +308,8 @@
     &__ceil {
       // Цвета
       &:nth-child(6) ~ &:nth-child(2n) {
-        background-color: map.get(colors.$mat-primary, 50);
-        color: map.get(colors.$mat-primary, contrast, 50);
+        background-color: map.get(colors.$matPrimary, 50);
+        color: map.get(colors.$matPrimary, contrast, 50);
       }
       // Кнопки
       &.controls {
@@ -384,7 +384,7 @@
           width: $size-1;
           height: $size-1;
           border-width: #{$line-1};
-          border-top-color: map.get(colors.$mat-primary, 500);
+          border-top-color: map.get(colors.$matPrimary, 500);
           top: math.div(math.max($size-1, $size-2) - $size-1, 2);
           left: math.div(math.max($size-1, $size-2) - $size-1, 2);
           animation: loader-animation #{$time-1} linear infinite;
@@ -394,7 +394,7 @@
           width: $size-2;
           height: $size-2;
           border-width: #{$line-2};
-          border-top-color: map.get(colors.$mat-primary, 400);
+          border-top-color: map.get(colors.$matPrimary, 400);
           top: math.div(math.max($size-1, $size-2) - $size-2, 2);
           left: math.div(math.max($size-1, $size-2) - $size-2, 2);
           animation: loader-animation #{$time-2} linear infinite;

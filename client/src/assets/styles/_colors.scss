@@ -1,10 +1,10 @@
 @use "sass:math";
 @use "sass:map";
 
-$color_1: #3f52b5;
-$color_2: #8334b1;
-$color_3: #a52125;
-$color_4: #666;
+$colorPrimary: #3f52b5;
+$colorSecondary: #8334b1;
+$colorStatusWarn: #a52125;
+$colorDisabled: #666;
 
 //**************************************************************************************
 //* Настройка цветов для Material
@@ -81,10 +81,10 @@ $color_4: #666;
   }
 }
 
-$mat-primary: createPalette($color_1);
-$mat-secondary: createPalette($color_2);
-$mat-status-warn: createPalette($color_3);
-$mat-disabled: createPalette($color_4);
+$matPrimary: createPalette($colorPrimary);
+$matSecondary: createPalette($colorSecondary);
+$matStatusWarn: createPalette($colorStatusWarn);
+$matDisabled: createPalette($colorDisabled);
 
 //**************************************************************************************
 //* Настройка цветов для Material
@@ -97,10 +97,10 @@ $border: #f1f1f1;
 $background: #f3f3f3;
 $card: #fff;
 
-$overlay-color: rgba(0, 0, 0, 0.5);
+$overlayColor: rgba(0, 0, 0, 0.5);
 $shadow: rgba(0, 0, 0, 0.15);
 
-$title-dark: #fff;
-$subtitle-dark: #ececec;
-$text-dark: #c0c0c0;
-$border-light: #ddd;
+$titleDark: #fff;
+$subTitleDark: #ececec;
+$textDark: #c0c0c0;
+$borderLight: #ddd;

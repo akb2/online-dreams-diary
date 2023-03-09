@@ -8,9 +8,9 @@
 $mat-theme: mat.define-light-theme(
   (
     color: (
-      primary: mat.define-palette(colors.$mat-primary),
-      accent: mat.define-palette(colors.$mat-secondary, A200, A100, A400),
-      warn: mat.define-palette(colors.$mat-status-warn),
+      primary: mat.define-palette(colors.$matPrimary),
+      accent: mat.define-palette(colors.$matSecondary, A200, A100, A400),
+      warn: mat.define-palette(colors.$matStatusWarn),
     ),
   )
 );
@@ -87,7 +87,7 @@ html {
     }
     // Ссылка
     a {
-      color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$matPrimary, 500);
     }
   }
 
@@ -102,8 +102,8 @@ html {
 }
 
 // Базовые настройки
-@include material.mat-snack-bar;
-@include material.mat-button;
+@include material.matSnackBar;
+@include material.matButton;
 
 // Выделение элементов
 *[unselectable="on"] {
@@ -145,7 +145,7 @@ html {
   &.root-#{$_elm} {
     // Основной цвет
     &.primary-color {
-      background-color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, 500);
     }
     // Белый контейнер
     &.white {

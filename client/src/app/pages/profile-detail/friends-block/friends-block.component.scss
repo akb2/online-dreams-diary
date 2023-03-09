@@ -80,7 +80,7 @@ $friendsLimit: 6;
     // Картинка
     > img {
       filter: grayscale(40%);
-      transition: filter #{screens.$animation-time};
+      transition: filter #{screens.$animationTime};
     }
     // Иконка
     > mat-icon {
@@ -89,9 +89,9 @@ $friendsLimit: 6;
       justify-content: center;
       align-items: center;
       font-size: 24px;
-      background-color: map.get(colors.$mat-disabled, 500);
-      color: map.get(colors.$mat-disabled, contrast, 500);
-      transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
+      background-color: map.get(colors.$matDisabled, 500);
+      color: map.get(colors.$matDisabled, contrast, 500);
+      transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
     }
     // Метка онлайн
     &-online {
@@ -106,7 +106,7 @@ $friendsLimit: 6;
     display: block;
     margin-top: 5px;
     color: colors.$text;
-    transition: color #{screens.$animation-time};
+    transition: color #{screens.$animationTime};
   }
   // Выделение
   &:hover #{$__elm} {
@@ -118,13 +118,13 @@ $friendsLimit: 6;
       }
       // Иконка
       > mat-icon {
-        background-color: map.get(colors.$mat-primary, 500);
-        color: map.get(colors.$mat-primary, contrast, 500);
+        background-color: map.get(colors.$matPrimary, 500);
+        color: map.get(colors.$matPrimary, contrast, 500);
       }
     }
     // Заголовок
     &__title {
-      color: map.get(colors.$mat-primary, 500);
+      color: map.get(colors.$matPrimary, 500);
     }
   }
 }

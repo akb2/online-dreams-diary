@@ -3,7 +3,7 @@
 @use "../../../../assets/styles/screens";
 
 // Обертка поля
-@include material.mat-form-field() {
+@include material.matFormField() {
   cursor: pointer;
   user-select: none;
 }
@@ -24,14 +24,14 @@
     font-weight: 400;
     font-size: 15px;
     color: colors.$title;
-    transition: color #{screens.$animation-time};
+    transition: color #{screens.$animationTime};
 
     &:first-child {
       text-align: center;
     }
 
     &.select {
-      color: colors.$color_1;
+      color: colors.$colorPrimary;
     }
   }
 

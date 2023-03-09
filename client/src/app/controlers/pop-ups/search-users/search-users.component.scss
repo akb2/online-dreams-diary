@@ -6,7 +6,7 @@
 @use "../../../../assets/styles/mixins";
 
 // Базовый стиль окна
-@include material.mat-dialog;
+@include material.matDialog;
 
 // Поле поиска
 .search-field {
@@ -64,8 +64,8 @@
       line-height: $iconSize;
       text-align: center;
       font-size: $iconSize * 0.6;
-      background-color: map.get(colors.$mat-primary, 500);
-      color: map.get(colors.$mat-primary, contrast, 500);
+      background-color: map.get(colors.$matPrimary, 500);
+      color: map.get(colors.$matPrimary, contrast, 500);
     }
   }
   // Заголовок

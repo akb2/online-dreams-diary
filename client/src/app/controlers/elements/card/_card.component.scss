@@ -8,10 +8,10 @@ $base_elm: ".mat-mdc-card";
 $image-color: 500;
 // Цвета
 $colors: (
-  primary: colors.$mat-primary,
-  accent: colors.$mat-secondary,
-  warn: colors.$mat-status-warn,
-  disabled: colors.$mat-disabled,
+  primary: colors.$matPrimary,
+  accent: colors.$matSecondary,
+  warn: colors.$matStatusWarn,
+  disabled: colors.$matDisabled,
 );
 
 // Родительский блок
@@ -114,8 +114,8 @@ $colors: (
         line-height: $image-size;
         font-size: $image-size * 0.6;
         text-align: center;
-        background-color: map.get(colors.$mat-primary, $image-color);
-        color: map.get(colors.$mat-primary, contrast, $image-color);
+        background-color: map.get(colors.$matPrimary, $image-color);
+        color: map.get(colors.$matPrimary, contrast, $image-color);
       }
 
       // Для закрашенных аватарок
@@ -235,7 +235,7 @@ $colors: (
       height: $image-size;
       line-height: $image-size;
       font-size: $image-size;
-      color: map.get(colors.$mat-primary, $image-color);
+      color: map.get(colors.$matPrimary, $image-color);
       text-align: center;
     }
 

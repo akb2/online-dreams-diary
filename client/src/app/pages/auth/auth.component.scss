@@ -5,7 +5,7 @@
 @use "../../../assets/styles/material";
 @use "../../../assets/styles/containers";
 
-@include material.mat-form-field;
+@include material.matFormField;
 
 // Контейнер
 .container {
@@ -24,7 +24,7 @@
   align-items: center;
 
   @each $screen, $resolution in screens.$breakpoints {
-    @media (min-width: #{screens.min_resolution( $screen )}px) and (max-width: #{screens.max_resolution( $screen )}px) {
+    @media (min-width: #{screens.minResolution( $screen )}px) and (max-width: #{screens.maxResolution( $screen )}px) {
       > * {
         width: math.div(100%, map.get($counts, $screen));
       }

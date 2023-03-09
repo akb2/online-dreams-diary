@@ -125,7 +125,7 @@ $breakpointMobile: small;
         }
         // Перекрытие
         &.overlay:after {
-          background-color: map.get(colors.$mat-primary, 500);
+          background-color: map.get(colors.$matPrimary, 500);
           opacity: 0.6;
         }
       }
@@ -156,7 +156,7 @@ $breakpointMobile: small;
       // Временная картинка
       &.temp {
         position: absolute;
-        animation: temp-image-hidden #{screens.$animation-time} linear 1;
+        animation: temp-image-hidden #{screens.$animationTime} linear 1;
         opacity: 0;
         // Правила анимации
         @keyframes temp-image-hidden {
@@ -178,7 +178,7 @@ $breakpointMobile: small;
     &-fill {
       position: absolute;
       inset: 0;
-      background-color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, 500);
     }
   }
   // Заголовок
@@ -187,13 +187,13 @@ $breakpointMobile: small;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
-    color: colors.$title-dark;
+    color: colors.$titleDark;
     font-weight: 400;
   }
   // Подзаголовок
   &__subtitle {
     line-height: 1.14;
-    color: colors.$subtitle-dark;
+    color: colors.$subTitleDark;
     font-weight: 300;
     letter-spacing: 0;
     display: -webkit-box;
@@ -222,8 +222,8 @@ $breakpointMobile: small;
       height: 100%;
       font-size: inherit;
       line-height: inherit;
-      background-color: map.get(colors.$mat-primary, contrast, 500);
-      color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, contrast, 500);
+      color: map.get(colors.$matPrimary, 500);
     }
   }
 }
@@ -264,9 +264,9 @@ $breakpointMobile: small;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: colors.$overlay-color;
+    background-color: colors.$overlayColor;
     opacity: 0;
-    transition: opacity screens.$animation-time;
+    transition: opacity screens.$animationTime;
 
     &.show {
       opacity: 1;
@@ -281,7 +281,7 @@ $breakpointMobile: small;
     background-color: colors.$card;
     position: relative;
     z-index: 1;
-    transition: margin-left screens.$animation-time;
+    transition: margin-left screens.$animationTime;
     display: grid;
     grid-template-rows: $info-height 1fr;
     grid-template-columns: 1fr;
@@ -303,7 +303,7 @@ $breakpointMobile: small;
     overflow-y: scroll;
     // Группы пунктов
     &-group {
-      border-top: 0 solid colors.$border-light;
+      border-top: 0 solid colors.$borderLight;
       & + & {
         border-top-width: 1px;
       }
@@ -313,23 +313,23 @@ $breakpointMobile: small;
       $__item: &;
       // Свойства
       width: 100%;
-      transition: border-top-color screens.$animation-time;
+      transition: border-top-color screens.$animationTime;
       // Выделение
       &:hover {
         &,
         & + #{$__item} {
-          border-top-color: colors.$color_1;
+          border-top-color: colors.$colorPrimary;
         }
         // Ссылка
         #{$__list}-link {
-          background-color: colors.$color_1;
+          background-color: colors.$colorPrimary;
           // Иконка
           > mat-icon {
-            color: colors.$title-dark;
+            color: colors.$titleDark;
           }
           // Текст
           > span {
-            color: colors.$subtitle-dark;
+            color: colors.$subTitleDark;
           }
         }
       }
@@ -342,7 +342,7 @@ $breakpointMobile: small;
       grid-template-columns: $icon-size 1fr;
       grid-gap: 10px;
       text-decoration: none;
-      transition: background-color screens.$animation-time;
+      transition: background-color screens.$animationTime;
       background-color: transparent;
       border: none;
       width: 100%;
@@ -355,7 +355,7 @@ $breakpointMobile: small;
         font-size: 24px;
         color: colors.$title;
         text-align: center;
-        transition: color screens.$animation-time;
+        transition: color screens.$animationTime;
       }
       // Текст
       > span {
@@ -369,18 +369,18 @@ $breakpointMobile: small;
         font-weight: 400;
         letter-spacing: 0;
         font-family: "Roboto", sans-serif;
-        transition: color screens.$animation-time;
+        transition: color screens.$animationTime;
         text-align: left;
       }
       // Активный пункт
       &.active {
         // Иконка
         > mat-icon {
-          color: colors.$color_1;
+          color: colors.$colorPrimary;
         }
         // Текст
         > span {
-          color: colors.$color_1;
+          color: colors.$colorPrimary;
         }
       }
     }
@@ -428,7 +428,7 @@ $breakpointMobile: small;
       right: 0;
       background-color: transparent;
       z-index: 0;
-      transition: background-color screens.$animation-time;
+      transition: background-color screens.$animationTime;
     }
     // Ссылка
     &-link {
@@ -436,13 +436,13 @@ $breakpointMobile: small;
       font-weight: 300;
       text-transform: uppercase;
       text-decoration: none;
-      color: colors.$subtitle-dark;
+      color: colors.$subTitleDark;
       display: flex;
       flex-flow: row nowrap;
       justify-content: flex-start;
       align-items: center;
       cursor: pointer;
-      transition: background-color screens.$animation-time, color screens.$animation-time;
+      transition: background-color screens.$animationTime, color screens.$animationTime;
       background-color: transparent;
       border: none;
       // Текст
@@ -453,8 +453,8 @@ $breakpointMobile: small;
       }
       // Активный элемент
       &.active #{$__elm}-line {
-        background-color: map.get(colors.$mat-secondary, 700);
-        color: map.get(colors.$mat-secondary, contrast, 700);
+        background-color: map.get(colors.$matSecondary, 700);
+        color: map.get(colors.$matSecondary, contrast, 700);
       }
     }
     // Список
@@ -465,7 +465,7 @@ $breakpointMobile: small;
       opacity: 0;
       visibility: hidden;
       border-style: solid;
-      transition: opacity #{screens.$animation-time}, visibility #{screens.$animation-time};
+      transition: opacity #{screens.$animationTime}, visibility #{screens.$animationTime};
       // Потомки
       > #{$__elm} {
         // Декорация
@@ -493,7 +493,7 @@ $breakpointMobile: small;
           }
           // Выделение
           &:hover {
-            background-color: map.get(colors.$mat-primary, 900);
+            background-color: map.get(colors.$matPrimary, 900);
             // Разделить
             > #{$__elm}-line {
               background-color: transparent;
@@ -537,8 +537,8 @@ $breakpointMobile: small;
         text-align: center;
         overflow: hidden;
         z-index: 2;
-        background-color: map.get(colors.$mat-status-warn, 500);
-        color: map.get(colors.$mat-status-warn, contrast, 500);
+        background-color: map.get(colors.$matStatusWarn, 500);
+        color: map.get(colors.$matStatusWarn, contrast, 500);
         // Для стиля с символом бесконечности
         > .is-infinity {
           font-size: 1.55rem;
@@ -549,8 +549,8 @@ $breakpointMobile: small;
           z-index: 1;
           height: 100% !important;
           opacity: 1 !important;
-          background-color: map.get(colors.$mat-status-warn, 600);
-          color: map.get(colors.$mat-status-warn, contrast, 600);
+          background-color: map.get(colors.$matStatusWarn, 600);
+          color: map.get(colors.$matStatusWarn, contrast, 600);
         }
       }
     }
@@ -599,7 +599,7 @@ $breakpointMobile: small;
     height: inherit;
     position: relative;
     z-index: 1;
-    color: colors.$title-dark;
+    color: colors.$titleDark;
   }
 
   &__overlay {
@@ -609,17 +609,17 @@ $breakpointMobile: small;
     right: 0;
     bottom: 0;
     position: absolute;
-    background-color: colors.$color_1;
+    background-color: colors.$colorPrimary;
     z-index: 0;
   }
 
   &,
   &__overlay {
-    transition: background-color screens.$animation-time;
+    transition: background-color screens.$animationTime;
   }
 
   &:hover #{$__elm}__overlay {
-    background-color: colors.$color_2;
+    background-color: colors.$colorSecondary;
   }
 }
 

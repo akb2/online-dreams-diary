@@ -27,9 +27,9 @@
     }
     // Ссылки
     ::ng-deep a {
-      color: map.get(colors.$mat-primary, 400);
+      color: map.get(colors.$matPrimary, 400);
       text-decoration: none;
-      transition: color #{screens.$animation-time};
+      transition: color #{screens.$animationTime};
       // Наведение машкой
       &:hover {
         color: colors.$text;

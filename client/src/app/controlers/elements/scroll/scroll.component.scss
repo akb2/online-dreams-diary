@@ -46,7 +46,7 @@ $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
       content: "";
       display: block;
       position: absolute;
-      background-color: map.get(colors.$mat-disabled, 300);
+      background-color: map.get(colors.$matDisabled, 300);
       transform: translateX(-50%) translateY(-50%);
       top: 50%;
       left: 50%;
@@ -57,27 +57,27 @@ $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
     width: vars.$scrollSize;
     height: vars.$scrollSize;
     border-radius: 50%;
-    background-color: map.get(colors.$mat-disabled, 500);
-    transition: background-color screens.$animation-time;
+    background-color: map.get(colors.$matDisabled, 500);
+    transition: background-color screens.$animationTime;
     cursor: pointer;
     // Выделение
     &:hover,
     &.hover {
-      background-color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, 500);
     }
   }
   // Слайдер
   &__slider {
     max-height: 100%;
     max-width: 100%;
-    background-color: map.get(colors.$mat-disabled, 500);
-    transition: background-color screens.$animation-time;
+    background-color: map.get(colors.$matDisabled, 500);
+    transition: background-color screens.$animationTime;
     border-radius: $sliderBorderRadius;
     position: absolute;
     // Выделение
     &:hover,
     &.hover {
-      background-color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, 500);
     }
   }
 

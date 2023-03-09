@@ -40,8 +40,8 @@
     align-items: center;
     // Иконка
     > mat-icon {
-      background-color: map.get(colors.$mat-disabled, 600);
-      color: map.get(colors.$mat-disabled, contrast, 600);
+      background-color: map.get(colors.$matDisabled, 600);
+      color: map.get(colors.$matDisabled, contrast, 600);
       width: 100%;
       height: $height;
       line-height: $height;
@@ -54,12 +54,12 @@
       // Иконка
       > mat-icon {
         cursor: pointer;
-        transition: background-color #{screens.$animation-time}, color #{screens.$animation-time};
+        transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
 
         // Выделение
         &:hover {
-          background-color: map.get(colors.$mat-primary, 600);
-          color: map.get(colors.$mat-primary, contrast, 600);
+          background-color: map.get(colors.$matPrimary, 600);
+          color: map.get(colors.$matPrimary, contrast, 600);
         }
       }
     }

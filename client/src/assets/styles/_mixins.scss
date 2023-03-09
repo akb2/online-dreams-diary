@@ -5,7 +5,7 @@
 @use "containers";
 
 // Повторить строку
-@function str-repeat($string, $count: 1, $implementer: "") {
+@function strRepeat($string, $count: 1, $implementer: "") {
   $return: "";
 
   @for $i from 1 through $count {
@@ -20,7 +20,7 @@
 }
 
 // Получить переменную
-@function map-get($map, $key) {
+@function mapGet($map, $key) {
   @if (map.has-key($map, $key)) {
     @return map.get($map, $key);
   }
@@ -135,7 +135,7 @@
   width: $size;
   height: $size;
   border-radius: 50%;
-  background-color: map.get(colors.$mat-status-warn, A700);
+  background-color: map.get(colors.$matStatusWarn, A700);
   animation: onlineBlinkPointAnimation 0.5s ease infinite alternate;
   // Правила анимации
   @keyframes onlineBlinkPointAnimation {
@@ -149,7 +149,7 @@
 }
 
 // Лоадер
-@mixin loader($size: 24px, $line: 2px, $speed: 1s, $color: map.get(colors.$mat-primary, 500)) {
+@mixin loader($size: 24px, $line: 2px, $speed: 1s, $color: map.get(colors.$matPrimary, 500)) {
   $lineB: math.round($line * 0.7);
   $spacing: math.clamp(2px, $lineB, 5px);
   $sizeB: $size - (($line + $spacing) * 2);
@@ -194,7 +194,7 @@
 }
 
 // Цвета лоадера
-@mixin loaderColors($color: map.get(colors.$mat-primary, 500)) {
+@mixin loaderColors($color: map.get(colors.$matPrimary, 500)) {
   // Полосы
   &::before,
   &::after {
@@ -205,10 +205,10 @@
 // Миксин цветов
 @mixin customsColors($size, $fontSize: 0.7) {
   $colors: (
-    primary: colors.$mat-primary 500,
-    accent: colors.$mat-secondary 500,
-    warn: colors.$mat-status-warn 500,
-    disabled: colors.$mat-disabled 500,
+    primary: colors.$matPrimary 500,
+    accent: colors.$matSecondary 500,
+    warn: colors.$matStatusWarn 500,
+    disabled: colors.$matDisabled 500,
   );
   // Свойства
   width: $size;

@@ -167,7 +167,7 @@ $columnTemplates: (
     width: $size-1;
     height: $size-1;
     border-width: #{$line-1};
-    border-top-color: map.get(colors.$mat-primary, 500);
+    border-top-color: map.get(colors.$matPrimary, 500);
     top: math.div(math.max($size-1, $size-2) - $size-1, 2);
     left: math.div(math.max($size-1, $size-2) - $size-1, 2);
     animation: loader-animation #{$time-1} linear infinite;
@@ -177,7 +177,7 @@ $columnTemplates: (
     width: $size-2;
     height: $size-2;
     border-width: #{$line-2};
-    border-top-color: map.get(colors.$mat-primary, 400);
+    border-top-color: map.get(colors.$matPrimary, 400);
     top: math.div(math.max($size-1, $size-2) - $size-2, 2);
     left: math.div(math.max($size-1, $size-2) - $size-2, 2);
     animation: loader-animation #{$time-2} linear infinite;

@@ -8,7 +8,7 @@
 @use "./vars";
 
 // Кнопки
-@mixin mat-button {
+@mixin matButton {
   $iconSize: 24px;
   // Базовые стили
   .mdc-button {
@@ -92,15 +92,15 @@
           }
           // Статус: warn
           &.mat-warn > .mat-icon {
-            @include mixins.loaderColors(map.get(colors.$mat-status-warn, 500));
+            @include mixins.loaderColors(map.get(colors.$matStatusWarn, 500));
           }
           // Статус: accent
           &.mat-accent > .mat-icon {
-            @include mixins.loaderColors(map.get(colors.$mat-secondary, 500));
+            @include mixins.loaderColors(map.get(colors.$matSecondary, 500));
           }
           // Статус: primary
           &.mat-primary > .mat-icon {
-            @include mixins.loaderColors(map.get(colors.$mat-primary, 500));
+            @include mixins.loaderColors(map.get(colors.$matPrimary, 500));
           }
         }
       }
@@ -109,7 +109,7 @@
 }
 
 // Обертка поля
-@mixin mat-form-field {
+@mixin matFormField {
   $__marginMainElm: ".mat-mdc-form-field";
   $__marginElms: "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
   // Обертка
@@ -232,13 +232,13 @@
 }
 
 // Всплывающие сообщения
-@mixin mat-snack-bar {
+@mixin matSnackBar {
   .mat-mdc-snack-bar-container.mdc-snackbar {
     // Цвета
     $colors: (
-      info: colors.$mat-disabled 900,
-      success: colors.$mat-primary 700,
-      error: colors.$mat-status-warn 600,
+      info: colors.$matDisabled 900,
+      success: colors.$matPrimary 700,
+      error: colors.$matStatusWarn 600,
     );
     // Цикл по стилям
     @each $class, $color in $colors {
@@ -262,7 +262,7 @@
 }
 
 // Диалоговое окно
-@mixin mat-dialog {
+@mixin matDialog {
   // Заголовок
   .title {
     // Свойства
@@ -334,7 +334,7 @@
 }
 
 // Выпадающие списки
-@mixin mat-option {
+@mixin matOption {
   .mat-mdc-option {
     line-height: 1;
     height: auto;

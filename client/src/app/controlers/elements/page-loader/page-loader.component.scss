@@ -72,7 +72,7 @@
       font-weight: 400;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: colors.$title-dark;
+      color: colors.$titleDark;
       margin-top: 15px;
     }
 
@@ -80,7 +80,7 @@
     &-desc {
       font-size: 17px;
       text-transform: uppercase;
-      color: colors.$subtitle-dark;
+      color: colors.$subTitleDark;
       margin-top: 2px;
     }
   }

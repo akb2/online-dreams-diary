@@ -6,12 +6,12 @@
     default: (
       back: #efefef,
       text: #000,
-      link: map.get(colors.$mat-secondary, 500),
+      link: map.get(colors.$matSecondary, 500),
     ),
     white: (
       back: #fff,
       text: #000,
-      link: map.get(colors.$mat-secondary, 500),
+      link: map.get(colors.$matSecondary, 500),
     ),
   );
 

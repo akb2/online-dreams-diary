@@ -7,10 +7,10 @@
 .text {
   $__elm: &;
   $colors: (
-    primary: colors.$mat-primary 500,
-    accent: colors.$mat-secondary 500,
-    warn: colors.$mat-status-warn 500,
-    disabled: colors.$mat-disabled 500,
+    primary: colors.$matPrimary 500,
+    accent: colors.$matSecondary 500,
+    warn: colors.$matStatusWarn 500,
+    disabled: colors.$matDisabled 500,
   );
   // Свойства
   line-height: inherit !important;
@@ -26,7 +26,7 @@
     padding: 0 6px;
     text-indent: 0;
     background-color: colors.$subtitle;
-    color: colors.$title-dark !important;
+    color: colors.$titleDark !important;
     border-radius: vars.$iconsSmallBorderRadius;
   }
   // Инвертированные цвета

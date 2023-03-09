@@ -81,8 +81,8 @@ $avatarSize: 48px;
       line-height: $avatarSize;
       font-size: $avatarSize * 0.7;
       text-align: center;
-      background-color: map.get(colors.$mat-primary, contrast, 500);
-      color: map.get(colors.$mat-primary, 500);
+      background-color: map.get(colors.$matPrimary, contrast, 500);
+      color: map.get(colors.$matPrimary, 500);
     }
     // Метка онлайн
     &-online {
@@ -100,7 +100,7 @@ $avatarSize: 48px;
     &-title {
       @include mixins.lineClamp(1, 1.2, 16px);
       // Свойства
-      color: colors.$title-dark;
+      color: colors.$titleDark;
       font-weight: 400;
       max-width: 100%;
     }
@@ -108,7 +108,7 @@ $avatarSize: 48px;
     &-subtitle {
       @include mixins.lineClamp(1, 1.2, 13px);
       // Свойства
-      color: colors.$subtitle-dark;
+      color: colors.$subTitleDark;
       font-weight: 300;
       max-width: 100%;
     }
@@ -120,7 +120,7 @@ $avatarSize: 48px;
   position: absolute;
   top: 0;
   right: 0;
-  color: colors.$title-dark;
+  color: colors.$titleDark;
   text-align: center;
   width: 60px;
   height: 60px;

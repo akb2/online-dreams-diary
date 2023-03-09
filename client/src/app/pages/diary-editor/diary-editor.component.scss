@@ -81,7 +81,7 @@ $tabsHeight: 49px;
     color: colors.$text;
     // Активная вкладка
     &-active {
-      color: map.get(colors.$mat-primary, 900);
+      color: map.get(colors.$matPrimary, 900);
     }
     // Содержимое
     &-content {

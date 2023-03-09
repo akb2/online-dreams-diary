@@ -1,7 +1,7 @@
 @use "../../../../assets/styles/material";
 
 // Обертка поля
-@include material.mat-form-field;
+@include material.matFormField;
 
 // Поле ввода
 .mat-input-element {

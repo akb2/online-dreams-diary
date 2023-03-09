@@ -2,12 +2,12 @@
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/colors";
 
-$back_1: map.get(colors.$mat-primary, 400);
-$back_2: map.get(colors.$mat-secondary, 400);
+$back_1: map.get(colors.$matPrimary, 400);
+$back_2: map.get(colors.$matSecondary, 400);
 
-$shape_1: map.get(colors.$mat-primary, 300);
-$shape_2: map.get(colors.$mat-secondary, 300);
-$shape_3: map.get(colors.$mat-secondary, 300);
+$shape_1: map.get(colors.$matPrimary, 300);
+$shape_2: map.get(colors.$matSecondary, 300);
+$shape_3: map.get(colors.$matSecondary, 300);
 $shape_4: rgba(255, 255, 255, 0.05);
 
 $shape_size: 1vw;
@@ -23,30 +23,11 @@ $shape_4_size_mobile: 190px;
   inset: 0;
 
   @include screens.adaptive(middle) {
-    background: radial-gradient(circle at 20% 40%, $shape_1 $shape_size, transparent ($shape_size + $shape_blur)),
-      radial-gradient(circle at 50% 70%, $shape_2 $shape_size, transparent ($shape_size + $shape_blur)),
-      radial-gradient(circle at 80% 80%, $shape_3 $shape_size, transparent ($shape_size + $shape_blur)),
-      radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size, transparent $shape_4_size),
-      linear-gradient(to right, $back_1 0, $back_2 100%);
+    background: radial-gradient(circle at 20% 40%, $shape_1 $shape_size, transparent ($shape_size + $shape_blur)), radial-gradient(circle at 50% 70%, $shape_2 $shape_size, transparent ($shape_size + $shape_blur)), radial-gradient(circle at 80% 80%, $shape_3 $shape_size, transparent ($shape_size + $shape_blur)), radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size, transparent $shape_4_size), linear-gradient(to right, $back_1 0, $back_2 100%);
   }
 
   @include screens.adaptive(auto, middle) {
-    background: radial-gradient(
-        circle at 20% 40%,
-        $shape_1 $shape_size_mobile,
-        transparent ($shape_size_mobile + $shape_blur_mobile)
-      ),
-      radial-gradient(
-        circle at 50% 70%,
-        $shape_2 $shape_size_mobile,
-        transparent ($shape_size_mobile + $shape_blur_mobile)
-      ),
-      radial-gradient(
-        circle at 80% 80%,
-        $shape_3 $shape_size_mobile,
-        transparent ($shape_size_mobile + $shape_blur_mobile)
-      ),
-      radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size_mobile, transparent $shape_4_size_mobile),
+    background: radial-gradient(circle at 20% 40%, $shape_1 $shape_size_mobile, transparent ($shape_size_mobile + $shape_blur_mobile)), radial-gradient(circle at 50% 70%, $shape_2 $shape_size_mobile, transparent ($shape_size_mobile + $shape_blur_mobile)), radial-gradient(circle at 80% 80%, $shape_3 $shape_size_mobile, transparent ($shape_size_mobile + $shape_blur_mobile)), radial-gradient(circle at 87% 18%, $shape_4 $shape_4_size_mobile, transparent $shape_4_size_mobile),
       linear-gradient(to right, $back_1 0, $back_2 100%);
   }
 }

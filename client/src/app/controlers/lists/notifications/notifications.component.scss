@@ -21,7 +21,7 @@ $spacing: 10px;
   opacity: 0;
   visibility: hidden;
   margin-top: 200px;
-  transition: opacity #{screens.$animation-time}, visibility #{screens.$animation-time}, margin-top #{screens.$animation-time};
+  transition: opacity #{screens.$animationTime}, visibility #{screens.$animationTime}, margin-top #{screens.$animationTime};
   // Позиция справа
   @include screens.adaptiveFor(containers.$widths) using ($width) {
     right: calc(50vw - #{math.div($width, 2) - containers.$paddingX});
@@ -65,7 +65,7 @@ $spacing: 10px;
   justify-content: flex-start;
   align-items: center;
   gap: 5px #{$gap};
-  transition: background-color #{screens.$animation-time};
+  transition: background-color #{screens.$animationTime};
   // Блок компонента
   &__elm {
     display: block;
@@ -112,10 +112,10 @@ $spacing: 10px;
   // Непрочитанное уведомление
   &.noRead {
     $colors: (
-      primary: colors.$mat-primary 50,
-      accent: colors.$mat-secondary 50,
-      warn: colors.$mat-status-warn 50,
-      disabled: colors.$mat-disabled 50,
+      primary: colors.$matPrimary 50,
+      accent: colors.$matSecondary 50,
+      warn: colors.$matStatusWarn 50,
+      disabled: colors.$matDisabled 50,
     );
     // Свойства
     @each $color, $value in $colors {
