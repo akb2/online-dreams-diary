@@ -145,18 +145,30 @@ export const MenuItems: MenuItemsListDevices = {
       {
         sort: 100,
         text: "Поиск",
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: false
+        },
         children: [
           // Люди
           {
             icon: "group",
             text: "Люди",
-            link: "/people"
+            link: "/people",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: false
+            }
           },
           // Дневники
           {
             icon: "collections_bookmark",
             text: "Дневники снов",
-            link: "/diary/all"
+            link: "/diary/all",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: false
+            }
           },
           // // Блог
           // {
@@ -177,35 +189,66 @@ export const MenuItems: MenuItemsListDevices = {
     auth: [
       // Личный кабинет
       {
+        id: "my-profie",
         icon: "person",
         text: "Моя страница",
-        link: "/profile/:currentUserID"
+        link: "/profile/:currentUserID",
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: true
+        }
       },
       // Дневник
       {
         sort: 1,
         icon: "book",
         text: "Мой дневник",
-        link: "/diary/:currentUserID"
+        link: "/diary/:currentUserID",
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: true
+        }
       },
       // Настройки
       {
         sort: 500,
         text: "Настройки",
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: false
+        },
         children: [
           // Настройки
           {
             icon: "settings",
             text: "Настройки",
             link: "/profile/settings",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: false
+            }
           },
           // Выход
           {
             id: "quit",
             icon: "exit_to_app",
-            text: "Выход"
+            text: "Выход",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: false
+            }
           }
         ]
+      },
+      // Уведомления
+      {
+        sort: 2,
+        id: "notifications",
+        icon: "notifications",
+        mobileView: {
+          leftPanel: false,
+          bottomPanel: true
+        }
       }
     ],
     // Неавторизованных
@@ -214,23 +257,39 @@ export const MenuItems: MenuItemsListDevices = {
       {
         icon: "home",
         text: "Главная",
-        link: "/home"
+        link: "/home",
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: false
+        }
       },
       // Личный кабинет
       {
         sort: 1000,
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: true
+        },
         children: [
           // Вход
           {
             icon: "lock",
             text: "Вход",
-            link: "/auth"
+            link: "/auth",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: true
+            }
           },
           // Регистрация
           {
             icon: "person_add",
             text: "Регистрация",
-            link: "/register"
+            link: "/register",
+            mobileView: {
+              leftPanel: true,
+              bottomPanel: true
+            }
           }
         ]
       }

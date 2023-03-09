@@ -12,12 +12,20 @@ export interface MenuItem {
   sort?: number;
   counter?: number;
   icon?: string;
+  image?: string;
   text?: string;
   desc?: string;
   link?: string;
+  mobileView?: MenuItemMobileView;
   linkParams?: SimpleObject;
   callback?: () => void;
   children?: MenuItem[];
+}
+
+// Параметры мобильного вида
+export interface MenuItemMobileView {
+  leftPanel: boolean;
+  bottomPanel: boolean;
 }
 
 // Тип способа авторизации

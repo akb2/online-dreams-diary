@@ -28,6 +28,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() show: boolean = false;
   @Input() listStyles: SimpleObject = {};
+  @Input() outerClickClose: boolean = true;
 
   @Output() showChange: EventEmitter<boolean> = new EventEmitter();
 
@@ -117,6 +118,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!!changes?.show && changes.show.previousValue !== changes.show.currentValue && this.show) {
+      this.showChange.emit(this.show);
       this.onScrollChange(this.previousScroll);
     }
   }
@@ -251,14 +253,14 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
       .pipe(
         takeUntil(this.destroyed$),
         map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications")),
-        filter(avail => this.outCloseAvail && avail)
+        filter(avail => this.outCloseAvail && avail && this.outerClickClose)
       )
       .subscribe(() => this.onClose());
     // Закрытие уведомлений: при нажатии на ссылки
     fromEvent(document, "click")
       .pipe(
         takeUntil(this.destroyed$),
-        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a"))
+        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a") && this.outerClickClose)
       )
       .subscribe(() => this.onClose());
     // Закрытие при скролле документа

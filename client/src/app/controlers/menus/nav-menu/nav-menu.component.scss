@@ -4,6 +4,7 @@
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/mixins";
 @use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/vars";
 
 $breakpointMobile: small;
 
@@ -396,6 +397,74 @@ $breakpointMobile: small;
         + li {
           border-top: 1px solid #{colors.$border};
         }
+      }
+    }
+  }
+}
+
+// Мобильное меню снизу
+.bottom-menu {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: vars.$headerHeight;
+  background-color: colors.$card;
+  box-shadow: containers.$cardBoxShadow;
+  pointer-events: all;
+  // Список элементов
+  &__items {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+  }
+  // Пункт меню
+  &__item {
+    display: block;
+    text-decoration: none;
+    position: relative;
+    // Иконка
+    > mat-icon {
+      $size: 40px;
+      // Свойства
+      display: block;
+      width: $size;
+      height: $size;
+      line-height: $size;
+      font-size: $size * 0.9;
+      text-align: center;
+      color: map.get(colors.$matPrimary, 500);
+    }
+    // Счетчик
+    &-counter {
+      $size: 20px;
+      $position: -5px;
+      // Свойства
+      position: absolute;
+      top: $position;
+      right: $position;
+      width: $size;
+      height: $size;
+      line-height: $size;
+      border-radius: 50%;
+      text-align: center;
+      overflow: hidden;
+      background-color: map.get(colors.$matStatusWarn, 600);
+      color: map.get(colors.$matStatusWarn, contrast, 600);
+      font-size: 11px;
+      // Символ бесконечности
+      > .is-infinity {
+        display: block;
+        width: inherit;
+        height: inherit;
+        line-height: inherit;
+        font-size: 19px;
       }
     }
   }

@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "@angular/material" as mat;
+@use "./assets/styles/vars";
 @use "./assets/styles/colors";
 @use "./assets/styles/containers";
 @use "./assets/styles/material";
@@ -76,6 +77,10 @@ html {
       &-all-scroll {
         cursor: all-scroll !important;
       }
+    }
+    // Отступ снизу для мобильного меню
+    &.mobile-menu-bottom-spacing {
+      padding-bottom: vars.$mobileMenuBottomHeight;
     }
   }
   // Текст

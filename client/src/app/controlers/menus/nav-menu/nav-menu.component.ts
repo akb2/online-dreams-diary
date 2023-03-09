@@ -87,7 +87,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollSmoothTimeStep: number = 30;
 
   notificationRepeat: number[] = CreateArray(2);
-  tooManyNotificationSymbol: string = "&infin;";
+  tooManyNotificationSymbol: string = "+";
+
+  private mobileMenuBottomBodyClass: string = "mobile-menu-bottom-spacing";
 
   css: CustomObject<SimpleObject> = {};
 
@@ -222,6 +224,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.screenService.breakpoint$
       .pipe(takeUntil(this.destroy$))
       .subscribe(breakpoint => {
+        if (breakpoint === "small" || breakpoint === "xsmall") {
+          document.body.classList.add(this.mobileMenuBottomBodyClass);
+        }
+        // Убрать класс мобильного меню снизу
+        else {
+          document.body.classList.remove(this.mobileMenuBottomBodyClass);
+        }
+        // Сохранить параметры
         this.breakpoint = breakpoint;
         this.onResize();
       });
@@ -435,6 +445,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         this.hideNotifications() :
         this.showNotifications();
     }
+  }
+
+  // Изменение статуса отображения списка уведомлений
+  onShowNotificationsChange(state: boolean): void {
+    this.isShowNotifications = state;
+    this.changeDetectorRef.detectChanges();
   }
 
 
