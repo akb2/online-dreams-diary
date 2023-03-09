@@ -123,14 +123,16 @@
   </div>
 
   <!-- Передний фон -->
-  <div class="main-menu__layer front"
-       *ngIf="isMobile">
+  <div class="main-menu__layer front">
     <!-- Пункты главного меню -->
-    <ng-container [ngTemplateOutlet]="mobileMenu"></ng-container>
-    <!-- Пункты главного меню внизу страницы -->
-    <ng-container [ngTemplateOutlet]="mobileMenuBottom"></ng-container>
+    <ng-container [ngTemplateOutlet]="mobileMenu"
+                  *ngIf="isMobile"></ng-container>
   </div>
 </div>
+
+<!-- Пункты главного меню внизу страницы -->
+<ng-container [ngTemplateOutlet]="mobileMenuBottom"
+              *ngIf="isMobile"></ng-container>
 
 <!-- Вспомогательный блок для коррекции контента -->
 <div class="main-menu {{ class }} type-{{ type }} helper"
