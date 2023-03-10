@@ -31,6 +31,10 @@
     &__item {
       width: calc((100% - #{$gap * ($count - 1)}) / #{$count});
     }
+    // Скрыть в режиме одной линии
+    &.oneLine > &__item:nth-child(#{$count}) ~ &__item {
+      display: none;
+    }
   }
 }
 

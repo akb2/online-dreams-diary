@@ -16,6 +16,7 @@ export class PeopleListComponent {
 
 
   @Input() people: User[];
+  @Input() oneLine: boolean = false;
 
   baseLink: string = "/profile/";
 
