@@ -48,3 +48,9 @@ export interface BaseSearch {
   ids: number[];
   excludeIds: number[];
 }
+
+// Базовые типы полей сортирвки
+export type BaseSearchSortField = "id";
+
+// Поиск: направления сортировки
+export type BaseSearchSortType = "asc" | "desc";
