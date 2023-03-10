@@ -73,5 +73,5 @@ WHERE
   AND `status` = :status
 <? endif; ?>
 
-ORDER BY <? if (strlen($input["q"]) > 0) : ?>`q` DESC,<? endif; ?> `id` ASC
+ORDER BY <? if (strlen($input["q"]) > 0) : ?>`q` DESC, <? endif; ?> `<?= $input['sort_field']; ?>` <?= $input['sort_type'] . ' '; ?>
 LIMIT <?= $input['limit_start']; ?>, <?= $input['limit_length']; ?>

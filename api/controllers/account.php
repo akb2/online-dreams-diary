@@ -98,6 +98,7 @@ class Account
   }
 
   // Создание ключа активации аккаунта
+  #[Request('get')]
   public function createActivationCode(array $data): array
   {
     return $this->userService->createActivationCodeApi($data);
@@ -125,7 +126,9 @@ class Account
       'exclude_ids' => $data['search_excludeIds'],
       'page' => $data['search_page'] ?? 1,
       'limit' => $data['search_limit'] ?? null,
-      'status' => $data['search_status'] ?? 1
+      'status' => $data['search_status'] ?? 1,
+      'sort_field' => $data['search_sortField'] ?? 'id',
+      'sort_type' => $data['search_sortType'] ?? 'asc'
     );
     $testUsers = $this->userService->getList($search, $token, $currentUserId);
     $people = array();

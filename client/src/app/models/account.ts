@@ -1,4 +1,4 @@
-import { BaseSearch } from "@_models/api";
+import { BaseSearch, BaseSearchSortField, BaseSearchSortType } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
 
@@ -111,7 +111,12 @@ export interface SearchUser extends BaseSearch {
   birthDay: string;
   birthMonth: string;
   birthYear: string;
+  sortField: SearchUserSortField;
+  sortType: BaseSearchSortType;
 }
+
+// Поиск: поля сортировки
+export type SearchUserSortField = BaseSearchSortField;
 
 
 

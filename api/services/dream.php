@@ -117,6 +117,8 @@ class DreamService
     $limit = $search['limit'] > 0 & $search['limit'] <= 100 ? $search['limit'] : $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     $areFriends = false;
+    $sortFields = array('id', 'date');
+    $sortTypes = array('asc', 'desc');
     // Проверка статуса в друзьях
     if (intval($search['user']) > 0 && intval($userId) > 0 && intval($search['user']) != intval($userId)) {
       $friend = $this->friendService->getFriendStatus($userId, $search['user']);
@@ -140,6 +142,8 @@ class DreamService
       "user_id" => intval($search["user"]),
       "withMap" => boolval($search["withMap"]),
       "withText" => boolval($search["withText"]),
+      'sort_field' => array_search($search['sort_field'] ?? 'id', $sortFields) ? $search['sort_field'] : $sortFields[0],
+      'sort_type' => array_search($search['sort_type'] ?? 'asc', $sortTypes) ? $search['sort_type'] : $sortTypes[0],
       // Параметры
       "are_friends" => $areFriends,
       "check_token" => $checkToken,

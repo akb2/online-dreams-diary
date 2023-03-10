@@ -111,5 +111,5 @@ else : ?>
   AND `status` = 5
 <? endif; ?>
 
-ORDER BY `date` DESC
+ORDER BY `<?= $input['sort_field']; ?>` <?= $input['sort_type'] . ' '; ?>
 LIMIT <?= $input['limit_start']; ?>, <?= $input['limit_length']; ?>

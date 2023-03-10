@@ -91,7 +91,9 @@ class Dream
       'limit' => $data['search_limit'] ?? null,
       'status' => $data['search_status'] ?? -1,
       'type' => $data['search_type'] ?? -1,
-      'mood' => $data['search_mood'] ?? -1
+      'mood' => $data['search_mood'] ?? -1,
+      'sort_field' => $data['search_sortField'] ?? 'date',
+      'sort_type' => $data['search_sortType'] ?? 'desc'
     );
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();

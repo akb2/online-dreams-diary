@@ -838,6 +838,8 @@ class UserService
     $limit = $search['limit'] > 0 & $search['limit'] <= 500 ? $search['limit'] : $this->config['dreams']['limit'];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     $statuses = array(-1, 0, 1);
+    $sortFields = array('id');
+    $sortTypes = array('asc', 'desc');
     // Отфильтровать поиск по ФИО
     if (strlen($search['q']) > 0) {
       $q = array();
@@ -860,6 +862,8 @@ class UserService
       'birth_month' => $search['birth_month'],
       'birth_day' => $search['birth_day'],
       'status' => array_search($search['status'] ?? 1, $statuses) ? $search['status'] : $statuses[0],
+      'sort_field' => array_search($search['sort_field'] ?? 'id', $sortFields) ? $search['sort_field'] : $sortFields[0],
+      'sort_type' => array_search($search['sort_type'] ?? 'asc', $sortTypes) ? $search['sort_type'] : $sortTypes[0],
       // Параметры
       'check_token' => $checkToken,
       'current_user' => intval($userId),
