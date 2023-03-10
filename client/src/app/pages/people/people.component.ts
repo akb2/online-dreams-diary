@@ -64,7 +64,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   private queryParams: SimpleObject = {};
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -151,7 +151,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.activatedRoute.queryParams
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(params => {
         this.queryParams = params as SimpleObject;
         this.pageCurrent = parseInt(params.page) || 1;
@@ -164,20 +164,20 @@ export class PeopleComponent implements OnInit, OnDestroy {
       });
     // Подписка на тип устройства
     this.screenService.isMobile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
     // Изменение списка дней
     merge(this.searchForm.get("birthMonth").valueChanges, this.searchForm.get("birthYear").valueChanges)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.fillDaysOptionData());
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
