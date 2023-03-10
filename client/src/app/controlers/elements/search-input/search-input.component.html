@@ -1,0 +1,25 @@
+<!-- Поле поиска -->
+<input class="input"
+       [ngClass]="{ isSearching }"
+       type="text"
+       [formControl]="control"
+       autocomplete="off"
+       name="search"
+       id="search"
+       placeholder="Начните вводить запрос . . ."
+       [maxlength]="128"
+       (keyup.enter)="onSearch()"
+       (keyup.numpadEnter)="onSearch()" />
+<!-- Кнопка очистки поиска -->
+<button class="clear"
+        *ngIf="isSearching">
+  <mat-icon matRipple
+            [matRippleCentered]="true"
+            matRippleColor="primary"
+            (click)="onClear()">close</mat-icon>
+</button>
+<!-- Кнопка поиска -->
+<button class="button"
+        matRipple
+        matRippleColor="primary"
+        (click)="onSearch()">Найти</button>

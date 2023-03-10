@@ -1,0 +1,79 @@
+@use "sass:map";
+@use "sass:math";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/colors";
+
+$height: 60px;
+$fontSize: 18px;
+$borderRadius: math.div($height, 2);
+
+// Общий блок
+:host {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: $borderRadius;
+}
+
+// Общие стили
+.input,
+.button,
+.clear {
+  height: $height;
+  line-height: $height;
+  font-size: $fontSize;
+}
+
+// Поле поиска
+.input {
+  padding: 0 32px;
+  flex-grow: 1;
+  border: 1px solid #{map.get(colors.$matPrimary, 500)};
+  outline: none;
+  border-radius: #{$borderRadius} 0 0 #{$borderRadius};
+  border-right-width: 0;
+  background-color: colors.$card;
+  // Идет поиск
+  &.isSearching {
+    padding-right: 0;
+  }
+}
+
+// Кнопка очистки поиска
+.clear {
+  width: $height;
+  border: 1px solid #{map.get(colors.$matPrimary, 500)};
+  border-width: 1px 0;
+  padding: 0;
+  background-color: colors.$card;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  // Иконка
+  > mat-icon {
+    $size: math.min(48px, $height - 2px);
+    // Свойства
+    display: block;
+    text-align: center;
+    width: $size;
+    height: $size;
+    line-height: $size;
+    font-size: $fontSize * 1.5;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+}
+
+// Кнопка поиска
+.button {
+  background-color: map.get(colors.$matPrimary, 500);
+  color: map.get(colors.$matPrimary, contrast, 500);
+  border-radius: 0 #{$borderRadius} #{$borderRadius} 0;
+  border: none;
+  outline: none;
+  padding: 0 48px;
+  cursor: pointer;
+}
