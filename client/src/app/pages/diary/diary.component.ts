@@ -268,6 +268,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       this.floatButtonIcon = !!this.user ? "add" : "";
       this.floatButtonLink = !!this.user ? "/diary/editor" : "";
       this.menuAvatarIcon = "content_paste_search";
+      this.backButtonLink = "/search";
       // Заголовок вкладки
       pageTitle = this.globalService.createTitle("Общий дневник");
     }
