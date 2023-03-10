@@ -277,7 +277,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Загрузка списка
-    this.accountService.search(this.getSearch, ["0002"]).subscribe(
+    this.accountService.search({ ...this.getSearch, sortType: "desc" }, ["0002"]).subscribe(
       ({ count, result: people, limit }) => {
         // Найдены сновидения
         if (count > 0) {

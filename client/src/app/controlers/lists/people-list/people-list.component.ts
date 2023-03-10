@@ -17,6 +17,7 @@ export class PeopleListComponent {
 
   @Input() people: User[];
   @Input() oneLine: boolean = false;
+  @Input() highlightWords: string[];
 
   baseLink: string = "/profile/";
 

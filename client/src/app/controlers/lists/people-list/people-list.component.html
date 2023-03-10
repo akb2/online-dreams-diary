@@ -18,7 +18,14 @@
     <!-- Имя пользователя -->
     <a class="user__text not-action"
        [routerLink]="baseLink + user.id">
-      <div class="user__text-title">{{user.name}} {{user.lastName}}</div>
+      <div class="user__text-title"
+           *ngIf="!highlightWords?.length">{{user.name}} {{user.lastName}}</div>
+      <!-- Выделенные слова в имени -->
+      <app-highlight-keywords color="primary"
+                              [text]="user.name + ' ' + user.lastName"
+                              [keywords]="highlightWords"
+                              *ngIf="!!highlightWords?.length"></app-highlight-keywords>
+      <!-- Сведения -->
       <div class="user__text-subtitle">
         <!-- В сети -->
         <ng-container *ngIf="user.online; else userlastVisitDate">Онлайн</ng-container>
