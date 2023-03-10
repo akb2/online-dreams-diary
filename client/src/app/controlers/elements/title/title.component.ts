@@ -23,6 +23,7 @@ export class TitleComponent implements AfterViewChecked {
   @Input() subTitle: string;
   @Input() noMargin: boolean = false;
   @Input() revertTitles: boolean = false;
+  @Input() oneLine: boolean = false;
 
   @ViewChild("actionsPanel") private actionsPanel: ElementRef;
 
@@ -37,6 +38,7 @@ export class TitleComponent implements AfterViewChecked {
     return {
       "revert-titles": this.revertTitles,
       "no-margin": this.noMargin,
+      "one-line": this.oneLine,
       image: !!this.icon,
       subtitle: !!this.subTitle,
       actions: this.showActionsPanel
