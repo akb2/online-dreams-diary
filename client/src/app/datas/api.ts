@@ -18,7 +18,7 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
 
 // Подготовка объекта как параметры URL
 export const ObjectToUrlObject = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: ExcludeUrlObjectValues) => Object.entries(params)
-  .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : v.toString()]))
+  .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : (v?.toString() ?? null)]))
   .map(([k, v]) => {
     const hasInExclude: boolean = excludeParams.hasOwnProperty(k) && (
       excludeParams[k] === true ||
