@@ -15,6 +15,7 @@
      *ngIf="!loading; else listLoader">
   <div class="container">
     <app-search-input [formControl]="searchForm"
+                      [buttonText]="isSearching && !getSearchValue? 'Сброс': 'Поиск'"
                       (search)="onSearch()"></app-search-input>
   </div>
   <!-- Результаты -->
@@ -23,7 +24,12 @@
     <div class="container"
          *ngIf="!!people?.length">
       <app-title [type]="2"
+                 [subTitle]="isSearching? 'Найденные': 'Новые'"
                  mainTitle="Пользователи"
+                 iconColor="primary"
+                 iconBackground="fill"
+                 [noMargin]="true"
+                 [revertTitles]="true"
                  icon="group">
         <a mat-stroked-button
            routerLink="/people"
@@ -31,13 +37,19 @@
       </app-title>
       <!-- Список -->
       <app-people-list [people]="people"
+                       [highlightWords]="getSearchWords"
                        [oneLine]="true"></app-people-list>
     </div>
     <!-- Список сновидений -->
     <div class="container"
          *ngIf="!!dreams?.length">
       <app-title [type]="3"
+                 [subTitle]="isSearching? 'Найденные': 'Новые'"
                  mainTitle="Сновидения"
+                 iconColor="primary"
+                 iconBackground="fill"
+                 [noMargin]="true"
+                 [revertTitles]="true"
                  icon="book">
         <a mat-stroked-button
            routerLink="/diary/all"
@@ -45,6 +57,7 @@
       </app-title>
       <!-- Список -->
       <app-dream-list [dreams]="dreams"
+                      [highlightWords]="getSearchWords"
                       [oneLine]="true"></app-dream-list>
     </div>
   </ng-container>

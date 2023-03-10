@@ -1,0 +1,6 @@
+@use "../../../assets/styles/containers";
+
+// Заголовки
+app-title {
+  margin-bottom: containers.$cardPaddingY;
+}

@@ -10,8 +10,9 @@ import { BackgroundImageData } from "@_models/appearance";
 import { Dream, SearchDream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
+import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
-import { concatMap, forkJoin, Subject, takeUntil } from "rxjs";
+import { forkJoin, Subject, takeUntil } from "rxjs";
 
 
 
@@ -36,6 +37,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   dreamsLimit: number = 4;
   peopleLimit: number = 8;
 
+  private queryParams: SimpleObject = {};
   searchForm: FormControl;
   people: User[];
   dreams: Dream[];
@@ -58,9 +60,24 @@ export class SearchComponent implements OnInit, OnDestroy {
     return { q };
   }
 
-  // ПРоверка наличия результатов
+  // Текущий запрос
+  get getSearchValue(): string {
+    return this.searchForm?.value?.toString() ?? "";
+  }
+
+  // Есть запрос для поска
+  get isSearching(): boolean {
+    return !!this.queryParams?.q?.length;
+  }
+
+  // Проверка наличия результатов
   get hasResults(): boolean {
     return !!this.people?.length || !!this.dreams?.length;
+  }
+
+  // Список слов поиска
+  get getSearchWords(): string[] {
+    return (this.queryParams?.q ?? "").split(" ").filter(w => !!w);
   }
 
 
@@ -73,6 +90,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
     private dreamService: DreamService,
+    private canonicalService: CanonicalService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.searchForm = this.formBuilder.control("");
@@ -84,10 +102,15 @@ export class SearchComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const search: string = params?.q?.toString() ?? "";
         // Установить значение
+        this.queryParams = params as SimpleObject;
         this.searchForm.setValue(search);
         // Поиск пользователей
         this.search();
       });
+    // Изменения поиска
+    this.searchForm.valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.changeDetectorRef.detectChanges());
   }
 
   ngOnDestroy(): void {
@@ -114,7 +137,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Параметры
     const q: string = this.searchForm?.value?.toString() ?? "";
-    const peopleSearch: Partial<SearchUser> = { q, limit: this.peopleLimit };
+    const peopleSearch: Partial<SearchUser> = {
+      q,
+      limit: this.peopleLimit,
+      sortType: "desc"
+    };
     const dreamsSearch: Partial<SearchDream> = { q, limit: this.dreamsLimit };
     const codes: string[] = ["0002"];
     // Запрос
@@ -127,6 +154,8 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.people = people.result;
         this.dreams = dreams.result;
+        // Обновить
+        this.canonicalService.setURL("search", this.getSearch, this.getExcludeParams);
         this.changeDetectorRef.detectChanges();
       });
   }
