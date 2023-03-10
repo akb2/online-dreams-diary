@@ -21,7 +21,8 @@
       <div class="user__text-title"
            *ngIf="!highlightWords?.length">{{user.name}} {{user.lastName}}</div>
       <!-- Выделенные слова в имени -->
-      <app-highlight-keywords color="primary"
+      <app-highlight-keywords class="user__text-title"
+                              color="primary"
                               [text]="user.name + ' ' + user.lastName"
                               [keywords]="highlightWords"
                               *ngIf="!!highlightWords?.length"></app-highlight-keywords>

@@ -99,6 +99,7 @@
     &-title {
       @include mixins.lineClamp(1, 22px, 15px);
       // Свойства
+      display: block;
       font-weight: 400;
       color: colors.$title;
       transition: color #{screens.$animationTime};
