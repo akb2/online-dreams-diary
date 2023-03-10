@@ -54,4 +54,8 @@ $mobileMenuHeight: 240px;
     padding-top: $paddingY;
     padding-bottom: $paddingY;
   }
+  // Последующие блоки
+  & + & {
+    padding-top: 0;
+  }
 }
