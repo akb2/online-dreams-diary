@@ -30,10 +30,10 @@
                  iconBackground="fill"
                  [noMargin]="true"
                  [revertTitles]="true"
+                 [oneLine]="true"
                  icon="group">
-        <a mat-stroked-button
-           routerLink="/people"
-           [queryParams]="getSearch">Полный список</a>
+        <ng-container [ngTemplateOutlet]="fullButton"
+                      [ngTemplateOutletContext]="{ $implicit: '/people' }"></ng-container>
       </app-title>
       <!-- Список -->
       <app-people-list [people]="people"
@@ -50,10 +50,10 @@
                  iconBackground="fill"
                  [noMargin]="true"
                  [revertTitles]="true"
+                 [oneLine]="true"
                  icon="book">
-        <a mat-stroked-button
-           routerLink="/diary/all"
-           [queryParams]="getSearch">Полный список</a>
+        <ng-container [ngTemplateOutlet]="fullButton"
+                      [ngTemplateOutletContext]="{ $implicit: '/diary/all' }"></ng-container>
       </app-title>
       <!-- Список -->
       <app-dream-list [dreams]="dreams"
@@ -84,4 +84,21 @@
                 mainTitle="Ничего не найдено"
                 subTitle="Попробуйте найти что-нибудь другое или повторите позже"></app-inform>
   </div>
+</ng-template>
+
+<!-- Кнопка полной страницы -->
+<ng-template #fullButton
+             let-routerLink>
+  <!-- Обычная кнопка -->
+  <a mat-stroked-button
+     [routerLink]="routerLink"
+     [queryParams]="getSearch"
+     *ngIf="!isMobileMaket">Полный список</a>
+  <!-- Мобильная кнопка -->
+  <a mat-mini-fab
+     class="mat-elevation-z"
+     color="primary"
+     [routerLink]="routerLink"
+     [queryParams]="getSearch"
+     *ngIf="isMobileMaket"><mat-icon>chevron_right</mat-icon></a>
 </ng-template>

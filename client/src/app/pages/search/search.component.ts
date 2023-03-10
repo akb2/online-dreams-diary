@@ -9,9 +9,11 @@ import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { Dream, SearchDream } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
+import { ScreenService } from "@_services/screen.service";
 import { forkJoin, Subject, takeUntil } from "rxjs";
 
 
@@ -41,6 +43,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   searchForm: FormControl;
   people: User[];
   dreams: Dream[];
+  breakpoint: ScreenKeys = "default";
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -80,6 +83,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     return (this.queryParams?.q ?? "").split(" ").filter(w => !!w);
   }
 
+  // Мобильный макет
+  get isMobileMaket(): boolean {
+    return this.breakpoint === "xsmall" || this.breakpoint === "small";
+  }
+
 
 
 
@@ -91,6 +99,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private dreamService: DreamService,
     private canonicalService: CanonicalService,
+    private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.searchForm = this.formBuilder.control("");
@@ -111,6 +120,13 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchForm.valueChanges
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.changeDetectorRef.detectChanges());
+    // Тип устройства
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {
