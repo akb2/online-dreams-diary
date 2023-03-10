@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 
@@ -15,7 +15,10 @@ import { BaseInputDirective } from "@_directives/base-input.directive";
 
 export class SearchInputComponent extends BaseInputDirective {
 
+  @Input() buttonText: string = "Найти";
+
   @Output() search: EventEmitter<string> = new EventEmitter();
+  @Output() clear: EventEmitter<void> = new EventEmitter();
 
 
   // Проверка значения поиска
@@ -35,6 +38,7 @@ export class SearchInputComponent extends BaseInputDirective {
     // Очистка
     if (!!control) {
       control.setValue("");
+      this.clear.emit();
     }
   }
 

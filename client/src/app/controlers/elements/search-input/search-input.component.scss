@@ -2,10 +2,19 @@
 @use "sass:math";
 @use "../../../../assets/styles/containers";
 @use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/screens";
 
 $height: 60px;
+$paddingY: 18px;
+$lineHeight: math.div($height - $paddingY, 2);
 $fontSize: 18px;
 $borderRadius: math.div($height, 2);
+
+$mobileHeight: 42px;
+$mobilePaddingY: 12px;
+$mobileLineHeight: math.div($mobileHeight - $mobilePaddingY, 2);
+$mobileFontSize: 14px;
+$mobileBorderRadius: math.div($mobileHeight, 2);
 
 // Общий блок
 :host {
@@ -22,19 +31,30 @@ $borderRadius: math.div($height, 2);
 .button,
 .clear {
   height: $height;
-  line-height: $height;
+  line-height: $lineHeight;
   font-size: $fontSize;
+  // Мобильный вид
+  @include screens.adaptive(xsmall, xsmall) {
+    height: $mobileHeight;
+    line-height: $mobileLineHeight;
+    font-size: $mobileFontSize;
+  }
 }
 
 // Поле поиска
 .input {
-  padding: 0 32px;
+  padding: #{$paddingY} 32px;
   flex-grow: 1;
   border: 1px solid #{map.get(colors.$matPrimary, 500)};
   outline: none;
   border-radius: #{$borderRadius} 0 0 #{$borderRadius};
   border-right-width: 0;
   background-color: colors.$card;
+  // Мобильный вид
+  @include screens.adaptive(xsmall, xsmall) {
+    padding: #{$mobilePaddingY} 18px;
+    border-radius: #{$mobileBorderRadius} 0 0 #{$mobileBorderRadius};
+  }
   // Идет поиск
   &.isSearching {
     padding-right: 0;
@@ -64,6 +84,19 @@ $borderRadius: math.div($height, 2);
     font-size: $fontSize * 1.5;
     cursor: pointer;
     border-radius: 50%;
+    // Мобильный вид
+    @include screens.adaptive(xsmall, xsmall) {
+      $size: math.min(36px, $mobileHeight - 2px);
+      // Свойства
+      width: $size;
+      height: $size;
+      line-height: $size;
+      font-size: $mobileFontSize * 1.5;
+    }
+  }
+  // Мобильный вид
+  @include screens.adaptive(xsmall, xsmall) {
+    width: $mobileHeight;
   }
 }
 
@@ -74,6 +107,11 @@ $borderRadius: math.div($height, 2);
   border-radius: 0 #{$borderRadius} #{$borderRadius} 0;
   border: none;
   outline: none;
-  padding: 0 48px;
+  padding: #{$paddingY} 48px;
   cursor: pointer;
+  // Мобильный вид
+  @include screens.adaptive(xsmall, xsmall) {
+    padding: #{$mobilePaddingY} 15px #{$mobilePaddingY} 10px;
+    border-radius: 0 #{$mobileBorderRadius} #{$mobileBorderRadius} 0;
+  }
 }
