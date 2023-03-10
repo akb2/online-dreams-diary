@@ -147,6 +147,13 @@ import { AuthRules } from "@_models/menu";
         data: { userId: 0, from: "", authRule: AuthRules.anyWay },
         canActivate: [AuthGuard]
       },
+      // Поиск
+      {
+        path: "search",
+        loadChildren: () => import("@_pages/search/search.module").then(m => m.SearchModule),
+        data: { authRule: AuthRules.anyWay },
+        canActivate: [AuthGuard]
+      },
       // Поиск: пользователи
       {
         path: "people",

@@ -17,6 +17,7 @@ export const MenuItems: MenuItemsListDevices = {
       {
         sort: 100,
         text: "Поиск",
+        link: "/search",
         children: [
           // Люди
           {
@@ -143,13 +144,23 @@ export const MenuItems: MenuItemsListDevices = {
     any: [
       // Поиск
       {
-        sort: 100,
+        sort: 3,
         text: "Поиск",
         mobileView: {
           leftPanel: true,
-          bottomPanel: false
+          bottomPanel: true
         },
         children: [
+          // Общий поиск
+          {
+            icon: "search",
+            text: "Поиск",
+            link: "/search",
+            mobileView: {
+              leftPanel: false,
+              bottomPanel: true
+            }
+          },
           // Люди
           {
             icon: "group",
@@ -189,6 +200,7 @@ export const MenuItems: MenuItemsListDevices = {
     auth: [
       // Личный кабинет
       {
+        sort: 1,
         id: "my-profie",
         icon: "person",
         text: "Моя страница",
@@ -200,7 +212,7 @@ export const MenuItems: MenuItemsListDevices = {
       },
       // Дневник
       {
-        sort: 1,
+        sort: 2,
         icon: "book",
         text: "Мой дневник",
         link: "/diary/:currentUserID",
@@ -242,7 +254,7 @@ export const MenuItems: MenuItemsListDevices = {
       },
       // Уведомления
       {
-        sort: 2,
+        sort: 4,
         id: "notifications",
         icon: "notifications",
         mobileView: {

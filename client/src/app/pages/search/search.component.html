@@ -1,0 +1,74 @@
+<!-- Шапка -->
+<app-main-menu [autoCollapse]="true"
+               [imageFullShow]="true"
+               [type]="navMenuType"
+               [image]="imagePrefix + backgroundImageData.imageName"
+               [imagePositionX]="backgroundImageData.positionX"
+               [imagePositionY]="backgroundImageData.positionY"
+               [imageOverlay]="backgroundImageData.imageOverlay"
+               avatarIcon="search"
+               mainTitle="Поиск"
+               subTitle="По сайту"></app-main-menu>
+
+<!-- Поиск -->
+<div class="root-section"
+     *ngIf="!loading; else listLoader">
+  <div class="container">
+    <app-search-input [formControl]="searchForm"
+                      (search)="onSearch()"></app-search-input>
+  </div>
+  <!-- Результаты -->
+  <ng-container *ngIf="hasResults; else noResults">
+    <!-- Список пользователей -->
+    <div class="container"
+         *ngIf="!!people?.length">
+      <app-title [type]="2"
+                 mainTitle="Пользователи"
+                 icon="group">
+        <a mat-stroked-button
+           routerLink="/people"
+           [queryParams]="getSearch">Полный список</a>
+      </app-title>
+      <!-- Список -->
+      <app-people-list [people]="people"
+                       [oneLine]="true"></app-people-list>
+    </div>
+    <!-- Список сновидений -->
+    <div class="container"
+         *ngIf="!!dreams?.length">
+      <app-title [type]="3"
+                 mainTitle="Сновидения"
+                 icon="book">
+        <a mat-stroked-button
+           routerLink="/diary/all"
+           [queryParams]="getSearch">Полный список</a>
+      </app-title>
+      <!-- Список -->
+      <app-dream-list [dreams]="dreams"
+                      [oneLine]="true"></app-dream-list>
+    </div>
+  </ng-container>
+</div>
+
+
+
+<!-- Загрузка -->
+<ng-template #listLoader>
+  <div class="root-section center">
+    <div class="container">
+      <app-inform mainTitle="Загрузка результатов"
+                  subTitle="Пожалуйста подождите"
+                  [waitPointers]="true"></app-inform>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Ничего не найдено -->
+<ng-template #noResults>
+  <div class="container">
+    <app-inform icon="search_off"
+                [aboveIcon]="true"
+                mainTitle="Ничего не найдено"
+                subTitle="Попробуйте найти что-нибудь другое или повторите позже"></app-inform>
+  </div>
+</ng-template>
