@@ -279,10 +279,12 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   // Загрузка списка сновидений
   private search(): void {
+    const search: Partial<SearchUser> = this.getSearch;
+    // Загрузка
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Загрузка списка
-    this.accountService.search({ ...this.getSearch, sortType: "desc" }, ["0002"]).subscribe(
+    this.accountService.search({ ...search, sortType: !!search?.q ? "asc" : "desc" }, ["0002"]).subscribe(
       ({ count, result: people, limit }) => {
         // Найдены сновидения
         if (count > 0) {

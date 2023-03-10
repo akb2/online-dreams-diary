@@ -140,7 +140,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     const peopleSearch: Partial<SearchUser> = {
       q,
       limit: this.peopleLimit,
-      sortType: "desc"
+      sortType: !!q ? "asc" : "desc"
     };
     const dreamsSearch: Partial<SearchDream> = { q, limit: this.dreamsLimit };
     const codes: string[] = ["0002"];
