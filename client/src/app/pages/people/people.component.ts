@@ -127,6 +127,11 @@ export class PeopleComponent implements OnInit, OnDestroy {
     };
   }
 
+  // Список слов поиска
+  get getSearchWords(): string[] {
+    return (this.queryParams?.q ?? "").split(" ").filter(w => !!w);
+  }
+
 
 
 

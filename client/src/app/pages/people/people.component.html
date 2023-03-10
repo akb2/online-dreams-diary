@@ -21,7 +21,8 @@
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"></ng-container>
         <!-- Список пользователей -->
-        <app-people-list [people]="people"></app-people-list>
+        <app-people-list [people]="people"
+                         [highlightWords]="getSearchWords"></app-people-list>
         <!-- Пагинатор -->
         <ng-container [ngTemplateOutlet]="pagination"
                       *ngIf="bottomPaginationIsAvail"></ng-container>
