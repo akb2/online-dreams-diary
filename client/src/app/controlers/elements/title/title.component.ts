@@ -1,5 +1,5 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from "@angular/core";
-import { CustomObject } from "@_models/app";
+import { CustomObject, IconBackground, IconColor } from "@_models/app";
 
 
 
@@ -17,9 +17,12 @@ export class TitleComponent implements AfterViewChecked {
 
   @Input() type: TitleType = 1;
   @Input() icon: string;
+  @Input() iconColor: IconColor | "basic" = "basic";
+  @Input() iconBackground: IconBackground = "transparent";
   @Input() mainTitle: string = "Заголовок";
   @Input() subTitle: string;
   @Input() noMargin: boolean = false;
+  @Input() revertTitles: boolean = false;
 
   @ViewChild("actionsPanel") private actionsPanel: ElementRef;
 
@@ -32,6 +35,7 @@ export class TitleComponent implements AfterViewChecked {
   // Класс поля
   get getClass(): CustomObject<boolean> {
     return {
+      "revert-titles": this.revertTitles,
       "no-margin": this.noMargin,
       image: !!this.icon,
       subtitle: !!this.subTitle,

@@ -3,6 +3,7 @@
 @use "../../../../assets/styles/screens";
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/mixins";
 
 $fontSizes: (
   default: 30px,
@@ -19,10 +20,10 @@ $breaksActions: (
 );
 
 $spacings: containers.$paddingsY;
-$imageKoof: 1;
+$imageKoof: 0.9;
 $subtitleKoof: 0.7;
 $lineHeight: 1.3;
-$gapKoof: 0.3;
+$gapKoof: 0.5;
 
 :host {
   display: block;
@@ -50,6 +51,10 @@ $gapKoof: 0.3;
       // Подзаголовок
       &.subtitle {
         grid-template-areas: "title" "subtitle";
+        // Поменять местами заголовки
+        &.revert-titles {
+          grid-template-areas: "subtitle" "title";
+        }
       }
       // Панель
       &.actions {
@@ -58,6 +63,10 @@ $gapKoof: 0.3;
       // Картинка и подзаголовок
       &.image.subtitle {
         grid-template-areas: "image title" "image subtitle";
+        // Поменять местами заголовки
+        &.revert-titles {
+          grid-template-areas: "image subtitle" "image title";
+        }
       }
       // Картинка и панель
       &.image.actions {
@@ -66,10 +75,18 @@ $gapKoof: 0.3;
       // Подзаголовок и панель
       &.subtitle.actions {
         grid-template-areas: "title actions" "subtitle actions";
+        // Поменять местами заголовки
+        &.revert-titles {
+          grid-template-areas: "subtitle actions" "title actions";
+        }
       }
       // Картинка, подзаголовок и панель
       &.image.subtitle.actions {
         grid-template-areas: "image title actions" "image subtitle actions";
+        // Поменять местами заголовки
+        &.revert-titles {
+          grid-template-areas: "image subtitle actions" "image title actions";
+        }
       }
 
       // Адаптив
@@ -85,10 +102,18 @@ $gapKoof: 0.3;
         // Подзаголовок и панель
         &.subtitle.actions {
           grid-template-areas: "title" "subtitle" "actions";
+          // Поменять местами заголовки
+          &.revert-titles {
+            grid-template-areas: "subtitle" "title" "actions";
+          }
         }
         // Картинка, подзаголовок и панель
         &.image.subtitle.actions {
           grid-template-areas: "image title" "image subtitle" "actions actions";
+          // Поменять местами заголовки
+          &.revert-titles {
+            grid-template-areas: "image subtitle" "image title" "actions actions";
+          }
         }
       }
     }
@@ -117,12 +142,13 @@ $gapKoof: 0.3;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        border-radius: containers.$cardBorderRadius;
       }
-    }
-    // Иконка
-    mat-icon {
-      grid-area: image;
-      text-align: center;
+      // Иконка
+      > mat-icon {
+        text-align: center;
+        border-radius: containers.$cardBorderRadius;
+      }
     }
     // Панель действий
     > .actions {
@@ -142,7 +168,7 @@ $gapKoof: 0.3;
 
     // Адаптив
     @include screens.adaptiveFor($fontSizes, $spacings, $breaksActions) using($fontSize, $spacing, $breakActions) {
-      $image-size: $fontSize * (1 + $subtitleKoof) * $lineHeight * $imageKoof;
+      $imageSize: $fontSize * (1 + $subtitleKoof) * $lineHeight * $imageKoof;
       // Свойства
       font-size: #{$fontSize} !important;
       gap: 0 #{$gapKoof * $fontSize};
@@ -156,7 +182,7 @@ $gapKoof: 0.3;
         // Картинка и подзаголовок
         &.image,
         &.image.subtitle {
-          grid-template-columns: #{$image-size} 1fr;
+          grid-template-columns: #{$imageSize} 1fr;
         }
         // Перенести панель действий
         @if ($breakActions == true) {
@@ -170,7 +196,7 @@ $gapKoof: 0.3;
           // Картинка, подзаголовок и панель
           &.image.actions,
           &.image.subtitle.actions {
-            grid-template-columns: #{$image-size} 1fr;
+            grid-template-columns: #{$imageSize} 1fr;
           }
         }
         // Обычное расположение панели действий
@@ -185,20 +211,13 @@ $gapKoof: 0.3;
           // Картинка, подзаголовок и панель
           &.image.actions,
           &.image.subtitle.actions {
-            grid-template-columns: #{$image-size} 1fr auto;
+            grid-template-columns: #{$imageSize} 1fr auto;
           }
         }
       }
       // Картинка
-      > .image,
-      mat-icon {
-        width: $image-size;
-        height: $image-size;
-      }
-      // Иконка
-      mat-icon {
-        line-height: $image-size;
-        font-size: $image-size;
+      > .image {
+        @include mixins.customsColors($imageSize, 0.8);
       }
     }
   }

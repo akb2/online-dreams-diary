@@ -27,8 +27,15 @@
 
 <!-- Шаблон -->
 <ng-template #content>
-  <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+  <div class="image"
+       [attr.background]="iconBackground"
+       [attr.color]="iconColor"
+       *ngIf="!!icon">
+    <mat-icon>{{icon}}</mat-icon>
+  </div>
+  <!-- Заголовок -->
   <sup>{{mainTitle}}</sup>
+  <!-- Подзаголовок -->
   <sub *ngIf="subTitle">{{subTitle}}</sub>
   <!-- Контент -->
   <div #actionsPanel
