@@ -36,7 +36,7 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
   dreamPlural: SimpleObject = DreamPlural;
 
-  private breakpoint: ScreenKeys = "default";
+  isMobile: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -47,11 +47,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
   // Проверка пола
   get userIsMale(): boolean {
     return this.user.sex === UserSex.Male;
-  }
-
-  // Мобилный макет
-  get isMobile(): boolean {
-    return this.breakpoint === "xsmall" || this.breakpoint === "small";
   }
 
 
@@ -68,10 +63,10 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.defineDreams();
     // Тип экрана
-    this.screenService.breakpoint$
+    this.screenService.isMobile$
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(breakpoint => {
-        this.breakpoint = breakpoint;
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
   }

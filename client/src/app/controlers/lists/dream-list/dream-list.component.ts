@@ -13,6 +13,8 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { filter, Subject, takeUntil } from "rxjs";
+import { ScreenKeys } from "@_models/screen";
+import { ScreenService } from "@_services/screen.service";
 
 
 
@@ -45,7 +47,9 @@ export class DreamListComponent implements OnInit, OnChanges {
   user: User;
   dreamsMenuItems: CustomObjectKey<number, CardMenuItem[]> = {};
 
-  private destroy$: Subject<void> = new Subject<void>();
+  isMobile: boolean = false;
+
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -119,16 +123,24 @@ export class DreamListComponent implements OnInit, OnChanges {
     private changeDetectorRef: ChangeDetectorRef,
     private dreamService: DreamService,
     private snackbarService: SnackbarService,
+    private screenService: ScreenService,
     private matDialog: MatDialog
   ) { }
 
   ngOnInit(): void {
     // Текущий пользователь
     this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
         this.createMenu();
+      });
+    // Тип экрана
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
       });
   }
 

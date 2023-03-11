@@ -280,7 +280,7 @@
       flex-flow: row nowrap;
       justify-content: space-between;
       align-items: center;
-      gap: 0 #{vars.$dreamCardSpacingX};
+      gap: 0;
       border-radius: 0 0 #{$borderRadius} #{$borderRadius};
       // Разделитель сверху
       *:not(.no-content.no-image) + & {
@@ -303,7 +303,7 @@
   &__icons {
     display: flex;
     text-decoration: none;
-    grid-gap: 6px;
+    grid-gap: 2px;
     align-items: center;
     // Иконка
     &-icon {

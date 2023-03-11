@@ -17,11 +17,13 @@ import { Dream, DreamStatus, SearchDream } from "@_models/dream";
 import { OptionData } from "@_models/form";
 import { Friend, FriendStatus } from "@_models/friend";
 import { NavMenuType } from "@_models/nav-menu";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
+import { ScreenService } from "@_services/screen.service";
 import { Observable, of, Subject, throwError, timer } from "rxjs";
 import { concatMap, map, skipWhile, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 
@@ -72,7 +74,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
   pageLimit: number = 12;
   private pageCount: number = 1;
 
-  isMobile: boolean = false;
   userHasAccess: boolean = false;
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
@@ -83,6 +84,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
   dreamStatuses: OptionData[] = [];
   dreamTypes: OptionData[] = [AllDreamTypes, ...DreamTypes].map(type => ({ ...type, subTitle: "" }));
   dreamMoods: OptionData[] = [AllDreamMoods, ...DreamMoods].map(mood => ({ ...mood, subTitle: "" }));
+
+  isMobile: boolean = false;
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -207,6 +210,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     private router: Router,
     private globalService: GlobalService,
     private formBuilder: FormBuilder,
+    private screenService: ScreenService,
     private canonicalService: CanonicalService
   ) {
     this.searchForm = this.formBuilder.group(Object.entries(this.getDefaultSearch)
@@ -217,6 +221,13 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.pageData = this.globalService.getPageData;
+    // Тип экрана
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
     // Запуск определения данных
     this.defineCurrentUser();
     this.defineUrlParams();
