@@ -124,13 +124,19 @@
     $iconSize: 40px;
     // Свойтсва
     display: flex;
-    height: $iconSize + $spacingY;
     flex-flow: row wrap;
     justify-content: flex-start;
     align-items: center;
-    padding-bottom: $spacingY;
     padding-left: $spacingX;
     padding-right: $spacingX;
+    // Текст
+    &-text {
+      font-size: 13px;
+      line-height: 15px;
+      text-align: center;
+      flex-grow: 1;
+      opacity: 0.8;
+    }
     // Кнопки
     ::ng-deep &-button {
       box-shadow: none !important;
@@ -143,6 +149,13 @@
     @include screens.adaptive(xsmall, xsmall) {
       padding-left: 8px;
       padding-right: 8px;
+    }
+  }
+  // Последний блок
+  &__text,
+  &__action {
+    &:nth-last-child(1) {
+      padding-bottom: $spacingY;
     }
   }
 

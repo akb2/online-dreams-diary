@@ -16,7 +16,7 @@
            *ngIf="user.online"></div>
     </a>
     <!-- Имя пользователя -->
-    <a class="user__text not-action"
+    <a class="user__text"
        [routerLink]="baseLink + user.id">
       <div class="user__text-title"
            *ngIf="!highlightWords?.length">{{user.name}} {{user.lastName}}</div>
@@ -37,6 +37,9 @@
         </ng-template>
       </div>
     </a>
+    <!-- Действия -->
+    <ng-container [ngTemplateOutlet]="userAction"
+                  [ngTemplateOutletContext]="{ $implicit: user }"></ng-container>
   </div>
 </div>
 
@@ -49,31 +52,65 @@
 
 <!-- Действия -->
 <ng-template #userAction
-             let-user>
-  <div class="user__action">
-    <!-- Сообщения -->
-    <button mat-mini-fab
-            color="basic"
-            class="user__action-button user__action-button_main"
-            matTooltip="Написать сообщение"
-            (click)="onDialogOpen($event)">
-      <mat-icon>chat</mat-icon>
-    </button>
-    <!-- Добавить в друзья -->
-    <button mat-mini-fab
-            color="basic"
-            class="user__action-button user__action-button_main"
-            matTooltip="Добавить в друзья"
-            (click)="onAddToFriendList($event)">
-      <mat-icon>add</mat-icon>
-    </button>
-    <!-- Добавить в друзья -->
-    <a mat-mini-fab
+             let-visitedUser>
+  <div class="user__action"
+       *ngIf="!!visitedUser">
+    <!-- Текущий пользователь -->
+    <div class="user__action-text"
+         *ngIf="!!visitedUser && itsMe(visitedUser)">(Это вы)</div>
+    <!-- Другой пользователь -->
+    <ng-container *ngIf="!!visitedUser && !itsMe(visitedUser) && !friendBlock">
+      <ng-container *ngIf="getFriend(visitedUser); let friend">
+        <div></div>
+        <!-- Добавить в друзья -->
+        <button mat-mini-fab
+                color="primary"
+                matTooltip="Добавить в друзья"
+                class="mat-elevation-z"
+                [attr.button-loader]="friendLoader"
+                (click)="onAddToFriend(visitedUser)"
+                *ngIf="friend.status === friendStatuses.NotExists"><mat-icon>person_add</mat-icon></button>
+        <!-- Исходящая заявка -->
+        <button mat-icon-button
+                class="mat-elevation-z"
+                color="warn"
+                matTooltip="Отменить заявку"
+                [attr.button-loader]="friendLoader"
+                (click)="onRejectFriends(visitedUser)"
+                *ngIf="friend.status === friendStatuses.OutSubscribe"><mat-icon>close</mat-icon></button>
+        <!-- Входящая заявка -->
+        <ng-container *ngIf="friend.status === friendStatuses.InSubscribe">
+          <!-- Сообщение о заявке -->
+          <button mat-mini-fab
+                  color="primary"
+                  class="mat-elevation-z"
+                  matTooltip="Принять заявку"
+                  [attr.button-loader]="friendLoader"
+                  (click)="onConfirmFriends(visitedUser)"><mat-icon>check</mat-icon></button>
+          <!-- Отменить заявку -->
+          <button mat-icon-button
+                  class="mat-elevation-z"
+                  color="warn"
+                  matTooltip="Отклонить заявку"
+                  [attr.button-loader]="friendLoader"
+                  (click)="onRejectFriends(visitedUser)"><mat-icon>close</mat-icon></button>
+        </ng-container>
+        <!-- В друзьях -->
+        <button mat-mini-fab
+                class="mat-elevation-z"
+                color="warn"
+                [attr.button-loader]="friendLoader"
+                matTooltip="Удалить из друзей"
+                (click)="onCancelFromFriends(visitedUser)"
+                *ngIf="friend.status === friendStatuses.Friends"><mat-icon>close</mat-icon></button>
+      </ng-container>
+    </ng-container>
+    <!-- Перейти на страницу пользователя -->
+    <a mat-icon-button
+       [routerLink]="baseLink + visitedUser.id"
+       class="mat-elevation-z user__action-button_advance"
        color="primary"
-       class="user__action-button user__action-button_advance"
-       matTooltip="Открыть страницу"
-       [routerLink]="baseLink + user.id">
-      <mat-icon>chevron_right</mat-icon>
-    </a>
+       matTooltip="Страница {{visitedUser | petrovich}}"
+       *ngIf="!itsMe(visitedUser)"><mat-icon>chevron_right</mat-icon></a>
   </div>
 </ng-template>

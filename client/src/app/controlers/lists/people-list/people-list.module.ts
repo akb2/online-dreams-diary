@@ -6,6 +6,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
 import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
 import { PeopleListComponent } from "@_controlers/people-list/people-list.component";
+import { CoreModule } from "@_modules/core.module";
 
 
 
@@ -24,7 +25,8 @@ import { PeopleListComponent } from "@_controlers/people-list/people-list.compon
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
-    HighlightKeywordsModule
+    HighlightKeywordsModule,
+    CoreModule
   ]
 })
 
