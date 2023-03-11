@@ -3,8 +3,10 @@ import { DreamPlural } from "@_datas/dream";
 import { User, UserSex } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
+import { ScreenKeys } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
+import { ScreenService } from "@_services/screen.service";
 import { catchError, concatMap, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
@@ -34,6 +36,8 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
 
   dreamPlural: SimpleObject = DreamPlural;
 
+  private breakpoint: ScreenKeys = "default";
+
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -45,6 +49,11 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
     return this.user.sex === UserSex.Male;
   }
 
+  // Мобилный макет
+  get isMobile(): boolean {
+    return this.breakpoint === "xsmall" || this.breakpoint === "small";
+  }
+
 
 
 
@@ -52,11 +61,19 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
   constructor(
     private friendService: FriendService,
     private dreamService: DreamService,
+    private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.defineDreams();
+    // Тип экрана
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {

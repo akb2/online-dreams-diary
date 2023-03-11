@@ -10,23 +10,39 @@
       <!-- Заголовок -->
       <app-title [type]="5"
                  [noMargin]="true"
+                 [oneLine]="true"
                  [mainTitle]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (user | petrovich)"
                  [subTitle]="dreamsCount | i18nPlural: dreamPlural">
-        <!-- Все сновидения -->
-        <a mat-stroked-button
-           color="basic"
-           routerLink="/diary/{{user.id}}">
-          <mat-icon>book</mat-icon>
-          Все сны
-        </a>
-        <!-- Новое сновидение -->
-        <a mat-flat-button
-           color="primary"
-           routerLink="/diary/editor"
-           *ngIf="itsMyPage">
-          <mat-icon>add</mat-icon>
-          Новый сон
-        </a>
+        <!-- Десктоп -->
+        <ng-container *ngIf="!isMobile">
+          <!-- Все сновидения -->
+          <a mat-stroked-button
+             color="basic"
+             routerLink="/diary/{{user.id}}">
+            <mat-icon>book</mat-icon>
+            Все сны
+          </a>
+          <!-- Новое сновидение -->
+          <a mat-flat-button
+             color="primary"
+             routerLink="/diary/editor"
+             *ngIf="itsMyPage">
+            <mat-icon>add</mat-icon>
+            Новый сон
+          </a>
+        </ng-container>
+        <!-- Для телефонов -->
+        <ng-container *ngIf="isMobile">
+          <!-- Новое сновидение -->
+          <a mat-mini-fab
+             color="primary"
+             routerLink="/diary/editor"
+             *ngIf="itsMyPage"><mat-icon>add</mat-icon></a>
+          <!-- Все сновидения -->
+          <a mat-icon-button
+             color="primary"
+             routerLink="/diary/{{user.id}}"><mat-icon>chevron_right</mat-icon></a>
+        </ng-container>
       </app-title>
       <!-- Список сновидений -->
       <app-dream-list [elmsPerLine]="3"
