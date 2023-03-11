@@ -15,7 +15,7 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { Observable, of, Subject } from "rxjs";
-import { concatMap, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
+import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/operators";
 
 
 
@@ -97,6 +97,7 @@ export class DreamService implements OnDestroy {
     if (userIds.length === 1 && ((!!this.user && this.user.id === userIds[0]) || userId === userIds[0])) {
       return this.accountService.user$(userId).pipe(
         takeUntil(this.destroyed$),
+        take(1),
         map(user => ([user]))
       );
     }
