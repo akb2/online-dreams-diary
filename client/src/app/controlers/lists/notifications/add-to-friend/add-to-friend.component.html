@@ -4,6 +4,7 @@
      *ngIf="!!user && !!notification">
   <!-- Картинка -->
   <notification-image [notification]="notification"
+                      [image]="user.avatars.small"
                       icon="person_add"></notification-image>
   <!-- Текст -->
   <div class="notification__text"
