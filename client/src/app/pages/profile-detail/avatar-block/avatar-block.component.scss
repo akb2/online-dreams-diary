@@ -100,7 +100,14 @@
   }
   // Для мобильного телефона
   @include screens.adaptive(xsmall, xsmall) {
-    padding-top: containers.$paddingX;
+    // Для аватарки
+    &:not(.no-avatar) {
+      padding-top: containers.$paddingX;
+      // Страница других пользователей
+      &.other-page {
+        padding-bottom: containers.$paddingX;
+      }
+    }
     // Картинка
     > img {
       max-width: 260px;

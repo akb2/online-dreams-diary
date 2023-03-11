@@ -1,4 +1,5 @@
 <div class="avatar"
+     [ngClass]="{ 'other-page': !itsMyPage, 'no-avatar': !getVisitedUserHasAvatar }"
      *ngIf="!!user">
   <!-- Аватарка -->
   <ng-container [ngTemplateOutlet]="getVisitedUserHasAvatar? avatarImage: avatarImageDefault"></ng-container>
