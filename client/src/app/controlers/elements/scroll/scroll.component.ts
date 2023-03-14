@@ -3,7 +3,7 @@ import { WaitObservable } from "@_datas/api";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CustomObject, SimpleObject } from "@_models/app";
-import { ScrollData } from "@_models/screen";
+import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { concatMap, fromEvent, Observable, of, Subject, tap, timer } from "rxjs";
 import { filter, map, pairwise, startWith, takeUntil } from "rxjs/operators";
@@ -332,9 +332,6 @@ export interface ScrollChangeEvent extends ScrollData {
   viewWidth: number;
   viewHeight: number;
 }
-
-// Направление движения скролла
-type ScrollAddDimension = "top" | "right" | "bottom" | "left";
 
 // Тип скролла
 type ScrollAddType = "v" | "h";

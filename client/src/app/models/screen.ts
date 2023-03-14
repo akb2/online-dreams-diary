@@ -1,6 +1,9 @@
 // Ключи названий экранов
 export type ScreenKeys = "default" | "xsmall" | "small" | "middle" | "large" | "xlarge";
 
+// Направление движения скролла
+export type ScrollAddDimension = "top" | "right" | "bottom" | "left";
+
 // Тип данных для размеров экрана
 export interface ScreenBreakpoints {
   default: number;
