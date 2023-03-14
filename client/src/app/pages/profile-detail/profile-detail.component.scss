@@ -34,7 +34,7 @@
   );
   // Свойства
   display: grid;
-  align-items: stretch;
+  align-items: start;
   // Колонки
   &__left,
   &__right {
@@ -50,6 +50,7 @@
   // Левая колонка
   &__left {
     position: relative;
+    height: 100%;
     // Помощник
     &-helper {
       position: sticky;
@@ -86,6 +87,7 @@
   // Правая колонка
   &__right {
     display: grid;
+    align-items: start;
     // Адаптив
     @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $rightColumnData) using($gap, $data) {
       width: calc(100% + #{$gap});
