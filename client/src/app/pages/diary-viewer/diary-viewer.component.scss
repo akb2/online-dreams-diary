@@ -7,8 +7,8 @@
 // Данные сновидения
 .dream {
   $fontSize: 20px;
-  $lineHeight: $fontSize * 1.2;
-  $textIndent: $fontSize * 1.5;
+  $lineHeight: $fontSize * 1.3;
+  $textIndent: $fontSize * 2;
   $tablePaddingY: math.div($fontSize, 2);
   $tablePaddingX: $fontSize;
   // Текст
@@ -18,8 +18,9 @@
     ::ng-deep * {
       font-size: $fontSize;
       font-weight: 300;
-      line-height: 1.2;
+      line-height: $lineHeight;
       color: colors.$text;
+      margin: 0;
     }
     // Абзацы
     ::ng-deep p {
@@ -62,6 +63,19 @@
       & + ::ng-deep .table {
         margin-top: $lineHeight;
       }
+    }
+    // Цитата
+    ::ng-deep blockquote {
+      border-left: 6px solid #{colors.$text};
+      margin-left: 0;
+      margin-right: 0;
+      padding: 1rem;
+      padding-right: 0;
+      font-style: italic;
+    }
+    // Последующие блоки
+    ::ng-deep > * + * {
+      margin-top: $lineHeight;
     }
   }
   // Карта
