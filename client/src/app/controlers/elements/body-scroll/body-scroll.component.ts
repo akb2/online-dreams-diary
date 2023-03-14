@@ -29,7 +29,6 @@ export class BodyScrollComponent implements OnInit, OnChanges, OnDestroy {
   sliderPosition: number = 0;
   sliderHeight: number = 0;
   private scrollStep: number = 20;
-  private checkInterval: number = 150;
 
   sliderMousePosY: number = 0;
   scrollActive: boolean = false;
