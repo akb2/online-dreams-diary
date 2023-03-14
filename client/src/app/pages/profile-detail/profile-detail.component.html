@@ -1,6 +1,7 @@
 <ng-container *ngIf="!pageLoading && !!visitedUser; else pageLoader">
   <!-- Шапка -->
-  <app-main-menu [autoCollapse]="true"
+  <app-main-menu #mainMenu
+                 [autoCollapse]="true"
                  [imageFullShow]="true"
                  [type]="navMenuType"
                  [image]="imagePrefix + backgroundImageData[navMenuType === navMenuTypes.full? 'imageName': 'imageNameShort']"
@@ -23,10 +24,14 @@
       <!-- Сведения аккаунта -->
       <div class="section">
         <div class="container">
-          <div class="information">
+          <div class="information"
+               #informationElm>
             <!-- Левая колонка -->
-            <div class="information__left">
-              <div class="information__left-helper">
+            <div class="information__left"
+                 #leftPanel>
+              <div class="information__left-helper"
+                   [ngStyle]="{ top: leftpanelHelperShift + 'px' }"
+                   #leftPanelHelper>
                 <ng-container [ngTemplateOutlet]="leftContent"></ng-container>
               </div>
             </div>
@@ -89,6 +94,10 @@
     <app-dreams-block [user]="visitedUser"
                       [itsMyPage]="itsMyPage"
                       [isAutorizedUser]="isAutorizedUser"></app-dreams-block>
+  </div>
+  <!-- Стена -->
+  <div class="comments">
+    <app-comment-block></app-comment-block>
   </div>
 </ng-template>
 

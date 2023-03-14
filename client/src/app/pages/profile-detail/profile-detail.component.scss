@@ -19,28 +19,28 @@
     small: false,
     xsmall: false,
   );
-  $rightColumnItems: "status" "general" "actions" "dreams" "avatar" "friends-friends" "friends-subscribers" "friends-subscribe";
+  $columnItems: "status" "general" "actions" "dreams" "avatar" "friends-friends" "friends-subscribers" "friends-subscribe" "comments";
   $rightColumnData: (
     default: (
-      areas: "status" "actions" "general" "dreams",
-      noActionsAreas: "status" "general" "dreams",
+      areas: "status" "actions" "general" "dreams" "comments",
+      noActionsAreas: "status" "general" "dreams" "comments",
       columns: repeat(1, minmax(1px, 1fr)),
     ),
     xlarge: (
-      areas: "status status status" "actions general general" "dreams dreams dreams",
-      noActionsAreas: "status status status" "general general empty" "dreams dreams dreams",
+      areas: "status status status" "actions general general" "dreams dreams dreams" "comments comments comments",
+      noActionsAreas: "status status status" "general general empty" "dreams dreams dreams" "comments comments comments",
       columns: repeat(3, minmax(1px, 1fr)),
     ),
   );
   // Свойства
   display: grid;
-  align-items: start;
+  align-items: stretch;
   // Колонки
   &__left,
   &__right {
     &,
     &-helper {
-      @each $item in $rightColumnItems {
+      @each $item in $columnItems {
         > #{"." + $item} {
           grid-area: #{$item};
         }
@@ -98,7 +98,7 @@
         grid-template-areas: map.get($data, noActionsAreas);
       }
       // Потомки
-      @each $item in $rightColumnItems {
+      @each $item in $columnItems {
         > #{"." + $item} {
           margin-top: $gap;
           margin-right: $gap;

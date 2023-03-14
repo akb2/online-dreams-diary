@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CardModule } from '@_controlers/card/card.module';
+import { CommentBlockModule } from "@_controlers/comment-block/comment-block.module";
 import { DreamListModule } from '@_controlers/dream-list/dream-list.module';
 import { InformModule } from '@_controlers/inform/inform.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -47,7 +48,8 @@ import { StatusBlockComponent } from './status-block/status-block.component';
     MatTooltipModule,
     MatMenuModule,
     CoreModule,
-    CardModule
+    CardModule,
+    CommentBlockModule
   ]
 })
 

@@ -1,20 +1,24 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
+import { WaitObservable } from "@_datas/api";
 import { BackgroundImageDatas } from '@_datas/appearance';
-import { ParseInt } from '@_helpers/math';
+import { CheckInRange, ParseInt } from '@_helpers/math';
 import { User, UserSex } from '@_models/account';
 import { Search } from '@_models/api';
 import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from '@_models/friend';
 import { NavMenuType } from '@_models/nav-menu';
+import { ScrollAddDimension } from "@_models/screen";
 import { AccountService } from '@_services/account.service';
 import { CanonicalService } from '@_services/canonical.service';
 import { FriendService } from '@_services/friend.service';
 import { GlobalService } from '@_services/global.service';
-import { catchError, concatMap, map, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { ScreenService } from "@_services/screen.service";
+import { catchError, concatMap, fromEvent, map, merge, mergeMap, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -29,6 +33,11 @@ import { catchError, concatMap, map, Observable, of, skipWhile, Subject, switchM
 
 export class ProfileDetailComponent implements OnInit, OnDestroy {
 
+
+  @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
+  @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
+  @ViewChild("leftPanelHelper", { read: ElementRef }) private leftPanelHelper: ElementRef;
+  @ViewChild("informationElm", { read: ElementRef }) private informationElm: ElementRef;
 
   imagePrefix: string = "/assets/images/backgrounds/";
   pageData: RouteData;
@@ -53,6 +62,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   private visitedUserId: number = -1;
   friendListLimit: number = 4;
+  private beforeScroll: number = 0;
+  leftpanelHelperShift: number = 0;
 
   user: User;
   visitedUser: User;
@@ -96,6 +107,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private screenService: ScreenService,
     private accountService: AccountService,
     private friendService: FriendService,
     private titleService: Title,
@@ -106,6 +118,14 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.pageData = this.globalService.getPageData;
+    // Прокрутка левой колонки
+    WaitObservable(() => !this.leftPanel?.nativeElement || !this.leftPanelHelper?.nativeElement || !this.informationElm?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(() => ({ elm: this.leftPanel.nativeElement, elmHelper: this.leftPanelHelper.nativeElement })),
+        mergeMap(({ elm, elmHelper }) => merge(fromEvent(document, "scroll"), this.screenService.elmResize([elm, elmHelper])))
+      )
+      .subscribe(() => this.onLeftPanelPosition());
     // Запуск определения данных
     this.defineCurrentUser();
     this.defineUrlParams();
@@ -164,6 +184,32 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.titleService.setTitle(this.pageTitle);
     this.canonicalService.setURL("profile/" + this.visitedUser.id);
     this.changeDetectorRef.detectChanges();
+  }
+
+  // Посчитать смещение левой колонки
+  private onLeftPanelPosition(): void {
+    if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement) {
+      const elm: HTMLElement = this.leftPanel.nativeElement;
+      const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
+      const elmInformation: HTMLElement = this.informationElm.nativeElement;
+      const spacing: number = ParseInt(getComputedStyle(elmInformation).rowGap);
+      const mainMenuHeight: number = this.mainMenu.headerHeight;
+      const elmHeight: number = elm.clientHeight;
+      const elmHelperHeight: number = elmHelper.clientHeight;
+      const headerShift: number = mainMenuHeight + spacing;
+      const screenHeight: number = window.innerHeight - headerShift - spacing;
+      const availShift: boolean = elmHelperHeight < elmHeight;
+      const maxShift: number = elmHelperHeight - screenHeight - headerShift;
+      const scrollY: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+      const scrollShift: number = scrollY - this.beforeScroll;
+      // Если отступ допустим
+      if (availShift) {
+        const newHelperShift: number = -CheckInRange(scrollShift - this.leftpanelHelperShift, maxShift, -headerShift);
+        // Запомнить скролл
+        this.leftpanelHelperShift = newHelperShift;
+        this.beforeScroll = scrollY;
+      }
+    }
   }
 
 
