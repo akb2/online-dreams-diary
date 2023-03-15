@@ -14,10 +14,11 @@
 <div class="actions">
   <!-- Смайлики -->
   <div class="smiles">
-    <button mat-icon-button
+    <button #emojiListToggleButton
+            mat-icon-button
             color="primary"
             customToolTip
-            (click)="onToggleEmoji()">
+            (click)="onToggleEmojilist()">
       <mat-icon>sentiment_very_satisfied</mat-icon>
     </button>
     <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
@@ -40,14 +41,13 @@
 
 <!-- Список смайликов -->
 <ng-template #emojiList>
-  <emoji-mart class="smiles__list"
+  <emoji-mart #emojiListItem
+              class="smiles__list"
               [ngClass]="{ show: showEmojiList }"
               [i18n]="i18nEmoji"
               [emojiSize]="32"
-              [showPreview]="false"
-              [virtualize]="true"
-              [virtualizeOffset]="0"
-              [useButton]="true"
+              [showPreview]="true"
+              [useButton]="false"
               (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
 </ng-template>
 
@@ -57,7 +57,7 @@
              let-src="src"
              let-alt="alt"
              let-id="id">
-  <img class="emoji-elm"
+  <img [class]="emojiClassName"
        src="/assets/dream-map/transparent.png"
        [ngStyle]="styles"
        [alt]="alt"

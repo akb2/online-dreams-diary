@@ -11,13 +11,20 @@ $maxLines: 10;
 $paddingX: containers.$cardPaddingX;
 $paddingY: 0;
 
+$adaptiveMin: xsmall;
+$adaptiveMax: large;
+
 // Общая обертка
 :host {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: $spacing;
+  gap: 0 #{$spacing};
   align-items: center;
   position: relative;
+  // Адаптив
+  @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // Редактор
@@ -65,9 +72,13 @@ $paddingY: 0;
     ::ng-deep .emoji-elm {
       display: inline-block;
       vertical-align: middle;
-      margin: 0 2px;
+      margin: 0;
       pointer-events: none;
     }
+  }
+  // Адаптив
+  @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    min-height: $minHeight;
   }
 }
 
@@ -79,6 +90,29 @@ $paddingY: 0;
   align-items: flex-start;
   gap: $spacing;
   padding: #{containers.$cardPaddingY} 0;
+  // Адаптив
+  @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    padding-top: 0;
+  }
+  // Список смайликов
+  ::ng-deep .emoji-mart {
+    // Поиск
+    &-search-icon {
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      align-items: center;
+    }
+    // Смайлик
+    &-emoji {
+      &,
+      > span {
+        cursor: pointer;
+      }
+    }
+  }
 }
 
 // Смайлики
