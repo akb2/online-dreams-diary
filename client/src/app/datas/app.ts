@@ -114,6 +114,22 @@ export const CompareElementBySelector = (target: any, selector: string) => {
   return false;
 }
 
+// Пересечение элемента
+export const CompareElementByElement = (target: any, elm: any) => {
+  if (!!target && !!elm) {
+    const match = e => e !== document && e === elm;
+    let element: any = target;
+    // Поиск пересечения
+    while (element.parentNode && !match(element)) {
+      element = element.parentNode;
+    }
+    // Проверка
+    return match(element);
+  }
+  // Нет пересечения
+  return false;
+}
+
 // Проверка массива ключей в многомерном объекте
 export const ObjectHasValueByFields = <T>(object: T | MultiObject<T>, ...mixedFields: string[]) => {
   const fields: string[] = mixedFields.length > 1 ? mixedFields : mixedFields[0].split(".");
