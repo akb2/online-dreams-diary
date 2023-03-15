@@ -97,7 +97,8 @@
   </div>
   <!-- Стена -->
   <div class="comments">
-    <app-comment-block [materialType]="materialType"
+    <app-comment-block [placeholder]="itsMyPage? 'Напишите, что у вас нового . . .': 'Напишите ' + (visitedUser | petrovich: 3 ) + ' что у вас нового . . .'"
+                       [materialType]="materialType"
                        [materialId]="visitedUser.id"></app-comment-block>
   </div>
 </ng-template>

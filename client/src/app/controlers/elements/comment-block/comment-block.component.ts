@@ -14,6 +14,11 @@ import { CommentMaterialType } from "@_models/comment";
 })
 
 export class CommentBlockComponent {
+
+
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
+  @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
+
+
 }
