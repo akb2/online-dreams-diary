@@ -105,6 +105,37 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  // Посчитать размер слайдера по оси Y
+  checkScrollElmHSize(size: number = 0): number {
+    const sliderH: HTMLElement = this.sliderHElm?.nativeElement;
+    const trackH: HTMLElement = this.trackHElm?.nativeElement;
+    // Все элементы определены
+    if (!!sliderH && !!trackH) {
+      const maxWidth: number = trackH.clientWidth ?? 0;
+      const minWidth: number = ParseInt(getComputedStyle(sliderH).minWidth) ?? 0;
+      // Проверка размера
+      return (CheckInRange(size > 0 ? size : sliderH.clientWidth ?? 0, maxWidth, minWidth) / maxWidth) * 100;
+    }
+    // Нет скролла
+    return 0;
+  }
+
+  // Посчитать размер слайдера по оси Y
+  checkScrollElmVSize(size: number = 0): number {
+    const sliderV: HTMLElement = this.sliderVElm?.nativeElement;
+    const trackV: HTMLElement = this.trackVElm?.nativeElement;
+    // Все элементы определены
+    if (!!sliderV && !!trackV) {
+      const maxHeight: number = trackV.clientHeight ?? 1;
+      const currentHeight: number = ((sliderV.clientHeight ?? 0) / maxHeight) * 100;
+      const minHeight: number = ((ParseInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
+      // Проверка размера
+      return CheckInRange(size > 0 ? size : currentHeight, 100, minHeight);
+    }
+    // Нет скролла
+    return 0;
+  }
+
 
 
 
@@ -267,8 +298,8 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     this.maxScrollY = scrollData.maxY;
     this.scrollX = scrollData.x;
     this.scrollY = scrollData.y;
-    this.scrollElmHSize = (listElm.clientWidth / listElm.scrollWidth) * 100;
-    this.scrollElmVSize = (listElm.clientHeight / listElm.scrollHeight) * 100;
+    this.scrollElmHSize = this.checkScrollElmHSize((listElm.clientWidth / listElm.scrollWidth) * 100);
+    this.scrollElmVSize = this.checkScrollElmVSize((listElm.clientHeight / listElm.scrollHeight) * 100);
     this.scrollElmHPos = (this.scrollX / this.maxScrollX) * (100 - this.scrollElmHSize);
     this.scrollElmVPos = (this.scrollY / this.maxScrollY) * (100 - this.scrollElmVSize);
     // Событие изменения скролла
