@@ -1,0 +1,104 @@
+@use "sass:math";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/vars";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+
+$spacing: 3px;
+$fontSize: 15px;
+$lineHeight: 24px;
+$maxLines: 10;
+$paddingX: containers.$cardPaddingX;
+$paddingY: 0;
+
+// Общая обертка
+:host {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: $spacing;
+  align-items: center;
+  position: relative;
+}
+
+// Редактор
+.editor {
+  $actionMinHeight: vars.$buttonSize + (containers.$cardPaddingY * 2);
+  $minHeight: $lineHeight + ($paddingY * 2);
+  $maxHeight: ($lineHeight * $maxLines) + ($paddingY * 2);
+  // Свойства
+  min-height: math.max($minHeight, $actionMinHeight);
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: stretch;
+  align-items: center;
+  cursor: text;
+  padding-top: containers.$cardPaddingY;
+  padding-bottom: containers.$cardPaddingY;
+  // Скролл
+  &__scroll {
+    flex-grow: 1;
+    max-height: $maxHeight;
+    border-radius: #{containers.$cardBorderRadius} 0 0 #{containers.$cardBorderRadius};
+  }
+  // Поле ввода
+  &__area {
+    width: 100%;
+    min-height: $minHeight;
+    padding-left: $paddingX;
+    line-height: $lineHeight;
+    font-size: $fontSize;
+    border: none;
+    outline: none;
+    color: colors.$title;
+    // Подсказка
+    &[placeholder]:empty {
+      &::before {
+        content: attr(placeholder);
+        color: colors.$text;
+      }
+      // Скрыть при фокусе
+      &:focus::before {
+        content: "";
+      }
+    }
+    // Смайлики
+    ::ng-deep .emoji-elm {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 2px;
+      pointer-events: none;
+    }
+  }
+}
+
+// Кнопки
+.actions {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: $spacing;
+  padding: #{containers.$cardPaddingY} 0;
+}
+
+// Смайлики
+.smiles {
+  z-index: 2;
+  // Список
+  &__list {
+    position: absolute;
+    right: -#{containers.$cardPaddingX};
+    bottom: 300%;
+    visibility: hidden;
+    opacity: 0;
+    box-shadow: containers.$cardBoxShadow;
+    border-radius: containers.$cardBorderRadius;
+    transition: opacity #{screens.$animationTime}, visibility #{screens.$animationTime}, bottom #{screens.$animationTime};
+    // Показать список
+    &.show {
+      bottom: 100%;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}

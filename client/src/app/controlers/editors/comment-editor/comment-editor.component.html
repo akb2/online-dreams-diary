@@ -1,0 +1,65 @@
+<!-- Поле ввода -->
+<div class="editor"
+     (click)="editor.focus()">
+  <app-scroll class="editor__scroll"
+              (click)="$event.stopPropagation()">
+    <div #editor
+         class="editor__area"
+         contenteditable="true"
+         [attr.placeholder]="placeholder"
+         (blur)="onBlur()"></div>
+  </app-scroll>
+</div>
+<!-- Действия -->
+<div class="actions">
+  <!-- Смайлики -->
+  <div class="smiles">
+    <button mat-icon-button
+            color="primary"
+            customToolTip
+            (click)="onToggleEmoji()">
+      <mat-icon>sentiment_very_satisfied</mat-icon>
+    </button>
+    <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
+  </div>
+  <!-- Прикрепить -->
+  <button mat-icon-button
+          color="primary"
+          matTooltip="Прикрепить">
+    <mat-icon>attach_file</mat-icon>
+  </button>
+  <!-- Отправить -->
+  <button mat-flat-button
+          color="primary">
+    <mat-icon iconPositionEnd>send</mat-icon>
+    Отправить
+  </button>
+</div>
+
+
+
+<!-- Список смайликов -->
+<ng-template #emojiList>
+  <emoji-mart class="smiles__list"
+              [ngClass]="{ show: showEmojiList }"
+              [i18n]="i18nEmoji"
+              [emojiSize]="32"
+              [showPreview]="false"
+              [virtualize]="true"
+              [virtualizeOffset]="0"
+              [useButton]="true"
+              (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
+</ng-template>
+
+<!-- Смайлик -->
+<ng-template #smile
+             let-styles="styles"
+             let-src="src"
+             let-alt="alt"
+             let-id="id">
+  <img class="emoji-elm"
+       src="/assets/dream-map/transparent.png"
+       [ngStyle]="styles"
+       [alt]="alt"
+       [attr.data-emoji-id]="id" />
+</ng-template>
