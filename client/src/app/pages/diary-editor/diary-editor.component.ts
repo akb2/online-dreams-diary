@@ -2,10 +2,9 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@ang
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { CKEditor5 } from "@ckeditor/ckeditor5-angular";
+import { CKEditor5, CKEditorComponent } from "@ckeditor/ckeditor5-angular";
 import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { OptionData } from "@_models/form";
 import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map-editor.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
@@ -16,7 +15,7 @@ import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
-import { ErrorMessagesType } from "@_models/form";
+import { ErrorMessagesType, OptionData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
@@ -40,9 +39,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   @ViewChild(NavMenuComponent) mainMenu!: NavMenuComponent;
   @ViewChild(DreamMapEditorComponent) mapEditor!: DreamMapEditorComponent;
+  @ViewChild("dreamTextEditor") dreamTextEditor!: CKEditorComponent;
 
   editor: any = ClassicEditor;
-  config: CKEditor5.Config = { language: "ru" };
+  config: CKEditor5.Config = EditorConfig;
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
   tabAnimation: boolean = false;
@@ -231,6 +231,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     this.tabAnimation = false;
   }
 
+  // Редактор текста загружен
+  onTextEditorReady(editor: CKEditor5.Editor): void {
+  }
+
 
 
 
@@ -295,3 +299,20 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     ]));
   }
 }
+
+
+
+
+
+// Настройки редактора
+const EditorConfig: CKEditor5.Config = {
+  language: "ru",
+  toolbar: [
+    "undo", "redo", "|",
+    "toggleImageCaption", "|",
+    "bold", "italic", "|",
+    "blockQuote", "|",
+    "bulletedList", "numberedList", "|",
+    "imageStyle:inline", "imageStyle:block", "imageStyle:side", "toggleImageCaption", "imageTextAlternative"
+  ]
+};

@@ -125,7 +125,8 @@
                   <ckeditor #dreamTextEditor
                             formControlName="text"
                             [editor]="editor"
-                            [config]="config"></ckeditor>
+                            [config]="config"
+                            (ready)="onTextEditorReady($event)"></ckeditor>
                 </div>
               </div>
             </div>
