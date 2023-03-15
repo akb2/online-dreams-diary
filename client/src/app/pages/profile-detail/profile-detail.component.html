@@ -97,7 +97,8 @@
   </div>
   <!-- Стена -->
   <div class="comments">
-    <app-comment-block></app-comment-block>
+    <app-comment-block [materialType]="materialType"
+                       [materialId]="visitedUser.id"></app-comment-block>
   </div>
 </ng-template>
 

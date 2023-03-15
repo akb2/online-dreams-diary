@@ -10,9 +10,9 @@ import { User, UserSex } from '@_models/account';
 import { Search } from '@_models/api';
 import { RouteData } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
+import { CommentMaterialType } from "@_models/comment";
 import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from '@_models/friend';
 import { NavMenuType } from '@_models/nav-menu';
-import { ScrollAddDimension } from "@_models/screen";
 import { AccountService } from '@_services/account.service';
 import { CanonicalService } from '@_services/canonical.service';
 import { FriendService } from '@_services/friend.service';
@@ -59,6 +59,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   floatButtonIcon: string;
   floatButtonLink: string;
   backButtonLink: string;
+  materialType: CommentMaterialType = CommentMaterialType.Profile;
 
   private visitedUserId: number = -1;
   friendListLimit: number = 4;
