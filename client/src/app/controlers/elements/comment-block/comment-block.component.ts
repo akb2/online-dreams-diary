@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { CreateArray } from "@_datas/app";
+import { CommentMaterialType } from "@_models/comment";
 
 
 
@@ -12,4 +14,6 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 
 export class CommentBlockComponent {
+  @Input() materialType: CommentMaterialType;
+  @Input() materialId: number;
 }

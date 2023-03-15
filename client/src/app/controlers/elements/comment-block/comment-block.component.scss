@@ -1,0 +1,10 @@
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/containers";
+
+// Поле редактора
+.editor {
+  background-color: colors.$card;
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: containers.$cardBorderRadius;
+  padding-right: containers.$cardPaddingX;
+}
