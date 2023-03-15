@@ -27,7 +27,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild("emojiListItem", { read: ElementRef }) emojiListItem: ElementRef<HTMLElement>;
   @ViewChild("emojiListToggleButton", { read: ElementRef }) emojiListToggleButton: ElementRef<HTMLElement>;
 
-  private lastPosition: CaretPosition = { start: 0, end: 0, range: new Range() };
+  private lastPosition: CaretPosition;
   private smileSize: number = 24;
 
   showEmojiList: boolean = false;
@@ -41,14 +41,18 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
 
 
   // Получить текущий курсор
-  private get getPos(): CaretPosition {
+  private getRangePosition(forceFocus: boolean = false): CaretPosition {
+    const editor: HTMLElement = this.editor?.nativeElement;
     let start: number = 0;
     let end: number = 0;
     let range: Range = new Range();
     // Поиск позиции
-    if (!!this.editor?.nativeElement) {
-      range = document.getSelection().getRangeAt(0);
+    if (!!editor) {
+      if (editor !== document.activeElement && forceFocus) {
+        editor.focus();
+      }
       // Запомнить значения
+      range = document.getSelection().getRangeAt(0);
       start = range.startOffset;
       end = range.endOffset;
     }
@@ -63,6 +67,10 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
 
   // Установить текст
   private insertContent(content: string | Node): void {
+    if (!this.lastPosition) {
+      this.lastPosition = this.getRangePosition(true);
+    }
+    // Убрать контент
     this.lastPosition.range.deleteContents();
     // Вставить текст
     if (typeof content === "string") {
@@ -138,7 +146,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
 
   // Потеря фокуса
   onBlur(): void {
-    this.lastPosition = this.getPos;
+    this.lastPosition = this.getRangePosition();
   }
 
   // Открыть список смайликов
