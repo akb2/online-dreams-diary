@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
-import { CreateArray } from "@_datas/app";
 import { CommentMaterialType } from "@_models/comment";
 
 
