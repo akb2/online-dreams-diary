@@ -27,6 +27,7 @@
     "@brakebein/threeoctree": "^2.0.1",
     "@ckeditor/ckeditor5-angular": "^2.0.2",
     "@ckeditor/ckeditor5-build-classic": "^31.1.0",
+    "@ctrl/ngx-emoji-mart": "^7.1.0",
     "css-calc-transform": "^1.0.0",
     "ng-recaptcha": "^11.0.0",
     "petrovich": "^0.2.1",
