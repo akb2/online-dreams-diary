@@ -56,10 +56,12 @@
              let-styles="styles"
              let-src="src"
              let-alt="alt"
-             let-id="id">
+             let-id="id"
+             let-skin="skin">
   <img [class]="emojiClassName"
        src="/assets/dream-map/transparent.png"
        [ngStyle]="styles"
        [alt]="alt"
-       [attr.data-emoji-id]="id" />
+       [attr.data-emoji-id]="id"
+       [attr.data-emoji-skin]="skin" />
 </ng-template>

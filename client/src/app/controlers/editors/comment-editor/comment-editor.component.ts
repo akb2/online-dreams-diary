@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
+import { ParseInt } from "@_helpers/math";
 import { MultiObject, SimpleObject } from "@_models/app";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
@@ -87,7 +88,11 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   // Получить шаблон смайлика
   private getSmileNode(mixedEmoji: string | EmojiData): Element {
     const emoji: EmojiData = typeof mixedEmoji === "string" ? this.emojiService.getData(mixedEmoji) : mixedEmoji;
-    const content: string = this.stringTemplatePipe.transform(this.smileElm, { styles: this.smileStyles(emoji), id: emoji.id, alt: emoji.name });
+    const styles: SimpleObject = this.smileStyles(emoji);
+    const id: string = emoji.id;
+    const alt: string = emoji.name;
+    const skin: number = emoji?.skinTone ?? 1;
+    const content: string = this.stringTemplatePipe.transform(this.smileElm, { styles, id, alt, skin });
     const node: Element = (new DOMParser()).parseFromString(content, "text/html").getElementsByClassName(this.emojiClassName)[0];
     // Вернуть шаблон
     return node;
@@ -190,7 +195,9 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     emojiNodes.forEach(node => {
       const text: string = editor.innerHTML;
       const nodeText: string = node.outerHTML;
-      const emojiCode: string = "[emoji=" + node.getAttribute("data-emoji-id") + "]";
+      const id: string = node.getAttribute("data-emoji-id");
+      const skin: number = ParseInt(node.getAttribute("data-emoji-skin"), 1);
+      const emojiCode: string = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + "]";
       // Замена текста
       editor.innerHTML = text.replace(nodeText, emojiCode);
     });
