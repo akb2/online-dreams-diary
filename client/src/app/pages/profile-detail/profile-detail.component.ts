@@ -18,7 +18,7 @@ import { CanonicalService } from '@_services/canonical.service';
 import { FriendService } from '@_services/friend.service';
 import { GlobalService } from '@_services/global.service';
 import { ScreenService } from "@_services/screen.service";
-import { catchError, concatMap, fromEvent, map, merge, mergeMap, Observable, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
 
 
 
@@ -87,16 +87,6 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       !!this.visitedUser.avatars.middle &&
       !!this.visitedUser.avatars.crop &&
       !!this.visitedUser.avatars.small
-    );
-  }
-
-  // Подписка на ожидание данных0
-  private waitObservable(callback: () => boolean): Observable<void> {
-    return timer(1, 50).pipe(
-      takeUntil(this.destroyed$),
-      takeWhile(callback, true),
-      skipWhile(callback),
-      map(() => { })
     );
   }
 
@@ -204,12 +194,12 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       const scrollY: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
       const scrollShift: number = scrollY - this.beforeScroll;
       // Если отступ допустим
-      if (availShift) {
-        const newHelperShift: number = -CheckInRange(scrollShift - this.leftpanelHelperShift, maxShift, -headerShift);
-        // Запомнить скролл
-        this.leftpanelHelperShift = newHelperShift;
-        this.beforeScroll = scrollY;
-      }
+      this.leftpanelHelperShift = availShift && elmHelperHeight > screenHeight ?
+        -CheckInRange(scrollShift - this.leftpanelHelperShift, maxShift, -headerShift) :
+        headerShift;
+      // Обновить
+      this.beforeScroll = scrollY;
+      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -237,8 +227,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка
-    this.waitObservable(() => !this.userReady)
+    WaitObservable(() => !this.userReady)
       .pipe(
+        takeUntil(this.destroyed$),
         concatMap(() => this.activatedRoute.params),
         switchMap(params => {
           if (params?.user_id === "0") {
@@ -263,7 +254,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка на данные пользователя
-    this.waitObservable(() => this.visitedUserId === -1 || !this.userReady)
+    WaitObservable(() => this.visitedUserId === -1 || !this.userReady)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         let visitedUserSync: boolean = false;
@@ -281,8 +272,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
             .subscribe(() => visitedUserSync = true);
         }
         // Подписка
-        this.waitObservable(() => !visitedUserSync)
+        WaitObservable(() => !visitedUserSync)
           .pipe(
+            takeUntil(this.destroyed$),
             concatMap(() => this.accountService.user$(this.visitedUserId, false)),
             takeUntil(this.destroyed$)
           )
