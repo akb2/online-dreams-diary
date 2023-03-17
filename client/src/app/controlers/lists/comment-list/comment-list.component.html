@@ -1,0 +1,24 @@
+<!-- Список комментариев -->
+<ng-container *ngIf="!loading; else loader">
+  <ng-container *ngIf="!!comments?.length; else noComments">
+  </ng-container>
+</ng-container>
+
+
+
+<!-- Загрузчик -->
+<ng-template #loader>
+  <app-inform mainTitle="Загрузка комментариев"
+              subTitle="Пожалуйста подождите"
+              [waitPointers]="true"
+              [smallMargins]="true"></app-inform>
+</ng-template>
+
+<!-- Комментариев нет -->
+<ng-template #noComments>
+  <app-inform icon="quickreply"
+              [mainTitle]="emptyCommentsMainTitle"
+              [subTitle]="emptyCommentsSubTitle"
+              [smallMargins]="true"
+              [aboveIcon]="true"></app-inform>
+</ng-template>

@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { Comment } from "@_models/comment";
 
 
 
@@ -12,4 +13,10 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 
 export class CommentListComponent {
+  @Input() emptyCommentsMainTitle: string = "Нет комментариев";
+  @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
+
+  comments: Comment[] = [];
+
+  loading: boolean = false;
 }

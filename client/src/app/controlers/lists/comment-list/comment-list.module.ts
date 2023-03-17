@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { InformModule } from "@_controlers/inform/inform.module";
 import { CommentListComponent } from "./comment-list.component";
 
 
@@ -14,7 +15,8 @@ import { CommentListComponent } from "./comment-list.component";
     CommentListComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    InformModule
   ]
 })
 
