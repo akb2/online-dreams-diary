@@ -14,6 +14,7 @@ class CommentService
   private DataBaseService $dataBaseService;
   private TokenService $tokenService;
   private FriendService $friendService;
+  private LongPollingService $longPollingService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -23,6 +24,7 @@ class CommentService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->friendService = new FriendService($this->pdo, $this->config);
+    $this->longPollingService = new LongPollingService($this->config);
   }
 
 
@@ -31,9 +33,9 @@ class CommentService
   public function createTableApi(string $password): bool
   {
     // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
+    if ($password == $this->config['appPassword']) {
       // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("comment/createTable.sql");
+      return $this->dataBaseService->executeFromFile('comment/createTable.sql');
     }
     // Результат работы функции
     return false;
@@ -43,9 +45,9 @@ class CommentService
   public function deleteTableApi(string $password): bool
   {
     // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
+    if ($password == $this->config['appPassword']) {
       // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("comment/deleteTable.sql");
+      return $this->dataBaseService->executeFromFile('comment/deleteTable.sql');
     }
     // Результат работы функции
     return false;
@@ -57,16 +59,23 @@ class CommentService
   public function create(array $data, int $userId): int
   {
     $sqlData = array(
-      "user_id" => intval($userId),
-      "reply_to_user_id" => intval($data["replyToUserId"] ?? null),
-      "material_type" => intval($data["materialType"]),
-      "material_id" => intval($data["materialId"]),
-      "text" => strval($data["text"]),
-      "attachment" => $data['attachment'] ?? null
+      'user_id' => intval($userId),
+      'reply_to_user_id' => intval($data['replyToUserId'] ?? null),
+      'material_type' => intval($data['materialType']),
+      'material_id' => intval($data['materialId']),
+      'text' => strval($data['text']),
+      'attachment' => $data['attachment'] ?? null
     );
     // Попытка сохранения
-    if ($this->dataBaseService->executeFromFile("comment/send.php", $sqlData)) {
-      return $this->pdo->lastInsertId();
+    if ($this->dataBaseService->executeFromFile('comment/send.php', $sqlData)) {
+      $commentId = $this->pdo->lastInsertId();
+      // Отправить в Long Polling
+      $this->longPollingService->send(
+        'comment/' . intval($data["materialType"]) . '/' . intval($data["materialId"]),
+        array('commentId' => $commentId)
+      );
+      // Вернуть ID
+      return $commentId;
     }
     // Сновидение не сохранено
     return 0;
