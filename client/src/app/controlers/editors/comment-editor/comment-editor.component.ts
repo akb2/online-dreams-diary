@@ -67,7 +67,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   // Установить текст
-  private insertContent(content: string | Node): void {
+  private insertContent(content: string | Node, event: Event): void {
     if (!this.lastPosition) {
       this.lastPosition = this.getRangePosition(true);
     }
@@ -83,6 +83,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     }
     // Убрать выделение
     this.lastPosition.range.collapse();
+    this.onEdit(event);
   }
 
   // Получить шаблон смайлика
@@ -154,6 +155,62 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     this.lastPosition = this.getRangePosition();
   }
 
+  // Ввод
+  onEdit(event: KeyboardEvent | Event): void {
+    if (!!this.editor?.nativeElement) {
+      // Проверка дочерних элементов
+      const hasChildNodes = (node: Node) => node.nodeName.toLowerCase() === "#text" ? !!node.textContent : !!node.childNodes?.length;
+      // Очистка переносов
+      const removeEmptyBr = (node: ChildNode) => {
+        const children: ChildNode[] = Array.from(node.childNodes);
+        // Очистка дочерних
+        children.forEach(child => removeEmptyBr(child));
+        // Проверка
+        const testChildren: ChildNode[] = Array.from(node.childNodes);
+        // Удалить пустые переносы
+        if (!!testChildren?.length && testChildren.every(child => child.nodeName.toLowerCase() === "br") && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+          testChildren.forEach(child => child.remove());
+        }
+      };
+      // Функция поиска и очистки
+      const clearChild = (node: ChildNode, clearNode: boolean) => {
+        const children: ChildNode[] = Array.from(node.childNodes);
+        const nodeName: string = node.nodeName.toLowerCase();
+        // Очистка дочерних
+        children.forEach(child => clearChild(child, true));
+        // Очистка текущего элемента
+        if (clearNode && !clearIgnore.includes(nodeName)) {
+          const testChildren: ChildNode[] = Array.from(node.childNodes);
+          // Удалить если нет дочерних элементов
+          if (!testChildren?.length && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+            node.remove();
+          }
+        }
+      };
+      // Параметры
+      const ignoreKeys: string[] = ["Enter", "NumpadEnter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+      const editor: HTMLElement = this.editor.nativeElement;
+      const clearIgnore: string[] = ["#text", "br", "img"];
+      const selection: Selection = document.getSelection();
+      const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
+      const firstChild: Node = editor.childNodes[0] ?? null;
+      const noRemoveNode: Node = keyEnter ? selection.focusNode : null;
+      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && noRemoveNode.previousSibling === firstChild && hasChildNodes(noRemoveNode) ?
+        firstChild : null;
+      // Начать очистку
+      removeEmptyBr(editor);
+      clearChild(editor, false);
+    }
+  }
+
+  // Вставка из буффера
+  onPaste(event: ClipboardEvent): void {
+    const text: string = event.clipboardData.getData("text/plain");
+    // Вставка текста
+    event.preventDefault();
+    document.execCommand("insertHTML", false, text);
+  }
+
   // Открыть список смайликов
   onOpenEmojiList(): void {
     this.showEmojiList = true;
@@ -180,8 +237,12 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   // Выбран смайлик
   onEmojiSelect(event: EmojiEvent): void {
     if (!!this.editor && !!event.emoji && !!this.smileElm) {
-      this.insertContent(this.getSmileNode(event.emoji));
+      this.insertContent(this.getSmileNode(event.emoji), event.$event);
     }
+  }
+
+  // Отправка комментария
+  onSend(): void {
   }
 
 
