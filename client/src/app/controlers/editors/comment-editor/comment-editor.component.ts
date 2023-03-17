@@ -119,6 +119,11 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     return "";
   }
 
+  // Состояние кнопки отправить
+  get sendIsAvail(): boolean {
+    return !!this.getEditorValue;
+  }
+
 
 
 
@@ -159,7 +164,29 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   onEdit(event: KeyboardEvent | Event): void {
     if (!!this.editor?.nativeElement) {
       // Проверка дочерних элементов
-      const hasChildNodes = (node: Node) => node.nodeName.toLowerCase() === "#text" ? !!node.textContent : !!node.childNodes?.length;
+      const hasChildNodes = (node: Node) => !!node ? (node.nodeName.toLowerCase() === "#text" ? !!node.textContent : !!node.childNodes?.length) : false;
+      // Предыдущий узел
+      const getBeforeNode = (node: Node) => {
+        if (node !== editor) {
+          if (!!node.previousSibling) {
+            return node.previousSibling;
+          }
+          // Поиск по родителям
+          else {
+            let tempNode: Node = node;
+            // Поиск
+            while (!!tempNode.parentElement && tempNode !== editor) {
+              tempNode = tempNode.parentElement;
+              // Элемент найден
+              if (!!tempNode.previousSibling) {
+                return tempNode.previousSibling;
+              }
+            }
+          }
+        }
+        // Нет предыдущего элемента
+        return null;
+      };
       // Очистка переносов
       const removeEmptyBr = (node: ChildNode) => {
         const children: ChildNode[] = Array.from(node.childNodes);
@@ -182,7 +209,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
         if (clearNode && !clearIgnore.includes(nodeName)) {
           const testChildren: ChildNode[] = Array.from(node.childNodes);
           // Удалить если нет дочерних элементов
-          if (!testChildren?.length && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+          if (!testChildren?.every(child => hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
             node.remove();
           }
         }
@@ -194,8 +221,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
       const selection: Selection = document.getSelection();
       const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
       const firstChild: Node = editor.childNodes[0] ?? null;
-      const noRemoveNode: Node = keyEnter ? selection.focusNode : null;
-      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && noRemoveNode.previousSibling === firstChild && hasChildNodes(noRemoveNode) ?
+      const noRemoveNode: Node = keyEnter ? selection.anchorNode : null;
+      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && getBeforeNode(noRemoveNode) === firstChild && hasChildNodes(noRemoveNode) ?
         firstChild : null;
       // Начать очистку
       removeEmptyBr(editor);
@@ -299,6 +326,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     editor.innerHTML = editor.innerHTML.replace(new RegExp("(\&nbsp;+)", "ig"), " ");
     editor.innerHTML = editor.innerHTML.replace(new RegExp("<br([\s\/]*)?>", "ig"), "[br]");
     editor.innerHTML = editor.innerHTML.replace(new RegExp("(\\[br\\])+", "ig"), "[br]");
+    editor.innerHTML = editor.innerHTML.replace(new RegExp("([\s\n\r\t])+", "ig"), " ");
+    editor.innerHTML = editor.innerHTML.trim();
   }
 }
 

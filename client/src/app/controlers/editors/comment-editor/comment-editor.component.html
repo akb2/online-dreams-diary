@@ -38,6 +38,7 @@
   <!-- Отправить -->
   <button mat-flat-button
           color="primary"
+          [disabled]="!sendIsAvail"
           (click)="onSend()">
     <mat-icon iconPositionEnd>send</mat-icon>
     Отправить
