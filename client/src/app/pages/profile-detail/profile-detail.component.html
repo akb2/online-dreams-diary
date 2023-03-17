@@ -97,7 +97,9 @@
   </div>
   <!-- Стена -->
   <div class="comments">
-    <app-comment-block [placeholder]="itsMyPage? 'Напишите, что у вас нового . . .': 'Напишите ' + (visitedUser | petrovich: 3 ) + ' что у вас нового . . .'"
+    <app-comment-block [placeholder]="getWallPlaceholder(visitedUser | petrovich: 3)"
+                       emptyCommentsMainTitle="Нет записей"
+                       [emptyCommentsSubTitle]="getWallEmptySubTitle(visitedUser | petrovich: 3)"
                        [materialType]="materialType"
                        [materialId]="visitedUser.id"></app-comment-block>
   </div>

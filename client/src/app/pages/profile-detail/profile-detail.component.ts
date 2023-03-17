@@ -1,33 +1,33 @@
-import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { DatePipe } from "@angular/common";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, Router } from "@angular/router";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
-import { BackgroundImageDatas } from '@_datas/appearance';
-import { CheckInRange, ParseInt } from '@_helpers/math';
-import { User, UserSex } from '@_models/account';
-import { Search } from '@_models/api';
-import { RouteData } from '@_models/app';
-import { BackgroundImageData } from '@_models/appearance';
+import { BackgroundImageDatas } from "@_datas/appearance";
+import { CheckInRange, ParseInt } from "@_helpers/math";
+import { User, UserSex } from "@_models/account";
+import { Search } from "@_models/api";
+import { RouteData } from "@_models/app";
+import { BackgroundImageData } from "@_models/appearance";
 import { CommentMaterialType } from "@_models/comment";
-import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from '@_models/friend';
-import { NavMenuType } from '@_models/nav-menu';
-import { AccountService } from '@_services/account.service';
-import { CanonicalService } from '@_services/canonical.service';
-import { FriendService } from '@_services/friend.service';
-import { GlobalService } from '@_services/global.service';
+import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from "@_models/friend";
+import { NavMenuType } from "@_models/nav-menu";
+import { AccountService } from "@_services/account.service";
+import { CanonicalService } from "@_services/canonical.service";
+import { FriendService } from "@_services/friend.service";
+import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
-import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from 'rxjs';
+import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
 
 
 
 
 
 @Component({
-  selector: 'app-profile-detail',
-  templateUrl: './profile-detail.component.html',
-  styleUrls: ['./profile-detail.component.scss'],
+  selector: "app-profile-detail",
+  templateUrl: "./profile-detail.component.html",
+  styleUrls: ["./profile-detail.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -88,6 +88,20 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       !!this.visitedUser.avatars.crop &&
       !!this.visitedUser.avatars.small
     );
+  }
+
+  // Плейсхолдер стены
+  getWallPlaceholder(name: string): string {
+    return this.itsMyPage ?
+      "Напишите, что у вас нового . . ." :
+      "Напишите " + name + " что у вас нового . . .";
+  }
+
+  // Подзаголовок стены без записей
+  getWallEmptySubTitle(name: string): string {
+    return this.itsMyPage ?
+      "Напишите на своей стене что у вас нового" :
+      "Будьте первым, напишите " + name + " что-нибудь интересное";
   }
 
 
