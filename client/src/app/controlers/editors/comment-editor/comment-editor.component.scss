@@ -118,6 +118,7 @@ $adaptiveMax: large;
 // Смайлики
 .smiles {
   z-index: 2;
+  height: vars.$buttonSize;
   // Список
   &__list {
     position: absolute;
@@ -134,5 +135,19 @@ $adaptiveMax: large;
       opacity: 1;
       visibility: visible;
     }
+  }
+}
+
+// Помощник в поле действий для переноса события
+.event-helper {
+  position: relative;
+  display: none;
+  flex-grow: 1;
+  height: vars.$buttonSize + containers.$cardPaddingY;
+  margin-bottom: -#{containers.$cardPaddingY};
+  cursor: text;
+  // Адаптив
+  @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    display: block;
   }
 }
