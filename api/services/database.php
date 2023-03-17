@@ -94,7 +94,8 @@ class DataBaseService
     if ($file->exists()) {
       // Текст запроса из файла с выполнением кода PHP
       if ($file->extension() === 'php') {
-        $sqlText = $file->eval($params);
+        echo json_encode($this->checkInputParams("", $params, false));
+        $sqlText = $file->eval($this->checkInputParams("", $params, false));
       }
       // Текст запроса из файла
       else {
@@ -106,26 +107,33 @@ class DataBaseService
   }
 
   // Скорректировать массив данных согласно тексту запроса
-  private function checkInputParams(string $query, array $params): array
+  private function checkInputParams(string $query, array $params, bool $checkParams = true): array
   {
-    preg_match_all('/(\?)/ui', $query, $findAsArray, PREG_PATTERN_ORDER);
-    preg_match_all('/:([a-z0-9\-_]+)/ui', $query, $findAsObject, PREG_PATTERN_ORDER);
-    // Настройки
-    $findAsArrayCount = count($findAsArray[1]);
     $newParams = array();
-    // Корректировка для порядкого перечисления
-    for ($k = 0; $k < $findAsArrayCount; $k++) {
-      $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
+    // Удалить незадействованные параметры
+    if (!$checkParams) {
+      $newParams = $params;
     }
-    // Корректировка для параметров с ключами
-    foreach ($findAsObject[1] as $k) {
-      $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
-    }
-    // Корректировать тип данных
-    foreach ($newParams as $k => $v) {
-      $types = array('boolean', 'integer', 'double', 'string');
-      if (!in_array(gettype($v), $types)) {
-        $newParams[$k] = strval($v);
+    // Не удалять неиспользуемые параметры
+    else {
+      preg_match_all('/(\?)/ui', $query, $findAsArray, PREG_PATTERN_ORDER);
+      preg_match_all('/:([a-z0-9\-_]+)/ui', $query, $findAsObject, PREG_PATTERN_ORDER);
+      // Настройки
+      $findAsArrayCount = count($findAsArray[1]);
+      // Корректировка для порядкого перечисления
+      for ($k = 0; $k < $findAsArrayCount; $k++) {
+        $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
+      }
+      // Корректировка для параметров с ключами
+      foreach ($findAsObject[1] as $k) {
+        $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
+      }
+      // Корректировать тип данных
+      foreach ($newParams as $k => $v) {
+        $types = array('boolean', 'integer', 'double', 'string');
+        if (!in_array(gettype($v), $types)) {
+          $newParams[$k] = $this->pdo->quote(strval($v));
+        }
       }
     }
     // Вернуть корректный массив данных
