@@ -5,7 +5,6 @@ namespace Controllers;
 use Decorators\CheckToken;
 use Decorators\Request;
 use Services\DreamService;
-use Services\TokenService;
 use Services\UserSettingsService;
 use PDO;
 
@@ -18,7 +17,6 @@ class Dream
   private PDO $pdo;
 
   private DreamService $dreamService;
-  private TokenService $tokenService;
   private UserSettingsService $userSettingsService;
 
 
@@ -39,7 +37,6 @@ class Dream
   public function setServices(): void
   {
     $this->dreamService = new DreamService($this->pdo, $this->config);
-    $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
   }
 
