@@ -1,4 +1,10 @@
+<!-- Редактор -->
 <div class="editor">
-  <app-comment-editor content
-                      [placeholder]="placeholder"></app-comment-editor>
+  <app-comment-editor [placeholder]="placeholder"></app-comment-editor>
+</div>
+
+<!-- Список комментариев -->
+<div class="list">
+  <app-comment-list [emptyCommentsMainTitle]="emptyCommentsMainTitle"
+                    [emptyCommentsSubTitle]="emptyCommentsSubTitle"></app-comment-list>
 </div>

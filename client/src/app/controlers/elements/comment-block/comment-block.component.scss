@@ -1,5 +1,7 @@
 @use "../../../../assets/styles/colors";
 @use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/vars";
 
 // Поле редактора
 .editor {
@@ -7,4 +9,11 @@
   box-shadow: containers.$cardBoxShadow;
   border-radius: containers.$cardBorderRadius;
   padding-right: containers.$cardPaddingX;
+}
+
+// Список коментариев
+.list {
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    margin-top: $gap;
+  }
 }
