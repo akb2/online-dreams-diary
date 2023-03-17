@@ -37,7 +37,7 @@ export class ApiService {
   checkSwitchMap(result: ApiResponse, codes: string[] = []): Observable<ApiResponse> {
     const code: ApiResponseCodes = result.result.code;
     // Сохранить токен
-    if (code === "0001") {
+    if (code === "0001" || codes.includes(code.toString())) {
       return of(result);
     }
     // Вернуть данные
