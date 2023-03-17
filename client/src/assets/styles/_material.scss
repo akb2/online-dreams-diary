@@ -84,6 +84,13 @@
           @include mixins.loader($iconSize, 2px, 1s, #fff);
         }
         // Расскрасить кнопки
+        &[mat-flat-button] {
+          // Статус: disabled
+          &.mat-mdc-unelevated-button[disabled][disabled] > .mat-icon {
+            @include mixins.loaderColors(map.get(colors.$matDisabled, 500));
+          }
+        }
+        // Расскрасить кнопки
         &[mat-stroked-button],
         &[mat-icon-button] {
           // Общий цвет
@@ -101,6 +108,30 @@
           // Статус: primary
           &.mat-primary > .mat-icon {
             @include mixins.loaderColors(map.get(colors.$matPrimary, 500));
+          }
+        }
+        // Точки загрузки
+        &[wait-pointers] > .mdc-button__label::after {
+          content: "";
+          display: inline-block;
+          vertical-align: middle;
+          text-align: left;
+          width: 20px;
+          animation: waitPointersAnimation 2s linear 0s infinite;
+          // Стиль анимации
+          @keyframes waitPointersAnimation {
+            0% {
+              content: "";
+            }
+            25% {
+              content: ".";
+            }
+            50% {
+              content: ". .";
+            }
+            75% {
+              content: ". . .";
+            }
           }
         }
       }
