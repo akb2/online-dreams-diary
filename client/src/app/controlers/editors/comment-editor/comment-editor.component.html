@@ -5,7 +5,7 @@
               (click)="$event.stopPropagation()">
     <div #editor
          class="editor__area"
-         contenteditable="true"
+         [attr.contenteditable]="!sendLoader"
          [attr.placeholder]="placeholder"
          (blur)="onBlur()"
          (keyup)="onEdit($event)"
@@ -24,7 +24,8 @@
             mat-icon-button
             color="primary"
             customToolTip
-            (click)="onToggleEmojilist()">
+            (click)="onToggleEmojilist()"
+            *ngIf="!sendLoader">
       <mat-icon>sentiment_very_satisfied</mat-icon>
     </button>
     <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
@@ -32,16 +33,19 @@
   <!-- Прикрепить -->
   <button mat-icon-button
           color="primary"
-          matTooltip="Прикрепить">
+          matTooltip="Прикрепить"
+          *ngIf="!sendLoader">
     <mat-icon>attach_file</mat-icon>
   </button>
   <!-- Отправить -->
   <button mat-flat-button
           color="primary"
+          [attr.button-loader]="sendLoader"
+          wait-pointers
           [disabled]="!sendIsAvail"
-          (click)="onSend()">
+          (click)="onSend($event)">
     <mat-icon iconPositionEnd>send</mat-icon>
-    Отправить
+    {{sendLoader? 'Отправка': 'Отправить'}}
   </button>
 </div>
 

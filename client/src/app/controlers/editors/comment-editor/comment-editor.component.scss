@@ -52,11 +52,17 @@ $adaptiveMax: large;
     width: 100%;
     min-height: $minHeight;
     padding-left: $paddingX;
-    line-height: $lineHeight;
-    font-size: $fontSize;
     border: none;
     outline: none;
-    color: colors.$title;
+    opacity: 0.7;
+    transition: opacity #{screens.$animationTime};
+    // Стиль текста
+    &,
+    ::ng-deep * {
+      line-height: $lineHeight;
+      font-size: $fontSize;
+      color: colors.$title;
+    }
     // Подсказка
     &[placeholder]:empty {
       &::before {
@@ -74,6 +80,10 @@ $adaptiveMax: large;
       vertical-align: middle;
       margin: 0;
       pointer-events: none;
+    }
+    // Редактирование разрешено
+    &[contenteditable="true"] {
+      opacity: 1;
     }
   }
   // Адаптив

@@ -1,10 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, TemplateRef, ViewChild } from "@angular/core";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { MultiObject, SimpleObject } from "@_models/app";
+import { CommentMaterialType } from "@_models/comment";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
+import { CommentService } from "@_services/comment.service";
 import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
 
 
@@ -21,7 +23,11 @@ import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
 export class CommentEditorComponent implements AfterViewInit, OnDestroy {
 
 
+  @Input() materialType: CommentMaterialType;
+  @Input() materialId: number;
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
+
+  @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
 
   @ViewChild("editor", { read: ElementRef }) editor: ElementRef<HTMLElement>;
   @ViewChild("smile") smileElm: TemplateRef<any>;
@@ -34,6 +40,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   showEmojiList: boolean = false;
   i18nEmoji: MultiObject<string> = I18nEmoji;
   emojiClassName: string = "emoji-elm";
+
+  sendLoader: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -131,7 +139,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private emojiService: EmojiService,
-    private stringTemplatePipe: StringTemplatePipe
+    private stringTemplatePipe: StringTemplatePipe,
+    private commentService: CommentService
   ) { }
 
   ngAfterViewInit(): void {
@@ -161,10 +170,13 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   // Ввод
-  onEdit(event: KeyboardEvent | Event): void {
+  onEdit(event: Event): void {
     if (!!this.editor?.nativeElement) {
       // Проверка дочерних элементов
-      const hasChildNodes = (node: Node) => !!node ? (node.nodeName.toLowerCase() === "#text" ? !!node.textContent : !!node.childNodes?.length) : false;
+      const hasChildNodes = (node: Node) => !!node ? (node.nodeName.toLowerCase() === "#text" ?
+        !!node.textContent :
+        !!node.childNodes?.length || noHasChildAvail.includes(node.nodeName.toLowerCase())) :
+        false;
       // Предыдущий узел
       const getBeforeNode = (node: Node) => {
         if (node !== editor) {
@@ -209,7 +221,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
         if (clearNode && !clearIgnore.includes(nodeName)) {
           const testChildren: ChildNode[] = Array.from(node.childNodes);
           // Удалить если нет дочерних элементов
-          if (!testChildren?.every(child => hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+          if (testChildren?.every(child => !hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
             node.remove();
           }
         }
@@ -218,6 +230,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
       const ignoreKeys: string[] = ["Enter", "NumpadEnter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
       const editor: HTMLElement = this.editor.nativeElement;
       const clearIgnore: string[] = ["#text", "br", "img"];
+      const noHasChildAvail: string[] = ["img"];
       const selection: Selection = document.getSelection();
       const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
       const firstChild: Node = editor.childNodes[0] ?? null;
@@ -269,7 +282,36 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   // Отправка комментария
-  onSend(): void {
+  onSend(event: MouseEvent): void {
+    if (this.sendIsAvail && !this.sendLoader) {
+      this.onEdit(event);
+      // Параметры
+      const text: string = this.getEditorValue;
+      // Проверка текста
+      if (!!text) {
+        this.sendLoader = true;
+        this.changeDetectorRef.detectChanges();
+        // Отправка
+        this.commentService.send(this.materialType, this.materialId, text)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe(
+            () => {
+              const editor: HTMLElement = this.editor?.nativeElement
+              // Очистить редактор
+              if (!!editor) {
+                editor.innerHTML = "";
+              }
+              // Обновить
+              this.sendLoader = false;
+              this.changeDetectorRef.detectChanges();
+            },
+            () => {
+              this.sendLoader = false;
+              this.changeDetectorRef.detectChanges();
+            }
+          );
+      }
+    }
   }
 
 
@@ -309,7 +351,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   private editorTagRemove(editor: HTMLElement, node: Element, br: boolean = false): void {
     const nodeText: string = node.outerHTML;
     const text: string = editor.innerHTML;
-    const tagCode: string = (br ? "[br]" : "") + node.innerHTML;
+    const brTag: string = br ? "[br]" : "";
+    const tagCode: string = brTag + node.innerHTML + brTag;
     // Замена текста
     editor.innerHTML = text.replace(nodeText, tagCode);
   }
@@ -324,9 +367,11 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
   // Замена пробелов
   private editorSpacingReplace(editor: HTMLElement): void {
     editor.innerHTML = editor.innerHTML.replace(new RegExp("(\&nbsp;+)", "ig"), " ");
-    editor.innerHTML = editor.innerHTML.replace(new RegExp("<br([\s\/]*)?>", "ig"), "[br]");
+    editor.innerHTML = editor.innerHTML.replace(new RegExp("<br([\\s\/]*)?>", "ig"), "[br]");
     editor.innerHTML = editor.innerHTML.replace(new RegExp("(\\[br\\])+", "ig"), "[br]");
-    editor.innerHTML = editor.innerHTML.replace(new RegExp("([\s\n\r\t])+", "ig"), " ");
+    editor.innerHTML = editor.innerHTML.replace(new RegExp("^\\[br\\]", "i"), "");
+    editor.innerHTML = editor.innerHTML.replace(new RegExp("\\[br\\]$", "i"), "");
+    editor.innerHTML = editor.innerHTML.replace(new RegExp("([\\s\\n\\r\\t])+", "ig"), " ");
     editor.innerHTML = editor.innerHTML.trim();
   }
 }
