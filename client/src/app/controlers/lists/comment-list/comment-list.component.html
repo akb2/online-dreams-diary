@@ -1,7 +1,36 @@
 <!-- Список комментариев -->
 <ng-container *ngIf="!loading; else loader">
-  <ng-container *ngIf="!!comments?.length; else noComments">
-  </ng-container>
+  <div class="list"
+       *ngIf="!!comments?.length; else noComments">
+    <div class="comment"
+         *ngFor="let comment of comments">
+      <div class="comment__header">
+        <!-- Аватарка -->
+        <a class="comment__header-avatar"
+           routerLink="/profile/{{comment.user.id}}"
+           background="fill"
+           color="primary">
+          <!-- Картинка -->
+          <img [src]="comment.user.avatars.small"
+               *ngIf="comment.user.avatars.small.length > 0" />
+          <!-- Иконка -->
+          <mat-icon *ngIf="comment.user.avatars.small.length === 0">person</mat-icon>
+          <!-- Метка онлайн -->
+          <div class="comment__header-avatar-online"
+               *ngIf="comment.user.online"></div>
+        </a>
+        <!-- Имя -->
+        <div class="comment__header-text">
+          <a class="comment__header-name"
+             routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
+          <!-- Дата -->
+          <div class="comment__header-state">{{comment.createDate | date: 'd.M.y - H:mm'}}</div>
+        </div>
+      </div>
+      <div class="comment__text"
+           [innerHTML]="comment.text | comment"></div>
+    </div>
+  </div>
 </ng-container>
 
 

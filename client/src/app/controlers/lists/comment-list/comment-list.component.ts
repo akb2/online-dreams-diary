@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { Comment } from "@_models/comment";
+import { User, UserSex } from "@_models/account";
+import { Comment, CommentMaterialType } from "@_models/comment";
 import { CommentService } from "@_services/comment.service";
-import { Subject } from "rxjs";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -15,12 +16,19 @@ import { Subject } from "rxjs";
 })
 
 export class CommentListComponent implements OnInit, OnDestroy {
+
+
+  @Input() materialType: CommentMaterialType;
+  @Input() materialId: number;
   @Input() emptyCommentsMainTitle: string = "Нет комментариев";
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
 
   comments: Comment[] = [];
 
-  loading: boolean = false;
+  loading: boolean = true;
+  moreLoading: boolean = false;
+
+  skipComments: number = 0;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -34,10 +42,59 @@ export class CommentListComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.loadComments();
   }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Загрузка комментариев
+  private loadComments(): void {
+    this.moreLoading = true;
+    this.changeDetectorRef.detectChanges();
+    // Запрос комментариев
+    this.commentService.getList(this.materialType, this.materialId, this.skipComments, ["0002"])
+      .pipe(
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(
+        ({ result: comments }) => {
+          this.addComment(comments);
+          // Обновить
+          this.loading = false;
+          this.moreLoading = false;
+          this.changeDetectorRef.detectChanges();
+        },
+        () => {
+          this.loading = false;
+          this.moreLoading = false;
+          this.changeDetectorRef.detectChanges();
+        }
+      );
+  }
+
+  // Добавить комментарии в общий список
+  private addComment(mixedComments: Comment | Comment[]): void {
+    const comments: Comment[] = Array.isArray(mixedComments) ? mixedComments : [mixedComments];
+    // Добавление
+    comments.forEach(comment => {
+      const index: number = this.comments.findIndex(({ id }) => comment.id === id);
+      // Обновить
+      if (index >= 0) {
+        this.comments[index] = comment;
+      }
+      // Добавить
+      else {
+        this.comments.push(comment);
+      }
+    });
+    // Сортировка
+    this.comments = this.comments.sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
   }
 }

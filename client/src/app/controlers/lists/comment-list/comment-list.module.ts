@@ -1,6 +1,9 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
+import { RouterModule } from "@angular/router";
 import { InformModule } from "@_controlers/inform/inform.module";
+import { CoreModule } from "@_modules/core.module";
 import { CommentListComponent } from "./comment-list.component";
 
 
@@ -16,7 +19,10 @@ import { CommentListComponent } from "./comment-list.component";
   ],
   imports: [
     CommonModule,
-    InformModule
+    InformModule,
+    RouterModule,
+    MatIconModule,
+    CoreModule
   ]
 })
 

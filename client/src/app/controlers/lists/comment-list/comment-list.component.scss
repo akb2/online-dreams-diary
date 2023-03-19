@@ -1,0 +1,91 @@
+@use "sass:map";
+@use "../../../../assets/styles/containers";
+@use "../../../../assets/styles/colors";
+@use "../../../../assets/styles/vars";
+@use "../../../../assets/styles/screens";
+@use "../../../../assets/styles/mixins";
+
+// Элемент комментария
+.comment {
+  background-color: colors.$card;
+  padding: #{containers.$cardPaddingY} #{containers.$cardPaddingX};
+  box-shadow: containers.$cardBoxShadow;
+  border-radius: containers.$cardBorderRadius;
+  // Шапка
+  &__header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-flow: row nowrap;
+    column-gap: containers.$cardPaddingY;
+    // Аватарка
+    &-avatar {
+      @include mixins.customsColors(containers.$avatarSize);
+      // Свойства
+      display: block;
+      position: relative;
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      // Иконка
+      > mat-icon {
+        width: containers.$avatarSize;
+        height: containers.$avatarSize;
+        line-height: containers.$avatarSize;
+        font-size: containers.$avatarSize * 0.7;
+        display: block;
+        text-align: center;
+        color: inherit;
+        border-radius: 50%;
+      }
+      // Метка онлайн
+      &-online {
+        @include mixins.onlineBlinkPoint(6px, 4px);
+      }
+    }
+    // Текст
+    &-text {
+      flex-grow: 1;
+    }
+    // Имя
+    &-name {
+      font-size: 15px;
+      line-height: 20px;
+      font-weight: 500;
+      text-decoration: none;
+      color: map.get(colors.$matPrimary, 500);
+    }
+    // Статус
+    &-state {
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 300;
+      color: colors.$text;
+    }
+  }
+  // Текст
+  &__text {
+    padding-left: containers.$cardPaddingY + containers.$avatarSize;
+    line-height: 24px;
+    font-size: 15px;
+    font-weight: 300;
+    // Смайлики
+    ::ng-deep > .smile {
+      display: inline-block;
+      line-height: 24px;
+      vertical-align: top;
+      margin: 0 1px;
+    }
+  }
+  // Адаптив
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    // Последующие блоки
+    & + & {
+      margin-top: $gap;
+    }
+  }
+}
