@@ -11,6 +11,7 @@ export interface Comment {
   replyToUser: User;
   materialType: CommentMaterialType;
   materialId: number;
+  materialOwner: number;
   text: string;
   createDate: Date;
   attachment: CommentAttachment;

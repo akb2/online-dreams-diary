@@ -3,6 +3,7 @@ INSERT INTO `comments` (
 `reply_to_user_id`,
 `material_type`,
 `material_id`,
+`material_owner`,
 `text`,
 `attachment`
 )
@@ -11,6 +12,7 @@ VALUES (
 <?= !!$input['reply_to_user_id'] ? ':reply_to_user_id' : 'NULL' ?>,
 :material_type,
 :material_id,
+:material_owner,
 :text,
 <?= !!$input['attachment'] ? ':attachment' : 'NULL' ?>
 )

@@ -101,7 +101,8 @@
                        emptyCommentsMainTitle="Нет записей"
                        [emptyCommentsSubTitle]="getWallEmptySubTitle(visitedUser | petrovich: 3)"
                        [materialType]="materialType"
-                       [materialId]="visitedUser.id"></app-comment-block>
+                       [materialId]="visitedUser.id"
+                       [materialOwner]="visitedUser.id"></app-comment-block>
   </div>
 </ng-template>
 
