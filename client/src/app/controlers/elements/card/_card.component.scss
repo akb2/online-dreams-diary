@@ -39,7 +39,6 @@ $colors: (
 
   // Шапка
   &-header {
-    $image-size: 48px;
     $menu-size: 40px;
 
     align-items: center;
@@ -55,7 +54,7 @@ $colors: (
       // Макет с аватаркой
       &.use-avatar {
         grid-template-areas: "avatar title" "avatar subtitle";
-        grid-template-columns: #{$image-size} 1fr;
+        grid-template-columns: #{containers.$avatarSize} 1fr;
       }
       // Макет с меню
       &.use-menu {
@@ -65,7 +64,7 @@ $colors: (
       // Макет с меню и аватаркой
       &.use-avatar.use-menu {
         grid-template-areas: "avatar title menu" "avatar subtitle menu";
-        grid-template-columns: #{$image-size} 1fr #{$menu-size};
+        grid-template-columns: #{containers.$avatarSize} 1fr #{$menu-size};
       }
     }
 
@@ -94,8 +93,8 @@ $colors: (
 
     // Аватарка
     #{$base_elm}-avatar {
-      width: $image-size;
-      height: $image-size;
+      width: containers.$avatarSize;
+      height: containers.$avatarSize;
       border-radius: containers.$cardBorderRadius;
       overflow: hidden;
       margin-bottom: 0;
@@ -109,10 +108,10 @@ $colors: (
 
       // Без картинки
       > mat-icon {
-        width: $image-size;
-        height: $image-size;
-        line-height: $image-size;
-        font-size: $image-size * 0.6;
+        width: containers.$avatarSize;
+        height: containers.$avatarSize;
+        line-height: containers.$avatarSize;
+        font-size: containers.$avatarSize * 0.6;
         text-align: center;
         background-color: map.get(colors.$matPrimary, $image-color);
         color: map.get(colors.$matPrimary, contrast, $image-color);
@@ -195,12 +194,12 @@ $colors: (
 
 // Прикрепленные свойства
 :host ::ng-deep .attachment {
-  $image-size: 28px;
+  containers.$avatarSize: 28px;
 
   display: grid;
   gap: 0 8px;
   grid-template: "image title" "image subtitle";
-  grid-template-columns: $image-size 1fr;
+  grid-template-columns: containers.$avatarSize 1fr;
   align-items: center;
 
   // Список элементов
@@ -225,16 +224,16 @@ $colors: (
     );
 
     display: block;
-    width: $image-size;
-    height: $image-size;
+    width: containers.$avatarSize;
+    height: containers.$avatarSize;
     grid-area: image;
 
     // Иконка
     > mat-icon {
-      width: $image-size;
-      height: $image-size;
-      line-height: $image-size;
-      font-size: $image-size;
+      width: containers.$avatarSize;
+      height: containers.$avatarSize;
+      line-height: containers.$avatarSize;
+      font-size: containers.$avatarSize;
       color: map.get(colors.$matPrimary, $image-color);
       text-align: center;
     }
@@ -249,7 +248,7 @@ $colors: (
     // Разные размеры
     @each $key, $size in $sizes {
       &[size="#{$key}"] > mat-icon {
-        font-size: $image-size * $size;
+        font-size: containers.$avatarSize * $size;
       }
     }
   }
