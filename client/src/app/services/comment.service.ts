@@ -91,7 +91,7 @@ export class CommentService implements OnDestroy {
       takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes)),
       concatMap(
-        ({ result: { data } }) => forkJoin((data?.comments ?? []).map(comment => this.getConvertedComment(comment))),
+        ({ result: { data } }) => !!data?.comments?.length ? forkJoin((data?.comments ?? []).map(comment => this.getConvertedComment(comment))) : of([]),
         ({ result: { data } }, result) => ({
           count: ParseInt(data?.count),
           limit: ParseInt(data?.limit),
