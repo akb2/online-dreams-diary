@@ -101,7 +101,8 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     const id: string = emoji.id;
     const alt: string = emoji.name;
     const skin: number = emoji?.skinTone ?? 1;
-    const content: string = this.stringTemplatePipe.transform(this.smileElm, { styles, id, alt, skin });
+    const set: string = emoji?.set ?? "";
+    const content: string = this.stringTemplatePipe.transform(this.smileElm, { styles, id, alt, skin, set });
     const node: Element = (new DOMParser()).parseFromString(content, "text/html").getElementsByClassName(this.emojiClassName)[0];
     // Вернуть шаблон
     return node;
@@ -326,8 +327,9 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
       const text: string = editor.innerHTML;
       const nodeText: string = node.outerHTML;
       const id: string = node.getAttribute("data-emoji-id");
+      const set: string = node.getAttribute("data-emoji-set");
       const skin: number = ParseInt(node.getAttribute("data-emoji-skin"), 1);
-      const emojiCode: string = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + "]";
+      const emojiCode: string = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + (!!set ? ":" + set : "") + "]";
       // Замена текста
       editor.innerHTML = text.replace(nodeText, emojiCode);
     });

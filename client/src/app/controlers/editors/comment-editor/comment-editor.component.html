@@ -69,11 +69,13 @@
              let-src="src"
              let-alt="alt"
              let-id="id"
+             let-set="set"
              let-skin="skin">
   <img [class]="emojiClassName"
        src="/assets/dream-map/transparent.png"
        [ngStyle]="styles"
        [alt]="alt"
        [attr.data-emoji-id]="id"
-       [attr.data-emoji-skin]="skin" />
+       [attr.data-emoji-skin]="skin"
+       [attr.data-emoji-set]="set" />
 </ng-template>
