@@ -92,6 +92,30 @@ class Comment
     );
   }
 
+  // Информация об уведомлении по ID
+  #[Request('get'), CheckToken(true)]
+  public function getById(array $data): array
+  {
+    $commentId = intval($data['comment_id'] ?? "0");
+    $code = '0000';
+    $testComment = $this->commentService->get($commentId);
+    $result = array();
+    // Проверка доступа
+    if (!!$testComment) {
+      ['code' => $code, 'comments' => $result] = $this->checkUserDataPrivate(array($testComment));
+      $result = $result[0] ?? array();
+    }
+    // Комментарий не найден
+    else {
+      $code = '0002';
+    }
+    // Вернуть результат
+    return array(
+      'data' => $result,
+      'code' => $code
+    );
+  }
+
 
 
   // Проверка доступа к комментарию
@@ -111,6 +135,7 @@ class Comment
           'replyToUserId' => intval($comment['reply_to_user_id']),
           'materialType' => intval($comment['material_type']),
           'materialId' => intval($comment['material_id']),
+          'materialOwner' => intval($comment['material_owner']),
           'text' => $comment['text'],
           'createDate' => $comment['create_date'],
           'attachment' => $comment['attachment']

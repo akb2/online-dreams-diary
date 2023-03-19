@@ -70,13 +70,27 @@ export class CommentListComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.moreLoading = false;
           this.changeDetectorRef.detectChanges();
+          // Прослушивание новых комментариев
+          this.waitNewComment();
         },
         () => {
           this.loading = false;
           this.moreLoading = false;
           this.changeDetectorRef.detectChanges();
+          // Прослушивание новых комментариев
+          this.waitNewComment();
         }
       );
+  }
+
+  // Прослушивание новых комментариев
+  private waitNewComment(): void {
+    this.commentService.waitNewComment(this.materialType, this.materialId)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(comment => {
+        this.addComment(comment);
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   // Добавить комментарии в общий список
@@ -84,6 +98,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     const comments: Comment[] = Array.isArray(mixedComments) ? mixedComments : [mixedComments];
     // Добавление
     comments.forEach(comment => {
+      console.log(comment);
       const index: number = this.comments.findIndex(({ id }) => comment.id === id);
       // Обновить
       if (index >= 0) {

@@ -4,7 +4,7 @@ import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { MultiObject, SimpleObject } from "@_models/app";
-import { CommentMaterialType } from "@_models/comment";
+import { Comment, CommentMaterialType } from "@_models/comment";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
 import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
@@ -25,6 +25,7 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
 
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
+  @Input() materialOwner: number;
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
 
   @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
@@ -288,12 +289,18 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
       this.onEdit(event);
       // Параметры
       const text: string = this.getEditorValue;
+      const data: Partial<Comment> = {
+        materialType: this.materialType,
+        materialId: this.materialId,
+        materialOwner: this.materialOwner,
+        text
+      };
       // Проверка текста
       if (!!text) {
         this.sendLoader = true;
         this.changeDetectorRef.detectChanges();
         // Отправка
-        this.commentService.send(this.materialType, this.materialId, text)
+        this.commentService.send(data)
           .pipe(takeUntil(this.destroyed$))
           .subscribe(
             () => {

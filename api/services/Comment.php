@@ -63,6 +63,7 @@ class CommentService
       'reply_to_user_id' => intval($data['replyToUserId'] ?? null),
       'material_type' => intval($data['materialType']),
       'material_id' => intval($data['materialId']),
+      'material_owner' => intval($data['materialOwner']),
       'text' => strval($data['text']),
       'attachment' => $data['attachment'] ?? null
     );
@@ -110,5 +111,21 @@ class CommentService
       'limit' => $limit,
       'result' => $result
     );
+  }
+
+  // Информация об уведомлении
+  public function get(int $commentId): array | null
+  {
+    if ($commentId > 0) {
+      $notification = $this->dataBaseService->getDatasFromFile('comment/getById.sql', array($commentId));
+      // Уведомление найдено
+      if (count($notification) > 0) {
+        if (isset($notification[0]['id']) && $notification[0]['id'] > 0) {
+          return $notification[0];
+        }
+      }
+    }
+    // Уведомления не существует
+    return null;
   }
 }

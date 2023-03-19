@@ -1,11 +1,11 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { ObjectToFormData, ObjectToParams } from "@_datas/api";
+import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType } from "@_models/comment";
-import { concatMap, forkJoin, map, Observable, of, Subject, switchMap, take, takeUntil } from "rxjs";
+import { catchError, concatMap, filter, forkJoin, map, Observable, of, share, Subject, switchMap, take, takeUntil, tap, timer } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 
@@ -49,6 +49,7 @@ export class CommentService implements OnDestroy {
         replyToUser,
         materialType: ParseInt(comment?.materialType) as CommentMaterialType,
         materialId: ParseInt(comment?.materialId),
+        materialOwner: ParseInt(comment?.materialOwner),
         text: comment?.text ?? "",
         createDate: ToDate(comment?.createDate),
         attachment
@@ -76,8 +77,13 @@ export class CommentService implements OnDestroy {
 
 
   // Отправка комментария
-  send(materialType: CommentMaterialType, materialId: number, text: string, codes: string[] = []): Observable<any> {
-    return this.httpClient.post<ApiResponse>("comment/send", ObjectToFormData({ materialType, materialId, text })).pipe(
+  send(data: Partial<Comment>, codes: string[] = []): Observable<any> {
+    return this.httpClient.post<ApiResponse>("comment/send", ObjectToFormData({
+      materialType: data.materialType,
+      materialId: data.materialId,
+      materialOwner: data.materialOwner,
+      text: data.text
+    })).pipe(
       takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes))
     );
@@ -98,6 +104,36 @@ export class CommentService implements OnDestroy {
           result
         })
       )
+    );
+  }
+
+  // Получение комментария по ID
+  getById(id: number, codes: string[] = []): Observable<Comment> {
+    const params: HttpParams = ObjectToParams({ comment_id: id });
+    // Вернуть подписчик
+    return this.httpClient.get<ApiResponse>("comment/getById", { params }).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
+        of(result.result.data) :
+        this.apiService.checkResponse(result.result.code, codes)
+      ),
+      concatMap(comment => this.getConvertedComment(comment))
+    );
+  }
+
+  // Ожидания новых комментариев
+  waitNewComment(materialType: CommentMaterialType, materialId: number, codes: string[] = []): Observable<Comment> {
+    let connect: boolean = false;
+    // Вернуть подписку
+    return timer(0, 1000).pipe(
+      share(),
+      takeUntil(this.destroyed$),
+      filter(() => !connect),
+      concatMap(() => this.httpClient.get("longPolling/get/comment/" + materialType + "/" + materialId).pipe(catchError(e => of({ ...e, text: "" })))),
+      catchError(() => of({ text: "" })),
+      map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.commentId)),
+      concatMap(commentId => commentId > 0 ? this.getById(commentId, codes).pipe(catchError(() => of(null))) : of(null)),
+      tap(() => connect = false)
     );
   }
 }
