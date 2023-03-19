@@ -71,7 +71,7 @@ class CommentService
       $commentId = $this->pdo->lastInsertId();
       // Отправить в Long Polling
       $this->longPollingService->send(
-        'comment/' . intval($data["materialType"]) . '/' . intval($data["materialId"]),
+        'comment/' . intval($data['materialType']) . '/' . intval($data['materialId']),
         array('commentId' => $commentId)
       );
       // Вернуть ID
@@ -79,5 +79,36 @@ class CommentService
     }
     // Сновидение не сохранено
     return 0;
+  }
+
+
+
+  // Список комментариев
+  public function getList(array $search): array
+  {
+    $count = 0;
+    $result = array();
+    $limit = $search['limit'] > 0 & $search['limit'] <= 100 ? $search['limit'] : $this->config['comments']['limit'];
+    // Данные для поиска
+    $sqlData = array(
+      'material_type' => intval($search['material_type']),
+      'material_id' => intval($search['material_id']),
+    );
+    // Запрос
+    $count = $this->dataBaseService->getCountFromFile('comment/getListCount.sql', $sqlData);
+    $skip = intval($search['skip']) ?? 0;
+    // Сновидения найдены
+    if ($count > 0) {
+      $sqlData['limit_start'] = $skip;
+      $sqlData['limit_length'] = intval($limit);
+      // Список данных
+      $result = $this->dataBaseService->getDatasFromFile('comment/getList.php', $sqlData);
+    }
+    // Сон не найден
+    return array(
+      'count' => $count,
+      'limit' => $limit,
+      'result' => $result
+    );
   }
 }

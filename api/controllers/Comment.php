@@ -52,6 +52,77 @@ class Comment
       'data' => $id
     );
   }
+
+
+
+  // Список комментариев
+  #[Request('get'), CheckToken(true)]
+  public function getList(array $data): array
+  {
+    $comments = array();
+    $hasAccess = true;
+    $code = '0002';
+    $search = array(
+      'material_type' => $data['search_materialType'] ?? 0,
+      'material_id' => $data['search_materialId'] ?? 0,
+      'limit' => $data['search_limit'] ?? 0,
+      'skip' => $data['search_skip'] ?? 0
+    );
+    $testComments = $this->commentService->getList($search);
+    $comments = array();
+    // Сновидение найдено
+    if ($testComments['count'] > 0) {
+      ['code' => $code, 'comments' => $comments] = $this->checkUserDataPrivate($testComments['result']);
+    }
+    // Сновидение не найдено
+    else {
+      $code = '0002';
+    }
+    // Обработка данных
+    $testComments['count'] = $code !== '8100' && isset($testComments['count']) ? $testComments['count'] : 0;
+    // Вернуть результат
+    return array(
+      'data' => array(
+        'count' => $testComments['count'],
+        'limit' => $testComments['limit'],
+        'comments' => $comments,
+        'hasAccess' => $hasAccess
+      ),
+      'code' => $code
+    );
+  }
+
+
+
+  // Проверка доступа к комментарию
+  private function checkUserDataPrivate(array $commentsData): array
+  {
+    $code = '8100';
+    $comments = null;
+    // Данные определены
+    if (is_array($commentsData)) {
+      $code = '0001';
+      $comments = array();
+      // Обработать список сновидений
+      foreach ($commentsData as $comment) {
+        $comments[] = array(
+          'id' => intval($comment['id']),
+          'userId' => intval($comment['user_id']),
+          'replyToUserId' => intval($comment['reply_to_user_id']),
+          'materialType' => intval($comment['material_type']),
+          'materialId' => intval($comment['material_id']),
+          'text' => $comment['text'],
+          'createDate' => $comment['create_date'],
+          'attachment' => $comment['attachment']
+        );
+      }
+    }
+    // Ошибка
+    return array(
+      'code' => $code,
+      'comments' => $comments
+    );
+  }
 }
 
 
