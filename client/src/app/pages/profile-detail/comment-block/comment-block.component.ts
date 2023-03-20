@@ -21,6 +21,7 @@ export class CommentBlockComponent {
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
   @Input() emptyCommentsMainTitle: string = "Нет комментариев";
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
+  @Input() wrapControls: boolean = false;
 
 
 }

@@ -26,6 +26,10 @@ $adaptiveMax: large;
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
     grid-template-columns: 1fr;
   }
+  // Принудительный перенос
+  &.wrap-controls {
+    grid-template-columns: 1fr;
+  }
 }
 
 // Редактор
@@ -91,6 +95,10 @@ $adaptiveMax: large;
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
     min-height: $minHeight;
   }
+  // Принудительный перенос
+  :host.wrap-controls & {
+    min-height: $minHeight;
+  }
 }
 
 // Кнопки
@@ -103,6 +111,10 @@ $adaptiveMax: large;
   padding: #{containers.$cardPaddingY} 0;
   // Адаптив
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    padding-top: 0;
+  }
+  // Принудительный перенос
+  :host.wrap-controls & {
     padding-top: 0;
   }
   // Список смайликов
@@ -159,6 +171,10 @@ $adaptiveMax: large;
   cursor: text;
   // Адаптив
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+    display: block;
+  }
+  // Принудительный перенос
+  :host.wrap-controls & {
     display: block;
   }
 }

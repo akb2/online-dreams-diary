@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
@@ -17,16 +17,22 @@ import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
   selector: "app-comment-editor",
   templateUrl: "./comment-editor.component.html",
   styleUrls: ["./comment-editor.component.scss"],
+  host: {
+    "[class.wrap-controls]": "wrapControlsClass"
+  },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CommentEditorComponent implements AfterViewInit, OnDestroy {
+export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
 
+
+  @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
 
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
   @Input() materialOwner: number;
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
+  @Input() wrapControls: boolean = false;
 
   @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
 
@@ -144,6 +150,10 @@ export class CommentEditorComponent implements AfterViewInit, OnDestroy {
     private stringTemplatePipe: StringTemplatePipe,
     private commentService: CommentService
   ) { }
+
+  ngOnChanges(): void {
+    this.wrapControlsClass = this.wrapControls;
+  }
 
   ngAfterViewInit(): void {
     WaitObservable(() => !this.emojiListItem?.nativeElement || !this.emojiListToggleButton?.nativeElement)
