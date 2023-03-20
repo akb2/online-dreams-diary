@@ -69,8 +69,21 @@ class DreamService
   public function checkAvail(string $id, string $userId, bool $edit = true): bool
   {
     $dream = $this->getById($id);
+    $areFriends = false;
     // Сновидение существует
     if (isset($dream["id"]) && $dream["id"] > 0) {
+      // Проверка статуса в друзьях
+      if (intval($dream["user_id"]) > 0 && intval($userId) > 0 && intval($dream["user_id"]) != intval($userId)) {
+        $friend = $this->friendService->getFriendStatus($userId, $dream["user_id"]);
+        // Заявка существует
+        if (!!$friend) {
+          $areFriends = ($friend['status'] == 1 ||
+            ($userId == $friend['in_user_id'] && $friend['status'] == 0) ||
+            ($userId == $friend['out_user_id'] && $friend['status'] == 2)
+          );
+        }
+      }
+      // Проверка
       if (
         // Доступно владельцу
         $dream["user_id"] == $userId ||
@@ -79,7 +92,9 @@ class DreamService
           // ? public(5)
           $dream["status"] == 5 ||
           // ? users(4)
-          $dream["status"] == 4
+          $dream["status"] == 4 ||
+          // ? friends(3)
+          ($areFriends && $dream["status"] == 3)
         )) ||
         // Без авторизации
         // ? public(5)
