@@ -64,7 +64,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   private visitedUserId: number = -1;
   friendListLimit: number = 4;
   private beforeScroll: number = 0;
-  leftpanelHelperShift: number = 0;
+  leftPanelHelperShift: number = 0;
 
   user: User;
   visitedUser: User;
@@ -208,8 +208,8 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
       const scrollY: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
       const scrollShift: number = scrollY - this.beforeScroll;
       // Если отступ допустим
-      this.leftpanelHelperShift = availShift && elmHelperHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.leftpanelHelperShift, maxShift, -headerShift) :
+      this.leftPanelHelperShift = availShift && elmHelperHeight > screenHeight ?
+        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
         headerShift;
       // Обновить
       this.beforeScroll = scrollY;
