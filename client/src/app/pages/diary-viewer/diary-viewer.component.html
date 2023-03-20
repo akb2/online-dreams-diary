@@ -1,7 +1,8 @@
 <div class="section light-gray"
      *ngIf="ready && dream; else pageLoader">
   <!-- Шапка -->
-  <app-main-menu [autoCollapse]="true"
+  <app-main-menu #mainMenu
+                 [autoCollapse]="true"
                  [imageFullShow]="true"
                  [type]="dream.headerType"
                  [image]="imagePrefix + dream.headerBackground[dream.headerType === _navMenuType.full? 'imageName': 'imageNameShort']"
@@ -18,19 +19,35 @@
 
   <!-- Контейнер с данными -->
   <div class="root-section light-gray">
-    <!-- Карта -->
-    <div class="container"
-         *ngIf="isMapAvail">
-      <div class="dream__map">
-        <app-dream-map-viewer [dreamMap]="dream.map"
-                              [debugInfo]="true"></app-dream-map-viewer>
+    <div #contentPanel
+         class="container content">
+      <!-- Контент -->
+      <div #leftPanel
+           class="content__data"
+           [ngStyle]="{ top: leftPanelHelperShift + 'px' }">
+        <!-- Карта -->
+        <ng-container *ngIf="isMapAvail">
+          <div class="dream__map">
+            <app-dream-map-viewer [dreamMap]="dream.map"
+                                  [debugInfo]="true"></app-dream-map-viewer>
+          </div>
+        </ng-container>
+        <!-- Текст -->
+        <ng-container *ngIf="isTextAvail">
+          <div class="dream__text"
+               [innerHTML]="dream.text"></div>
+        </ng-container>
       </div>
-    </div>
-    <!-- Текст -->
-    <div class="container"
-         *ngIf="isTextAvail">
-      <div class="dream__text"
-           [innerHTML]="dream.text"></div>
+      <!-- Комментарии -->
+      <div #rightPanel
+           class="content__comments"
+           [ngStyle]="{ top: rightPanelHelperShift + 'px' }">
+        <app-comment-block placeholder="Что вы об этом думаете?"
+                           [materialType]="commentMaterialType"
+                           [materialOwner]="dream.user.id"
+                           [materialId]="dream.id"
+                           [wrapControls]="true"></app-comment-block>
+      </div>
     </div>
   </div>
 </div>

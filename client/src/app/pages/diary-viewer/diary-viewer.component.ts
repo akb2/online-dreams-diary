@@ -1,17 +1,23 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
+import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
+import { WaitObservable } from "@_datas/api";
 import { DreamTitle } from "@_datas/dream-map-settings";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
+import { CommentMaterialType } from "@_models/comment";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
-import { mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
+import { ScreenService } from "@_services/screen.service";
+import { fromEvent, map, merge, mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -27,22 +33,32 @@ import { mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 export class DiaryViewerComponent implements OnInit, OnDestroy {
 
 
+  @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
+  @ViewChild("contentPanel", { read: ElementRef }) private contentPanel: ElementRef;
+  @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
+  @ViewChild("rightPanel", { read: ElementRef }) private rightPanel: ElementRef;
+
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
   private pageTitle: string = "Просмотр сновидения";
 
   defaultTitle: string = DreamTitle;
   today: Date = new Date();
+  private beforeScroll: number = 0;
 
   _navMenuType: typeof NavMenuType = NavMenuType;
+  commentMaterialType: CommentMaterialType = CommentMaterialType.Dream;
 
   dreamId: number = 0;
   private fromMark: string;
   dream: Dream;
-
   user: User;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private breakpoint: ScreenKeys = "default";
+  leftPanelHelperShift: number = 0;
+  rightPanelHelperShift: number = 0;
+
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -111,6 +127,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     private router: Router,
     private titleService: Title,
     private globalService: GlobalService,
+    private screenService: ScreenService,
     private canonicalService: CanonicalService
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
@@ -119,11 +136,68 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.defineData();
+    // Текущий брейкпоинт
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.changeDetectorRef.detectChanges();
+      });
+    // Прокрутка левой колонки
+    WaitObservable(() => !this.contentPanel?.nativeElement || !this.leftPanel?.nativeElement || !this.rightPanel?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(() => ({
+          contentPanel: this.contentPanel.nativeElement,
+          leftPanel: this.leftPanel.nativeElement,
+          rightPanel: this.rightPanel.nativeElement
+        })),
+        mergeMap(({ contentPanel, leftPanel, rightPanel }) => merge(
+          fromEvent(document, "scroll"),
+          this.screenService.elmResize([contentPanel, leftPanel, rightPanel])
+        ))
+      )
+      .subscribe(() => this.onPanelsPosition());
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Скролл панелей
+  private onPanelsPosition(): void {
+    if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
+      const contentPanel: HTMLElement = this.contentPanel.nativeElement;
+      const leftPanel: HTMLElement = this.leftPanel.nativeElement;
+      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
+      const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
+      const mainMenuHeight: number = this.mainMenu.headerHeight;
+      const contentPanelHeight: number = contentPanel.clientHeight;
+      const leftPanelHeight: number = leftPanel.clientHeight;
+      const rightPanelHeight: number = rightPanel.clientHeight;
+      const headerShift: number = mainMenuHeight + spacing;
+      const availLeftShift: boolean = contentPanelHeight < leftPanelHeight;
+      const availRightShift: boolean = contentPanelHeight < rightPanelHeight;
+      const screenHeight: number = window.innerHeight - headerShift - spacing;
+      const scrollShift: number = scrollY - this.beforeScroll;
+      const maxShift: number = contentPanelHeight - screenHeight - headerShift;
+      // Если отступ допустим
+      this.leftPanelHelperShift = availLeftShift && contentPanelHeight > screenHeight ?
+        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
+        headerShift;
+      // Если отступ допустим
+      this.rightPanelHelperShift = availRightShift && contentPanelHeight > screenHeight ?
+        -CheckInRange(scrollShift - this.rightPanelHelperShift, maxShift, -headerShift) :
+        headerShift;
+      // Обновить
+      this.beforeScroll = scrollY;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
 
@@ -134,7 +208,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   private defineData(): void {
     this.accountService.user$()
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         mergeMap(
           () => this.activatedRoute.queryParams,
           (user, params) => ({ user, params })

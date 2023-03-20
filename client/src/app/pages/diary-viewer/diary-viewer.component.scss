@@ -3,6 +3,7 @@
 @use "../../../assets/styles/colors";
 @use "../../../assets/styles/screens";
 @use "../../../assets/styles/containers";
+@use "../../../assets/styles/vars";
 
 // Данные сновидения
 .dream {
@@ -83,7 +84,51 @@
     width: 100%;
     // Адаптив
     @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
-      height: calc(100vh - #{60px + ($paddingY * 2)});
+      height: calc(100vh - #{vars.$headerHeight + ($paddingY * 2)});
+    }
+  }
+}
+
+// Контент
+.content {
+  $commentsWidths: (
+    default: 100%,
+    xlarge: 30%,
+    large: 38%,
+  );
+  // Свойства
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  // Внутренние блоки
+  &__data,
+  &__comments {
+    position: sticky;
+  }
+  // Адаптив
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $commentsWidths) using($gap, $width) {
+    gap: $gap;
+    // На всю ширину
+    @if ($width == 100%) {
+      // Внутренние блоки
+      &__data,
+      &__comments {
+        width: 100%;
+        position: static;
+      }
+    }
+    // В две колонки
+    @else {
+      // Данные сновидения
+      &__data {
+        width: calc(100% - #{$gap} - #{$width});
+      }
+      // Комментарии
+      &__comments {
+        width: $width;
+      }
     }
   }
 }
