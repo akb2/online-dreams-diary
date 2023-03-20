@@ -12,7 +12,8 @@ export interface Notification {
 
 // Перечисление типа уведомлений
 export enum NotificationActionType {
-  addToFriend = "add_to_friend"
+  addToFriend = "add_to_friend",
+  sendComment = "send_comment"
 };
 
 // Дополнительные данные уведомлений

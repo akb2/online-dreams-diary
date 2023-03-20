@@ -25,7 +25,15 @@
                                 class="notification__elm"
                                 [user]="inUser"
                                 [notification]="notification"
-                                [date]="date"></notification-add-to-friend>
+                                [date]="date"
+                                *ngIf="notification.actionType === notificationActionType.addToFriend"></notification-add-to-friend>
+    <!-- Комментарий -->
+    <notification-send-comment #notificationElm
+                               class="notification__elm"
+                               [user]="inUser"
+                               [notification]="notification"
+                               [date]="date"
+                               *ngIf="notification.actionType === notificationActionType.sendComment"></notification-send-comment>
   </ng-container>
 </ng-template>
 

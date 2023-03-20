@@ -12,9 +12,8 @@ class CommentService
   private array $config;
 
   private DataBaseService $dataBaseService;
-  private TokenService $tokenService;
-  private FriendService $friendService;
   private LongPollingService $longPollingService;
+  private NotificationService $notificationService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -22,9 +21,8 @@ class CommentService
     $this->config = $config;
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
-    $this->tokenService = new TokenService($this->pdo, $this->config);
-    $this->friendService = new FriendService($this->pdo, $this->config);
     $this->longPollingService = new LongPollingService($this->config);
+    $this->notificationService = new NotificationService($this->pdo, $this->config);
   }
 
 
@@ -74,6 +72,13 @@ class CommentService
       $this->longPollingService->send(
         'comment/' . intval($data['materialType']) . '/' . intval($data['materialId']),
         array('commentId' => $commentId)
+      );
+      // Отправить уведомление
+      $this->sendNotice(
+        intval($data['materialType']),
+        intval($data['materialId']),
+        intval($data['materialOwner']),
+        intval($userId)
       );
       // Вернуть ID
       return $commentId;
@@ -127,5 +132,37 @@ class CommentService
     }
     // Уведомления не существует
     return null;
+  }
+
+
+
+  // Отправить уведомление
+  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId): void
+  {
+    // Не отправлять самому себе
+    if ($materialOwner !== $userId) {
+      $text = '';
+      $link = '';
+      // Стена пользователя
+      if ($materialType === 0) {
+        $link = '/profile/' . $materialOwner;
+        $text = '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> оставил${user.sexLetter} комментарий на вашей стене.';
+      }
+      // Комментарий к сновидению
+      else {
+        $link = '/diary/viewer/' . $materialId;
+        $text = '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> прокомментировал${user.sexLetter} ваше сновидение.';
+      }
+      // Дополнить текст
+      $text .= ' <a href="' . $link . '">Прочитать комментарий</a>';
+      // Отправить уведомление
+      $this->notificationService->create(
+        $materialOwner,
+        $text,
+        $link,
+        array('user' => $userId),
+        'send_comment'
+      );
+    }
   }
 }

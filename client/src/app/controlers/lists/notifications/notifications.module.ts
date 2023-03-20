@@ -9,6 +9,7 @@ import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { CoreModule } from "@_modules/core.module";
 import { NotificationAddToFriendComponent } from "./add-to-friend/add-to-friend.component";
 import { NotificationImageComponent } from "./image/image.component";
+import { NotificationSendCommentComponent } from "./send-comment/send-comment.component";
 
 
 
@@ -18,7 +19,8 @@ import { NotificationImageComponent } from "./image/image.component";
   declarations: [
     NotificationsComponent,
     NotificationImageComponent,
-    NotificationAddToFriendComponent
+    NotificationAddToFriendComponent,
+    NotificationSendCommentComponent
   ],
   exports: [
     NotificationsComponent

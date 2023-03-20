@@ -12,7 +12,7 @@ $spacing: 10px;
 .list {
   position: fixed;
   display: block;
-  z-index: 10;
+  z-index: 12;
   max-width: calc(100% - #{$spacing * 2});
   width: 460px;
   background-color: colors.$card;
