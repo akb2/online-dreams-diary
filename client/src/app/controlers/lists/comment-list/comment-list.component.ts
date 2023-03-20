@@ -98,7 +98,6 @@ export class CommentListComponent implements OnInit, OnDestroy {
     const comments: Comment[] = Array.isArray(mixedComments) ? mixedComments : [mixedComments];
     // Добавление
     comments.forEach(comment => {
-      console.log(comment);
       const index: number = this.comments.findIndex(({ id }) => comment.id === id);
       // Обновить
       if (index >= 0) {
