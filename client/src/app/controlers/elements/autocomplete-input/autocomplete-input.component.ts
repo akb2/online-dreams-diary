@@ -5,10 +5,12 @@ import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { WaitObservable } from "@_datas/api";
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { IconBackground, IconColor } from "@_models/app";
+import { ParseInt } from "@_helpers/math";
+import { CreateRandomID } from "@_helpers/string";
+import { CustomObject, IconBackground, IconColor } from "@_models/app";
 import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
 import { fromEvent, Subject, timer } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { filter, map, takeUntil } from "rxjs/operators";
 
 
 
@@ -57,6 +59,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   private focusTempValue: string;
   private focusClass: string = "mat-focused";
 
+  private autoCompleteID: string = "autocomplete-overlay-" + CreateRandomID(64);
+
   private destroyed$: Subject<void> = new Subject<void>();
 
 
@@ -103,6 +107,20 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
       "";
   }
 
+  // Список классов выпадающего списка
+  get autocompleteClassList(): string {
+    const classList: CustomObject<boolean> = {
+      "autocomplete-overlay": true,
+      [this.autoCompleteID]: true,
+      "has-image": !!this.image || !!this.icon
+    };
+    // Вернуть список
+    return Object.entries(classList)
+      .filter(([, v]) => !!v)
+      .map(([k]) => k)
+      .join(" ");
+  }
+
 
 
 
@@ -127,7 +145,17 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         this.optionDataFilter();
       });
     // События
-    fromEvent(window, "scroll").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onScroll(e));
+    fromEvent(window, "scroll")
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(e => this.onScroll(e));
+    // Проверка положения выпадающего списка
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(() => document.getElementsByClassName(this.autoCompleteID)[0] as HTMLElement),
+        filter(elm => !!elm)
+      )
+      .subscribe(elm => this.onAutoCompleteListOpening(elm));
   }
 
   ngAfterViewInit(): void {
@@ -212,6 +240,25 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   private onScroll(event: Event): void {
     if (event.target === document || event.target === window) {
       this.autoComplete.closePanel();
+    }
+  }
+
+  // Проверка положения выпадающего списка
+  private onAutoCompleteListOpening(elm: HTMLElement): void {
+    const defaultValue: number = Infinity;
+    const parent: HTMLElement = elm.parentElement;
+    const left: number = ParseInt(parent.style.left, defaultValue);
+    const right: number = ParseInt(parent.style.right, defaultValue);
+    const autoCompleteRight: boolean = left === defaultValue && right !== defaultValue;
+    // Поле справа
+    if (autoCompleteRight) {
+      elm.classList.add("placed-right");
+      elm.classList.remove("placed-left");
+    }
+    // Поле слева
+    else {
+      elm.classList.add("placed-left");
+      elm.classList.remove("placed-right");
     }
   }
 

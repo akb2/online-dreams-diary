@@ -29,12 +29,16 @@
     <mat-autocomplete #autocompleteElement="matAutocomplete"
                       [displayWith]="displayWith.bind(this)"
                       [panelWidth]="getPanelWidth"
+                      [hideSingleSelectionIndicator]="true"
+                      [class]="autocompleteClassList"
                       (optionSelected)="setValue($event.option?.value, true, true)">
-      <mat-option [value]="optionData"
-                  *ngFor="let optionData of optionDataFiltered">
-        <ng-container [ngTemplateOutlet]="optionDataElement"
-                      [ngTemplateOutletContext]="{ $implicit: optionData }"></ng-container>
-      </mat-option>
+      <app-scroll>
+        <mat-option [value]="optionData"
+                    *ngFor="let optionData of optionDataFiltered; let key = index">
+          <ng-container [ngTemplateOutlet]="optionDataElement"
+                        [ngTemplateOutletContext]="{ $implicit: optionData, key }"></ng-container>
+        </mat-option>
+      </app-scroll>
     </mat-autocomplete>
     <!-- Вывод ошибок -->
     <mat-error *ngIf="control?.invalid">{{getErrorMessageKey()}}</mat-error>
@@ -65,8 +69,11 @@
 
 <!-- Элементы списка -->
 <ng-template #optionDataElement
-             let-item>
-  <div class="option">
+             let-item
+             let-index="key">
+  <div class="option"
+       [attr.color]="item.iconColor"
+       [ngClass]="{ selected: (!!control?.value && control.value === item.key) || (!control?.value && notNull && index === 0 ) }">
     <div class="option__image"
          [ngClass]="{ colorized: item.iconBackground === 'fill' }"
          [attr.position]="item.imagePosition"

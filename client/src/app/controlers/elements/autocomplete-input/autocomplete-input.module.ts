@@ -6,6 +6,7 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { AutocompleteInputComponent } from "@_controlers/autocomplete-input/autocomplete-input.component";
+import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { CoreModule } from "@_modules/core.module";
 
 
@@ -27,7 +28,8 @@ import { CoreModule } from "@_modules/core.module";
     FormsModule,
     ReactiveFormsModule,
     TextFieldModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    ScrollModule
   ]
 })
 

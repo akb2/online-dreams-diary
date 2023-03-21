@@ -1,8 +1,9 @@
 @use "sass:map";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/material";
-@use "../../../../assets/styles/mixins";
-@use "../../../../assets/styles/vars";
+@use "sass:list";
+@use "colors";
+@use "material";
+@use "mixins";
+@use "vars";
 
 // Обертка поля
 @include material.matFormField;
@@ -32,7 +33,6 @@
   gap: 0 10px;
   min-height: $image-size;
   padding: 10px 15px;
-
   // Картинка или иконка
   &__image {
     // Картинка
@@ -47,7 +47,6 @@
     @include mixins.customsColors($image-size) {
     }
   }
-
   // Тексты
   &__name {
     display: flex;
@@ -75,6 +74,22 @@
     &-subTitle {
       font-size: 13px;
       font-weight: 300;
+    }
+  }
+  // Выбранный пункт меню
+  &.selected {
+    $colors: (
+      primary: colors.$matPrimary 50,
+      accent: colors.$matSecondary 50,
+      warn: colors.$matStatusWarn 50,
+    );
+    // Фон по умолчанию
+    background-color: map.get(colors.$matDisabled, 50);
+    // Цикл по цветам
+    @each $color, $data in $colors {
+      &[color="#{$color}"] {
+        background-color: map.get(list.nth($data, 1), list.nth($data, 2));
+      }
     }
   }
 }
@@ -120,6 +135,23 @@
     line-height: inherit;
     font-size: inherit;
     display: block;
+  }
+}
+
+// Стиль всплывающего списка
+::ng-deep .autocomplete-overlay {
+  padding: 0 !important;
+  // Скролл
+  > app-scroll {
+    max-height: inherit;
+  }
+  // Есть картинка
+  &.has-image {
+    min-width: 100%;
+    // Позиционирование по левому краю
+    &.placed-left {
+      margin-left: -#{vars.$matFormFieldImageSize} !important;
+    }
   }
 }
 
