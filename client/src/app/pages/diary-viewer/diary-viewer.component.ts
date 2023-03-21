@@ -54,7 +54,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   dream: Dream;
   user: User;
 
-  private breakpoint: ScreenKeys = "default";
   leftPanelHelperShift: number = 0;
   rightPanelHelperShift: number = 0;
 
@@ -115,6 +114,14 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.map) && !!this.dream.map;
   }
 
+  // Подзаголовок стены без записей
+  getWallEmptySubTitle(name: string): string {
+    return this.dream?.user?.id === this.user?.id ?
+      "Напишите первый комментарий к своему сновидению" : !!this.user?.id ?
+        "Будьте первым, напишите что-нибудь интересное про сновидение " + name :
+        "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
+  }
+
 
 
 
@@ -136,13 +143,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.defineData();
-    // Текущий брейкпоинт
-    this.screenService.breakpoint$
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(breakpoint => {
-        this.breakpoint = breakpoint;
-        this.changeDetectorRef.detectChanges();
-      });
     // Прокрутка левой колонки
     WaitObservable(() => !this.contentPanel?.nativeElement || !this.leftPanel?.nativeElement || !this.rightPanel?.nativeElement)
       .pipe(
