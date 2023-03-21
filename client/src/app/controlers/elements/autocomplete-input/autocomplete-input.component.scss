@@ -79,16 +79,18 @@
   // Выбранный пункт меню
   &.selected {
     $colors: (
-      primary: colors.$matPrimary 50,
-      accent: colors.$matSecondary 50,
-      warn: colors.$matStatusWarn 50,
+      primary: colors.$matPrimary 50 900,
+      accent: colors.$matSecondary 50 900,
+      warn: colors.$matStatusWarn 50 900,
     );
     // Фон по умолчанию
     background-color: map.get(colors.$matDisabled, 50);
+    color: map.get(colors.$matDisabled, 900);
     // Цикл по цветам
     @each $color, $data in $colors {
       &[color="#{$color}"] {
         background-color: map.get(list.nth($data, 1), list.nth($data, 2));
+        color: map.get(list.nth($data, 1), list.nth($data, 3));
       }
     }
   }

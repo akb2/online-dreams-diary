@@ -370,6 +370,7 @@
     line-height: 1;
     height: auto;
     padding: 0;
+    min-height: 0;
     // Текст
     ::ng-deep > .mdc-list-item__primary-text {
       width: 100%;
