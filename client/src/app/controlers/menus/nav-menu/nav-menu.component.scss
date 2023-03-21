@@ -422,7 +422,7 @@ $breakpointMobile: small;
   background-color: colors.$card;
   box-shadow: containers.$cardBoxShadow;
   pointer-events: all;
-  z-index: 9;
+  z-index: 11;
   // Список элементов
   &__items {
     display: flex;
