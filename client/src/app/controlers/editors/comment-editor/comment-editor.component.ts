@@ -338,10 +338,10 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     const keys: string[] = ["Enter", "NumpadEnter"];
     // Нажатия на Enter
     if (keys.includes(event.key)) {
-      event.preventDefault();
-      event.stopPropagation();
-      // Отправка сообщения
       if (event.ctrlKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        // Отправка сообщения
         this.onSend(event);
       }
     }
