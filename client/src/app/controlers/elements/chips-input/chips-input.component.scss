@@ -1,5 +1,5 @@
-@use "../../../../assets/styles/material";
-@use "../../../../assets/styles/mixins";
+@use "material";
+@use "mixins";
 
 // Обертка поля
 @include material.matFormField;

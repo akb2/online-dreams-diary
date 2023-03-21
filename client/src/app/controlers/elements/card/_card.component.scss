@@ -1,8 +1,8 @@
 @use "sass:map";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/mixins";
+@use "colors";
+@use "screens";
+@use "containers";
+@use "mixins";
 
 $base_elm: ".mat-mdc-card";
 $image-color: 500;

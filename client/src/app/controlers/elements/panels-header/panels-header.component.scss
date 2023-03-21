@@ -1,7 +1,7 @@
 @use "sass:map";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/mixins";
-@use "../../../../assets/styles/colors";
+@use "containers";
+@use "mixins";
+@use "colors";
 
 $positionsX: left center right;
 $positionsY: top center bottom;

@@ -1,9 +1,9 @@
 @use "sass:map";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/mixins";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/vars";
+@use "screens";
+@use "containers";
+@use "mixins";
+@use "colors";
+@use "vars";
 
 :host {
   display: block;

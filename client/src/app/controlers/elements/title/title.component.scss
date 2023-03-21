@@ -1,9 +1,9 @@
 @use "sass:math";
 @use "sass:map";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/mixins";
+@use "screens";
+@use "colors";
+@use "containers";
+@use "mixins";
 
 $fontSizes: (
   default: 30px,

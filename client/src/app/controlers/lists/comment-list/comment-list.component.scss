@@ -1,9 +1,9 @@
 @use "sass:map";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/vars";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/mixins";
+@use "containers";
+@use "colors";
+@use "vars";
+@use "screens";
+@use "mixins";
 
 // Элемент комментария
 .comment {

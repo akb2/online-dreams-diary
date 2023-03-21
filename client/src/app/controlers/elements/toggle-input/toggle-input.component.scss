@@ -1,6 +1,6 @@
-@use "../../../../assets/styles/material";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
+@use "material";
+@use "colors";
+@use "screens";
 
 // Обертка поля
 @include material.matFormField() {

@@ -1,9 +1,9 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../../assets/styles/material";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/mixins";
+@use "material";
+@use "screens";
+@use "colors";
+@use "mixins";
 
 // Базовый стиль окна
 @include material.matDialog;

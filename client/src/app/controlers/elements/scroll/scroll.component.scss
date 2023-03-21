@@ -1,8 +1,8 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../../assets/styles/vars";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
+@use "vars";
+@use "colors";
+@use "screens";
 
 $scrollWidth: vars.$scrollSize + (vars.$scrollSpacing * 2);
 $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);

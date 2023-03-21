@@ -1,6 +1,6 @@
 @use "sass:map";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/colors";
+@use "screens";
+@use "colors";
 
 $back_1: map.get(colors.$matPrimary, 400);
 $back_2: map.get(colors.$matSecondary, 400);

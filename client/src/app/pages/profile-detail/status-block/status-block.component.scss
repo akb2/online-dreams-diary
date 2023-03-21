@@ -1,10 +1,10 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/mixins";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/vars";
+@use "colors";
+@use "mixins";
+@use "containers";
+@use "screens";
+@use "vars";
 
 $columnTemplates: (
   default: true,

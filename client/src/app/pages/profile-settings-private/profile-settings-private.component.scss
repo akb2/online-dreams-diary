@@ -1,8 +1,8 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../assets/styles/screens";
-@use "../../../assets/styles/colors";
-@use "../../../assets/styles/mixins";
+@use "screens";
+@use "colors";
+@use "mixins";
 
 // Настройки правила доступа
 .setting {

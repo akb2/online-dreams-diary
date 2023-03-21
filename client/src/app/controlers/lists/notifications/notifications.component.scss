@@ -1,11 +1,11 @@
 @use "sass:map";
 @use "sass:list";
 @use "sass:math";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/mixins";
-@use "../../../../assets/styles/vars";
+@use "colors";
+@use "containers";
+@use "screens";
+@use "mixins";
+@use "vars";
 
 $spacing: 10px;
 

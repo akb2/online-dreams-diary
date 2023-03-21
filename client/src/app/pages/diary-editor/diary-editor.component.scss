@@ -1,8 +1,8 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../assets/styles/colors";
-@use "../../../assets/styles/screens";
-@use "../../../assets/styles/containers";
+@use "colors";
+@use "screens";
+@use "containers";
 
 $headerHeight: 60px;
 $tabsHeight: 49px;

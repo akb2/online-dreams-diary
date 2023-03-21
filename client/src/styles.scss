@@ -1,10 +1,10 @@
 @use "sass:map";
 @use "@angular/material" as mat;
-@use "./assets/styles/vars";
-@use "./assets/styles/colors";
-@use "./assets/styles/containers";
-@use "./assets/styles/material";
-@use "./assets/styles/screens";
+@use "vars";
+@use "colors";
+@use "containers";
+@use "material";
+@use "screens";
 
 @include mat.core();
 $mat-theme: mat.define-light-theme(

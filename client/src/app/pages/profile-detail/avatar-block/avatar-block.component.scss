@@ -1,8 +1,8 @@
 @use "sass:map";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/vars";
+@use "containers";
+@use "screens";
+@use "colors";
+@use "vars";
 
 // Аватарка
 .avatar {

@@ -1,8 +1,8 @@
 @use "sass:map";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/vars";
+@use "colors";
+@use "screens";
+@use "containers";
+@use "vars";
 
 // Данные пользователя
 .user-data {

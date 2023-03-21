@@ -1,8 +1,8 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../../assets/styles/containers";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
+@use "containers";
+@use "colors";
+@use "screens";
 
 $height: 60px;
 $paddingY: 18px;

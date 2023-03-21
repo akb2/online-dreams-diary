@@ -1,8 +1,8 @@
 @use "sass:map";
-@use "../../../assets/styles/screens";
-@use "../../../assets/styles/material";
-@use "../../../assets/styles/containers";
-@use "../../../assets/styles/mixins";
+@use "screens";
+@use "material";
+@use "containers";
+@use "mixins";
 
 $properties: (
   xsmall: (

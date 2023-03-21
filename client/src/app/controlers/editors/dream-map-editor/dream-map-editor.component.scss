@@ -1,8 +1,8 @@
 @use "sass:map";
 @use "sass:math";
-@use "../../../../assets/styles/colors";
-@use "../../../../assets/styles/screens";
-@use "../../../../assets/styles/mixins";
+@use "colors";
+@use "screens";
+@use "mixins";
 
 $controlOffset: 5px;
 $toolButtonBRadius: 3px;
