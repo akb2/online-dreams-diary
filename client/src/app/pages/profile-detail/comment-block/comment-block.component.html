@@ -1,5 +1,6 @@
 <!-- Редактор -->
-<div class="editor">
+<div class="editor"
+     *ngIf="authState">
   <app-comment-editor [materialType]="materialType"
                       [materialId]="materialId"
                       [materialOwner]="materialOwner"

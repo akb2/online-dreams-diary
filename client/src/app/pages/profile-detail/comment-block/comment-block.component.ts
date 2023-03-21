@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { CommentMaterialType } from "@_models/comment";
+import { AccountService } from "@_services/account.service";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -12,7 +14,7 @@ import { CommentMaterialType } from "@_models/comment";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CommentBlockComponent {
+export class CommentBlockComponent implements OnInit, OnDestroy {
 
 
   @Input() materialType: CommentMaterialType;
@@ -23,5 +25,30 @@ export class CommentBlockComponent {
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
   @Input() wrapControls: boolean = false;
 
+  authState: boolean = false;
 
+  private destroyed$: Subject<void> = new Subject();
+
+
+
+
+
+  constructor(
+    private accountService: AccountService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) { }
+
+  ngOnInit(): void {
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(user => {
+        this.authState = !!user?.id;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
 }
