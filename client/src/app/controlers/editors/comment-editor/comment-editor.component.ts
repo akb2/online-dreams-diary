@@ -33,6 +33,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   @Input() materialOwner: number;
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
   @Input() wrapControls: boolean = false;
+  @Input() bottomSmiles: boolean = false;
 
   @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
 
@@ -82,7 +83,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   // Установить текст
-  private insertContent(content: string | Node, event: Event): void {
+  private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {
     if (!this.lastPosition) {
       this.lastPosition = this.getRangePosition(true);
     }
@@ -92,7 +93,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     if (typeof content === "string") {
       this.lastPosition.range.insertNode(document.createTextNode(content));
     }
-    // Вставеть HTML
+    // Вставить HTML
     else {
       this.lastPosition.range.insertNode(content);
     }
@@ -294,7 +295,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   // Отправка комментария
-  onSend(event: MouseEvent): void {
+  onSend(event: Event): void {
     if (this.sendIsAvail && !this.sendLoader) {
       this.onEdit(event);
       // Параметры
@@ -328,6 +329,20 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
               this.changeDetectorRef.detectChanges();
             }
           );
+      }
+    }
+  }
+
+  // Перенос строки
+  onCheckEnterKey(event: KeyboardEvent): void {
+    const keys: string[] = ["Enter", "NumpadEnter"];
+    // Нажатия на Enter
+    if (keys.includes(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      // Отправка сообщения
+      if (event.ctrlKey) {
+        this.onSend(event);
       }
     }
   }

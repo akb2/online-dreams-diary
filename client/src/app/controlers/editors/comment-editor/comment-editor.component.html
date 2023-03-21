@@ -10,7 +10,8 @@
          (blur)="onBlur()"
          (keyup)="onEdit($event)"
          (change)="onEdit($event)"
-         (paste)="onPaste($event)"></div>
+         (paste)="onPaste($event)"
+         (keydown)="onCheckEnterKey($event)"></div>
   </app-scroll>
 </div>
 <!-- Действия -->
@@ -55,7 +56,7 @@
 <ng-template #emojiList>
   <emoji-mart #emojiListItem
               class="smiles__list"
-              [ngClass]="{ show: showEmojiList }"
+              [ngClass]="{ show: showEmojiList, bottomSmiles }"
               [i18n]="i18nEmoji"
               [emojiSize]="32"
               [showPreview]="true"
