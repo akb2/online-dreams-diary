@@ -17,7 +17,6 @@ import { Dream, DreamStatus, SearchDream } from "@_models/dream";
 import { OptionData } from "@_models/form";
 import { Friend, FriendStatus } from "@_models/friend";
 import { NavMenuType } from "@_models/nav-menu";
-import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
