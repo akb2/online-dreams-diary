@@ -100,8 +100,9 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   // Подзаголовок стены без записей
   getWallEmptySubTitle(name: string): string {
     return this.itsMyPage ?
-      "Напишите на своей стене что у вас нового" :
-      "Будьте первым, напишите " + name + " что-нибудь интересное";
+      "Напишите на своей стене что у вас нового" : !!this.user?.id ?
+        "Будьте первым, напишите " + name + " что-нибудь интересное" :
+        "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
   }
 
 
