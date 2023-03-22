@@ -25,6 +25,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private pageData: RouteData;
 
+  statusBarColor: string = "#3f52b5";
+
   private destroy$: Subject<void> = new Subject();
 
 

@@ -3,3 +3,14 @@
 <ng-template #loader>
   <app-page-loader></app-page-loader>
 </ng-template>
+
+<meta name="theme-color"
+      [content]="statusBarColor">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, ya-title={{statusBarColor}}, ya-dock={{statusBarColor}}" />
+<meta name="apple-mobile-web-app-status-bar-style"
+      [content]="statusBarColor">
+<meta name="msapplication-navbutton-color"
+      [content]="statusBarColor">
+<meta name="msapplication-TileColor"
+      [content]="statusBarColor">
