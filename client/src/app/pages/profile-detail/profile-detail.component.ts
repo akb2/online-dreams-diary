@@ -143,6 +143,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
 
   ngAfterContentChecked(): void {
     this.showDreamsList = !!(this.dreamListElm?.nativeElement as HTMLElement)?.children?.length;
+    this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(): void {
