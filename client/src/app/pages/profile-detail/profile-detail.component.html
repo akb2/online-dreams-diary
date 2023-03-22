@@ -90,8 +90,10 @@
   </div>
   <!-- Список сновидений -->
   <div class="dreams"
+       [hidden]="!showDreamsList"
        *ngIf="userHasAccess">
-    <app-dreams-block [user]="visitedUser"
+    <app-dreams-block #dreamListElm
+                      [user]="visitedUser"
                       [itsMyPage]="itsMyPage"
                       [isAutorizedUser]="isAutorizedUser"></app-dreams-block>
   </div>

@@ -1,5 +1,5 @@
 import { DatePipe } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
@@ -31,13 +31,14 @@ import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, 
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileDetailComponent implements OnInit, OnDestroy {
+export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDestroy {
 
 
   @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
   @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
   @ViewChild("leftPanelHelper", { read: ElementRef }) private leftPanelHelper: ElementRef;
   @ViewChild("informationElm", { read: ElementRef }) private informationElm: ElementRef;
+  @ViewChild("dreamListElm", { read: ElementRef }) private dreamListElm: ElementRef;
 
   imagePrefix: string = "/assets/images/backgrounds/";
   pageData: RouteData;
@@ -47,6 +48,7 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
   userHasAccess: boolean = false;
   pageLoading: boolean = false;
   private userReady: boolean = false;
+  showDreamsList: boolean = false;
 
   title: string = "Страница пользователя";
   subTitle: string = "";
@@ -137,6 +139,10 @@ export class ProfileDetailComponent implements OnInit, OnDestroy {
     this.defineUrlParams();
     this.defineVisitingUser();
     this.defineFriendList();
+  }
+
+  ngAfterContentChecked(): void {
+    this.showDreamsList = !!(this.dreamListElm?.nativeElement as HTMLElement)?.children?.length;
   }
 
   ngOnDestroy(): void {
