@@ -99,19 +99,25 @@ export class CommentListComponent implements OnInit, OnDestroy {
     // Данные в порядке
     if (!!comments && this.comments) {
       // Добавление
-      comments.forEach(comment => {
-        const index: number = this.comments.findIndex(c => !!comment?.id && !!c.id && comment.id === c.id);
-        // Обновить
-        if (index >= 0) {
-          this.comments[index] = comment;
-        }
-        // Добавить
-        else {
-          this.comments.push(comment);
-        }
-      });
+      comments
+        .filter(comment => !!comment)
+        .forEach(comment => {
+          const index: number = this.comments.findIndex(c => !!comment?.id && !!c.id && comment.id === c.id);
+          // Обновить
+          if (index >= 0) {
+            this.comments[index] = comment;
+          }
+          // Добавить
+          else {
+            this.comments.push(comment);
+          }
+        });
       // Сортировка
-      this.comments = this.comments.sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
+      if (!!this.comments?.length) {
+        this.comments = this.comments
+          .filter(comment => !!comment)
+          .sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
+      }
     }
   }
 }
