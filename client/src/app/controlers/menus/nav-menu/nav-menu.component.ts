@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { CreateArray } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
+import { CheckInRange, MathRound } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
@@ -10,7 +11,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { filter, forkJoin, fromEvent, interval, map, merge, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -84,8 +85,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollMouseStartY: number = 0;
   private swipeScrollDistance: number = 0;
   private swipeScrollPress: boolean = false;
-  private scrollSmoothSpeed: number = 210;
-  private scrollSmoothTimeStep: number = 30;
+
+  private scrollLastTime: Date = new Date();
+  private scrollSpeedByPixel: number = 0;
+  private scrollSpeedByPixelDefault: number = 0.4;
+  private scrollSpeedByPixelMaxTime: number = 0.6;
+  private scrollSteps: number = 12;
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -263,7 +268,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         this.changeDetectorRef.detectChanges();
       });
     // Скролл
-    this.scroll = this.getCurrentScroll.y;
+    this.saveScroll();
     this.scrollTo(0);
   }
 
@@ -356,7 +361,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
     }
     // Расчитать данные
-    this.scroll = scroll;
+    this.saveScroll(scroll);
     this.dataCalculate();
   }
 
@@ -640,20 +645,22 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         const startScroll: number = this.getCurrentScroll.y;
         const scrollDiff: number = Math.abs(top - startScroll);
         const scrollDelta: -1 | 1 = ((top - startScroll) / scrollDiff) > 0 ? 1 : -1;
-        const scrollSmoothStep: number = Math.ceil((scrollDiff * this.scrollSmoothTimeStep) / this.scrollSmoothSpeed);
-        const scrollLastStep: number = Math.ceil(scrollDiff / scrollSmoothStep);
-        // Запретить скролл
+        const animationTime: number = scrollDiff * this.scrollSpeedByPixel;
+        const stepTime: number = MathRound(animationTime / this.scrollSteps);
+        const stepDistance: number = MathRound(scrollDiff / this.scrollSteps);
+        // Запретить мануальный скролл
         this.stopScroll();
         // Плавный скролл
-        interval(this.scrollSmoothTimeStep)
+        timer(0, stepTime)
           .pipe(
             takeUntil(this.destroyed$),
             map(step => step + 1),
-            takeWhile(step => step < scrollLastStep, true),
+            takeWhile(step => step < this.scrollSteps, true),
           )
           .subscribe(step => {
-            let scrollTo: number = step * scrollSmoothStep;
+            let scrollTo: number = step * stepDistance;
             scrollTo = scrollTo > scrollDiff ? scrollDiff : scrollTo;
+            scrollTo = scrollTo < scrollDiff && step === this.scrollSteps ? scrollDiff : scrollTo;
             top = startScroll + (scrollTo * scrollDelta);
             // Запретить скролл
             this.stopScroll();
@@ -662,7 +669,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             // Скролл
             window.scroll(0, top);
             // Закончить скролл
-            if (step === scrollLastStep) {
+            if (step === this.scrollSteps) {
               this.onWindowScrollEnd();
             }
           });
@@ -698,6 +705,21 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   hideNotifications(): void {
     this.isShowNotifications = false;
     this.changeDetectorRef.detectChanges();
+  }
+
+  // Запонмить новый скролл
+  private saveScroll(scroll?: number): void {
+    scroll = scroll ?? this.getCurrentScroll.y;
+    // Параметры
+    const currentDate: Date = new Date();
+    const timeDiff: number = CheckInRange(currentDate.getTime() - this.scrollLastTime.getTime(), Infinity, 1);
+    const scrollDiff: number = Math.abs(this.scroll - scroll);
+    // Запомнить данные
+    this.scrollSpeedByPixel = !!scrollDiff ? MathRound(timeDiff / scrollDiff) : this.scrollSpeedByPixelDefault;
+    this.scrollSpeedByPixel = this.scrollSpeedByPixel === Infinity ? this.scrollSpeedByPixelDefault : this.scrollSpeedByPixel;
+    this.scrollSpeedByPixel = this.scrollSpeedByPixel > this.scrollSpeedByPixelMaxTime ? this.scrollSpeedByPixelMaxTime : this.scrollSpeedByPixel;
+    this.scroll = scroll;
+    this.scrollLastTime = currentDate;
   }
 }
 
