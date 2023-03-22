@@ -77,6 +77,7 @@ export class AccountService implements OnDestroy {
         !!prev ? { ...prev, online: this.isOnlineByDate(prev.lastActionDate) } : prev,
         !!next ? { ...next, online: this.isOnlineByDate(next.lastActionDate) } : next
       ])),
+      map(([prev, next]) => ([!!prev?.id ? prev : null, !!next?.id ? next : null])),
       filter(([prev, next]) => !CompareObjects(prev, next) || this.syncUser[0] === userId),
       map(([, next]) => next)
     );

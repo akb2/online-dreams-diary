@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
-import { BackgroundImageData } from "@_models/appearance";
 import { BackgroundImageDatas } from "@_datas/appearance";
+import { BackgroundImageData } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
 import { NavMenuType } from "@_models/nav-menu";
 import { MenuService } from "@_services/menu.service";
@@ -14,7 +14,8 @@ import { Subject, takeUntil } from "rxjs";
   selector: "app-nav-menu-settings",
   templateUrl: "./nav-menu-settings.component.html",
   styleUrls: ["./nav-menu-settings.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [MenuService]
 })
 
 export class NavMenuSettingsComponent implements OnInit, OnDestroy {

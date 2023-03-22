@@ -14,9 +14,7 @@ import { BehaviorSubject, filter, map, Observable, pairwise, startWith, Subject,
 
 
 
-@Injectable({
-  providedIn: "root"
-})
+@Injectable()
 
 export class MenuService implements OnDestroy {
 
