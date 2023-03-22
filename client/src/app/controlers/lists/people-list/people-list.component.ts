@@ -184,17 +184,20 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
   // Добавить статус друзей в массив
   private addFriendToList(friend: Friend): void {
     const friends: Friend[] = this.friends ?? [];
-    const index: number = friends.findIndex(({ id }) => friend.id === id);
-    // Заменить существующую
-    if (index >= 0) {
-      friends[index] = friend;
+    const index: number = friends?.findIndex(f => friend?.id && f?.id && friend.id === f.id) ?? -1;
+    // Данные в порядке
+    if (!!friend && !!friends) {
+      // Заменить существующую
+      if (index >= 0) {
+        friends[index] = friend;
+      }
+      // Новая запись
+      else {
+        friends.push(friend);
+      }
+      // Обновить
+      this.friends = [...friends];
+      this.changeDetectorRef.detectChanges();
     }
-    // Новая запись
-    else {
-      friends.push(friend);
-    }
-    // Обновить
-    this.friends = [...friends];
-    this.changeDetectorRef.detectChanges();
   }
 }
