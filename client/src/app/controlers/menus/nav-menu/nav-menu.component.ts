@@ -10,7 +10,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { filter, forkJoin, fromEvent, interval, map, merge, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -20,7 +20,8 @@ import { forkJoin, fromEvent, interval, map, mergeMap, Subject, takeUntil, takeW
   selector: "app-main-menu",
   templateUrl: "./nav-menu.component.html",
   styleUrls: ["./nav-menu.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [MenuService]
 })
 
 export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -93,7 +94,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   css: CustomObject<SimpleObject> = {};
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -209,20 +210,31 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
     // События
-    fromEvent(window, "scroll").pipe(takeUntil(this.destroy$)).subscribe(e => this.onWindowScroll(e as Event));
-    fromEvent(window, "mousemove").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseMove(e as MouseEvent));
-    fromEvent(window, "mouseup").pipe(takeUntil(this.destroy$)).subscribe(e => this.onMouseUp(e as MouseEvent));
-    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(() => this.onResize());
+    fromEvent<Event>(window, "scroll").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onWindowScroll(e));
+    fromEvent<MouseEvent>(window, "mousemove").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onMouseMove(e));
+    fromEvent<MouseEvent>(window, "mouseup").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onMouseUp(e));
+    fromEvent(window, "resize").pipe(takeUntil(this.destroyed$)).subscribe(() => this.onResize());
+    // Отменить скролл во время процесса схлопывания
+    merge(
+      fromEvent<WheelEvent>(window, "mousewheel", { passive: false }),
+      fromEvent<WheelEvent>(window, "DOMMouseScroll", { passive: false }),
+      fromEvent<WheelEvent>(window, "wheel", { passive: false })
+    )
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => this.autoCollapsed)
+      )
+      .subscribe(event => event.preventDefault());
     // Пункты меню
     this.menuService.menuItems$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(menuItems => {
         this.menuItems = menuItems;
         this.changeDetectorRef.detectChanges();
       });
     // Подписка на брейкпоинт
     this.screenService.breakpoint$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(breakpoint => {
         if (breakpoint === "small" || breakpoint === "xsmall") {
           document.body.classList.add(this.mobileMenuBottomBodyClass);
@@ -237,14 +249,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       });
     // Подписка на тип устройства
     this.screenService.isMobile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
         this.onResize();
       });
     // Подписка на данные о текущем пользователей
     this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
         this.isAutorizedUser = this.accountService.checkAuth;
@@ -271,7 +283,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       this.imageOverlay = changes.imageOverlay?.currentValue || this.imageOverlay;
       // Очистить временную картинку
       timer(this.clearTempImageTimeout)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntil(this.destroyed$))
         .subscribe(() => {
           this.tempImage = "";
           this.changeDetectorRef.detectChanges();
@@ -293,7 +305,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Изменения размера контейнера текста
     forkJoin([this.screenService.waitWhileFalse(this.contentLayerContainer), this.screenService.waitWhileFalse(this.contentLayerContainerLeft)])
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyed$),
         mergeMap(() => this.screenService.elmResize(this.contentLayerContainer.nativeElement)),
         mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement))
       )
@@ -301,8 +313,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -331,6 +343,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         // Отменить скролл
         else {
           this.stopScroll();
+          // Вернуть скролл обратно
+          if (scroll !== this.scroll) {
+            scroll = this.scroll;
+            // Установить скролл
+            window.scroll(0, scroll);
+          }
         }
       }
       // Обычный скролл
@@ -629,7 +647,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         // Плавный скролл
         interval(this.scrollSmoothTimeStep)
           .pipe(
-            takeUntil(this.destroy$),
+            takeUntil(this.destroyed$),
             map(step => step + 1),
             takeWhile(step => step < scrollLastStep, true),
           )
@@ -669,7 +687,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   // Показать уведомления
   showNotifications(): void {
     timer(1)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         this.isShowNotifications = true;
         this.changeDetectorRef.detectChanges();
