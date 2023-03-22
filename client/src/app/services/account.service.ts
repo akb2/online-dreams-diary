@@ -7,6 +7,7 @@ import { ToArray, ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
+import { CapitalizeFirstLetter } from "@_helpers/string";
 import { AuthResponce, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
@@ -411,6 +412,8 @@ export class AccountService implements OnDestroy {
       const user: User = {
         ...data,
         id: ParseInt(data?.id),
+        name: CapitalizeFirstLetter(data?.name?.toString()),
+        lastName: CapitalizeFirstLetter(data?.lastName?.toString()),
         sex: ParseInt(data?.sex) as UserSex,
         online: this.isOnlineByDate(ToDate(data?.lastActionDate)),
         lastActionDate: ToDate(data?.lastActionDate),
