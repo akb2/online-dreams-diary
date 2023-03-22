@@ -96,19 +96,22 @@ export class CommentListComponent implements OnInit, OnDestroy {
   // Добавить комментарии в общий список
   private addComment(mixedComments: Comment | Comment[]): void {
     const comments: Comment[] = Array.isArray(mixedComments) ? mixedComments : [mixedComments];
-    // Добавление
-    comments.forEach(comment => {
-      const index: number = this.comments.findIndex(({ id }) => comment.id === id);
-      // Обновить
-      if (index >= 0) {
-        this.comments[index] = comment;
-      }
-      // Добавить
-      else {
-        this.comments.push(comment);
-      }
-    });
-    // Сортировка
-    this.comments = this.comments.sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
+    // Данные в порядке
+    if (!!comments && this.comments) {
+      // Добавление
+      comments.forEach(comment => {
+        const index: number = this.comments.findIndex(c => !!comment?.id && !!c.id && comment.id === c.id);
+        // Обновить
+        if (index >= 0) {
+          this.comments[index] = comment;
+        }
+        // Добавить
+        else {
+          this.comments.push(comment);
+        }
+      });
+      // Сортировка
+      this.comments = this.comments.sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
+    }
   }
 }
