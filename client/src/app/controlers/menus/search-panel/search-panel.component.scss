@@ -10,7 +10,7 @@
   position: fixed;
   user-select: none;
   pointer-events: none;
-  z-index: 10;
+  z-index: 12;
   // Затенение
   &__overlay {
     @include mixins.inset;
