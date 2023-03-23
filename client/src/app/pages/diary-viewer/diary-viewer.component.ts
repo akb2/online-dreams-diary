@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
+import { ScrollElement } from "@_datas/app";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
@@ -11,7 +12,6 @@ import { SimpleObject } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
-import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
@@ -153,7 +153,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           rightPanel: this.rightPanel.nativeElement
         })),
         mergeMap(({ contentPanel, leftPanel, rightPanel }) => merge(
-          fromEvent(document, "scroll"),
+          fromEvent(ScrollElement(), "scroll"),
           this.screenService.elmResize([contentPanel, leftPanel, rightPanel])
         ))
       )
@@ -183,7 +183,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const headerShift: number = mainMenuHeight + spacing;
       const availLeftShift: boolean = contentPanelHeight < leftPanelHeight;
       const availRightShift: boolean = contentPanelHeight < rightPanelHeight;
-      const screenHeight: number = window.innerHeight - headerShift - spacing;
+      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
+      const scrollY: number = Math.ceil(ScrollElement().scrollTop ?? 0);
       const scrollShift: number = scrollY - this.beforeScroll;
       const maxShift: number = contentPanelHeight - screenHeight - headerShift;
       // Если отступ допустим

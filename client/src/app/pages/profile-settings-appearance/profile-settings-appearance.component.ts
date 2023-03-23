@@ -103,7 +103,6 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
       .subscribe(
         ([code]) => {
           if (code === "0001") {
-            //window.scrollTo({ top: 0, behavior: "smooth" });
             this.snackbarService.open({
               mode: "success",
               message: "Настройки сохранены"

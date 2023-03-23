@@ -1,4 +1,6 @@
-<router-outlet *ngIf="!showPreLoader; else loader"></router-outlet>
+<div id="app_main_page">
+  <router-outlet *ngIf="!showPreLoader; else loader"></router-outlet>
+</div>
 
 <ng-template #loader>
   <app-page-loader></app-page-loader>

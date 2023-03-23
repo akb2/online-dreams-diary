@@ -1,6 +1,8 @@
 import { MatDialogConfig } from "@angular/material/dialog";
 import { MathRound, Random } from "@_helpers/math";
 import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
+import { concatMap, fromEvent, map } from "rxjs";
+import { WaitObservable } from "./api";
 
 
 
@@ -200,3 +202,6 @@ export const CollapseObject = <T>(object: T | MultiObject<T>) => {
   // Вернуть результат
   return targetObject;
 };
+
+// Прокручиваемый элемент
+export const ScrollElement: () => HTMLElement = () => document.getElementById("app_main_page");

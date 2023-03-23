@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
 import { WaitObservable } from "@_datas/api";
-import { CompareElementBySelector, CreateArray } from "@_datas/app";
+import { CompareElementBySelector, CreateArray, ScrollElement } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -264,7 +264,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
       )
       .subscribe(() => this.onClose());
     // Закрытие при скролле документа
-    fromEvent(document, "scroll")
+    fromEvent(ScrollElement(), "scroll")
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.onClose());
   }

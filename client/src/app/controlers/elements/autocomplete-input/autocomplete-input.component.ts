@@ -4,6 +4,7 @@ import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { WaitObservable } from "@_datas/api";
+import { ScrollElement } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { ParseInt } from "@_helpers/math";
 import { CreateRandomID } from "@_helpers/string";
@@ -145,7 +146,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         this.optionDataFilter();
       });
     // События
-    fromEvent(window, "scroll")
+    fromEvent(ScrollElement(), "scroll")
       .pipe(takeUntil(this.destroyed$))
       .subscribe(e => this.onScroll(e));
     // Проверка положения выпадающего списка
@@ -238,7 +239,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   // Скролл документа
   private onScroll(event: Event): void {
-    if (event.target === document || event.target === window) {
+    if (event.target === ScrollElement()) {
       this.autoComplete.closePanel();
     }
   }

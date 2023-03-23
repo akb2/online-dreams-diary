@@ -4,6 +4,7 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
+import { ScrollElement } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
@@ -131,7 +132,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       .pipe(
         takeUntil(this.destroyed$),
         map(() => ({ elm: this.leftPanel.nativeElement, elmHelper: this.leftPanelHelper.nativeElement })),
-        mergeMap(({ elm, elmHelper }) => merge(fromEvent(document, "scroll"), this.screenService.elmResize([elm, elmHelper])))
+        mergeMap(({ elm, elmHelper }) => merge(fromEvent(ScrollElement(), "scroll"), this.screenService.elmResize([elm, elmHelper])))
       )
       .subscribe(() => this.onLeftPanelPosition());
     // Запуск определения данных
@@ -210,10 +211,10 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       const elmHeight: number = elm.clientHeight;
       const elmHelperHeight: number = elmHelper.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
-      const screenHeight: number = window.innerHeight - headerShift - spacing;
+      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
       const availShift: boolean = elmHelperHeight < elmHeight;
       const maxShift: number = elmHelperHeight - screenHeight - headerShift;
-      const scrollY: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
+      const scrollY: number = Math.ceil(ScrollElement().scrollTop ?? 0);
       const scrollShift: number = scrollY - this.beforeScroll;
       // Если отступ допустим
       this.leftPanelHelperShift = availShift && elmHelperHeight > screenHeight ?

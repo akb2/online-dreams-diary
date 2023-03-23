@@ -1,8 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { WaitObservable } from "@_datas/api";
-import { CreateArray } from "@_datas/app";
+import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { CheckInRange, MathRound } from "@_helpers/math";
+import { CheckInRange, MathRound, ParseInt } from "@_helpers/math";
 import { CreateRandomID } from "@_helpers/string";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
@@ -90,11 +90,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   private scrollLastTime: Date = new Date();
   private scrollSpeedByPixel: number = 0;
-  private scrollSpeedByPixelDefault: number = 0.1;
-  private scrollSpeedByPixelMaxTime: number = 0.3;
-  private scrollSteps: number = 10;
+  private scrollSpeedByPixelDefault: number = 0.08;
+  private scrollSpeedByPixelMaxTime: number = 0.2;
+  private scrollSteps: number = 12;
 
-  private scrollEndTimeDetect: number = 20;
+  private scrollEndTimeDetect: number = 75;
   private scrollTolastId: string = "";
 
   notificationRepeat: number[] = CreateArray(2);
@@ -185,13 +185,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Текущий скролл по оси Y
   private get getCurrentScroll(): ScrollData {
-    const x: number = Math.ceil(document?.scrollingElement?.scrollLeft ?? window.scrollX ?? 0);
-    const y: number = Math.ceil(document?.scrollingElement?.scrollTop ?? window.scrollY ?? 0);
-    const maxElms: HTMLElement[] = [document.body, document.documentElement];
-    const maxKeysX: (keyof HTMLElement)[] = ["scrollWidth", "offsetWidth", "clientWidth"];
-    const maxKeysY: (keyof HTMLElement)[] = ["scrollHeight", "offsetHeight", "clientHeight"];
-    const maxX = Math.max(...maxElms.map(e => maxKeysX.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
-    const maxY = Math.max(...maxElms.map(e => maxKeysY.map(k => typeof e[k] === "number" ? e[k] as number : 0)).reduce((o, v) => ([...o, ...v]), []));
+    const elm: HTMLElement = ScrollElement();
+    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
+    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
+    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
+    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
     // Скролл
     return { x, y, maxX, maxY };
   }
@@ -221,12 +219,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.maxHeight = DrawDatas.maxHeight;
     // События
     merge(
-      fromEvent<Event>(window, "scroll").pipe(tap(event => this.onWindowScroll(event))),
+      fromEvent<Event>(ScrollElement(), "scroll").pipe(tap(event => this.onWindowScroll(event))),
       fromEvent<TouchEvent>(window, "touchstart").pipe(tap(event => this.onScrollMouseDown(event))),
       fromEvent<MouseEvent>(window, "mousemove").pipe(tap(event => this.onMouseMove(event))),
       fromEvent<MouseEvent>(window, "mouseup").pipe(tap(event => this.onMouseUp(event))),
       fromEvent<TouchEvent>(window, "touchend").pipe(tap(event => this.onMouseUp(event))),
-      fromEvent(window, "resize").pipe(tap(() => this.onResize()))
+      this.screenService.elmResize(ScrollElement()).pipe(tap(() => this.onResize()))
     )
       .pipe(takeUntil(this.destroyed$))
       .subscribe();
@@ -253,11 +251,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       .pipe(takeUntil(this.destroyed$))
       .subscribe(breakpoint => {
         if (breakpoint === "small" || breakpoint === "xsmall") {
-          document.body.classList.add(this.mobileMenuBottomBodyClass);
+          ScrollElement().classList.add(this.mobileMenuBottomBodyClass);
         }
         // Убрать класс мобильного меню снизу
         else {
-          document.body.classList.remove(this.mobileMenuBottomBodyClass);
+          ScrollElement().classList.remove(this.mobileMenuBottomBodyClass);
         }
         // Сохранить параметры
         this.breakpoint = breakpoint;
@@ -345,9 +343,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       this.stopScroll();
       // Вернуть скролл обратно
       if (scroll !== this.scroll) {
+        console.log(scroll, this.scroll);
         scroll = this.scroll;
         // Установить скролл
-        window.scroll(0, scroll);
+        ScrollElement().scrollTo({ top: scroll, behavior: "auto" });
       }
     }
     // Расчитать данные
@@ -364,38 +363,36 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Изменение размеров экрана
   private onResize(): void {
-    const collapse: boolean = DrawDatas.screenHeight < window.innerHeight;
+    // const collapse: boolean = DrawDatas.screenHeight < ScrollElement().clientHeight;
     // Запомнить настройки
     DrawDatas.type = this.type;
-    DrawDatas.screenWidth = window.innerWidth;
-    DrawDatas.screenHeight = window.innerHeight;
+    DrawDatas.screenWidth = ScrollElement().clientWidth;
+    DrawDatas.screenHeight = ScrollElement().clientHeight;
     DrawDatas.containerWidth = this.contentLayerContainer?.nativeElement?.offsetWidth ?? 0;
     DrawDatas.containerLeftWidth = this.contentLayerContainerLeft?.nativeElement?.offsetWidth ?? 0;
     DrawDatas.dataRender();
     // Схлопнуть меню
-    if (collapse && this.getHeaderStatus === HeaderStatus.inProccess && this.autoCollapse) {
-      this.collapseMenu();
-    }
+    // if (collapse && this.getHeaderStatus === HeaderStatus.inProccess) {
+    //   this.collapseMenu();
+    // }
     // Расчет и отрисовка
     this.dataCalculate();
   }
 
   // Фокус для скролла смахиванием
   onScrollMouseDown(event: MouseEvent | TouchEvent): void {
-    this.scrollMousePosY = (event as MouseEvent)?.y ?? (event as TouchEvent)?.touches.item(0).clientY;
-    this.scrollMouseStartY = window.scrollY;
+    this.scrollMousePosY = (event instanceof MouseEvent ? event.y : event.touches.item(0).clientY);
+    this.scrollMouseStartY = ScrollElement().scrollTop;
     // Включить обнаружение движения мышкой
     this.swipeScrollPress = true;
     // Запретить скролл
-    if (event instanceof MouseEvent) {
-      this.stopScroll();
-    }
+    this.stopScroll();
   }
 
   // Движение мышкой
-  onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent | TouchEvent): void {
     if (this.swipeScrollPress) {
-      this.swipeScrollDistance = event.y - this.scrollMousePosY;
+      this.swipeScrollDistance = (event instanceof MouseEvent ? event.y : event.touches.item(0).clientY) - this.scrollMousePosY;
       // Запретить скролл
       this.stopScroll();
       // Установить скролл
@@ -409,10 +406,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Для мышки
     if (event instanceof MouseEvent) {
       this.onSwipeDetect();
-    }
-    // Для сенсорных экранов
-    else {
-      this.saveScroll();
     }
   }
 
@@ -517,6 +510,18 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             for (let property of datas.property) {
               this.css[titleKey][property] = value;
             }
+          }
+        }
+        // Главное меню: позиция сверху
+        if (titleKey === "menu") {
+          if (this.scroll < this.getHeaderMaxHeight) {
+            this.css[titleKey].position = "absolute";
+            this.css[titleKey]["margin-top"] = this.scroll + "px";
+          }
+          // Схлопнутая шапка
+          else {
+            this.css[titleKey].position = "fixed";
+            this.css[titleKey]["margin-top"] = "0px";
           }
         }
       }
@@ -636,7 +641,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollTo(top: number, behavior: ScrollBehavior = "auto"): void {
     if (this.getCurrentScroll.y !== top) {
       if (behavior === "auto") {
-        window.scrollTo({ behavior, top });
+        ScrollElement().scrollTo({ behavior, top });
         // Окончить скролл
         this.onWindowScrollEnd();
       }
@@ -661,7 +666,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             takeWhile(step => step < this.scrollSteps && this.scrollTolastId === scrollToId, true),
           )
           .subscribe(step => {
-            let scrollTo: number = step * stepDistance;
+            let scrollTo: number = MathRound(step * stepDistance);
             scrollTo = scrollTo > scrollDiff ? scrollDiff : scrollTo;
             scrollTo = scrollTo < scrollDiff && step === this.scrollSteps ? scrollDiff : scrollTo;
             top = startScroll + (scrollTo * scrollDelta);
@@ -670,7 +675,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             // Запомнить новый скролл
             this.scroll = top;
             // Скролл
-            window.scroll(0, top);
+            console.log(top);
+            ScrollElement().scrollTo({ top, behavior: "auto" });
             // Закончить скролл
             if (step === this.scrollSteps) {
               this.onWindowScrollEnd();
@@ -686,12 +692,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Запретить скролл
   private stopScroll(): void {
-    document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
+    ScrollElement().querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
   }
 
   // Разрешить скролл
   private startScroll(): void {
-    document.querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
+    ScrollElement().querySelectorAll("body, html").forEach(elm => elm.classList.remove("no-scroll"));
   }
 
   // Показать уведомления
@@ -736,6 +742,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         const headerStatus = this.getHeaderStatus;
         // Схлопнуть / развернуть меню
         if (headerStatus === HeaderStatus.inProccess) {
+          console.log("dsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", scroll, oldScroll, headerMaxHeight);
           // Схлопнуть меню
           if (scroll > oldScroll && oldScroll < headerMaxHeight) {
             this.collapseMenu();

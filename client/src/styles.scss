@@ -5,6 +5,7 @@
 @use "containers";
 @use "material";
 @use "screens";
+@use "mixins";
 
 @include mat.core();
 $mat-theme: mat.define-light-theme(
@@ -35,12 +36,7 @@ $mat-theme: mat.define-light-theme(
 html {
   $scroll-size: 0;
   // Свойства
-  overflow-x: hidden;
-  overflow-y: scroll;
   background-color: colors.$background;
-  top: 0 !important;
-  position: static !important;
-  scrollbar-width: none;
   // Свойства потомков
   &,
   * {
@@ -60,15 +56,16 @@ html {
   body {
     padding: 0;
     margin: 0;
-    min-height: 100%;
-  }
-  // Скроллбар
-  &::-webkit-scrollbar {
-    width: $scroll-size;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    scrollbar-width: none;
   }
   // Тело
   body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    position: relative;
     // Курсоры
     &.cursor {
       // Повороты
@@ -79,10 +76,6 @@ html {
       &-all-scroll {
         cursor: all-scroll !important;
       }
-    }
-    // Отступ снизу для мобильного меню
-    &.mobile-menu-bottom-spacing {
-      padding-bottom: vars.$mobileMenuBottomHeight;
     }
   }
   // Текст
@@ -98,13 +91,41 @@ html {
     }
   }
 
+  #app_main_page {
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    // Отступ снизу для мобильного меню
+    &.mobile-menu-bottom-spacing {
+      padding-bottom: vars.$mobileMenuBottomHeight;
+    }
+  }
+
+  // Скроллбар
+  &,
+  #app_main_page {
+    &::-webkit-scrollbar {
+      width: $scroll-size;
+    }
+  }
+
   // Скролл запрещен
   &.cdk-global-scrollblock,
-  &.no-scroll {
+  &.no-scroll,
+  #app_main_page.no-scroll {
     &,
     > body {
       overflow-y: hidden;
     }
+  }
+
+  // Блок страницы
+  router-outlet ~ *,
+  app-root {
+    display: block;
   }
 }
 
@@ -137,6 +158,7 @@ html {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
+    justify-content: center;
     background-color: colors.$background;
     // Последний элемент
     > .#{$_elm}:last-child {

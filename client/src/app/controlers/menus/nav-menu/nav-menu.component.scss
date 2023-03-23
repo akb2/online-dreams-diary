@@ -13,10 +13,10 @@ $breakpointMobile: small;
   @include mixins.inset(0, 0, auto, 0);
   // Свойства
   max-width: 100vw;
-  position: fixed;
   z-index: 12;
   user-select: none;
   box-shadow: containers.$cardBoxShadow;
+  top: 0;
   // Полноразмерное меню
   &.type-full {
     height: 100vh;
