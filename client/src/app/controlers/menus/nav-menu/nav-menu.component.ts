@@ -1,7 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
+import { WaitObservable } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { CheckInRange, MathRound } from "@_helpers/math";
+import { CreateRandomID } from "@_helpers/string";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
@@ -11,7 +13,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { concatMap, filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -93,6 +95,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollSteps: number = 10;
 
   private scrollEndTimeDetect: number = 20;
+  private scrollTolastId: string = "";
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -338,7 +341,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private onWindowScroll(event: Event): void {
     let scroll: number = this.getCurrentScroll.y;
     // Блокировка скролла если шапка в процессе изменения состояния
-    console.log(this.swipeScrollPress);
     if (!this.swipeScrollPress && this.autoCollapse && this.autoCollapsed) {
       this.stopScroll();
       // Вернуть скролл обратно
@@ -391,9 +393,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Движение мышкой
-  onMouseMove(event: MouseEvent | TouchEvent): void {
+  onMouseMove(event: MouseEvent): void {
     if (this.swipeScrollPress) {
-      this.swipeScrollDistance = ((event as MouseEvent)?.y ?? (event as TouchEvent)?.touches.item(0).clientY) - this.scrollMousePosY;
+      this.swipeScrollDistance = event.y - this.scrollMousePosY;
       // Запретить скролл
       this.stopScroll();
       // Установить скролл
@@ -646,6 +648,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         const animationTime: number = scrollDiff * this.scrollSpeedByPixel;
         const stepTime: number = MathRound(animationTime / this.scrollSteps);
         const stepDistance: number = MathRound(scrollDiff / this.scrollSteps);
+        const scrollToId: string = CreateRandomID(128);
+        // Запомнить ID
+        this.scrollTolastId = scrollToId;
         // Запретить мануальный скролл
         this.stopScroll();
         // Плавный скролл
@@ -653,7 +658,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           .pipe(
             takeUntil(this.destroyed$),
             map(step => step + 1),
-            takeWhile(step => step < this.scrollSteps, true),
+            takeWhile(step => step < this.scrollSteps && this.scrollTolastId === scrollToId, true),
           )
           .subscribe(step => {
             let scrollTo: number = step * stepDistance;
@@ -720,9 +725,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.scroll = scroll;
     this.scrollLastTime = currentDate;
     // Проверить окончание скролла
-    timer(this.scrollEndTimeDetect)
+    WaitObservable(() => this.swipeScrollPress)
       .pipe(
         takeUntil(this.destroyed$),
+        concatMap(() => timer(this.scrollEndTimeDetect)),
         filter(() => this.scrollLastTime === currentDate && !this.autoCollapsed && !this.swipeScrollPress)
       )
       .subscribe(() => {
@@ -737,6 +743,17 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           // Развернуть меню
           else if (scroll < oldScroll && scroll < headerMaxHeight) {
             this.expandMenu();
+          }
+          // Определить
+          else if (scroll === oldScroll && scroll < headerMaxHeight) {
+            // Схлопнуть
+            if (scroll > headerMaxHeight / 2) {
+              this.collapseMenu();
+            }
+            // Развернуть
+            else if (scroll < headerMaxHeight / 2) {
+              this.expandMenu();
+            }
           }
         }
       });
