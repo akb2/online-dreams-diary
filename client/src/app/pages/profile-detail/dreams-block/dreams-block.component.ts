@@ -102,6 +102,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
         this.dreamsCount = count;
         this.dreamsLoading = false;
         this.changeDetectorRef.detectChanges();
-      }, e => console.log(e));
+      });
   }
 }

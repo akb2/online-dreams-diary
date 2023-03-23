@@ -66,7 +66,6 @@ export class NotificationService implements OnDestroy {
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
       filter(([prev, next]) => !CompareArrays(prev, next) || this.syncNotifications > 0),
-      tap(([, next]) => console.log(next)),
       map(([, next]) => next),
       map(ns => ns.filter((n, k) => k >= skip && k < skip + limit))
     );

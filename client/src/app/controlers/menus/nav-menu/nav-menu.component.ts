@@ -343,7 +343,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       this.stopScroll();
       // Вернуть скролл обратно
       if (scroll !== this.scroll) {
-        console.log(scroll, this.scroll);
         scroll = this.scroll;
         // Установить скролл
         ScrollElement().scrollTo({ top: scroll, behavior: "auto" });
@@ -675,7 +674,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             // Запомнить новый скролл
             this.scroll = top;
             // Скролл
-            console.log(top);
             ScrollElement().scrollTo({ top, behavior: "auto" });
             // Закончить скролл
             if (step === this.scrollSteps) {
@@ -742,7 +740,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         const headerStatus = this.getHeaderStatus;
         // Схлопнуть / развернуть меню
         if (headerStatus === HeaderStatus.inProccess) {
-          console.log("dsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", scroll, oldScroll, headerMaxHeight);
           // Схлопнуть меню
           if (scroll > oldScroll && oldScroll < headerMaxHeight) {
             this.collapseMenu();
