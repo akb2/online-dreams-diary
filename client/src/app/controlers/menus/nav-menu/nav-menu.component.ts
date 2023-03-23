@@ -11,7 +11,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -88,9 +88,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   private scrollLastTime: Date = new Date();
   private scrollSpeedByPixel: number = 0;
-  private scrollSpeedByPixelDefault: number = 0.4;
-  private scrollSpeedByPixelMaxTime: number = 0.6;
-  private scrollSteps: number = 12;
+  private scrollSpeedByPixelDefault: number = 0.1;
+  private scrollSpeedByPixelMaxTime: number = 0.3;
+  private scrollSteps: number = 10;
+
+  private scrollEndTimeDetect: number = 50;
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -215,10 +217,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
     // События
-    fromEvent<Event>(window, "scroll").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onWindowScroll(e));
-    fromEvent<MouseEvent>(window, "mousemove").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onMouseMove(e));
-    fromEvent<MouseEvent>(window, "mouseup").pipe(takeUntil(this.destroyed$)).subscribe(e => this.onMouseUp(e));
-    fromEvent(window, "resize").pipe(takeUntil(this.destroyed$)).subscribe(() => this.onResize());
+    merge(
+      fromEvent<Event>(window, "scroll").pipe(tap(event => this.onWindowScroll(event))),
+      fromEvent<MouseEvent>(window, "mousemove").pipe(tap(event => this.onMouseMove(event))),
+      fromEvent<MouseEvent>(window, "mouseup").pipe(tap(() => this.onMouseUp())),
+      fromEvent(window, "resize").pipe(tap(() => this.onResize()))
+    )
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
     // Отменить скролл во время процесса схлопывания
     merge(
       fromEvent<WheelEvent>(window, "mousewheel", { passive: false }),
@@ -331,29 +337,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     let scroll: number = this.getCurrentScroll.y;
     // Скролл
     if (!this.swipeScrollPress) {
-      // Автоколапс (если уже не происходит)
-      if (this.autoCollapse) {
-        if (!this.autoCollapsed) {
-          const headerMaxHeight: number = this.getHeaderMaxHeight;
-          const headerStatus = this.getHeaderStatus;
-          // Схлопнуть меню
-          if (headerStatus !== HeaderStatus.collapsed && scroll > this.scroll && this.scroll < headerMaxHeight) {
-            this.collapseMenu();
-          }
-          // Развернуть меню
-          else if (headerStatus !== HeaderStatus.expanded && scroll < this.scroll && scroll < headerMaxHeight) {
-            this.expandMenu();
-          }
-        }
-        // Отменить скролл
-        else {
-          this.stopScroll();
-          // Вернуть скролл обратно
-          if (scroll !== this.scroll) {
-            scroll = this.scroll;
-            // Установить скролл
-            window.scroll(0, scroll);
-          }
+      // Блокировка скролла если шапка в процессе изменения состояния
+      if (this.autoCollapse && this.autoCollapsed) {
+        this.stopScroll();
+        // Вернуть скролл обратно
+        if (scroll !== this.scroll) {
+          scroll = this.scroll;
+          // Установить скролл
+          window.scroll(0, scroll);
         }
       }
       // Обычный скролл
@@ -391,8 +382,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Фокус для скролла смахиванием
-  onScrollMouseDown(event: MouseEvent): void {
-    this.scrollMousePosY = event.y;
+  onScrollMouseDown(event: MouseEvent | TouchEvent): void {
+    this.scrollMousePosY = (event as MouseEvent)?.y ?? (event as TouchEvent)?.touches.item(0).clientY;
     this.scrollMouseStartY = window.scrollY;
     // Включить обнаружение движения мышкой
     this.swipeScrollPress = true;
@@ -401,9 +392,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Движение мышкой
-  onMouseMove(event: MouseEvent): void {
+  onMouseMove(event: MouseEvent | TouchEvent): void {
     if (this.swipeScrollPress) {
-      this.swipeScrollDistance = event.y - this.scrollMousePosY;
+      this.swipeScrollDistance = ((event as MouseEvent)?.y ?? (event as TouchEvent)?.touches.item(0).clientY) - this.scrollMousePosY;
       // Запретить скролл
       this.stopScroll();
       // Установить скролл
@@ -412,20 +403,21 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Потеря фокуса любым элементом
-  onMouseUp(event: MouseEvent): void {
+  onMouseUp(): void {
     this.swipeScrollPress = false;
     this.onSwipeDetect();
   }
 
   // Открыть или закрыть меню свайпом
   private onSwipeDetect(): void {
+    const headerStatus = this.getHeaderStatus;
     // Установить скролл
     if (this.autoCollapse && Math.abs(this.swipeScrollDistance) >= this.mouseSwipeStep) {
-      // Схлопнуть
+      // Развернуть
       if (this.swipeScrollDistance > 0) {
         this.expandMenu();
       }
-      // Развернуть
+      // Схлопнуть
       else {
         this.collapseMenu();
       }
@@ -433,12 +425,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Вернуть обратно
     else if (this.autoCollapse && Math.abs(this.swipeScrollDistance) > 0) {
       // Развернуть
-      if (this.swipeScrollDistance > 0) {
-        this.collapseMenu();
+      if (this.swipeScrollDistance < 0 && headerStatus !== HeaderStatus.collapsed) {
+        this.expandMenu();
       }
       // Схлопнуть
-      else {
-        this.expandMenu();
+      else if (this.swipeScrollDistance > 0 || headerStatus === HeaderStatus.collapsed) {
+        this.collapseMenu();
       }
     }
     // Разблокировать скролл
@@ -714,12 +706,34 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     const currentDate: Date = new Date();
     const timeDiff: number = CheckInRange(currentDate.getTime() - this.scrollLastTime.getTime(), Infinity, 1);
     const scrollDiff: number = Math.abs(this.scroll - scroll);
+    const oldScroll: number = this.scroll;
     // Запомнить данные
     this.scrollSpeedByPixel = !!scrollDiff ? MathRound(timeDiff / scrollDiff) : this.scrollSpeedByPixelDefault;
     this.scrollSpeedByPixel = this.scrollSpeedByPixel === Infinity ? this.scrollSpeedByPixelDefault : this.scrollSpeedByPixel;
     this.scrollSpeedByPixel = this.scrollSpeedByPixel > this.scrollSpeedByPixelMaxTime ? this.scrollSpeedByPixelMaxTime : this.scrollSpeedByPixel;
     this.scroll = scroll;
     this.scrollLastTime = currentDate;
+    // Проверить окончание скролла
+    timer(this.scrollEndTimeDetect)
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => this.scrollLastTime === currentDate && !this.autoCollapsed && !this.swipeScrollPress)
+      )
+      .subscribe(() => {
+        const headerMaxHeight: number = this.getHeaderMaxHeight;
+        const headerStatus = this.getHeaderStatus;
+        // Схлопнуть / развернуть меню
+        if (headerStatus === HeaderStatus.inProccess) {
+          // Схлопнуть меню
+          if (scroll > oldScroll && oldScroll < headerMaxHeight) {
+            this.collapseMenu();
+          }
+          // Развернуть меню
+          else if (scroll < oldScroll && scroll < headerMaxHeight) {
+            this.expandMenu();
+          }
+        }
+      });
   }
 }
 
