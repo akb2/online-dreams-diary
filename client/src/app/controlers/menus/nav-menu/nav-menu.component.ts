@@ -92,10 +92,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollSpeedByPixel: number = 0;
   private scrollSpeedByPixelDefault: number = 0.08;
   private scrollSpeedByPixelMaxTime: number = 0.2;
-  private scrollSteps: number = 12;
+  private scrollSteps: number = 10;
 
   private scrollEndTimeDetect: number = 75;
-  private scrollTolastId: string = "";
+  private scrollToLastId: string = "";
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -183,7 +183,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     return Math.round(DrawDatas.maxHeight - DrawDatas.minHeight);
   }
 
-  // Текущий скролл по оси Y
+  // Текущий скролл
   private get getCurrentScroll(): ScrollData {
     const elm: HTMLElement = ScrollElement();
     const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
@@ -356,6 +356,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   // Скролл закончился
   private onWindowScrollEnd(): void {
     this.autoCollapsed = false;
+    this.scrollToLastId = "";
     // Разрешить скролл
     this.startScroll();
   }
@@ -638,7 +639,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Скролл
   private scrollTo(top: number, behavior: ScrollBehavior = "auto"): void {
-    if (this.getCurrentScroll.y !== top) {
+    const scrollData: ScrollData = this.getCurrentScroll;
+    // Если скролл отличается от текущего
+    if (scrollData.y !== top) {
       if (behavior === "auto") {
         ScrollElement().scrollTo({ behavior, top });
         // Окончить скролл
@@ -646,7 +649,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
       // Плавный скролл
       else {
-        const startScroll: number = this.getCurrentScroll.y;
+        const startScroll: number = scrollData.y;
         const scrollDiff: number = Math.abs(top - startScroll);
         const scrollDelta: -1 | 1 = ((top - startScroll) / scrollDiff) > 0 ? 1 : -1;
         const animationTime: number = scrollDiff * this.scrollSpeedByPixel;
@@ -654,7 +657,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         const stepDistance: number = MathRound(scrollDiff / this.scrollSteps);
         const scrollToId: string = CreateRandomID(128);
         // Запомнить ID
-        this.scrollTolastId = scrollToId;
+        this.scrollToLastId = scrollToId;
         // Запретить мануальный скролл
         this.stopScroll();
         // Плавный скролл
@@ -662,7 +665,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           .pipe(
             takeUntil(this.destroyed$),
             map(step => step + 1),
-            takeWhile(step => step < this.scrollSteps && this.scrollTolastId === scrollToId, true),
+            takeWhile(step => step < this.scrollSteps && this.scrollToLastId === scrollToId, true),
           )
           .subscribe(step => {
             let scrollTo: number = MathRound(step * stepDistance);
