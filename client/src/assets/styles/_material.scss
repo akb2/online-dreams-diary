@@ -264,28 +264,39 @@
 
 // Всплывающие сообщения
 @mixin matSnackBar {
-  .mat-mdc-snack-bar-container.mdc-snackbar {
-    // Цвета
-    $colors: (
-      info: colors.$matDisabled 900,
-      success: colors.$matPrimary 700,
-      error: colors.$matStatusWarn 600,
-    );
-    // Цикл по стилям
-    @each $class, $color in $colors {
-      &.snackbar-#{$class} {
-        $backColor: map.get(list.nth($color, 1), list.nth($color, 2));
-        $textColor: map.get(list.nth($color, 1), contrast, list.nth($color, 2));
-        // Переменные
-        --mat-mdc-snack-bar-button-color: $textColor;
-        --mdc-snackbar-container-color: $backColor;
-        --mdc-snackbar-supporting-text-color: $textColor;
-        // Свойства
-        background-color: $backColor;
-        color: $textColor;
-        // Кнопка
-        .mat-simple-snackbar-action {
-          color: $textColor;
+  .mat-mdc-snack-bar {
+    // Обертка
+    &-handset {
+      pointer-events: none;
+    }
+    // Уведомление
+    &-container {
+      pointer-events: all;
+      // Уведомление
+      &.mdc-snackbar {
+        // Цвета
+        $colors: (
+          info: colors.$matDisabled 900,
+          success: colors.$matPrimary 700,
+          error: colors.$matStatusWarn 600,
+        );
+        // Цикл по стилям
+        @each $class, $color in $colors {
+          &.snackbar-#{$class} {
+            $backColor: map.get(list.nth($color, 1), list.nth($color, 2));
+            $textColor: map.get(list.nth($color, 1), contrast, list.nth($color, 2));
+            // Переменные
+            --mat-mdc-snack-bar-button-color: $textColor;
+            --mdc-snackbar-container-color: $backColor;
+            --mdc-snackbar-supporting-text-color: $textColor;
+            // Свойства
+            background-color: $backColor;
+            color: $textColor;
+            // Кнопка
+            .mat-simple-snackbar-action {
+              color: $textColor;
+            }
+          }
         }
       }
     }
