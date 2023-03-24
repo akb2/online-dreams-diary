@@ -11,7 +11,8 @@
 
 <!-- Список комментариев -->
 <div class="list">
-  <app-comment-list [materialType]="materialType"
+  <app-comment-list #commentListElm
+                    [materialType]="materialType"
                     [materialId]="materialId"
                     [emptyCommentsMainTitle]="emptyCommentsMainTitle"
                     [emptyCommentsSubTitle]="emptyCommentsSubTitle"></app-comment-list>

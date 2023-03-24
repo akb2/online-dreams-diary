@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { CommentMaterialType } from "@_models/comment";
 import { AccountService } from "@_services/account.service";
 import { Subject, takeUntil } from "rxjs";
@@ -26,6 +27,8 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @Input() wrapControls: boolean = false;
   @Input() bottomSmiles: boolean = false;
 
+  @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
+
   authState: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
@@ -51,5 +54,16 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Загрузить больше комментариев
+  loadMoreComments(): void {
+    if (!!this.commentListElm) {
+      this.commentListElm.loadMoreComments();
+    }
   }
 }

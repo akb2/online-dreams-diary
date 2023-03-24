@@ -27,8 +27,14 @@
           <div class="comment__header-state">{{comment.createDate | date: 'd.M.y - H:mm'}}</div>
         </div>
       </div>
+      <!-- Текст комментариев -->
       <div class="comment__text"
            [innerHTML]="comment.text | comment"></div>
+    </div>
+    <!-- Загрузчик новых комментариев -->
+    <div class="comment__more-loader"
+         *ngIf="moreLoading">
+      <ng-container [ngTemplateOutlet]="loader"></ng-container>
     </div>
   </div>
 </ng-container>

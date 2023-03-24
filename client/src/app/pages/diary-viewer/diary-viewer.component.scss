@@ -107,9 +107,27 @@
   &__comments {
     position: sticky;
   }
+  // Блок комментариев
+  &__comments {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    // Блок редактора
+    &-editor {
+      background-color: colors.$card;
+      box-shadow: containers.$cardBoxShadow;
+      border-radius: containers.$cardBorderRadius;
+      padding-right: containers.$cardPaddingX;
+    }
+  }
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $commentsWidths) using($gap, $width) {
     gap: $gap;
+    // Блок комментариев
+    &__comments {
+      gap: $gap;
+    }
     // На всю ширину
     @if ($width == 100%) {
       // Внутренние блоки

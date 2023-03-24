@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { User, UserSex } from "@_models/account";
 import { Comment, CommentMaterialType } from "@_models/comment";
 import { CommentService } from "@_services/comment.service";
 import { Subject, takeUntil } from "rxjs";
@@ -24,6 +23,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
 
   comments: Comment[] = [];
+  count: number = 0;
 
   loading: boolean = true;
   moreLoading: boolean = false;
@@ -42,7 +42,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.loadComments();
+    this.loadComments(true);
   }
 
   ngOnDestroy(): void {
@@ -55,7 +55,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
   // Загрузка комментариев
-  private loadComments(): void {
+  private loadComments(listenNew: boolean = false): void {
     this.moreLoading = true;
     this.changeDetectorRef.detectChanges();
     // Запрос комментариев
@@ -64,21 +64,26 @@ export class CommentListComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$)
       )
       .subscribe(
-        ({ result: comments }) => {
+        ({ result: comments, count }) => {
           this.addComment(comments);
           // Обновить
+          this.count = count;
           this.loading = false;
           this.moreLoading = false;
           this.changeDetectorRef.detectChanges();
           // Прослушивание новых комментариев
-          this.waitNewComment();
+          if (listenNew) {
+            this.waitNewComment();
+          }
         },
         () => {
           this.loading = false;
           this.moreLoading = false;
           this.changeDetectorRef.detectChanges();
           // Прослушивание новых комментариев
-          this.waitNewComment();
+          if (listenNew) {
+            this.waitNewComment();
+          }
         }
       );
   }
@@ -89,6 +94,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroyed$))
       .subscribe(comment => {
         this.addComment(comment);
+        // Обновить
+        this.count++;
         this.changeDetectorRef.detectChanges();
       });
   }
@@ -110,6 +117,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
           // Добавить
           else {
             this.comments.push(comment);
+            this.skipComments++;
           }
         });
       // Сортировка
@@ -118,6 +126,13 @@ export class CommentListComponent implements OnInit, OnDestroy {
           .filter(comment => !!comment)
           .sort(({ createDate: a }, { createDate: b }) => a > b ? -1 : (a < b ? 1 : 0));
       }
+    }
+  }
+
+  // Загрузить больше комментариев
+  loadMoreComments(): void {
+    if (this.skipComments < this.count && this.count > 0 && !this.moreLoading) {
+      this.loadComments();
     }
   }
 }

@@ -99,7 +99,8 @@
   </div>
   <!-- Стена -->
   <div class="comments">
-    <app-comment-block [placeholder]="getWallPlaceholder(visitedUser | petrovich: 3)"
+    <app-comment-block #commentListElm
+                       [placeholder]="getWallPlaceholder(visitedUser | petrovich: 3)"
                        emptyCommentsMainTitle="Нет записей"
                        [emptyCommentsSubTitle]="getWallEmptySubTitle(visitedUser | petrovich: 3)"
                        [materialType]="materialType"

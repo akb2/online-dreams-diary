@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDe
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
+import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
 import { ScrollElement } from "@_datas/app";
@@ -12,6 +13,7 @@ import { SimpleObject } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { Dream, DreamMode } from "@_models/dream";
 import { NavMenuType } from "@_models/nav-menu";
+import { ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
@@ -37,6 +39,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   @ViewChild("contentPanel", { read: ElementRef }) private contentPanel: ElementRef;
   @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
   @ViewChild("rightPanel", { read: ElementRef }) private rightPanel: ElementRef;
+  @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
@@ -53,9 +56,13 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   private fromMark: string;
   dream: Dream;
   user: User;
+  authState: boolean;
 
   leftPanelHelperShift: number = 0;
   rightPanelHelperShift: number = 0;
+
+  private scrollEnded: boolean = false;
+  private scrollEndDistance: number = 150;
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -122,6 +129,17 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
   }
 
+  // Текущий скролл
+  private get getCurrentScroll(): ScrollData {
+    const elm: HTMLElement = ScrollElement();
+    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
+    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
+    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
+    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
+    // Скролл
+    return { x, y, maxX, maxY };
+  }
+
 
 
 
@@ -171,6 +189,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Скролл панелей
   private onPanelsPosition(): void {
+    this.onScroll();
+    // Все элементы определены
     if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
       const contentPanel: HTMLElement = this.contentPanel.nativeElement;
       const leftPanel: HTMLElement = this.leftPanel.nativeElement;
@@ -181,23 +201,49 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const leftPanelHeight: number = leftPanel.clientHeight;
       const rightPanelHeight: number = rightPanel.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
-      const availLeftShift: boolean = contentPanelHeight < leftPanelHeight;
-      const availRightShift: boolean = contentPanelHeight < rightPanelHeight;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
-      const scrollY: number = Math.ceil(ScrollElement().scrollTop ?? 0);
+      const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
+      const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
+      const scrollY: number = this.getCurrentScroll.y;
       const scrollShift: number = scrollY - this.beforeScroll;
-      const maxShift: number = contentPanelHeight - screenHeight - headerShift;
+      const maxLeftShift: number = leftPanelHeight - screenHeight - headerShift;
+      const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим
       this.leftPanelHelperShift = availLeftShift && contentPanelHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
+        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -headerShift) :
         headerShift;
       // Если отступ допустим
       this.rightPanelHelperShift = availRightShift && contentPanelHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.rightPanelHelperShift, maxShift, -headerShift) :
+        -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
         headerShift;
       // Обновить
       this.beforeScroll = scrollY;
       this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Прослушивание скролла
+  private onScroll(): void {
+    if (!!this.contentPanel?.nativeElement && !!this.rightPanel?.nativeElement && !!this.commentListElm) {
+      const contentPanel: HTMLElement = this.contentPanel.nativeElement;
+      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
+      const mainMenuHeight: number = this.mainMenu.headerHeight;
+      const rightPanelHeight: number = rightPanel.clientHeight;
+      const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
+      const headerShift: number = mainMenuHeight + spacing;
+      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
+      const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
+      const currentRightShift: number = -this.rightPanelHelperShift;
+      // Скролл прокручен до конца
+      if (maxRightShift > 0 && currentRightShift > maxRightShift - this.scrollEndDistance && !this.scrollEnded) {
+        this.scrollEnded = true;
+        // Загрузить новые комментарии
+        this.commentListElm.loadMoreComments();
+      }
+      // Отменить событие окончания скролла
+      else if (this.scrollEnded && currentRightShift < maxRightShift - this.scrollEndDistance) {
+        this.scrollEnded = false;
+      }
     }
   }
 
@@ -223,6 +269,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       .subscribe(
         ({ user, params, dream }) => {
           this.user = user;
+          this.authState = !!this.user && !!this.user?.id;
           this.fromMark = params.from?.toString() || "";
           this.dream = dream;
           this.ready = true;

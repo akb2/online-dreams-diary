@@ -42,13 +42,20 @@
       <div #rightPanel
            class="content__comments"
            [ngStyle]="{ top: rightPanelHelperShift + 'px' }">
-        <app-comment-block placeholder="Что вы об этом думаете?"
-                           [emptyCommentsSubTitle]="getWallEmptySubTitle(dream.user | petrovich)"
-                           [materialType]="commentMaterialType"
-                           [materialOwner]="dream.user.id"
-                           [materialId]="dream.id"
-                           [wrapControls]="true"
-                           [bottomSmiles]="true"></app-comment-block>
+        <!-- Редактор -->
+        <div class="content__comments-editor">
+          <app-comment-editor content
+                              [materialType]="commentMaterialType"
+                              [materialId]="dream.id"
+                              [materialOwner]="dream.user.id"
+                              placeholder="Что вы об этом думаете?"
+                              [wrapControls]="true"
+                              [bottomSmiles]="true"></app-comment-editor>
+        </div>
+        <!-- Список комментариев -->
+        <app-comment-list #commentListElm
+                          [materialType]="commentMaterialType"
+                          [materialId]="dream.id"></app-comment-list>
       </div>
     </div>
   </div>

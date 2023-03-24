@@ -1,5 +1,5 @@
 import { DatePipe } from "@angular/common";
-import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
@@ -14,12 +14,14 @@ import { BackgroundImageData } from "@_models/appearance";
 import { CommentMaterialType } from "@_models/comment";
 import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from "@_models/friend";
 import { NavMenuType } from "@_models/nav-menu";
+import { ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
+import { CommentBlockComponent } from "./comment-block/comment-block.component";
 
 
 
@@ -32,7 +34,7 @@ import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, 
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDestroy {
+export class ProfileDetailComponent implements OnInit, AfterContentChecked, AfterViewInit, OnDestroy {
 
 
   @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
@@ -40,6 +42,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
   @ViewChild("leftPanelHelper", { read: ElementRef }) private leftPanelHelper: ElementRef;
   @ViewChild("informationElm", { read: ElementRef }) private informationElm: ElementRef;
   @ViewChild("dreamListElm", { read: ElementRef }) private dreamListElm: ElementRef;
+  @ViewChild("commentListElm", { read: CommentBlockComponent }) private commentListElm: CommentBlockComponent;
 
   imagePrefix: string = "/assets/images/backgrounds/";
   pageData: RouteData;
@@ -68,6 +71,9 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
   friendListLimit: number = 4;
   private beforeScroll: number = 0;
   leftPanelHelperShift: number = 0;
+
+  private scrollEnded: boolean = false;
+  private scrollEndDistance: number = 150;
 
   user: User;
   visitedUser: User;
@@ -108,6 +114,17 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
         "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
   }
 
+  // Текущий скролл
+  private get getCurrentScroll(): ScrollData {
+    const elm: HTMLElement = ScrollElement();
+    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
+    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
+    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
+    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
+    // Скролл
+    return { x, y, maxX, maxY };
+  }
+
 
 
 
@@ -140,6 +157,10 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     this.defineUrlParams();
     this.defineVisitingUser();
     this.defineFriendList();
+  }
+
+  ngAfterViewInit(): void {
+    this.onScroll();
   }
 
   ngAfterContentChecked(): void {
@@ -202,6 +223,8 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
 
   // Посчитать смещение левой колонки
   private onLeftPanelPosition(): void {
+    this.onScroll();
+    // Все элементы определены
     if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement) {
       const elm: HTMLElement = this.leftPanel.nativeElement;
       const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
@@ -223,6 +246,23 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       // Обновить
       this.beforeScroll = scrollY;
       this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Прослушивание скролла
+  private onScroll(): void {
+    const scrollData: ScrollData = this.getCurrentScroll;
+    // Скролл прокручен до конца
+    if (scrollData.maxY > 0 && scrollData.y > scrollData.maxY - this.scrollEndDistance && !this.scrollEnded) {
+      this.scrollEnded = true;
+      // Загрузить новые комментарии
+      if (!!this.commentListElm) {
+        this.commentListElm.loadMoreComments();
+      }
+    }
+    // Отменить событие окончания скролла
+    else if (this.scrollEnded && scrollData.y < scrollData.maxY - this.scrollEndDistance) {
+      this.scrollEnded = false;
     }
   }
 
