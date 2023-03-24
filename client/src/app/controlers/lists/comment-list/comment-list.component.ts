@@ -60,9 +60,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Запрос комментариев
     this.commentService.getList(this.materialType, this.materialId, this.skipComments, ["0002"])
-      .pipe(
-        takeUntil(this.destroyed$)
-      )
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(
         ({ result: comments, count }) => {
           this.addComment(comments);
@@ -131,6 +129,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Загрузить больше комментариев
   loadMoreComments(): void {
+    console.log(this.skipComments, this.count);
     if (this.skipComments < this.count && this.count > 0 && !this.moreLoading) {
       this.loadComments();
     }

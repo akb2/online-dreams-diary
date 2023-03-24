@@ -149,7 +149,10 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
       .pipe(
         takeUntil(this.destroyed$),
         map(() => ({ elm: this.leftPanel.nativeElement, elmHelper: this.leftPanelHelper.nativeElement })),
-        mergeMap(({ elm, elmHelper }) => merge(fromEvent(ScrollElement(), "scroll"), this.screenService.elmResize([elm, elmHelper])))
+        mergeMap(({ elm, elmHelper }) => merge(
+          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
+          this.screenService.elmResize([elm, elmHelper]).pipe(takeUntil(this.destroyed$))
+        ))
       )
       .subscribe(() => this.onLeftPanelPosition());
     // Запуск определения данных

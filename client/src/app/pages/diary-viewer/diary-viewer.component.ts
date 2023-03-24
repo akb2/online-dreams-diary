@@ -171,8 +171,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           rightPanel: this.rightPanel.nativeElement
         })),
         mergeMap(({ contentPanel, leftPanel, rightPanel }) => merge(
-          fromEvent(ScrollElement(), "scroll"),
-          this.screenService.elmResize([contentPanel, leftPanel, rightPanel])
+          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
+          this.screenService.elmResize([contentPanel, leftPanel, rightPanel]).pipe(takeUntil(this.destroyed$))
         ))
       )
       .subscribe(() => this.onPanelsPosition());
