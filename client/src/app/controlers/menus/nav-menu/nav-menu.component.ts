@@ -96,6 +96,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   private scrollEndTimeDetect: number = 75;
   private scrollToLastId: string = "";
+  private scrollEndLastId: string = "";
+  private scrollEndLastDimension: -1 | 0 | 1 = 0;
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -725,30 +727,37 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     const timeDiff: number = CheckInRange(currentDate.getTime() - this.scrollLastTime.getTime(), Infinity, 1);
     const scrollDiff: number = Math.abs(this.scroll - scroll);
     const oldScroll: number = this.scroll;
+    const scrollLastId: string = CreateRandomID(128);
+    const dimension: -1 | 0 | 1 = oldScroll < scroll ? 1 : (oldScroll > scroll ? -1 : 0);
+    const oldDimension: -1 | 0 | 1 = this.scrollEndLastDimension;
     // Запомнить данные
     this.scrollSpeedByPixel = !!scrollDiff ? MathRound(timeDiff / scrollDiff) : this.scrollSpeedByPixelDefault;
     this.scrollSpeedByPixel = this.scrollSpeedByPixel === Infinity ? this.scrollSpeedByPixelDefault : this.scrollSpeedByPixel;
     this.scrollSpeedByPixel = this.scrollSpeedByPixel > this.scrollSpeedByPixelMaxTime ? this.scrollSpeedByPixelMaxTime : this.scrollSpeedByPixel;
     this.scroll = scroll;
     this.scrollLastTime = currentDate;
+    this.scrollEndLastId = scrollLastId;
+    this.scrollEndLastDimension = dimension;
     // Проверить окончание скролла
     WaitObservable(() => this.swipeScrollPress)
       .pipe(
         takeUntil(this.destroyed$),
         concatMap(() => timer(this.scrollEndTimeDetect)),
+        takeWhile(() => this.scrollEndLastId === scrollLastId),
         filter(() => this.scrollLastTime === currentDate && !this.autoCollapsed && !this.swipeScrollPress)
       )
       .subscribe(() => {
         const headerMaxHeight: number = this.getHeaderMaxHeight;
         const headerStatus = this.getHeaderStatus;
+        const dimensionChanged: boolean = dimension !== 0 && oldDimension !== 0 && dimension !== oldDimension && Math.abs(oldScroll - scroll) < 2;
         // Схлопнуть / развернуть меню
         if (headerStatus === HeaderStatus.inProccess) {
           // Схлопнуть меню
-          if (scroll > oldScroll && oldScroll < headerMaxHeight) {
+          if (((scroll > oldScroll && !dimensionChanged) || (dimensionChanged && dimension === -1)) && oldScroll < headerMaxHeight) {
             this.collapseMenu();
           }
           // Развернуть меню
-          else if (scroll < oldScroll && scroll < headerMaxHeight) {
+          else if (((scroll < oldScroll && !dimensionChanged) || (dimensionChanged && dimension === 1)) && scroll < headerMaxHeight) {
             this.expandMenu();
           }
           // Определить
