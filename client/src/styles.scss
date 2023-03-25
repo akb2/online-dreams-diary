@@ -155,10 +155,6 @@ html {
   &.root-#{$_elm} {
     width: 100%;
     min-height: calc(100vh - #{vars.$headerHeight});
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    justify-content: center;
     background-color: colors.$background;
     // Последний элемент
     > .#{$_elm}:last-child {
@@ -166,6 +162,9 @@ html {
     }
     // По середине
     &.center {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
       justify-content: center;
     }
     // Для телефона
