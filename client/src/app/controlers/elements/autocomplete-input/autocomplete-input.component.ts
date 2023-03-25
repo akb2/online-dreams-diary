@@ -156,7 +156,7 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         map(() => document.getElementsByClassName(this.autoCompleteID)[0] as HTMLElement),
         filter(elm => !!elm)
       )
-      .subscribe(elm => this.onAutoCompleteListOpening(elm));
+      .subscribe(elm => this.onAutoCompleteListOpened(elm));
   }
 
   ngAfterViewInit(): void {
@@ -245,12 +245,17 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Проверка положения выпадающего списка
-  private onAutoCompleteListOpening(elm: HTMLElement): void {
+  private onAutoCompleteListOpened(elm: HTMLElement): void {
     const defaultValue: number = Infinity;
+    const field: HTMLElement = this.field.nativeElement;
     const parent: HTMLElement = elm.parentElement;
     const left: number = ParseInt(parent.style.left, defaultValue);
     const right: number = ParseInt(parent.style.right, defaultValue);
     const autoCompleteRight: boolean = left === defaultValue && right !== defaultValue;
+    const screenHeight: number = ScrollElement().clientHeight;
+    const fieldTop: number = field.getBoundingClientRect().top;
+    const top: number = ParseInt(parent.style.top, defaultValue);
+    const height: number = parent.getBoundingClientRect().height;
     // Поле справа
     if (autoCompleteRight) {
       elm.classList.add("placed-right");
@@ -260,6 +265,14 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     else {
       elm.classList.add("placed-left");
       elm.classList.remove("placed-right");
+    }
+    // Поправить позицию
+    if (top + height > screenHeight) {
+      const bottom: number = screenHeight - fieldTop;
+      // Установить позицию
+      parent.style.top = "auto";
+      parent.style.bottom = bottom + "px";
+      elm.classList.add("placed-bottom");
     }
   }
 

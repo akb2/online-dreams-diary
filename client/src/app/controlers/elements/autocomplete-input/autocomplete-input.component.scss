@@ -154,6 +154,10 @@
     &.placed-left {
       margin-left: -#{vars.$matFormFieldImageSize} !important;
     }
+    // Позиционирование по нижнему краю
+    &.placed-bottom {
+      border-radius: 4px 4px 0 0 !important;
+    }
   }
 }
 
