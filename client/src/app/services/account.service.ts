@@ -8,7 +8,7 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
-import { AuthResponce, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
+import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
 import { ApiService } from "@_services/api.service";
@@ -437,6 +437,7 @@ export class AccountService implements OnDestroy {
   userPrivRulesConverter(mixedData: any = null): UserPrivate {
     try {
       const data: any = mixedData ?? DefaultUserPriv;
+      const hasntBePublic: (keyof UserPrivate)[] = ["myCommentsWrite"];
       // Вернуть данные
       return UserPrivateNames
         .map(({ rule }) => rule)
@@ -448,6 +449,13 @@ export class AccountService implements OnDestroy {
             whiteList: ToArray(data?.whiteList, d => ParseInt(d))
           }
         }))
+        .map(({ rule, data }) => {
+          if (hasntBePublic.includes(rule) && data.type === PrivateType.public) {
+            data.type = PrivateType.users;
+          }
+          // Вернуть правило
+          return { rule, data };
+        })
         .reduce((o, { rule: k, data: v }) => ({ ...o, [k as keyof UserPrivate]: v }), {} as UserPrivate);
     }
     catch (e: any) {

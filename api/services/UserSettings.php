@@ -52,10 +52,12 @@ class UserSettingsService
     $user = $this->userService->getUser($userId);
     $rules = is_array($user['private']) && count($user['private']) > 0 ? $user['private'] : $this->getDefaultUserPrivate();
     $ruleData = is_array($rules[$rule]) && count($rules[$rule]) > 0 ? $rules[$rule] : $this->getDefaultUserPrivateItem();
+    $hasntBePublic = ['myCommentsWrite'];
     // Правило существует
     if (!!$ruleData) {
       // Привести к типам
       $ruleData['type'] = intval($ruleData['type']);
+      $ruleData['type'] = array_search($rule, $hasntBePublic) ? 2 : $ruleData['type'];
       // Пользователь в белом списке
       if (array_search($currentUser, $ruleData['whiteList'])) {
         return true;
