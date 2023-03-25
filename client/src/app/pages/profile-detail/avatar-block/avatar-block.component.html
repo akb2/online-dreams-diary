@@ -22,8 +22,6 @@
   <img [ngClass]="{ 'hover-avail': itsMyPage, 'has-control': !itsMyPage }"
        [src]="user.avatars.crop"
        [hidden]="loadingAvatar"
-       (load)="onAvatarLoadSuccess()"
-       (error)="onAvatarLoadError()"
        (click)="itsMyPage? fileInput.click(): null" />
   <!-- Загрузчик -->
   <ng-container [ngTemplateOutlet]="avatarImageLoader"

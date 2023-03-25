@@ -1,6 +1,8 @@
 import { BaseSearch, BaseSearchSortField, BaseSearchSortType } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
+import { CustomObjectKey } from "./app";
+import { NotificationActionType } from "./notification";
 
 
 
@@ -25,12 +27,20 @@ export interface User extends UserSave {
 export interface UserSettings {
   profileBackground: BackgroundImageData;
   profileHeaderType: NavMenuType;
+  notifications: CustomObjectKey<NotificationActionType, UserNotificationSetting>;
 }
 
 // Интерфейс настроек пользователя для API
 export interface UserSettingsDto {
   profileBackground: number;
   profileHeaderType: string;
+  notifications: CustomObjectKey<NotificationActionType, UserNotificationSetting>;
+}
+
+// настройки уведомлений пользователя
+export interface UserNotificationSetting {
+  site: boolean;
+  email: boolean;
 }
 
 // Интерфейс настроек приватности

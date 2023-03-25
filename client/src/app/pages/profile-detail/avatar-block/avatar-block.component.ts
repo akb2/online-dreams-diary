@@ -72,9 +72,9 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
   ngOnChanges(): void {
     this.avatarForm.setValue(this.user?.avatars?.full);
     this.showDefaultAva = false;
+    this.loadingAvatar = false;
     // Остановить загрузчик при отсутствии аватарки
     if (!this.getCheckVisitedUserHasAvatar) {
-      this.loadingAvatar = false;
       this.showDefaultAva = true;
     }
   }
@@ -87,20 +87,6 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
 
 
 
-
-  // Аватарка загружена
-  onAvatarLoadSuccess(): void {
-    this.showDefaultAva = false;
-    this.loadingAvatar = false;
-    this.changeDetectorRef.detectChanges();
-  }
-
-  // Аватарка загружена
-  onAvatarLoadError(): void {
-    this.showDefaultAva = true;
-    this.loadingAvatar = false;
-    this.changeDetectorRef.detectChanges();
-  }
 
   // Выбор файла
   onSelectFiles(files: FileList): void {

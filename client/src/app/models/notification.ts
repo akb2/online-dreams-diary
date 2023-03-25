@@ -12,6 +12,7 @@ export interface Notification {
 
 // Перечисление типа уведомлений
 export enum NotificationActionType {
+  security = "security",
   addToFriend = "add_to_friend",
   sendComment = "send_comment"
 };
@@ -28,6 +29,15 @@ export interface NotificationSearchRequest {
   excludeIds: number[];
   skip: number;
   limit: number;
+}
+
+// Описание типа уведомления
+export interface NotificationTypeDescription {
+  type: NotificationActionType;
+  title: string;
+  subTitle: string;
+  siteRequired: boolean;
+  emailRequired: boolean;
 }
 
 

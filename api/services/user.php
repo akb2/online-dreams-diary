@@ -514,7 +514,8 @@ class UserService
     if (strlen($id) > 0) {
       $sqlData = array(
         'profileBackground' => $data['profileBackground'],
-        'profileHeaderType' => $data['profileHeaderType']
+        'profileHeaderType' => $data['profileHeaderType'],
+        'notifications' => $data['notifications']
       );
       // Сохранение данных
       if ($this->dataBaseService->executeFromFile('account/saveUserSettings.sql', array(json_encode($sqlData), $id))) {

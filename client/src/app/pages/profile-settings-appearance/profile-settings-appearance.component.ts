@@ -50,7 +50,7 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
       .subscribe(user => {
         this.user = user;
         this.changeDetectorRef.detectChanges();
-      })
+      });
   }
 
   ngOnDestroy() {
@@ -71,7 +71,8 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
       ) {
         this.saveUserSettings({
           profileBackground: BackgroundImageDatas.find(b => b.id === settings.backgroundId),
-          profileHeaderType: settings.navMenuType
+          profileHeaderType: settings.navMenuType,
+          notifications: this.user.settings.notifications
         });
       }
     }

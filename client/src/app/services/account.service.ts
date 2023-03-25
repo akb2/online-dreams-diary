@@ -11,6 +11,7 @@ import { CapitalizeFirstLetter } from "@_helpers/string";
 import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
 import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
+import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
@@ -348,7 +349,8 @@ export class AccountService implements OnDestroy {
   saveUserSettings(settings: UserSettings, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/saveUserSettings", ObjectToFormData({
       profileBackground: settings.profileBackground.id,
-      profileHeaderType: settings.profileHeaderType as string
+      profileHeaderType: settings.profileHeaderType as string,
+      notifications: JSON.stringify(settings.notifications)
     })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
@@ -406,6 +408,13 @@ export class AccountService implements OnDestroy {
     try {
       const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
       const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
+      let notifications = {};
+      // Настройки уведомлений из объекта
+      try {
+        notifications = JSON.parse(data?.settings?.notifications);
+      }
+      // Настройки по умолчанию
+      catch (e: any) { }
       // Права доступа
       const privateRules: UserPrivate = this.userPrivRulesConverter(data?.private);
       // Данные пользователя
@@ -421,7 +430,16 @@ export class AccountService implements OnDestroy {
         hasAccess: !!data?.hasAccess,
         settings: {
           profileBackground: BackgroundImageDatas.find(d => d.id == background) ?? BackgroundImageDatas[0],
-          profileHeaderType: headerType ?? NavMenuType.short
+          profileHeaderType: headerType ?? NavMenuType.short,
+          notifications: Object.entries(NotificationActionType)
+            .map(([type]) => NotificationActionType[type])
+            .reduce((o, type) => ({
+              ...o,
+              [type]: {
+                site: notifications?.hasOwnProperty(type) ? !!notifications[type]?.site : true,
+                email: notifications?.hasOwnProperty(type) ? !!notifications[type]?.email : true
+              }
+            }), {})
         },
         private: privateRules
       } as User;

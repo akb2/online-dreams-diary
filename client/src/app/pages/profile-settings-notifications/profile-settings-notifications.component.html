@@ -1,0 +1,53 @@
+<ng-container *ngIf="user">
+  <!-- Шапка -->
+  <app-main-menu [autoCollapse]="true"
+                 [imageFullShow]="true"
+                 [type]="navMenuType.collapse"
+                 [image]="imagePrefix + user.settings.profileBackground[( user.settings.profileHeaderType === navMenuType.full? 'imageName': 'imageNameShort' )]"
+                 [imagePositionX]="user.settings.profileBackground.positionX"
+                 [imagePositionY]="user.settings.profileBackground.positionY"
+                 [imageOverlay]="user.settings.profileBackground.imageOverlay"
+                 [mainTitle]="user.name + ' ' + user.lastName"
+                 subTitle="Уведомления"
+                 [avatarImage]="user.avatars.middle"
+                 avatarIcon="person"
+                 backButtonLink="/profile/settings"></app-main-menu>
+
+  <!-- Контейнер с данными -->
+  <div class="root-section">
+    <div class="container">
+      <form class="table"
+            [formGroup]="form">
+        <!-- Заголовки -->
+        <div class="table__line"
+             *ngFor="let description of notificationTypeDescriptions">
+          <div class="table__ceil title name">Событие</div>
+          <div class="table__ceil title site">Уведомление на сайте</div>
+          <div class="table__ceil title email">E-mail</div>
+          <!-- Описание -->
+          <div class="table__ceil name">
+            <span class="highlight">{{description.title}}</span>
+            <span class="light">{{description.subTitle}}</span>
+          </div>
+          <!-- Внутри сайта -->
+          <div class="table__ceil site">
+            <mat-slide-toggle color="primary"
+                              formControlName="{{description.type}}-site"
+                              (click)="onSave()"></mat-slide-toggle>
+          </div>
+          <!-- Для почты -->
+          <div class="table__ceil email">
+            <mat-slide-toggle color="primary"
+                              formControlName="{{description.type}}-email"
+                              (click)="onSave()"></mat-slide-toggle>
+          </div>
+        </div>
+        <!-- Загрузчик -->
+        <div class="table__loader"
+             *ngIf="loading">
+          <div class="loader"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-container>
