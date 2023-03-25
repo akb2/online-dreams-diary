@@ -56,6 +56,13 @@ import { AuthRules } from "@_models/menu";
       },
       // Настройки: Приватность
       {
+        path: "profile/settings/notifications",
+        loadChildren: () => import("@_pages/profile-settings-notifications/profile-settings-notifications.module").then(m => m.profileSettingsNotificationsModule),
+        data: { authRule: AuthRules.auth },
+        canActivate: [AuthGuard]
+      },
+      // Настройки: Приватность
+      {
         path: "profile/settings/private",
         loadChildren: () => import("@_pages/profile-settings-private/profile-settings-private.module").then(m => m.ProfileSettingsPrivateModule),
         data: { authRule: AuthRules.auth },
