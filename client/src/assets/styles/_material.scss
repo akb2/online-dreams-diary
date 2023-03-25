@@ -309,59 +309,76 @@
   .title {
     // Свойства
     display: grid;
-    grid-template-columns: 1fr #{vars.$dialogPadding};
-    grid-template-rows: vars.$dialogPadding;
+    grid-template-columns: 1fr #{vars.$dialogTitleSize};
+    grid-template-rows: vars.$dialogTitleSize;
     grid-template-areas: "title button";
     grid-gap: 0 15px;
     align-items: center;
-    line-height: math.div(vars.$dialogPadding, 2);
+    font-size: vars.$dialogTitleFontSize;
     // Подзаголовок
     &.hasSubTitle {
       grid-template-areas: "title button" "subtitle button";
-      grid-template-rows: #{math.div(vars.$dialogPadding, 2)} #{math.div(vars.$dialogPadding, 2)};
+      grid-template-rows: #{vars.$dialogTitleSize * 0.6} #{vars.$dialogTitleSize * 0.4};
     }
 
+    // Текст
+    &__title,
+    &__subTitle {
+      font: inherit;
+    }
     // Заголовок
     &__title {
       grid-area: title;
-      font: inherit;
       color: #000;
+      line-height: vars.$dialogTitleSize * 0.6;
     }
     // Подзаголовок
     &__subTitle {
       grid-area: subtitle;
-      font: inherit;
-      font-size: 0.7em;
+      font-size: 0.85em;
       font-weight: 400;
       color: #000;
+      line-height: vars.$dialogTitleSize * 0.4;
     }
     // Кнопка закрыть
     &__button {
       grid-area: button;
-      width: vars.$dialogPadding;
-      height: vars.$dialogPadding;
-      line-height: vars.$dialogPadding;
-      font-size: vars.$dialogPadding * 0.6;
+      width: vars.$dialogTitleSize;
+      height: vars.$dialogTitleSize;
+      line-height: vars.$dialogTitleSize;
+      font-size: vars.$dialogTitleSize * 0.6;
       cursor: pointer;
       text-align: center;
     }
   }
   // Окно
-  .mat-dialog {
-    // Окно
-    &-container {
+  .mat-mdc-dialog {
+    // Общая обертка
+    ::ng-deep &-surface {
+      padding-bottom: vars.$dialogPadding;
+    }
+    // Заголовок
+    &-title {
       padding: vars.$dialogPadding;
+      margin: 0;
+      // Псевдоэлемент
+      &::before {
+        display: none;
+        content: none;
+      }
     }
     // Содержимое
     &-content {
       font-size: 0;
       line-height: 1;
+      padding: 0 #{vars.$dialogPadding};
       max-height: vars.$dialogContentMaxHeight;
     }
     // Действия
     &-actions {
       width: 100%;
-      padding: 16px 0;
+      padding: vars.$dialogPadding;
+      padding-bottom: 0;
       // Кнопки
       > .buttons {
         width: 100%;
