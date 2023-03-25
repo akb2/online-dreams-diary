@@ -67,6 +67,13 @@ const MenuItems: MenuItem[] = [
   },
   // Приватность
   {
+    icon: "notifications_active",
+    text: "Уведомления",
+    desc: "Настройка типов уведомлений и куда их направлять",
+    link: "notifications"
+  },
+  // Приватность
+  {
     icon: "vpn_lock",
     text: "Приватность",
     desc: "Настройка безопасности ваших персональных данных",

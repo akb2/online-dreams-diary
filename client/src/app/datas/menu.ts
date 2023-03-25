@@ -74,6 +74,11 @@ export const MenuItems: MenuItemsListDevices = {
             text: "Мои данные",
             link: "/profile/settings/person",
           },
+          // Персональные данные
+          {
+            text: "Уведомления",
+            link: "/profile/settings/notifications",
+          },
           // Приватность
           {
             text: "Приватность",
