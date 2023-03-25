@@ -31,7 +31,7 @@
           <div class="setting__type">
             <app-autocomplete-input formControlName="type"
                                     label="Кому доступно"
-                                    [optionData]="privateTypes"
+                                    [optionData]="getAvailTypes(rule)"
                                     (selectItemEvent)="onSave()"></app-autocomplete-input>
           </div>
           <!-- Белый список -->
@@ -81,7 +81,7 @@
           <!-- Блок лоадера -->
           <div class="setting__loader"
                *ngIf="settingsLoader">
-            <app-inform></app-inform>
+            <div class="loader"></div>
           </div>
         </div>
       </app-card>

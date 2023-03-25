@@ -27,7 +27,6 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
 
   settingsLoader: boolean = false;
-  private firstFormUpdate: boolean = true;
 
   form: FormGroup;
   user: User;
@@ -40,7 +39,7 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   navMenuType: NavMenuType = NavMenuType.collapse;
   ruleNames: UserPrivateNameItem[] = UserPrivateNames;
 
-  privateTypes: OptionData[] = PrivateTypes;
+  private privateTypes: OptionData[] = PrivateTypes;
   peoplePlural: SimpleObject = PeoplePlural;
 
   private destroy$: Subject<void> = new Subject<void>();
@@ -82,6 +81,17 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   // Состояние просмотра полного списка
   getUserMoreState(rule: keyof UserPrivate, listType: ListType): boolean {
     return this.showAll[rule][listType] ?? false;
+  }
+
+  // Список доступных прав доступа
+  getAvailTypes(rule: UserPrivateNameItem): OptionData[] {
+    if (!!rule?.availValues?.length) {
+      return this.privateTypes.filter(({ key }) => rule.availValues.some(type => type.toString() === key));
+    }
+    // Все типы доступны
+    else {
+      return this.privateTypes;
+    }
   }
 
 

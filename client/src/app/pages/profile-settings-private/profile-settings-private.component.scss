@@ -3,6 +3,7 @@
 @use "screens";
 @use "colors";
 @use "mixins";
+@use "vars";
 
 // Настройки правила доступа
 .setting {
@@ -73,6 +74,10 @@
     align-items: center;
     justify-content: center;
     background-color: transparentize(colors.$card, 0.3);
+    // Элемент лоадера
+    .loader {
+      @include mixins.loader(vars.$matFormFieldImageSize, vars.$iconsSmallBorderRadius, 0.8s);
+    }
   }
 
   // Адаптив

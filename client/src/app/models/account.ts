@@ -37,6 +37,8 @@ export interface UserSettingsDto {
 export interface UserPrivate {
   myPage: UserPrivateItem;
   myDreamList: UserPrivateItem;
+  myCommentsWrite: UserPrivateItem;
+  myCommentsRead: UserPrivateItem;
 }
 
 // Интерфейс элемента настроек приватности
@@ -52,6 +54,7 @@ export interface UserPrivateNameItem {
   icon: string;
   name: string;
   desc: string;
+  availValues?: PrivateType[];
 }
 
 // Интерфейс массива аватарок

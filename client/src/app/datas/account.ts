@@ -1,6 +1,6 @@
-import { OptionData } from "@_models/form";
 import { PrivateType, UserPrivate, UserPrivateItem, UserPrivateNameItem } from "@_models/account";
 import { SimpleObject } from "@_models/app";
+import { OptionData } from "@_models/form";
 
 
 
@@ -32,6 +32,21 @@ export const UserPrivateNames: UserPrivateNameItem[] = [
     icon: "collections_bookmark",
     name: "Мой дневник снов",
     desc: "Кто может просматривать ваш список сновидений (это не влияет на публичные сновидения в общем дневнике)"
+  },
+  // Писать на стене
+  {
+    rule: "myCommentsWrite",
+    icon: "rate_review",
+    name: "Комментарии: создание",
+    desc: "Кто может оставлять комментарии на вашей стене и других ваших материалах",
+    availValues: [PrivateType.private, PrivateType.friends, PrivateType.users]
+  },
+  // Читать стену
+  {
+    rule: "myCommentsRead",
+    icon: "mark_chat_unread",
+    name: "Комментарии: чтение",
+    desc: "Кто может просматривать комментарии на вашей стене и других ваших материалах"
   }
 ];
 
@@ -77,5 +92,7 @@ export const DefaultUserPrivItem: UserPrivateItem = {
 // Список правил приватности по умолчанию
 export const DefaultUserPriv: UserPrivate = {
   myPage: DefaultUserPrivItem,
-  myDreamList: DefaultUserPrivItem
+  myDreamList: DefaultUserPrivItem,
+  myCommentsWrite: DefaultUserPrivItem,
+  myCommentsRead: DefaultUserPrivItem
 };
