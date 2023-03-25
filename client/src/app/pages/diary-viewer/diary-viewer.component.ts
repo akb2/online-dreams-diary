@@ -19,7 +19,7 @@ import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
-import { fromEvent, map, merge, mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
+import { concatMap, fromEvent, map, merge, mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -57,6 +57,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   dream: Dream;
   user: User;
   authState: boolean;
+  writeAccess: boolean = false;
+  readAccess: boolean = false;
 
   leftPanelHelperShift: number = 0;
   rightPanelHelperShift: number = 0;
@@ -193,27 +195,29 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     // Все элементы определены
     if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
       const contentPanel: HTMLElement = this.contentPanel.nativeElement;
-      const leftPanel: HTMLElement = this.leftPanel.nativeElement;
-      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
       const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const contentPanelHeight: number = contentPanel.clientHeight;
-      const leftPanelHeight: number = leftPanel.clientHeight;
-      const rightPanelHeight: number = rightPanel.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
-      const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
-      const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
       const scrollY: number = this.getCurrentScroll.y;
       const scrollShift: number = scrollY - this.beforeScroll;
+      // Левая панель
+      const leftPanel: HTMLElement = this.leftPanel.nativeElement;
+      const leftPanelHeight: number = leftPanel.clientHeight;
+      const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
       const maxLeftShift: number = leftPanelHeight - screenHeight - headerShift;
+      // Правая панель
+      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
+      const rightPanelHeight: number = rightPanel.clientHeight;
+      const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
-      // Если отступ допустим
-      this.leftPanelHelperShift = availLeftShift && contentPanelHeight > screenHeight ?
+      // Если отступ допустим: левая панель
+      this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenHeight ?
         -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -headerShift) :
         headerShift;
-      // Если отступ допустим
-      this.rightPanelHelperShift = availRightShift && contentPanelHeight > screenHeight ?
+      // Если отступ допустим: правая панель
+      this.rightPanelHelperShift = availRightShift && rightPanelHeight > screenHeight ?
         -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
         headerShift;
       // Обновить
@@ -264,12 +268,22 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           () => this.dreamId > 0 ? this.dreamService.getById(this.dreamId, false) : throwError(null),
           (o, dream) => ({ ...o, dream })
         ),
-        switchMap(r => !!r.dream ? of(r) : throwError(null))
+        switchMap(r => !!r.dream ? of(r) : throwError(null)),
+        concatMap(
+          ({ dream }) => !!dream?.user?.id ? this.accountService.checkPrivate("myCommentsWrite", dream.user.id, ["8100"]) : of(false),
+          (data, writeAccess) => ({ ...data, writeAccess })
+        ),
+        concatMap(
+          ({ dream }) => !!dream?.user?.id ? this.accountService.checkPrivate("myCommentsRead", dream.user.id, ["8100"]) : of(false),
+          (data, readAccess) => ({ ...data, readAccess })
+        )
       )
       .subscribe(
-        ({ user, params, dream }) => {
+        ({ user, params, dream, writeAccess, readAccess }) => {
           this.user = user;
           this.authState = !!this.user && !!this.user?.id;
+          this.writeAccess = writeAccess;
+          this.readAccess = readAccess;
           this.fromMark = params.from?.toString() || "";
           this.dream = dream;
           this.ready = true;

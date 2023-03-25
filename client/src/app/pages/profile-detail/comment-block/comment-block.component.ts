@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { CommentMaterialType } from "@_models/comment";
 import { AccountService } from "@_services/account.service";
-import { Subject, takeUntil } from "rxjs";
+import { concatMap, of, Subject, takeUntil } from "rxjs";
 
 
 
@@ -30,6 +30,8 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   authState: boolean = false;
+  writeAccess: boolean = false;
+  readAccess: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -44,9 +46,25 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.accountService.user$()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(user => {
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(
+          () => !!this.materialOwner ? this.accountService.user$(this.materialOwner) : of(null),
+          (user, visitedUser) => ({ user, visitedUser })
+        ),
+        concatMap(
+          ({ visitedUser }) => !!visitedUser ? this.accountService.checkPrivate("myCommentsWrite", visitedUser?.id, ["8100"]) : of(false),
+          (data, writeAccess) => ({ ...data, writeAccess })
+        ),
+        concatMap(
+          ({ visitedUser }) => !!visitedUser ? this.accountService.checkPrivate("myCommentsRead", visitedUser?.id, ["8100"]) : of(false),
+          (data, readAccess) => ({ ...data, readAccess })
+        )
+      )
+      .subscribe(({ user, writeAccess, readAccess }) => {
         this.authState = !!user?.id;
+        this.writeAccess = writeAccess;
+        this.readAccess = readAccess;
         this.changeDetectorRef.detectChanges();
       });
   }

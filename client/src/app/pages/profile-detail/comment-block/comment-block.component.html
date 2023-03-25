@@ -1,6 +1,6 @@
 <!-- Редактор -->
 <div class="editor"
-     *ngIf="authState">
+     *ngIf="authState && writeAccess">
   <app-comment-editor [materialType]="materialType"
                       [materialId]="materialId"
                       [materialOwner]="materialOwner"
@@ -10,7 +10,8 @@
 </div>
 
 <!-- Список комментариев -->
-<div class="list">
+<div class="list"
+     *ngIf="readAccess">
   <app-comment-list #commentListElm
                     [materialType]="materialType"
                     [materialId]="materialId"

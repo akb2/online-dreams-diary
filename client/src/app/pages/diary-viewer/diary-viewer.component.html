@@ -20,10 +20,12 @@
   <!-- Контейнер с данными -->
   <div class="root-section light-gray">
     <div #contentPanel
-         class="container content">
+         class="container content"
+         [ngClass]="{ noComments: !writeAccess && !readAccess }">
       <!-- Контент -->
       <div #leftPanel
            class="content__data"
+           [ngClass]="{ noComments: !writeAccess && !readAccess }"
            [ngStyle]="{ top: leftPanelHelperShift + 'px' }">
         <!-- Карта -->
         <ng-container *ngIf="isMapAvail">
@@ -43,7 +45,8 @@
            class="content__comments"
            [ngStyle]="{ top: rightPanelHelperShift + 'px' }">
         <!-- Редактор -->
-        <div class="content__comments-editor">
+        <div class="content__comments-editor"
+             *ngIf="writeAccess">
           <app-comment-editor content
                               [materialType]="commentMaterialType"
                               [materialId]="dream.id"
@@ -55,7 +58,8 @@
         <!-- Список комментариев -->
         <app-comment-list #commentListElm
                           [materialType]="commentMaterialType"
-                          [materialId]="dream.id"></app-comment-list>
+                          [materialId]="dream.id"
+                          *ngIf="readAccess"></app-comment-list>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ use Decorators\CheckToken;
 use Decorators\Request;
 use PDO;
 use Services\CommentService;
+use Services\UserSettingsService;
 
 class Comment
 {
@@ -14,6 +15,7 @@ class Comment
   private PDO $pdo;
 
   private CommentService $commentService;
+  private UserSettingsService $userSettingsService;
 
 
 
@@ -33,6 +35,7 @@ class Comment
   public function setServices(): void
   {
     $this->commentService = new CommentService($this->pdo, $this->config);
+    $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
   }
 
 
@@ -43,9 +46,17 @@ class Comment
   {
     $code = '5001';
     $userId = $_SERVER['TOKEN_USER_ID'];
-    $id = $this->commentService->create($data, $userId);
-    // Обновить код
-    $code = $id > 0 ? '0001' : $code;
+    $ownerId = $data['materialOwner'];
+    // Проверка доступа
+    if ($this->userSettingsService->checkPrivate('myCommentsWrite', $ownerId, $userId)) {
+      $id = $this->commentService->create($data, $userId);
+      // Обновить код
+      $code = $id > 0 ? '0001' : $code;
+    }
+    // Нет доступа
+    else {
+      $code = '8103';
+    }
     // Комментарий не отправлен
     return array(
       'code' => $code,
@@ -62,6 +73,7 @@ class Comment
     $comments = array();
     $hasAccess = true;
     $code = '0002';
+    $userId = $_SERVER['TOKEN_USER_ID'];
     $search = array(
       'material_type' => $data['search_materialType'] ?? 0,
       'material_id' => $data['search_materialId'] ?? 0,
@@ -72,7 +84,7 @@ class Comment
     $comments = array();
     // Сновидение найдено
     if ($testComments['count'] > 0) {
-      ['code' => $code, 'comments' => $comments] = $this->checkUserDataPrivate($testComments['result']);
+      ['code' => $code, 'comments' => $comments] = $this->checkUserDataPrivate($testComments['result'], $userId);
     }
     // Сновидение не найдено
     else {
@@ -119,7 +131,7 @@ class Comment
 
 
   // Проверка доступа к комментарию
-  private function checkUserDataPrivate(array $commentsData): array
+  private function checkUserDataPrivate(array $commentsData, int $userId): array
   {
     $code = '8100';
     $comments = null;
@@ -129,17 +141,26 @@ class Comment
       $comments = array();
       // Обработать список сновидений
       foreach ($commentsData as $comment) {
-        $comments[] = array(
-          'id' => intval($comment['id']),
-          'userId' => intval($comment['user_id']),
-          'replyToUserId' => intval($comment['reply_to_user_id']),
-          'materialType' => intval($comment['material_type']),
-          'materialId' => intval($comment['material_id']),
-          'materialOwner' => intval($comment['material_owner']),
-          'text' => $comment['text'],
-          'createDate' => $comment['create_date'],
-          'attachment' => $comment['attachment']
-        );
+        if ($this->userSettingsService->checkPrivate('myCommentsRead', intval($comment['material_owner']), $userId)) {
+          $comments[] = array(
+            'id' => intval($comment['id']),
+            'userId' => intval($comment['user_id']),
+            'replyToUserId' => intval($comment['reply_to_user_id']),
+            'materialType' => intval($comment['material_type']),
+            'materialId' => intval($comment['material_id']),
+            'materialOwner' => intval($comment['material_owner']),
+            'text' => $comment['text'],
+            'createDate' => $comment['create_date'],
+            'attachment' => $comment['attachment']
+          );
+        }
+        // Нет доступа
+        else {
+          $comments = array();
+          $code = '8104';
+          // остановить
+          break;
+        }
       }
     }
     // Ошибка

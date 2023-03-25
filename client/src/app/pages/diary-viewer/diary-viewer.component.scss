@@ -91,6 +91,7 @@
 
 // Контент
 .content {
+  $__elm: &;
   $commentsWidths: (
     default: 100%,
     xlarge: 30%,
@@ -147,6 +148,15 @@
       &__comments {
         width: $width;
       }
+    }
+  }
+  // Без комментариев
+  &.noComments {
+    display: block;
+    position: static;
+    // Блок данных
+    #{$__elm}__data {
+      width: 100%;
     }
   }
 }
