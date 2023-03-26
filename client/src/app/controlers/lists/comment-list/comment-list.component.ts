@@ -129,7 +129,6 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Загрузить больше комментариев
   loadMoreComments(): void {
-    console.log(this.skipComments, this.count);
     if (this.skipComments < this.count && this.count > 0 && !this.moreLoading) {
       this.loadComments();
     }
