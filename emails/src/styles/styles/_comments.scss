@@ -1,0 +1,57 @@
+@use "../settings/colors";
+
+.comment {
+  $paddingY: 15px;
+  $paddingX: 20px;
+  $avatarSize: 70px;
+  // Свойства
+  background-color: colors.$card;
+  border-radius: 5px;
+  table-layout: fixed;
+  margin-bottom: 15px;
+  // Все дочерние элементы
+  &,
+  * {
+    box-sizing: border-box;
+  }
+  // Аватарка
+  &__avatar {
+    padding: #{$paddingY} #{$paddingX};
+    vertical-align: top;
+    width: $avatarSize + ($paddingX * 2);
+    max-width: $avatarSize + ($paddingX * 2);
+    // Картинка
+    > a > img,
+    > img {
+      width: $avatarSize;
+      height: $avatarSize;
+      border-radius: 50%;
+    }
+  }
+  // Текст
+  &__content {
+    vertical-align: top;
+    padding: #{$paddingY} #{$paddingX} #{$paddingY} 0;
+  }
+  // Заголовок
+  &__title {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 21px;
+  }
+  // Дата
+  &__date {
+    font-size: 12px;
+    color: colors.$text;
+    line-height: 15px;
+  }
+  // Текст
+  &__text {
+    margin-top: 10px;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 300;
+    font-style: italic;
+  }
+}
