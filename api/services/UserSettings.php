@@ -47,7 +47,7 @@ class UserSettingsService
 
 
   // Проверить настройку приватности
-  public function checkPrivate(string $rule, int $userId, int $currentUser)
+  public function checkPrivate(string $rule, int $userId, int $currentUser): bool
   {
     $user = $this->userService->getUser($userId);
     $rules = is_array($user['private']) && count($user['private']) > 0 ? $user['private'] : $this->getDefaultUserPrivate();

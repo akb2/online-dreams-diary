@@ -13,6 +13,7 @@ class NotificationService
 
   private DataBaseService $dataBaseService;
   private LongPollingService $longPollingService;
+  private UserService $userService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -21,6 +22,7 @@ class NotificationService
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->longPollingService = new LongPollingService($this->config);
+    $this->userService = new UserService($this->pdo, $this->config);
   }
 
 
@@ -37,23 +39,27 @@ class NotificationService
         'data' => json_encode($data),
         'diff_time' => $this->config['notifications']['noRepeatTime']
       );
-      $check = $this->dataBaseService->getDatasFromFile('notification/getByData.php', $sqlData);
-      $notificationId = 0;
       $result = false;
-      // Уведомление уже есть
-      if (isset($check[0]['id']) && $check[0]['id'] > 0) {
-        $notificationId = $check[0]['id'];
-        $sqlData['id'] = $notificationId;
-        $result = $this->dataBaseService->executeFromFile('notification/update.sql', $sqlData);
-      }
-      // Создать запись
-      else {
-        $result = $this->dataBaseService->executeFromFile('notification/create.sql', $sqlData);
-        $notificationId = $this->pdo->lastInsertId();
-      }
-      // Отправить в Long Polling
-      if ($notificationId > 0) {
-        $this->sendNotificationToLongPolling($notificationId);
+      ['site' => $ruleSite, 'email' => $ruleEmail] = $this->checkNotificationSettings($userId, $actionType);
+      // Отправка уведомления внутри сайта
+      if ($ruleSite) {
+        $notificationId = 0;
+        $check = $this->dataBaseService->getDatasFromFile('notification/getByData.php', $sqlData);
+        // Уведомление уже есть
+        if (isset($check[0]['id']) && $check[0]['id'] > 0) {
+          $notificationId = $check[0]['id'];
+          $sqlData['id'] = $notificationId;
+          $result = $this->dataBaseService->executeFromFile('notification/update.sql', $sqlData);
+        }
+        // Создать запись
+        else {
+          $result = $this->dataBaseService->executeFromFile('notification/create.sql', $sqlData);
+          $notificationId = $this->pdo->lastInsertId();
+        }
+        // Отправить в Long Polling
+        if ($notificationId > 0) {
+          $this->sendNotificationToLongPolling($notificationId);
+        }
       }
     }
     // Уведоммление не создано
@@ -154,5 +160,32 @@ class NotificationService
   {
     $notification = $this->get($notificationId);
     $this->longPollingService->send('notification/new/' . $notification['userId'], array('notificationId' => $notificationId));
+  }
+
+  // Проверить возможность отправления уведомления
+  public function checkNotificationSettings(int $userId, string $actionType = ''): array
+  {
+    $site = false;
+    $email = false;
+    $user = $this->userService->getUser($userId);
+    $requred = array(
+      'security' => array('site' => true, 'email' => true),
+      'add_to_friend' => array('site' => true),
+      'send_comment' => array('site' => true),
+    );
+    // Загрузка данных
+    if (!!$user && !!$actionType) {
+      $requiredSite = $requred[$actionType]['site'] ?? null;
+      $requiredEmail = $requred[$actionType]['email'] ?? null;
+      $userSite = $user['settings']['notifications'][$actionType]['site'] ?? true;
+      $userEmail = $user['settings']['notifications'][$actionType]['email'] ?? true;
+      $site = $requiredSite === true || $requiredSite === false ? $requiredSite : $userSite;
+      $email = $requiredEmail === true || $requiredEmail === false ? $requiredEmail : $userEmail;
+    }
+    // Вернуть результат
+    return array(
+      'site' => $site,
+      'email' => $email
+    );
   }
 }
