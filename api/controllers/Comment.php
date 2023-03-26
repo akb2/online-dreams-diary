@@ -110,11 +110,12 @@ class Comment
   {
     $commentId = intval($data['comment_id'] ?? "0");
     $code = '0000';
+    $userId = $_SERVER['TOKEN_USER_ID'];
     $testComment = $this->commentService->get($commentId);
     $result = array();
     // Проверка доступа
     if (!!$testComment) {
-      ['code' => $code, 'comments' => $result] = $this->checkUserDataPrivate(array($testComment));
+      ['code' => $code, 'comments' => $result] = $this->checkUserDataPrivate(array($testComment), $userId);
       $result = $result[0] ?? array();
     }
     // Комментарий не найден
