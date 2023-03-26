@@ -1,0 +1,45 @@
+@use "../settings/colors";
+
+.user {
+  $paddingY: 15px;
+  $paddingX: 20px;
+  $avatarSize: 170;
+  // Свойства
+  table-layout: fixed;
+  margin-bottom: 15px;
+  // Все дочерние элементы
+  &,
+  * {
+    box-sizing: border-box;
+  }
+  // Аватарка
+  &__avatar {
+    background-color: colors.$card;
+    border-radius: 5px 5px 0 0;
+    vertical-align: top;
+    width: $avatarSize;
+    max-width: $avatarSize;
+    overflow: hidden;
+    // Картинка
+    > a > img,
+    > img {
+      width: $avatarSize;
+      height: $avatarSize;
+    }
+  }
+  // Текст
+  &__name {
+    background-color: colors.$card;
+    border-radius: 0 0 5px 5px;
+    vertical-align: top;
+    padding: #{$paddingY} #{$paddingX};
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    // Ссылка
+    &,
+    > a {
+      text-decoration: none;
+    }
+  }
+}

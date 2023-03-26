@@ -1,7 +1,7 @@
 extend ../../layouts/main/layout
 block vars
   -
-    headerSubTitle = "Новый комментарий";
+    headerSubTitle = "Заявка в друзья";
     footerSmallText = "Вы получили данное письмо, т.к. адрес вашей электронной почты был указан на сайте дневника сновидений и подтвержден с помощью электронного письма. Если вы не хотите получать письма с данной тематикой, перейдите в настройки вашего аккаунта в раздел уведомления и настройте список событий о которых вы хотите получать рассылку.";
     // Переменные письма
     name = "{{name}}";
@@ -9,34 +9,30 @@ block vars
     authorLastName = "{{authorLastName}}";
     authorImage = "{{authorImage}}";
     authorlink = "{{authorlink}}";
-    commentlink = "{{commentlink}}";
-    commentDate = "{{commentDate}}";
     // Переменные письма для теста
     if(!production) {
       name = "Андрей";
       authorName = "Василий";
       authorLastName = "Сахаров";
-      authorImage = "https://media-test.dreams-diary.ru/images/user_avatars/small/3.jpg";
+      authorImage = "https://media-test.dreams-diary.ru/images/user_avatars/middle/3.jpg";
       authorlink = siteLink + "/profile/2";
-      commentlink = siteLink + "/profile/1";
-      commentDate = "26.3.2023 - 6:34";
     }
 block content
   +container.section--white
     p
-      | Здравствуйте, <b>!{name}</b>. Пользователь <b><a href=!{authorlink}>!{authorName} !{authorLastName}</a></b> оставил вам новый комментарий.
+      | Здравствуйте, <b>!{name}</b>. Пользователь <b><a href=!{authorlink}>!{authorName} !{authorLastName}</a></b> отправил вам заявку в друзья.
   +container.section
-    table.comment
-      tr.comment__overlay
-        td.comment__avatar(width=110)
+    table.user
+      tr.user__overlay
+        td
+        td.user__avatar(width=170)
           a(href=authorlink)
-            img(src = authorImage, width=70, height=70)
-        td.comment__content
-          a.comment__title(href=authorlink) !{authorName} !{authorLastName}
-          br
-          span.comment__date=commentDate
-          br
-          span.comment__text
-            | В целях безопасности текст комментария был скрыт. Чтобы увидеть его полностью перейдите по ссылке ниже.
+            img(src = authorImage, width=170, height=170)
+        td
+      tr.user__overlay
+        td
+        td.user__name(width=170)
+          a(href=authorlink) !{authorName} !{authorLastName}
+        td
     +container('no-v-spacing', 'no-h-spacing', 'auto', true, 250, 'center')
-      a.button--primary(href=commentlink) Прочитать комментарий
+      a.button--primary(href=authorlink) Добавить в друзья

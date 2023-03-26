@@ -1,4 +1,4 @@
 module.exports = {
   'port': 9000,
-  'openPage': 'notifications/send_comment.html',
+  'openPage': 'notifications/add_to_friend.html',
 };
