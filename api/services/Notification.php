@@ -14,6 +14,7 @@ class NotificationService
   private DataBaseService $dataBaseService;
   private LongPollingService $longPollingService;
   private UserService $userService;
+  private MailService $mailService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -23,6 +24,7 @@ class NotificationService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->longPollingService = new LongPollingService($this->config);
     $this->userService = new UserService($this->pdo, $this->config);
+    $this->mailService = new MailService($this->config);
   }
 
 
@@ -60,6 +62,41 @@ class NotificationService
         if ($notificationId > 0) {
           $this->sendNotificationToLongPolling($notificationId);
         }
+      }
+      // Отправка письма на почту
+      if ($ruleEmail) {
+        $user = $this->userService->getUser($userId);
+        $mailParams = array(
+          'name' => $user['name']
+        );
+        // Данные о пользователе
+        if (!!$data['user']) {
+          $actionUser = $this->userService->getUser($data['user']);
+        }
+        // Данные для комментариев
+        if ($actionType === 'send_comment') {
+          $mailParams['authorName'] = $actionUser['name'];
+          $mailParams['authorLastName'] = $actionUser['lastName'];
+          $mailParams['authorImage'] = $actionUser['avatars']['small'] ?? $this->config['appDomain'] . '/assets/images/avatars/user-small.jpg';
+          $mailParams['authorlink'] = $this->config['appDomain'] . '/profile/' . $actionUser['id'];
+          $mailParams['commentlink'] = $this->config['appDomain'] . $link;
+          $mailParams['commentDate'] = date('j.n.Y - G:i');
+        }
+        // Данные для заявок в друзья
+        if ($actionType === 'add_to_friend') {
+          $mailParams['authorName'] = $actionUser['name'];
+          $mailParams['authorLastName'] = $actionUser['lastName'];
+          $mailParams['authorImage'] = $actionUser['avatars']['small'] ?? $this->config['appDomain'] . '/assets/images/avatars/user-middle.jpg';
+          $mailParams['authorlink'] = $this->config['appDomain'] . '/profile/' . $actionUser['id'];
+        }
+        // Заголовки
+        $titles = array(
+          'security' => 'Уведомление системы безопасности',
+          'add_to_friend' => 'Заявка в друзья',
+          'send_comment' => 'Новый комментарий'
+        );
+        // Отправить
+        $this->mailService->send('notifications/' . $actionType, $user['email'], $titles[$actionType], $mailParams);
       }
     }
     // Уведоммление не создано
