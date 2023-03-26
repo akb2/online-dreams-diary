@@ -315,7 +315,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
           .pipe(takeUntil(this.destroyed$))
           .subscribe(
             () => {
-              const editor: HTMLElement = this.editor?.nativeElement
+              const editor: HTMLElement = this.editor?.nativeElement;
               // Очистить редактор
               if (!!editor) {
                 editor.innerHTML = "";
