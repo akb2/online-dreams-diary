@@ -1,5 +1,12 @@
 @use "../settings/vars";
 
+$aligns: (
+  default: left,
+  "left": left,
+  "center": center,
+  "right": right,
+  "justify": justify,
+);
 $hSpacings: (
   default: 35px,
   "no-h-spacing": 0px,
@@ -14,20 +21,28 @@ $vSpacings: (
 .container {
   @each $vSpacingKey, $vSpacing in $vSpacings {
     @each $hSpacingKey, $hSpacing in $hSpacings {
-      // Класс для модификатора отступа по вертикали
-      $vSpacingClass: "";
-      @if ($vSpacingKey != "default") {
-        $vSpacingClass: "--#{$vSpacingKey}";
-      }
-      // Класс для модификатора отступа по горизонтали
-      $hSpacingClass: "";
-      @if ($hSpacingKey != "default") {
-        $hSpacingClass: "--#{$hSpacingKey}";
-      }
+      @each $alignKey, $align in $aligns {
+        // Класс для модификатора отступа по вертикали
+        $vSpacingClass: "";
+        @if ($vSpacingKey != "default") {
+          $vSpacingClass: "--#{$vSpacingKey}";
+        }
+        // Класс для модификатора отступа по горизонтали
+        $hSpacingClass: "";
+        @if ($hSpacingKey != "default") {
+          $hSpacingClass: "--#{$hSpacingKey}";
+        }
+        // Класс для модификатора выравнивания текста
+        $alignClass: "";
+        @if ($alignKey != "default") {
+          $alignClass: "--#{$alignKey}";
+        }
 
-      &#{$vSpacingClass}#{$hSpacingClass} {
-        width: 100%;
-        padding: #{$vSpacing} #{$hSpacing};
+        &#{$vSpacingClass}#{$hSpacingClass}#{$alignClass} {
+          width: 100%;
+          padding: #{$vSpacing} #{$hSpacing};
+          text-align: $align;
+        }
       }
     }
   }

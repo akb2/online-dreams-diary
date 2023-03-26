@@ -75,7 +75,7 @@ module.exports = (env, option) => {
             // Удаление дубликатов стилей
             const search = new RegExp("style=('|\")([a-z0-9\-_\\s:;\.,\#\%]*)('|\")", "gmi");
             const saveValue = v => v === "0" ? v + "px" : v;
-            const styles = source.match(search)
+            const styles = (source.match(search) ?? [])
               .map(f => {
                 o = f.replace(search, "$2");
                 n = o.split(";");

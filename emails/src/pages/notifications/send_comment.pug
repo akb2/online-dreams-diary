@@ -21,8 +21,8 @@ block vars
       authorSection = "на вашей стене";
       //- authorSection = "к вашему сновидению";
       authorImage = "https://media-test.dreams-diary.ru/images/user_avatars/small/3.jpg";
-      authorlink = "http://localhost:4200/profile/2";
-      commentlink = "http://localhost:4200/profile/1";
+      authorlink = siteLink + "/profile/2";
+      commentlink = siteLink + "/profile/1";
       commentDate = "26.3.2023 - 6:34";
     }
 block content
@@ -32,7 +32,7 @@ block content
   +container.section
     table.comment
       tr.comment__overlay
-        td.comment__avatar
+        td.comment__avatar(width=110)
           a(href=authorlink)
             img(src = authorImage)
         td.comment__content
@@ -42,5 +42,5 @@ block content
           br
           span.comment__text
             | В целях безопасности текст комментария был скрыт. Чтобы увидеть его полностью перейдите по ссылке ниже.
-    +container('no-v-spacing', 'no-h-spacing', 'auto', true)
-      a.button--primary(href=commentlink) Смотреть полностью
+    +container('no-v-spacing', 'no-h-spacing', 'auto', true, 250, 'center')
+      a.button--primary(href=commentlink) Прочитать комментарий

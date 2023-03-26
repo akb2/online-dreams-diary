@@ -1,10 +1,10 @@
-mixin container(vSpacings, hSpacings, ceilHeight="auto", center=false)
-  - containerClass = 'container' + (!!vSpacings? '--' + vSpacings: '') + (!!hSpacings? '--' + hSpacings: '')
+mixin container(vSpacings, hSpacings, ceilHeight="auto", center=false, width=600, align='' )
+  - containerClass = 'container' + (!!vSpacings? '--' + vSpacings: '') + (!!hSpacings? '--' + hSpacings: '') + (!!align? '--' + align: '')
   if(center === true)
     table( class = attributes.class )
       tr
         td
-        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, valign="middle" )
+        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, width=width, valign="middle" )
           table
             tr
               td( class=containerClass )
@@ -13,7 +13,7 @@ mixin container(vSpacings, hSpacings, ceilHeight="auto", center=false)
   else
     table( class = attributes.class )
       tr
-        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, valign="middle" )
+        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, width=width, valign="middle" )
           table
             tr
               td( class=containerClass )
