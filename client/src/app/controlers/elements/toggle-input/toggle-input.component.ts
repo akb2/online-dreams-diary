@@ -18,6 +18,7 @@ export class ToggleInputComponent extends BaseInputDirective {
   @Input() override label: string = "Заголовок";
   @Input() values: [string, string] = ["Параметр 1", "Параметр 2"];
   @Input() appearance: MatFormFieldAppearance = "fill";
+  @Input() errorText: boolean = false;
 
 
 

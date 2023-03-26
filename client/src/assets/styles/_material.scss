@@ -225,6 +225,7 @@
       }
       // Отступы между элементами из списка
       @each $__elmB in $__marginElms {
+        #{$__elm}:not(.no-margin) + #{$__elmB}:not(.no-margin) > #{$__marginMainElm}:not(.no-margin),
         #{$__elm} + #{$__elmB}:not(.no-margin) {
           margin-top: 15px;
         }

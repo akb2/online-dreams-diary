@@ -1,5 +1,5 @@
 <mat-form-field [appearance]="appearance"
-                [class]="hasValidators? '': 'disabled-validators'">
+                [class]="hasValidators || errorText? '': 'disabled-validators'">
   <mat-label>{{label}}</mat-label>
   <div class="values">
     <!-- Текстовая отметка для значения: нет -->
@@ -22,4 +22,6 @@
          hidden=""
          [formControl]="control"
          type="text" />
+  <!-- Поле ошибки -->
+  <mat-error *ngIf="errorText"></mat-error>
 </mat-form-field>
