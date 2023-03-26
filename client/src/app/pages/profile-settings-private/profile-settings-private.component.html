@@ -15,7 +15,8 @@
   <!-- Контейнер с данными -->
   <div class="root-section">
     <form class="container"
-          [formGroup]="form">
+          [formGroup]="form"
+          *ngIf="!!ruleNames?.length">
       <!-- Цикл по правилам приватности -->
       <app-card [mainTitle]="rule.name"
                 [subTitle]="rule.desc"
@@ -31,7 +32,7 @@
           <div class="setting__type">
             <app-autocomplete-input formControlName="type"
                                     label="Кому доступно"
-                                    [optionData]="getAvailTypes(rule)"
+                                    [optionData]="rule.optionData"
                                     (selectItemEvent)="onSave()"></app-autocomplete-input>
           </div>
           <!-- Белый список -->

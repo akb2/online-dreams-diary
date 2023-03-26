@@ -37,9 +37,8 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
   listTypes: typeof ListType = ListType;
   navMenuType: NavMenuType = NavMenuType.collapse;
-  ruleNames: UserPrivateNameItem[] = UserPrivateNames;
+  ruleNames: UserPrivateNameItemLocal[] = [];
 
-  private privateTypes: OptionData[] = PrivateTypes;
   peoplePlural: SimpleObject = PeoplePlural;
 
   private destroy$: Subject<void> = new Subject<void>();
@@ -84,13 +83,13 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
   }
 
   // Список доступных прав доступа
-  getAvailTypes(rule: UserPrivateNameItem): OptionData[] {
+  private getAvailTypes(rule: UserPrivateNameItem): OptionData[] {
     if (!!rule?.availValues?.length) {
-      return this.privateTypes.filter(({ key }) => rule.availValues.some(type => type.toString() === key));
+      return PrivateTypes.filter(({ key }) => rule.availValues.some(type => type.toString() === key));
     }
     // Все типы доступны
     else {
-      return this.privateTypes;
+      return PrivateTypes;
     }
   }
 
@@ -210,6 +209,10 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
   // Создание формы
   private defineData(create: boolean = false): void {
+    this.ruleNames = UserPrivateNames.map(rule => ({
+      ...rule,
+      optionData: this.getAvailTypes(rule)
+    }));
     // Новая форма
     if (create) {
       const formDatas = this.ruleNames.reduce((o, r) => {
@@ -280,6 +283,11 @@ export class ProfileSettingsPrivateComponent implements OnInit, OnDestroy {
 
 
 
+
+// Локальный тип настроек
+interface UserPrivateNameItemLocal extends UserPrivateNameItem {
+  optionData: OptionData[];
+}
 
 // Тип списка
 enum ListType {
