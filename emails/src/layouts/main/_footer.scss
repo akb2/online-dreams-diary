@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "../../styles/settings/colors";
+@use "../../styles/settings/vars";
 
 $footerGap: 15px;
 $footerLeftColumnSize: 40%;
@@ -8,6 +9,7 @@ $footerBottomColumnSize: 100%;
 
 .footer {
   background-color: #111;
+  border-radius: 0 0 #{vars.$mainContainerBorderRadius} #{vars.$mainContainerBorderRadius};
 
   &__left {
     width: $footerLeftColumnSize;

@@ -1,24 +1,34 @@
 @use "../settings/vars";
 
-$hSpacing: 30px;
+$hSpacings: (
+  default: 35px,
+  "no-h-spacing": 0px,
+);
 $vSpacings: (
-  default: 45px,
+  default: 25px,
   "no-v-spacing": 0px,
-  middle: 60px,
-  large: 90px,
+  middle: 30px,
+  large: 35px,
 );
 
 .container {
   @each $vSpacingKey, $vSpacing in $vSpacings {
-    // Класс для модификатора отступа
-    $vSpacingClass: "";
-    @if ($vSpacingKey != "default") {
-      $vSpacingClass: "--#{$vSpacingKey}";
-    }
+    @each $hSpacingKey, $hSpacing in $hSpacings {
+      // Класс для модификатора отступа по вертикали
+      $vSpacingClass: "";
+      @if ($vSpacingKey != "default") {
+        $vSpacingClass: "--#{$vSpacingKey}";
+      }
+      // Класс для модификатора отступа по горизонтали
+      $hSpacingClass: "";
+      @if ($hSpacingKey != "default") {
+        $hSpacingClass: "--#{$hSpacingKey}";
+      }
 
-    &#{$vSpacingClass} {
-      width: 100%;
-      padding: #{$vSpacing} #{$hSpacing};
+      &#{$vSpacingClass}#{$hSpacingClass} {
+        width: 100%;
+        padding: #{$vSpacing} #{$hSpacing};
+      }
     }
   }
 }

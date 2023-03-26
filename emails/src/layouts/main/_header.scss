@@ -5,6 +5,7 @@
 .header {
   width: 100%;
   background-color: map.get(colors.$matPrimary, 500);
+  border-radius: #{vars.$mainContainerBorderRadius} #{vars.$mainContainerBorderRadius} 0 0;
 
   &__filler {
     width: 50%;

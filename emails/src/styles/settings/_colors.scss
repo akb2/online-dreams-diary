@@ -81,10 +81,10 @@ $color_4: #666;
   }
 }
 
-$mat-primary: createPalette($color_1);
-$mat-secondary: createPalette($color_2);
-$mat-status-warn: createPalette($color_3);
-$mat-disabled: createPalette($color_4);
+$matPrimary: createPalette($color_1);
+$matSecondary: createPalette($color_2);
+$matStatusWarn: createPalette($color_3);
+$matDisabled: createPalette($color_4);
 
 //**************************************************************************************
 //* Настройка цветов для Material
@@ -98,9 +98,9 @@ $background: #f3f3f3;
 $card: #fff;
 
 $overlay-color: rgba(0, 0, 0, 0.5);
-$shadow: rgba(0, 0, 0, 0.15);
+$shadow: #555;
 
-$title-dark: #fff;
-$subtitle-dark: #ececec;
-$text-dark: #c0c0c0;
-$border-light: #ddd;
+$titleDark: #fff;
+$subtitleDark: #ececec;
+$textDark: #c0c0c0;
+$borderLight: #ddd;

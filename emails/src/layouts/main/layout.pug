@@ -16,10 +16,17 @@ html(xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:off
 		style=renderScss("src/layouts/main/styles.scss")
 		link( href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@100;300;400;600&display=swap" rel="stylesheet" )
 	body
-		#page
-			block header
-				include header
-			#all-content
-				block content
-			block footer
-				include footer
+		table#page
+			tr.main-container__overlay
+				td
+				td.main-container
+					table
+						tr
+							td.main-container__content
+								block header
+									include header
+								#all-content
+									block content
+								block footer
+									include footer
+				td

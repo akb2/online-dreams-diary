@@ -1,6 +1,8 @@
 @use "sass:map";
 @use "../settings/colors";
+@use "../settings/vars";
 
+// Секции
 .section {
   $sectionColors: (
     default: (
@@ -34,5 +36,18 @@
         color: map.get($color, link);
       }
     }
+  }
+}
+
+// Главный контейнер
+.main-container {
+  width: 600px;
+  max-width: 100%;
+  padding: 15px;
+  // Блок с данными
+  &__content {
+    border-radius: vars.$mainContainerBorderRadius;
+    box-shadow: 3px 3px 15px 1px #{colors.$shadow};
+    background-color: colors.$background;
   }
 }

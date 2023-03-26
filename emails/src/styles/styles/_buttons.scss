@@ -42,6 +42,7 @@
 
       &#{$sizeClass}#{$colorClass} {
         display: inline-block;
+        white-space: nowrap;
         padding: #{map.get($size, vSpacing)} #{map.get($size, hSpacing)};
         font-size: map.get($size, textSize);
         border-radius: map.get($size, radius);

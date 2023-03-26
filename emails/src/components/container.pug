@@ -1,10 +1,20 @@
-mixin container(vSpacings, ceilHeight="auto")
-  table( class = attributes.class )
-    tr
-      td
-      td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', width=600, height=ceilHeight, valign="middle" )
-        table
-          tr
-            td( class='container' + (!!vSpacings? '--' + vSpacings: '') )
-              block
-      td
+mixin container(vSpacings, hSpacings, ceilHeight="auto", center=false)
+  - containerClass = 'container' + (!!vSpacings? '--' + vSpacings: '') + (!!hSpacings? '--' + hSpacings: '')
+  if(center === true)
+    table( class = attributes.class )
+      tr
+        td
+        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, valign="middle" )
+          table
+            tr
+              td( class=containerClass )
+                block
+        td
+  else
+    table( class = attributes.class )
+      tr
+        td.container__overlay( class=!!ceilClass? ' ' + ceilClass: '', height=ceilHeight, valign="middle" )
+          table
+            tr
+              td( class=containerClass )
+                block
