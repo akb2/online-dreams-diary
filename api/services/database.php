@@ -94,7 +94,6 @@ class DataBaseService
     if ($file->exists()) {
       // Текст запроса из файла с выполнением кода PHP
       if ($file->extension() === 'php') {
-        echo json_encode($this->checkInputParams("", $params, false));
         $sqlText = $file->eval($this->checkInputParams("", $params, false));
       }
       // Текст запроса из файла
