@@ -72,13 +72,19 @@
       margin-left: 0;
       margin-right: 0;
       padding: 1rem;
-      padding-right: 0;
       font-style: italic;
+      background-color: colors.$card;
     }
     // Последующие блоки
     ::ng-deep > * + *,
     ::ng-deep > .text > * + * {
       margin-top: $lineHeight;
+    }
+    // Адаптив
+    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+      & + & {
+        margin-top: $paddingY;
+      }
     }
   }
   // Карта

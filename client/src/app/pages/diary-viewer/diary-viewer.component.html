@@ -56,10 +56,18 @@
         </ng-container>
         <!-- Текст -->
         <ng-container *ngIf="isTextAvail">
+          <!-- Текст сновидения -->
           <app-highlight-keywords class="dream__text"
                                   color="primary"
                                   [keywords]="[selectedKeyword]"
                                   [text]="dream.text"></app-highlight-keywords>
+          <!-- Толкование -->
+          <div class="dream__text"
+               *ngIf="!!dream?.interpretation">
+            <b>Возможное толкование</b>
+            <br>
+            <blockquote [innerHTML]="dream.interpretation"></blockquote>
+          </div>
         </ng-container>
       </div>
       <!-- Комментарии -->
