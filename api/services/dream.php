@@ -243,6 +243,21 @@ class DreamService
     return 0;
   }
 
+  // Сохранить толкование
+  public function saveInterpretate(int $id, string $interpretation): bool
+  {
+    $sqlData = array(
+      "id" => $id,
+      "interpretation" => $interpretation
+    );
+    // Попытка сохранения
+    if ($this->dataBaseService->executeFromFile("dream/saveInterpetation.sql", $sqlData)) {
+      return true;
+    }
+    // Сновидение не сохранено
+    return false;
+  }
+
   // Удалить сновидение
   public function delete(int $dreamId, int $userId): string
   {

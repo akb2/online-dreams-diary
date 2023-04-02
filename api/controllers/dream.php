@@ -7,8 +7,7 @@ use Decorators\Request;
 use Services\DreamService;
 use Services\UserSettingsService;
 use PDO;
-
-
+use Services\OpenAIChatGPTService;
 
 class Dream
 {
@@ -18,6 +17,7 @@ class Dream
 
   private DreamService $dreamService;
   private UserSettingsService $userSettingsService;
+  private OpenAIChatGPTService $openAIChatGPTService;
 
 
 
@@ -38,6 +38,7 @@ class Dream
   {
     $this->dreamService = new DreamService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
+    $this->openAIChatGPTService = new OpenAIChatGPTService($this->config);
   }
 
 
@@ -141,6 +142,7 @@ class Dream
           'description' => $testDream['description'],
           'keywords' => $testDream['keywords'],
           'text' => $testDream['text'],
+          'interpretation' => $testDream['interpretation'] ?? '',
           'places' => $testDream['places'],
           'members' => $testDream['members'],
           'map' => $testDream['map'],
@@ -151,6 +153,16 @@ class Dream
           'headerType' => $testDream['header_type'],
           'headerBackgroundId' => intval($testDream['header_background'])
         );
+        // Создать толкование
+        if ((!$dream['interpretation'] || strlen($dream['interpretation']) === 0) && !!$dream['text'] && strlen($dream['text']) > 0 && !$edit) {
+          $interpretation = $this->openAIChatGPTService->dreamInterpretate($dream);
+          // Было создано толкование
+          if (!!$interpretation) {
+            $dream['interpretation'] = $interpretation;
+            // Сохранить интерпритацию
+            $this->dreamService->saveInterpretate(intval($testDream['id']), $interpretation);
+          }
+        }
       }
       // Нельяз смотреть
       else {
