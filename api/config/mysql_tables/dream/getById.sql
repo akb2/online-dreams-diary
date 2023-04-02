@@ -11,6 +11,7 @@ SELECT
     `description`,
     `keywords`,
     `text`,
+    `interpretation`,
     `places`,
     `members`,
     `map`,

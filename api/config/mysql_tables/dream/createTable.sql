@@ -13,6 +13,7 @@ CREATE TABLE `dreams`
     `description` VARCHAR(400) NOT NULL DEFAULT "",
     `keywords` VARCHAR(500) NOT NULL DEFAULT "",
     `text` TEXT,
+    `interpretation` TEXT,
     `places` VARCHAR(2000) NOT NULL DEFAULT "",
     `members` VARCHAR(2000) NOT NULL DEFAULT "",
     `map` JSON,

@@ -18,6 +18,7 @@ export interface DreamDto {
   description: string;
   keywords: string;
   text: string;
+  interpretation?: string;
   places: string;
   members: string;
   map: string;
@@ -45,6 +46,7 @@ export interface Dream {
   places: Place[];
   members: number[];
   text: string;
+  interpretation?: string;
   map: DreamMap;
   headerType: NavMenuType;
   headerBackground: BackgroundImageData;
