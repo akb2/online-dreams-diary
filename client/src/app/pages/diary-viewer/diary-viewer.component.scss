@@ -4,6 +4,7 @@
 @use "screens";
 @use "containers";
 @use "vars";
+@use "mixins";
 
 // Данные сновидения
 .dream {
@@ -75,7 +76,8 @@
       font-style: italic;
     }
     // Последующие блоки
-    ::ng-deep > * + * {
+    ::ng-deep > * + *,
+    ::ng-deep > .text > * + * {
       margin-top: $lineHeight;
     }
   }
@@ -97,19 +99,36 @@
     xlarge: 30%,
     large: 38%,
   );
+  $shadowCorrection: 8px;
   // Свойства
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  position: relative;
+  display: grid;
+  align-items: start;
+  grid-template-rows: auto 1fr;
   // Внутренние блоки
   &__data,
-  &__comments {
+  &__comments,
+  &__keywords {
     position: sticky;
+    z-index: 1;
+  }
+  // Блок комментариев
+  &__keywords {
+    grid-area: keywords;
+    background-color: colors.$background;
+    z-index: 2;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 8px 16px;
+  }
+  // Блок описания
+  &__data {
+    grid-area: data;
   }
   // Блок комментариев
   &__comments {
+    grid-area: comments;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -123,7 +142,7 @@
     }
   }
   // Адаптив
-  @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $commentsWidths) using($gap, $width) {
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $commentsWidths, containers.$paddingsY) using($gap, $width, $paddingY) {
     gap: $gap;
     // Блок комментариев
     &__comments {
@@ -131,22 +150,27 @@
     }
     // На всю ширину
     @if ($width == 100%) {
+      grid-template-columns: 1fr;
+      grid-template-areas: "keywords" "data" "comments";
       // Внутренние блоки
       &__data,
-      &__comments {
+      &__comments,
+      &__keywords {
         width: 100%;
         position: static;
       }
     }
     // В две колонки
     @else {
-      // Данные сновидения
-      &__data {
-        width: calc(100% - #{$gap} - #{$width});
-      }
-      // Комментарии
-      &__comments {
-        width: $width;
+      grid-template-columns: 1fr #{$width};
+      grid-template-areas: "keywords comments" "data comments";
+      // Блок комментариев
+      &__keywords {
+        padding-top: $paddingY;
+        padding-bottom: $gap - $shadowCorrection;
+        margin-top: -#{$paddingY};
+        margin-bottom: -#{$gap - $shadowCorrection};
+        top: vars.$headerHeight;
       }
     }
   }
@@ -157,6 +181,66 @@
     // Блок данных
     #{$__elm}__data {
       width: 100%;
+    }
+  }
+}
+
+// Отметки свойств сновидения
+.setting-label {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  gap: 6px;
+  // Картинка
+  &__image {
+    @include mixins.customsColors(vars.$buttonSize, 0.6);
+    // Картинка и иконка
+    > mat-icon,
+    img {
+      border-radius: 50%;
+    }
+  }
+  // Заголовок
+  &__main-title {
+    font-size: 13px;
+    font-weight: 300;
+    color: colors.$subtitle;
+  }
+  // Подзаголовок
+  &__sub-title {
+    font-size: 16px;
+    font-weight: 400;
+    color: colors.$title;
+  }
+}
+
+// Ключевое слово
+.keyword {
+  @include mixins.lineClamp(1, vars.$buttonSize, 16px, 0);
+  // Свойства
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: math.div(vars.$buttonSize, 2);
+  background-color: map.get(colors.$matDisabled, 100);
+  color: map.get(colors.$matDisabled, contrast, 100);
+  transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
+  user-select: none;
+  cursor: pointer;
+  // Выделение
+  &:hover {
+    background-color: map.get(colors.$matDisabled, 200);
+    color: map.get(colors.$matDisabled, contrast, 200);
+  }
+  // Выбранное ключевое слово
+  &.selected {
+    background-color: map.get(colors.$matPrimary, 500);
+    color: map.get(colors.$matPrimary, contrast, 500);
+    // Выделение
+    &:hover {
+      background-color: map.get(colors.$matPrimary, 600);
+      color: map.get(colors.$matPrimary, contrast, 600);
     }
   }
 }

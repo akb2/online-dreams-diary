@@ -22,7 +22,27 @@
     <div #contentPanel
          class="container content"
          [ngClass]="{ noComments: !writeAccess && !readAccess }">
-      <!-- Контент -->
+      <!-- Краткие данные -->
+      <div #keywordsPanel
+           class="content__keywords">
+        <!-- Тип приватности -->
+        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                      [ngTemplateOutletContext]="labels"
+                      *ngIf="getDreamPrivateLabels as labels"></ng-container>
+        <!-- Тип сновидения -->
+        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                      [ngTemplateOutletContext]="labels"
+                      *ngIf="getDreamTypeLabels as labels"></ng-container>
+        <!-- Настроение сновидения -->
+        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                      [ngTemplateOutletContext]="labels"
+                      *ngIf="getDreamMoodLabels as labels"></ng-container>
+        <!-- Ключевые слова -->
+        <ng-container [ngTemplateOutlet]="dreamKeyword"
+                      [ngTemplateOutletContext]="{ $implicit: keyword }"
+                      *ngFor="let keyword of dream.keywords"></ng-container>
+      </div>
+      <!-- Описание или карта -->
       <div #leftPanel
            class="content__data"
            [ngClass]="{ noComments: !writeAccess && !readAccess }"
@@ -36,8 +56,10 @@
         </ng-container>
         <!-- Текст -->
         <ng-container *ngIf="isTextAvail">
-          <div class="dream__text"
-               [innerHTML]="dream.text"></div>
+          <app-highlight-keywords class="dream__text"
+                                  color="primary"
+                                  [keywords]="[selectedKeyword]"
+                                  [text]="dream.text"></app-highlight-keywords>
         </ng-container>
       </div>
       <!-- Комментарии -->
@@ -65,7 +87,48 @@
   </div>
 </div>
 
+
+
 <!-- Лоадер страницы -->
 <ng-template #pageLoader>
   <app-page-loader></app-page-loader>
+</ng-template>
+
+<!-- Шаблон данных для характеристики сновидения -->
+<ng-template #dreamSettingLabel
+             let-icon="icon"
+             let-image="image"
+             let-mainTitle="mainTitle"
+             let-subTitle="subTitle"
+             let-color="color"
+             let-background="background"
+             let-position="position"
+             let-colorized="colorized">
+  <div class="setting-label">
+    <!-- Картинка -->
+    <div class="setting-label__image"
+         [ngClass]="{ colorized }"
+         [attr.color]="color"
+         [attr.background]="background"
+         [attr.position]="position">
+      <!-- Картинка -->
+      <img [src]="image"
+           *ngIf="!!image?.length" />
+      <!-- Иконка -->
+      <mat-icon *ngIf="!image?.length">{{!!icon ? icon: 'person' }}</mat-icon>
+    </div>
+    <!-- Данные -->
+    <div class="setting-label__data">
+      <div class="setting-label__main-title">{{mainTitle}}</div>
+      <div class="setting-label__sub-title">{{subTitle}}</div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Шаблон ключевого слова -->
+<ng-template #dreamKeyword
+             let-keyword>
+  <div class="keyword"
+       [ngClass]="{ selected: keyword === selectedKeyword }"
+       (click)="onKeywordSelect(keyword)">{{keyword}}</div>
 </ng-template>

@@ -6,12 +6,14 @@ import { CommentListComponent } from "@_controlers/comment-list/comment-list.com
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
 import { ScrollElement } from "@_datas/app";
+import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
-import { SimpleObject } from "@_models/app";
+import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { Dream, DreamMode } from "@_models/dream";
+import { AutocompleteImageSize, OptionData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
@@ -39,6 +41,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   @ViewChild("contentPanel", { read: ElementRef }) private contentPanel: ElementRef;
   @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
   @ViewChild("rightPanel", { read: ElementRef }) private rightPanel: ElementRef;
+  @ViewChild("keywordsPanel", { read: ElementRef }) private keywordsPanel: ElementRef;
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -48,6 +51,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   defaultTitle: string = DreamTitle;
   today: Date = new Date();
   private beforeScroll: number = 0;
+  selectedKeyword: string;
 
   _navMenuType: typeof NavMenuType = NavMenuType;
   commentMaterialType: CommentMaterialType = CommentMaterialType.Dream;
@@ -142,6 +146,66 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     return { x, y, maxX, maxY };
   }
 
+  // Данные о приватности сновидения
+  get getDreamPrivateLabels(): DreamSettingLabels {
+    if (!!this.dream) {
+      const data: OptionData = DreamStatuses.find(({ key }) => key === this.dream.status.toString());
+      // Вернуть данные
+      return {
+        image: data?.image ?? "",
+        icon: data?.icon ?? "",
+        color: data?.iconColor ?? "disabled",
+        background: "fill",
+        position: data?.imagePosition ?? "contain",
+        mainTitle: "Тип доступности",
+        subTitle: data?.title ?? "",
+        colorized: false
+      };
+    }
+    // Не удалось определить данные
+    return null;
+  }
+
+  // Тип сновидения
+  get getDreamTypeLabels(): DreamSettingLabels {
+    if (!!this.dream) {
+      const data: OptionData = DreamTypes.find(({ key }) => key === this.dream.type.toString());
+      // Вернуть данные
+      return {
+        image: data?.image ?? "",
+        icon: data?.icon ?? "",
+        color: data?.iconColor ?? "disabled",
+        background: "fill",
+        position: data?.imagePosition ?? "contain",
+        mainTitle: "Тип сновидения",
+        subTitle: data?.title ?? "",
+        colorized: true
+      };
+    }
+    // Не удалось определить данные
+    return null;
+  }
+
+  // Настроение сновидения
+  get getDreamMoodLabels(): DreamSettingLabels {
+    if (!!this.dream) {
+      const data: OptionData = DreamMoods.find(({ key }) => key === this.dream.mood.toString());
+      // Вернуть данные
+      return {
+        image: data?.image ?? "",
+        icon: data?.icon ?? "",
+        color: data?.iconColor ?? "disabled",
+        background: "fill",
+        position: data?.imagePosition ?? "contain",
+        mainTitle: "Настроение в сновидении",
+        subTitle: data?.title ?? "",
+        colorized: true
+      };
+    }
+    // Не удалось определить данные
+    return null;
+  }
+
 
 
 
@@ -195,27 +259,32 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     // Все элементы определены
     if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
       const contentPanel: HTMLElement = this.contentPanel.nativeElement;
+      const keywordsPanel: HTMLElement = this.keywordsPanel.nativeElement;
       const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const contentPanelHeight: number = contentPanel.clientHeight;
+      const keywordsPanelHeight: number = keywordsPanel.clientHeight;
+      const keywordsPanelSpacingBottom: number = spacing - ParseInt(getComputedStyle(keywordsPanel).paddingBottom);
       const headerShift: number = mainMenuHeight + spacing;
+      const headerKeywordsShift: number = mainMenuHeight + keywordsPanelHeight + keywordsPanelSpacingBottom;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
+      const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;
       const scrollY: number = this.getCurrentScroll.y;
       const scrollShift: number = scrollY - this.beforeScroll;
       // Левая панель
       const leftPanel: HTMLElement = this.leftPanel.nativeElement;
       const leftPanelHeight: number = leftPanel.clientHeight;
       const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
-      const maxLeftShift: number = leftPanelHeight - screenHeight - headerShift;
+      const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
       // Правая панель
       const rightPanel: HTMLElement = this.rightPanel.nativeElement;
       const rightPanelHeight: number = rightPanel.clientHeight;
       const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим: левая панель
-      this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -headerShift) :
-        headerShift;
+      this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenKeywordsHeight ?
+        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -headerKeywordsShift) :
+        headerKeywordsShift;
       // Если отступ допустим: правая панель
       this.rightPanelHelperShift = availRightShift && rightPanelHeight > screenHeight ?
         -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
@@ -249,6 +318,12 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         this.scrollEnded = false;
       }
     }
+  }
+
+  // Выбор ключевого слова
+  onKeywordSelect(keyword?: string): void {
+    this.selectedKeyword = !!keyword && keyword !== this.selectedKeyword ? keyword : null;
+    this.changeDetectorRef.detectChanges();
   }
 
 
@@ -316,4 +391,16 @@ interface FloatButtonData {
   icon: string;
   link: string;
   params?: SimpleObject;
+}
+
+// Данные о настройках
+interface DreamSettingLabels {
+  image: string;
+  icon: string;
+  color: IconColor;
+  background: IconBackground;
+  position: AutocompleteImageSize;
+  mainTitle: string;
+  subTitle: string;
+  colorized: boolean;
 }
