@@ -1,4 +1,5 @@
 <div class="text"
      [ngClass]="{ invert }"
      [attr.color]="color"
-     [innerHTML]="getText"></div>
+     [innerHTML]="highlightingText"
+     *ngIf="!!highlightingText"></div>
