@@ -368,7 +368,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
             this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\n\r]+)", "ig"), "\n");
             this.dream.interpretation = this.dream.interpretation.replace(new RegExp("^([\n\r]+)", "ig"), "");
             this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\n\r]+)$", "ig"), "");
-            this.dream.interpretation = "<p>" + this.dream.interpretation.replace("\n", "</p><p>") + "</p>";
+            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\s\t]+)", "ig"), " ");
+            this.dream.interpretation = "<p>" + this.dream.interpretation.replace(new RegExp("\n", "ig"), "</p><p>") + "</p>";
             this.dream.interpretation = this.dream.interpretation.replace("<p></p>", "");
           }
           // Заголовок
