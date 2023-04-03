@@ -67,8 +67,9 @@ class OpenAIChatGPTService
         "model" => "text-davinci-003",
         'prompt' => $text,
         'max_tokens' => 1024,
-        'temperature' => 0,
-        'stream' => false
+        'temperature' => 0.5,
+        'stream' => false,
+        'stop' => '###'
       );
       $data = $this->gptRequest($url, $body);
       // Вернуть данные
