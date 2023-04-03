@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
-import { IconColor } from "@_models/app";
 import { CompareArrays } from "@_helpers/objects";
+import { IconColor } from "@_models/app";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import * as snowballFactory from "snowball-stemmers";
 
 
 
@@ -20,6 +21,8 @@ export class HighlightKeywordsComponent implements OnChanges {
   @Input() keywords: string[];
   @Input() color: IconColor | "default" = "default";
   @Input() invert: boolean = false;
+
+  private stemmer: Stemmer = snowballFactory.newStemmer("russian");
 
   highlightingText: string;
 
@@ -50,13 +53,19 @@ export class HighlightKeywordsComponent implements OnChanges {
     if (!!this.keywords?.length) {
       return this.keywords
         .filter(keyword => !!keyword?.length)
+        .map(keyword => keyword.toLowerCase().trim())
         .reduce(
           (text, keyword) => {
-            const keywordForms: string[] = Array.from(new Set([keyword, this.getWordStem(keyword), ...this.getWordForms(keyword)]));
-            // Замена форм слова
-            return keywordForms
-              .filter(form => !!form)
-              .reduce((text, form) => text.replace(new RegExp("([^a-zа-я0-9<>])(" + form + ")([^a-zа-я0-9<>])", "gmi"), "$1<span class=\"text__highlight\">$2</span>$3"), text);
+            const keywords: string[] = keyword.split(" ");
+            // Обработка для каждого ключевого слова
+            return keywords.reduce((text, keyword) => {
+              const keywordForms: string[] = this.getAllWordForms(keyword);
+              // Замена форм слова
+              return text.replace(
+                new RegExp("(?<!<span class=\"text__highlight\">)([^a-zа-я0-9]|^)(" + keywordForms.join("|") + ")([^a-zа-я0-9]|$)(?<!<\/span>)", "gmiu"),
+                "$1<span class=\"text__highlight\">$2</span>$3"
+              );
+            }, text);
           },
           this.text
         );
@@ -65,118 +74,82 @@ export class HighlightKeywordsComponent implements OnChanges {
     return this.text;
   }
 
-  // Получение базового значения слова
-  private getWordStem(word: string): string {
-    const vowels = ["а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"];
-    const perfectiveGerundEndings = ["в", "вши", "вшись", "в", "вши", "вшись"];
-    const adjectiveEndings = ["ее", "ие", "ые", "ое", "ими", "ыми", "ей", "ий", "ый", "ой", "ем", "им", "ым", "ом", "его", "ого", "ему", "ому", "их", "ых", "ую", "юю", "ая", "яя", "ою", "ею"];
-    const participleEndings = ["ивши", "ывши", "ующи", "емый", "омый", "имый", "ымый"];
-    const reflexiveEndings = ["ся", "сь"];
-    const verbEndings = ["ла", "на", "ете", "йте", "ли", "й", "л", "ем", "н", "ло", "но", "ет", "ют", "ны", "ть", "ешь", "нно"];
-    let stem = word.toLowerCase().trim();
-    // Step 1
-    let m = stem.match(/([\s\S]*?)(и|а|е(?:йте)?|нн|ть|ешь|л(?:а|о|и)|ю|ут?|ы(?:ть)?)$/);
-    // Уже базовая форма
-    if (!m) {
-      return stem;
-    }
-    // Поиск
-    stem = m[1];
-    // Step 2
-    for (let i = 0; i < perfectiveGerundEndings.length; i++) {
-      if (stem.endsWith(perfectiveGerundEndings[i])) {
-        stem = stem.slice(0, -perfectiveGerundEndings[i].length);
-        break;
-      }
-    }
-    // Step 3
-    m = stem.match(/([\s\S]*?)(ив|ывш|ующ)$/);
-    if (m) {
-      let mm = m[1].match(/([\s\S]*?)(ат|яч|ь)$/);
-      if (mm) {
-        stem = mm[1];
-      }
-    }
-    // Step 4
-    for (let i = 0; i < adjectiveEndings.length; i++) {
-      if (stem.endsWith(adjectiveEndings[i])) {
-        stem = stem.slice(0, -adjectiveEndings[i].length);
-        break;
-      }
-    }
-    // Step 5
-    for (let i = 0; i < participleEndings.length; i++) {
-      if (stem.endsWith(participleEndings[i])) {
-        stem = stem.slice(0, -participleEndings[i].length);
-        break;
-      }
-    }
-    // Step 6
-    for (let i = 0; i < reflexiveEndings.length; i++) {
-      if (stem.endsWith(reflexiveEndings[i])) {
-        stem = stem.slice(0, -reflexiveEndings[i].length);
-        break;
-      }
-    }
-    // Step 7
-    m = stem.match(/([\s\S]*?)(и)$/);
-    if (m) {
-      stem = m[1];
-    }
-    // Step 8
-    for (let i = 0; i < verbEndings.length; i++) {
-      if (stem.endsWith(verbEndings[i])) {
-        stem = stem.slice(0, -verbEndings[i].length);
-        break;
-      }
-    }
-    // Вернуть базовую форму
-    return stem;
-  }
+  private getAllWordForms(word: string): string[] {
+    const baseForm: string = this.stemmer.stem(word);
+    // Создаем все возможные варианты окончаний слова для каждого типа слова
+    const nounEndings: string[] = ["", "а", "у", "ом", "е", "ы", "ов", "ам", "ами", "ах", "ия", "ья", "ии", "ье", "ьи", "и", "ев", "ева", "ов", "ова", "ий"];
+    const verbEndings: string[] = ["", "ю", "ешь", "ет", "ем", "ете", "ут", "ют"];
+    const adjectiveEndings: string[] = ["", "ый", "ая", "ое", "ые", "ого", "ой", "ую", "ою", "ее", "ие", "ые", "ими", "ей", "их", "ую", "яя", "ее", "ие", "ые", "ими", "ей", "их", "ую", "яя"];
+    const pronounEndings: string[] = ["", "ый", "ая", "ое", "ые", "ого", "ой", "ую", "ою", "ее", "ие", "ые", "ими", "ей", "их", "ую", "яя", "ее", "ие", "ые", "ими", "ей", "их", "ую", "яя"];
+    const pastVerbEndings: string[] = ['', 'л', 'ла', 'ло', 'ли', 'лись', 'ла', 'ло', 'ли', 'ал', 'ел', 'лись'];
+    const result: string[] = [];
+    // Добавляем в массив базовую форму слова
+    result.push(baseForm);
 
-  // Получение форм слова
-  private getWordForms(word: string): string[] {
-    const stem = this.getWordStem(word);
-    const vowels = ["а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"];
-    const nounEndings = ["а", "у", "ом", "е", "ы", "ов", "ам", "ям", "ами", "ями", "о", "е", "и", "ь", "я", "ю", "ем", "н", "ми", "х"];
-    const adjectiveEndings = ["ый", "ого", "ому", "ым", "ом", "ая", "ую", "ою", "ее", "ие", "ые", "ое", "ими", "ыми", "ей", "ий", "ем", "им", "ым", "его", "ому", "их", "ых", "ую", "юю", "яя"];
-    const verbEndings = ["ю", "ешь", "ет", "ем", "ете", "ут", "ют", "ишь", "ит", "им", "ите", "ат", "ят", "ал", "ала", "али", "ать", "ят", "ила", "ило", "или", "ыл", "ыла", "ыли", "итесь", "иться", "ишься", "ится", "имся", "омся", "аете", "уются", "яться", "ел", "ело", "ела", "на"];
-    const adverbEndings = ["о", "е", "ым", "ую", "ою", "ей", "ий"];
-    const participleEndings = ["ший", "его", "ему", "им", "ая", "ую", "яя", "ее", "ие", "ые", "ое", "ими", "ыми", "ей", "ий", "ем", "им", "ым", "ого", "ому", "ых", "их"];
-    const gerundEndings = ["в", "вши", "вшись"];
-    const reflexiveEndings = ["ся", "сь"];
-    let forms: string[] = [];
-    // Nouns
-    for (let i = 0; i < nounEndings.length; i++) {
-      forms.push(stem + nounEndings[i]);
-      forms.push(stem + vowels[4] + nounEndings[i]);
+    // Добавляем все возможные формы существительных
+    if (baseForm.endsWith("ь")) {
+      result.push(baseForm.slice(0, -1) + "я");
+      result.push(baseForm.slice(0, -1) + "ю");
+      result.push(baseForm.slice(0, -1) + "ям");
+      result.push(baseForm.slice(0, -1) + "ями");
+      result.push(baseForm.slice(0, -1) + "ях");
     }
-    // Adjectives
-    for (let i = 0; i < adjectiveEndings.length; i++) {
-      forms.push(stem + adjectiveEndings[i]);
-      forms.push(stem + vowels[4] + adjectiveEndings[i]);
+    // Добавляем все возможные формы существительных А, Я
+    else if (baseForm.endsWith("а") || baseForm.endsWith("я")) {
+      result.push(...nounEndings.map(ending => baseForm + ending));
     }
-    // Verbs
-    for (let i = 0; i < verbEndings.length; i++) {
-      forms.push(stem + verbEndings[i]);
+    // Добавляем все возможные формы существительных О, Е
+    else if (baseForm.endsWith("о") || baseForm.endsWith("е")) {
+      result.push(...nounEndings.slice(4).map(ending => baseForm + ending));
     }
-    // Adverbs
-    for (let i = 0; i < adverbEndings.length; i++) {
-      forms.push(stem + adverbEndings[i]);
+    // Остальные буквы
+    else {
+      result.push(...nounEndings.map(ending => baseForm + ending));
     }
-    // Participles
-    for (let i = 0; i < participleEndings.length; i++) {
-      forms.push(stem + participleEndings[i]);
+
+    // Добавляем все возможные формы глаголов АТЬ
+    if (baseForm.endsWith("ать")) {
+      result.push(...verbEndings.map(ending => baseForm.slice(0, -2) + ending));
+      result.push(...pastVerbEndings.map(ending => baseForm.slice(0, -2) + ending));
     }
-    // Gerunds
-    for (let i = 0; i < gerundEndings.length; i++) {
-      forms.push(stem + gerundEndings[i]);
+    // Добавляем все возможные формы глаголов ИТЬ, ЕТЬ
+    else if (baseForm.endsWith("ить") || baseForm.endsWith("еть")) {
+      result.push(...verbEndings.slice(1).map(ending => baseForm.slice(0, -2) + ending));
+      result.push(...pastVerbEndings.slice(1).map(ending => baseForm.slice(0, -2) + ending));
     }
-    // Reflexives
-    for (let i = 0; i < reflexiveEndings.length; i++) {
-      forms.push(stem + reflexiveEndings[i]);
+    // Добавляем все возможные формы глаголов
+    else if (baseForm.endsWith("ет") || baseForm.endsWith("ат")) {
+      result.push(...verbEndings.map(ending => baseForm + ending));
+      result.push(...pastVerbEndings.map(ending => baseForm + ending));
     }
-    // Вернуть массив форм
-    return forms;
+
+    // Добавляем все возможные формы прилагательных и местоимений ЫЙ, ИЙ, ОЙ
+    if (baseForm.endsWith("ый") || baseForm.endsWith("ий") || baseForm.endsWith("ой")) {
+      result.push(...adjectiveEndings.map(ending => baseForm.slice(0, -2) + ending));
+    }
+    // Добавляем все возможные формы прилагательных и местоимений АЯ, ЯЯ
+    else if (baseForm.endsWith("ая") || baseForm.endsWith("яя")) {
+      result.push(...adjectiveEndings.slice(1, 9).map(ending => baseForm.slice(0, -2) + ending));
+    }
+    // Добавляем все возможные формы прилагательных и местоимений ОЕ, ЕЕ, ИЕ, ЫЕ
+    else if (baseForm.endsWith("ое") || baseForm.endsWith("ее") || baseForm.endsWith("ие") || baseForm.endsWith("ые")) {
+      result.push(...adjectiveEndings.slice(9, 18).map(ending => baseForm.slice(0, -2) + ending));
+    }
+    // Остальные буквы
+    else {
+      result.push(...pronounEndings.map(ending => baseForm + ending));
+    }
+
+    // Возвращаем результат
+    return Array.from(new Set(result));
   }
+}
+
+
+
+
+
+// Интерфейс стеммера
+interface Stemmer {
+  stem: (word: string) => string;
 }
