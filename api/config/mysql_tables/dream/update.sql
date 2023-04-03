@@ -14,6 +14,7 @@ SET
   `map` = :map,
   `header_type` = :header_type,
   `header_background` = :header_background,
-  `edit_date` = CURRENT_TIMESTAMP
+  `edit_date` = CURRENT_TIMESTAMP,
+  `interpretation` = ""
 WHERE
   `id` = :id
