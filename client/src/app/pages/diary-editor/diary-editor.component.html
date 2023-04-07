@@ -9,21 +9,23 @@
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [mainTitle]="dream.title || defaultTitle"
-                 subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                 subTitle="Приснилось {{(dreamForm.get('date')?.value ?? today) | date: 'dd MMMM YYYY'}}"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
                  floatButtonIcon="save"
                  (floatButtonCallback)="onSave()"></app-main-menu>
 
   <!-- Контейнер с данными -->
-  <div class="root-section">
+  <div class="root-section"
+       [ngClass]="{ center: loading }">
     <div class="root-section__helper"
          [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
                      [selectedIndex]="0"
                      (selectedIndexChange)="onChangeTab($event)"
-                     (animationDone)="onTabAnimationDone()">
+                     (animationDone)="onTabAnimationDone()"
+                     *ngIf="!loading; else saveLoader">
         <!-- Общее -->
         <mat-tab label="Общее">
           <ng-template matTabContent>
@@ -74,6 +76,7 @@
                                          placeholder="Введите ключевую фразу"
                                          placeholderLimit="Достигнута максимальное количество ключевых фраз"
                                          formControlName="keywords"
+                                         color="primary"
                                          [maxLength]="keywordsMaxLength"></app-chips-input>
                         <!-- Тип данных -->
                         <app-autocomplete-input required
@@ -171,6 +174,16 @@
     </div>
   </div>
 </div>
+
+
+
+<!-- Лоадер сохранения -->
+<ng-template #saveLoader>
+  <app-inform [waitPointers]="true"
+              [smallMargins]="true"
+              mainTitle="Сохранение"
+              subTitle="Пожалуйста подождите"></app-inform>
+</ng-template>
 
 <!-- Лоадер страницы -->
 <ng-template #pageLoader>

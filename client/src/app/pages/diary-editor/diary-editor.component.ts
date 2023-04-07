@@ -49,6 +49,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   config: CKEditor5.Config = EditorConfig;
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
+  loading: boolean = false;
   tabAnimation: boolean = false;
   private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
@@ -125,7 +126,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   // Доступен ли текст
-  private get isTextAvail(): boolean {
+  get isTextAvail(): boolean {
     const mode: DreamMode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
     // Проверка
     return mode === DreamMode.text || mode === DreamMode.mixed;
@@ -149,7 +150,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     return (
       this.dream.title !== title ||
       this.dream.description !== description ||
-      this.dream.date !== date ||
+      this.dream.date.toISOString() !== date.toISOString() ||
       this.dream.headerType !== headerType ||
       this.dream.headerBackground.id !== headerBackground ||
       this.dream.mode !== mode ||
@@ -213,43 +214,57 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Сохранение
   onSave(): void {
-    const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
-    // Подсветить ошибки
-    if (this.dreamForm.invalid) {
-      this.dreamForm.markAllAsTouched();
-    }
-    // Нет изменений
-    else if (!this.formHasChanges) {
-      this.snackbarService.open({
-        message: "Изменений не обнаружено",
-        mode: "error"
-      });
-    }
-    // Сохранить
-    else if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
-      this.dream.description = this.dreamForm.get("description").value as string;
-      this.dream.mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
-      this.dream.type = ParseInt(this.dreamForm.get("type")?.value) as DreamType;
-      this.dream.mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood;
-      this.dream.status = status;
-      this.dream.keywords = this.dreamForm.get("keywords").value as string[];
-      this.dream.text = this.dreamForm.get("text").value as string;
-      this.dream.map = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
-      this.dream.headerType = this.dreamForm.get("headerType")?.value?.toString() as NavMenuType ?? NavMenuType.collapse;
-      this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === ParseInt(this.dreamForm.get("headerBackground")?.value)) ?? BackgroundImageDatas[0];
-      // Сохранение
-      this.dreamService.save(this.dream)
-        .pipe(takeUntil(this.destroyed$))
-        .subscribe(id => {
-          this.dream.id = id;
-          // Добавить ID в URL
-          this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
-          // Уведомление о сохранении
-          this.snackbarService.open({
-            message: "Сновидение успешно сохранено",
-            mode: "success"
-          });
+    if (!this.loading) {
+      const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
+      // Подсветить ошибки
+      if (this.dreamForm.invalid) {
+        this.dreamForm.markAllAsTouched();
+      }
+      // Нет изменений
+      else if (!this.formHasChanges) {
+        this.snackbarService.open({
+          message: "Изменений не обнаружено",
+          mode: "error"
         });
+      }
+      // Сохранить
+      else if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
+        this.dream.description = this.dreamForm.get("description").value as string;
+        this.dream.mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
+        this.dream.type = ParseInt(this.dreamForm.get("type")?.value) as DreamType;
+        this.dream.mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood;
+        this.dream.status = status;
+        this.dream.date = ToDate(this.dreamForm.get("date")?.value);
+        this.dream.keywords = this.dreamForm.get("keywords").value as string[];
+        this.dream.text = this.dreamForm.get("text").value as string;
+        this.dream.map = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
+        this.dream.headerType = this.dreamForm.get("headerType")?.value?.toString() as NavMenuType ?? NavMenuType.collapse;
+        this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === ParseInt(this.dreamForm.get("headerBackground")?.value)) ?? BackgroundImageDatas[0];
+        // Лоадер
+        this.loading = true;
+        this.changeDetectorRef.detectChanges();
+        // Сохранение
+        this.dreamService.save(this.dream)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe(
+            id => {
+              this.dream.id = id;
+              this.loading = false;
+              this.changeDetectorRef.detectChanges();
+              // Добавить ID в URL
+              this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
+              // Уведомление о сохранении
+              this.snackbarService.open({
+                message: "Сновидение успешно сохранено",
+                mode: "success"
+              });
+            },
+            () => {
+              this.loading = false;
+              this.changeDetectorRef.detectChanges();
+            }
+          );
+      }
     }
   }
 
@@ -274,9 +289,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Изменение даты сновидения
   private onChangeDate(date: Date): void {
-    this.dream.date = date;
-    // Обновить
-    this.changeDetectorRef.detectChanges();
+    this.dreamForm.get("date").setValue(date ?? this.today, { emitEvent: false });
   }
 
   // Изменить настройки оформления
