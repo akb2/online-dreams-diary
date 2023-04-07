@@ -142,7 +142,7 @@
 // Обертка поля
 @mixin matFormField {
   $__marginMainElm: ".mat-mdc-form-field";
-  $__marginElms: "app-slider-input" "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
+  $__marginElms: "mat-checkbox" "app-slider-input" "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
   // Обертка
   .mat-mdc-form-field {
     $elm: &;
