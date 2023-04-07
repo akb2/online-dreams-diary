@@ -89,6 +89,13 @@ html {
     a {
       color: map.get(colors.$matPrimary, 500);
     }
+    // Подзаголовки
+    .sub-text {
+      &,
+      > * {
+        font-size: 0.8rem;
+      }
+    }
   }
 
   #app_main_page {
