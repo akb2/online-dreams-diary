@@ -4,6 +4,7 @@ import { NgControl } from "@angular/forms";
 import { MatChipInput, MatChipInputEvent } from "@angular/material/chips";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { BaseInputDirective } from "@_directives/base-input.directive";
+import { ThemePalette } from "@angular/material/core";
 
 
 
@@ -27,6 +28,7 @@ export class ChipsInputComponent extends BaseInputDirective implements DoCheck, 
   @Input() separator: string = ",";
   @Input() disableSymbols: string[] = DefaultDisabledChar;
   @Input() maxLength: number = 512;
+  @Input() color: ThemePalette | "" = "";
 
   @Output() keyDown: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();
   @Output() keyUp: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();

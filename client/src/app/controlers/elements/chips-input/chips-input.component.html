@@ -7,6 +7,8 @@
                  [formControl]="control"
                  (cdkDropListDropped)="onDrop($event)">
     <mat-chip-row cdkDrag
+                  [highlighted]="!!color"
+                  [color]="color"
                   [value]="word"
                   (removed)="onRemoveWord(word)"
                   *ngFor="let word of words">
