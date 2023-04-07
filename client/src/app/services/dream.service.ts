@@ -197,9 +197,24 @@ export class DreamService implements OnDestroy {
     const formData: FormData = ObjectToFormData({ id: dreamId });
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("dream/delete", formData).pipe(
+      takeUntil(this.destroyed$),
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :
+          this.apiService.checkResponse(result.result.code, codes)
+      )
+    );
+  }
+
+  // Создать интерпритацию
+  createInterpretation(dreamId: number, codes: string[] = []): Observable<string> {
+    const formData: FormData = ObjectToFormData({ id: dreamId });
+    // Вернуть подписку
+    return this.httpClient.post<ApiResponse>("dream/createInterpretation", formData).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(
+        result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
+          of(result.result.data) :
           this.apiService.checkResponse(result.result.code, codes)
       )
     );

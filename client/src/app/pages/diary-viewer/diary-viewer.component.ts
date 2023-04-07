@@ -46,6 +46,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
+  interpretationLoading: boolean = false;
   private pageTitle: string = "Просмотр сновидения";
 
   defaultTitle: string = DreamTitle;
@@ -119,12 +120,12 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Доступен ли просмотр текста
   get isTextAvail(): boolean {
-    return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.text) && this.dream.text.length > 0;
+    return !!this.dream && (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.text) && !!this.dream?.text;
   }
 
   // Доступен ли просмотр текста
   get isMapAvail(): boolean {
-    return (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.map) && !!this.dream.map;
+    return !!this.dream && (this.dream.mode === DreamMode.mixed || this.dream.mode === DreamMode.map) && !!this.dream.map;
   }
 
   // Подзаголовок стены без записей
@@ -326,6 +327,29 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Создать интерапритация
+  onUpdateInterpritation(): void {
+    if (!this.interpretationLoading) {
+      this.interpretationLoading = true;
+      this.changeDetectorRef.detectChanges();
+      // Интерпритация
+      this.dreamService.createInterpretation(this.dream.id)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(
+          interpretation => {
+            this.interpretationLoading = false;
+            this.dream.interpretation = this.interpretationConvert(interpretation);
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
+            this.interpretationLoading = false;
+            this.changeDetectorRef.detectChanges();
+          }
+        );
+    }
+  }
+
 
 
 
@@ -364,13 +388,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           this.ready = true;
           // Заменить переносы на теги
           if (!!this.dream?.interpretation) {
-            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("^([\.,]+)", "ig"), "\n");
-            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\n\r]+)", "ig"), "\n");
-            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("^([\n\r]+)", "ig"), "");
-            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\n\r]+)$", "ig"), "");
-            this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\s\t]+)", "ig"), " ");
-            this.dream.interpretation = "<p>" + this.dream.interpretation.replace(new RegExp("\n", "ig"), "</p><p>") + "</p>";
-            this.dream.interpretation = this.dream.interpretation.replace(/<p>[\s\n\r\t]*<\/p>/gmi, "");
+            this.dream.interpretation = this.interpretationConvert(this.dream.interpretation);
           }
           // Заголовок
           this.setSEO();
@@ -389,6 +407,19 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     ]));
     // Каноничный адрес
     this.canonicalService.setURL("diary/viewer/" + this.dream.id);
+  }
+
+  // Подготовка интерпритации к отображению
+  private interpretationConvert(interpretation: string): string {
+    interpretation = interpretation.replace(new RegExp("^([\.,]+)", "ig"), "\n");
+    interpretation = interpretation.replace(new RegExp("([\n\r]+)", "ig"), "\n");
+    interpretation = interpretation.replace(new RegExp("^([\n\r]+)", "ig"), "");
+    interpretation = interpretation.replace(new RegExp("([\n\r]+)$", "ig"), "");
+    interpretation = interpretation.replace(new RegExp("([\s\t]+)", "ig"), " ");
+    interpretation = "<p>" + interpretation.replace(new RegExp("\n", "ig"), "</p><p>") + "</p>";
+    interpretation = interpretation.replace(/<p>[\s\n\r\t]*<\/p>/gmi, "");
+    // Вернуть текст
+    return interpretation;
   }
 }
 

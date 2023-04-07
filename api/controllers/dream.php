@@ -7,7 +7,6 @@ use Decorators\Request;
 use Services\DreamService;
 use Services\UserSettingsService;
 use PDO;
-use Services\OpenAIChatGPTService;
 
 class Dream
 {
@@ -121,8 +120,8 @@ class Dream
   {
     $code = '0002';
     $userId = $_SERVER['TOKEN_USER_ID'] ?? '';
-    $edit = $_GET['edit'] === 'true';
-    $testDream = $this->dreamService->getById($data['id']);
+    $edit = isset($_GET['edit']) && $_GET['edit'] === 'true';
+    $testDream = $this->dreamService->getById(intval($data['id']));
     $dream = array();
     // Сновидение найдено
     if (isset($testDream['id']) && $testDream['id'] > 0) {
@@ -168,6 +167,40 @@ class Dream
       'data' => array(
         'isDelete' => $isDelete
       ),
+      'code' => $code
+    );
+  }
+
+  // Создать интерпритацию
+  #[Request('post'), CheckToken]
+  public function createInterpretation($data): array
+  {
+    $code = '7006';
+    $userId = $_SERVER['TOKEN_USER_ID'];
+    $interpretation = '';
+    // Проверка идентификатора
+    if (isset($data['id']) && $data['id'] > 0) {
+      $dream = $this->dreamService->getById($data['id'], $userId);
+      // Сновидение найдено
+      if (!!$dream && isset($dream['id'])) {
+        // Проверка доступа
+        if ($dream['user_id'] == $userId) {
+          $interpretation = $this->dreamService->createInterpretation($dream, true);
+          $code = !!$interpretation && strlen($interpretation) > 0 ? '0001' : '7007';
+        }
+      }
+      // Сон не найден
+      else {
+        $code = '0002';
+      }
+    }
+    // Сон не найден
+    else {
+      $code = '0002';
+    }
+    // Вернуть результат
+    return array(
+      'data' => $interpretation,
       'code' => $code
     );
   }

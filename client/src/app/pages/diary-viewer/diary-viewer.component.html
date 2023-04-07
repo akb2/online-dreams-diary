@@ -37,6 +37,8 @@
         <ng-container [ngTemplateOutlet]="dreamSettingLabel"
                       [ngTemplateOutletContext]="labels"
                       *ngIf="getDreamMoodLabels as labels"></ng-container>
+        <!-- Заполнитель -->
+        <div class="content__keywords-filler"></div>
         <!-- Ключевые слова -->
         <ng-container [ngTemplateOutlet]="dreamKeyword"
                       [ngTemplateOutletContext]="{ $implicit: keyword }"
@@ -62,12 +64,29 @@
                                   [keywords]="[selectedKeyword]"
                                   [text]="dream.text"></app-highlight-keywords>
           <!-- Толкование -->
-          <div class="dream__text"
-               *ngIf="!!dream?.interpretation">
-            <b>Возможное толкование</b>
-            <br>
-            <blockquote [innerHTML]="dream.interpretation"></blockquote>
-          </div>
+          <ng-container *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user.id)">
+            <div class="dream__text">
+              <!-- Заголовок -->
+              <app-title [type]="3"
+                         [noMargin]="true"
+                         mainTitle="Возможное толкование">
+                <!-- Обновить -->
+                <button mat-mini-fab
+                        color="primary"
+                        matTooltip="Обновить толкование"
+                        [attr.button-loader]="interpretationLoading"
+                        (click)="onUpdateInterpritation()"
+                        *ngIf="dream.user.id === user.id">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </app-title>
+              <!-- Текст толкования -->
+              <blockquote [innerHTML]="dream.interpretation"
+                          *ngIf="!!dream?.interpretation"></blockquote>
+              <!-- Нет толкования -->
+              <blockquote *ngIf="!dream?.interpretation">Пока что нет толкования</blockquote>
+            </div>
+          </ng-container>
         </ng-container>
       </div>
       <!-- Комментарии -->
