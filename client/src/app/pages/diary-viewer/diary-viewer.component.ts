@@ -1,7 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { Title } from "@angular/platform-browser";
-import { ActivatedRoute, Router } from "@angular/router";
-import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
@@ -21,7 +17,11 @@ import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
-import { concatMap, fromEvent, map, merge, mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, Router } from "@angular/router";
+import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
+import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -370,7 +370,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
             this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\n\r]+)$", "ig"), "");
             this.dream.interpretation = this.dream.interpretation.replace(new RegExp("([\s\t]+)", "ig"), " ");
             this.dream.interpretation = "<p>" + this.dream.interpretation.replace(new RegExp("\n", "ig"), "</p><p>") + "</p>";
-            this.dream.interpretation = this.dream.interpretation.replace("<p></p>", "");
+            this.dream.interpretation = this.dream.interpretation.replace(/<p>[\s\n\r\t]*<\/p>/gmi, "");
           }
           // Заголовок
           this.setSEO();
