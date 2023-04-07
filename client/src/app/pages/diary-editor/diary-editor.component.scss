@@ -36,7 +36,6 @@ $tabsHeight: 49px;
         position: absolute;
         top: 0;
         background-color: inherit;
-        border-bottom: 1px solid #e0e0e0;
       }
       // Слева
       &:before {
@@ -45,6 +44,12 @@ $tabsHeight: 49px;
       // Справа
       &:after {
         left: 100%;
+      }
+      // Границы
+      &,
+      &::before,
+      &::after {
+        border-bottom: 1px solid #{colors.$tabBorder};
       }
     }
     // Адаптив
