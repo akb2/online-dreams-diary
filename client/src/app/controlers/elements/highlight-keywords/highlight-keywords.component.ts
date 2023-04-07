@@ -1,5 +1,5 @@
 import { CompareArrays } from "@_helpers/objects";
-import { CustomObject, IconColor } from "@_models/app";
+import { IconColor } from "@_models/app";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import * as snowballFactory from "snowball-stemmers";
 
@@ -50,7 +50,6 @@ export class HighlightKeywordsComponent implements OnChanges {
 
   // Форматированный текст
   private highlightText(): string {
-    console.log(this.getAllWordForms("бег"));
     if (!!this.keywords?.length) {
       return this.keywords
         .filter(keyword => !!keyword?.length)
@@ -149,18 +148,17 @@ export class HighlightKeywordsComponent implements OnChanges {
       result.push(...pronounEndings.map(ending => baseForm + ending));
     }
 
-    if (searchExcludes) {
-      if (verbEnds.every(e => !baseForm.endsWith(e))) {
-        verbEnds.map(e => this.getAllWordForms(baseForm + e, false)).forEach(ws => result.push(...ws));
-      }
-      // Исключения
-      if (excludeWords.some(ws => ws.includes(baseForm))) {
-        const words: string[] = excludeWords
-          .find(ws => ws.includes(baseForm))
-          .reduce((o, w) => ([...o, w]), [])
-          .filter(k => k !== baseForm);
-        words.map(word => this.getAllWordForms(word, false)).forEach(ws => result.push(...ws));
-      }
+    // Формы глаголов
+    if (verbEnds.every(e => !baseForm.endsWith(e))) {
+      verbEnds.map(e => this.getAllWordForms(baseForm + e, false)).forEach(ws => result.push(...ws));
+    }
+    // Исключения
+    if (searchExcludes && excludeWords.some(ws => ws.includes(baseForm))) {
+      const words: string[] = excludeWords
+        .find(ws => ws.includes(baseForm))
+        .reduce((o, w) => ([...o, w]), [])
+        .filter(k => k !== baseForm);
+      words.map(word => this.getAllWordForms(word, false)).forEach(ws => result.push(...ws));
     }
     // Возвращаем результат
     return Array.from(new Set(result));
