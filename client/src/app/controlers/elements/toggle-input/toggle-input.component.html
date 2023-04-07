@@ -8,7 +8,7 @@
           (click)="control.setValue(false)">{{values[0]}}</span>
     <!-- Переключатель -->
     <div class="values__toggle">
-      <mat-slide-toggle #toggle=""
+      <mat-slide-toggle #toggle
                         color="primary"
                         [checked]="isChecked"
                         (toggleChange)="control.setValue(!control.value)"></mat-slide-toggle>
@@ -18,8 +18,8 @@
           [ngClass]="{ select: isChecked }"
           (click)="control.setValue(true)">{{values[1]}}</span>
   </div>
-  <input matInput=""
-         hidden=""
+  <input matInput
+         hidden
          [formControl]="control"
          type="text" />
   <!-- Поле ошибки -->
