@@ -14,6 +14,7 @@ class DreamService
   private DataBaseService $dataBaseService;
   private TokenService $tokenService;
   private FriendService $friendService;
+  private OpenAIChatGPTService $openAIChatGPTService;
 
   public function __construct(PDO $pdo, array $config)
   {
@@ -23,6 +24,7 @@ class DreamService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->friendService = new FriendService($this->pdo, $this->config);
+    $this->openAIChatGPTService = new OpenAIChatGPTService($this->config);
   }
 
 
@@ -216,7 +218,7 @@ class DreamService
   }
 
   // Обновить сновидение
-  public function updateDream($data): string
+  public function updateDream($data): int
   {
     $sqlData = array(
       "id" => intval($data["id"]),
@@ -244,18 +246,35 @@ class DreamService
   }
 
   // Сохранить толкование
-  public function saveInterpretate(int $id, string $interpretation): bool
+  public function createInterpretation(int|array $mixedDream, bool $override): string
   {
-    $sqlData = array(
-      "id" => $id,
-      "interpretation" => $interpretation
-    );
-    // Попытка сохранения
-    if ($this->dataBaseService->executeFromFile("dream/saveInterpetation.sql", $sqlData)) {
-      return true;
+    $dream = is_array($mixedDream) ? $mixedDream : $this->getById($mixedDream);
+    // Сновидение найдено
+    if (!!$dream && $dream['id']) {
+      $hasInterpretation = !!$dream['interpretation'] && strlen($dream['interpretation']) > 0;
+      $hasText = ($dream['mode'] == 0 || $dream['mode'] == 2) && !!$dream['text'] && strlen($dream['text']) > 0;
+      // Новая интерпритация
+      if ($override || (!$hasInterpretation && $hasText)) {
+        $interpretation = $this->openAIChatGPTService->dreamInterpretate($dream);
+        // Сохранить интерпритацию
+        if (!!$interpretation) {
+          $sqlData = array(
+            "id" => $dream['id'],
+            "interpretation" => $interpretation
+          );
+          // Попытка сохранения
+          if ($this->dataBaseService->executeFromFile("dream/saveInterpetation.sql", $sqlData)) {
+            return $interpretation;
+          }
+        }
+      }
+      // Существующая
+      else {
+        return $dream['interpretation'];
+      }
     }
     // Сновидение не сохранено
-    return false;
+    return '';
   }
 
   // Удалить сновидение

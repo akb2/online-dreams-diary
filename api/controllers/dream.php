@@ -17,7 +17,6 @@ class Dream
 
   private DreamService $dreamService;
   private UserSettingsService $userSettingsService;
-  private OpenAIChatGPTService $openAIChatGPTService;
 
 
 
@@ -38,7 +37,6 @@ class Dream
   {
     $this->dreamService = new DreamService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
-    $this->openAIChatGPTService = new OpenAIChatGPTService($this->config);
   }
 
 
@@ -51,16 +49,14 @@ class Dream
     $code = '7001';
     $userId = $_SERVER['TOKEN_USER_ID'];
     $dream = $this->dreamService->getById($data['id'], $userId);
-    // Переписать старое
-    if (isset($dream['id']) && $dream['id'] > 0) {
-      $id = $this->dreamService->updateDream($data);
+    // Сохранение
+    $id = isset($dream['id']) && $dream['id'] > 0 ?
+      $this->dreamService->updateDream($data) :
+      $this->dreamService->createDream($data);
+    // Сновидение сохранено
+    if ($id > 0) {
+      $code = '0001';
     }
-    // Новое сновидение
-    else {
-      $id = $this->dreamService->createDream($data);
-    }
-    // Обновить код
-    $code = $id > 0 ? '0001' : $code;
     // Сновидение не сохранено
     return array(
       'code' => $code,
@@ -133,36 +129,7 @@ class Dream
       // Доступность для просмотра или редактирования
       if ($this->dreamService->checkAvail($testDream['id'], $userId, $edit)) {
         $code = '0001';
-        $dream = array(
-          'id' => intval($testDream['id']),
-          'userId' => intval($testDream['user_id']),
-          'createDate' => $testDream['create_date'],
-          'date' => $testDream['date'],
-          'title' => $testDream['title'],
-          'description' => $testDream['description'],
-          'keywords' => $testDream['keywords'],
-          'text' => $testDream['text'],
-          'interpretation' => $testDream['interpretation'] ?? '',
-          'places' => $testDream['places'],
-          'members' => $testDream['members'],
-          'map' => $testDream['map'],
-          'mode' => intval($testDream['mode']),
-          'type' => intval($testDream['type']),
-          'mood' => intval($testDream['mood']),
-          'status' => intval($testDream['status']),
-          'headerType' => $testDream['header_type'],
-          'headerBackgroundId' => intval($testDream['header_background'])
-        );
-        // Создать толкование
-        if ((!$dream['interpretation'] || strlen($dream['interpretation']) === 0) && !!$dream['text'] && strlen($dream['text']) > 0 && !$edit) {
-          $interpretation = $this->openAIChatGPTService->dreamInterpretate($dream);
-          // Было создано толкование
-          if (!!$interpretation) {
-            $dream['interpretation'] = $interpretation;
-            // Сохранить интерпритацию
-            $this->dreamService->saveInterpretate(intval($testDream['id']), $interpretation);
-          }
-        }
+        $dream = $this->dreamConvert($testDream);
       }
       // Нельяз смотреть
       else {
@@ -220,25 +187,7 @@ class Dream
         $dreams = array();
         // Обработать список сновидений
         foreach ($dreamsData as $dream) {
-          $dreams[] = array(
-            'id' => intval($dream['id']),
-            'userId' => intval($dream['user_id']),
-            'createDate' => $dream['create_date'],
-            'date' => $dream['date'],
-            'title' => $dream['title'],
-            'description' => $dream['description'],
-            'keywords' => $dream['keywords'],
-            'text' => isset($dream['text']) ? $dream['text'] : '',
-            'places' => isset($dream['places']) ? $dream['places'] : '',
-            'members' => isset($dream['members']) ? $dream['members'] : '',
-            'map' => isset($dream['map']) ? $dream['map'] : '',
-            'mode' => intval($dream['mode']),
-            'type' => intval($dream['type']),
-            'mood' => intval($dream['mood']),
-            'status' => intval($dream['status']),
-            'headerType' => $dream['header_type'],
-            'headerBackgroundId' => intval($dream['header_background'])
-          );
+          $dreams[] = $this->dreamConvert($dream);
         }
       }
     }
@@ -246,6 +195,31 @@ class Dream
     return array(
       'code' => $code,
       'dreams' => $dreams
+    );
+  }
+
+  // Конвертация сновидения
+  private function dreamConvert(array $dream): array
+  {
+    return array(
+      'id' => intval($dream['id']),
+      'userId' => intval($dream['user_id']),
+      'interpretation' => strval($dream['interpretation'] ?? ''),
+      'createDate' => $dream['create_date'],
+      'date' => $dream['date'],
+      'title' => $dream['title'],
+      'description' => $dream['description'],
+      'keywords' => $dream['keywords'],
+      'text' => isset($dream['text']) ? $dream['text'] : '',
+      'places' => isset($dream['places']) ? $dream['places'] : '',
+      'members' => isset($dream['members']) ? $dream['members'] : '',
+      'map' => isset($dream['map']) ? $dream['map'] : '',
+      'mode' => intval($dream['mode']),
+      'type' => intval($dream['type']),
+      'mood' => intval($dream['mood']),
+      'status' => intval($dream['status']),
+      'headerType' => $dream['header_type'],
+      'headerBackgroundId' => intval($dream['header_background'])
     );
   }
 }
