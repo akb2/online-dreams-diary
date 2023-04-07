@@ -17,11 +17,19 @@ class OpenAIChatGPTService
     // Параметры
     $this->secretToken = $this->config['chatGpt']['sectretToken'];
     $this->gptUrls = array(
-      'dream' => 'https://api.openai.com/v1/completions'
+      'models' => array('https://api.openai.com/v1/models', false),
+      'dream' => array('https://api.openai.com/v1/completions', true)
     );
   }
 
 
+
+  // Список доступных моделей\
+  public function getModelsInfo(): array|null
+  {
+    [$url, $isPost] = $this->gptUrls['models'];
+    return $this->gptRequest($url, $isPost);
+  }
 
   // Запрос интерпритации сновидения
   public function dreamInterpretate(array $dream): string
@@ -62,19 +70,18 @@ class OpenAIChatGPTService
         'Полное описание: ' . strip_tags($dreamText) .
         '';
       // Параметры запроса
-      $url = $this->gptUrls['dream'];
+      [$url, $isPost] = $this->gptUrls['dream'];
       $body = array(
-        "model" => "text-davinci-003",
+        'model' => 'text-davinci-003',
         'prompt' => $text,
-        'max_tokens' => 1024,
-        'temperature' => 0.5,
-        'stream' => false,
+        'temperature' => 0.6,
+        'max_tokens' => 2048,
         'stop' => '###'
       );
-      $data = $this->gptRequest($url, $body);
+      $data = $this->gptRequest($url, $isPost, $body);
       // Вернуть данные
       if (!!$data) {
-        return $data;
+        return strval($data['choices'][0]['text'] ?? '');;
       }
     }
     // Не удалось интерпретировать
@@ -84,29 +91,29 @@ class OpenAIChatGPTService
 
 
   // Запрос к GPT
-  private function gptRequest($url, $body)
+  private function gptRequest(string $url, bool $isPost = false, array $body = array()): array|null
   {
-    if (!!$url && !!$body && !!$this->secretToken) {
+    if (!!$url && !!$this->secretToken) {
       $ch = curl_init();
       // Настройки запроса
       curl_setopt($ch, CURLOPT_URL, $url);
-      curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+      curl_setopt($ch, CURLOPT_POST, $isPost ? 1 : 0);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         'Content-Type: application/json',
         'Authorization: Bearer ' . $this->secretToken
       ));
+      // Данные
+      if (!!$body) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+      }
       // Выполнить запрос
       $response = curl_exec($ch);
       // Закрытие cURL-сессии
       curl_close($ch);
       // Обработка данных
       if (!!$response) {
-        $data = json_decode($response, true);
-        $data = strval($data['choices'][0]['text'] ?? '');
-        // Вернуть ответ
-        return $data;
+        return json_decode($response, true);
       }
     }
     // Ошибка запроса
