@@ -142,13 +142,17 @@
 // Обертка поля
 @mixin matFormField {
   $__marginMainElm: ".mat-mdc-form-field";
-  $__marginElms: "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
+  $__marginElms: "app-slider-input" "app-text-input" "app-autocomplete-input" "app-toggle-input" "app-chips-input" "mat-radio-group" ".input-field";
   // Обертка
   .mat-mdc-form-field {
     $elm: &;
     $padding: 12px;
     // Свойства
     width: 100%;
+    // Блочное отображение
+    ::ng-deep &.block {
+      display: block;
+    }
     // Поле с картинкой
     .image + & {
       margin-left: -#{vars.$matFormFieldImageSize};

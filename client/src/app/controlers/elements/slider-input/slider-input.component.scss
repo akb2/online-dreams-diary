@@ -2,6 +2,12 @@
 @use "mixins";
 @use "vars";
 
+// Главный блок
+:host {
+  display: block;
+  width: 100%;
+}
+
 // Слайдер
 .slider {
   display: block;

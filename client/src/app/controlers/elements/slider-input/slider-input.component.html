@@ -1,31 +1,33 @@
-<!-- Картинки/иконки списка данных -->
-<div class="list"
-     *ngIf="isAnOptionDataList">
-  <div class="list__item"
-       [ngClass]="{ colorized: iconColorized && item.iconBackground === 'fill', current: i === getValue }"
-       [attr.position]="item.imagePosition"
-       [attr.color]="item.iconColor"
-       [attr.background]="item.iconBackground"
-       (click)="onValueChange(i)"
-       *ngFor="let item of optionData; let i = index">
-    <!-- Картинка -->
-    <img [src]="item.image"
-         *ngIf="item.image?.length && !item.icon?.length" />
-    <!-- Иконка -->
-    <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
+<div class="mat-mdc-form-field block">
+  <!-- Картинки/иконки списка данных -->
+  <div class="list"
+       *ngIf="isAnOptionDataList">
+    <div class="list__item"
+         [ngClass]="{ colorized: iconColorized && item.iconBackground === 'fill', current: i === getValue }"
+         [attr.position]="item.imagePosition"
+         [attr.color]="item.iconColor"
+         [attr.background]="item.iconBackground"
+         (click)="onValueChange(i)"
+         *ngFor="let item of optionData; let i = index">
+      <!-- Картинка -->
+      <img [src]="item.image"
+           *ngIf="item.image?.length && !item.icon?.length" />
+      <!-- Иконка -->
+      <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
+    </div>
   </div>
-</div>
-<!-- Слайдер -->
-<mat-slider class="slider"
-            [ngClass]="{ 'option-data': isAnOptionDataList }"
-            [min]="getMinValue"
-            [max]="getMaxValue"
-            [step]="getStep">
-  <input matSliderThumb
-         [value]="getValue"
-         (valueChange)="onValueChange($event)">
-</mat-slider>
-<!-- Обозначение -->
-<div class="label">
-  <div class="label__title">{{label}}: <b>{{getDisplayValue}}</b></div>
+  <!-- Слайдер -->
+  <mat-slider class="slider"
+              [ngClass]="{ 'option-data': isAnOptionDataList }"
+              [min]="getMinValue"
+              [max]="getMaxValue"
+              [step]="getStep">
+    <input matSliderThumb
+           [value]="getValue"
+           (valueChange)="onValueChange($event)">
+  </mat-slider>
+  <!-- Обозначение -->
+  <div class="label">
+    <div class="label__title">{{label}}: <b>{{getDisplayValue}}</b></div>
+  </div>
 </div>
