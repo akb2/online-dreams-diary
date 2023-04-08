@@ -1,4 +1,3 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { WaitObservable } from "@_datas/api";
 import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
@@ -8,12 +7,13 @@ import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
-import { DrawDataPeriod, DrawDatasKeys, DrawDataValue, NavMenuType } from "@_models/nav-menu";
+import { DrawDataPeriod, DrawDataValue, DrawDatasKeys, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
-import { concatMap, filter, forkJoin, fromEvent, map, merge, mergeMap, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
+import { Subject, concatMap, filter, forkJoin, fromEvent, map, merge, mergeMap, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -365,6 +365,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Изменение размеров экрана
   private onResize(): void {
+    this.maxHeight = DrawDatas.maxHeight;
     // const collapse: boolean = DrawDatas.screenHeight < ScrollElement().clientHeight;
     // Запомнить настройки
     DrawDatas.type = this.type;
