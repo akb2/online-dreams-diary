@@ -44,6 +44,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   @ViewChild("keywordsPanel", { read: ElementRef }) private keywordsPanel: ElementRef;
   @ViewChild("keywordsPanelHelper", { read: ElementRef }) private keywordsPanelHelper: ElementRef;
   @ViewChild("keywordsPanelElm", { read: ElementRef }) private keywordsPanelElm: ElementRef;
+  @ViewChild("interpretationPanel", { read: ElementRef }) private interpretationPanel: ElementRef;
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -273,6 +274,13 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         ))
       )
       .subscribe(() => this.onPanelsPosition());
+    // Изменение размеров панели
+    WaitObservable(() => !this.interpretationPanel?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => this.screenService.elmResize(this.interpretationPanel.nativeElement))
+      )
+      .subscribe(() => this.onPanelsPosition());
     // Мобильный интерфейс
     this.screenService.isMobile$
       .pipe(takeUntil(this.destroyed$))
@@ -300,12 +308,12 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const keywordsPanel: HTMLElement = this.keywordsPanel.nativeElement;
       const leftPanel: HTMLElement = this.leftPanel.nativeElement;
       const rightPanel: HTMLElement = this.rightPanel.nativeElement;
+      const interpretationPanel: HTMLElement = this.interpretationPanel?.nativeElement;
       const contentPanelStyles: CSSStyleDeclaration = getComputedStyle(contentPanel);
       const keywordPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
       const spacing: number = ParseInt(contentPanelStyles.rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const mainMenuHeightDiff: number = this.mainMenu.maxHeight - mainMenuHeight;
-      console.log(mainMenuHeightDiff);
       const contentPanelHeight: number = contentPanel.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
@@ -316,7 +324,10 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const rightPanelHeight: number = rightPanel.clientHeight;
       const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
       const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
-      const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom);
+      const interpretationPanelHeight: number = !!interpretationPanel ?
+        interpretationPanel.getBoundingClientRect().height + ParseInt(getComputedStyle(interpretationPanel).marginTop) :
+        0;
+      const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom) - interpretationPanelHeight;
       const headerKeywordsTop: number = CheckInRange(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
       const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
       const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;

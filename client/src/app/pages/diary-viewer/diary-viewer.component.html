@@ -76,30 +76,30 @@
                                   [text]="dream.text"
                                   (foundCount)="onKeywordSelectCount($event)"></app-highlight-keywords>
           <!-- Толкование -->
-          <ng-container *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user.id)">
-            <div class="dream__text">
-              <!-- Заголовок -->
-              <app-title [type]="3"
-                         [noMargin]="true"
-                         [oneLine]="true"
-                         mainTitle="Возможное толкование">
-                <!-- Обновить -->
-                <button mat-mini-fab
-                        color="primary"
-                        matTooltip="Обновить толкование"
-                        [attr.button-loader]="interpretationLoading"
-                        (click)="onUpdateInterpritation()"
-                        *ngIf="dream.user.id === user.id">
-                  <mat-icon>refresh</mat-icon>
-                </button>
-              </app-title>
-              <!-- Текст толкования -->
-              <blockquote [innerHTML]="dream.interpretation"
-                          *ngIf="!!dream?.interpretation"></blockquote>
-              <!-- Нет толкования -->
-              <blockquote *ngIf="!dream?.interpretation">Пока что нет толкования</blockquote>
-            </div>
-          </ng-container>
+          <div #interpretationPanel
+               class="dream__text"
+               *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user.id)">
+            <!-- Заголовок -->
+            <app-title [type]="3"
+                       [noMargin]="true"
+                       [oneLine]="true"
+                       mainTitle="Возможное толкование">
+              <!-- Обновить -->
+              <button mat-mini-fab
+                      color="primary"
+                      matTooltip="Обновить толкование"
+                      [attr.button-loader]="interpretationLoading"
+                      (click)="onUpdateInterpritation()"
+                      *ngIf="dream.user.id === user.id">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </app-title>
+            <!-- Текст толкования -->
+            <blockquote [innerHTML]="dream.interpretation"
+                        *ngIf="!!dream?.interpretation"></blockquote>
+            <!-- Нет толкования -->
+            <blockquote *ngIf="!dream?.interpretation">Пока что нет толкования</blockquote>
+          </div>
         </ng-container>
       </div>
       <!-- Комментарии -->
@@ -133,17 +133,24 @@
                  icon="auto_stories"
                  iconColor="primary"
                  iconBackground="fill"
+                 [oneLine]="true"
                  mainTitle="Так же смотрите"
                  subTitle="Другие сновидения {{dream.user | petrovich}}">
         <!-- Для десктопа -->
         <a mat-stroked-button
            color="basic"
-           routerLink="/diary/{{dream.user.id}}">
+           routerLink="/diary/{{dream.user.id}}"
+           *ngIf="!isMobile">
           Все сны
-          <mat-icon>chevron_right</mat-icon>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
         </a>
         <!-- Для телефона -->
-        <a></a>
+        <a mat-mini-fab
+           color="primary"
+           routerLink="/diary/{{dream.user.id}}"
+           *ngIf="isMobile">
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </a>
       </app-title>
       <!-- Список сновидений -->
       <app-dream-list [dreams]="otherDreams"
