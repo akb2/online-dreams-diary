@@ -24,25 +24,35 @@
          [ngClass]="{ noComments: !writeAccess && !readAccess }">
       <!-- Краткие данные -->
       <div #keywordsPanel
-           class="content__keywords">
-        <!-- Тип приватности -->
-        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
-                      [ngTemplateOutletContext]="labels"
-                      *ngIf="getDreamPrivateLabels as labels"></ng-container>
-        <!-- Тип сновидения -->
-        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
-                      [ngTemplateOutletContext]="labels"
-                      *ngIf="getDreamTypeLabels as labels"></ng-container>
-        <!-- Настроение сновидения -->
-        <ng-container [ngTemplateOutlet]="dreamSettingLabel"
-                      [ngTemplateOutletContext]="labels"
-                      *ngIf="getDreamMoodLabels as labels"></ng-container>
-        <!-- Заполнитель -->
-        <div class="content__keywords-filler"></div>
-        <!-- Ключевые слова -->
-        <ng-container [ngTemplateOutlet]="dreamKeyword"
-                      [ngTemplateOutletContext]="{ $implicit: keyword }"
-                      *ngFor="let keyword of dream.keywords"></ng-container>
+           class="content__keywords"
+           [ngClass]="{ open: topPanelOpen }"
+           [ngStyle]="{ top: topPanelHelperShift + 'px' }">
+        <div #keywordsPanelHelper
+             class="content__keywords-helper">
+          <!-- Тип приватности -->
+          <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                        [ngTemplateOutletContext]="labels"
+                        *ngIf="getDreamPrivateLabels as labels"></ng-container>
+          <!-- Тип сновидения -->
+          <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                        [ngTemplateOutletContext]="labels"
+                        *ngIf="getDreamTypeLabels as labels"></ng-container>
+          <!-- Настроение сновидения -->
+          <ng-container [ngTemplateOutlet]="dreamSettingLabel"
+                        [ngTemplateOutletContext]="labels"
+                        *ngIf="getDreamMoodLabels as labels"></ng-container>
+          <!-- Ключевые слова -->
+          <ng-container [ngTemplateOutlet]="dreamKeyword"
+                        [ngTemplateOutletContext]="{ $implicit: keyword }"
+                        *ngFor="let keyword of dream.keywords"></ng-container>
+        </div>
+        <!-- Развернуть -->
+        <button mat-mini-fab
+                color="primary"
+                class="content__keywords-button mat-elevation-z"
+                [matTooltip]="topPanelOpen? 'Скрыть список': 'Раскрыть список'"
+                (click)="onKeywordsExpandStateChange()"
+                *ngIf="keywordsExpandAvail"><mat-icon>{{topPanelOpen? 'expand_less': 'expand_more'}}</mat-icon></button>
       </div>
       <!-- Описание или карта -->
       <div #leftPanel
@@ -69,6 +79,7 @@
               <!-- Заголовок -->
               <app-title [type]="3"
                          [noMargin]="true"
+                         [oneLine]="true"
                          mainTitle="Возможное толкование">
                 <!-- Обновить -->
                 <button mat-mini-fab
@@ -110,6 +121,23 @@
                           [materialId]="dream.id"
                           *ngIf="readAccess"></app-comment-list>
       </div>
+    </div>
+  </div>
+  <!-- Другие сновидения -->
+  <div class="section"
+       *ngIf="!!otherDreams?.length">
+    <div class="container">
+      <app-title [type]="4"
+                 icon="auto_stories"
+                 iconColor="primary"
+                 iconBackground="fill"
+                 mainTitle="Так же смотрите"
+                 subTitle="Другие сновидения {{dream.user | petrovich}}"></app-title>
+      <!-- Список сновидений -->
+      <app-dream-list [dreams]="otherDreams"
+                      [oneLine]="true"
+                      [showProfile]="false"
+                      [elmsPerLine]="4"></app-dream-list>
     </div>
   </div>
 </div>

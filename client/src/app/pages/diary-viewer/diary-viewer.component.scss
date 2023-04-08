@@ -23,7 +23,7 @@
       line-height: $lineHeight;
       margin: 0;
       // Цвет
-      ::ng-deep &:not(.mat-icon):not(.mat-mdc-button-base) {
+      &:not(.mat-icon):not(.mat-mdc-button-base) {
         color: colors.$text;
       }
     }
@@ -111,6 +111,12 @@
     large: 38%,
   );
   $shadowCorrection: 8px;
+  $keyWordsGapY: 8px;
+  $keyWordsGapX: 16px;
+  $keyWordsShowLine: 1;
+  $keyWordsOpenShowLine: 10;
+  $keyWordsShowLineMobile: 4;
+  $keyWordsOpenShowLineMobile: 24;
   // Свойства
   display: grid;
   align-items: start;
@@ -126,15 +132,34 @@
   &__keywords {
     grid-area: keywords;
     background-color: colors.$background;
-    z-index: 2;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 8px 16px;
-    // Заполнитель
-    &-filler {
-      width: 100%;
+    z-index: 3;
+    overflow: hidden;
+    position: relative;
+    transition: max-height #{screens.$animationTime};
+    padding-right: vars.$buttonSize + $keyWordsGapX;
+    // Блок с элементами
+    &-helper {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: #{$keyWordsGapY} #{$keyWordsGapX};
+    }
+    // Кнопка раскрытия списка
+    &-button {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
+    // Заполнитель снизу
+    &::after {
+      @include mixins.inset;
+      // Свойства
+      content: "";
+      display: block;
+      top: auto;
+      position: absolute;
+      background-color: colors.$background;
     }
   }
   // Блок описания
@@ -148,6 +173,7 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: stretch;
+    z-index: 4;
     // Блок редактора
     &-editor {
       background-color: colors.$card;
@@ -169,10 +195,23 @@
       grid-template-areas: "keywords" "data" "comments";
       // Внутренние блоки
       &__data,
-      &__comments,
-      &__keywords {
+      &__comments {
         width: 100%;
         position: static;
+      }
+      // Блок комментариев
+      &__keywords {
+        width: 100%;
+        max-height: ($keyWordsGapY * ($keyWordsShowLineMobile - 1)) + (vars.$buttonSize * $keyWordsShowLineMobile);
+        top: 0 !important;
+        // Заполнитель снизу
+        &::after {
+          display: none;
+        }
+        // Раскрытые список
+        &.open {
+          max-height: ($keyWordsGapY * ($keyWordsOpenShowLineMobile - 1)) + (vars.$buttonSize * $keyWordsOpenShowLineMobile);
+        }
       }
     }
     // В две колонки
@@ -186,6 +225,19 @@
         margin-top: -#{$paddingY};
         margin-bottom: -#{$gap - $shadowCorrection};
         top: vars.$headerHeight;
+        max-height: $paddingY + ($gap - $shadowCorrection) + ($keyWordsGapY * ($keyWordsShowLine - 1)) + (vars.$buttonSize * $keyWordsShowLine);
+        // Заполнитель снизу
+        &::after {
+          height: $gap - $shadowCorrection;
+        }
+        // Раскрытые список
+        &.open {
+          max-height: $paddingY + ($gap - $shadowCorrection) + ($keyWordsGapY * ($keyWordsOpenShowLine - 1)) + (vars.$buttonSize * $keyWordsOpenShowLine);
+        }
+        // Кнопка раскрытия списка
+        &-button {
+          bottom: $gap - $shadowCorrection;
+        }
       }
     }
   }

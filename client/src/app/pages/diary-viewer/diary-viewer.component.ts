@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDe
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
+import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
 
@@ -42,6 +42,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   @ViewChild("leftPanel", { read: ElementRef }) private leftPanel: ElementRef;
   @ViewChild("rightPanel", { read: ElementRef }) private rightPanel: ElementRef;
   @ViewChild("keywordsPanel", { read: ElementRef }) private keywordsPanel: ElementRef;
+  @ViewChild("keywordsPanelHelper", { read: ElementRef }) private keywordsPanelHelper: ElementRef;
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -60,13 +61,16 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   dreamId: number = 0;
   private fromMark: string;
   dream: Dream;
+  otherDreams: Dream[];
   user: User;
   authState: boolean;
   writeAccess: boolean = false;
   readAccess: boolean = false;
 
+  topPanelHelperShift: number = 0;
   leftPanelHelperShift: number = 0;
   rightPanelHelperShift: number = 0;
+  topPanelOpen: boolean = false;
 
   private scrollEnded: boolean = false;
   private scrollEndDistance: number = 150;
@@ -207,6 +211,22 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  // Доступно ли раскрытие списка
+  get keywordsExpandAvail(): boolean {
+    const keywordsPanel: HTMLElement = this.keywordsPanel?.nativeElement;
+    const keywordsPanelHelper: HTMLElement = this.keywordsPanelHelper?.nativeElement;
+    // Элементы доступны
+    if (!!keywordsPanel && !!keywordsPanelHelper) {
+      const keywordsPanelStyles = getComputedStyle(keywordsPanel);
+      const keywordsPanelHeight: number = keywordsPanel.getBoundingClientRect().height - ParseInt(keywordsPanelStyles.paddingTop) - ParseInt(keywordsPanelStyles.paddingBottom);
+      const keywordsPanelHelperHeight: number = keywordsPanelHelper.getBoundingClientRect().height;
+      // Проверка доступности
+      return keywordsPanelHeight < keywordsPanelHelperHeight || this.topPanelOpen;
+    }
+    // Не доступно
+    return false;
+  }
+
 
 
 
@@ -229,17 +249,24 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.defineData();
     // Прокрутка левой колонки
-    WaitObservable(() => !this.contentPanel?.nativeElement || !this.leftPanel?.nativeElement || !this.rightPanel?.nativeElement)
+    WaitObservable(() => !this.contentPanel?.nativeElement || !this.leftPanel?.nativeElement || !this.rightPanel?.nativeElement || !this.keywordsPanel?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
         map(() => ({
           contentPanel: this.contentPanel.nativeElement,
+          keywordsPanel: this.keywordsPanel.nativeElement,
           leftPanel: this.leftPanel.nativeElement,
           rightPanel: this.rightPanel.nativeElement
         })),
-        mergeMap(({ contentPanel, leftPanel, rightPanel }) => merge(
-          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
-          this.screenService.elmResize([contentPanel, leftPanel, rightPanel]).pipe(takeUntil(this.destroyed$))
+        mergeMap(({ contentPanel, leftPanel, rightPanel, keywordsPanel }) => merge(
+          fromEvent(ScrollElement(), "scroll").pipe(
+            takeUntil(this.destroyed$),
+            tap(() => {
+              this.topPanelOpen = false;
+              this.changeDetectorRef.detectChanges();
+            })
+          ),
+          this.screenService.elmResize([contentPanel, leftPanel, rightPanel, keywordsPanel]).pipe(takeUntil(this.destroyed$))
         ))
       )
       .subscribe(() => this.onPanelsPosition());
@@ -261,26 +288,27 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
       const contentPanel: HTMLElement = this.contentPanel.nativeElement;
       const keywordsPanel: HTMLElement = this.keywordsPanel.nativeElement;
-      const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
+      const leftPanel: HTMLElement = this.leftPanel.nativeElement;
+      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
+      const contentPanelStyles: CSSStyleDeclaration = getComputedStyle(contentPanel);
+      const keywordPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
+      const spacing: number = ParseInt(contentPanelStyles.rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const contentPanelHeight: number = contentPanel.clientHeight;
-      const keywordsPanelHeight: number = keywordsPanel.clientHeight;
-      const keywordsPanelSpacingBottom: number = spacing - ParseInt(getComputedStyle(keywordsPanel).paddingBottom);
       const headerShift: number = mainMenuHeight + spacing;
-      const headerKeywordsShift: number = mainMenuHeight + keywordsPanelHeight + keywordsPanelSpacingBottom;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
-      const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;
       const scrollY: number = this.getCurrentScroll.y;
       const scrollShift: number = scrollY - this.beforeScroll;
-      // Левая панель
-      const leftPanel: HTMLElement = this.leftPanel.nativeElement;
+      const keywordsPanelHeight: number = keywordsPanel.clientHeight;
       const leftPanelHeight: number = leftPanel.clientHeight;
-      const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
-      const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
-      // Правая панель
-      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
       const rightPanelHeight: number = rightPanel.clientHeight;
+      const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
       const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
+      const maxTopShift: number = contentPanelHeight - mainMenuHeight - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom);
+      const headerKeywordsTop: number = CheckInRange(scrollY + spacing - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
+      const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
+      const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;
+      const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим: левая панель
       this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenKeywordsHeight ?
@@ -290,6 +318,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       this.rightPanelHelperShift = availRightShift && rightPanelHeight > screenHeight ?
         -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
         headerShift;
+      // Если отступ допустим: ключевые слова
+      this.topPanelHelperShift = headerKeywordsTop;
       // Обновить
       this.beforeScroll = scrollY;
       this.changeDetectorRef.detectChanges();
@@ -350,6 +380,12 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Раскрыть/скрыть список
+  onKeywordsExpandStateChange(): void {
+    this.topPanelOpen = !this.topPanelOpen;
+    this.changeDetectorRef.detectChanges();
+  }
+
 
 
 
@@ -375,16 +411,23 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         concatMap(
           ({ dream }) => !!dream?.user?.id ? this.accountService.checkPrivate("myCommentsRead", dream.user.id, ["8100"]) : of(false),
           (data, readAccess) => ({ ...data, readAccess })
+        ),
+        concatMap(
+          ({ user, dream: { id, user: { id: userId } } }) => !user || (!!user?.id && userId !== user.id) ?
+            this.dreamService.search({ user: userId, excludeIds: [id], sortField: "random" }, ["0002"]) :
+            of({ result: [] }),
+          (data, { result: otherDreams }) => ({ ...data, otherDreams })
         )
       )
       .subscribe(
-        ({ user, params, dream, writeAccess, readAccess }) => {
+        ({ user, params, dream, writeAccess, readAccess, otherDreams }) => {
           this.user = user;
           this.authState = !!this.user && !!this.user?.id;
           this.writeAccess = writeAccess;
           this.readAccess = readAccess;
           this.fromMark = params.from?.toString() || "";
           this.dream = dream;
+          this.otherDreams = otherDreams ?? [];
           this.ready = true;
           // Заменить переносы на теги
           if (!!this.dream?.interpretation) {

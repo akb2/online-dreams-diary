@@ -1,6 +1,7 @@
 import { CardModule } from "@_controlers/card/card.module";
 import { CommentEditorModule } from "@_controlers/comment-editor/comment-editor.module";
 import { CommentListModule } from "@_controlers/comment-list/comment-list.module";
+import { DreamListModule } from "@_controlers/dream-list/dream-list.module";
 import { DreamMapViewerModule } from '@_controlers/dream-map-viewer/dream-map-viewer.module';
 import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -35,7 +36,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     TitleModule,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DreamListModule
   ]
 })
 
