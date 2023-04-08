@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDe
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -43,6 +43,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   @ViewChild("rightPanel", { read: ElementRef }) private rightPanel: ElementRef;
   @ViewChild("keywordsPanel", { read: ElementRef }) private keywordsPanel: ElementRef;
   @ViewChild("keywordsPanelHelper", { read: ElementRef }) private keywordsPanelHelper: ElementRef;
+  @ViewChild("keywordsPanelElm", { read: ElementRef }) private keywordsPanelElm: ElementRef;
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
@@ -72,6 +73,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   leftPanelHelperShift: number = 0;
   rightPanelHelperShift: number = 0;
   topPanelOpen: boolean = false;
+  isMobile: boolean = false;
 
   private scrollEnded: boolean = false;
   private scrollEndDistance: number = 150;
@@ -213,19 +215,25 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   }
 
   // Доступно ли раскрытие списка
-  get keywordsExpandAvail(): boolean {
+  get keywordsExpandLines(): number {
     const keywordsPanel: HTMLElement = this.keywordsPanel?.nativeElement;
     const keywordsPanelHelper: HTMLElement = this.keywordsPanelHelper?.nativeElement;
+    const keywordsPanelElm: HTMLElement = this.keywordsPanelElm?.nativeElement;
     // Элементы доступны
-    if (!!keywordsPanel && !!keywordsPanelHelper) {
-      const keywordsPanelStyles = getComputedStyle(keywordsPanel);
+    if (!!keywordsPanel && !!keywordsPanelHelper && !!keywordsPanelElm) {
+      const keywordsPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
+      const keywordsPanelHelperStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanelHelper);
+      const keywordsPanelElmHeight: number = keywordsPanelElm.getBoundingClientRect().height;
+      const keysPanelHelperGap: number = ParseInt(keywordsPanelHelperStyles.rowGap);
       const keywordsPanelHeight: number = keywordsPanel.getBoundingClientRect().height - ParseInt(keywordsPanelStyles.paddingTop) - ParseInt(keywordsPanelStyles.paddingBottom);
       const keywordsPanelHelperHeight: number = keywordsPanelHelper.getBoundingClientRect().height;
       // Проверка доступности
-      return keywordsPanelHeight < keywordsPanelHelperHeight || this.topPanelOpen;
+      return keywordsPanelHeight < keywordsPanelHelperHeight || this.topPanelOpen ?
+        Math.ceil(keywordsPanelHelperHeight / (keywordsPanelElmHeight + keysPanelHelperGap)) :
+        0;
     }
     // Не доступно
-    return false;
+    return 0;
   }
 
 
@@ -260,17 +268,18 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           rightPanel: this.rightPanel.nativeElement
         })),
         mergeMap(({ contentPanel, leftPanel, rightPanel, keywordsPanel }) => merge(
-          fromEvent(ScrollElement(), "scroll").pipe(
-            takeUntil(this.destroyed$),
-            tap(() => {
-              this.topPanelOpen = false;
-              this.changeDetectorRef.detectChanges();
-            })
-          ),
+          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
           this.screenService.elmResize([contentPanel, leftPanel, rightPanel, keywordsPanel]).pipe(takeUntil(this.destroyed$))
         ))
       )
       .subscribe(() => this.onPanelsPosition());
+    // Мобильный интерфейс
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy() {
@@ -295,6 +304,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const keywordPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
       const spacing: number = ParseInt(contentPanelStyles.rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
+      const mainMenuHeightDiff: number = this.mainMenu.maxHeight - mainMenuHeight;
+      console.log(mainMenuHeightDiff);
       const contentPanelHeight: number = contentPanel.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
       const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
@@ -305,16 +316,16 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const rightPanelHeight: number = rightPanel.clientHeight;
       const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
       const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
-      const maxTopShift: number = contentPanelHeight - mainMenuHeight - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom);
-      const headerKeywordsTop: number = CheckInRange(scrollY + spacing - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
+      const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom);
+      const headerKeywordsTop: number = CheckInRange(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
       const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
       const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;
       const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим: левая панель
       this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenKeywordsHeight ?
-        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -headerKeywordsShift) :
-        headerKeywordsShift;
+        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -keywordsPanelHeight - spacing) :
+        keywordsPanelHeight + spacing;
       // Если отступ допустим: правая панель
       this.rightPanelHelperShift = availRightShift && rightPanelHeight > screenHeight ?
         -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :

@@ -25,7 +25,8 @@
       <!-- Краткие данные -->
       <div #keywordsPanel
            class="content__keywords"
-           [ngClass]="{ open: topPanelOpen }"
+           [attr.lines]="keywordsExpandLines"
+           [ngClass]="{ open: topPanelOpen, scrolled: topPanelHelperShift > 0 }"
            [ngStyle]="{ top: topPanelHelperShift + 'px' }">
         <div #keywordsPanelHelper
              class="content__keywords-helper">
@@ -52,7 +53,7 @@
                 class="content__keywords-button mat-elevation-z"
                 [matTooltip]="topPanelOpen? 'Скрыть список': 'Раскрыть список'"
                 (click)="onKeywordsExpandStateChange()"
-                *ngIf="keywordsExpandAvail"><mat-icon>{{topPanelOpen? 'expand_less': 'expand_more'}}</mat-icon></button>
+                *ngIf="keywordsExpandLines > 1"><mat-icon>{{topPanelOpen? 'expand_less': 'expand_more'}}</mat-icon></button>
       </div>
       <!-- Описание или карта -->
       <div #leftPanel
@@ -133,7 +134,17 @@
                  iconColor="primary"
                  iconBackground="fill"
                  mainTitle="Так же смотрите"
-                 subTitle="Другие сновидения {{dream.user | petrovich}}"></app-title>
+                 subTitle="Другие сновидения {{dream.user | petrovich}}">
+        <!-- Для десктопа -->
+        <a mat-stroked-button
+           color="basic"
+           routerLink="/diary/{{dream.user.id}}">
+          Все сны
+          <mat-icon>chevron_right</mat-icon>
+        </a>
+        <!-- Для телефона -->
+        <a></a>
+      </app-title>
       <!-- Список сновидений -->
       <app-dream-list [dreams]="otherDreams"
                       [oneLine]="true"
@@ -184,7 +195,8 @@
 <!-- Шаблон ключевого слова -->
 <ng-template #dreamKeyword
              let-keyword>
-  <div class="keyword"
+  <div #keywordsPanelElm
+       class="keyword"
        [ngClass]="{ selected: keyword === selectedKeyword, noFound: !selectedKeywordCount }"
        (click)="onKeywordSelect(keyword)">
     {{keyword}}

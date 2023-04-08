@@ -135,8 +135,12 @@
     z-index: 3;
     overflow: hidden;
     position: relative;
-    transition: max-height #{screens.$animationTime};
+    transition: max-height #{screens.$animationTime}, box-shadow #{screens.$animationTime};
     padding-right: vars.$buttonSize + $keyWordsGapX;
+    // Элемент прокручен
+    &.scrolled {
+      box-shadow: 0 10px 10px -10px #{colors.$shadow};
+    }
     // Блок с элементами
     &-helper {
       display: flex;
@@ -204,6 +208,10 @@
         width: 100%;
         max-height: ($keyWordsGapY * ($keyWordsShowLineMobile - 1)) + (vars.$buttonSize * $keyWordsShowLineMobile);
         top: 0 !important;
+        // Элемент прокручен
+        &.scrolled {
+          box-shadow: none;
+        }
         // Заполнитель снизу
         &::after {
           display: none;
@@ -232,7 +240,11 @@
         }
         // Раскрытые список
         &.open {
-          max-height: $paddingY + ($gap - $shadowCorrection) + ($keyWordsGapY * ($keyWordsOpenShowLine - 1)) + (vars.$buttonSize * $keyWordsOpenShowLine);
+          @for $lines from 1 through $keyWordsOpenShowLine {
+            &[lines="#{$lines}"] {
+              max-height: $paddingY + ($gap - $shadowCorrection) + ($keyWordsGapY * ($lines - 1)) + (vars.$buttonSize * $lines);
+            }
+          }
         }
         // Кнопка раскрытия списка
         &-button {
