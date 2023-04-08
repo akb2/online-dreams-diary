@@ -1,6 +1,6 @@
 import { CompareArrays } from "@_helpers/objects";
 import { IconColor } from "@_models/app";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import * as snowballFactory from "snowball-stemmers";
 
 
@@ -21,6 +21,8 @@ export class HighlightKeywordsComponent implements OnChanges {
   @Input() keywords: string[];
   @Input() color: IconColor | "default" = "default";
   @Input() invert: boolean = false;
+
+  @Output() foundCount: EventEmitter<number> = new EventEmitter();
 
   private stemmer: Stemmer = snowballFactory.newStemmer("russian");
 
@@ -50,8 +52,11 @@ export class HighlightKeywordsComponent implements OnChanges {
 
   // Форматированный текст
   private highlightText(): string {
+    let count: number = 0;
+    let text: string = this.text;
+    // Ключевые слова найдены
     if (!!this.keywords?.length) {
-      return this.keywords
+      text = this.keywords
         .filter(keyword => !!keyword?.length)
         .map(keyword => keyword.toLowerCase().trim())
         .reduce(
@@ -60,18 +65,23 @@ export class HighlightKeywordsComponent implements OnChanges {
             // Обработка для каждого ключевого слова
             return keywords.reduce((text, keyword) => {
               const keywordForms: string[] = this.getAllWordForms(keyword);
-              // Замена форм слова
-              return text.replace(
-                new RegExp("(?<!<span class=\"text__highlight\">)([^a-zа-я0-9]|^)(" + keywordForms.join("|") + ")([^a-zа-я0-9]|$)(?<!<\/span>)", "gmiu"),
-                "$1<span class=\"text__highlight\">$2</span>$3"
+              const regExp: RegExp = new RegExp(
+                "(?<!<span class=\"text__highlight\">)([^a-zа-я0-9]|^)(" + keywordForms.join("|") + ")([^a-zа-я0-9]|$)(?<!<\/span>)",
+                "gmiu"
               );
+              // Подсчет нахождений
+              count += text.match(regExp)?.length ?? 0;
+              // Замена форм слова
+              return text.replace(regExp, "$1<span class=\"text__highlight\">$2</span>$3");
             }, text);
           },
           this.text
         );
     }
-    // Вернуть текст без изменений
-    return this.text;
+    // Отправить найденное количество
+    this.foundCount.emit(count);
+    // Вернуть текст
+    return text;
   }
 
   private getAllWordForms(word: string, searchExcludes: boolean = true): string[] {
