@@ -54,6 +54,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   today: Date = new Date();
   private beforeScroll: number = 0;
   selectedKeyword: string;
+  selectedKeywordCount: number = 0;
 
   _navMenuType: typeof NavMenuType = NavMenuType;
   commentMaterialType: CommentMaterialType = CommentMaterialType.Dream;
@@ -354,6 +355,12 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   // Выбор ключевого слова
   onKeywordSelect(keyword?: string): void {
     this.selectedKeyword = !!keyword && keyword !== this.selectedKeyword ? keyword : null;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Количество найденных ключевых слов
+  onKeywordSelectCount(count: number): void {
+    this.selectedKeywordCount = count;
     this.changeDetectorRef.detectChanges();
   }
 

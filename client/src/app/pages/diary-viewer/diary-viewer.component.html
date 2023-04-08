@@ -72,7 +72,8 @@
           <app-highlight-keywords class="dream__text"
                                   color="primary"
                                   [keywords]="[selectedKeyword]"
-                                  [text]="dream.text"></app-highlight-keywords>
+                                  [text]="dream.text"
+                                  (foundCount)="onKeywordSelectCount($event)"></app-highlight-keywords>
           <!-- Толкование -->
           <ng-container *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user.id)">
             <div class="dream__text">
@@ -184,6 +185,9 @@
 <ng-template #dreamKeyword
              let-keyword>
   <div class="keyword"
-       [ngClass]="{ selected: keyword === selectedKeyword }"
-       (click)="onKeywordSelect(keyword)">{{keyword}}</div>
+       [ngClass]="{ selected: keyword === selectedKeyword, noFound: !selectedKeywordCount }"
+       (click)="onKeywordSelect(keyword)">
+    {{keyword}}
+    {{keyword === selectedKeyword && !!selectedKeywordCount? '(' + selectedKeywordCount + ')': ''}}
+  </div>
 </ng-template>

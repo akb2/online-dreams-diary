@@ -309,5 +309,15 @@
       background-color: map.get(colors.$matPrimary, 600);
       color: map.get(colors.$matPrimary, contrast, 600);
     }
+    // Ничего не найдено
+    &.noFound {
+      background-color: map.get(colors.$matStatusWarn, 500);
+      color: map.get(colors.$matStatusWarn, contrast, 500);
+      // Выделение
+      &:hover {
+        background-color: map.get(colors.$matStatusWarn, 600);
+        color: map.get(colors.$matStatusWarn, contrast, 600);
+      }
+    }
   }
 }
