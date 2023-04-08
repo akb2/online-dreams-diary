@@ -1,5 +1,5 @@
 import { User } from "@_models/account";
-import { BaseSearch, Search } from "@_models/api";
+import { BaseSearch, BaseSearchSortType, Search } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { DreamMap } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
@@ -76,7 +76,12 @@ export interface SearchDream extends BaseSearch {
   withMap: boolean;
   withText: boolean;
   limit: number;
+  sortField: SearchDreamSortFields;
+  sortType: BaseSearchSortType;
 }
+
+// Поиск: сортировка по полям
+type SearchDreamSortFields = "id" | "date" | "mode" | "create_date" | "edit_date" | "title" | "description" | "keywords" | "header_type" | "header_background" | "random";
 
 
 

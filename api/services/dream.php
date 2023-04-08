@@ -134,7 +134,7 @@ class DreamService
     $limit = $search['limit'] > 0 & $search['limit'] <= 100 ? $search['limit'] : $this->config["dreams"]["limit"];
     $checkToken = $this->tokenService->checkToken($userId, $token);
     $areFriends = false;
-    $sortFields = array('id', 'date');
+    $sortFields = array('id', 'date', 'mode', 'create_date', 'edit_date', 'title', 'description', 'keywords', 'header_type', 'header_background', 'random');
     $sortTypes = array('asc', 'desc');
     // Проверка статуса в друзьях
     if (intval($search['user']) > 0 && intval($userId) > 0 && intval($search['user']) != intval($userId)) {
@@ -171,11 +171,20 @@ class DreamService
     $page = isset($search["page"]) && $search["page"] > 0 ? $search["page"] : 1;
     // Сновидения найдены
     if ($count > 0) {
-      $maxPage = ceil($count / $limit);
-      $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
-      // Настройки ограничения данных
-      $sqlData['limit_start'] = intval(($page * $limit) - $limit);
-      $sqlData['limit_length'] = intval($limit);
+      // Случайная сортировка
+      if ($sqlData['sort_field'] === 'random') {
+        $sqlData['sort_field'] = $sortFields[rand(0, count($sortFields) - 2)];
+        $sqlData['sort_type'] = $sortTypes[rand(0, count($sortTypes) - 1)];
+        $sqlData['limit_length'] = intval($limit);
+        $sqlData['limit_start'] =  max(0, rand(0, $count - $sqlData['limit_length']));
+      }
+      // Сортировка по определенному полю
+      else {
+        $maxPage = ceil($count / $limit);
+        $page = $page < 1 ? 1 : ($page > $maxPage ? $maxPage : $page);
+        $sqlData['limit_start'] = intval(($page * $limit) - $limit);
+        $sqlData['limit_length'] = intval($limit);
+      }
       // Список данных
       $result = $this->dataBaseService->getDatasFromFile("dream/searchDreams.php", $sqlData);
     }
