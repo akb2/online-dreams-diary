@@ -234,6 +234,11 @@ export class DreamService implements OnDestroy {
   // Конвертер сновидений
   private dreamConverter(dreamDto: DreamDto): Dream {
     let dreamMap: DreamMapDto;
+    const keywords: string[] = Array.from(new Set((dreamDto.keywords ?? "").split(",")
+      .map(k => k.trim())
+      .map(k => k.replace(/[\?\.=:;]/gmi, ""))
+      .filter(k => !!k)
+    ))
     // Обработка параметров
     dreamDto.headerBackgroundId = BackgroundImageDatas.some(b => b.id === dreamDto.headerBackgroundId) ? dreamDto.headerBackgroundId : 11;
     dreamDto.headerType = NavMenuType[dreamDto.headerType] ? dreamDto.headerType : NavMenuType.short;
@@ -255,7 +260,7 @@ export class DreamService implements OnDestroy {
       status: (dreamDto?.status as DreamStatus) ?? DreamStatus.private,
       type: (dreamDto?.type as DreamType) ?? DreamType.Simple,
       mood: (dreamDto?.mood as DreamMood) ?? DreamMood.Nothing,
-      keywords: dreamDto.keywords?.length > 0 ? dreamDto.keywords.split(",").filter(k => !!k.trim()) : [],
+      keywords,
       places: null,
       members: null,
       text: dreamDto?.text ?? "",
@@ -277,7 +282,7 @@ export class DreamService implements OnDestroy {
       date: dream.date.toISOString(),
       title: dream.title ?? "",
       description: dream.description ?? "",
-      keywords: dream.keywords?.join(",") || "",
+      keywords: Array.from(new Set(dream.keywords ?? []))?.join(",") || "",
       text: dream?.text ?? "",
       interpretation: dream?.interpretation ?? "",
       places: dream.places?.join(",") || "",
