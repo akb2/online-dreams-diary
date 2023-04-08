@@ -131,7 +131,7 @@ export class ScreenService implements OnDestroy {
       elms.forEach(e => resizeObserver.observe(e));
       return () => resizeObserver.disconnect();
     });
-
+    // Вернуть подписчик
     return observable.pipe(takeUntil(this.destroy$));
   }
 
