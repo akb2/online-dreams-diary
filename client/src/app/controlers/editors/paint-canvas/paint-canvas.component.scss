@@ -1,0 +1,21 @@
+@use "sass:list";
+@use "sass:math";
+@use "colors";
+
+$canvasSize: 500px;
+$canvasAspect: 1 1;
+
+// Полотно для рисования
+.canvas {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  // Полотно
+  > canvas {
+    display: block;
+    width: $canvasSize;
+    height: math.div($canvasSize, list.nth($canvasAspect, 1)) * list.nth($canvasAspect, 2);
+    border: 1px solid #{colors.$border};
+    box-shadow: inset 0 0 10px #{colors.$shadow};
+  }
+}
