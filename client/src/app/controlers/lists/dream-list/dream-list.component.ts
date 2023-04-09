@@ -1,6 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
-import { OptionData } from "@_models/form";
 import { CardMenuItem } from "@_controlers/card-menu/card-menu.component";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
@@ -8,13 +5,15 @@ import { DreamDescription, DreamTitle } from "@_datas/dream-map-settings";
 import { User, UserSex } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
+import { OptionData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
-import { SnackbarService } from "@_services/snackbar.service";
-import { filter, Subject, takeUntil } from "rxjs";
-import { ScreenKeys } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
+import { SnackbarService } from "@_services/snackbar.service";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
+import { Subject, concatMap, filter, takeUntil } from "rxjs";
 
 
 
@@ -160,16 +159,21 @@ export class DreamListComponent implements OnInit, OnChanges {
     const subTitle: string = "";
     const text: string = "Вы действительно желаете удалить сновидение \"" + (dream.title || this.defaultTitle) + "\"? Сновидение нельзя будет восстановить.";
     // Открыть окно
-    PopupConfirmComponent.open(this.matDialog, { title, subTitle, text }).afterClosed().pipe(filter(r => !!r)).subscribe(r => this.dreamService.delete(dream.id).subscribe(r => {
-      if (r) {
+    PopupConfirmComponent.open(this.matDialog, { title, subTitle, text }).afterClosed()
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(r => !!r),
+        concatMap(() => this.dreamService.delete(dream.id)),
+        filter(del => !!del)
+      )
+      .subscribe(() => {
         this.dreamDelete.emit();
         // Уведомление об удалении
         this.snackbarService.open({
           message: "Сновидение \"" + dream.title + "\" успешно удалено",
           mode: "success"
         });
-      }
-    }));
+      });
   }
 
 
