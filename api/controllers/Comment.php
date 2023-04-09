@@ -6,6 +6,7 @@ use Decorators\CheckToken;
 use Decorators\Request;
 use PDO;
 use Services\CommentService;
+use Services\MediaService;
 use Services\UserSettingsService;
 
 class Comment
@@ -16,6 +17,7 @@ class Comment
 
   private CommentService $commentService;
   private UserSettingsService $userSettingsService;
+  private MediaService $mediaService;
 
 
 
@@ -36,6 +38,7 @@ class Comment
   {
     $this->commentService = new CommentService($this->pdo, $this->config);
     $this->userSettingsService = new UserSettingsService($this->pdo, $this->config);
+    $this->mediaService = new MediaService($this->pdo, $this->config);
   }
 
 
@@ -49,6 +52,16 @@ class Comment
     $ownerId = $data['materialOwner'];
     // Проверка доступа
     if ($this->userSettingsService->checkPrivate('myCommentsWrite', $ownerId, $userId)) {
+      $data['attachment'] = $data['attachment'] ?? array();
+      // Создание медиафайла для графити
+      if (!!$_FILES['graffityUpload']) {
+        $graffityMediaId = $this->mediaService->createFromUpload($_FILES['graffityUpload'], 'графити');
+        // Файл граффити создан
+        if ($graffityMediaId > 0) {
+          $data['attachment']['graffity'] = $graffityMediaId;
+        }
+      }
+      // Отправка комментария
       $id = $this->commentService->create($data, $userId);
       // Обновить код
       $code = $id > 0 ? '0001' : $code;
@@ -143,6 +156,13 @@ class Comment
       // Обработать список сновидений
       foreach ($commentsData as $comment) {
         if ($this->userSettingsService->checkPrivate('myCommentsRead', intval($comment['material_owner']), $userId)) {
+          $comment['attachment'] = json_decode($comment['attachment'], true);
+          $graffityId = intval($comment['attachment']['graffity'] ?? 0);
+          // Загрузка данных о графити
+          if ($graffityId > 0) {
+            $comment['attachment']['graffity'] = $this->mediaService->getById($graffityId);
+          }
+          // Данные комментария
           $comments[] = array(
             'id' => intval($comment['id']),
             'userId' => intval($comment['user_id']),

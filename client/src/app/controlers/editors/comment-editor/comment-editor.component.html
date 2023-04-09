@@ -50,6 +50,18 @@
     {{sendLoader? 'Отправка': 'Отправить'}}
   </button>
 </div>
+<!-- Прикрепленные материалы -->
+<div class="attachments"
+     *ngIf="hasAttachment">
+  <!-- Граффити -->
+  <ng-container [ngTemplateOutlet]="attachedImage"
+                [ngTemplateOutletContext]="{
+                  url: graffityData.image,
+                  callback: onGraffityPopupOpen.bind(this),
+                  overlayIcon: 'edit'
+                }"
+                *ngIf="!!graffityData?.image"></ng-container>
+</div>
 
 
 
@@ -84,10 +96,30 @@
 
 <!-- Меню прикрепления материалов -->
 <mat-menu #attachMenuPanel="matMenu">
-  <!-- Граффити -->
-  <button mat-menu-item
-          (click)="onGraffityPopupOpen()">
-    <mat-icon svgIcon="paint_spray"></mat-icon>
-    Граффити
-  </button>
+  <ng-container *ngIf="!sendLoader">
+    <!-- Граффити -->
+    <button mat-menu-item
+            (click)="onGraffityPopupOpen()">
+      <mat-icon svgIcon="paint_spray"></mat-icon>
+      Граффити
+    </button>
+  </ng-container>
 </mat-menu>
+
+<!-- Прикрепленная картинка -->
+<ng-template #attachedImage
+             let-url="url"
+             let-callback="callback"
+             let-overlayIcon="overlayIcon">
+  <div class="attachments__image"
+       (click)="!!callback && !sendLoader? callback(): null"
+       *ngIf="!!url">
+    <!-- Картинка -->
+    <img [src]="url" />
+    <!-- Удаление -->
+    <div class="attachments__image-overlay"
+         [ngClass]="{ noSelect: sendLoader }">
+      <mat-icon>{{overlayIcon ?? 'close'}}</mat-icon>
+    </div>
+  </div>
+</ng-template>

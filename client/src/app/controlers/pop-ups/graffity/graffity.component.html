@@ -8,9 +8,27 @@
 
 <!-- Содержимое -->
 <div mat-dialog-content>
-  <app-paint-canvas></app-paint-canvas>
+  <app-paint-canvas #paintCanvas
+                    [drawData]="drawData"
+                    (changeCanvas)="onChangeCanvas($event)"></app-paint-canvas>
 </div>
 
 <!-- Панель действия -->
 <div mat-dialog-actions>
+  <div class="buttons">
+    <!-- Удалить -->
+    <button mat-flat-button
+            color="warn"
+            (click)="onSave(true)"
+            *ngIf="deleteAvail">Удалить</button>
+    <!-- Очистить поле -->
+    <button mat-stroked-button
+            clor="basic"
+            (click)="paintCanvas.clear()">Очистить</button>
+    <!-- Сохранить -->
+    <button mat-flat-button
+            [disabled]="!saveAvail"
+            color="primary"
+            (click)="onSave()">Сохранить</button>
+  </div>
 </div>

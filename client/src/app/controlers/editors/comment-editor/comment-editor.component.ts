@@ -3,7 +3,7 @@ import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { MultiObject, SimpleObject } from "@_models/app";
-import { Comment, CommentMaterialType } from "@_models/comment";
+import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, TemplateRef, ViewChild } from "@angular/core";
@@ -46,6 +46,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   private lastPosition: CaretPosition;
   private smileSize: number = 24;
+
+  graffityData: GraffityDrawData;
 
   showEmojiList: boolean = false;
   i18nEmoji: MultiObject<string> = I18nEmoji;
@@ -140,7 +142,12 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   // Состояние кнопки отправить
   get sendIsAvail(): boolean {
-    return !!this.getEditorValue;
+    return !!this.getEditorValue || !!this.graffityData?.image;
+  }
+
+  // Есть закрепленные данные
+  get hasAttachment(): boolean {
+    return !!this.graffityData?.image;
   }
 
 
@@ -160,8 +167,6 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   ngAfterViewInit(): void {
-    // Test
-    this.onGraffityPopupOpen();
     WaitObservable(() => !this.emojiListItem?.nativeElement || !this.emojiListToggleButton?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
@@ -309,10 +314,13 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         materialType: this.materialType,
         materialId: this.materialId,
         materialOwner: this.materialOwner,
-        text
+        text,
+        uploadAttachment: {
+          graffity: !!this.graffityData?.blob ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type }) : null
+        }
       };
       // Проверка текста
-      if (!!text) {
+      if (!!text || data?.uploadAttachment?.graffity) {
         this.sendLoader = true;
         this.changeDetectorRef.detectChanges();
         // Отправка
@@ -325,6 +333,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
               if (!!editor) {
                 editor.innerHTML = "";
               }
+              // Очистить другие данные
+              this.graffityData = null;
               // Обновить
               this.sendLoader = false;
               this.changeDetectorRef.detectChanges();
@@ -354,10 +364,11 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   // Открыть окно граффити
   onGraffityPopupOpen(): void {
-    PopupGraffityComponent.open(this.matDialog, {}).afterClosed()
+    PopupGraffityComponent.open(this.matDialog, { graffityData: this.graffityData }).afterClosed()
       .pipe(takeUntil(this.destroyed$))
       .subscribe(data => {
-        console.log(data);
+        this.graffityData = data;
+        this.changeDetectorRef.detectChanges();
       });
   }
 

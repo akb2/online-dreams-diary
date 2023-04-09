@@ -3,6 +3,7 @@
 @use "vars";
 @use "containers";
 @use "screens";
+@use "mixins";
 
 $spacing: 3px;
 $fontSize: 15px;
@@ -192,5 +193,52 @@ $adaptiveMax: large;
   // Принудительный перенос
   :host.wrap-controls & {
     display: block;
+  }
+}
+
+// Закрепленные материалы
+.attachments {
+  $itemHeight: 80px;
+  // Свойства
+  padding: #{containers.$cardPaddingY} 0;
+  padding-left: containers.$cardPaddingX;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  // Изображение
+  &__image {
+    position: relative;
+    height: $itemHeight;
+    cursor: pointer;
+    min-width: $itemHeight;
+    // Картинка
+    > img {
+      width: auto;
+      height: 100%;
+      object-fit: cover;
+    }
+    // Удаление
+    &-overlay {
+      @include mixins.inset;
+      // Свойства
+      position: absolute;
+      background-color: colors.$overlayColor;
+      opacity: 0;
+      transition: opacity #{screens.$animationTime};
+      text-align: center;
+      color: colors.$titleDark;
+      // Иконка
+      > mat-icon {
+        height: $itemHeight;
+        line-height: $itemHeight;
+        display: inline-block;
+      }
+    }
+    // Выделение
+    &:hover &-overlay:not(.noSelect) {
+      opacity: 1;
+    }
   }
 }

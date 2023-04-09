@@ -1,21 +1,150 @@
-@use "sass:list";
 @use "sass:math";
 @use "colors";
+@use "vars";
+@use "screens";
+@use "mixins";
 
-$canvasSize: 500px;
-$canvasAspect: 1 1;
+$colorLight: #ddd;
+$colorDark: #555;
 
 // Полотно для рисования
 .canvas {
+  margin: 0 auto;
+  width: auto;
+  box-shadow: inset 0 0 10px #{colors.$shadow};
+  // Полотно
+  canvas {
+    display: block;
+    border: 1px solid #{colors.$border};
+  }
+}
+
+// Выбор цвета
+.colors {
+  $markerSize: math.round(vars.$buttonSize * 0.4);
+  $borderSize: 1px;
+  // Свойства
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
-  // Полотно
-  > canvas {
+  justify-content: space-between;
+  align-items: center;
+  margin-top: vars.$dialogPadding;
+  // Элемент выбора цвета
+  &__item {
+    $__elm: &;
+    // Свойства
     display: block;
-    width: $canvasSize;
-    height: math.div($canvasSize, list.nth($canvasAspect, 1)) * list.nth($canvasAspect, 2);
-    border: 1px solid #{colors.$border};
-    box-shadow: inset 0 0 10px #{colors.$shadow};
+    width: vars.$buttonSize;
+    height: vars.$buttonSize;
+    cursor: pointer;
+    border-radius: 50%;
+    outline: none;
+    position: relative;
+    border: #{$borderSize} solid #{$colorDark};
+    // Отметка
+    &-cursor {
+      @include mixins.inset(math.div(vars.$buttonSize - ($borderSize * 2) - $markerSize, 2));
+      // Свойства
+      content: "";
+      display: block;
+      width: $markerSize;
+      height: $markerSize;
+      position: absolute;
+      opacity: 0;
+      border-radius: 50%;
+      transition: opacity #{screens.$animationTime};
+      // Темный фон
+      &.dark {
+        background-color: $colorDark;
+      }
+      // Светлый фон
+      &.light {
+        background-color: $colorLight;
+      }
+    }
+    // Выбранный цвет
+    &.selected > &-cursor {
+      opacity: 1;
+    }
+    // Все цвета
+    &.colorCircle {
+      border: none;
+      background: radial-gradient(circle, #fff 0%, transparent 70%), conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+      // Выбранный цвет
+      &.selected {
+        background: transparent;
+      }
+      // Отметка
+      > #{$__elm}-cursor {
+        @include mixins.inset(0);
+        // Свойства
+        width: 100%;
+        height: 100%;
+        border: #{$borderSize} solid transparent;
+        // Темный фон
+        &.dark {
+          border-color: $colorDark;
+        }
+        // Светлый фон
+        &.light {
+          border-color: $colorLight;
+        }
+      }
+      // Выбор цвета
+      > #{$__elm}-picker {
+        position: absolute;
+        bottom: 300%;
+        right: calc(100% + 8px);
+        opacity: 0;
+        visibility: hidden;
+        // Показать паьитру
+        &.show {
+          bottom: 0;
+          opacity: 1;
+          visibility: visible;
+        }
+      }
+    }
+  }
+}
+
+// Выбор размера
+.sizes {
+  $size: 66px;
+  // Свойства
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: vars.$dialogPadding;
+  gap: 8px;
+  // Предпросмотр
+  &__preview {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    // Темный фон
+    &.dark {
+      background-color: $colorDark;
+    }
+    // Светлый фон
+    &.light {
+      background-color: $colorLight;
+    }
+    // Элемент
+    &-item {
+      border-radius: 50%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+  // Поле изменения размера
+  &__slider {
+    flex-grow: 1;
+    margin: 0 24px;
   }
 }

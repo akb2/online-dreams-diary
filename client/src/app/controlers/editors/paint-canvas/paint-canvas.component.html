@@ -1,4 +1,70 @@
 <!-- Полотно -->
 <div class="canvas">
-  <canvas #canvas></canvas>
+  <canvas #canvasElement
+          [width]="canvasWidth"
+          [height]="canvasHeight"></canvas>
+</div>
+
+<!-- Выбор цвета -->
+<div class="colors"
+     *ngIf="!!colorPallete">
+  <button class="colors__item {{currentContrastColor}}"
+          [ngClass]="{ selected: isCurrentColor(color) }"
+          [ngStyle]="{ backgroundColor: color }"
+          (click)="setColor(color)"
+          *ngFor="let color of colorPallete">
+    <div class="colors__item-cursor {{currentContrastColor}}"></div>
+  </button>
+  <!-- Выбор других цветов -->
+  <button #colorPickerButton
+          class="colors__item colorCircle"
+          [ngClass]="{ selected: !isPalleteCurrentColor }"
+          (click)="onColorPickerToggle($event)">
+    <div class="colors__item-cursor {{currentContrastColor}}"
+         [ngStyle]="{ backgroundColor: currentColor }"
+         *ngIf="!isPalleteCurrentColor"></div>
+    <!-- Цветовая палитра -->
+    <chrome-picker #colorPicker
+                   [color]="currentColor"
+                   [control]="colorPickerControl"
+                   class="colors__item-picker"
+                   [ngClass]="{ show: showColorPicker }"
+                   (colorChange)="setColor($event)"></chrome-picker>
+  </button>
+</div>
+
+<!-- Выбор Размера -->
+<div class="sizes"
+     *ngIf="!!sizesKit">
+  <!-- Текущий размер -->
+  <div class="sizes__preview {{currentContrastColor}}">
+    <div class="sizes__preview-item"
+         [ngStyle]="{
+           backgroundColor: currentColor,
+           width: sizesKit[currentSizeIndex] + 'px',
+           height: sizesKit[currentSizeIndex] + 'px'
+         }"></div>
+  </div>
+  <!-- Изменение цвета -->
+  <mat-slider class="sizes__slider"
+              [step]="1"
+              [min]="0"
+              [max]="sizesKit.length - 1"
+              showTickMarks>
+    <input matSliderThumb
+           [value]="currentSizeIndex"
+           (valueChange)="setSize($event)">
+  </mat-slider>
+  <!-- Отменить -->
+  <button mat-mini-fab
+          color="primary"
+          class="mat-elevation-z"
+          [disabled]="!canUndo"
+          (click)="undo()"><mat-icon>undo</mat-icon></button>
+  <!-- Повторить -->
+  <button mat-mini-fab
+          color="primary"
+          class="mat-elevation-z"
+          [disabled]="!canRedo"
+          (click)="redo()"><mat-icon>redo</mat-icon></button>
 </div>

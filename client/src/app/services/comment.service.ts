@@ -1,13 +1,14 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType } from "@_models/comment";
-import { catchError, concatMap, filter, forkJoin, map, Observable, of, share, Subject, switchMap, take, takeUntil, tap, timer } from "rxjs";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Injectable, OnDestroy } from "@angular/core";
+import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
+import { MediaService } from "./media.service";
 
 
 
@@ -34,7 +35,7 @@ export class CommentService implements OnDestroy {
     const getUser = (id: number) => !!id ? this.accountService.user$(userId).pipe(take(1)) : of(null);
     // Закрепления
     try {
-      attachment = JSON.parse(comment?.attachment);
+      attachment = (typeof comment?.attachment === "string" ? JSON.parse(comment?.attachment) : comment?.attachment) ?? {};
     }
     // Ошибка преобразования
     catch (e: any) { }
@@ -43,6 +44,10 @@ export class CommentService implements OnDestroy {
       takeUntil(this.destroyed$),
       concatMap(() => getUser(userId), (data, user) => ({ ...data, user })),
       concatMap(() => getUser(replyToUserId), (data, replyToUser) => ({ ...data, replyToUser })),
+      concatMap(
+        () => !!attachment?.graffity ? this.mediaService.convertData(attachment.graffity) : of(null),
+        (data, graffity) => ({ ...data, attachment: { ...attachment, graffity } })
+      ),
       map(({ comment, user, replyToUser }) => ({
         id: ParseInt(comment?.id),
         user,
@@ -64,7 +69,8 @@ export class CommentService implements OnDestroy {
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private mediaService: MediaService
   ) { }
 
   ngOnDestroy(): void {
@@ -82,7 +88,8 @@ export class CommentService implements OnDestroy {
       materialType: data.materialType,
       materialId: data.materialId,
       materialOwner: data.materialOwner,
-      text: data.text
+      text: data.text,
+      graffityUpload: data?.uploadAttachment?.graffity
     })).pipe(
       takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes))

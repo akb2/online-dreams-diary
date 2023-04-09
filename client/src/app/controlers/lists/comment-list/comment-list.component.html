@@ -29,7 +29,19 @@
       </div>
       <!-- Текст комментариев -->
       <div class="comment__text"
-           [innerHTML]="comment.text | comment"></div>
+           [innerHTML]="comment.text | comment"
+           *ngIf="!!comment?.text"></div>
+      <!-- Прикрепления -->
+      <ng-container *ngVar="comment?.attachment?.graffity as graffity">
+        <div class="comment__attachment"
+             [ngClass]="{ graffity }"
+             *ngIf="!!graffity">
+          <!-- Граффити -->
+          <ng-container [ngTemplateOutlet]="graffityAttachment"
+                        [ngTemplateOutletContext]="{ media: graffity }"
+                        *ngIf="!!graffity"></ng-container>
+        </div>
+      </ng-container>
     </div>
     <!-- Загрузчик новых комментариев -->
     <div class="comment__more-loader"
@@ -56,4 +68,15 @@
               [subTitle]="emptyCommentsSubTitle"
               [smallMargins]="true"
               [aboveIcon]="true"></app-inform>
+</ng-template>
+
+<!-- Граффити в закреплении -->
+<ng-template #graffityAttachment
+             let-media="media">
+  <div class="comment__attachment-graffity"
+       *ngIf="!!media">
+    <div class="image-helper">
+      <img [src]="media.url" />
+    </div>
+  </div>
 </ng-template>
