@@ -9,7 +9,7 @@
 
 // Кнопки
 @mixin matButton {
-  $iconSize: 24px;
+  $iconSize: vars.$buttonIconSize;
   // Базовые стили
   .mdc-button {
     line-height: 1;
@@ -66,11 +66,18 @@
         > .mat-icon {
           width: vars.$buttonSize;
           height: vars.$buttonSize;
+          font-size: vars.$buttonIconSize;
           line-height: vars.$buttonSize;
           margin-right: 0;
           margin-left: 0;
           padding-left: 0;
           padding-right: 0;
+          // Картинка
+          > svg {
+            width: vars.$buttonIconSize;
+            height: vars.$buttonIconSize;
+            object-fit: contain;
+          }
         }
       }
       // Загрузчик
