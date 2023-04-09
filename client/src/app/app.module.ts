@@ -1,11 +1,12 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
-import { NgModule } from "@angular/core";
-import { MatSnackBarModule } from "@angular/material/snack-bar";
-import { BrowserModule } from "@angular/platform-browser";
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { PageLoaderModule } from "@_controlers/page-loader/page-loader.module";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
+import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+import { NgModule } from "@angular/core";
+import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 
@@ -25,12 +26,14 @@ import { AppComponent } from "./app.component";
     PageLoaderModule,
     MatSnackBarModule,
     CoreModule,
-    PageLoaderModule
+    PageLoaderModule,
+    MatIconModule
   ],
   bootstrap: [
     AppComponent
   ],
   providers: [
+    MatIconRegistry,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ApiInterceptorService,
@@ -39,4 +42,13 @@ import { AppComponent } from "./app.component";
   ]
 })
 
-export class AppModule { }
+export class AppModule {
+  // Регистрация иконок
+  constructor(
+    private matIconRegistry: MatIconRegistry,
+    private domSanitizer: DomSanitizer
+  ) {
+    // Балончик с краской
+    this.matIconRegistry.addSvgIcon("paint_spray", this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/paint_spray.svg"));
+  }
+}

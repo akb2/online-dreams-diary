@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg2610"
+   xml:space="preserve"
+   width="682.66669"
+   height="682.66669"
+   viewBox="0 0 682.66669 682.66669"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs2614"><clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath2624"><path
+         d="M 0,512 H 512 V 0 H 0 Z"
+         id="path2622" /></clipPath></defs><g
+     id="g2616"
+     transform="matrix(1.3333333,0,0,-1.3333333,0,682.66667)"><g
+       id="g2618"><g
+         id="g2620"
+         clip-path="url(#clipPath2624)"><g
+           id="g2626"
+           transform="translate(165,316)"><path
+             d="m 0,0 h -120 c 0,0 -30,-30 -30,-60 V -301 H 30 V -60 C 30,-30 0,0 0,0 Z"
+             style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+             id="path2628" /></g><path
+           d="M 165,316 H 45 v 60 h 120 z"
+           style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           id="path2630" /><path
+           d="M 135,376 H 75 v 60 h 60 z"
+           style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           id="path2632" /><g
+           id="g2634"
+           transform="translate(225,391)"><path
+             d="M 0,0 C 52.324,0 106.648,42.067 137.926,50.896 137.318,53.836 137,56.882 137,60 c 0,24.814 20.186,46 45,46 24.814,0 45,-21.186 45,-46 0,-0.63 -0.013,-1.257 -0.039,-1.88 C 252.859,51.473 272,27.972 272,0 c 0,-27.972 -19.141,-51.473 -45.039,-58.12 0.026,-0.623 0.039,-1.25 0.039,-1.88 0,-24.814 -20.186,-45 -45,-45 -24.814,0 -45,20.186 -45,45 0,3.118 0.318,6.164 0.926,9.104 C 106.648,-42.067 52.324,0 0,0"
+             style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+             id="path2636" /></g><path
+           d="m 195,106 h -90 v 90 h 90 z"
+           style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           id="path2638" /></g></g></g></svg>
