@@ -1,5 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
-import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
+import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
@@ -7,7 +6,10 @@ import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType } from "@_models/comment";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
-import { concatMap, filter, fromEvent, map, Subject, takeUntil } from "rxjs";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, TemplateRef, ViewChild } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
+import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
+import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
 
 
 
@@ -149,7 +151,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     private changeDetectorRef: ChangeDetectorRef,
     private emojiService: EmojiService,
     private stringTemplatePipe: StringTemplatePipe,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private matDialog: MatDialog
   ) { }
 
   ngOnChanges(): void {
@@ -157,6 +160,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   ngAfterViewInit(): void {
+    // Test
+    this.onGraffityPopupOpen();
     WaitObservable(() => !this.emojiListItem?.nativeElement || !this.emojiListToggleButton?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
@@ -345,6 +350,15 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         this.onSend(event);
       }
     }
+  }
+
+  // Открыть окно граффити
+  onGraffityPopupOpen(): void {
+    PopupGraffityComponent.open(this.matDialog, {}).afterClosed()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(data => {
+        console.log(data);
+      });
   }
 
 
