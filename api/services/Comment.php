@@ -78,7 +78,8 @@ class CommentService
         intval($data['materialType']),
         intval($data['materialId']),
         intval($data['materialOwner']),
-        intval($userId)
+        intval($userId),
+        intval($commentId)
       );
       // Вернуть ID
       return $commentId;
@@ -137,7 +138,7 @@ class CommentService
 
 
   // Отправить уведомление
-  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId): void
+  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId, int $commentId): void
   {
     // Не отправлять самому себе
     if ($materialOwner !== $userId) {
@@ -160,7 +161,7 @@ class CommentService
         $materialOwner,
         $text,
         $link,
-        array('user' => $userId),
+        array('user' => $userId, 'comment' => $commentId),
         'send_comment'
       );
     }
