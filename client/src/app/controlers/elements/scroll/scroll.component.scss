@@ -20,6 +20,7 @@ $sliderBorderRadius: math.div(vars.$scrollSliderSize, 2);
   overflow: scroll;
   scrollbar-width: none;
   overscroll-behavior: contain;
+  will-change: scroll-position;
   // Убрать системный скролл
   &::-webkit-scrollbar {
     width: 0;

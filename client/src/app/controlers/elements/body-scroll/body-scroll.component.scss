@@ -44,7 +44,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   height: vars.$scrollSize;
   border-radius: $borderRadius;
   cursor: pointer;
-  background-color: map.get(colors.$matPrimary, 500);
+  background-color: map.get(colors.$matDisabled, 500);
   transition: background-color screens.$animationTime;
   box-shadow: containers.$cardBoxShadow;
   // Выделение
@@ -69,7 +69,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
     top: -#{vars.$scrollSpacing};
     left: 50%;
     transform: translateX(-50%);
-    background-color: map.get(colors.$matPrimary, 300);
+    background-color: map.get(colors.$matDisabled, 300);
   }
 }
 
@@ -80,7 +80,7 @@ $sliderBorderRadius: math.div($sliderSize, 2);
   min-height: vars.$scrollSliderMinHeight;
   max-height: 100%;
   border-radius: $sliderBorderRadius;
-  background-color: map.get(colors.$matPrimary, 500);
+  background-color: map.get(colors.$matDisabled, 500);
   transition: background-color screens.$animationTime;
   z-index: 1;
   cursor: pointer;
