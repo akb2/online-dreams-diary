@@ -114,7 +114,6 @@ html {
   // Скроллбар
   &,
   #app_main_page {
-    will-change: scroll-position;
     // Полоса
     &::-webkit-scrollbar {
       width: $scroll-size;
