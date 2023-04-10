@@ -1,7 +1,3 @@
-import { DatePipe } from "@angular/common";
-import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { Title } from "@angular/platform-browser";
-import { ActivatedRoute, Router } from "@angular/router";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
 import { ScrollElement } from "@_datas/app";
@@ -14,13 +10,17 @@ import { BackgroundImageData } from "@_models/appearance";
 import { CommentMaterialType } from "@_models/comment";
 import { FriendListMixedResopnse, FriendSearch, FriendSearchType, FriendWithUsers } from "@_models/friend";
 import { NavMenuType } from "@_models/nav-menu";
-import { ScrollData } from "@_models/screen";
+import { ScreenKeys, ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
-import { catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, Subject, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
+import { DatePipe } from "@angular/common";
+import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, Router } from "@angular/router";
+import { Subject, catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
 import { CommentBlockComponent } from "./comment-block/comment-block.component";
 
 
@@ -74,6 +74,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
 
   private scrollEnded: boolean = false;
   private scrollEndDistance: number = 150;
+  private breakpoint: ScreenKeys = "default";
 
   user: User;
   visitedUser: User;
@@ -155,6 +156,14 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
         ))
       )
       .subscribe(() => this.onLeftPanelPosition());
+    // Изменения брейкпоинта
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.breakpoint = breakpoint;
+        this.onLeftPanelPosition();
+        this.changeDetectorRef.detectChanges();
+      });
     // Запуск определения данных
     this.defineCurrentUser();
     this.defineUrlParams();
@@ -228,7 +237,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
   private onLeftPanelPosition(): void {
     this.onScroll();
     // Все элементы определены
-    if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement) {
+    if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement && this.breakpoint !== "xsmall") {
       const elm: HTMLElement = this.leftPanel.nativeElement;
       const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
       const elmInformation: HTMLElement = this.informationElm.nativeElement;
