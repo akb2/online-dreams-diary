@@ -90,7 +90,7 @@
                       matTooltip="Обновить толкование"
                       [attr.button-loader]="interpretationLoading"
                       (click)="onUpdateInterpritation()"
-                      *ngIf="dream.user.id === user.id">
+                      *ngIf="dream.user.id === user?.id">
                 <mat-icon>refresh</mat-icon>
               </button>
             </app-title>
