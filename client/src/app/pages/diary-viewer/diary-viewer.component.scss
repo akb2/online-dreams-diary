@@ -13,8 +13,17 @@
   $textIndent: $fontSize * 2;
   $tablePaddingY: math.div($fontSize, 2);
   $tablePaddingX: $fontSize;
+  // Карта
+  &__map {
+    width: 100%;
+    // Адаптив
+    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+      height: calc(100vh - #{vars.$headerHeight + ($paddingY * 2)});
+    }
+  }
   // Текст
   &__text {
+    display: block;
     // Общий стиль
     &,
     ::ng-deep * {
@@ -85,19 +94,13 @@
         margin-top: $lineHeight;
       }
     }
-    // Адаптив
-    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
-      & + & {
-        margin-top: $paddingY;
-      }
-    }
   }
-  // Карта
-  &__map {
-    width: 100%;
-    // Адаптив
-    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
-      height: calc(100vh - #{vars.$headerHeight + ($paddingY * 2)});
+  // Адаптив
+  @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+    // Отступы
+    &__map + &__text,
+    &__text + &__text {
+      margin-top: $paddingY;
     }
   }
 }
