@@ -16,7 +16,7 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { BehaviorSubject, Observable, Subject, of, timer } from "rxjs";
-import { catchError, concatMap, filter, finalize, map, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, concatMap, filter, map, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -32,9 +32,6 @@ export class AccountService implements OnDestroy {
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
   private usersCookieKey: string = "users";
-
-  private syncUser: [number, number] = [-1, 0];
-  private userSubscritionCounter: [number, number][] = [];
 
   private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
   private destroyed$: Subject<void> = new Subject<void>();
@@ -67,44 +64,33 @@ export class AccountService implements OnDestroy {
     userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
     codes.push("8100");
     // Обновить счетчик
-    let counter: number = this.updateUserCounter(userId, 1);
+    let firstCall: boolean = true;
     // Подписки
-    const observable: Observable<User> = this.users.asObservable().pipe(
+    const observable: Observable<unknown> = this.users.asObservable().pipe(
       takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
       map(([prev, next]) => ([
-        prev?.find(({ id }) => id === userId),
+        prev?.find(({ id }) => id === userId) ?? (firstCall ? undefined : null),
         next?.find(({ id }) => id === userId) ?? null
       ])),
-      map(([prev, next]) => ([
-        !!prev ? { ...prev, online: this.isOnlineByDate(prev.lastActionDate) } : prev,
-        !!next ? { ...next, online: this.isOnlineByDate(next.lastActionDate) } : next
-      ])),
+      map(([prev, next]) => {
+        firstCall = false;
+        // Вернуть данные
+        return [
+          !!prev ? { ...prev, online: this.isOnlineByDate(prev.lastActionDate) } : prev,
+          !!next ? { ...next, online: this.isOnlineByDate(next.lastActionDate) } : next
+        ];
+      }),
       map(([prev, next]) => ([!!prev?.id || prev === undefined ? prev : null, !!next?.id ? next : null])),
-      filter(([prev, next]) => !CompareObjects(prev, next) || this.syncUser[0] === userId),
+      filter(([prev, next]) => !CompareObjects(prev, next)),
       map(([, next]) => next)
     );
     const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
     const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId, codes) : of(null))).pipe(
       takeUntil(this.destroyed$),
-      concatMap(() => observable),
-      tap(() => {
-        const [id, i] = this.syncUser;
-        if (id === userId) {
-          counter = this.updateUserCounter(userId);
-          // Обновить счетчик
-          if (i < counter) {
-            this.syncUser[1]++;
-          }
-          // Очистить
-          else {
-            this.syncUser = [-1, 0];
-          }
-        }
-      }),
-      finalize(() => this.updateUserCounter(userId, -1))
+      concatMap(() => <Observable<User>>observable)
     );
     // Вернуть подписки
     return userObservable;
@@ -224,9 +210,11 @@ export class AccountService implements OnDestroy {
 
 
   // Автополучение данных о пользователе
-  syncUserData(id: string | number = 0, lastEditDate: Date = null): Observable<User> {
+  syncUserData(mixedId: string | number = 0, lastEditDate: Date = null): Observable<User> {
+    let id: number = ParseInt(mixedId);
+    // Параметры
     let connect: boolean = false;
-    const observable = (id: string | number = 0, lastEditDate: Date = null) => {
+    const observable = (id: number = 0, lastEditDate: Date = null) => {
       const user: User = this.users.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.id));
       // Параметры
       id = user?.id ?? id ?? 0;
@@ -269,10 +257,7 @@ export class AccountService implements OnDestroy {
   syncAnonymousUser(): Observable<User> {
     return of(true).pipe(
       takeUntil(this.destroyed$),
-      tap(() => {
-        this.syncUser = [0, 0];
-        this.users.next([...this.users.getValue()]);
-      }),
+      tap(() => this.users.next([...this.users.getValue()])),
       map(() => null)
     );
   }
@@ -507,28 +492,5 @@ export class AccountService implements OnDestroy {
     this.configLocalStorage();
     this.localStorageService.deleteCookie(this.usersCookieKey);
     this.users.next([]);
-  }
-
-  // Обновить счетчик подписок на пользователей
-  private updateUserCounter(userId: number, eventType: -1 | 1 | 0 = 0): number {
-    const counterIndex: number = this.userSubscritionCounter.findIndex(([id]) => id === userId);
-    // Для существующего счетчика
-    if (counterIndex >= 0) {
-      this.userSubscritionCounter[counterIndex][1] += eventType;
-      // Удалить
-      if (this.userSubscritionCounter[counterIndex][1] <= 0) {
-        this.userSubscritionCounter.splice(counterIndex, 1);
-        // Вернуть ноль
-        return 0;
-      }
-      // Вернуть количество
-      return this.userSubscritionCounter[counterIndex][1];
-    }
-    // Для несуществующего
-    else if (eventType === 1) {
-      this.userSubscritionCounter.push([userId, 1]);
-    }
-    // Вернуть ноль
-    return 0;
   }
 }

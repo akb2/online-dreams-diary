@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDe
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
+import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
 
@@ -421,8 +421,9 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Определить данные
   private defineData(): void {
-    this.accountService.user$()
+    this.accountService.user$(0, false, [], "dream-viewer")
       .pipe(
+        tap(data => console.log("dream-viewer", data)),
         takeUntil(this.destroyed$),
         mergeMap(
           () => this.activatedRoute.queryParams,
