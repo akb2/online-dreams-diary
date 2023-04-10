@@ -49,14 +49,16 @@ export class CommentPipe implements PipeTransform {
     const emojiRegExp: RegExp = new RegExp("\\[emoji=([a-z0-9\-_\+]+)(:([0-9]+))?(:([a-z]+))?\\]", "ig");
     const emojies: string[] = text.match(emojiRegExp) ?? [];
     // Замена смайликов
-    emojies.forEach(textEmoji => {
-      const mixedEmoji: string = textEmoji.replace(emojiRegExp, "$1");
-      const skin: EmojiSkin = ParseInt(textEmoji.replace(emojiRegExp, "$3"), 1) as EmojiSkin;
-      const set: EmojiSet = textEmoji.replace(emojiRegExp, "$5") as EmojiSet;
-      const emojiHTML: string = this.getEmojiHTML(mixedEmoji, skin, set);
-      // Замена смайлика
-      text = text.replace(textEmoji, emojiHTML);
-    });
+    if (!!emojies?.length) {
+      emojies.forEach(textEmoji => {
+        const mixedEmoji: string = textEmoji.replace(emojiRegExp, "$1");
+        const skin: EmojiSkin = ParseInt(textEmoji.replace(emojiRegExp, "$3"), 1) as EmojiSkin;
+        const set: EmojiSet = textEmoji.replace(emojiRegExp, "$5") as EmojiSet;
+        const emojiHTML: string = this.getEmojiHTML(mixedEmoji, skin, set);
+        // Замена смайлика
+        text = text.replace(textEmoji, emojiHTML);
+      });
+    }
     // Замена тегов
     text = text.replace(new RegExp("\\[br\\]", "ig"), "<br>");
     // Вернуть изначальный текст
