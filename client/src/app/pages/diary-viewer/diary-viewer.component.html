@@ -78,7 +78,7 @@
           <!-- Толкование -->
           <div #interpretationPanel
                class="dream__text"
-               *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user.id)">
+               *ngIf="isTextAvail && (!!dream?.interpretation || dream.user.id === user?.id)">
             <!-- Заголовок -->
             <app-title [type]="3"
                        [noMargin]="true"

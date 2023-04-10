@@ -255,8 +255,8 @@
   }
   // Без комментариев
   &.noComments {
-    display: block;
-    position: static;
+    grid-template-columns: 1fr;
+    grid-template-areas: "keywords" "data";
     // Блок данных
     #{$__elm}__data {
       width: 100%;
