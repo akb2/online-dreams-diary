@@ -3,7 +3,7 @@
   <div class="list"
        *ngIf="!!comments?.length; else noComments">
     <div class="comment"
-         *ngFor="let comment of comments">
+         *ngFor="let comment of comments; trackBy: listTrackBy">
       <div class="comment__header">
         <!-- Аватарка -->
         <a class="comment__header-avatar"
@@ -75,8 +75,6 @@
              let-media="media">
   <div class="comment__attachment-graffity"
        *ngIf="!!media">
-    <div class="image-helper">
-      <img [src]="media.url" />
-    </div>
+    <img [src]="media.url" />
   </div>
 </ng-template>

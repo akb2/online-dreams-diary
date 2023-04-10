@@ -36,6 +36,27 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
 
+  // Функция проверки пользователя для обновления списка
+  listTrackBy(index: number, comment: Comment): string {
+    const dataStrings: string[] = [
+      comment.id.toString(),
+      comment.createDate?.toISOString(),
+      comment.user.id.toString(),
+      comment.user.name,
+      comment.user.lastName,
+      comment.user.avatars?.small,
+      comment.user.online ? "true" : "false",
+      comment.text,
+      comment?.attachment?.graffity?.url
+    ];
+    // Объединить данные
+    return dataStrings.join("-");
+  }
+
+
+
+
+
   constructor(
     private commentService: CommentService,
     private changeDetectorRef: ChangeDetectorRef

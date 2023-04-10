@@ -92,28 +92,13 @@
     // Граффити
     &-graffity {
       display: block;
-      position: relative;
       overflow: hidden;
+      background-color: colors.$background;
       // Картинка
-      > .image-helper {
+      > img {
+        object-fit: contain;
         display: block;
-        z-index: 0;
-        position: relative;
-        padding-bottom: 100%;
-        // Картинка
-        > img {
-          position: absolute;
-          object-fit: contain;
-        }
-        // Тень
-        &::after {
-          @include mixins.inset;
-          // Свойства
-          content: "";
-          position: absolute;
-          display: block;
-          z-index: 1;
-        }
+        max-width: 100%;
       }
     }
     // ? Вариаты
@@ -129,22 +114,10 @@
         width: $graffitySize + ($padding * 2);
         max-width: 100%;
         border-radius: 6px;
+        padding: $padding;
         // Картинка
-        > .image-helper {
-          width: 100%;
-          padding-bottom: 100%;
-          // Картинка
-          > img {
-            border-radius: 3px;
-            top: $padding;
-            left: $padding;
-            width: calc(100% - #{$padding * 2});
-            height: calc(100% - #{$padding * 2});
-          }
-          // Тень
-          &::after {
-            box-shadow: inset 0 0 10px 1px #{colors.$shadow};
-          }
+        > img {
+          border-radius: 3px;
         }
       }
     }
