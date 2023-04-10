@@ -91,14 +91,14 @@ class Dream
     $testDreams = $this->dreamService->getList($search, $token, $userId);
     $dreams = array();
     $hasAccess = false;
+    $checkDiaryPrivate = ($_GET['search_checkPrivate'] ?? 'true') === 'false' ? false : true;
     // Сновидение найдено
-    if ($testDreams['count'] > 0) {
-      ['code' => $code, 'dreams' => $dreams] = $this->checkUserDataPrivate($testDreams['result'], intval($search['user']), $userId);
-    }
-    // Сновидение не найдено
-    else {
-      $code = '0002';
-    }
+    ['code' => $code, 'dreams' => $dreams] = $this->checkUserDataPrivate(
+      $testDreams['result'],
+      intval($search['user']),
+      $userId,
+      $checkDiaryPrivate
+    );
     // Обработка данных
     $testDreams['count'] = $code !== '8100' && isset($testDreams['count']) ? $testDreams['count'] : 0;
     $hasAccess = $code !== '8100';
@@ -208,19 +208,26 @@ class Dream
 
 
   // Проверка доступа к дневнику пользователя
-  private function checkUserDataPrivate(array $dreamsData, int $userId, $currentUserId): array
+  private function checkUserDataPrivate(array $dreamsData, int $userId, $currentUserId, bool $checkDiaryPrivate = true): array
   {
     $code = '8100';
     $dreams = null;
     // Данные определены
     if (is_array($dreamsData)) {
       // Проверка данных
-      if ($userId <= 0 || $this->userSettingsService->checkPrivate('myDreamList', $userId, intval($currentUserId))) {
-        $code = '0001';
-        $dreams = array();
-        // Обработать список сновидений
-        foreach ($dreamsData as $dream) {
-          $dreams[] = $this->dreamConvert($dream);
+      if (!$checkDiaryPrivate || $userId <= 0 || $this->userSettingsService->checkPrivate('myDreamList', $userId, intval($currentUserId))) {
+        // Есть сновидения
+        if (count($dreamsData) > 0) {
+          $code = '0001';
+          $dreams = array();
+          // Обработать список сновидений
+          foreach ($dreamsData as $dream) {
+            $dreams[] = $this->dreamConvert($dream);
+          }
+        }
+        // Нет сновидений
+        else {
+          $code = '0002';
         }
       }
     }

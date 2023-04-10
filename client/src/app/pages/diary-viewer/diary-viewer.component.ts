@@ -443,7 +443,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         ),
         concatMap(
           ({ user, dream: { id, user: { id: userId } } }) => !user || (!!user?.id && userId !== user.id) ?
-            this.dreamService.search({ user: userId, excludeIds: [id], sortField: "random" }, ["0002"]) :
+            this.dreamService.search({ user: userId, excludeIds: [id], sortField: "random", checkPrivate: false }, ["0002", "8100"]) :
             of({ result: [] }),
           (data, { result: otherDreams }) => ({ ...data, otherDreams })
         )

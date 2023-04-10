@@ -78,6 +78,7 @@ export interface SearchDream extends BaseSearch {
   limit: number;
   sortField: SearchDreamSortFields;
   sortType: BaseSearchSortType;
+  checkPrivate: boolean;
 }
 
 // Поиск: сортировка по полям
