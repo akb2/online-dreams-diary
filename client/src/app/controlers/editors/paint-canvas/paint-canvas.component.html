@@ -1,8 +1,8 @@
 <!-- Полотно -->
-<div class="canvas">
-  <canvas #canvasElement
-          [width]="canvasWidth"
-          [height]="canvasHeight"></canvas>
+<div #canvasOverlay
+     class="canvas"
+     [ngStyle]="{ height: canvasHeight + 'px' }">
+  <canvas #canvasElement></canvas>
 </div>
 
 <!-- Выбор цвета -->
@@ -28,8 +28,8 @@
                    [color]="currentColor"
                    [control]="colorPickerControl"
                    class="colors__item-picker"
-                   [ngClass]="{ show: showColorPicker }"
-                   (colorChange)="setColor($event)"></chrome-picker>
+                   (colorChange)="setColor($event)"
+                   *ngIf="showColorPicker"></chrome-picker>
   </button>
 </div>
 

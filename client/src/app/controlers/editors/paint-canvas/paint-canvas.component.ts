@@ -4,9 +4,9 @@ import { GraffityDrawData } from "@_models/comment";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
-import { fabric } from "fabric";
-import { Observable, Subject, concatMap, filter, fromEvent, map, merge, mergeMap, of, takeUntil, tap } from "rxjs";
 import { ColorPickerControl } from "@iplab/ngx-color-picker";
+import { fabric } from "fabric";
+import { Observable, Subject, concatMap, delay, filter, fromEvent, map, merge, mergeMap, of, takeUntil, tap } from "rxjs";
 
 
 
@@ -22,8 +22,7 @@ import { ColorPickerControl } from "@iplab/ngx-color-picker";
 export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
 
 
-  @Input() canvasWidth: number = 452;
-  @Input() canvasHeight: number = 452;
+  @Input() canvasSize: number = 452;
   @Input() drawData: GraffityDrawData = null;
 
   @Output() changeCanvas: EventEmitter<GraffityDrawData> = new EventEmitter();
@@ -31,8 +30,11 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
   @ViewChild("canvasElement", { static: false, read: ElementRef }) canvasElement: ElementRef;
   @ViewChild("colorPickerButton", { read: ElementRef }) colorPickerButton: ElementRef;
   @ViewChild("colorPicker", { read: ElementRef }) colorPicker: ElementRef;
+  @ViewChild("canvasOverlay", { read: ElementRef }) canvasOverlay: ElementRef;
 
   private canvas: fabric.Canvas;
+  canvasWidth: number = 0;
+  canvasHeight: number = 0;
 
   colorPallete: string[] = ColorPallete;
   sizesKit: number[] = SizesKit;
@@ -94,36 +96,63 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
   ) { }
 
   ngAfterViewInit(): void {
-    this.canvas = new fabric.Canvas(this.canvasElement.nativeElement, {
-      backgroundColor: this.drawData?.background ?? this.backgroundColor,
-    });
-    this.canvas.isDrawingMode = true;
-    // Загрузить граффити из JSON
-    if (this.drawData) {
-      this.canvas.loadFromJSON(this.drawData, () => this.canvas.renderAll());
-    }
-    // Установить настройки
-    this.setColor(this.drawData?.color);
-    this.setSize(this.sizesKit.findIndex(size => size === this.drawData?.size));
-    // Обновление состояний
-    fromEvent(this.canvas, "path:created")
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => {
-        this.undedObjects = [];
-        this.canvas.renderAll();
-        this.onSave().subscribe();
-        this.changeDetectorRef.detectChanges();
-      });
-    // Закрыть выбор цвета
-    WaitObservable(() => !this.colorPickerButton?.nativeElement)
+    WaitObservable(() => !this.canvasOverlay?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
-        mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
-        filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement))
+        map(() => <HTMLElement>this.canvasOverlay.nativeElement)
       )
-      .subscribe(() => {
-        this.showColorPicker = false;
-        this.changeDetectorRef.detectChanges();
+      .subscribe(canvasOverlay => {
+        this.canvas = new fabric.Canvas(this.canvasElement.nativeElement, {
+          backgroundColor: this.drawData?.background ?? this.backgroundColor,
+        });
+        this.canvas.isDrawingMode = true;
+        // Загрузить граффити из JSON
+        if (this.drawData) {
+          this.canvas.loadFromJSON(this.drawData, () => this.canvas.renderAll());
+        }
+        // Установить настройки
+        this.setColor(this.drawData?.color);
+        this.setSize(this.sizesKit.findIndex(size => size === this.drawData?.size));
+        // Изменение размера
+        this.screenService.elmResize(canvasOverlay)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe(() => {
+            const availSize: number = Math.min(canvasOverlay.getBoundingClientRect().width, this.canvasSize);
+            const zoom: number = availSize / this.canvasSize;
+            const canvasContainer: HTMLElement = <HTMLElement>this.canvas['wrapperEl'];
+            // Инициализация холста
+            this.canvasWidth = availSize;
+            this.canvasHeight = availSize;
+            this.canvas.setWidth(this.canvasSize);
+            this.canvas.setHeight(this.canvasSize);
+            // Установить зум
+            if (!!canvasContainer) {
+              canvasContainer.style.transform = "scale(" + zoom + ")";
+              canvasContainer.style.transformOrigin = "0 0";
+            }
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          });
+        // Обновление состояний
+        fromEvent(this.canvas, "path:created")
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe(() => {
+            this.undedObjects = [];
+            this.canvas.renderAll();
+            this.onSave().subscribe();
+            this.changeDetectorRef.detectChanges();
+          });
+        // Закрыть выбор цвета
+        WaitObservable(() => !this.colorPickerButton?.nativeElement)
+          .pipe(
+            takeUntil(this.destroyed$),
+            mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
+            filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement))
+          )
+          .subscribe(() => {
+            this.showColorPicker = false;
+            this.changeDetectorRef.detectChanges();
+          });
       });
   }
 
@@ -159,7 +188,7 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
 
   // Переключения показа цветовой палитры
   onColorPickerToggle(event: MouseEvent): void {
-    if (this.colorPicker?.nativeElement && !CompareElementByElement(event?.target, this.colorPicker?.nativeElement)) {
+    if (!this.colorPicker?.nativeElement || !CompareElementByElement(event?.target, this.colorPicker?.nativeElement)) {
       this.showColorPicker = !this.showColorPicker;
       this.changeDetectorRef.detectChanges();
     }

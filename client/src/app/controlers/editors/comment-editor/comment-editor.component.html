@@ -69,12 +69,13 @@
 <ng-template #emojiList>
   <emoji-mart #emojiListItem
               class="smiles__list"
-              [ngClass]="{ show: showEmojiList, bottomSmiles }"
+              [ngClass]="{ bottomSmiles }"
               [i18n]="i18nEmoji"
               [emojiSize]="32"
               [showPreview]="true"
               [useButton]="false"
-              (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
+              (emojiSelect)="onEmojiSelect($event)"
+              *ngIf="showEmojiList"></emoji-mart>
 </ng-template>
 
 <!-- Смайлик -->

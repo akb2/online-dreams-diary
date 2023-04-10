@@ -10,8 +10,7 @@ $colorDark: #555;
 // Полотно для рисования
 .canvas {
   margin: 0 auto;
-  width: auto;
-  box-shadow: inset 0 0 10px #{colors.$shadow};
+  width: 100%;
   // Полотно
   canvas {
     display: block;
@@ -21,8 +20,12 @@ $colorDark: #555;
 
 // Выбор цвета
 .colors {
-  $markerSize: math.round(vars.$buttonSize * 0.4);
   $borderSize: 1px;
+  $countPerLine: 10;
+  $sizes: (
+    default: vars.$buttonSize,
+    xsmall: 26px,
+  );
   // Свойства
   display: flex;
   flex-flow: row nowrap;
@@ -34,8 +37,6 @@ $colorDark: #555;
     $__elm: &;
     // Свойства
     display: block;
-    width: vars.$buttonSize;
-    height: vars.$buttonSize;
     cursor: pointer;
     border-radius: 50%;
     outline: none;
@@ -43,12 +44,8 @@ $colorDark: #555;
     border: #{$borderSize} solid #{$colorDark};
     // Отметка
     &-cursor {
-      @include mixins.inset(math.div(vars.$buttonSize - ($borderSize * 2) - $markerSize, 2));
-      // Свойства
       content: "";
       display: block;
-      width: $markerSize;
-      height: $markerSize;
       position: absolute;
       opacity: 0;
       border-radius: 50%;
@@ -93,16 +90,22 @@ $colorDark: #555;
       // Выбор цвета
       > #{$__elm}-picker {
         position: absolute;
-        bottom: 300%;
+        bottom: 0;
         right: calc(100% + 8px);
-        opacity: 0;
-        visibility: hidden;
-        // Показать паьитру
-        &.show {
-          bottom: 0;
-          opacity: 1;
-          visibility: visible;
-        }
+      }
+    }
+    // Адаптив
+    @include screens.adaptiveFor($sizes) using($size) {
+      $markerSize: math.round($size * 0.4);
+      // Свойства
+      width: $size;
+      height: $size;
+      // Отметка
+      &-cursor {
+        @include mixins.inset(math.div($size - ($borderSize * 2) - $markerSize, 2));
+        // Свойства
+        width: $markerSize;
+        height: $markerSize;
       }
     }
   }
@@ -140,6 +143,10 @@ $colorDark: #555;
       border-radius: 50%;
       max-width: 100%;
       max-height: 100%;
+    }
+    // Скрыть для телефона
+    @include screens.adaptive(auto, xsmall) {
+      display: none;
     }
   }
   // Поле изменения размера
