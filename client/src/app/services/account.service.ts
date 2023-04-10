@@ -1,6 +1,3 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
-import { Router } from "@angular/router";
 import { DefaultUserPriv, DefaultUserPrivItem, OnlinePeriod, UserPrivateNames } from "@_datas/account";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
@@ -15,7 +12,10 @@ import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { BehaviorSubject, Observable, of, Subject, timer } from "rxjs";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Injectable, OnDestroy } from "@angular/core";
+import { Router } from "@angular/router";
+import { BehaviorSubject, Observable, Subject, of, timer } from "rxjs";
 import { catchError, concatMap, filter, finalize, map, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
@@ -63,7 +63,7 @@ export class AccountService implements OnDestroy {
   }
 
   // Получить подписку на данные о пользователе
-  user$(userId: number = 0, sync: boolean = false, codes: string[] = []): Observable<User> {
+  user$(userId: number = 0, sync: boolean = false, codes: string[] = [], test?: any): Observable<User> {
     userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
     codes.push("8100");
     // Обновить счетчик
@@ -74,12 +74,15 @@ export class AccountService implements OnDestroy {
       startWith(undefined),
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
-      map(([prev, next]) => ([prev, next].map(us => us?.find(({ id }) => id === userId) ?? null))),
+      map(([prev, next]) => ([
+        prev?.find(({ id }) => id === userId),
+        next?.find(({ id }) => id === userId) ?? null
+      ])),
       map(([prev, next]) => ([
         !!prev ? { ...prev, online: this.isOnlineByDate(prev.lastActionDate) } : prev,
         !!next ? { ...next, online: this.isOnlineByDate(next.lastActionDate) } : next
       ])),
-      map(([prev, next]) => ([!!prev?.id ? prev : null, !!next?.id ? next : null])),
+      map(([prev, next]) => ([!!prev?.id || prev === undefined ? prev : null, !!next?.id ? next : null])),
       filter(([prev, next]) => !CompareObjects(prev, next) || this.syncUser[0] === userId),
       map(([, next]) => next)
     );

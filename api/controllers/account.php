@@ -67,7 +67,7 @@ class Account
   }
 
   // Проверить настройку приватности
-  #[Request('post'), CheckToken]
+  #[Request('post'), CheckToken(true)]
   public function checkPrivate(array $dataIn): array
   {
     $code = '0000';

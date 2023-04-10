@@ -86,7 +86,7 @@ class Comment
     $comments = array();
     $hasAccess = true;
     $code = '0002';
-    $userId = $_SERVER['TOKEN_USER_ID'];
+    $userId = intval($_SERVER['TOKEN_USER_ID']) ?? 0;
     $search = array(
       'material_type' => $data['search_materialType'] ?? 0,
       'material_id' => $data['search_materialId'] ?? 0,
