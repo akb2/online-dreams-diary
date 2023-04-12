@@ -86,8 +86,15 @@ html {
       font-weight: 900;
     }
     // Ссылка
-    a {
+    a,
+    .link {
       color: map.get(colors.$matPrimary, 500);
+      display: inline;
+      padding: 0;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
     }
     // Подзаголовки
     .sub-text {
