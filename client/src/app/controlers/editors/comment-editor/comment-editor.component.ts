@@ -1,12 +1,14 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { WaitObservable } from "@_datas/api";
-import { CompareElementByElement } from "@_datas/app";
+import { CompareElementByElement, ScrollElement } from "@_datas/app";
+import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
+import { User } from "@_models/account";
 import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
@@ -36,10 +38,15 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
   @Input() wrapControls: boolean = false;
   @Input() bottomSmiles: boolean = false;
+  @Input() replyUser: User;
+  @Input() scrollSpacing: number = 15;
 
   @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
+  @Output() replyUserChange: EventEmitter<User> = new EventEmitter();
 
   @ViewChild("editor", { read: ElementRef }) editor: ElementRef<HTMLElement>;
+  @ViewChild("editorContainer", { read: ElementRef }) editorContainer: ElementRef<HTMLElement>;
+  @ViewChild("replyElement", { read: ElementRef }) replyElement: ElementRef<HTMLElement>;
   @ViewChild("smile") smileElm: TemplateRef<any>;
   @ViewChild("emojiListItem", { read: ElementRef }) emojiListItem: ElementRef<HTMLElement>;
   @ViewChild("emojiListToggleButton", { read: ElementRef }) emojiListToggleButton: ElementRef<HTMLElement>;
@@ -162,8 +169,44 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     private matDialog: MatDialog
   ) { }
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
     this.wrapControlsClass = this.wrapControls;
+    // Изменение адресата ответа
+    if (!!changes?.replyUser) {
+      const prevUser: User = changes.replyUser?.previousValue;
+      const nextUser: User = changes.replyUser?.currentValue;
+      // Скрол к редактору
+      if ((!prevUser && !!nextUser) || (!!prevUser && !!nextUser)) {
+        WaitObservable(() => !this.editorContainer?.nativeElement || !this.replyElement?.nativeElement || !this.editor?.nativeElement, 10)
+          .pipe(
+            takeUntil(this.destroyed$),
+            map(() => ({
+              editorContainer: <HTMLElement>this.editorContainer.nativeElement,
+              editor: <HTMLElement>this.editor.nativeElement,
+              replyElement: <HTMLElement>this.replyElement.nativeElement
+            }))
+          )
+          .subscribe(({ replyElement, editor }) => {
+            const scrollElement: HTMLElement = ScrollElement();
+            const replyBounding: DOMRect = replyElement.getBoundingClientRect();
+            const replyStyles: CSSStyleDeclaration = getComputedStyle(replyElement);
+            const mainMenuHeight: number = DrawDatas.minHeight;
+            const currentScroll: number = scrollElement.scrollTop;
+            const scrollBorderTop: number = currentScroll + mainMenuHeight;
+            // const scrollBorderBottom: number = currentScroll + window.innerHeight;
+            const fieldBorderTop: number = currentScroll + replyBounding.top - ParseInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
+            // const fieldBorderBottom: number = fieldBorderTop + editorContainer.clientHeight - this.scrollSpacing;
+            // Скролл
+            if (fieldBorderTop < scrollBorderTop) {
+              scrollElement.scrollTo({
+                top: fieldBorderTop,
+                behavior: "smooth"
+              });
+              editor.focus();
+            }
+          });
+      }
+    }
   }
 
   ngAfterViewInit(): void {
@@ -314,6 +357,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         materialType: this.materialType,
         materialId: this.materialId,
         materialOwner: this.materialOwner,
+        replyToUser: this.replyUser,
         text,
         uploadAttachment: {
           graffity: !!this.graffityData?.blob ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type }) : null
@@ -335,6 +379,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
               }
               // Очистить другие данные
               this.graffityData = null;
+              this.onReplyUserDelete();
               // Обновить
               this.sendLoader = false;
               this.changeDetectorRef.detectChanges();
@@ -370,6 +415,13 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         this.graffityData = data;
         this.changeDetectorRef.detectChanges();
       });
+  }
+
+  // Удалить адресата ответа
+  onReplyUserDelete(): void {
+    this.replyUser = null;
+    this.replyUserChange.emit(null);
+    this.changeDetectorRef.detectChanges();
   }
 
 

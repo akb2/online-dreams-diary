@@ -1,12 +1,15 @@
 <!-- Редактор -->
-<div class="editor"
+<div #editorBlock
+     class="editor"
      *ngIf="authState && writeAccess">
   <app-comment-editor [materialType]="materialType"
                       [materialId]="materialId"
                       [materialOwner]="materialOwner"
                       [placeholder]="placeholder"
                       [wrapControls]="wrapControls"
-                      [bottomSmiles]="bottomSmiles"></app-comment-editor>
+                      [bottomSmiles]="bottomSmiles"
+                      [scrollSpacing]="scrollSpacing"
+                      [(replyUser)]="replyUser"></app-comment-editor>
 </div>
 
 <!-- Список комментариев -->
@@ -16,5 +19,7 @@
                     [materialType]="materialType"
                     [materialId]="materialId"
                     [emptyCommentsMainTitle]="emptyCommentsMainTitle"
-                    [emptyCommentsSubTitle]="emptyCommentsSubTitle"></app-comment-list>
+                    [emptyCommentsSubTitle]="emptyCommentsSubTitle"
+                    [writeAccess]="writeAccess"
+                    (replyEvent)="onReply($event)"></app-comment-list>
 </div>

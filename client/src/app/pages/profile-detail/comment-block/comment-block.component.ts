@@ -1,8 +1,11 @@
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
+import { ParseInt } from "@_helpers/math";
+import { User } from "@_models/account";
 import { CommentMaterialType } from "@_models/comment";
 import { AccountService } from "@_services/account.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { Subject, concatMap, of, takeUntil } from "rxjs";
+import { ScreenService } from "@_services/screen.service";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Subject, concatMap, map, of, takeUntil } from "rxjs";
 
 
 
@@ -28,10 +31,15 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @Input() bottomSmiles: boolean = false;
 
   @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
+  @ViewChild("editorBlock", { read: ElementRef }) private editorBlock: ElementRef;
 
   authState: boolean = false;
   writeAccess: boolean = false;
   readAccess: boolean = false;
+
+  replyUser: User;
+
+  scrollSpacing: number = 0;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -40,7 +48,9 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
 
 
   constructor(
+    private hostElement: ElementRef,
     private accountService: AccountService,
+    private screenService: ScreenService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
@@ -67,11 +77,31 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
         this.readAccess = readAccess;
         this.changeDetectorRef.detectChanges();
       });
+    // Изменение отступов
+    this.screenService.breakpoint$
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(() => this.hostElement?.nativeElement)
+      )
+      .subscribe(hostElement => {
+        this.scrollSpacing = !!hostElement ? ParseInt(getComputedStyle(hostElement).rowGap) : 0;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Ответить на комментарий
+  onReply(user: User): void {
+    this.replyUser = user;
+    this.changeDetectorRef.detectChanges();
   }
 
 

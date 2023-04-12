@@ -24,7 +24,8 @@
           <a class="comment__header-name"
              routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
           <!-- Дата -->
-          <div class="comment__header-state">{{comment.createDate | date: 'd.M.y - H:mm'}}</div>
+          <time class="comment__header-state"
+                [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
         </div>
       </div>
       <!-- Текст комментариев -->
@@ -33,6 +34,7 @@
            *ngIf="!!comment?.text"></div>
       <!-- Прикрепления -->
       <ng-container *ngVar="comment?.attachment?.graffity as graffity">
+        <!-- Граффити -->
         <div class="comment__attachment"
              [ngClass]="{ graffity }"
              *ngIf="!!graffity">
@@ -42,6 +44,13 @@
                         *ngIf="!!graffity"></ng-container>
         </div>
       </ng-container>
+      <!-- Действия -->
+      <div class="comment__actions">
+        <!-- Ответить -->
+        <button class="link"
+                (click)="onReply(comment.user)"
+                *ngIf="isReplyAvail(comment)">Ответить</button>
+      </div>
     </div>
     <!-- Загрузчик новых комментариев -->
     <div class="comment__more-loader"

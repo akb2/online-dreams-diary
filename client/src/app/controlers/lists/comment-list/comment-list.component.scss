@@ -63,6 +63,7 @@
     }
     // Статус
     &-state {
+      display: block;
       font-size: 12px;
       line-height: 18px;
       font-weight: 300;
@@ -130,6 +131,13 @@
     @include screens.adaptive(xsmall, middle) {
       margin-top: containers.$cardPaddingY;
     }
+  }
+  // Действия
+  &__actions {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {

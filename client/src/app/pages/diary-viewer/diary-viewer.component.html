@@ -121,6 +121,7 @@
         <app-comment-list #commentListElm
                           [materialType]="commentMaterialType"
                           [materialId]="dream.id"
+                          [writeAccess]="writeAccess"
                           *ngIf="readAccess"></app-comment-list>
       </div>
     </div>

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { User } from "@_models/account";
 import { Comment, CommentMaterialType } from "@_models/comment";
+import { AccountService } from "@_services/account.service";
 import { CommentService } from "@_services/comment.service";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { Subject, takeUntil } from "rxjs";
 
 
@@ -21,7 +23,11 @@ export class CommentListComponent implements OnInit, OnDestroy {
   @Input() materialId: number;
   @Input() emptyCommentsMainTitle: string = "Нет комментариев";
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
+  @Input() writeAccess: boolean = false;
 
+  @Output() replyEvent: EventEmitter<User> = new EventEmitter();
+
+  private user: User;
   comments: Comment[] = [];
   count: number = 0;
 
@@ -53,22 +59,46 @@ export class CommentListComponent implements OnInit, OnDestroy {
     return dataStrings.join("-");
   }
 
+  // Доступность ответа
+  isReplyAvail(comment: Comment): boolean {
+    return this.writeAccess && !!this.user?.id && !!comment?.user?.id && this.user.id !== comment.user.id;
+  }
+
 
 
 
 
   constructor(
     private commentService: CommentService,
+    private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.loadComments(true);
+    // Загрузка данных о текущем пользователе
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(user => {
+        this.user = user;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Ответить
+  onReply(user: User): void {
+    if (!!user) {
+      this.replyEvent.emit(user);
+    }
   }
 
 

@@ -5,13 +5,10 @@
 
 // Общий блок
 :host {
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: flex-start;
-  align-items: stretch;
+  display: block;
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
-    gap: $gap;
+    row-gap: $gap;
   }
 }
 
@@ -21,4 +18,11 @@
   box-shadow: containers.$cardBoxShadow;
   border-radius: containers.$cardBorderRadius;
   padding-right: containers.$cardPaddingX;
+  // Адаптив
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($spacing) {
+    // Список комментариев
+    & + .list {
+      margin-top: $spacing;
+    }
+  }
 }

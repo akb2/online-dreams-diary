@@ -88,6 +88,7 @@ export class CommentService implements OnDestroy {
       materialType: data.materialType,
       materialId: data.materialId,
       materialOwner: data.materialOwner,
+      replyToUserId: ParseInt(data?.replyToUser?.id),
       text: data.text,
       graffityUpload: data?.uploadAttachment?.graffity
     })).pipe(

@@ -1,5 +1,39 @@
+<!-- Ответ -->
+<div #replyElement
+     class="reply__overlay"
+     *ngIf="!!replyUser">
+  <!-- Элемент с пользователем -->
+  <div class="reply">
+    <!-- Аватарка -->
+    <div class="reply__avatar">
+      <!-- Картинка -->
+      <img [src]="replyUser.avatars.small"
+           *ngIf="replyUser.avatars.small.length > 0" />
+      <!-- Иконка -->
+      <mat-icon *ngIf="replyUser.avatars.small.length === 0">person</mat-icon>
+      <!-- Метка онлайн -->
+      <div class="reply__avatar-online"
+           *ngIf="replyUser.online"></div>
+    </div>
+    <!-- Данные -->
+    <div class="reply__content">
+      <div class="reply__content-mainTitle">Вы отвечаете</div>
+      <div class="reply__content-subTitle">
+        {{replyUser | petrovich: [3, 'first'] }}
+        {{replyUser | petrovich: [3, 'last'] }}
+      </div>
+    </div>
+    <!-- Удалить -->
+    <button mat-icon-button
+            class="reply__delete"
+            color="primary"
+            (click)="onReplyUserDelete()"><mat-icon>close</mat-icon></button>
+  </div>
+</div>
+
 <!-- Поле ввода -->
-<div class="editor"
+<div #editorContainer
+     class="editor"
      (click)="editor.focus()">
   <app-scroll class="editor__scroll"
               (click)="$event.stopPropagation()">
@@ -14,6 +48,7 @@
          (keydown)="onCheckEnterKey($event)"></div>
   </app-scroll>
 </div>
+
 <!-- Действия -->
 <div class="actions">
   <!-- Перенос события на поле ввода -->
@@ -50,6 +85,7 @@
     {{sendLoader? 'Отправка': 'Отправить'}}
   </button>
 </div>
+
 <!-- Прикрепленные материалы -->
 <div class="attachments"
      *ngIf="hasAttachment">

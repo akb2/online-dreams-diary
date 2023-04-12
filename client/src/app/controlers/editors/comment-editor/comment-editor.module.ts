@@ -9,6 +9,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { PickerModule } from "@ctrl/ngx-emoji-mart";
 import { CommentEditorComponent } from "./comment-editor.component";
+import { CoreModule } from "@_modules/core.module";
 
 
 
@@ -29,7 +30,8 @@ import { CommentEditorComponent } from "./comment-editor.component";
     MatTooltipModule,
     PickerModule,
     MatMenuModule,
-    PopupGraffityModule
+    PopupGraffityModule,
+    CoreModule
   ],
   providers: [
     StringTemplatePipe

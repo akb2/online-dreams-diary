@@ -56,12 +56,14 @@ class CommentService
   // Новый комментарий
   public function create(array $data, int $userId): int
   {
+    $replyToUserId = intval($data['replyToUserId'] ?? null);
+    $materialOwner = intval($data['materialOwner']);
     $sqlData = array(
       'user_id' => intval($userId),
-      'reply_to_user_id' => intval($data['replyToUserId'] ?? null),
+      'reply_to_user_id' => $replyToUserId,
       'material_type' => intval($data['materialType']),
       'material_id' => intval($data['materialId']),
-      'material_owner' => intval($data['materialOwner']),
+      'material_owner' => $materialOwner,
       'text' => strval($data['text']),
       'attachment' => !!$data['attachment'] ? json_encode($data['attachment']) : null
     );
@@ -73,14 +75,25 @@ class CommentService
         'comment/' . intval($data['materialType']) . '/' . intval($data['materialId']),
         array('commentId' => $commentId)
       );
-      // Отправить уведомление
+      // Отправить уведомление владельцу
       $this->sendNotice(
         intval($data['materialType']),
         intval($data['materialId']),
-        intval($data['materialOwner']),
+        $materialOwner,
         intval($userId),
         intval($commentId)
       );
+      // Отправить уведомление адресату
+      if ($replyToUserId > 0 && $replyToUserId != $materialOwner) {
+        $this->sendNotice(
+          intval($data['materialType']),
+          intval($data['materialId']),
+          $materialOwner,
+          intval($userId),
+          intval($commentId),
+          $replyToUserId
+        );
+      }
       // Вернуть ID
       return $commentId;
     }
@@ -138,10 +151,11 @@ class CommentService
 
 
   // Отправить уведомление
-  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId, int $commentId): void
+  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId, int $commentId, int $replyToUserId = 0): void
   {
     // Не отправлять самому себе
-    if ($materialOwner !== $userId) {
+    if ($materialOwner !== $userId || ($replyToUserId > 0 && $replyToUserId !== $userId)) {
+      $destinationUser = $materialOwner;
       $text = '';
       $link = '';
       // Стена пользователя
@@ -154,11 +168,16 @@ class CommentService
         $link = '/diary/viewer/' . $materialId;
         $text = '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> прокомментировал${user.sexLetter} ваше сновидение.';
       }
+      // Ответ на комментарий
+      if ($replyToUserId > 0) {
+        $text = '<a href="/profile/${user.id}">${user.name} ${user.lastName}</a> написал ответ на ваш комментарий.';
+        $destinationUser = $replyToUserId;
+      }
       // Дополнить текст
       $text .= ' <a href="' . $link . '">Прочитать комментарий</a>';
       // Отправить уведомление
       $this->notificationService->create(
-        $materialOwner,
+        $destinationUser,
         $text,
         $link,
         array('user' => $userId, 'comment' => $commentId),
