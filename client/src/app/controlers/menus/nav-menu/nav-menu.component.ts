@@ -6,6 +6,7 @@ import { CreateRandomID } from "@_helpers/string";
 import { User, UserSex } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
+import { NumberDirection } from "@_models/math";
 import { MenuItem } from "@_models/menu";
 import { DrawDataPeriod, DrawDataValue, DrawDatasKeys, NavMenuType } from "@_models/nav-menu";
 import { ScreenKeys } from "@_models/screen";
@@ -97,7 +98,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollEndTimeDetect: number = 75;
   private scrollToLastId: string = "";
   private scrollEndLastId: string = "";
-  private scrollEndLastDimension: -1 | 0 | 1 = 0;
+  private scrollEndLastDimension: NumberDirection = 0;
 
   notificationRepeat: number[] = CreateArray(2);
   tooManyNotificationSymbol: string = "+";
@@ -729,8 +730,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     const scrollDiff: number = Math.abs(this.scroll - scroll);
     const oldScroll: number = this.scroll;
     const scrollLastId: string = CreateRandomID(128);
-    const dimension: -1 | 0 | 1 = oldScroll < scroll ? 1 : (oldScroll > scroll ? -1 : 0);
-    const oldDimension: -1 | 0 | 1 = this.scrollEndLastDimension;
+    const dimension: NumberDirection = oldScroll < scroll ? 1 : (oldScroll > scroll ? -1 : 0);
+    const oldDimension: NumberDirection = this.scrollEndLastDimension;
     // Запомнить данные
     this.scrollSpeedByPixel = !!scrollDiff ? MathRound(timeDiff / scrollDiff) : this.scrollSpeedByPixelDefault;
     this.scrollSpeedByPixel = this.scrollSpeedByPixel === Infinity ? this.scrollSpeedByPixelDefault : this.scrollSpeedByPixel;

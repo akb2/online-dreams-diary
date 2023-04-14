@@ -1,20 +1,21 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { CreateArray } from "@_datas/app";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, IsOdd, RadToAngle } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { NumberDirection } from "@_models/math";
 import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
 import { DreamMapObjectService } from "@_services/dream-map/object.service";
 import { GetDreamMapObjectByID } from "@_services/dream-map/objects/grass/_functions";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
 import { DreamMapTerrainService, GeometryQuality } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
-import { forkJoin, fromEvent, Observable, of, Subject, throwError, timer } from "rxjs";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
+import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, Matrix4, Mesh, MeshStandardMaterial, MOUSE, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, sRGBEncoding, TextureLoader, Vector3, WebGLRenderer } from "three";
+import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Matrix4, Mesh, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -1382,8 +1383,8 @@ export interface ObjectHoverEvent {
     x: number;
     y: number;
     z: number;
-    xDimen: -1 | 0 | 1;
-    yDimen: -1 | 0 | 1;
+    xDimen: NumberDirection;
+    yDimen: NumberDirection;
   };
 }
 
@@ -1419,7 +1420,7 @@ export enum CursorType {
 
 
 // Координаты соседних блоков
-const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: -1 | 0 | 1, y: -1 | 0 | 1 } } = {
+const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: NumberDirection, y: NumberDirection } } = {
   top: { x: 0, y: -1 },
   left: { x: -1, y: 0 },
   bottom: { x: 0, y: 1 },
