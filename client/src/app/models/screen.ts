@@ -1,3 +1,9 @@
+import { NumberDirection } from "./math";
+
+
+
+
+
 // Ключи названий экранов
 export type ScreenKeys = "default" | "xsmall" | "small" | "middle" | "large" | "xlarge";
 
@@ -27,6 +33,17 @@ export interface ScrollData {
   y: number;
   maxX: number;
   maxY: number;
+  elm?: HTMLElement;
+  scrollableHeight?: number;
+  lastDirectionX?: NumberDirection;
+  lastDirectionY?: NumberDirection;
+  lastScrollAddedY?: number;
+  emitEvent?: boolean;
+}
+
+// Установка значений скролл
+export interface SetScrollData extends ScrollToOptions {
+  emitEvent?: boolean;
 }
 
 // Данные о загруженной картинке
