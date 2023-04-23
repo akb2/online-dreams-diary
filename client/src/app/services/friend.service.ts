@@ -1,16 +1,16 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
 import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
-import { ApiResponse, Search } from "@_models/api";
+import { ApiResponse, SearchResponce } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
-import { BehaviorSubject, catchError, filter, finalize, map, mergeMap, Observable, of, pairwise, startWith, Subject, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { Injectable, OnDestroy } from "@angular/core";
+import { BehaviorSubject, Observable, Subject, catchError, filter, finalize, map, mergeMap, of, pairwise, startWith, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
 
@@ -179,7 +179,7 @@ export class FriendService implements OnDestroy {
   }
 
   // Поиск пользоватлей
-  getList(search: Partial<FriendSearch>, codes: string[] = []): Observable<Search<FriendWithUsers>> {
+  getList(search: Partial<FriendSearch>, codes: string[] = []): Observable<SearchResponce<FriendWithUsers>> {
     let count: number = 0;
     let limit: number = 0;
     // Вернуть подписку

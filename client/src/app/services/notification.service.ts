@@ -1,16 +1,16 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
-import { ApiResponse, Search } from "@_models/api";
+import { ApiResponse, SearchResponce } from "@_models/api";
 import { Notification, NotificationData, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { BehaviorSubject, catchError, concatMap, filter, finalize, map, Observable, of, pairwise, share, startWith, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Injectable, OnDestroy } from "@angular/core";
+import { BehaviorSubject, Observable, Subject, catchError, concatMap, filter, finalize, map, of, pairwise, share, startWith, switchMap, takeUntil, tap, timer } from "rxjs";
 import { TokenService } from "./token.service";
 
 
@@ -133,7 +133,7 @@ export class NotificationService implements OnDestroy {
 
 
   // Получение списка
-  getList(search: Partial<NotificationSearchRequest>, codes: string[] = []): Observable<Search<Notification>> {
+  getList(search: Partial<NotificationSearchRequest>, codes: string[] = []): Observable<SearchResponce<Notification>> {
     return this.httpClient.get<ApiResponse>("notification/getList", {
       params: ObjectToParams({
         status: search.status ?? NotificationStatus.any,
@@ -203,7 +203,7 @@ export class NotificationService implements OnDestroy {
   }
 
   // Отметить уведомления как прочитанные
-  readNotifications(ids: number[], codes: string[] = []): Observable<Search<Notification>> {
+  readNotifications(ids: number[], codes: string[] = []): Observable<SearchResponce<Notification>> {
     return this.httpClient.post<ApiResponse>("notification/readByIds", ObjectToFormData({ ids })).pipe(
       takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?

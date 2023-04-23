@@ -1,5 +1,5 @@
 import { User } from "@_models/account";
-import { BaseSearch, BaseSearchSortType, Search } from "@_models/api";
+import { BaseSearch, BaseSearchSortType, SearchResponce } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { DreamMap } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
@@ -62,7 +62,7 @@ export interface Place {
 }
 
 // Интерфейс ответа поиска сновидений
-export interface SearchRequestDream extends Search<Dream> {
+export interface SearchRequestDream extends SearchResponce<Dream> {
   hasAccess: boolean;
 }
 

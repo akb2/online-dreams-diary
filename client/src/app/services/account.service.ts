@@ -6,7 +6,7 @@ import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
-import { ApiResponse, ApiResponseCodes, Search } from "@_models/api";
+import { ApiResponse, ApiResponseCodes, SearchResponce } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
 import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
@@ -283,7 +283,7 @@ export class AccountService implements OnDestroy {
   }
 
   // Поиск пользоватлей
-  search(search: Partial<SearchUser>, codes: string[] = []): Observable<Search<User>> {
+  search(search: Partial<SearchUser>, codes: string[] = []): Observable<SearchResponce<User>> {
     search.ids = Array.from(new Set(search.ids));
     search.limit = !!search.ids?.length ? search.ids.length : (search.limit ?? 0);
     // Подписка

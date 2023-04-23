@@ -1,5 +1,7 @@
 import { SafeUrl } from "@angular/platform-browser";
 import { User } from "./account";
+import { BaseSearch, SearchResponce } from "./api";
+import { NumberDirection } from "./math";
 import { MediaFile } from "./media";
 
 
@@ -39,6 +41,23 @@ export interface GraffityDrawData {
   version: string;
   objects: Object[];
   background?: string;
+}
+
+// Интерфейс поиска комментариев: запрос
+export interface SearchResponceComment extends SearchResponce<Comment> {
+  prevCount: number;
+  nextCount: number;
+  hasAccess: boolean;
+}
+
+// Интерфейс поиска комментариев: ответ
+export interface SearchRequestComment extends Pick<BaseSearch, "limit"> {
+  materialType: CommentMaterialType;
+  materialId: number;
+  startWithId: number;
+  lastDate: string;
+  lastId: number;
+  loadListType: NumberDirection;
 }
 
 

@@ -35,7 +35,7 @@ export interface ApiResponse {
 }
 
 // Поиск: ответ
-export interface Search<T> {
+export interface SearchResponce<T> {
   count: number;
   limit: number;
   result: T[];
