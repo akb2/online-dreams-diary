@@ -2,7 +2,13 @@
 <ng-container *ngIf="!loading; else loader">
   <div class="list"
        *ngIf="!!comments?.length; else noComments">
-    <div class="comment"
+    <!-- Загрузчик следующих комментариев -->
+    <ng-container [ngTemplateOutlet]="moreCommentsDetector"
+                  [ngTemplateOutletContext]="{ loading: nextLoading, leftItems: nextLeftCount, next: true }"></ng-container>
+    <!-- Элемент комментария -->
+    <div #comment
+         class="comment"
+         [attr.comment-id]="comment.id"
          *ngFor="let comment of comments; trackBy: listTrackBy">
       <div class="comment__header">
         <!-- Аватарка -->
@@ -52,15 +58,31 @@
                 *ngIf="isReplyAvail(comment)">Ответить</button>
       </div>
     </div>
-    <!-- Загрузчик новых комментариев -->
-    <div class="comment__more-loader"
-         *ngIf="moreLoading">
-      <ng-container [ngTemplateOutlet]="loader"></ng-container>
-    </div>
+    <!-- Загрузчик предыдущих комментариев -->
+    <ng-container [ngTemplateOutlet]="moreCommentsDetector"
+                  [ngTemplateOutletContext]="{ loading: prevLoading, leftItems: prevLeftCount, next: false }"></ng-container>
   </div>
 </ng-container>
 
 
+
+<!-- Детектор загрузки новых комментариев -->
+<ng-template #moreCommentsDetector
+             let-loading="loading"
+             let-leftItems="leftItems"
+             let-next="next">
+  <!-- Детектирующий элемент -->
+  <div scrollDetector
+       class="comment__more-loader"
+       [ngClass]="{ loading, next, prev: !next }"
+       [detectDirection]="next? -1: 1"
+       (inScreenEvent)="onLoadMoreComments(next)"
+       *ngIf="leftItems > 0">
+    <!-- Загрузчик -->
+    <ng-container [ngTemplateOutlet]="loader"
+                  *ngIf="loading"></ng-container>
+  </div>
+</ng-template>
 
 <!-- Загрузчик -->
 <ng-template #loader>

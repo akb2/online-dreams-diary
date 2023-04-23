@@ -1,10 +1,9 @@
-import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { CommentMaterialType } from "@_models/comment";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit } from "@angular/core";
 import { Subject, concatMap, map, of, takeUntil } from "rxjs";
 
 
@@ -29,9 +28,6 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
   @Input() wrapControls: boolean = false;
   @Input() bottomSmiles: boolean = false;
-
-  @ViewChild("commentListElm", { read: CommentListComponent }) private commentListElm: CommentListComponent;
-  @ViewChild("editorBlock", { read: ElementRef }) private editorBlock: ElementRef;
 
   authState: boolean = false;
   writeAccess: boolean = false;
@@ -102,16 +98,5 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   onReply(user: User): void {
     this.replyUser = user;
     this.changeDetectorRef.detectChanges();
-  }
-
-
-
-
-
-  // Загрузить больше комментариев
-  loadMoreComments(): void {
-    if (!!this.commentListElm) {
-      this.commentListElm.loadMoreComments();
-    }
   }
 }

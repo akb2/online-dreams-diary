@@ -2,7 +2,7 @@ import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_dat
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { ApiResponse } from "@_models/api";
-import { Comment, CommentAttachment, CommentMaterialType } from "@_models/comment";
+import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
@@ -98,18 +98,23 @@ export class CommentService implements OnDestroy {
   }
 
   // Получение списка комментариев
-  getList(materialType: CommentMaterialType, materialId: number, skip: number = 0, codes: string[] = []): Observable<any> {
-    const params: HttpParams = ObjectToParams({ materialType, materialId, skip }, "search_");
+  getList(search: Partial<SearchRequestComment>, codes: string[] = []): Observable<SearchResponceComment> {
+    const params: HttpParams = ObjectToParams(search, "search_");
     // Вернуть подписчик
     return this.httpClient.get<ApiResponse>("comment/getList", { params }).pipe(
       takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes)),
       concatMap(
-        ({ result: { data } }) => !!data?.comments?.length ? forkJoin((data?.comments ?? []).map(comment => this.getConvertedComment(comment))) : of([]),
+        ({ result: { data } }) => !!data?.comments?.length ?
+          forkJoin<Comment[]>((data?.comments ?? []).map(comment => this.getConvertedComment(comment))) :
+          of([] as Comment[]),
         ({ result: { data } }, result) => ({
           count: ParseInt(data?.count),
           limit: ParseInt(data?.limit),
-          result
+          prevCount: ParseInt(data?.prevCount),
+          nextCount: ParseInt(data?.nextCount),
+          result,
+          hasAccess: !!data?.hasAccess
         })
       )
     );

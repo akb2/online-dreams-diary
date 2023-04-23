@@ -8,6 +8,7 @@
 // Элемент комментария
 .comment {
   $__elm: &;
+  $__marginElms: (#{&}, "#{&}__more-loader.loading");
   // Свойства
   background-color: colors.$card;
   padding: #{containers.$cardPaddingY} #{containers.$cardPaddingX};
@@ -139,12 +140,28 @@
     justify-content: flex-end;
     align-items: center;
   }
+  // Смещения для блоков определения загрузки
+  &__more-loader {
+    position: relative;
+  }
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
     // Последующие блоки
-    & + &,
-    & + &__more-loader {
-      margin-top: $gap;
+    @each $elmA in $__marginElms {
+      @each $elmB in $__marginElms {
+        @at-root #{$elmA} + #{$elmB} {
+          margin-top: $gap;
+        }
+      }
+    }
+    // Смещения для блоков определения загрузки
+    &__more-loader {
+      bottom: -#{$gap};
+      // Новые комментарии
+      &.next {
+        top: -#{$gap};
+        bottom: auto;
+      }
     }
   }
 }
