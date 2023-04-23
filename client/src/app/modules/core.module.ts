@@ -1,14 +1,15 @@
+import { ScrollDetectorDirective } from "@_directives/scroll-detector.directive";
+import { VarDirective } from "@_directives/var.directive";
+import { CommentPipe } from "@_pipes/comment.pipe";
+import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
+import { PetrovichPipe } from "@_pipes/petrovich.pipe";
+import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
 import "@angular/common/locales/global/ru";
 import { LOCALE_ID, NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { RouterModule } from "@angular/router";
-import { VarDirective } from "@_directives/var.directive";
-import { CommentPipe } from "@_pipes/comment.pipe";
-import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
-import { PetrovichPipe } from "@_pipes/petrovich.pipe";
-import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 
 
 
@@ -20,7 +21,8 @@ const components = [
 
 // Директивы
 const directives = [
-  VarDirective
+  VarDirective,
+  ScrollDetectorDirective
 ];
 
 // Пайпы
