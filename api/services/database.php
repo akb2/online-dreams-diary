@@ -4,8 +4,7 @@ namespace Services;
 
 use PDO;
 use Models\File;
-
-
+use PDOStatement;
 
 class DataBaseService
 {
@@ -24,7 +23,9 @@ class DataBaseService
     $sqlText = $this->getSqlFromFile($fileName, $params);
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
-      return $this->pdo->prepare($sqlText)->execute($this->checkInputParams($sqlText, $params));
+      $sql = $this->pdo->prepare($sqlText);
+      $sql = $this->bindValues($sql, $this->checkInputParams($sqlText, $params));
+      return $sql->execute();
     }
     // Запрос неудался
     return false;
@@ -37,7 +38,8 @@ class DataBaseService
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
       $sql = $this->pdo->prepare($sqlText);
-      $sql->execute($this->checkInputParams($sqlText, $params));
+      $sql = $this->bindValues($sql, $this->checkInputParams($sqlText, $params));
+      $sql->execute();
       return $sql->fetchAll(PDO::FETCH_ASSOC);
     }
     // Запрос неудался
@@ -51,8 +53,10 @@ class DataBaseService
     // Выполнять запрос
     if (strlen($sqlText) > 0) {
       $sql = $this->pdo->prepare($sqlText);
-      $sql->execute($this->checkInputParams($sqlText, $params));
+      $sql = $this->bindValues($sql, $this->checkInputParams($sqlText, $params));
+      $sql->execute();
       $count = $sql->fetch(PDO::FETCH_NUM);
+      // Вернуть результат
       return intval(!!$count ? reset($count) : 0);
     }
     // Запрос неудался
@@ -62,24 +66,18 @@ class DataBaseService
   // Получить текст запроса для теста
   public function interpolateQuery(string $fileName, array $params = array())
   {
-    $query = $this->getSqlFromFile($fileName, $params);
-    // Цикл по данным
+    $sqlText = $this->getSqlFromFile($fileName, $params);
+    $sql = $this->pdo->prepare($sqlText);
+    $sql = $this->bindValues($sql, $this->checkInputParams($sqlText, $params));
+    $sql->execute();
+    $query = $sql->queryString;
+    // Поиск параметров
     foreach ($params as $key => $value) {
-      $assoc = is_string($key);
-      $key = $assoc ? '/:' . $key . '/' : '/[\?]+/';
-      // Параметры: строка
-      if (is_string($value))
-        $value = '"' . $value . '"';
-      // Параметры: массив
-      if (is_array($value))
-        $value = '"' . implode('","', $value) . '"';
-      // Параметры: NULL
-      if (is_null($value))
-        $value = 'NULL';
-      // Заменить данные
-      $query = preg_replace($key, $value, $query, $assoc ? -1 : 1);
+      $paramName = ':' . $key;
+      $paramValue = is_numeric($value) ? $value : '\'' . addslashes($value) . '\'';
+      $query = str_replace($paramName, $paramValue, $query);
     }
-    // Текст запроса
+    // Вернуть эмуляцию запроса
     return $query;
   }
 
@@ -137,5 +135,37 @@ class DataBaseService
     }
     // Вернуть корректный массив данных
     return $newParams;
+  }
+
+  // Добавить параметры в запрос
+  private function bindValues(PDOStatement|false $sql, array $params): PDOStatement|false
+  {
+    if (!!$sql) {
+      $types = array(
+        'boolean' => PDO::PARAM_BOOL,
+        'integer' => PDO::PARAM_INT,
+        'double' => PDO::PARAM_INT,
+        'float' => PDO::PARAM_INT,
+        'null' => PDO::PARAM_NULL,
+        'default' => PDO::PARAM_STR
+      );
+      // Счетчик позиций для нумерованных параметров
+      $position = 1;
+      // Цикл по значениям
+      foreach ($params as $key => $value) {
+        $type = $types[strtolower(gettype($value))] ?? $types['default'];
+        // Ассоциативный параметр
+        if (is_string($key)) {
+          $sql->bindValue(':' . $key, $value, $type);
+        }
+        // Нумерованный параметр
+        else {
+          $sql->bindValue($position, $value, $type);
+          $position++;
+        }
+      }
+    }
+    // Вернуть запрос
+    return $sql;
   }
 }
