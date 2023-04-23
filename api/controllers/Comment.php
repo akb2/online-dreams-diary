@@ -90,8 +90,11 @@ class Comment
     $search = array(
       'material_type' => $data['search_materialType'] ?? 0,
       'material_id' => $data['search_materialId'] ?? 0,
-      'limit' => $data['search_limit'] ?? 0,
-      'skip' => $data['search_skip'] ?? 0
+      'start_with_id' => $data['search_startWithId'] ?? 0,
+      'load_list_type' => $data['search_loadListType'] ?? 0,
+      'last_id' => $data['search_lastId'] ?? 0,
+      'last_date' => $data['search_lastDate'] ?? null,
+      'limit' => $data['search_limit'] ?? 0
     );
     $testComments = $this->commentService->getList($search);
     $comments = array();
@@ -110,6 +113,8 @@ class Comment
       'data' => array(
         'count' => $testComments['count'],
         'limit' => $testComments['limit'],
+        'prevCount' => $testComments['prevCount'],
+        'nextCount' => $testComments['nextCount'],
         'comments' => $comments,
         'hasAccess' => $hasAccess
       ),
