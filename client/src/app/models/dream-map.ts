@@ -132,9 +132,9 @@ export interface MapSize {
 }
 
 // Интерфейс 2D координат
-export interface XYCoord {
-  x: number;
-  y: number;
+export interface XYCoord<T = number> {
+  x: T;
+  y: T;
 }
 
 // Интерфейс координат
