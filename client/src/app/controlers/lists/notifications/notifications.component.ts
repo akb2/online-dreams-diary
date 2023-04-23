@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
 import { WaitObservable } from "@_datas/api";
-import { CompareElementBySelector, CreateArray, ScrollElement } from "@_datas/app";
+import { CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -9,8 +8,10 @@ import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { Notification, NotificationActionType, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
+import { ScrollService } from "@_services/scroll.service";
 import { TokenService } from "@_services/token.service";
-import { filter, forkJoin, fromEvent, map, Observable, of, Subject, takeUntil, timer } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
+import { Observable, Subject, filter, forkJoin, fromEvent, map, of, takeUntil, timer } from "rxjs";
 
 
 
@@ -88,6 +89,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private accountService: AccountService,
     private tokenService: TokenService,
+    private scrollService: ScrollService,
     private notificationService: NotificationService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
@@ -264,7 +266,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
       )
       .subscribe(() => this.onClose());
     // Закрытие при скролле документа
-    fromEvent(ScrollElement(), "scroll")
+    this.scrollService.onAlwaysScroll()
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.onClose());
   }

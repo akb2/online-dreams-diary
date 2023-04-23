@@ -1,8 +1,3 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
-import { FormControl, NgControl } from "@angular/forms";
-import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
-import { MatOption } from "@angular/material/core";
-import { MatFormFieldAppearance } from "@angular/material/form-field";
 import { WaitObservable } from "@_datas/api";
 import { ScrollElement } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
@@ -10,7 +5,13 @@ import { ParseInt } from "@_helpers/math";
 import { CreateRandomID } from "@_helpers/string";
 import { CustomObject, IconBackground, IconColor } from "@_models/app";
 import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
-import { fromEvent, Subject, timer } from "rxjs";
+import { ScrollService } from "@_services/scroll.service";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
+import { FormControl, NgControl } from "@angular/forms";
+import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
+import { MatOption } from "@angular/material/core";
+import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { Subject, timer } from "rxjs";
 import { filter, map, takeUntil } from "rxjs/operators";
 
 
@@ -128,7 +129,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   constructor(
     @Optional() @Self() override controlDir: NgControl,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private scrollService: ScrollService
   ) {
     super(controlDir);
   }
@@ -146,9 +148,9 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
         this.optionDataFilter();
       });
     // События
-    fromEvent(ScrollElement(), "scroll")
+    this.scrollService.onAlwaysScroll()
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(e => this.onScroll(e));
+      .subscribe(() => this.onScroll());
     // Проверка положения выпадающего списка
     timer(0, 50)
       .pipe(
@@ -238,10 +240,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   }
 
   // Скролл документа
-  private onScroll(event: Event): void {
-    if (event.target === ScrollElement()) {
-      this.autoComplete.closePanel();
-    }
+  private onScroll(): void {
+    this.autoComplete.closePanel();
   }
 
   // Проверка положения выпадающего списка

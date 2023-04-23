@@ -1,10 +1,9 @@
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
-import { ScrollElement } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User, UserSex } from "@_models/account";
-import { Search } from "@_models/api";
+import { SearchResponce } from "@_models/api";
 import { RouteData } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { CommentMaterialType } from "@_models/comment";
@@ -16,11 +15,12 @@ import { CanonicalService } from "@_services/canonical.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
+import { ScrollService } from "@_services/scroll.service";
 import { DatePipe } from "@angular/common";
-import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subject, catchError, concatMap, fromEvent, map, merge, mergeMap, of, skipWhile, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
+import { Subject, catchError, concatMap, map, merge, mergeMap, of, skipWhile, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
 import { CommentBlockComponent } from "./comment-block/comment-block.component";
 
 
@@ -34,7 +34,7 @@ import { CommentBlockComponent } from "./comment-block/comment-block.component";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ProfileDetailComponent implements OnInit, AfterContentChecked, AfterViewInit, OnDestroy {
+export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDestroy {
 
 
   @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
@@ -72,8 +72,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
   private beforeScroll: number = 0;
   leftPanelHelperShift: number = 0;
 
-  private scrollEnded: boolean = false;
-  private scrollEndDistance: number = 150;
   private breakpoint: ScreenKeys = "default";
 
   user: User;
@@ -115,17 +113,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
         "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
   }
 
-  // Текущий скролл
-  private get getCurrentScroll(): ScrollData {
-    const elm: HTMLElement = ScrollElement();
-    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
-    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
-    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
-    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
-    // Скролл
-    return { x, y, maxX, maxY };
-  }
-
 
 
 
@@ -135,6 +122,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private screenService: ScreenService,
+    private scrollService: ScrollService,
     private accountService: AccountService,
     private friendService: FriendService,
     private titleService: Title,
@@ -151,17 +139,20 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
         takeUntil(this.destroyed$),
         map(() => ({ elm: this.leftPanel.nativeElement, elmHelper: this.leftPanelHelper.nativeElement })),
         mergeMap(({ elm, elmHelper }) => merge(
-          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
-          this.screenService.elmResize([elm, elmHelper]).pipe(takeUntil(this.destroyed$))
+          this.scrollService.onAlwaysScroll().pipe(takeUntil(this.destroyed$)),
+          this.screenService.elmResize([elm, elmHelper]).pipe(
+            takeUntil(this.destroyed$),
+            map(() => this.scrollService.getCurrentScroll)
+          )
         ))
       )
-      .subscribe(() => this.onLeftPanelPosition());
+      .subscribe(scrollData => this.onLeftPanelPosition(scrollData));
     // Изменения брейкпоинта
     this.screenService.breakpoint$
       .pipe(takeUntil(this.destroyed$))
       .subscribe(breakpoint => {
         this.breakpoint = breakpoint;
-        this.onLeftPanelPosition();
+        this.onLeftPanelPosition(this.scrollService.getCurrentScroll);
         this.changeDetectorRef.detectChanges();
       });
     // Запуск определения данных
@@ -169,10 +160,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
     this.defineUrlParams();
     this.defineVisitingUser();
     this.defineFriendList();
-  }
-
-  ngAfterViewInit(): void {
-    this.onScroll();
   }
 
   ngAfterContentChecked(): void {
@@ -234,9 +221,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
   }
 
   // Посчитать смещение левой колонки
-  private onLeftPanelPosition(): void {
-    this.onScroll();
-    // Все элементы определены
+  private onLeftPanelPosition({ elm: scrollElm, y: scrollY, lastScrollAddedY }: ScrollData): void {
     if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement && this.breakpoint !== "xsmall") {
       const elm: HTMLElement = this.leftPanel.nativeElement;
       const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
@@ -246,35 +231,19 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
       const elmHeight: number = elm.clientHeight;
       const elmHelperHeight: number = elmHelper.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
-      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
+      const screenHeight: number = scrollElm.clientHeight - headerShift - spacing;
       const availShift: boolean = elmHelperHeight < elmHeight;
       const maxShift: number = elmHelperHeight - screenHeight - headerShift;
-      const scrollY: number = Math.ceil(ScrollElement().scrollTop ?? 0);
       const scrollShift: number = scrollY - this.beforeScroll;
       // Если отступ допустим
-      this.leftPanelHelperShift = availShift && elmHelperHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
-        headerShift;
+      if (lastScrollAddedY === 0) {
+        this.leftPanelHelperShift = availShift && elmHelperHeight > screenHeight ?
+          -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
+          headerShift;
+      }
       // Обновить
       this.beforeScroll = scrollY;
       this.changeDetectorRef.detectChanges();
-    }
-  }
-
-  // Прослушивание скролла
-  private onScroll(): void {
-    const scrollData: ScrollData = this.getCurrentScroll;
-    // Скролл прокручен до конца
-    if (scrollData.maxY > 0 && scrollData.y > scrollData.maxY - this.scrollEndDistance && !this.scrollEnded) {
-      this.scrollEnded = true;
-      // Загрузить новые комментарии
-      if (!!this.commentListElm) {
-        this.commentListElm.loadMoreComments();
-      }
-    }
-    // Отменить событие окончания скролла
-    else if (this.scrollEnded && scrollData.y < scrollData.maxY - this.scrollEndDistance) {
-      this.scrollEnded = false;
     }
   }
 
@@ -367,7 +336,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, Afte
 
   // Определение списка друзей
   private defineFriendList(): void {
-    const emptyList: Search<FriendWithUsers> = { count: 0, limit: this.friendListLimit, result: [] };
+    const emptyList: SearchResponce<FriendWithUsers> = { count: 0, limit: this.friendListLimit, result: [] };
     const emptyLists: FriendListMixedResopnse = { friends: emptyList, subscribe: emptyList, subscribers: emptyList };
     // Подписка
     timer(0, 50)

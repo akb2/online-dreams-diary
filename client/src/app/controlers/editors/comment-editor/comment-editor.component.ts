@@ -1,13 +1,15 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { WaitObservable } from "@_datas/api";
-import { CompareElementByElement, ScrollElement } from "@_datas/app";
+import { CompareElementByElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
+import { ScrollData } from "@_models/screen";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
+import { ScrollService } from "@_services/scroll.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
@@ -165,6 +167,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     private changeDetectorRef: ChangeDetectorRef,
     private emojiService: EmojiService,
     private stringTemplatePipe: StringTemplatePipe,
+    private scrollService: ScrollService,
     private commentService: CommentService,
     private matDialog: MatDialog
   ) { }
@@ -187,21 +190,17 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
             }))
           )
           .subscribe(({ replyElement, editor }) => {
-            const scrollElement: HTMLElement = ScrollElement();
+            const { y: currentScroll }: ScrollData = this.scrollService.getCurrentScroll;
             const replyBounding: DOMRect = replyElement.getBoundingClientRect();
             const replyStyles: CSSStyleDeclaration = getComputedStyle(replyElement);
             const mainMenuHeight: number = DrawDatas.minHeight;
-            const currentScroll: number = scrollElement.scrollTop;
             const scrollBorderTop: number = currentScroll + mainMenuHeight;
             // const scrollBorderBottom: number = currentScroll + window.innerHeight;
             const fieldBorderTop: number = currentScroll + replyBounding.top - ParseInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
             // const fieldBorderBottom: number = fieldBorderTop + editorContainer.clientHeight - this.scrollSpacing;
             // Скролл
             if (fieldBorderTop < scrollBorderTop) {
-              scrollElement.scrollTo({
-                top: fieldBorderTop,
-                behavior: "smooth"
-              });
+              this.scrollService.scrollToY(fieldBorderTop, "auto", false);
               editor.focus();
             }
           });

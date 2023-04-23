@@ -1,7 +1,6 @@
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
-import { ScrollElement } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { CheckInRange, ParseInt } from "@_helpers/math";
@@ -17,11 +16,12 @@ import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
+import { ScrollService } from "@_services/scroll.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { Subject, concatMap, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Subject, concatMap, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
 
 
 
@@ -75,9 +75,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   rightPanelHelperShift: number = 0;
   topPanelOpen: boolean = false;
   isMobile: boolean = false;
-
-  private scrollEnded: boolean = false;
-  private scrollEndDistance: number = 150;
 
   private destroyed$: Subject<void> = new Subject<void>();
 
@@ -142,17 +139,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       "Напишите первый комментарий к своему сновидению" : !!this.user?.id ?
         "Будьте первым, напишите что-нибудь интересное про сновидение " + name :
         "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
-  }
-
-  // Текущий скролл
-  private get getCurrentScroll(): ScrollData {
-    const elm: HTMLElement = ScrollElement();
-    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
-    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
-    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
-    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
-    // Скролл
-    return { x, y, maxX, maxY };
   }
 
   // Данные о приватности сновидения
@@ -250,6 +236,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     private titleService: Title,
     private globalService: GlobalService,
     private screenService: ScreenService,
+    private scrollService: ScrollService,
     private canonicalService: CanonicalService
   ) {
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
@@ -269,7 +256,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           rightPanel: this.rightPanel.nativeElement
         })),
         mergeMap(({ contentPanel, leftPanel, rightPanel, keywordsPanel }) => merge(
-          fromEvent(ScrollElement(), "scroll").pipe(takeUntil(this.destroyed$)),
+          this.scrollService.onAlwaysScroll().pipe(takeUntil(this.destroyed$)),
           this.screenService.elmResize([contentPanel, leftPanel, rightPanel, keywordsPanel]).pipe(takeUntil(this.destroyed$))
         ))
       )
@@ -301,9 +288,9 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
   // Скролл панелей
   private onPanelsPosition(): void {
-    this.onScroll();
     // Все элементы определены
     if (!!this.contentPanel?.nativeElement && !!this.leftPanel?.nativeElement && !!this.rightPanel?.nativeElement) {
+      const { y: scrollY, elm: scrollElement }: ScrollData = this.scrollService.getCurrentScroll;
       const contentPanel: HTMLElement = this.contentPanel.nativeElement;
       const keywordsPanel: HTMLElement = this.keywordsPanel.nativeElement;
       const leftPanel: HTMLElement = this.leftPanel.nativeElement;
@@ -316,8 +303,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const mainMenuHeightDiff: number = this.mainMenu.maxHeight - mainMenuHeight;
       const contentPanelHeight: number = contentPanel.clientHeight;
       const headerShift: number = mainMenuHeight + spacing;
-      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
-      const scrollY: number = this.getCurrentScroll.y;
+      const screenHeight: number = scrollElement.clientHeight - headerShift - spacing;
       const scrollShift: number = scrollY - this.beforeScroll;
       const keywordsPanelHeight: number = keywordsPanel.clientHeight;
       const leftPanelHeight: number = leftPanel.clientHeight;
@@ -330,7 +316,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom) - interpretationPanelHeight;
       const headerKeywordsTop: number = CheckInRange(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
       const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
-      const screenKeywordsHeight: number = ScrollElement().clientHeight - headerKeywordsShift - spacing;
+      const screenKeywordsHeight: number = scrollElement.clientHeight - headerKeywordsShift - spacing;
       const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим: левая панель
@@ -346,31 +332,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
       // Обновить
       this.beforeScroll = scrollY;
       this.changeDetectorRef.detectChanges();
-    }
-  }
-
-  // Прослушивание скролла
-  private onScroll(): void {
-    if (!!this.contentPanel?.nativeElement && !!this.rightPanel?.nativeElement && !!this.commentListElm) {
-      const contentPanel: HTMLElement = this.contentPanel.nativeElement;
-      const rightPanel: HTMLElement = this.rightPanel.nativeElement;
-      const mainMenuHeight: number = this.mainMenu.headerHeight;
-      const rightPanelHeight: number = rightPanel.clientHeight;
-      const spacing: number = ParseInt(getComputedStyle(contentPanel).rowGap);
-      const headerShift: number = mainMenuHeight + spacing;
-      const screenHeight: number = ScrollElement().clientHeight - headerShift - spacing;
-      const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
-      const currentRightShift: number = -this.rightPanelHelperShift;
-      // Скролл прокручен до конца
-      if (maxRightShift > 0 && currentRightShift > maxRightShift - this.scrollEndDistance && !this.scrollEnded) {
-        this.scrollEnded = true;
-        // Загрузить новые комментарии
-        this.commentListElm.loadMoreComments();
-      }
-      // Отменить событие окончания скролла
-      else if (this.scrollEnded && currentRightShift < maxRightShift - this.scrollEndDistance) {
-        this.scrollEnded = false;
-      }
     }
   }
 
@@ -423,7 +384,6 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   private defineData(): void {
     this.accountService.user$(0, false, [], "dream-viewer")
       .pipe(
-        tap(data => console.log("dream-viewer", data)),
         takeUntil(this.destroyed$),
         mergeMap(
           () => this.activatedRoute.queryParams,

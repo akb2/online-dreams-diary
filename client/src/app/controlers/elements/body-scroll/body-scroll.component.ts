@@ -1,11 +1,12 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { ScrollElement } from "@_datas/app";
+import { PageComponentElement, ScrollElement } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, Subject, timer } from "rxjs";
-import { filter, takeUntil, tap } from "rxjs/operators";
+import { ScrollService } from "@_services/scroll.service";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Subject, forkJoin, fromEvent, of, timer } from "rxjs";
+import { concatMap, filter, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -46,22 +47,6 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
 
 
 
-  // Высота документа для скролла
-  private get scrollHeight(): number {
-    return this.getCurrentScroll.maxY - this.headerHeight;
-  }
-
-  // Текущий скролл по оси Y
-  private get getCurrentScroll(): ScrollData {
-    const elm: HTMLElement = ScrollElement();
-    const x: number = ParseInt(elm?.scrollLeft);
-    const y: number = ParseInt(elm?.scrollTop);
-    const maxX: number = ParseInt(elm?.scrollWidth - elm?.clientWidth);
-    const maxY: number = ParseInt(elm?.scrollHeight - elm?.clientHeight);
-    // Скролл
-    return { x, y, maxX, maxY };
-  }
-
   // Посчитать размер слайдера по оси Y
   checkScrollElmSize(size: number = 0): number {
     const sliderV: HTMLElement = this.slider?.nativeElement;
@@ -84,6 +69,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
 
   constructor(
     private screenService: ScreenService,
+    private scrollService: ScrollService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
@@ -94,17 +80,17 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
   ngOnInit() {
     this.onWindowScroll();
     // События
-    forkJoin([
-      this.screenService.elmResize(document.body).pipe(tap(() => this.onWindowScroll())),
-      fromEvent(ScrollElement(), "scroll").pipe(tap(() => this.onWindowScroll())),
-      this.screenService.elmResize([
-        ScrollElement(),
-        ScrollElement()?.getElementsByTagName("router-outlet")?.item(0)?.nextElementSibling as HTMLElement
-      ]).pipe(tap(() => this.onWindowScroll())),
-      fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
-      fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
-    ])
-      .pipe(takeUntil(this.destroyed$))
+    of({ scrollElement: ScrollElement(), pageComponentElement: PageComponentElement() })
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(({ scrollElement, pageComponentElement }) => forkJoin([
+          this.screenService.elmResize(document.body).pipe(tap(() => this.onWindowScroll())),
+          this.scrollService.onAlwaysScroll().pipe(tap(() => this.onWindowScroll())),
+          this.screenService.elmResize([scrollElement, pageComponentElement]).pipe(tap(() => this.onWindowScroll())),
+          fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
+          fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
+        ])),
+      )
       .subscribe();
     // Подписка на тип устройства
     this.screenService.isMobile$
@@ -137,8 +123,8 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
 
   // Скролл страницы
   onWindowScroll(): void {
-    const scrollData: ScrollData = this.getCurrentScroll;
-    const screenHeight: number = ScrollElement().clientHeight - this.headerHeight;
+    const scrollData: ScrollData = this.scrollService.getCurrentScroll;
+    const screenHeight: number = scrollData.elm.clientHeight - this.headerHeight;
     const scrollHeight: number = scrollData.maxY + screenHeight;
     // Активность скролла
     this.scrollActive = screenHeight < scrollHeight;
@@ -168,7 +154,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
   // Движение мышкой
   onMouseMove(event: MouseEvent): void {
     if (this.sliderMousePress) {
-      const scrollData: ScrollData = this.getCurrentScroll;
+      const scrollData: ScrollData = this.scrollService.getCurrentScroll;
       const maxScroll: number = scrollData.maxY;
       const trackElm: HTMLElement = this.track?.nativeElement;
       const sliderElm: HTMLElement = this.slider?.nativeElement;
@@ -181,7 +167,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
         const trackAvailSize: number = trackSize - sliderData.height;
         const newScroll: number = CheckInRange((shift / trackAvailSize) * maxScroll, maxScroll, 0);
         // Скроллинг
-        ScrollElement().scrollTo({ top: newScroll, behavior: "auto" });
+        this.scrollService.scrollToY(newScroll, "auto", false);
       }
     }
   }
@@ -200,13 +186,11 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
   // Скролл по направлению
   private onAddScroll(): void {
     if (!!this.scrollAddDimension) {
-      const scrollData: ScrollData = this.getCurrentScroll;
-      const scroll: number = scrollData.y;
-      const maxScroll: number = scrollData.maxY;
+      const { y: scroll, maxY: maxScroll }: ScrollData = this.scrollService.getCurrentScroll;
       const addScroll: number = this.scrollAddDimension === "top" ? -this.scrollAddSize : this.scrollAddSize;
       const newScroll: number = CheckInRange(scroll + addScroll, maxScroll, 0);
       // Скроллинг
-      ScrollElement().scrollTo({ top: newScroll, behavior: "auto" })
+      this.scrollService.scrollToY(newScroll, "auto", false);
     }
   }
 }
