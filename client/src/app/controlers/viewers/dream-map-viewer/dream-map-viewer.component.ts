@@ -1455,7 +1455,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   set3DSettings(settings: DreamMapSettings): Observable<void> {
     this.dreamMapSettings = settings;
     // Подписка на изменения
-    return timer(10).pipe(
+    return timer(5).pipe(
       takeUntil(this.destroy$),
       take(1),
       map(() => {

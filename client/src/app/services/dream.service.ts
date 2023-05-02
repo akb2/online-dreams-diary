@@ -87,7 +87,7 @@ export class DreamService implements OnDestroy {
     return this.localStorageService.getItem(
       this.localStorageDreamMapSettings,
       settings => ({
-        detalization: CheckInRange(ParseInt(settings?.detalization), DreamObjectElmsValues.VeryLow, DreamObjectElmsValues.Awesome),
+        detalization: CheckInRange(ParseInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
         shadowQuality: ParseInt(settings?.shadowQuality)
       })
     );

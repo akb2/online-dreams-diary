@@ -14,7 +14,7 @@ import { DreamService } from "@_services/dream.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { Subject, fromEvent, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { Subject, delay, fromEvent, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -274,8 +274,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.form.get("currentTime").valueChanges
       .pipe(takeUntil(this.destroyed$))
       .subscribe(value => this.onTimeChange(value));
-    // Test: открыть настройки
-    this.onOpenConfigModal();
   }
 
   ngOnChanges(): void {
@@ -474,13 +472,20 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменение типа рельефа
   onReliefTypeChange(type: ClosestHeightName | "center"): void {
     this.loading = true;
+    this.changeDetectorRef.detectChanges();
     // Для центральной ячейки
     if (type === "center") {
-      this.viewer.setReliefRewrite();
-      // Разблокировать UI
-      this.loading = false;
-      // обновить интерфейс
-      this.createReliefData();
+      timer(10)
+        .pipe(
+          takeUntil(this.destroyed$),
+          tap(() => this.viewer.setReliefRewrite()),
+          delay(500)
+        )
+        .subscribe(() => {
+          this.loading = false;
+          // обновить интерфейс
+          this.createReliefData();
+        });
     }
     // Тип за пределами карты
     else {
@@ -672,6 +677,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private set3DSettings(): void {
     this.loading = true;
     this.dreamService.saveSettings(this.dreamMapSettings);
+    this.changeDetectorRef.detectChanges();
     // Обновить объекты
     this.viewer.set3DSettings(this.dreamMapSettings)
       .pipe(takeUntil(this.destroyed$))
