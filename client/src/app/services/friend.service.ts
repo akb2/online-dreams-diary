@@ -25,7 +25,7 @@ export class FriendService implements OnDestroy {
 
   private cookieKey: string = "friend_service_";
   private cookieLifeTime: number = 604800;
-  private friendsCookieKey: string = "friends";
+  private friendsLocalStorageKey: string = "friends";
 
   private syncFriend: [number, number, number] = [0, 0, 0];
   private firensSubscritionCounter: [number, number, number][] = [];
@@ -41,8 +41,8 @@ export class FriendService implements OnDestroy {
   private getFriendsFromStore(): void {
     this.configLocalStorage();
     // Добавить в наблюдение
-    this.friends.next(this.localStorageService.getCookie(
-      this.friendsCookieKey,
+    this.friends.next(this.localStorageService.getItem(
+      this.friendsLocalStorageKey,
       d => ToArray(d).map(u => u as Friend).filter(u => !!u)
     ));
   }
@@ -328,8 +328,8 @@ export class FriendService implements OnDestroy {
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
   }
 
   // Сохранить данные о статусе дружбы в стор
@@ -346,7 +346,7 @@ export class FriendService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.friendsCookieKey, friends);
+    this.localStorageService.setItem(this.friendsLocalStorageKey, friends);
     this.friends.next(friends);
   }
 
@@ -360,7 +360,7 @@ export class FriendService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.friendsCookieKey, friends);
+    this.localStorageService.setItem(this.friendsLocalStorageKey, friends);
     this.friends.next(friends);
   }
 
@@ -390,7 +390,7 @@ export class FriendService implements OnDestroy {
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
     this.configLocalStorage();
-    this.localStorageService.deleteCookie(this.friendsCookieKey);
+    this.localStorageService.deleteItem(this.friendsLocalStorageKey);
     this.friends.next([]);
   }
 }

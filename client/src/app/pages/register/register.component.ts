@@ -1,3 +1,7 @@
+import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
+import { ErrorMessagesType, FormDataType } from "@_models/form";
+import { NavMenuType } from "@_models/nav-menu";
+import { CanonicalService } from "@_services/canonical.service";
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
@@ -6,10 +10,6 @@ import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister, UserSex } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
 import { LocalStorageService } from "@app/services/local-storage.service";
-import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
-import { ErrorMessagesType, FormDataType } from "@_models/form";
-import { NavMenuType } from "@_models/nav-menu";
-import { CanonicalService } from "@_services/canonical.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -63,21 +63,21 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   constructor(
     private formBuilder: FormBuilder,
-    private localStorage: LocalStorageService,
+    private localStorageService: LocalStorageService,
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private canonicalService: CanonicalService
   ) {
-    this.localStorage.cookieKey = this.cookieKey;
-    this.localStorage.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
     // Данные формы
     this.form = [
       // Данные входа
       this.formBuilder.group({
         testLogin: [[], null],
-        login: [this.localStorage.getCookie("login"), AccountValidatorData.login],
-        password: [this.localStorage.getCookie("password"), AccountValidatorData.password],
-        confirmPassword: [this.localStorage.getCookie("confirmPassword"), AccountValidatorData.password]
+        login: [this.localStorageService.getItem("login"), AccountValidatorData.login],
+        password: [this.localStorageService.getItem("password"), AccountValidatorData.password],
+        confirmPassword: [this.localStorageService.getItem("confirmPassword"), AccountValidatorData.password]
       }, {
         validators: [
           CustomValidators.passwordMatchValidator,
@@ -86,15 +86,19 @@ export class RegisterComponent implements OnInit, OnDestroy {
       }),
       // Сведения
       this.formBuilder.group({
-        name: [this.localStorage.getCookie("name"), AccountValidatorData.name],
-        lastName: [this.localStorage.getCookie("lastName"), AccountValidatorData.name],
-        birthDate: [this.localStorage.getCookie("birthDate") ? new Date(this.localStorage.getCookie("birthDate")) : null, AccountValidatorData.birthDate],
-        sex: [!!this.localStorage.getCookie("sex") ? UserSex.Female : UserSex.Male]
+        name: [this.localStorageService.getItem("name"), AccountValidatorData.name],
+        lastName: [this.localStorageService.getItem("lastName"), AccountValidatorData.name],
+        birthDate: [
+          this.localStorageService.getItem("birthDate") ?
+            new Date(this.localStorageService.getItem("birthDate")) :
+            null, AccountValidatorData.birthDate
+        ],
+        sex: [!!this.localStorageService.getItem("sex") ? UserSex.Female : UserSex.Male]
       }),
       // Контакты
       this.formBuilder.group({
         testEmail: [[], null],
-        email: [this.localStorage.getCookie("email"), AccountValidatorData.email],
+        email: [this.localStorageService.getItem("email"), AccountValidatorData.email],
         captcha: ["", Validators.required]
       }, {
         validators: [
@@ -130,7 +134,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
 
   // Изменение формы
-  private onChange(datas: CookieFormDatas): void {
+  private onChange(datas: LocalStorageFormDatas): void {
     Object.entries(datas).map(data => {
       // Преобразовать дату
       if (data[0] === "birthDate") {
@@ -141,7 +145,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         data[1] = data[1] ? "true" : "false";
       }
 
-      this.localStorage.setCookie(data[0], typeof data[1] === "string" ? data[1] : "");
+      this.localStorageService.setItem(data[0], typeof data[1] === "string" ? data[1] : "");
     });
   }
 
@@ -183,7 +187,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
             this.registed = true;
             this.registerEmail = userRegister.email;
             // Удалить данные из кэша
-            this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorage.deleteCookie(key)));
+            this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorageService.deleteItem(key)));
           }
           // Ошибка капчи
           else if (code == "9010") {
@@ -283,7 +287,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
 
 // Данные формы
-interface CookieFormDatas {
+interface LocalStorageFormDatas {
   login?: string;
   password?: string;
   confirmPassword?: string;

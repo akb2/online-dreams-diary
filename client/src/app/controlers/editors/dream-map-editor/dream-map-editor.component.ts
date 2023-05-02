@@ -1,16 +1,20 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
+import { PopupDreamMapSettingsComponent } from "@_controlers/dream-map-settings/dream-map-settings.component";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { ArrayRandom, CreateArray } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectDetalization, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
+import { SliderSettings } from "@_models/form";
+import { ImageExtension } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
-import { fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
+import { MatDialog } from "@angular/material/dialog";
+import { Subject, fromEvent, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -166,7 +170,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     key = key < this.timeSettings.min ? this.timeSettings.min : key;
     // В процентах
     if (asPercent) {
-      value = Math.round(key / (this.timeSettings.max - 1) * 100).toString();
+      value = MathRound(key / (this.timeSettings.max - 1) * 100).toString();
     }
     // В формате 24 часов
     else {
@@ -198,7 +202,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     if (this.terrainList.some(t => t.id === id)) {
       const terrain: MapTerrain = this.terrainList.find(t => t.id === id)!;
       // Ссылка на картинку
-      return TexturePaths.face + terrain.name + "." + terrain.exts.face;
+      return TexturePaths.icons + terrain.name + "." + ImageExtension.jpg;
     }
     // Картинка не найдена
     return "";
@@ -239,7 +243,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
-    private dreamService: DreamService
+    private dreamService: DreamService,
+    private matDialog: MatDialog
   ) {
     this.dreamMapSettings = this.dreamService.getDreamMapSettings;
     // Настройки формы
@@ -269,6 +274,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.form.get("currentTime").valueChanges
       .pipe(takeUntil(this.destroyed$))
       .subscribe(value => this.onTimeChange(value));
+    // Test: открыть настройки
+    this.onOpenConfigModal();
   }
 
   ngOnChanges(): void {
@@ -414,9 +421,15 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение инструмента
   onToolChange(tool: Tool): void {
-    this.tool = tool;
-    // Убрать свечение
-    this.lightCeils(true);
+    if (tool === Tool.settings) {
+      this.onOpenConfigModal();
+    }
+    // Заменить инструмент
+    else {
+      this.tool = tool;
+      // Убрать свечение
+      this.lightCeils(true);
+    }
   }
 
   // Изменение инструмента ландшафт
@@ -492,15 +505,6 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // Изменение уровня детализации
-  onDetalizationChange(detalization: DreamObjectElmsValues): void {
-    if (detalization >= this.detalizationMin && detalization <= this.detalizationMax && this.dreamMapSettings.detalization !== detalization) {
-      this.dreamMapSettings.detalization = detalization ?? DreamObjectDetalization;
-      // Установить высоту
-      this.setDetalization();
-    }
-  }
-
   // Изменение категории объектов
   onObjectsCategoriesChange(catalog: number = 0): void {
     catalog = catalog !== 0 ? this.objectsCatalogs.find(({ id }) => id === catalog)?.id ?? this.objectsCatalogs[0].id : 0;
@@ -525,6 +529,19 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.currentObject = object;
       this.currentObjectsByCatalog[this.currentObjectCatalog] = this.currentObject;
     }
+  }
+
+  // Открыть окно настроек
+  private onOpenConfigModal(): void {
+    PopupDreamMapSettingsComponent.open(this.matDialog, { settings: this.dreamMapSettings }).afterClosed()
+      .pipe(
+        takeUntil(this.destroyed$),
+        takeWhile(settings => !!settings)
+      )
+      .subscribe(settings => {
+        this.dreamMapSettings = settings;
+        this.set3DSettings();
+      });
   }
 
 
@@ -652,11 +669,11 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Перерисовка объектов
-  private setDetalization(): void {
+  private set3DSettings(): void {
     this.loading = true;
     this.dreamService.saveSettings(this.dreamMapSettings);
     // Обновить объекты
-    this.viewer.setDetalization(this.dreamMapSettings)
+    this.viewer.set3DSettings(this.dreamMapSettings)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         this.loading = false;
@@ -841,13 +858,6 @@ interface LandscapeToolListItem extends ToolListItemBase {
 // Интерфейс списка инструментов: вода
 interface WaterTypeToolListItem extends ToolListItemBase {
   type: WaterTypeTool;
-}
-
-// Интерфейс параметров слайдера
-interface SliderSettings {
-  min: number;
-  max: number;
-  step: number;
 }
 
 // Интерфейс настроек окружающего ландшафта

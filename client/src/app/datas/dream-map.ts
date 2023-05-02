@@ -1,6 +1,5 @@
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType } from "@_models/dream-map";
-import { ImageExtension } from "@_models/screen";
 
 
 
@@ -9,10 +8,13 @@ import { ImageExtension } from "@_models/screen";
 // Базовый путь к файлам текстур местости
 export const BaseTexturePath: string = "assets/dream-map/terrain/";
 
-// Путь к файлам текстур местости
+// Путь к файлам текстур местности
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
-  face: BaseTexturePath + "face/",
-  normal: BaseTexturePath + "normal/",
+  icons: BaseTexturePath + "icons/",
+  face: BaseTexturePath + "face",
+  normal: BaseTexturePath + "normal",
+  ao: BaseTexturePath + "ao",
+  light: BaseTexturePath + "light",
 };
 
 const BaseobjectTexturePath: string = "assets/dream-map/object/";
@@ -63,50 +65,35 @@ export const MapTerrains: MapTerrain[] = [
     id: 1,
     name: "grass",
     title: "Газон",
-    exts: {
-      face: ImageExtension.jpg,
-      normal: ImageExtension.jpg,
-    },
+    tileCoords: { x: 1, y: 0 }
   },
   // Земля
   {
     id: 2,
     name: "dirt",
     title: "Земля",
-    exts: {
-      face: ImageExtension.jpg,
-      normal: ImageExtension.jpg,
-    },
+    tileCoords: { x: 0, y: 0 }
   },
   // Камень
   {
     id: 3,
     name: "stone",
     title: "Камень",
-    exts: {
-      face: ImageExtension.jpg,
-      normal: ImageExtension.jpg,
-    },
+    tileCoords: { x: 0, y: 1 }
   },
   // Песок
   {
     id: 4,
     name: "sand",
     title: "Песок",
-    exts: {
-      face: ImageExtension.jpg,
-      normal: ImageExtension.jpg,
-    },
+    tileCoords: { x: 2, y: 0 }
   },
   // Снег
   {
     id: 5,
     name: "snow",
     title: "Снег",
-    exts: {
-      face: ImageExtension.jpg,
-      normal: ImageExtension.jpg,
-    },
+    tileCoords: { x: 3, y: 0 }
   }
 ]
   // Преобразовать в тип
@@ -119,12 +106,6 @@ export const MapTerrains: MapTerrain[] = [
     return {
       ...d,
       isAvail: !!d?.isAvail || true,
-      exts: {
-        face: d?.exts?.face as ImageExtension ?? ImageExtension.png,
-        disp: d?.exts?.disp as ImageExtension ?? ImageExtension.png,
-        normal: d?.exts?.normal as ImageExtension ?? ImageExtension.png,
-        ao: d?.exts?.ao as ImageExtension ?? ImageExtension.png
-      },
       splatMap: {
         layout,
         color: Colors[colorIndex]

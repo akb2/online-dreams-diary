@@ -1,3 +1,9 @@
+import { DreamMapSettings } from "@_models/dream-map";
+
+
+
+
+
 // Размер карты по умолчанию
 export const DreamMapSize: number = 50;
 
@@ -48,6 +54,14 @@ export enum DreamObjectElmsValues {
   Ultra,
   Awesome
 };
-export const DreamObjectDetalization: DreamObjectElmsValues = DreamObjectElmsValues.Middle;
-export const DreamBaseElmsCount: number = 32;
+export const DreamBaseElmsCount: number = 64;
+export const DreamShadowQualitySize: number = 1024;
 export const DreamMaxElmsCount: (d: DreamObjectElmsValues) => number = (d: DreamObjectElmsValues) => DreamBaseElmsCount * (d + 1);
+export const DreamMapMinShadowQuality: number = 1;
+export const DreamMapMaxShadowQuality: number = 7;
+export const DreamMapDefaultShadowQuality: number = 2;
+
+export const DefaultDreamMapSettings: DreamMapSettings = {
+  detalization: DreamObjectElmsValues.Middle,
+  shadowQuality: DreamMapDefaultShadowQuality,
+};

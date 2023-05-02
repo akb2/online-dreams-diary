@@ -36,9 +36,6 @@
     <!-- Под-инструмент: вода -->
     <ng-container [ngTemplateOutlet]="waterTools"
                   *ngIf="getCurrentTool.type === toolType.water"></ng-container>
-    <!-- Под-инструмент: настройки -->
-    <ng-container [ngTemplateOutlet]="settingsTools"
-                  *ngIf="getCurrentTool.type === toolType.settings"></ng-container>
     <!-- Под-инструмент: объекты -->
     <ng-container [ngTemplateOutlet]="objectsTools"
                   *ngIf="getCurrentTool.type === toolType.objects"></ng-container>
@@ -173,32 +170,6 @@
           <input matSliderThumb
                  formControlName="worldOceanHeight">
         </mat-slider>
-      </div>
-    </div>
-  </form>
-</ng-template>
-
-<!-- Под-инструмент: настройки -->
-<ng-template #settingsTools>
-  <!-- Детализация -->
-  <form class="tool-button"
-        [formGroup]="form">
-    <mat-icon>deblur</mat-icon>
-    <!-- Настройка размера -->
-    <div class="tool-button__items border-radius">
-      <!-- Снижение качества -->
-      <div class="tool-button"
-           [ngClass]="{ disabled: dreamMapSettings.detalization <= detalizationMin }"
-           (click)="onDetalizationChange(dreamMapSettings.detalization - 1)">
-        <mat-icon>chevron_left</mat-icon>
-      </div>
-      <!-- отметка -->
-      <div class="tool-button container text-fixed center">Детализация: {{detaliationLabels[dreamMapSettings.detalization]}}</div>
-      <!-- Увеличение качества -->
-      <div class="tool-button"
-           [ngClass]="{ disabled: dreamMapSettings.detalization >= detalizationMax }"
-           (click)="onDetalizationChange(dreamMapSettings.detalization + 1)">
-        <mat-icon>chevron_right</mat-icon>
       </div>
     </div>
   </form>

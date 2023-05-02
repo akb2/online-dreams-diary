@@ -1,0 +1,36 @@
+@use "material";
+@use "vars";
+@use "mixins";
+
+// Базовый стиль окна
+@include material.matDialog;
+
+// Стили полей ввода
+.field {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  // Заголовок
+  &__title {
+    width: 35%;
+    text-align: right;
+  }
+  // Иконка
+  &__image {
+    @include mixins.customsColors(vars.$iconsSmallSize);
+    // Свойства
+    border-radius: vars.$iconsSmallBorderRadius;
+    overflow: hidden;
+  }
+  // Иконка
+  &__slider {
+    flex-grow: 1;
+    margin: 0 16px;
+  }
+  // Отступы
+  & + & {
+    margin-top: vars.$dreamCardSpacingY;
+  }
+}

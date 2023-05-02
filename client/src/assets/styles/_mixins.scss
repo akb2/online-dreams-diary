@@ -230,6 +230,11 @@
     line-height: $size;
     font-size: $size * $fontSize;
     text-align: center;
+    // Картинка SVG
+    ::ng-deep > svg {
+      width: $size * $fontSize;
+      height: $size * $fontSize;
+    }
   }
 
   // Размеры картинки

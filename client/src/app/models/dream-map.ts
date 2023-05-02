@@ -1,7 +1,6 @@
+import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
-import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { ImageExtension } from "@_models/screen";
 import { MeshStandardMaterial, Side, Texture } from "three";
 
 
@@ -49,12 +48,7 @@ export interface MapTerrain {
   title: string;
   isAvail: boolean;
   splatMap: MapTerrainSplatMapSetting;
-  exts: {
-    face: ImageExtension;
-    ao: ImageExtension;
-    disp: ImageExtension;
-    normal: ImageExtension;
-  };
+  tileCoords: XYCoord;
 }
 
 // Тип рельефов
@@ -179,7 +173,7 @@ export interface WayLineType {
 export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 
 // Типы текстур
-export type TextureType = "face" | "ao" | "normal" | "disp";
+export type TextureType = "face" | "ao" | "normal" | "disp" | "icons";
 
 // Настройки карты за пределами
 export interface DreamMapReliefSettings {
@@ -189,6 +183,7 @@ export interface DreamMapReliefSettings {
 // Настройки редактора
 export interface DreamMapSettings {
   detalization: DreamObjectElmsValues;
+  shadowQuality: number;
 }
 
 

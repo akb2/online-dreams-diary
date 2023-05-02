@@ -1,7 +1,7 @@
+import { DreamMapObjectTemplate } from "@_datas/three.js/objects/_base";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
-import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapObjectTemplate } from "@_services/dream-map/objects/_base";
+import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
 
 
@@ -86,6 +86,19 @@ export interface MapObject {
   isDefault: boolean;
   translates?: CoordDto[];
   animate?: Function;
+  raycastBox?: boolean;
+};
+
+// Тип ответа
+export class MapObjectRaycastBoxData {
+  constructor(
+    public minX: number = Infinity,
+    public maxX: number = -Infinity,
+    public minY: number = Infinity,
+    public maxY: number = -Infinity,
+    public minZ: number = Infinity,
+    public maxZ: number = -Infinity
+  ) { }
 };
 
 

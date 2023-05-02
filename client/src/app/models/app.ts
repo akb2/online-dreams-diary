@@ -13,8 +13,8 @@ export type CustomObject<V> = { [key: string]: V };
 export type CustomObjectKey<K, V> = { [key in K as string | number | symbol]: V };
 export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
 
-// Данные для Cookie
-export interface CookieInterface {
+// Данные для Local Storage
+export interface LocalStorageItemInterface {
   value: any;
   expiry: number;
 }

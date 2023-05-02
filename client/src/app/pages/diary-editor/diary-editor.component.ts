@@ -51,6 +51,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   ready: boolean = false;
   loading: boolean = false;
   tabAnimation: boolean = false;
+  selectedTab: number = 2;
   private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -99,10 +100,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     }
     // Из профиля
     else if (from === "profile") {
-      return "/profile/" + this.dream.user.id;
+      return "/profile/" + this.dream.user?.id;
     }
     // Мой дневник
-    return "/diary/" + this.dream.user.id;
+    return "/diary/" + this.dream.user?.id;
   }
 
   // Кнопка назад: параметры
@@ -130,6 +131,11 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     const mode: DreamMode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
     // Проверка
     return mode === DreamMode.text || mode === DreamMode.mixed;
+  }
+
+  // Текущий режим
+  get getCurrentMode(): DreamMode {
+    return ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
   }
 
   // Проверка изменений
@@ -266,16 +272,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
           );
       }
     }
-  }
-
-  // Изменение типа сновидения
-  onChangeMode(): void {
-    const defaultMode: DreamMode = DreamMode.text;
-    const mode: DreamMode = ParseInt(this.dreamForm.get("mode").value) as DreamMode || defaultMode;
-    // Новый метод
-    this.dream.mode = mode;
-    // Обновить
-    this.changeDetectorRef.detectChanges();
   }
 
   // Изменение названия сновидения

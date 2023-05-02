@@ -1,5 +1,5 @@
+import { LocalStorageItemInterface } from "@_models/app";
 import { Injectable } from "@angular/core";
-import { CookieInterface } from "@_models/app";
 
 
 
@@ -12,35 +12,35 @@ import { CookieInterface } from "@_models/app";
 export class LocalStorageService {
 
 
-  private systemCookieKey: string = "Online_Dreams_Diary_Cookie_key_";
-  public cookieKey: string = "";
-  public cookieLifeTime: number = 30 * 60;
+  private systemItemKey: string = "Online_Dreams_Diary_Cookie_key_";
+  itemKey: string = "";
+  itemLifeTime: number = 30 * 60;
 
 
 
 
 
   // Записать данные в куки
-  public setCookie(key: string, value: any, ttl?: number): void {
-    ttl = ttl ? ttl : this.cookieLifeTime;
+  setItem(key: string, value: any, ttl?: number): void {
+    ttl = ttl ? ttl : this.itemLifeTime;
 
     const now: number = (new Date()).getTime();
-    const item: CookieInterface = {
+    const item: LocalStorageItemInterface = {
       value,
       expiry: now + (ttl * 1000),
     };
 
-    localStorage.setItem(this.systemCookieKey + this.cookieKey + key, JSON.stringify(item))
+    localStorage.setItem(this.systemItemKey + this.itemKey + key, JSON.stringify(item))
   }
 
   // Получить данные из куки
-  public getCookie<T>(key: string, typeCallback: (d: any) => T = d => d as T): T {
-    const itemStr: string = localStorage.getItem(this.systemCookieKey + this.cookieKey + key) as string;
+  getItem<T>(key: string, typeCallback: (d: any) => T = d => d as T): T {
+    const itemStr: string = localStorage.getItem(this.systemItemKey + this.itemKey + key) as string;
     const now: number = (new Date()).getTime();
     // Если есть запись
     if (itemStr) {
       try {
-        const item: CookieInterface = JSON.parse(itemStr) as CookieInterface;
+        const item: LocalStorageItemInterface = JSON.parse(itemStr) as LocalStorageItemInterface;
         // Вернуть данные
         if (now <= item.expiry) {
           try {
@@ -52,11 +52,11 @@ export class LocalStorageService {
         }
         // Очистить куки
         else {
-          this.deleteCookie(key);
+          this.deleteItem(key);
         }
       }
       catch (e) {
-        this.deleteCookie(key);
+        this.deleteItem(key);
       }
     }
     // Пустой ответ
@@ -64,7 +64,7 @@ export class LocalStorageService {
   }
 
   // Удалить куки
-  public deleteCookie(key: string): void {
-    localStorage.removeItem(this.systemCookieKey + this.cookieKey + key);
+  deleteItem(key: string): void {
+    localStorage.removeItem(this.systemItemKey + this.itemKey + key);
   }
 }

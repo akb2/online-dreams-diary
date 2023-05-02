@@ -1,10 +1,20 @@
 import { CustomObjectKey } from "@_models/app";
 import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
-import { DreamMapPlantainGrassObject } from "@_services/dream-map/objects/grass/plantaingrass";
-import { DreamMapWheatGrassObject } from "@_services/dream-map/objects/grass/wheatgrass";
-import { DreamMapBirchTreeObject } from "@_services/dream-map/objects/tree/birch";
-import { DreamMapFirTreeObject } from "@_services/dream-map/objects/tree/fir";
-import { DreamMapOakTreeObject } from "@_services/dream-map/objects/tree/oak";
+import { DreamMapPlantainGrassObject } from "./three.js/objects/grass/plantaingrass";
+import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";
+import { DreamMapBirchTreeObject } from "./three.js/objects/tree/birch";
+import { DreamMapFirTreeObject } from "./three.js/objects/tree/fir";
+import { DreamMapOakTreeObject } from "./three.js/objects/tree/oak";
+
+
+
+
+
+// Имена объектов на карте
+export const DreamMapTerrainName: string = "terrainObject";
+export const DreamMapOceanName: string = "oceanObject";
+export const DreamMapSkyName: string = "skyObject";
+export const DreamMapObjectIntersectorName: string = "objectIntersector";
 
 
 

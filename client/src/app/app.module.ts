@@ -1,4 +1,5 @@
 import { PageLoaderModule } from "@_controlers/page-loader/page-loader.module";
+import { ForCycle } from "@_helpers/objects";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
 import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
@@ -49,6 +50,14 @@ export class AppModule {
     private domSanitizer: DomSanitizer
   ) {
     // Балончик с краской
-    this.matIconRegistry.addSvgIcon("paint_spray", this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/paint_spray.svg"));
+    this.matIconRegistry.addSvgIcon(
+      "paint_spray",
+      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/paint_spray.svg")
+    );
+    // Уровни детализации графики
+    ForCycle(7, i => this.matIconRegistry.addSvgIcon(
+      "detalization_level_" + i,
+      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/detalization_level_" + i + ".svg")
+    ));
   }
 }

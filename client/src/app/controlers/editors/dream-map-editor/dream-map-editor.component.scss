@@ -78,6 +78,7 @@ $separatorColor: #ccc;
   pointer-events: auto;
   position: relative;
   transition: background-color #{screens.$animationTime};
+  cursor: pointer;
   // Иконка
   > mat-icon {
     color: inherit;

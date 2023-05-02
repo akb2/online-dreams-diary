@@ -22,7 +22,7 @@
          [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
-                     [selectedIndex]="0"
+                     [selectedIndex]="selectedTab"
                      (selectedIndexChange)="onChangeTab($event)"
                      (animationDone)="onTabAnimationDone()"
                      *ngIf="!loading; else saveLoader">
@@ -82,8 +82,7 @@
                         <app-autocomplete-input required
                                                 label="Тип описания сновидения"
                                                 formControlName="mode"
-                                                [optionData]="dreamModes"
-                                                (selectItemEvent)="onChangeMode()"></app-autocomplete-input>
+                                                [optionData]="dreamModes"></app-autocomplete-input>
                         <!-- Статус сновидения -->
                         <app-autocomplete-input required
                                                 label="Кому достпно сновидение"
@@ -119,7 +118,7 @@
         </mat-tab>
         <!-- Описание -->
         <mat-tab label="Текст"
-                 *ngIf="dream.mode === _dreamMode.text || dream.mode === _dreamMode.mixed">
+                 *ngIf="getCurrentMode === _dreamMode.text || getCurrentMode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
               <div class="section root-section tabs">
@@ -137,7 +136,7 @@
         </mat-tab>
         <!-- Карта -->
         <mat-tab label="Карта"
-                 *ngIf="dream.mode === _dreamMode.map || dream.mode === _dreamMode.mixed">
+                 *ngIf="getCurrentMode === _dreamMode.map || getCurrentMode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
               <div class="section root-section tabs">

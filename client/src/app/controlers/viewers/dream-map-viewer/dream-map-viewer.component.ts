@@ -1,21 +1,25 @@
 import { CreateArray } from "@_datas/app";
+import { DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { AngleToRad, IsOdd, RadToAngle } from "@_helpers/math";
+import { GetDreamMapObjectByID } from "@_datas/three.js/objects/grass/_functions";
+import { GetInstanceBoundingBox } from "@_helpers/geometry";
+import { AngleToRad, IsOdd, LineFunc, RadToAngle } from "@_helpers/math";
+import { ArrayFilter, ArrayForEach, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
-import { DreamMapObject, MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { DreamMapObject, MapObject, MapObjectRaycastBoxData, ObjectSetting } from "@_models/dream-map-objects";
 import { NumberDirection } from "@_models/math";
-import { DreamMapAlphaFogService } from "@_services/dream-map/alphaFog.service";
-import { DreamMapObjectService } from "@_services/dream-map/object.service";
-import { GetDreamMapObjectByID } from "@_services/dream-map/objects/grass/_functions";
-import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/dream-map/skybox.service";
-import { DreamMapTerrainService, GeometryQuality } from "@_services/dream-map/terrain.service";
 import { DreamService } from "@_services/dream.service";
+import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
+import { DreamMapObjectService } from "@_services/three.js/object.service";
+import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
+import { DreamMapTerrainService, GeometryQuality } from "@_services/three.js/terrain.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
+import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Matrix4, Mesh, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -68,7 +72,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   private lastMouseMove: number = 0;
 
+  private objectRaycastBoxes: ObjectRaycastMesh[] = [];
+  private postProcessingEffects: PostProcessingEffects;
   private renderer: WebGLRenderer;
+  private composer: EffectComposer;
   private scene: Scene;
   private octree: Octree;
   private camera: PerspectiveCamera;
@@ -163,21 +170,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Объект по событию
   private getEventObject(event: MouseEvent | TouchEvent): Intersection[] {
     if (event.target === this.canvas.nativeElement) {
-      const clientX: number = event instanceof MouseEvent ? event.clientX : event.touches.item(0).clientX;
-      const clientY: number = event instanceof MouseEvent ? event.clientY : event.touches.item(0).clientY;
-      const far: number = FogFar * DreamCeilSize;
-      const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
-      const x: number = ((clientX - this.canvas.nativeElement.getBoundingClientRect().left) / this.width) * 2 - 1;
-      const y: number = -(((clientY - this.canvas.nativeElement.getBoundingClientRect().top) / this.height) * 2 - 1);
-      // Настройки
-      raycaster.setFromCamera({ x, y }, this.camera)
-      // Объекты в фокусе
-      const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
-      // Обработка объектов
-      return intersect?.length ? intersect : null;
+      const clientX: number = (event instanceof MouseEvent ? event.clientX : event.touches.item(0).clientX) - this.canvas.nativeElement.getBoundingClientRect().left;
+      const clientY: number = (event instanceof MouseEvent ? event.clientY : event.touches.item(0).clientY) - this.canvas.nativeElement.getBoundingClientRect().top;
+      const objects: Intersection[] = ArrayFilter(this.getIntercectionObject(clientX, clientY), ({ object: { name } }) => name === DreamMapTerrainName);
+      const closestObjects: Intersection[] = objects?.sort(({ distance: distanceA }, { distance: distanceB }) => distanceA - distanceB);
+      // Поиск объектов
+      return !!closestObjects?.length ? closestObjects : null;
     }
     // Объект не найден
     return null;
+  }
+
+  // Получить объекты пересечения
+  private getIntercectionObject(x: number, y: number): Intersection[] {
+    x = (x / this.width) * 2 - 1;
+    y = -((y / this.height) * 2 - 1);
+    const far: number = FogFar * DreamCeilSize;
+    const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
+    // Настройки
+    raycaster.setFromCamera({ x, y }, this.camera);
+    // Объекты в фокусе
+    const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
+    // Обработка объектов
+    return intersect?.length ? intersect : null;
   }
 
   // Данные карты
@@ -405,6 +420,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     event.object.getWorldDirection(vector);
     this.compassAngle = RadToAngle(Math.atan2(-vector.x, -vector.z));
     this.changeDetectorRef.detectChanges();
+    // обновить пост отрисовку
+    this.updatePostProcessors();
     // обновить объекты
     // this.objects.filter(object => object instanceof LOD).forEach(object => (object as LOD).update(this.camera));
   }
@@ -416,6 +433,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.renderer) {
       this.renderer.setSize(this.width, this.height);
       this.camera.aspect = this.width / this.height;
+      // обновить пост отрисовку
+      this.updatePostProcessors();
       // Рендер
       this.camera.updateProjectionMatrix();
       this.render();
@@ -508,8 +527,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.createTerrains().subscribe(() => {
       this.createObjects();
       this.createCursor();
+      this.createPostProcessors();
       // События
       this.animate();
+      // обновить пост отрисовку
+      this.updatePostProcessors();
+      // Изменение камеры
       fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
         .pipe(takeUntil(this.destroy$))
         .subscribe();
@@ -523,10 +546,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание сцены
   private createScene(): void {
-    const oWidth: number = this.dreamMap?.size?.width || DreamMapSize;
-    const oHeight: number = this.dreamMap?.size?.height || DreamMapSize;
-    const borderOSize: number = Math.max(oWidth, oHeight) * this.terrainService.outsideMapSize;
-    const octreeSize: number = Math.max(oWidth, oHeight) + (borderOSize * 2);
     // Отрисовщик
     this.renderer = new WebGLRenderer({
       context: this.canvas.nativeElement.getContext(this.contextType),
@@ -538,7 +557,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       logarithmicDepthBuffer: false
     });
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor(this.sceneColor, 1);
+    this.renderer.setClearColor(this.sceneColor, 0);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputEncoding = sRGBEncoding;
@@ -560,11 +579,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.scene.add(this.camera);
     // Пересечения
     this.octree = new Octree({
-      undeferred: false,
-      depthMax: octreeSize,
-      objectsThreshold: 1,
-      overlapPct: 0.05,
       scene: this.scene,
+      undeferred: false,
+      depthMax: 1,
+      objectsThreshold: 8,
+      overlapPct: 1
     });
     // Управление
     this.control = new OrbitControls(this.camera, this.canvas.nativeElement);
@@ -588,6 +607,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.clock = new Clock();
   }
 
+  // Создание пост обработки
+  private createPostProcessors(): void {
+    const renderPass: RenderPass = new RenderPass(this.scene, this.camera);
+    const depthOfFieldEffect: DepthOfFieldEffect = new DepthOfFieldEffect(this.camera, {
+      focalLength: 0.1,
+      focusRange: 0.3,
+      bokehScale: 5,
+      resolutionX: this.width,
+      resolutionY: this.height
+    });
+    const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect);
+    // Добавление эффектов
+    this.postProcessingEffects = { renderPass, depthOfFieldEffect };
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(renderPass);
+    this.composer.addPass(effectPass);
+  }
+
   // Отрисовать небо
   private createSky(): void {
     if (this.scene) {
@@ -598,9 +635,16 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
       const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
       const size: number = Math.min(width, height);
-      const { sky, sun, fog, atmosphere }: SkyBoxOutput = this.skyBoxService.getObject(this.renderer, size, this.dreamMap?.sky?.time ?? DreamSkyTime);
+      const { sky, sun, fog, atmosphere }: SkyBoxOutput = this.skyBoxService.getObject(
+        this.renderer,
+        size,
+        this.dreamMap?.sky?.time ?? DreamSkyTime,
+        this.dreamMapSettings
+      );
       // Добавить к сцене
       this.scene.add(sky, sun, atmosphere);
+      this.octree.add(sky, { useVertices: false, useFaces: false });
+      this.octree.update();
       this.scene.fog = fog;
       this.sun = sun;
       // Рендер
@@ -620,6 +664,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const heightPart: number = DreamCeilSize / DreamCeilParts;
       const z: number = heightPart * this.dreamMap.ocean.z;
       const geometry: PlaneGeometry = new PlaneGeometry(width, height, 1, 1);
+      const position: Vector3 = new Vector3(0, z, 0);
+      const sunDirection: Vector3 = new Vector3().subVectors(this.sun.position, position).normalize();
       // Создать океан
       this.ocean = new Water(geometry, {
         textureWidth: 1024,
@@ -630,17 +676,21 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         waterColor: 0x001E33,
         distortionScale: 2,
         fog: true,
-        sunDirection: this.sun.position,
-        side: FrontSide
+        sunDirection,
+        side: FrontSide,
+        alpha: 0.95
       });
       // Свойства
       this.ocean.material = this.alphaFogService.getShaderMaterial(this.ocean.material);
       this.ocean.rotation.x = AngleToRad(-90);
-      this.ocean.position.set(0, z, 0);
+      this.ocean.position.set(position.x, position.y, position.z);
       this.ocean.material.uniforms.size.value = DreamCeilSize * 10;
       this.ocean.receiveShadow = true;
+      this.ocean.name = DreamMapOceanName;
       // Добавить в сцену
+      this.octree.add(this.ocean, { useVertices: false, useFaces: false });
       this.scene.add(this.ocean);
+      this.octree.update();
       this.render();
     }
   }
@@ -722,7 +772,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Рендер сцены
   render(): void {
-    this.renderer.render(this.scene, this.camera);
+    if (!!this.composer) {
+      this.composer.render();
+    }
   }
 
   // Обновление сцены
@@ -734,7 +786,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Обновить воду
       this.ocean.material.uniforms.time.value += heightPart * (this.oceanFlowSpeed / 10);
       // Анимация объектов
-      Object.values(this.animateFunctions).forEach(f => f());
+      ArrayForEach(Object.values(this.animateFunctions), f => f(), true);
       // Обновить сцену
       this.control.update();
       this.render();
@@ -755,22 +807,23 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.sun = undefined;
       // Удаление материалов
       const clearMaterial: (material: any) => void = material => {
+        const textures = ArrayFilter(Object.entries(material), ([, texture]: [string, any]) => !!texture && !!texture?.dispose && typeof texture.dispose === "function");
         // Удалить текстуры
-        const textures = Object.entries(material)
-          .filter(([, texture]: [string, any]) => !!texture && !!texture?.dispose && typeof texture.dispose === "function");
-        textures.forEach(([, texture]: [string, any]) => {
+        ArrayForEach(textures, ([, texture]: [string, any]) => {
           texture.dispose();
           texture = undefined;
-        });
+        }, true);
         // Удалить униформы
-        Object.values(material)
-          .filter((o: any) => !!o?.uniforms)
-          .map((o: any) => Object.values(o.uniforms).map((o: any) => o?.value).filter(o => !!o).filter(o => !!o.dispose))
-          .filter(o => !!o?.length)
-          .forEach((o: any[]) => o.forEach(o => {
-            o.dispose();
-            o = undefined;
-          }));
+        ArrayForEach(Object.values(material), (o: any) => {
+          if (!!o?.uniforms) {
+            const value: any[] = Object.values(o.uniforms).map((o: any) => o?.value).filter(o => !!o && !!o.dispose);
+            // Значения найдены
+            if (!!value?.length) {
+              o.dispose();
+              o = undefined;
+            }
+          }
+        });
         // Очистка
         material.dispose();
         material = undefined;
@@ -791,7 +844,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Материалы
         if (!!node.material) {
           Array.isArray(node.material) ?
-            node.material.forEach(material => clearMaterial(material)) :
+            ArrayForEach(node.material, material => clearMaterial(material)) :
             clearMaterial(node.material);
           node.material = undefined;
         }
@@ -807,7 +860,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         node = undefined;
       }
       // Очистка
-      // console.log(JSON.stringify(this.renderer.info.memory));
       clearThree(this.scene);
       // console.log(JSON.stringify(this.renderer.info.memory));
       // Очистить сцену
@@ -859,11 +911,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const objects: MapObject[][] = mixedObjects.map(mixedObject => Array.isArray(mixedObject) ? mixedObject : [mixedObject]);
           const defaultColor: Color = new Color();
           const defaultMatrix: Matrix4 = new Matrix4();
+          const mapObjects: MapObject[] = objects.reduce((o, d) => ([...o, ...d]), []);
           // Цикл по объектам
-          objects
-            .reduce((o, d) => ([...o, ...d]), [])
-            .filter(object => !!object)
-            .forEach(object => {
+          ArrayForEach(mapObjects, object => {
+            if (!!object) {
               const count: number = object.count;
               const length: number = object.matrix?.length ?? 0;
               // Если у объекта есть фрагменты
@@ -881,11 +932,16 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
                 const translates: CoordDto[] = object.translates ?? [];
                 const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault, translates };
+                let raycastCoords: MapObjectRaycastBoxData;
                 // Цикл по ключам
-                indexKeys.forEach((index, k) => {
+                ArrayForEach(indexKeys, (index, k) => {
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
                   mesh.setColorAt(index, object.color[k] ?? defaultColor);
-                });
+                  // Коробка для пересечений
+                  if (!!object?.raycastBox) {
+                    raycastCoords = GetInstanceBoundingBox(mesh, index, raycastCoords);
+                  }
+                }, true);
                 // Функция анимации
                 if (!!object.animate && !this.animateFunctions.hasOwnProperty(keyType)) {
                   this.animateFunctions[keyType] = object.animate;
@@ -904,12 +960,53 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                   // Добавить на сцену
                   this.scene.add(mesh);
                 }
+                // Объект для пересечения
+                if (!!raycastCoords) {
+                  const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(this.objectRaycastBoxes, ({ ceilCoords: { x, y } }) => x === ceil.coord.x && y === ceil.coord.y);
+                  const raycastMesh: Mesh = !!allRaycastMesh?.length ? allRaycastMesh[0].mesh : new Mesh(ObjectRaycastGeometry.clone(), ObjectRaycastMaterial);
+                  const [minX, maxX, minY, maxY, minZ, maxZ] = [...allRaycastMesh, raycastCoords]
+                    .map(({ minX, maxX, minY, maxY, minZ, maxZ }) => ([minX, maxX, minY, maxY, minZ, maxZ]))
+                    .reduce(([oMinX, oMaxX, oMinY, oMaxY, oMinZ, oMaxZ], [minX, maxX, minY, maxY, minZ, maxZ]) => ([
+                      Math.min(minX, oMinX), Math.max(maxX, oMaxX),
+                      Math.min(minY, oMinY), Math.max(maxY, oMaxY),
+                      Math.min(minZ, oMinZ), Math.max(maxZ, oMaxZ),
+                    ]), [Infinity, -Infinity, Infinity, -Infinity, Infinity, -Infinity]);
+                  const width: number = maxX - minX;
+                  const height: number = maxY - minY;
+                  const depth: number = maxZ - minZ;
+                  const scaleX: number = width / DreamCeilSize;
+                  const scaleY: number = height / DreamCeilSize;
+                  const scaleZ: number = depth / DreamCeilSize;
+                  // Добавить новый элемент
+                  this.objectRaycastBoxes.push({
+                    ...raycastCoords,
+                    objectId: mesh.uuid,
+                    mesh: raycastMesh,
+                    ceilCoords: {
+                      x: ceil.coord.x,
+                      y: ceil.coord.y,
+                    }
+                  });
+                  // Добавить объект
+                  if (!allRaycastMesh?.length) {
+                    this.scene.add(raycastMesh);
+                    this.octree.add(raycastMesh, { useVertices: false, useFaces: false });
+                  }
+                  // Обновить параметры
+                  raycastMesh.geometry = ObjectRaycastGeometry.clone();
+                  raycastMesh.scale.set(scaleX, scaleY, scaleZ);
+                  raycastMesh.position.set(minX + width / 2, minY + height / 2, minZ + depth / 2);
+                  raycastMesh.name = DreamMapObjectIntersectorName;
+                  // Обновить
+                  this.octree.update();
+                }
                 // Общие настройки
                 this.objectSettings.push(objectSetting);
                 this.objectCounts[keyType] = !!this.objectCounts[keyType] ? this.objectCounts[keyType] + length : length;
                 mesh.count = this.objectCounts[keyType];
               }
-            });
+            }
+          });
         }
       }
     }
@@ -926,96 +1023,117 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const defaultMatrix: Matrix4 = new Matrix4();
     const color: Color = new Color();
     const matrix: Matrix4 = new Matrix4();
-    // Если элемент существует
-    if (!!objectSettingKeys?.length) {
-      let ksB: CustomObjectKey<string, number[]> = {};
-      let kB: number;
-      // Цикл по объектам
-      objectSettingKeys.forEach(kA => {
-        const isDefault: boolean = this.objectSettings[kA].isDefault;
-        // Удалять объекты по умолчанию, если передан параметр их удаления
-        if ((isDefault && removeDefault) || !isDefault) {
-          const type: string = this.objectSettings[kA].type;
-          const subType: string = this.objectSettings[kA].subType;
-          const splitBySubType: boolean = this.objectSettings[kA].splitBySubType;
-          const keyType: string = type + (splitBySubType ? "-" + subType : "");
-          const mesh: InstancedMesh = this.objectSettings[kA].mesh;
-          const lastIndexPreffix: number = this.objectCounts[keyType] ?? 0;
-          const objectCount: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType))?.length - 1;
+    const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(this.objectRaycastBoxes, ({ ceilCoords: { x: tX, y: tY } }) => tX === x && tY === y);
+    const allRaycastMeshLength = allRaycastMesh?.length ?? 0;
+    let ksB: CustomObjectKey<string, number[]> = {};
+    let kB: number;
+    // Цикл по объектам
+    ArrayForEach(objectSettingKeys, kA => {
+      const isDefault: boolean = this.objectSettings[kA].isDefault;
+      // Удалять объекты по умолчанию, если передан параметр их удаления
+      if ((isDefault && removeDefault) || !isDefault) {
+        const type: string = this.objectSettings[kA].type;
+        const subType: string = this.objectSettings[kA].subType;
+        const splitBySubType: boolean = this.objectSettings[kA].splitBySubType;
+        const keyType: string = type + (splitBySubType ? "-" + subType : "");
+        const mesh: InstancedMesh = this.objectSettings[kA].mesh;
+        const lastIndexPreffix: number = this.objectCounts[keyType] ?? 0;
+        const objectCount: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType))?.length - 1;
+        // Обновить
+        if (objectCount > 0) {
+          ArrayForEach(this.objectSettings[kA].indexKeys, (index, k) => {
+            const lastIndex: number = lastIndexPreffix - 1 - k;
+            // Индекс последней геометрии
+            kB = this.getObjectSettingKeyByIndex(lastIndex, type, splitBySubType ? subType : null, kB, ksB);
+            // Перемещение данных
+            if (index !== lastIndex) {
+              const lastType: string = this.objectSettings[kB].type;
+              const lastSubType: string = this.objectSettings[kB].subType;
+              const lastSplitBySubType: boolean = this.objectSettings[kB].splitBySubType;
+              const lastKeyType: string = lastType + (lastSplitBySubType ? "-" + lastSubType : "");
+              const lastIndexKey: number = this.objectSettings[kB].indexKeys.findIndex(i => i === lastIndex);
+              // Добавить в массив использований
+              if (!ksB[lastKeyType]?.includes(kB)) {
+                ksB[lastKeyType] = ksB[lastKeyType] ?? [];
+                ksB[lastKeyType].push(kB);
+              }
+              // Получить матрицу и цвет
+              mesh.getMatrixAt(lastIndex, matrix);
+              mesh.getColorAt(lastIndex, color);
+              // Переместить последний фрагмент
+              mesh.setMatrixAt(index, matrix);
+              mesh.setColorAt(index, color);
+              // Удалить последний фрагмент
+              mesh.setMatrixAt(lastIndex, defaultMatrix);
+              mesh.setColorAt(lastIndex, defaultColor);
+              // Обновить
+              this.objectSettings[kB].indexKeys[lastIndexKey] = index;
+              this.objectSettings[kA].indexKeys[k] = -1;
+            }
+            // Очистка данных
+            else {
+              mesh.setMatrixAt(index, defaultMatrix);
+              mesh.setColorAt(index, defaultColor);
+            }
+            // Обновить количества
+            this.objectCounts[keyType] -= 1;
+            mesh.count -= 1;
+          }, true);
           // Обновить
-          if (objectCount > 0) {
-            this.objectSettings[kA].indexKeys.forEach((index, k) => {
-              const lastIndex: number = lastIndexPreffix - 1 - k;
-              // Индекс последней геометрии
-              kB = this.getObjectSettingKeyByIndex(lastIndex, type, splitBySubType ? subType : null, kB, ksB);
-              // Перемещение данных
-              if (index !== lastIndex) {
-                const lastType: string = this.objectSettings[kB].type;
-                const lastSubType: string = this.objectSettings[kB].subType;
-                const lastSplitBySubType: boolean = this.objectSettings[kB].splitBySubType;
-                const lastKeyType: string = lastType + (lastSplitBySubType ? "-" + lastSubType : "");
-                const lastIndexKey: number = this.objectSettings[kB].indexKeys.findIndex(i => i === lastIndex);
-                // Добавить в массив использований
-                if (!ksB[lastKeyType]?.includes(kB)) {
-                  ksB[lastKeyType] = ksB[lastKeyType] ?? [];
-                  ksB[lastKeyType].push(kB);
-                }
-                // Получить матрицу и цвет
-                mesh.getMatrixAt(lastIndex, matrix);
-                mesh.getColorAt(lastIndex, color);
-                // Переместить последний фрагмент
-                mesh.setMatrixAt(index, matrix);
-                mesh.setColorAt(index, color);
-                // Удалить последний фрагмент
-                mesh.setMatrixAt(lastIndex, defaultMatrix);
-                mesh.setColorAt(lastIndex, defaultColor);
-                // Обновить
-                this.objectSettings[kB].indexKeys[lastIndexKey] = index;
-                this.objectSettings[kA].indexKeys[k] = -1;
-              }
-              // Очистка данных
-              else {
-                mesh.setMatrixAt(index, defaultMatrix);
-                mesh.setColorAt(index, defaultColor);
-              }
-              // Обновить количества
-              this.objectCounts[keyType] -= 1;
-              mesh.count -= 1;
-            });
-            // Обновить
-            mesh.instanceMatrix.needsUpdate = true;
-            mesh.instanceColor.needsUpdate = true;
-          }
-          // Удалить
-          else {
-            delete this.animateFunctions[keyType];
-            delete this.objectCounts[keyType];
-            this.scene.remove(mesh);
-            mesh.dispose();
-            this.renderer.dispose();
-          }
+          mesh.instanceMatrix.needsUpdate = true;
+          mesh.instanceColor.needsUpdate = true;
         }
-      });
-      // Очистка
-      objectSettingKeys
-        .filter(kA => (this.objectSettings[kA].isDefault && removeDefault) || !this.objectSettings[kA].isDefault)
-        .sort((a, b) => b - a)
-        .forEach(kA => this.objectSettings.splice(kA, 1));
+        // Удалить
+        else {
+          delete this.animateFunctions[keyType];
+          delete this.objectCounts[keyType];
+          this.octree.remove(mesh);
+          this.scene.remove(mesh);
+          this.octree.update();
+          mesh.dispose();
+          mesh.remove();
+        }
+      }
+    }, true);
+    // Очистка
+    ArrayForEach(objectSettingKeys, kA => {
+      const objectSettings: ObjectSetting = this.objectSettings[kA];
+      // Отфильтровать
+      if (!!objectSettings && ((objectSettings.isDefault && removeDefault) || !objectSettings.isDefault)) {
+        this.objectSettings.splice(kA, 1);
+      }
+    }, true);
+    // Удалить объект пересечений
+    if (allRaycastMeshLength > 0) {
+      ArrayForEach(allRaycastMesh, (raycastMesh, key) => {
+        const index: number = this.objectRaycastBoxes.findIndex(obj => obj === raycastMesh);
+        // Удалить элемент оз общего массива
+        this.objectRaycastBoxes.splice(index, 1);
+        // Удалить основной объект
+        if (key + 1 === allRaycastMeshLength) {
+          this.octree.remove(raycastMesh.mesh);
+          this.scene.remove(raycastMesh.mesh);
+          this.octree.update();
+          raycastMesh.mesh.remove();
+        }
+      }, true);
     }
   }
 
   // Удалить все объекты
   private clearObjects(): void {
-    const length: number = this.objectSettings.length;
-    // Цикл по элементам с конца
-    CreateArray(length).map(k => length - 1 - k).forEach(k => {
-      const objectSetting: ObjectSetting = this.objectSettings[k];
+    ArrayForEach(this.objectSettings, (objectSetting, k) => {
       const type: string = objectSetting.type;
       const subType: string = objectSetting.subType;
       const splitBySubType: boolean = objectSetting.splitBySubType;
       const keyType: string = type + (splitBySubType ? "-" + subType : "");
       const mesh: InstancedMesh = objectSetting.mesh;
       const typeLength: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType)).length;
+      const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(
+        this.objectRaycastBoxes,
+        ({ ceilCoords: { x: tX, y: tY } }) => tX === objectSetting.coords.x && tY === objectSetting.coords.y
+      );
+      const allRaycastMeshLength = allRaycastMesh?.length ?? 0;
       // Удалить настройки
       this.objectSettings.splice(k, 1);
       this.objectCounts[keyType] = 0;
@@ -1025,15 +1143,54 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         mesh.dispose();
         mesh.removeFromParent();
         this.renderer.dispose();
+        // Удалить объект пересечений
+        if (allRaycastMeshLength > 0) {
+          ArrayForEach(allRaycastMesh, (raycastMesh, key) => {
+            const index: number = this.objectRaycastBoxes.findIndex(obj => obj === raycastMesh);
+            // Удалить элемент оз общего массива
+            this.objectRaycastBoxes.splice(index, 1);
+            // Удалить основной объект
+            if (key + 1 === allRaycastMeshLength) {
+              this.octree.remove(raycastMesh.mesh);
+              this.scene.remove(raycastMesh.mesh);
+              this.octree.update();
+              raycastMesh.mesh.remove();
+            }
+          }, true);
+        }
         // Удаление
         delete this.animateFunctions[keyType];
       }
-    });
+    }, true);
   }
 
 
 
 
+
+  // Обновить параметры пост обработки
+  private updatePostProcessors(): void {
+    if (!!this.postProcessingEffects) {
+      const screenX: number = this.width * 0.5;
+      const screenY: number = LineFunc(this.height, this.height * 0.5, this.control.getPolarAngle(), this.control.minPolarAngle, this.control.maxPolarAngle);
+      const objects: Intersection[] = this.getIntercectionObject(screenX, screenY);
+      const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
+      const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+      const blendMode: BlendMode = depthOfFieldEffect.blendMode;
+      const closestObject: Intersection = !!objects?.length ?
+        objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
+        null;
+      const focusDistance: number = LineFunc(1, 0.4, this.control.getDistance(), 0, this.control.maxDistance);
+      // Обновить дальность
+      blendMode.opacity.value = LineFunc(0.6, 1, this.control.getDistance(), this.control.minDistance, this.control.maxDistance);
+      depthOfFieldEffect.resolution.width = this.width / 2;
+      depthOfFieldEffect.resolution.height = this.height / 2;
+      // Найдены объекты
+      depthOfFieldEffect.target = !!closestObject ? closestObject.point : this.control.target;
+      circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
+      circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.6;
+    }
+  }
 
   // Обновить статус свечения местности
   setTerrainHoverStatus(ceil: DreamMapCeil = null, oToolSize: number = 0): void {
@@ -1114,50 +1271,48 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       if (updateObjects) {
         const usedCeils: DreamMapCeil[] = [];
         // Активные ячейки
-        ceils.forEach((ceil, i) => {
-          const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
+        ArrayForEach(ceils, ceil => {
+          const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
           // Если существуют объекты
-          if (!!objectSettings?.length) {
-            objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-              objectSetting,
-              this.dreamMap,
-              ceil,
-              this.terrainMesh,
-              this.clock,
-              this.terrainService.displacementTexture,
-              this.getClosestCeils(ceil),
-              this.dreamMapSettings
-            ));
-          }
+          ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
+            objectSetting,
+            this.dreamMap,
+            ceil,
+            this.terrainMesh,
+            this.clock,
+            this.terrainService.displacementTexture,
+            this.getClosestCeils(ceil),
+            this.dreamMapSettings
+          ), true);
           // Запомнить ячейку и не изменять больше
           usedCeils.push(ceil);
-        });
+        }, true);
         // Удалить/выставить объекты по умолчанию в соседних ячейках
-        ceils.forEach(ceil => {
+        ArrayForEach(ceils, ceil => {
           const nCeils: DreamMapCeil[] = Object
             .values(this.getClosestCeils(ceil))
             .map(({ coords: { x, y } }) => this.getCeil(x, y))
             .filter(ceil => !usedCeils.includes(ceil));
           // Добавить обратанные ячейки в массив
-          nCeils.forEach(nCeil => {
-            const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
+          ArrayForEach(nCeils, nCeil => {
+            const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
             // Если существуют объекты
-            if (!!objectSettings?.length) {
-              objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-                objectSetting,
-                this.dreamMap,
-                nCeil,
-                this.terrainMesh,
-                this.clock,
-                this.terrainService.displacementTexture,
-                this.getClosestCeils(nCeil),
-                this.dreamMapSettings
-              ));
-            }
+            ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
+              objectSetting,
+              this.dreamMap,
+              nCeil,
+              this.terrainMesh,
+              this.clock,
+              this.terrainService.displacementTexture,
+              this.getClosestCeils(nCeil),
+              this.dreamMapSettings
+            ), true);
             // Запомнить ячейку и не изменять больше
             usedCeils.push(nCeil);
-          });
-        });
+          }, true);
+        }, true);
+        // обновить пост отрисовку
+        this.updatePostProcessors();
       }
     }
   }
@@ -1233,8 +1388,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Посчитать полоение небесных светил
   setSkyTime(time: number): void {
     this.dreamMap.sky.time = time;
+    // Установить параметры
+    this.skyBoxService.setSkyTime(time, this.dreamMapSettings);
+    // Обновить океан
+    const sunDirection: Vector3 = new Vector3().subVectors(this.sun.position, this.ocean.position).normalize();
+    this.ocean.material.uniforms.sunDirection.value = sunDirection;
+    // Обновить рендер
+    this.updatePostProcessors();
     // Обновить сцену
-    this.skyBoxService.setSkyTime(time);
     this.render();
   }
 
@@ -1248,23 +1409,20 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
         const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
         // Цикл по ячейкам
-        CreateArray(oHeight).forEach(y => CreateArray(oWidth).forEach(x => {
-          const ceil: DreamMapCeil = this.getCeil(x, y);
-          const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
+        XYForEach(oWidth, oHeight, (x, y) => this.getCeil(x, y), ceil => {
+          const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
           // Если существуют объекты
-          if (!!objectSettings?.length) {
-            objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-              objectSetting,
-              this.dreamMap,
-              ceil,
-              this.terrainMesh,
-              this.clock,
-              this.terrainService.displacementTexture,
-              this.getClosestCeils(ceil),
-              this.dreamMapSettings
-            ));
-          }
-        }));
+          ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
+            objectSetting,
+            this.dreamMap,
+            ceil,
+            this.terrainMesh,
+            this.clock,
+            this.terrainService.displacementTexture,
+            this.getClosestCeils(ceil),
+            this.dreamMapSettings
+          ), true);
+        });
       })
     );
   }
@@ -1277,27 +1435,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.terrainService.updateDreamMap(this.dreamMap);
     this.terrainService.updateReliefRewrite();
     // Цикл по ячейкам
-    CreateArray(oHeight).forEach(y => CreateArray(oWidth).forEach(x => {
-      const ceil: DreamMapCeil = this.getCeil(x, y);
-      const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
+    XYForEach(oWidth, oHeight, (x, y) => this.getCeil(x, y), ceil => {
+      const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
       // Если существуют объекты
-      if (!!objectSettings?.length) {
-        objectSettings.forEach(objectSetting => this.objectService.updateHeight(
-          objectSetting,
-          this.dreamMap,
-          ceil,
-          this.terrainMesh,
-          this.clock,
-          this.terrainService.displacementTexture,
-          this.getClosestCeils(ceil),
-          this.dreamMapSettings
-        ));
-      }
-    }));
+      ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
+        objectSetting,
+        this.dreamMap,
+        ceil,
+        this.terrainMesh,
+        this.clock,
+        this.terrainService.displacementTexture,
+        this.getClosestCeils(ceil),
+        this.dreamMapSettings
+      ), true);
+    });
   }
 
   // Изменить уровни детализации
-  setDetalization(settings: DreamMapSettings): Observable<void> {
+  set3DSettings(settings: DreamMapSettings): Observable<void> {
     this.dreamMapSettings = settings;
     // Подписка на изменения
     return timer(10).pipe(
@@ -1306,6 +1461,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       map(() => {
         this.clearObjects();
         this.createObjects();
+        this.setSkyTime(this.dreamMap.sky.time);
         this.render();
       })
     );
@@ -1316,33 +1472,32 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const objectData: DreamMapObject = GetDreamMapObjectByID(newObject);
     const usedCeils: DreamMapCeil[] = [];
     // Цикл по ячейкам
-    ceils
-      .forEach(ceil => {
-        const oldObjectData: DreamMapObject = GetDreamMapObjectByID(ceil.object);
-        // Удаление
-        if (newObject <= 0) {
-          ceil.object = 0;
-        }
-        // Добавление объекта
-        this.addObject(
-          ceil.coord.x,
-          ceil.coord.y,
-          newObject > 0 ? newObject : 0,
-          ceil.terrain,
-          newObject > 0 ? false : true,
-          newObject > 0 ? !objectData?.settings?.mixWithDefault : !oldObjectData?.settings?.mixWithDefault,
-        );
-        // Запомнить ячейку и не изменять больше
-        usedCeils.push(ceil);
-      });
+    ArrayForEach(ceils, ceil => {
+      const oldObjectData: DreamMapObject = GetDreamMapObjectByID(ceil.object);
+      // Удаление
+      if (newObject <= 0) {
+        ceil.object = 0;
+      }
+      // Добавление объекта
+      this.addObject(
+        ceil.coord.x,
+        ceil.coord.y,
+        newObject > 0 ? newObject : 0,
+        ceil.terrain,
+        newObject > 0 ? false : true,
+        newObject > 0 ? !objectData?.settings?.mixWithDefault : !oldObjectData?.settings?.mixWithDefault,
+      );
+      // Запомнить ячейку и не изменять больше
+      usedCeils.push(ceil);
+    }, true);
     // Удалить/выставить объекты по умолчанию в соседних ячейках
-    ceils.forEach(ceil => {
+    ArrayForEach(ceils, ceil => {
       const nCeils: DreamMapCeil[] = Object
         .values(this.getClosestCeils(ceil))
         .map(({ coords: { x, y } }) => this.getCeil(x, y))
         .filter(ceil => !usedCeils.includes(ceil));
       // Добавить обратанне ячейки в массив
-      nCeils.forEach(nCeil => {
+      ArrayForEach(nCeils, nCeil => {
         const objectSettings: ObjectSetting[] = this.objectSettings.filter(({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
         let update: number = 0;
         // Если объект уже существует
@@ -1360,8 +1515,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         }
         // Больше не анализировать ячейку
         usedCeils.push(nCeil);
-      });
-    });
+      }, true);
+    }, true);
   }
 }
 
@@ -1407,6 +1562,19 @@ interface CursorData {
   names: CustomObjectKey<"light" | "ring", string>;
 }
 
+// Интерфейс эффектов постобработки
+interface PostProcessingEffects {
+  renderPass: RenderPass;
+  depthOfFieldEffect: DepthOfFieldEffect;
+}
+
+// Объект для определения столкновений с объектами
+interface ObjectRaycastMesh extends MapObjectRaycastBoxData {
+  ceilCoords: XYCoord;
+  objectId: string;
+  mesh?: Mesh;
+}
+
 // Перечисление типов курсора
 export enum CursorType {
   default,
@@ -1430,3 +1598,13 @@ const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: NumberDirection,
   bottomLeft: { x: -1, y: 1 },
   bottomRight: { x: 1, y: 1 },
 };
+
+// Геометрия и материал для объектов пересечения
+const ObjectRaycastGeometry: BoxGeometry = new BoxGeometry(DreamCeilSize, DreamCeilSize, DreamCeilSize);
+const ObjectRaycastMaterial: MeshBasicMaterial = new MeshBasicMaterial({
+  color: 0xbb00bb,
+  wireframe: true,
+  transparent: true,
+  opacity: 0,
+  depthWrite: false
+});

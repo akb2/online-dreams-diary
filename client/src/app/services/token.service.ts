@@ -1,6 +1,3 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Router } from "@angular/router";
 import { ObjectToFormData } from "@_datas/api";
 import { BrowserNames, OsNames, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
@@ -10,6 +7,9 @@ import { CustomObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { Router } from "@angular/router";
 import { BehaviorSubject, Observable } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
@@ -42,8 +42,8 @@ export class TokenService {
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
   }
 
 
@@ -66,7 +66,7 @@ export class TokenService {
   // Получить данные из Local Storage
   updateState(): void {
     this.configLocalStorage();
-    this.id = this.localStorageService.getCookie("current_user");
+    this.id = this.localStorageService.getItem("current_user");
   }
 
 
@@ -145,7 +145,7 @@ export class TokenService {
       tap(() => {
         this.id = "";
         this.configLocalStorage();
-        this.localStorageService.deleteCookie("current_user");
+        this.localStorageService.deleteItem("current_user");
         this.router.navigate([""]);
       })
     );
@@ -176,11 +176,11 @@ export class TokenService {
   saveAuth(id: string): void {
     this.id = id;
     this.configLocalStorage();
-    this.localStorageService.setCookie("current_user", this.id);
+    this.localStorageService.setItem("current_user", this.id);
   }
 
   // Удалить сведения о текущем пользователе
   private deleteCurrentUser(): void {
-    this.localStorageService.deleteCookie("current_user");
+    this.localStorageService.deleteItem("current_user");
   }
 }

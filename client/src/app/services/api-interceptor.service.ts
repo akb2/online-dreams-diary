@@ -1,8 +1,8 @@
-import { HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
-import { Injectable } from "@angular/core";
 import { environment } from "@_environments/environment";
 import { SimpleObject } from "@_models/app";
 import { LocalStorageService } from "@_services/local-storage.service";
+import { HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 
 
@@ -52,13 +52,13 @@ export class ApiInterceptorService implements HttpInterceptor {
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
   }
 
   // Получить данные из Local Storage
   private updateState(): void {
     this.configLocalStorage();
-    this.id = this.localStorageService.getCookie("current_user");
+    this.id = this.localStorageService.getItem("current_user");
   }
 }

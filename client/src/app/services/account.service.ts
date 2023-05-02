@@ -31,7 +31,7 @@ export class AccountService implements OnDestroy {
 
   private cookieKey: string = "account_service_";
   private cookieLifeTime: number = 604800;
-  private usersCookieKey: string = "users";
+  private usersLocalStorageKey: string = "users";
 
   private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
   private destroyed$: Subject<void> = new Subject<void>();
@@ -100,8 +100,8 @@ export class AccountService implements OnDestroy {
   private getUsersFromStore(): void {
     this.configLocalStorage();
     // Добавить в наблюдение
-    this.users.next(this.localStorageService.getCookie(
-      this.usersCookieKey,
+    this.users.next(this.localStorageService.getItem(
+      this.usersLocalStorageKey,
       d => ToArray(d).map(user => this.userConverter(user)).filter(u => !!u)
     ));
   }
@@ -387,8 +387,8 @@ export class AccountService implements OnDestroy {
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
   }
 
   // Преобразовать данные с сервера
@@ -483,14 +483,14 @@ export class AccountService implements OnDestroy {
     }
     // Обновить
     this.configLocalStorage();
-    this.localStorageService.setCookie(this.usersCookieKey, users);
+    this.localStorageService.setItem(this.usersLocalStorageKey, users);
     this.users.next(users);
   }
 
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
     this.configLocalStorage();
-    this.localStorageService.deleteCookie(this.usersCookieKey);
+    this.localStorageService.deleteItem(this.usersLocalStorageKey);
     this.users.next([]);
   }
 }

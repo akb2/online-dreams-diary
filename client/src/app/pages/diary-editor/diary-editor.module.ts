@@ -12,7 +12,6 @@ import { CoreModule } from '@_modules/core.module';
 import { DiaryEditorRoutingModule } from '@_pages/diary-editor/diary-editor-routing.module';
 import { DiaryEditorComponent } from '@_pages/diary-editor/diary-editor.component';
 import { NgModule } from '@angular/core';
-import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatTabsModule } from '@angular/material/tabs';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 

@@ -1,5 +1,5 @@
-import { AbstractControlOptions, ValidatorFn } from "@angular/forms";
 import { CustomObject, IconBackground, IconColor } from "@_models/app";
+import { AbstractControlOptions, ValidatorFn } from "@angular/forms";
 
 
 
@@ -46,6 +46,14 @@ export interface OptionData {
   iconBackground?: IconBackground;
   imagePosition?: AutocompleteImageSize;
   data?: any;
+}
+
+// Интерфейс параметров слайдера
+export interface SliderSettings {
+  min: number;
+  max: number;
+  step: number;
+  icon?: string;
 }
 
 

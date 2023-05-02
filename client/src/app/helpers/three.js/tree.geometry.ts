@@ -1,6 +1,6 @@
-import { MultiArray } from "@_models/app";
 import { CreateArray } from "@_datas/app";
 import { MathRound, Random } from "@_helpers/math";
+import { MultiArray } from "@_models/app";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -85,6 +85,25 @@ export class TreeGeometry extends BufferGeometry {
     this.setAttribute("uv", uvsArray);
     this.setAttribute("uv2", uvsArray);
     this.computeVertexNormals();
+  }
+
+  override copy(source: this): this {
+    super.copy(source);
+    // Копируем дополнительные свойства и параметры
+    this.tree = source.tree;
+    this.positionsOfBranches = source.positionsOfBranches?.map(v => v.clone()) ?? [];
+    this.parameters = { ...source.parameters };
+    // Вернуть текущий экземпляр
+    return this;
+  }
+
+  override clone(): this {
+    const parametersCopy = { ...this.parameters };
+    const newGeometry = new TreeGeometry(parametersCopy) as this;
+    // Копирование
+    newGeometry.copy(this);
+    // Вернуть новый экземпляр
+    return newGeometry;
   }
 
 
@@ -221,7 +240,9 @@ class Tree {
     };
   }
 
-  constructor(parameters: TreeGeometryParams) {
+  constructor(
+    private parameters: TreeGeometryParams
+  ) {
     this.from = parameters.from ?? new Vector3();
     // Поворот из параметров
     if (!!parameters?.rotation) {
@@ -244,6 +265,38 @@ class Tree {
     this.grow(this.spawner);
   }
 
+  copy(source: this): this {
+    this.parameters = source.parameters;
+    this.defaultLength = source.defaultLength;
+    this.defaultUvLength = source.defaultUvLength;
+    this.defaultGenerations = source.defaultGenerations;
+    this.defaultRadius = source.defaultRadius;
+    this.defaultRadiusSegments = source.defaultRadiusSegments;
+    this.defaultHeightSegments = source.defaultHeightSegments;
+    this.from = source.from.clone();
+    this.rotation = source.rotation.clone();
+    this.length = source.length;
+    this.uvLength = source.uvLength;
+    this.generation = source.generation;
+    this.generations = source.generations;
+    this.radius = source.radius;
+    this.radiusSegments = source.radiusSegments;
+    this.heightSegments = source.heightSegments;
+    this.root = source.root.clone();
+    this.spawner = source.spawner.clone();
+    // Вернуть текущий экземпляр
+    return this;
+  }
+
+  clone(): this {
+    const parametersCopy = { ...this.parameters };
+    const newTree = new Tree(parametersCopy) as this;
+    // Копирование
+    newTree.copy(this);
+    // Вернуть новый экземпляр
+    return newTree;
+  }
+
   // Смазывание
   private grow(spawner: TreeSpawner) {
     spawner = spawner ?? this.spawner;
@@ -263,6 +316,12 @@ class TreeSpawner {
     private attenuation: number = 0.75,
     private rootRange: Vector2 = new Vector2(0.75, 1.0)
   ) { }
+
+  clone(): this {
+    const newTreeSpawner = new TreeSpawner(this.theta, this.attenuation, this.rootRange.clone()) as this;
+    // Вернуть новый экземпляр
+    return newTreeSpawner;
+  }
 
   // Генерация дерева
   spawn(branch: TreeBranch, extension: boolean = false): TreeBranch {
@@ -312,7 +371,9 @@ class TreeBranch {
   segments: TreeSegment[];
   children: TreeBranch[];
 
-  constructor(parameters: TreeGeometryParams) {
+  constructor(
+    private parameters: TreeGeometryParams
+  ) {
     const from: TreeSegment | Vector3 = parameters.from;
     // Параметры класса
     this.rotation = parameters.rotation;
@@ -340,6 +401,34 @@ class TreeBranch {
     this.to = this.position.clone().add(direction.setLength(this.length));
     this.segments = this.buildTreeSegments(this.radius, this.radiusSegments, direction, this.heightSegments);
     this.children = [];
+  }
+
+  clone(): this {
+    const parametersCopy: TreeGeometryParams = { ...this.parameters };
+    const newTreeBranch = new TreeBranch(parametersCopy) as this;
+    // Копирование
+    newTreeBranch.copy(this);
+    // Вернуть новый экземпляр
+    return newTreeBranch;
+  }
+
+  copy(source: this): this {
+    this.rotation = source.rotation;
+    this.length = source.length;
+    this.generation = source.generation;
+    this.generations = source.generations;
+    this.uvLength = source.uvLength;
+    this.uvOffset = source.uvOffset;
+    this.radius = source.radius;
+    this.radiusSegments = source.radiusSegments;
+    this.heightSegments = source.heightSegments;
+    this.from = source.from.clone();
+    this.to = source.to.clone();
+    this.position = source.position.clone();
+    this.segments = source.segments?.map(s => s.clone()) ?? [];
+    this.children = source.children?.map(s => s.clone()) ?? [];
+    // Вернуть текущий экземпляр
+    return this;
   }
 
   // Создание сегментов
@@ -455,6 +544,27 @@ class TreeSegment {
       this.vertices.push(vertex);
       this.uvs.push(uv);
     });
+  }
+
+  clone(): this {
+    const newTreeBranch = new TreeSegment(
+      this.position.clone(),
+      this.rotation.clone(),
+      this.uvOffset,
+      this.radius,
+      this.radiusSegments
+    ) as this;
+    // Копирование
+    newTreeBranch.copy(this);
+    // Вернуть новый экземпляр
+    return newTreeBranch;
+  }
+
+  copy(source: this): this {
+    this.vertices = source.vertices?.map(v => v.clone()) ?? [];
+    this.uvs = source.uvs?.map(v => v.clone()) ?? [];
+    // Вернуть текущий экземпляр
+    return this;
   }
 }
 

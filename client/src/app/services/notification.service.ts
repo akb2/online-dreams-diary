@@ -26,7 +26,7 @@ export class NotificationService implements OnDestroy {
 
   private cookieKey: string = "notification_service_";
   private cookieLifeTime: number = 604800;
-  private notificationsCookieKey: string = "notifications";
+  private notificationsLocalStorageKey: string = "notifications";
 
   private user: User;
 
@@ -47,8 +47,8 @@ export class NotificationService implements OnDestroy {
   private getNotificationsFromStore(): void {
     this.configLocalStorage();
     // Добавить в наблюдение
-    this.notifications.next(this.localStorageService.getCookie(
-      this.notificationsCookieKey,
+    this.notifications.next(this.localStorageService.getItem(
+      this.notificationsLocalStorageKey,
       d => ToArray(d).map(u => u as any).filter(u => !!u)
     ));
   }
@@ -261,21 +261,21 @@ export class NotificationService implements OnDestroy {
       }
       // Обновить
       this.configLocalStorage();
-      this.localStorageService.setCookie(this.notificationsCookieKey, notifications);
+      this.localStorageService.setItem(this.notificationsLocalStorageKey, notifications);
       this.notifications.next(notifications);
     }
   }
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.cookieKey;
+    this.localStorageService.itemLifeTime = this.cookieLifeTime;
   }
 
   // Очистить данные о пользователях в сторе
   private clearNotificationsFromStore(): void {
     this.configLocalStorage();
-    this.localStorageService.deleteCookie(this.notificationsCookieKey);
+    this.localStorageService.deleteItem(this.notificationsLocalStorageKey);
     this.newNotificationsCount.next(0);
     this.notifications.next([]);
   }

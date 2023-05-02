@@ -124,18 +124,21 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
   // Скролл страницы
   onWindowScroll(): void {
     const scrollData: ScrollData = this.scrollService.getCurrentScroll;
-    const screenHeight: number = scrollData.elm.clientHeight - this.headerHeight;
-    const scrollHeight: number = scrollData.maxY + screenHeight;
-    // Активность скролла
-    this.scrollActive = screenHeight < scrollHeight;
-    this.changeDetectorRef.detectChanges();
-    // Отрисовка позиций скролла
-    if (this.scrollActive && !this.isMobile) {
-      this.sliderHeight = this.checkScrollElmSize((screenHeight / scrollHeight) * 100);
-      this.sliderPosition = (scrollData.y / scrollData.maxY) * (100 - this.sliderHeight);
+    // Элемент скролла отрисован
+    if (!!scrollData.elm) {
+      const screenHeight: number = scrollData.elm.clientHeight - this.headerHeight;
+      const scrollHeight: number = scrollData.maxY + screenHeight;
+      // Активность скролла
+      this.scrollActive = screenHeight < scrollHeight;
+      this.changeDetectorRef.detectChanges();
+      // Отрисовка позиций скролла
+      if (this.scrollActive && !this.isMobile) {
+        this.sliderHeight = this.checkScrollElmSize((screenHeight / scrollHeight) * 100);
+        this.sliderPosition = (scrollData.y / scrollData.maxY) * (100 - this.sliderHeight);
+      }
+      // Обновить
+      this.changeDetectorRef.detectChanges();
     }
-    // Обновить
-    this.changeDetectorRef.detectChanges();
   }
 
   // Фокус внутри слайдера

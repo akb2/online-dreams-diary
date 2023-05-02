@@ -1,10 +1,8 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -14,7 +12,9 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { LocalStorageService } from "@_services/local-storage.service";
-import { Observable, of, Subject } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { Injectable, OnDestroy } from "@angular/core";
+import { Observable, Subject, of } from "rxjs";
 import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/operators";
 
 
@@ -28,8 +28,9 @@ import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/opera
 export class DreamService implements OnDestroy {
 
 
-  private cookieKey: string = "dream_service";
-  private cookieLifeTime: number = 60 * 60 * 24 * 365;
+  private localStorageKey: string = "dream_service";
+  private localStorageLifeTime: number = 60 * 60 * 24 * 365;
+  private localStorageDreamMapSettings: string = "_map_settings";
 
   private user: User;
 
@@ -83,12 +84,13 @@ export class DreamService implements OnDestroy {
   get getDreamMapSettings(): DreamMapSettings {
     this.configLocalStorage();
     // Настройки
-    return {
-      detalization: this.localStorageService.getCookie(
-        "settings_detalization",
-        d => ParseInt(d) as DreamObjectElmsValues
-      )
-    };
+    return this.localStorageService.getItem(
+      this.localStorageDreamMapSettings,
+      settings => ({
+        detalization: CheckInRange(ParseInt(settings?.detalization), DreamObjectElmsValues.VeryLow, DreamObjectElmsValues.Awesome),
+        shadowQuality: ParseInt(settings?.shadowQuality)
+      })
+    );
   }
 
   // Сведения о владельце сновидения
@@ -224,7 +226,7 @@ export class DreamService implements OnDestroy {
   saveSettings(settings: DreamMapSettings): void {
     this.configLocalStorage();
     // Сохранение параметров
-    this.localStorageService.setCookie("settings_detalization", settings.detalization);
+    this.localStorageService.setItem(this.localStorageDreamMapSettings, settings);
   }
 
 
@@ -422,7 +424,7 @@ export class DreamService implements OnDestroy {
 
   // Инициализация Local Storage
   private configLocalStorage(): void {
-    this.localStorageService.cookieKey = this.cookieKey;
-    this.localStorageService.cookieLifeTime = this.cookieLifeTime;
+    this.localStorageService.itemKey = this.localStorageKey;
+    this.localStorageService.itemLifeTime = this.localStorageLifeTime;
   }
 }

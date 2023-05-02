@@ -12,6 +12,14 @@ export const ParseInt = (value: any, defaultValue: number = 0) => {
   return num;
 };
 
+// Преобразовать данные в число
+export const ParseFloat = (value: any, defaultValue: number = 0, afterDotNum: number = 0) => {
+  let num: number = parseFloat(value);
+  num = isNaN(num) ? defaultValue : num;
+  // Вернуть число
+  return MathRound(num, afterDotNum);
+};
+
 // Проверить число в пределах и вернуть новое значение
 export const CheckInRange = (value: number, max: number = Infinity, min: number = 0) => {
   value = value < min ? min : value;

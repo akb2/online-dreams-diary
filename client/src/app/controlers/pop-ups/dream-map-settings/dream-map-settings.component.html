@@ -1,0 +1,67 @@
+<!-- Шапка окна -->
+<div mat-dialog-title
+     class="title hasSubTitle">
+  <div class="title__title">Карта сновидений</div>
+  <div class="title__subTitle">Настройки графики</div>
+  <mat-icon class="title__button"
+            mat-dialog-close>close</mat-icon>
+</div>
+
+<!-- Содержимое -->
+<div mat-dialog-content>
+  <!-- Уровень детализации -->
+  <div class="field"
+       *ngVar="getDetalizationInputData as inputData">
+    <div class="field__title">Уровень детализации:</div>
+    <!-- Иконка -->
+    <div class="field__image"
+         background="fill"
+         color="primary">
+      <mat-icon [svgIcon]="inputData.icon"></mat-icon>
+    </div>
+    <!-- Поле редактирования -->
+    <mat-slider showTickMarks
+                class="field__slider"
+                [min]="inputData.min"
+                [max]="inputData.max"
+                [step]="inputData.step"
+                *ngIf="getDetalizationInitState">
+      <input matSliderThumb
+             [(ngModel)]="this.settings.detalization">
+    </mat-slider>
+  </div>
+  <!-- Качество теней -->
+  <div class="field"
+       *ngVar="getShadowQualityInputData as inputData">
+    <div class="field__title">Качество теней:</div>
+    <!-- Иконка -->
+    <div class="field__image"
+         background="fill"
+         color="primary">
+      <mat-icon [svgIcon]="inputData.icon"></mat-icon>
+    </div>
+    <!-- Поле редактирования -->
+    <mat-slider showTickMarks
+                class="field__slider"
+                [min]="inputData.min"
+                [max]="inputData.max"
+                [step]="inputData.step"
+                *ngIf="getDetalizationInitState">
+      <input matSliderThumb
+             [(ngModel)]="getShadowQualityValue">
+    </mat-slider>
+  </div>
+</div>
+
+<!-- Панель действия -->
+<div mat-dialog-actions>
+  <div class="buttons">
+    <button mat-stroked-button
+            mat-dialog-close
+            color="basic">Отмена</button>
+    <!-- Сохранение настроек -->
+    <button mat-flat-button
+            color="primary"
+            (click)="onConfirm()">Сохранить</button>
+  </div>
+</div>

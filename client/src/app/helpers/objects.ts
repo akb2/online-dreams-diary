@@ -1,3 +1,9 @@
+import { ParseInt } from "./math";
+
+
+
+
+
 // Сравнение двух объектов
 export const CompareObjects: <T>(objA: T, objB: T) => boolean = <T>(objA: T, objB: T) => {
   const simpleType: boolean = !(!!objA && !!objB && ((Array.isArray(objA) && Array.isArray(objB)) || (typeof objA === "object" && typeof objB === "object")));
@@ -54,4 +60,81 @@ export const UniqueArray: <T>(a: T[]) => T[] = <T>(a: T[]) => {
   }
   // Simple type
   return Array.from(new Set(a))
+};
+
+// Оптимизированный цикл
+export const ForCycle = (size: number, callback: (index: number) => void, inverse: boolean = false) => {
+  if (size > 0) {
+    if (!inverse) {
+      for (let i = 0; i < size; i++) {
+        callback(i);
+      }
+    }
+    // Инвертированный цикл
+    else {
+      for (let i = size - 1; i >= 0; i--) {
+        callback(i);
+      }
+    }
+  }
+};
+
+// Оптимизированный цикл по массиву
+export const ArrayForEach = <T>(array: T[], callback: (item: T, index?: number) => void, inverse: boolean = false) => {
+  ForCycle(ParseInt(array?.length), index => {
+    const item: T = array[index];
+    // Вызвать обработку элемента
+    callback(item, index);
+  }, inverse);
+};
+
+// Оптимизированная фильтрация массива
+export const ArrayFilter = <T>(array: T[], filterCallback: (item: T, index?: number) => boolean) => {
+  const filteredArray: T[] = [];
+  // Цикл по массиву
+  ArrayForEach(array, (item: T, index: number) => filterCallback(item, index) ? filteredArray.unshift(item) : null);
+  // Вернуть отфильрованный массив
+  return filteredArray;
+};
+
+// Оптимизированный поиск вхождения
+export const ArrayFind = <T>(array: T[], searchCallback: (item: T, index?: number) => boolean) => {
+  const arraySize: number = array?.length ?? 0;
+  // Массив содержит элементы
+  if (arraySize > 0) {
+    for (let index: number = arraySize - 1; index >= 0; index--) {
+      const item: T = array[index];
+      // Элемент найден
+      if (searchCallback(item, index)) {
+        return item;
+      }
+    }
+  }
+  // Ничего не найдено
+  return null;
+};
+
+// Оптимизированный поиск вхождения в массиве
+export const ArraySome = <T>(array: T[], searchCallback: (item: T, index?: number) => boolean) => !!ArrayFind(array, searchCallback);
+
+// Двумерный цикл по координатам
+export const XYForEach = <T>(width: number, height: number, getItem: (x: number, y: number) => T, callback: (item: T, x?: number, y?: number) => void) => {
+  ForCycle(height, y => ForCycle(width, x => {
+    const item: T = getItem(x, y);
+    // Обратный вызов
+    callback(item, x, y);
+  }, true), true);
+};
+
+// Двумерный цикл по координатам с возвращением результата
+export const XYMapEach = <T>(width: number, height: number, getItem: (x: number, y: number) => T) => {
+  const list: T[] = [];
+  // Цикл
+  for (let y: number = height - 1; y >= 0; y--) {
+    for (let x: number = width - 1; x >= 0; x--) {
+      list.unshift(getItem(x, y));
+    }
+  }
+  // Вернуть массив
+  return list;
 };
