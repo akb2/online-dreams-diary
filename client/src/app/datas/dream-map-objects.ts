@@ -104,7 +104,6 @@ const DreamMapGroupObjects: Partial<DreamMapGroupObject>[] = [
     ids: [1, 2, 3],
     sortIndex: 2,
     name: "Лес (случайное дерево)",
-    icon: "forest",
     catalog: 1,
     settings: {
       multiCeils: true
