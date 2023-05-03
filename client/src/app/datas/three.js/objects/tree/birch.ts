@@ -251,7 +251,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         fog: true,
         side: FrontSide,
         ...treeTextures,
-        aoMapIntensity: 0.6,
+        aoMapIntensity: 0.9,
         lightMapIntensity: 0.6,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,

@@ -227,7 +227,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         alphaTest: 0.7,
         flatShading: true,
         ...leafTextures,
-        aoMapIntensity: 0.3,
+        aoMapIntensity: 0.1,
         lightMapIntensity: 1,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
