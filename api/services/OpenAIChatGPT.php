@@ -18,7 +18,7 @@ class OpenAIChatGPTService
     $this->secretToken = $this->config['chatGpt']['sectretToken'];
     $this->gptUrls = array(
       'models' => array('https://api.openai.com/v1/models', false),
-      'dream' => array('https://api.openai.com/v1/completions', true)
+      'dream' => array('https://api.openai.com/v1/chat/completions', true)
     );
   }
 
@@ -60,28 +60,27 @@ class OpenAIChatGPTService
       $dreamText = $dream['text'];
       // Текст для интерпритации
       $text =
-        'Интерпретируй пожалуйста мое сновидение' . "\n" .
         (!!$dreamTitle ? 'Название: ' . $dreamTitle . "\n" : '') .
-        (!!$dreamDescription ? 'Краткое описание: ' . $dreamDescription . "\n" : '') .
-        (!!$dreamKeywords ? 'Ключевые слова: ' . $dreamKeywords . "\n" : '') .
-        (!!$dreamDate ? 'Когда приснился: ' . $dreamDate . "\n" : '') .
-        (!!$dreamType ? 'Тип сновидения: ' . $dreamType . "\n" : '') .
-        (!!$dreamMood ? 'Настроение в сновидении: ' . $dreamMood . "\n" : '') .
-        'Полное описание: ' . strip_tags($dreamText) .
+        (!!$dreamDate ? 'Дата: ' . $dreamDate . "\n" : '') .
+        (!!$dreamType ? 'Тип: ' . $dreamType . "\n" : '') .
+        (!!$dreamMood ? 'Настроение: ' . $dreamMood . "\n" : '') .
+        'Текст: ' . strip_tags($dreamText) .
         '';
       // Параметры запроса
       [$url, $isPost] = $this->gptUrls['dream'];
       $body = array(
-        'model' => 'text-davinci-003',
-        'prompt' => $text,
+        'model' => 'gpt-3.5-turbo',
         'temperature' => 0.8,
         'max_tokens' => 2048,
-        'stop' => '###'
+        'messages' => array(
+          array('role' => 'system', 'content' => 'Тебе надо дать толкование сновидения по описанию'),
+          array('role' => 'user', 'content' => $text),
+        )
       );
       $data = $this->gptRequest($url, $isPost, $body);
       // Вернуть данные
       if (!!$data) {
-        return strval($data['choices'][0]['text'] ?? '');;
+        return strval($data['choices'][0]['message']['content'] ?? '');;
       }
     }
     // Не удалось интерпретировать
