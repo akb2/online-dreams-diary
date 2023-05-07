@@ -1,5 +1,5 @@
 import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_datas/dream-map-settings";
-import { CoordDto } from "@_models/dream-map";
+import { ClosestHeights, CoordDto } from "@_models/dream-map";
 import { Float32BufferAttribute, IUniform, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
 
 
@@ -85,3 +85,6 @@ export const DefaultMatrix: Matrix4 = new Matrix4();
 
 // Загрузчик текстур
 export const GetTextureLoader: TextureLoader = new TextureLoader();
+
+// Список анализируемых соседних ячеек
+export const ClosestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];

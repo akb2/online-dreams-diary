@@ -32,9 +32,6 @@ export const CeilGrassFillGeometry: CeilGrassFillGeometryType[] = [
   "triangle",
 ];
 
-// Список анализируемых соседних ячеек
-export const ClosestKeysAll: (keyof ClosestHeights)[] = ["top", "right", "bottom", "left"];
-
 // Углы
 export const AnglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 180, bottom: 270, left: 0 };
 export const AnglesB: CustomObjectKey<keyof ClosestHeights, CustomObjectKey<keyof ClosestHeights, number>> = {
