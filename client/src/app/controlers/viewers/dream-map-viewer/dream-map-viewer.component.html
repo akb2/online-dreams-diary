@@ -1,4 +1,7 @@
 <div class="map-viewer">
+  <!-- Прицел -->
+  <div class="map-viewer__chair"
+       [ngStyle]="{ top: chairPositionY + 'px', left: chairPositionX + 'px' }"></div>
   <!-- Карта -->
   <canvas #canvas></canvas>
   <!-- Статистика -->

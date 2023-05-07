@@ -52,8 +52,6 @@
 
 
 
-
-
 <!-- Под-инструмент: окружение -->
 <ng-template #envTools>
   <!-- Положение небесного светила -->
@@ -186,7 +184,8 @@
   <!-- Категории -->
   <div class="tool-button"
        (click)="onObjectsCategoriesChange(getCurrentObjectsCatalog.id)">
-    <mat-icon>{{getCurrentObjectsCatalog.icon}}</mat-icon>
+    <ng-template [ngTemplateOutlet]="matIcon"
+                 [ngTemplateOutletContext]="{ icon: getCurrentObjectsCatalog.icon, type: getCurrentObjectsCatalog.iconType }"></ng-template>
     <!-- Список категорий объектов -->
     <div class="tool-button__items border-radius">
       <div class="tool-button"
@@ -194,7 +193,8 @@
            matTooltip="Категория объектов: {{catalog.name}}"
            (click)="onObjectsCategoriesChange(catalog.id)"
            *ngFor="let catalog of objectsCatalogs">
-        <mat-icon>{{catalog.icon}}</mat-icon>
+        <ng-template [ngTemplateOutlet]="matIcon"
+                     [ngTemplateOutletContext]="{ icon: catalog.icon, type: catalog.iconType }"></ng-template>
       </div>
     </div>
   </div>
@@ -225,7 +225,14 @@
 
 
 
-
+<!-- Стандартная иконка -->
+<ng-template #matIcon
+             let-icon="icon"
+             let-type="type">
+  <mat-icon [svgIcon]="icon"
+            *ngIf="type === iconTypes.svg"></mat-icon>
+  <mat-icon *ngIf="type !== iconTypes.svg">{{icon}}</mat-icon>
+</ng-template>
 
 <!-- Под-инструмент: размер кисти -->
 <ng-template #toolsSizeForm>

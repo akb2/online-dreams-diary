@@ -5,7 +5,7 @@ import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
-import { CustomObjectKey, SimpleObject } from "@_models/app";
+import { CustomObjectKey, IconType, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
 import { SliderSettings } from "@_models/form";
@@ -40,6 +40,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   toolSizeLandLength: number = ToolSizeLand.length - 1;
   form: FormGroup;
   loading: boolean = false;
+  iconTypes: typeof IconType = IconType;
 
   private startZ: number = -1;
 

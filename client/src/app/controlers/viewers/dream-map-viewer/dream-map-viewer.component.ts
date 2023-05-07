@@ -1,9 +1,9 @@
 import { CreateArray } from "@_datas/app";
 import { DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { GetDreamMapObjectByID } from "@_datas/three.js/objects/grass/_functions";
+import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleToRad, IsOdd, LineFunc, RadToAngle } from "@_helpers/math";
+import { AngleToRad, IsOdd, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -19,7 +19,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Material, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -71,6 +71,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private oceanFlowSpeed: number = 3;
 
   private lastMouseMove: number = 0;
+
+  chairPositionY: number = 0;
+  chairPositionX: number = 0;
 
   private objectRaycastBoxes: ObjectRaycastMesh[] = [];
   private postProcessingEffects: PostProcessingEffects;
@@ -546,6 +549,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание сцены
   private createScene(): void {
+    const mapWidth: number = this.dreamMap.size.width;
+    const mapHeight: number = this.dreamMap.size.height;
+    const raycastSize: number = (mapWidth * mapHeight) + 3;
+    const depthMax: number = 1;
+    const preferredObjectsPerNode: number = 8;
+    const objectsThreshold: number = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Отрисовщик
     this.renderer = new WebGLRenderer({
       context: this.canvas.nativeElement.getContext(this.contextType),
@@ -582,8 +591,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       scene: this.scene,
       undeferred: false,
       depthMax: 1,
-      objectsThreshold: 8,
-      overlapPct: 1
+      objectsThreshold,
+      overlapPct: 0.15
     });
     // Управление
     this.control = new OrbitControls(this.camera, this.canvas.nativeElement);
@@ -643,7 +652,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       );
       // Добавить к сцене
       this.scene.add(sky, sun, atmosphere);
-      this.octree.add(sky, { useVertices: false, useFaces: false });
+      this.octree.add(sky);
       this.octree.update();
       this.scene.fog = fog;
       this.sun = sun;
@@ -688,7 +697,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.ocean.receiveShadow = true;
       this.ocean.name = DreamMapOceanName;
       // Добавить в сцену
-      this.octree.add(this.ocean, { useVertices: false, useFaces: false });
+      this.octree.add(this.ocean);
       this.scene.add(this.ocean);
       this.octree.update();
       this.render();
@@ -702,7 +711,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       map(terrain => {
         this.scene.add(terrain);
         this.terrainMesh = terrain;
-        this.octree.add(terrain, { useVertices: false, useFaces: false });
+        this.octree.add(terrain);
         // Рендер
         this.render();
         this.octree.update();
@@ -963,7 +972,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 // Объект для пересечения
                 if (!!raycastCoords) {
                   const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(this.objectRaycastBoxes, ({ ceilCoords: { x, y } }) => x === ceil.coord.x && y === ceil.coord.y);
-                  const raycastMesh: Mesh = !!allRaycastMesh?.length ? allRaycastMesh[0].mesh : new Mesh(ObjectRaycastGeometry.clone(), ObjectRaycastMaterial);
+                  const isNewObject: boolean = !allRaycastMesh?.length;
+                  const raycastMesh: Mesh = !isNewObject ? allRaycastMesh[0].mesh : new Mesh(ObjectRaycastGeometry.clone(), ObjectRaycastMaterial);
                   const [minX, maxX, minY, maxY, minZ, maxZ] = [...allRaycastMesh, raycastCoords]
                     .map(({ minX, maxX, minY, maxY, minZ, maxZ }) => ([minX, maxX, minY, maxY, minZ, maxZ]))
                     .reduce(([oMinX, oMaxX, oMinY, oMaxY, oMinZ, oMaxZ], [minX, maxX, minY, maxY, minZ, maxZ]) => ([
@@ -987,18 +997,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                       y: ceil.coord.y,
                     }
                   });
-                  // Добавить объект
-                  if (!allRaycastMesh?.length) {
-                    this.scene.add(raycastMesh);
-                    this.octree.add(raycastMesh, { useVertices: false, useFaces: false });
-                  }
                   // Обновить параметры
                   raycastMesh.geometry = ObjectRaycastGeometry.clone();
                   raycastMesh.scale.set(scaleX, scaleY, scaleZ);
                   raycastMesh.position.set(minX + width / 2, minY + height / 2, minZ + depth / 2);
                   raycastMesh.name = DreamMapObjectIntersectorName;
-                  // Обновить
-                  this.octree.update();
+                  // Добавить объект
+                  if (isNewObject) {
+                    this.scene.add(raycastMesh);
+                    this.octree.add(raycastMesh);
+                  }
+                  // Обновить объект
+                  else {
+                    this.octree.updateObject(raycastMesh);
+                  }
+                  // Обновить октодерево
+                  if (!!this.octree.objectsDeferred?.length) {
+                    this.octree.update();
+                  }
                 }
                 // Общие настройки
                 this.objectSettings.push(objectSetting);
@@ -1090,6 +1106,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.octree.remove(mesh);
           this.scene.remove(mesh);
           this.octree.update();
+          mesh.geometry?.dispose();
+          (mesh.material as Material)?.dispose();
           mesh.dispose();
           mesh.remove();
         }
@@ -1114,7 +1132,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           this.octree.remove(raycastMesh.mesh);
           this.scene.remove(raycastMesh.mesh);
           this.octree.update();
-          raycastMesh.mesh.remove();
+          raycastMesh.mesh.geometry?.dispose();
+          (raycastMesh.mesh.material as Material)?.dispose();
         }
       }, true);
     }
@@ -1171,9 +1190,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Обновить параметры пост обработки
   private updatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
-      const screenX: number = this.width * 0.5;
-      const screenY: number = LineFunc(this.height, this.height * 0.5, this.control.getPolarAngle(), this.control.minPolarAngle, this.control.maxPolarAngle);
-      const objects: Intersection[] = this.getIntercectionObject(screenX, screenY);
+      this.chairPositionX = this.width * 0.5;
+      this.chairPositionY = LineFunc(this.height * 0.8, this.height * 0.5, this.control.getPolarAngle(), this.control.minPolarAngle, this.control.maxPolarAngle);
+      const objects: Intersection[] = this.getIntercectionObject(this.chairPositionX, this.chairPositionY);
       const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
       const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
       const blendMode: BlendMode = depthOfFieldEffect.blendMode;
@@ -1606,5 +1625,6 @@ const ObjectRaycastMaterial: MeshBasicMaterial = new MeshBasicMaterial({
   wireframe: true,
   transparent: true,
   opacity: 0,
-  depthWrite: false
+  depthWrite: false,
+  side: DoubleSide
 });
