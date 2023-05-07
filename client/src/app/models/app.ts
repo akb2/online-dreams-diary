@@ -13,6 +13,12 @@ export type CustomObject<V> = { [key: string]: V };
 export type CustomObjectKey<K, V> = { [key in K as string | number | symbol]: V };
 export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
 
+// Тип иконки
+export enum IconType {
+  default,
+  svg
+}
+
 // Данные для Local Storage
 export interface LocalStorageItemInterface {
   value: any;

@@ -1,5 +1,5 @@
 import { DreamMapObjectTemplate } from "@_datas/three.js/objects/_base";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey, IconType } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
 import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { BufferGeometry, Clock, Color, DataTexture, InstancedMesh, Material, Matrix4, Mesh } from "three";
@@ -15,6 +15,7 @@ export interface DreamMapObject {
   sortIndex: number;
   name: string;
   icon?: string;
+  iconType?: IconType;
   image?: string;
   catalog: number;
   controllers: ObjectController[];
@@ -54,6 +55,7 @@ export interface DreamMapObjectSettings {
 export interface DreamMapObjectCatalog {
   id: number;
   icon: string;
+  iconType: IconType;
   name: string;
 }
 
