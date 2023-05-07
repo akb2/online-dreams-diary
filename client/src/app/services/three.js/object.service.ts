@@ -1,7 +1,7 @@
 import { ObjectControllers, ObjectStaticSubTypeControllers } from "@_datas/dream-map-objects";
 import { DreamTerrain } from "@_datas/dream-map-settings";
 import { DreamMapObjectTemplate } from "@_datas/three.js/objects/_base";
-import { GetDreamMapObjectByID } from "@_datas/three.js/objects/grass/_functions";
+import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { ArrayFilter } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";

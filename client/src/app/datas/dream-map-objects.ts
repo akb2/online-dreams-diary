@@ -1,5 +1,6 @@
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey, IconType } from "@_models/app";
 import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
+import { DreamMapRabitzNetObject } from "./three.js/objects/fence/rabitzNet";
 import { DreamMapPlantainGrassObject } from "./three.js/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";
 import { DreamMapBirchTreeObject } from "./three.js/objects/tree/birch";
@@ -39,7 +40,15 @@ export const DreamMapObjectCatalogs: DreamMapObjectCatalog[] = [
   {
     id: 1,
     icon: "forest",
+    iconType: IconType.default,
     name: "Растительность"
+  },
+  // Заборы
+  {
+    id: 2,
+    icon: "fence",
+    iconType: IconType.svg,
+    name: "Заборы"
   },
 ];
 
@@ -92,6 +101,23 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
     settings: {
       mixWithDefault: true,
       multiCeils: true
+    }
+  },
+  // Забор: сетка Рабица
+  {
+    id: 4,
+    sortIndex: 1,
+    name: "Сетка Рабица",
+    catalog: 2,
+    controllers: [
+      DreamMapRabitzNetObject
+    ],
+    subTypeFunctions: {
+      "fence-rabitz-net-column": DreamMapRabitzNetObject.getSubType
+    },
+    settings: {
+      mixWithDefault: true,
+      multiCeils: false
     }
   }
 ];
