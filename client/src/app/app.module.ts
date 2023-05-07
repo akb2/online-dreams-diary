@@ -59,5 +59,10 @@ export class AppModule {
       "detalization_level_" + i,
       this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/detalization_level_" + i + ".svg")
     ));
+    // Забор
+    this.matIconRegistry.addSvgIcon(
+      "fence",
+      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/fence.svg")
+    );
   }
 }
