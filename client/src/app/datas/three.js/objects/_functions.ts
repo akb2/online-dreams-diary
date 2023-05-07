@@ -1,10 +1,10 @@
 import { CreateArray } from "@_datas/app";
+import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_helpers/math";
-import { ArrayForEach } from "@_helpers/objects";
-import { CustomObjectKey } from "@_models/app";
+import { ArrayFilter, ArrayFind, ArrayForEach } from "@_helpers/objects";
 import { CoordDto } from "@_models/dream-map";
-import { ObjectSetting } from "@_models/dream-map-objects";
+import { DreamMapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { GeometryQuality } from "@_services/three.js/terrain.service";
 import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "./_models";
@@ -12,6 +12,12 @@ import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerr
 
 
 
+
+// Объект по ID
+export const GetDreamMapObjectByID = (objectId: number) => ArrayFind(
+  ArrayFilter(DreamMapObjects, ({ type }) => type === "object").map(d => d as DreamMapObject),
+  ({ id }) => id === objectId
+);
 
 // Функция определения положения объекта на координате Y
 export const GetHeightByTerrain = (params: GetHeightByTerrainObject, x: number, y: number) => {
@@ -164,9 +170,7 @@ export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {
 };
 
 // Пакет текстур
-type GetTexturesType = (name: string, path: string, useKeys?: (keyof MeshStandardMaterial)[], callback?: (texture: Texture) => void) =>
-  CustomObjectKey<keyof MeshStandardMaterial, Texture>;
-export const GetTextures: GetTexturesType = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
+export const GetTextures = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
   .filter(([key]) => !useKeys || useKeys.includes(key))
   .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
     texture.encoding = sRGBEncoding;

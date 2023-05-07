@@ -1,20 +1,13 @@
-import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilSize } from "@_datas/dream-map-settings";
 import { MathRound, Random, TriangleSquare } from "@_helpers/math";
-import { ArrayFilter, ArrayFind } from "@_helpers/objects";
 import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
-import { DreamMapObject } from "@_models/dream-map-objects";
-import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, ClosestKeysAll, RandomFactor, TrianglesCoords } from "./_models";
+import { GetDreamMapObjectByID } from "../_functions";
+import { ClosestKeysAll } from "../_models";
+import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, RandomFactor, TrianglesCoords } from "./_models";
 
 
 
 
-
-// Объект по ID
-export const GetDreamMapObjectByID = (objectId: number) => ArrayFind(
-  ArrayFilter(DreamMapObjects, ({ type }) => type === "object").map(d => d as DreamMapObject),
-  ({ id }) => id === objectId
-);
 
 // Получить под типа травы
 export const GetGrassSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => {
