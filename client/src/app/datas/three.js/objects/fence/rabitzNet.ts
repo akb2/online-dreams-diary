@@ -1,16 +1,30 @@
 import { DreamCeilSize } from "@_datas/dream-map-settings";
-import { ArrayForEach } from "@_helpers/objects";
+import { AngleToRad } from "@_helpers/math";
+import { ArrayForEach, MapCycle } from "@_helpers/objects";
+import { CustomObjectKey } from "@_models/app";
+import { ClosestHeights, CoordDto, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { BoxGeometry, BufferGeometry, DoubleSide, FrontSide, Matrix4, MeshLambertMaterial, Object3D, PlaneGeometry } from "three";
+import { BoxGeometry, BufferGeometry, DoubleSide, FrontSide, Matrix4, MeshLambertMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
-import { GetHeightByTerrain, UpdateHeight } from "../_functions";
-import { CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
+import { CreateTerrainTriangles, GetHeightByTerrain, GetTextures } from "../_functions";
+import { CreateTerrainTrianglesObject, DefTranslate, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
+import { GetFenceSubType, GetFenceWallSettings } from "./_functions";
+import { AnglesA } from "./_models";
 
 
 
 
 
 export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements DreamMapObjectTemplate {
+
+  // Получение подтипа
+  static override getSubType(ceil?: DreamMapCeil, neighboringCeils?: ClosestHeights, type: string = "", subType: string = ""): string {
+    return GetFenceSubType(ceil, neighboringCeils);
+  }
+
+
+
+
 
   private type: string = "fence-rabitz-net";
 
@@ -38,24 +52,91 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
   private getColumnInstance(): MapObject {
     const type: string = this.type + "-column";
     const params: Params = this.getParams;
-    const { cX, cY, geometry: { column: geometry }, material: { column: material }, columnHeight } = params;
-    const dummy: Object3D = new Object3D();
+    const {
+      cX,
+      cY,
+      geometry: { column: geometry },
+      material: { column: material },
+      columnHeight,
+      dummy: defaultDummy,
+      netWidth,
+      netHeight,
+      netPositionTop,
+      columnCount: count,
+      horizontalScale
+    } = params;
+    const wallSettings = GetFenceWallSettings(this.ceil, this.neighboringCeils);
+    const columnHeightHalf: number = columnHeight / 2;
     const x: number = cX + (DreamCeilSize / 2);
     const y: number = cY + (DreamCeilSize / 2);
-    const z: number = GetHeightByTerrain(params, x, y) + (columnHeight / 2);
+    const z: number = GetHeightByTerrain(params, x, y) + columnHeightHalf;
     // Настройки
-    dummy.matrix = DefaultMatrix.clone();
-    dummy.position.set(x, z, y);
-    dummy.updateMatrix();
-    // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = [dummy.matrix.clone()];
+    const matrix: Matrix4[] = MapCycle(count, i => {
+      const dummy: Object3D = defaultDummy.clone();
+      // Горизонтальные опоры
+      if (i < wallSettings.length) {
+        const setting = wallSettings[i];
+        const angle: number = AnglesA[setting.neighboringName];
+        const neighboringParams: Params = {
+          ...params,
+          ...this.createParamsHelpers(),
+          ...CreateTerrainTriangles(params.terrainGeometry, setting.coords.x, setting.coords.y)
+        };
+        const neighboringX: number = neighboringParams.cX + (DreamCeilSize / 2);
+        const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
+        const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + columnHeightHalf;
+        const diffZ: number = neighboringZ - z;
+        const size: number = Math.sqrt(Math.pow(netWidth, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
+        const verticalScale: number = size / columnHeight;
+        const correctAngle: number = (Math.atan2(diffZ / 2, netWidth));
+        const tempZ: number = z - columnHeightHalf + netPositionTop + netHeight + (diffZ / 4);
+        // Левая грань
+        if (angle === 180) {
+          dummy.position.set(x - (netWidth / 2), tempZ, y);
+          dummy.scale.set(horizontalScale, verticalScale, 1);
+          dummy.rotateZ(AngleToRad(90) - correctAngle);
+        }
+        // Правая грань
+        else if (angle === 0) {
+          dummy.position.set(x + (netWidth / 2), tempZ, y);
+          dummy.scale.set(horizontalScale, verticalScale, 1);
+          dummy.rotateZ(AngleToRad(90) + correctAngle);
+        }
+        // Нижняя грань
+        else if (angle === 270) {
+          dummy.position.set(x, tempZ, y + (netWidth / 2));
+          dummy.scale.set(1, verticalScale, horizontalScale);
+          dummy.rotateX(AngleToRad(90) - correctAngle);
+        }
+        // Верхняя грань
+        else if (angle === 90) {
+          dummy.position.set(x, tempZ, y - (netWidth / 2));
+          dummy.scale.set(1, verticalScale, horizontalScale);
+          dummy.rotateX(AngleToRad(90) + correctAngle);
+        }
+        // Обновить матрицу
+        dummy.updateMatrix();
+        // Вернуть матрицу
+        return dummy.matrix.clone();
+      }
+      // Основной столб
+      else if (i === count - 1) {
+        dummy.position.set(x, z, y);
+        dummy.updateMatrix();
+        // Вернуть матрицу
+        return dummy.matrix.clone();
+      }
+      // Нет фрагмента
+      return null;
+    });
     // Вернуть объект
     return {
       type,
       subType: DreamMapRabitzNetObject.getSubType(this.ceil, this.neighboringCeils),
       splitBySubType: false,
-      count: 1,
+      count,
       matrix,
+      skews: [],
       color: [],
       geometry: geometry as BufferGeometry,
       material,
@@ -73,28 +154,58 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
 
   // Сетка
   private getNetInstance(): MapObject {
-    const type: string = this.type + "-net";
+    const type: string = this.type + "-wall";
     const params: Params = this.getParams;
-    const { cX, cY, geometry: { net: geometry }, material: { net: material }, netHeight, netWidth, netPositionTop } = params;
-    const dummy: Object3D = new Object3D();
+    const {
+      cX,
+      cY,
+      geometry: { net: geometry },
+      material: { net: material },
+      netHeight,
+      netWidth,
+      netPositionTop,
+      dummy: defaultDummy,
+      netCount: count
+    } = params;
+    const wallSettings = GetFenceWallSettings(this.ceil, this.neighboringCeils);
     const x: number = cX + (DreamCeilSize / 2);
     const y: number = cY + (DreamCeilSize / 2);
     const z: number = GetHeightByTerrain(params, x, y) + netPositionTop;
-    // Настройки
-    dummy.matrix = DefaultMatrix.clone();
-    dummy.position.set(x, z, y);
-    dummy.translateX(netWidth / 2);
-    dummy.translateY(netHeight / 2);
-    geometry.applyMatrix4(dummy.matrix);
-    dummy.updateMatrix();
+    const skews: Vector3[] = [];
     // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = [dummy.matrix.clone()];
+    const matrix: Matrix4[] = MapCycle(count, i => {
+      if (i < wallSettings.length) {
+        const dummy: Object3D = defaultDummy.clone();
+        const setting = wallSettings[i];
+        const angle: number = AnglesA[setting.neighboringName];
+        const neighboringParams: Params = {
+          ...params,
+          ...this.createParamsHelpers(),
+          ...CreateTerrainTriangles(params.terrainGeometry, setting.coords.x, setting.coords.y)
+        };
+        const neighboringX: number = neighboringParams.cX + (DreamCeilSize / 2);
+        const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
+        const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + netPositionTop;
+        const diffZ: number = neighboringZ - z;
+        // Настройки
+        dummy.position.set(x, z, y);
+        dummy.rotation.set(0, AngleToRad(angle), 0);
+        dummy.translateX(netWidth / 2);
+        dummy.translateY((netHeight / 2) + (diffZ / 4));
+        dummy.updateMatrix();
+        skews.push(new Vector3(0, diffZ, 0));
+        // Вернуть матрицу
+        return dummy.matrix.clone();
+      }
+      // Матрица по умолчанию
+      return null;
+    }, false);
     // Вернуть сетки
     return {
       type,
-      subType: DreamMapRabitzNetObject.getSubType(this.ceil, this.neighboringCeils),
+      subType: DreamMapRabitzNetObject.getSubType(this.ceil, this.neighboringCeils, type),
       splitBySubType: false,
-      count: 1,
+      count,
       matrix,
       color: [],
       geometry: geometry as BufferGeometry,
@@ -103,11 +214,13 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         x: this.ceil.coord.x,
         y: this.ceil.coord.y
       },
+      skews,
       animate: this.animate.bind(this),
       castShadow: false,
       recieveShadow: false,
       isDefault: false,
-      raycastBox: true
+      raycastBox: true,
+      moreClosestsUpdate: true
     };
   }
 
@@ -120,6 +233,10 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     }
     // Определить параметры
     else {
+      const columnCount: number = 5;
+      const netCount: number = 4;
+      const horizontalScale: number = 0.7;
+      const textureRepeat: number = 12;
       const columnDiameter: number = (this.columnRadius * DreamCeilSize) * 2;
       const columnHeight: number = this.columnHeight * DreamCeilSize;
       const netHeight: number = this.netHeight * DreamCeilSize;
@@ -127,12 +244,26 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       const netPositionTop: number = DreamCeilSize * this.netPositionTop;
       const columnGeometry: BoxGeometry = new BoxGeometry(columnDiameter, columnHeight, columnDiameter);
       const netGeometry: PlaneGeometry = new PlaneGeometry(netWidth, netWidth);
+      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map"/* , "aoMap", "normalMap", "lightMap" */];
+      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys, texture => {
+        texture.repeat = new Vector2(textureRepeat, (netHeight / netWidth) * textureRepeat);
+      });
       const columnMeterial: MeshLambertMaterial = new MeshLambertMaterial({ color: 0x888888, side: FrontSide });
-      const netMeterial: MeshLambertMaterial = new MeshLambertMaterial({ color: 0x888888, side: DoubleSide });
+      const netMeterial: MeshStandardMaterial = new MeshStandardMaterial({
+        ...textures,
+        side: DoubleSide,
+        transparent: true,
+        alphaTest: 0.5
+      });
+      const dummy: Object3D = new Object3D();
       // Парамтеры
       this.params = {
         ...geometryDatas,
         ...this.createParamsHelpers(),
+        columnCount,
+        netCount,
+        horizontalScale,
+        dummy,
         columnDiameter,
         columnHeight,
         netHeight,
@@ -158,7 +289,147 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
 
   // Обновить позицию по оси Z
   updateHeight(objectSetting: ObjectSetting): void {
-    UpdateHeight(objectSetting, this.getParams);
+    if (objectSetting.count > 0) {
+      if (objectSetting.type === this.type + "-column") {
+        this.updateColumnHeight(objectSetting);
+      }
+      // Сетка
+      else if (objectSetting.type === this.type + "-wall") {
+        this.updateNetHeight(objectSetting);
+      }
+    }
+  }
+
+  // Обновить позицию по оси Z: опоры
+  private updateColumnHeight(objectSetting: ObjectSetting): void {
+    const params: Params = this.getParams;
+    const matrix: Matrix4 = DefaultMatrix.clone();
+    const position: Vector3 = new Vector3();
+    const columnHeightHalf: number = params.columnHeight / 2;
+    const wallSettings = GetFenceWallSettings(this.ceil, this.neighboringCeils);
+    // Цикл по фрагментам
+    ArrayForEach(objectSetting.indexKeys, (index, i) => {
+      objectSetting.mesh.getMatrixAt(index, matrix);
+      position.setFromMatrixPosition(matrix);
+      // Горизонтальные опоры
+      if (i < wallSettings.length) {
+        const x: number = params.cX + (DreamCeilSize / 2);
+        const y: number = params.cY + (DreamCeilSize / 2);
+        const z: number = GetHeightByTerrain(params, x, y) + columnHeightHalf;
+        const setting = wallSettings[i];
+        const angle: number = AnglesA[setting.neighboringName];
+        const neighboringParams: Params = {
+          ...params,
+          ...this.createParamsHelpers(),
+          ...CreateTerrainTriangles(params.terrainGeometry, setting.coords.x, setting.coords.y)
+        };
+        const neighboringX: number = neighboringParams.cX + (DreamCeilSize / 2);
+        const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
+        const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + columnHeightHalf;
+        const diffZ: number = neighboringZ - z;
+        const size: number = Math.sqrt(Math.pow(params.netWidth, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
+        const verticalScale: number = size / params.columnHeight;
+        const correctAngle: number = (Math.atan2(diffZ / 2, params.netWidth));
+        const tempZ: number = z - columnHeightHalf + params.netPositionTop + params.netHeight + (diffZ / 4);
+        // Сбросить матрицу
+        matrix.identity();
+        // Левая грань
+        if (angle === 180) {
+          matrix.makeRotationZ(AngleToRad(90) - correctAngle);
+          matrix.setPosition(x - (params.netWidth / 2), tempZ, y);
+          matrix.scale(new Vector3(1, verticalScale, 1));
+        }
+        // Правая грань
+        else if (angle === 0) {
+          matrix.makeRotationZ(AngleToRad(90) + correctAngle);
+          matrix.setPosition(x + (params.netWidth / 2), tempZ, y);
+          matrix.scale(new Vector3(1, verticalScale, 1));
+        }
+        // Нижняя грань
+        else if (angle === 270) {
+          matrix.makeRotationX(AngleToRad(90) - correctAngle);
+          matrix.setPosition(x, tempZ, y + (params.netWidth / 2));
+          matrix.scale(new Vector3(1, verticalScale, 1));
+        }
+        // Верхняя грань
+        else if (angle === 90) {
+          matrix.makeRotationX(AngleToRad(90) + correctAngle);
+          matrix.setPosition(x, tempZ, y - (params.netWidth / 2));
+          matrix.scale(new Vector3(1, verticalScale, 1));
+        }
+      }
+      // Основной столб
+      else if (i === params.columnCount - 1) {
+        const translate: CoordDto = objectSetting?.translates?.length > i ? objectSetting.translates[i] ?? DefTranslate : DefTranslate;
+        const x: number = position.x - translate.x;
+        const z: number = position.z - translate.z;
+        const y: number = GetHeightByTerrain(params, x, z) + columnHeightHalf;
+        // Обновить свойства
+        matrix.setPosition(x + translate.x, y + translate.y, z + translate.z);
+      }
+      // Запомнить позицию
+      objectSetting.mesh.setMatrixAt(index, matrix);
+    }, true);
+    // Обновить
+    objectSetting.mesh.updateMatrix();
+    objectSetting.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // Обновить позицию по оси Z: сетка
+  private updateNetHeight(objectSetting: ObjectSetting): void {
+    const params: Params = this.getParams;
+    const matrix: Matrix4 = DefaultMatrix.clone();
+    const skews: Vector3 = new Vector3();
+    const x: number = params.cX + (DreamCeilSize / 2);
+    const y: number = params.cY + (DreamCeilSize / 2);
+    const z: number = GetHeightByTerrain(params, x, y) + params.netPositionTop;
+    const wallSettings = GetFenceWallSettings(this.ceil, this.neighboringCeils);
+    // Цикл по фрагментам
+    ArrayForEach(objectSetting.indexKeys, (index, i) => {
+      if (i < wallSettings.length) {
+        const setting = wallSettings[i];
+        const angle: number = AnglesA[setting.neighboringName];
+        const neighboringParams: Params = {
+          ...params,
+          ...this.createParamsHelpers(),
+          ...CreateTerrainTriangles(params.terrainGeometry, setting.coords.x, setting.coords.y)
+        };
+        const neighboringX: number = neighboringParams.cX + (DreamCeilSize / 2);
+        const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
+        const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + params.netPositionTop;
+        const diffZ: number = neighboringZ - z;
+        // Сбросить матрицу
+        objectSetting.mesh.getMatrixAt(index, matrix);
+        objectSetting.mesh.getShearAt(index, skews);
+        matrix.identity();
+        // Настройки
+        matrix.makeRotationY(AngleToRad(angle));
+        skews.set(0, diffZ, 0);
+        // Левая стена
+        if (setting.neighboringName === "left") {
+          matrix.setPosition(x - (params.netWidth / 2), z + (params.netHeight / 2) + (diffZ / 4), y);
+        }
+        // Правая стена
+        if (setting.neighboringName === "right") {
+          matrix.setPosition(x + (params.netWidth / 2), z + (params.netHeight / 2) + (diffZ / 4), y);
+        }
+        // Верхняя стена
+        if (setting.neighboringName === "top") {
+          matrix.setPosition(x, z + (params.netHeight / 2) + (diffZ / 4), y - (params.netWidth / 2));
+        }
+        // Нижняя стена
+        if (setting.neighboringName === "bottom") {
+          matrix.setPosition(x, z + (params.netHeight / 2) + (diffZ / 4), y + (params.netWidth / 2));
+        }
+        // Запомнить позицию
+        objectSetting.mesh.setMatrixAt(index, matrix);
+        objectSetting.mesh.setShearAt(index, skews);
+      }
+    }, true);
+    // Обновить
+    objectSetting.mesh.updateMatrix();
+    objectSetting.mesh.instanceMatrix.needsUpdate = true;
+    objectSetting.mesh.instanceShear.needsUpdate = true;
   }
 
   // Очистка памяти
@@ -180,17 +451,21 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
 
 // Интерфейс параметров для расчетов
 interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject {
+  columnCount: number;
+  netCount: number;
+  horizontalScale: number;
   columnDiameter: number;
   columnHeight: number;
   netWidth: number;
   netHeight: number;
   netPositionTop: number;
+  dummy: Object3D;
   geometry: {
     column: BoxGeometry,
     net: PlaneGeometry
   };
   material: {
     column: MeshLambertMaterial,
-    net: MeshLambertMaterial
+    net: MeshStandardMaterial
   };
 }

@@ -1,46 +1,51 @@
-import { ClosestHeight, ClosestHeights, DreamMapCeil } from "@_models/dream-map";
-import { GetDreamMapObjectByID } from "../_functions";
+import { ArrayFilter, ArrayMap } from "@_helpers/objects";
+import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { ClosestKeysAll } from "../_models";
-import { CeilFenceWallGeometry } from "./_models";
 
 
 
 
 
-// Получить под типа травы
-// export const GetGrassSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => {
-//   const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);
-//   const closestCeils: ClosestHeight[] = closestKeys.map(k => neighboringCeils[k]);
-//   const closestCount: number = closestCeils.length;
-//   // Отрисовка только для существующих типов фигур
-//   if (closestCount < CeilFenceWallGeometry.length && !!CeilFenceWallGeometry[closestCount]) {
-//     // Для ячеек без похожих соседних ячеек
-//     if (closestCount === 0) {
-//       return "circle";
-//     }
-//     // Для ячеек с одной похожей геометрией
-//     else if (closestCount === 1) {
-//       return "half-circle";
-//     }
-//     // Для ячеек с двумя похожими геометриями
-//     else if (closestCount === 2) {
-//       const angle: number = AnglesB[closestKeys[0]][closestKeys[1]] ?? -1;
-//       // Обрабатывать только те ячейки где одинаковые соседние типы местности в разных координатах
-//       if (angle >= 0) {
-//         const corners: (keyof ClosestHeights)[] = AllCorners[closestKeys[0]][closestKeys[1]];
-//         const cornersCount: number = corners.map(k => neighboringCeils[k]).filter(c => c.terrain === ceil.terrain).length;
-//         // Посчитать
-//         return cornersCount > 0 ? "triangle" : "quarter-ceil";
-//       }
-//     }
-//   }
-//   // Полная геометрия
-//   return "square";
-// };
+// Получить под типа забора
+export const GetFenceSubType = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => {
+  const closestCeils = GetLikeNeighboringKeys(ceil, neighboringCeils);
+  const closestCount: number = closestCeils.length;
+  // Отрисовка только для существующих типов фигур
+  if (closestCount < 4) {
+    // Для ячеек без похожих соседних ячеек
+    if (closestCount === 0) {
+      return "none";
+    }
+    // Для ячеек с одной похожей геометрией
+    else if (closestCount === 1) {
+      return "once";
+    }
+    // Для ячеек с двумя похожими геометриями
+    else if (closestCount === 2) {
+      const isLine: boolean = (
+        closestCeils.every(({ neighboringName }) => neighboringName === "top" || neighboringName === "bottom") ||
+        closestCeils.every(({ neighboringName }) => neighboringName === "left" || neighboringName === "right")
+      );
+      // Линия или угол
+      return isLine ? "line" : "corner";
+    }
+    // Для ячеек с тремя похожими геометриями
+    else if (closestCount === 3) {
+      return "tee";
+    }
+  }
+  // Полная геометрия
+  return "chair";
+};
+
+// Получить направления для соседних ячеек
+export const GetFenceWallSettings = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => GetLikeNeighboringKeys(ceil, neighboringCeils) ?? [];
+
+// Получить количество стен у забора
+export const GetFenceWallCount = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => GetFenceWallSettings(ceil, neighboringCeils)?.length ?? 0;
 
 // Получить список ключей соседних ячеек с травой
-export const GetLikeNeighboringKeys = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => ClosestKeysAll.filter(k => {
-  const c: ClosestHeight = neighboringCeils[k];
-  // Вернуть результат проверки
-  return !!c.object && c.object === ceil.object;
-});
+export const GetLikeNeighboringKeys = (ceil: DreamMapCeil, neighboringCeils: ClosestHeights) => ArrayFilter(
+  ArrayMap(ClosestKeysAll, item => ({ ...neighboringCeils[item], neighboringName: item })),
+  ({ object }) => !!object && object === ceil.object
+);
