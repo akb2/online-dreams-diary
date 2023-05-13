@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { NoizeShader } from "@_datas/three.js/shaders/noise";
+import { NoizeShader } from "@_datas/three.js/shaders/noise.shader";
 import { AngleToRad, Cos, MathRound, Random, Sin } from "@_helpers/math";
 import { ArrayForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
@@ -86,6 +86,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       splitBySubType: true,
       count: 1,
       matrix: matrix,
+      skews: [],
       color: colors,
       geometry: geometry as BufferGeometry,
       material,
@@ -148,6 +149,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       splitBySubType: false,
       count: this.leafCount,
       matrix: matrix,
+      skews: [],
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,

@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { NoizeShader } from "@_datas/three.js/shaders/noise";
+import { NoizeShader } from "@_datas/three.js/shaders/noise.shader";
 import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -91,6 +91,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       splitBySubType: true,
       count: 1,
       matrix: matrix,
+      skews: [],
       color: colors,
       geometry: geometry as BufferGeometry,
       material,
@@ -181,6 +182,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       splitBySubType: false,
       count: this.leafCount,
       matrix: matrix,
+      skews: [],
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,

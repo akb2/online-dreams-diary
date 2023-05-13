@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { NoizeShader } from "@_datas/three.js/shaders/noise";
+import { NoizeShader } from "@_datas/three.js/shaders/noise.shader";
 import { AngleToRad, IsMultiple, Random } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
@@ -92,6 +92,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         splitBySubType: false,
         count: this.count,
         matrix,
+        skews: [],
         color: matrix.map(() => GetRandomColorByRange(GrassColorRange)),
         geometry: geometry as BufferGeometry,
         material,
