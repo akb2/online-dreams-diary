@@ -2,16 +2,17 @@ import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { AngleToRad, MathRound } from "@_helpers/math";
-import { ArrayForEach, ArraySome, ForCycle, XYForEach, XYMapEach } from "@_helpers/objects";
-import { CapitalizeFirstLetter } from "@_helpers/string";
+import { AoMapTextureName, LightMapName, MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
+import { ArrayFind, ArrayForEach, ArraySome, ForCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
-import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, MapTerrainSplatMapColor, ReliefType, XYCoord } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, ReliefType, XYCoord } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
+import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
-import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, IUniform, LinearFilter, Mesh, NearestMipMapNearestFilter, PlaneGeometry, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
+import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Mesh, NearestMipMapNearestFilter, PlaneGeometry, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
 import { DreamMapAlphaFogService } from "./alphaFog.service";
 
 
@@ -24,8 +25,6 @@ export class DreamMapTerrainService implements OnDestroy {
 
 
   private materialType: keyof typeof ShaderLib = "standard";
-
-  private maskTextureNamePreffix: string = "maskTex";
 
   outsideMapSize: number = DreamOutsideSize;
 
@@ -143,220 +142,29 @@ export class DreamMapTerrainService implements OnDestroy {
 
   // Шейдер смешивания текстур (Splat Map)
   private get getMaterial(): ShaderMaterial {
-    const repeat: number = 1.5;
-    const tileSize: number = 512;
-    const tileSetSize: number = tileSize * 4;
     const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = this.outsideMapSize * Math.max(oWidth, oHeight);
     const width: number = oWidth + (borderOSize * 2);
     const height: number = oHeight + (borderOSize * 2);
-    const repeatX: number = MathRound(repeat * width);
-    const repeatY: number = MathRound(repeat * height);
-    const createNamedArray = (key: string) => MapTerrains.map(t => key + CapitalizeFirstLetter(t.name));
-    // Базовые ткустуры
+    const repeatX: number = MathRound(TerrainRepeat * width);
+    const repeatY: number = MathRound(TerrainRepeat * height);
     const colorTextures: DataTexture[] = this.createMaterials();
-    const mapTexturesItterator: number[] = CreateArray(colorTextures.length);
-    // RGBA Маски
-    const maskNames: string[] = mapTexturesItterator.map(k => this.maskTextureNamePreffix + k);
-    const maskMapNames: string[] = mapTexturesItterator.map(k => "maskMap" + k);
-    const mapTileCoords: string[] = createNamedArray("mapTileCoords");
-    const mapRepeats: string[] = createNamedArray("terrainRepeat");
-    // Текстуры
-    const mapTexture: string[] = createNamedArray("mapTexture");
-    const normalMapTexture: string[] = createNamedArray("normalMapTexture");
-    const aoMapTexture: string[] = createNamedArray("aoMapTexture");
-    const lightMap: string[] = createNamedArray("lightMap");
-    // Имена цветов
-    const colorsNames: CustomObjectKey<MapTerrainSplatMapColor, string> = {
-      [MapTerrainSplatMapColor.Red]: "r",
-      [MapTerrainSplatMapColor.Green]: "g",
-      [MapTerrainSplatMapColor.Blue]: "b"
-    };
-    const getMapVar: Function = (t: MapTerrain) => maskMapNames[t.splatMap.layout];
-    const getMapVarColor: Function = (t: MapTerrain) => getMapVar(t) + "." + colorsNames[t.splatMap.color];
-    // Код шейдера: фрагменты
-    const fragmentShader: string = `
-      uniform vec2 tileSize;
-      uniform vec2 tileSetSize;
-      uniform vec2 mapRepeat;
-      uniform vec2 ${mapTileCoords.join(", ")};
-      uniform vec2 ${mapRepeats.join(", ")};
-
-      uniform sampler2D ${maskNames.join(", ")};
-      uniform sampler2D mapTexture;
-
-      vec2 vec2LineFunc (vec2 min, vec2 max, vec2 value, vec2 valueMin, vec2 valueMax) {
-        return clamp((((min - max) / valueMax) * (value - valueMin)) + max, max, min);
-      }
-
-      vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {
-        vec2 allTiles = floor((tileSetSize / tileSize) + vec2(0.5, 0.5)) - vec2(1, 1);
-        vec2 coords = vec2(tileCoords.x, allTiles.y - tileCoords.y);
-        vec2 uvMin = vec2(0.0, 0.0);
-        vec2 uvMax = vec2(1.0, 1.0);
-        vec2 tilingUV = (uv - uvMin) * mapRepeat;
-        vec2 epsilon = vec2(0.0001);
-        vec2 offset = (tileSize * coords) + (tileSize * (fract(tilingUV) - epsilon));
-        vec2 textureUV = vec2LineFunc(uvMax, uvMin, offset, uvMin, tileSetSize);
-
-        return texture2D(texture, textureUV);
-      }
-
-      vec4 lightMapTexelToLinear(vec4 texel) {
-        return vec4(pow(texel.rgb, vec3(2.2)), texel.a);
-      }
-
-      #if defined( USE_NORMALMAP )
-        uniform sampler2D normalMapTexture;
-      #endif
-
-      #if defined( USE_AOMAP )
-        uniform sampler2D aoMapTexture;
-      #endif
-
-      ${ShaderLib[this.materialType].fragmentShader
-        // Общие переменные
-        .replace("void main() {", `
-          void main() {
-            ${maskMapNames.map((n, k) => `vec4 ${n} = texture2D(${maskNames[k]}, vUv);`).join("\n")}
-        `)
-        // Заполнение текстурных карт
-        .replace("#include <map_fragment>", `
-          #ifdef USE_MAP
-            ${mapTexture.map((n, k) => `vec4 ${n} = getTileTexture(mapTexture, ${mapTileCoords[k]}, vUv);`).join("\n")}
-            vec4 texelColor = (${MapTerrains.map((t, k) => "(" + mapTexture[k] + " * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")});
-            vec4 diffuseColor = LinearToLinear(texelColor);
-          #endif
-        `)
-        // Заполнение карт атмосферного свечения: фрагмент 1
-        .replace("#include <aomap_pars_fragment>", `
-          #ifdef USE_AOMAP
-            uniform float aoMapIntensity;
-          #endif
-        `)
-        // Заполнение карт атмосферного свечения: фрагмент 2
-        .replace("#include <aomap_fragment>", `
-          #ifdef USE_AOMAP
-            ${aoMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(aoMapTexture, ${mapTileCoords[k]}, vUv);`).join("\n")}
-            float ambientOcclusion = (
-              ${MapTerrains.map((t, k) => "(" + aoMapTexture[k] + ".r * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")}
-            ) * aoMapIntensity + 1.0;
-            reflectedLight.indirectDiffuse *= ambientOcclusion;
-
-            #if defined( USE_ENVMAP ) && defined( STANDARD )
-              float dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );
-          		reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
-            #endif
-          #endif
-        `)
-        // Удаление лишней закраски
-        .replace("vec4 diffuseColor = vec4( diffuse, opacity );", `
-          #ifdef USE_MAP
-          #endif
-        `)
-        // Карта нормалей: фрагмент 1
-        .replace("#include <normalmap_pars_fragment>", `
-          #ifdef USE_NORMALMAP
-            uniform vec2 normalScale;
-
-            vec3 perturbNormal2Arb (vec3 eye_pos, vec3 surf_norm) {
-              vec3 q0 = vec3(dFdx(eye_pos.x), dFdx(eye_pos.y), dFdx(eye_pos.z));
-              vec3 q1 = vec3(dFdy(eye_pos.x), dFdy(eye_pos.y), dFdy(eye_pos.z));
-              vec2 st0 = dFdx(vUv.st);
-              vec2 st1 = dFdy(vUv.st);
-              vec3 S = normalize(q0 * st1.t - q1 * st0.t);
-              vec3 T = normalize(-q0 * st1.s + q1 * st0.s);
-              vec3 N = normalize(surf_norm);
-
-              ${maskMapNames.map((n, k) => `vec4 ${n} = texture2D(${maskNames[k]}, vUv);`).join("\n")}
-              ${normalMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(normalMapTexture, ${mapTileCoords[k]}, vUv);`).join("\n")}
-
-              vec4 full_normal = (
-                ${MapTerrains.map((t, k) => "(" + normalMapTexture[k] + " * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")}
-              );
-
-              vec3 mapN = full_normal.xyz * 2.0 - 1.0;
-              mapN.xy = normalScale * mapN.xy;
-              mat3 tsn = mat3(S, T, N);
-
-              return normalize(tsn * mapN);
-            }
-          #endif
-        `)
-        // Карта нормалей: фрагмент 2
-        .replace("#include <normal_fragment_maps>", `
-          #ifdef USE_NORMALMAP
-            normal = perturbNormal2Arb(-vViewPosition, normal);
-          #endif
-        `)
-        // Карта освещения: фрагмент 1
-        .replace("#include <lightmap_pars_fragment>", `
-          uniform sampler2D lightMap;
-          uniform float lightMapIntensity;
-        `)
-        // Карта освещения: фрагмент 2
-        // gl_FragColor = gl_FragColor * texture2D(lightMap, vUv2);
-        .replace("#include <lightmap_fragment>", `
-          #ifdef USE_LIGHTMAP
-            ${lightMap.map((n, k) => `vec4 ${n} = getTileTexture(lightMap, ${mapTileCoords[k]}, vUv2);`).join("\n")}
-            vec4 lightMapTexel = (${MapTerrains.map((t, k) => "(" + lightMap[k] + " * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")});
-            vec3 lightMapIrradiance = lightMapTexel.rgb * lightMapIntensity;
-            reflectedLight.indirectDiffuse += lightMapIrradiance;
-          #endif
-        `)
-      }
-    `;
-    // Код шейдера: вершины
-    const vertexShader: string = ShaderLib[this.materialType].vertexShader;
+    const fragmentShader: string = TerrainFragmentShader;
+    const vertexShader: string = TerrainVertexShader;
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
-      ...maskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
-      mapTexture: this.loadTexture(TexturePaths.face + "." + ImageExtension.jpg, "mapTexture"),
-      normalMapTexture: this.loadTexture(TexturePaths.normal + "." + ImageExtension.jpg, "normalMapTexture"),
-      aoMapTexture: this.loadTexture(TexturePaths.ao + "." + ImageExtension.jpg, "aoMapTexture"),
-      lightMap: this.loadTexture(TexturePaths.light + "." + ImageExtension.jpg, "lightMap")
+      ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
+      mapTexture: this.loadTexture(TexturePaths.face + "." + ImageExtension.jpg, MapTextureName),
+      normalMapTexture: this.loadTexture(TexturePaths.normal + "." + ImageExtension.jpg, NormalMapTextureName),
+      aoMapTexture: this.loadTexture(TexturePaths.ao + "." + ImageExtension.jpg, AoMapTextureName),
+      lightMap: this.loadTexture(TexturePaths.light + "." + ImageExtension.jpg, LightMapName)
     };
     // Значения
-    const uniforms: { [uniform: string]: IUniform } = UniformsUtils.merge([ShaderLib[this.materialType].uniforms, {
-      // Текстуры
+    const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
       ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: { type: "t", value } }), {}),
-      // Координаты текстур
-      ...mapTileCoords.reduce((o, name, k) => {
-        const terrain: MapTerrain = MapTerrains[k];
-        // Запомнить координаты
-        return {
-          ...o,
-          [name]: { type: "v2", value: terrain.tileCoords }
-        };
-      }, {}),
-      // Повторы
-      b_one_repeat: { type: "v2", value: { x: 1, y: 1 } },
-      // Прочее
-      mapRepeat: { type: "v2", value: { x: repeatX, y: repeatY } },
-      tileSize: { type: "v2", value: { x: tileSize, y: tileSize } },
-      tileSetSize: { type: "v2", value: { x: tileSetSize, y: tileSetSize } },
-      normalScale: { type: "v2", value: { x: -1, y: 1 } },
-      aoMapIntensity: { type: "f", value: 1 },
-      lightMapIntensity: { type: "f", value: 1 }
+      mapRepeat: { type: "v2", value: { x: repeatX, y: repeatY } }
     }]);
-    // Свойства шейдера
-    const defines: CustomObject<boolean> = {
-      USE_MAP: true,
-      USE_UV: true,
-      USE_AOMAP: true,
-      USE_NORMALMAP: true,
-      USE_BUMPMAP: false,
-      USE_LIGHTMAP: true,
-      USE_DISPLACEMENTMAP: true,
-      PHYSICALLY_CORRECT_LIGHTS: false,
-      FLAT_SHADED: false,
-      USE_TANGENT: true,
-      DOUBLE_SIDED: true,
-      USE_CLEARCOAT: true,
-      USE_SHEEN: true,
-      USE_ENVMAP: true,
-    };
     // Материал
     this.material = new ShaderMaterial({
       vertexShader,
@@ -364,7 +172,7 @@ export class DreamMapTerrainService implements OnDestroy {
       uniforms,
       lights: true,
       fog: true,
-      defines,
+      defines: TerrainDefines,
       side: FrontSide,
       wireframe: false,
       extensions: {
@@ -388,7 +196,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
     const borderOSize: number = Math.max(oWidth, oHeight) * this.outsideMapSize;
     // Вернуть данные
-    return MapTerrains.find(({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1);
+    return ArrayFind(MapTerrains, ({ id }) => id === this.getCeil(x - borderOSize, y - borderOSize).terrain) ?? MapTerrains.find(({ id }) => id === 1);
   }
 
   // Получить сведения о цвете
@@ -420,10 +228,7 @@ export class DreamMapTerrainService implements OnDestroy {
 
   // Корректировка цвета
   private correctColor(color: number): number {
-    color = color < 0 ? 0 : color;
-    color = color > 255 ? 255 : color;
-    // Вернуть цвет
-    return color;
+    return CheckInRange(color, 255, 0);
   }
 
 
@@ -455,7 +260,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const width: number = (borderOSize * 2) + oWidth;
     const height: number = (borderOSize * 2) + oHeight;
     const size: number = width * height;
-    const depth: number = MapTerrains.filter((t, k) => k / 3 === Math.round(k / 3)).length;
+    const depth: number = TerrainColorDepth;
     // Цикл по слоям
     return CreateArray(depth).map(d => {
       const data: Uint8Array = new Uint8Array(4 * size);
@@ -762,11 +567,11 @@ export class DreamMapTerrainService implements OnDestroy {
       const terrain: MapTerrain = this.getTerrain(ceil.coord.x + borderOSize, ceil.coord.y + borderOSize);
       // Уровни
       CreateArray(depth).forEach(d => {
-        CreateArray(3).forEach(k => this.material.uniforms[this.maskTextureNamePreffix + d].value.image.data[stride + k] = this.getColor(d, k, terrain));
+        CreateArray(3).forEach(k => this.material.uniforms[MaskTextureNamePreffix + d].value.image.data[stride + k] = this.getColor(d, k, terrain));
         // Прозрачный канал
-        this.material.uniforms[this.maskTextureNamePreffix + d].value.image.data[stride + 3] = 255;
+        this.material.uniforms[MaskTextureNamePreffix + d].value.image.data[stride + 3] = 255;
         // Обновить текстуру
-        this.material.uniforms[this.maskTextureNamePreffix + d].value.needsUpdate = true;
+        this.material.uniforms[MaskTextureNamePreffix + d].value.needsUpdate = true;
       });
     });
     // Обновить общую текстуру
