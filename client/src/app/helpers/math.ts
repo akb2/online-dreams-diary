@@ -35,13 +35,37 @@ export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Mat
 export const IsOdd: (num: number) => boolean = (num: number) => !IsEven(num);
 
 // Проверка числа на нечетность
-export const IsMultiple: (num: number, del: number) => boolean = (num: number, del: number) => num / del === Math.round(num / del);
+export const IsMultiple = (num: number, del: number) => num / del === Math.round(num / del);
 
 // Градусы в радианы
-export const AngleToRad: (angle: number) => number = (angle: number) => (Math.PI * angle) / 180;
+export const AngleToRad = (angle: number) => (Math.PI * angle) / 180;
 
 // Радианы в градусы
-export const RadToAngle: (rad: number) => number = (rad: number) => (rad * 180) / Math.PI;
+export const RadToAngle = (rad: number) => (rad * 180) / Math.PI;
+
+// Колапсировать угол 360 до 90 градусов
+export const AngleCollapse = (angle: number) => {
+  if (angle > 360) {
+    angle = angle % 360;
+  }
+  // Угол меньше нуля
+  if (angle < 0) {
+    angle = angle % 360;
+  }
+  // Угол больше 180
+  if (angle > 180) {
+    angle = 360 - angle;
+  }
+  // Угол больше 90
+  if (angle > 90) {
+    angle = 180 - angle;
+  }
+  // Вернуть угол
+  return angle;
+};
+
+// Колапсировать радианы
+export const RadCollapse = (rad: number) => AngleToRad(AngleCollapse(RadToAngle(rad)));
 
 // Синус и косинус в угол
 export const SinCosToAngle = (sin: number, cos: number) => RadToAngle(SinCosToRad(sin, cos));
@@ -96,5 +120,27 @@ export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) 
 // Расстояние между двумя точками
 export const LengthByCoords = (a: XYCoord, b: XYCoord = { x: 0, y: 0 }) => Math.sqrt(Math.pow(Math.abs(a.x - b.x), 2) + Math.pow(Math.abs(a.y - b.y), 2));
 
+// Получить гипотенузу по сторонам
+export const GetHypotinuze = (a: number, b: number = Infinity) => {
+  b = b === Infinity ? a : b;
+  // Вернуть гипотенузу
+  return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+}
+
 // Линейная функция расчета
 export const LineFunc = (min: number, max: number, value: number, valueMin: number, valueMax: number) => (((min - max) / valueMax) * (value - valueMin)) + max;
+
+// Получить расстояние от центра квадрата к одной из его граней по углу
+export const GetLengthFromSquareCenter = (size: number, angle: number) => {
+  const collapsedAngle: number = Math.abs(AngleCollapse(angle));
+  // Исключение
+  if (collapsedAngle === 0 || collapsedAngle === 90) {
+    return size / 2;
+  }
+  // Посчитать расстояние
+  return CheckInRange(
+    Math.abs(size / (2 * Math.cos(AngleToRad(collapsedAngle)))),
+    GetHypotinuze(size) / 2,
+    size / 2
+  );
+};
