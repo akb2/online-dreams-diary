@@ -89,26 +89,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private ocean: Water;
   private sun: DirectionalLight;
   private animateFunctions: CustomObjectKey<string, Function> = {};
-  private cursor: CursorData = {
-    coords: null,
-    borderSize: DreamCeilSize * 0.02,
-    zOffset: 0.0001,
-    ring: {
-      quality: 12,
-      zOffset: (DreamCeilParts / DreamCeilSize) * 0.02,
-      height: (DreamCeilParts / DreamCeilSize) * 0.002,
-      repeats: 60,
-      displacementMap: null,
-      geometry: null,
-      material: null,
-    },
-    type: CursorType.default,
-    group: new Group(),
-    names: {
-      light: "pointLight",
-      ring: "ring"
-    }
-  };
+  private cursor: CursorData = DefaultCursorData;
   private objectSettings: ObjectSetting[] = [];
   private objectCounts: CustomObjectKey<string, number> = {};
   stats: Stats;
@@ -1204,7 +1185,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private updatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
       this.chairPositionX = this.width * 0.5;
-      this.chairPositionY = LineFunc(this.height * 0.8, this.height * 0.5, this.control.getPolarAngle(), this.control.minPolarAngle, this.control.maxPolarAngle);
+      this.chairPositionY = LineFunc(this.height * 0.9, this.height * 0.5, this.control.getPolarAngle(), this.control.minPolarAngle, this.control.maxPolarAngle);
       const objects: Intersection[] = this.getIntercectionObject(this.chairPositionX, this.chairPositionY);
       const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
       const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
@@ -1212,15 +1193,16 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const closestObject: Intersection = !!objects?.length ?
         objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
         null;
-      const focusDistance: number = LineFunc(1, 0.4, this.control.getDistance(), 0, this.control.maxDistance);
+      const distance: number = this.control.getDistance();
+      const focusDistance: number = LineFunc(1, 0.2, distance, 0, this.control.maxDistance);
       // Обновить дальность
-      blendMode.opacity.value = LineFunc(0.6, 1, this.control.getDistance(), this.control.minDistance, this.control.maxDistance);
-      depthOfFieldEffect.resolution.width = this.width / 2;
-      depthOfFieldEffect.resolution.height = this.height / 2;
+      blendMode.opacity.value = LineFunc(0.2, 1, distance, this.control.minDistance, this.control.maxDistance);
+      depthOfFieldEffect.resolution.width = this.width;
+      depthOfFieldEffect.resolution.height = this.height;
       // Найдены объекты
       depthOfFieldEffect.target = !!closestObject ? closestObject.point : this.control.target;
       circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
-      circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.6;
+      circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.5;
     }
   }
 
@@ -1619,3 +1601,25 @@ const ObjectRaycastMaterial: MeshBasicMaterial = new MeshBasicMaterial({
   depthWrite: false,
   side: DoubleSide
 });
+
+// Стартовый объект курсора
+const DefaultCursorData: CursorData = {
+  coords: null,
+  borderSize: DreamCeilSize * 0.02,
+  zOffset: 0.0001,
+  ring: {
+    quality: 12,
+    zOffset: (DreamCeilParts / DreamCeilSize) * 0.02,
+    height: (DreamCeilParts / DreamCeilSize) * 0.002,
+    repeats: 60,
+    displacementMap: null,
+    geometry: null,
+    material: null,
+  },
+  type: CursorType.default,
+  group: new Group(),
+  names: {
+    light: "pointLight",
+    ring: "ring"
+  }
+};
