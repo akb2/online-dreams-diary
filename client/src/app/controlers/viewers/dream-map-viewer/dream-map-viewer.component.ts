@@ -1312,7 +1312,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             if (!usedCeils.includes(nCeil)) {
               const corrX: number = Math.abs(cX - size);
               const corrY: number = Math.abs(cY - size);
-              const isAdvanceCeil: boolean = (corrX === 2 && corrY === 0) || (corrX === 0 && corrY === 2);
+              const isAdvanceCeil: boolean = (corrX === 2 && corrY < 2) || (corrX < 2 && corrY === 2);
               const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
               const moreClosestsUpdate: boolean = isAdvanceCeil ? ArraySome(objectSettings, ({ moreClosestsUpdate }) => moreClosestsUpdate) : false;
               // Добавить ячейки
