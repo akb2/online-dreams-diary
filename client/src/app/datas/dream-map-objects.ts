@@ -1,5 +1,7 @@
 import { CustomObjectKey, IconType } from "@_models/app";
+import { ClosestHeights } from "@_models/dream-map";
 import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
+import { NumberDirection } from "@_models/math";
 import { DreamMapRabitzNetObject } from "./three.js/objects/fence/rabitzNet";
 import { DreamMapPlantainGrassObject } from "./three.js/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";
@@ -113,7 +115,8 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
       DreamMapRabitzNetObject
     ],
     subTypeFunctions: {
-      "fence-rabitz-net-column": DreamMapRabitzNetObject.getSubType
+      "fence-rabitz-net-column": DreamMapRabitzNetObject.getSubType,
+      "fence-rabitz-net-wall": DreamMapRabitzNetObject.getSubType
     },
     settings: {
       mixWithDefault: true,
@@ -179,3 +182,15 @@ export const DreamMapObjects: DreamMapMixedObject[] = [
     } as DreamMapGroupObject;
   })
 ];
+
+// Координаты соседних блоков
+export const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: NumberDirection, y: NumberDirection } } = {
+  top: { x: 0, y: -1 },
+  left: { x: -1, y: 0 },
+  bottom: { x: 0, y: 1 },
+  right: { x: 1, y: 0 },
+  topLeft: { x: -1, y: -1 },
+  topRight: { x: 1, y: -1 },
+  bottomLeft: { x: -1, y: 1 },
+  bottomRight: { x: 1, y: 1 },
+};
