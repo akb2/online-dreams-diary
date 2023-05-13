@@ -79,6 +79,27 @@ export const ForCycle = (size: number, callback: (index: number) => void, invers
   }
 };
 
+// Оптимизированный цикл с возвращаемыми данными
+export const MapCycle = <T>(size: number, callback: (index: number) => T, inverse: boolean = false) => {
+  const list: T[] = [];
+  // Цикл
+  if (size > 0) {
+    if (!inverse) {
+      for (let i = 0; i < size; i++) {
+        list.push(callback(i));
+      }
+    }
+    // Инвертированный цикл
+    else {
+      for (let i = size - 1; i >= 0; i--) {
+        list.unshift(callback(i));
+      }
+    }
+  }
+  // Вернуть массив
+  return list;
+};
+
 // Оптимизированный цикл по массиву
 export const ArrayForEach = <T>(array: T[], callback: (item: T, index?: number) => void, inverse: boolean = false) => {
   ForCycle(ParseInt(array?.length), index => {
@@ -95,6 +116,25 @@ export const ArrayFilter = <T>(array: T[], filterCallback: (item: T, index?: num
   ArrayForEach(array, (item: T, index: number) => filterCallback(item, index) ? filteredArray.unshift(item) : null);
   // Вернуть отфильрованный массив
   return filteredArray;
+};
+
+// Оптимизированное преобразование массива
+export const ArrayMap = <O, T>(array: O[], callback: (item: O, index?: number) => T, inverse: boolean = false) => {
+  const list: T[] = [];
+  // Цикл
+  ForCycle(ParseInt(array?.length), index => {
+    const item: O = array[index];
+    // Вызвать обработку элемента
+    if (!inverse) {
+      list.push(callback(item, index));
+    }
+    // Вызвать обработку элемента с инверсией
+    else {
+      list.unshift(callback(item, index));
+    }
+  }, inverse);
+  // Вернуть массив
+  return list;
 };
 
 // Оптимизированный поиск вхождения
