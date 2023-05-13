@@ -90,7 +90,7 @@ export interface MapObject {
   recieveShadow: boolean;
   isDefault: boolean;
   translates?: CoordDto[];
-  animate?: Function;
+  animate?: () => void;
   raycastBox?: boolean;
   moreClosestsUpdate?: boolean;
 };

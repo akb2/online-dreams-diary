@@ -1,3 +1,4 @@
+import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { Injectable } from "@angular/core";
 import { Material, Shader, ShaderMaterial } from "three";
 
@@ -14,17 +15,13 @@ export class DreamMapAlphaFogService {
 
   // Преобразовать туман материала в прозрачный
   getMaterial(material: Material): Material {
-    const onBeforeCompile: Function = !!material?.onBeforeCompile ? material.onBeforeCompile : shader => { };
-    // Добавление шейдера
-    material.onBeforeCompile = (shader: Shader) => {
-      onBeforeCompile();
-      // Замена шейдера
+    AddMaterialBeforeCompile(material, (shader: Shader) => {
       shader.vertexShader = FogVertexShader(shader.vertexShader);
       shader.fragmentShader = FogFragmentShader(shader.fragmentShader);
       // Настройки
       material.userData.shader = shader;
       material.transparent = true;
-    };
+    });
     // Преобразованный материал
     return material;
   }

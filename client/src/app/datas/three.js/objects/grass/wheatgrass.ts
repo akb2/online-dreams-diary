@@ -5,6 +5,7 @@ import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/ma
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TriangleGeometry } from "@_threejs/triangle.geometry";
 import { BufferGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
@@ -225,10 +226,10 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
   // Создание шейдера
   private createShader(): void {
     if (!this.params.shader) {
-      this.params.material.onBeforeCompile = subShader => {
+      AddMaterialBeforeCompile(this.params.material, subShader => {
         NoizeShader(this.params.material, subShader, this.noize, false);
         this.params.shader = subShader;
-      };
+      });
     }
   }
 }

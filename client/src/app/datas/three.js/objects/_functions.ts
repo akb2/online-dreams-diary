@@ -5,9 +5,10 @@ import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@
 import { ArrayFilter, ArrayFind, ArrayForEach } from "@_helpers/objects";
 import { CoordDto } from "@_models/dream-map";
 import { DreamMapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { GeometryQuality } from "@_services/three.js/terrain.service";
 import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";
-import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, ShaderUniforms, TextureKeys } from "./_models";
+import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, TextureKeys } from "./_models";
 
 
 
@@ -163,7 +164,7 @@ export const GetRandomColorByRange = ([rA, rB, gA, gB, bA, bB]: ColorRange, afte
 );
 
 // Анимация для шейдера ветра
-export const AnimateNoizeShader = (uniforms: ShaderUniforms, clock: Clock) => {
+export const AnimateNoizeShader = (uniforms: Uniforms, clock: Clock) => {
   if (!!uniforms?.time) {
     uniforms.time.value = clock.getElapsedTime();
   }

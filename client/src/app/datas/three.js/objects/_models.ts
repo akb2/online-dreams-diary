@@ -1,6 +1,6 @@
 import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { ClosestHeightName, CoordDto } from "@_models/dream-map";
-import { Float32BufferAttribute, IUniform, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
+import { Float32BufferAttribute, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
 
 
 
@@ -57,9 +57,6 @@ export interface CreateTerrainTrianglesObject {
 
 // Тип диапазона цветов
 export type ColorRange = [number, number, number, number, number, number];
-
-// Униформы шейдера
-export type ShaderUniforms = { [uniform: string]: IUniform<any> };
 
 
 

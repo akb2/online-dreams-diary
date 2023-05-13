@@ -5,6 +5,7 @@ import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
@@ -338,10 +339,10 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   // Создание шейдера
   private createShader(): void {
     if (!this.params.shader) {
-      this.params.material.leaf.onBeforeCompile = subShader => {
+      AddMaterialBeforeCompile(this.params.material.leaf, subShader => {
         NoizeShader(this.params.material.leaf, subShader, this.noize, false);
         this.params.shader = subShader;
-      };
+      });
     }
   }
 }

@@ -5,6 +5,7 @@ import { AngleToRad, IsMultiple, Random } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { BufferGeometry, CircleGeometry, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
@@ -216,11 +217,11 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 
   // Создание шейдера
   private createShader(): void {
-    if (!this.params.shader) {
-      this.params.material.onBeforeCompile = subShader => {
+    if (!this.params?.shader) {
+      AddMaterialBeforeCompile(this.params.material, subShader => {
         NoizeShader(this.params.material, subShader, this.noize, false);
         this.params.shader = subShader;
-      };
+      });
     }
   }
 }

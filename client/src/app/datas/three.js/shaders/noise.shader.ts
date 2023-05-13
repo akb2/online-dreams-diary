@@ -1,6 +1,6 @@
 import { MathRound } from "@_helpers/math";
 import { FogFragmentShader, FogVertexShader } from "@_services/three.js/alphaFog.service";
-import { Material, Shader } from "three";
+import { Material, Shader, UniformsUtils } from "three";
 
 
 
@@ -115,10 +115,7 @@ export const NoizeShader: (material: Material, shader: Shader, noize: number, de
   shader.vertexShader = VertexShader(noize, defineVuV);
   shader.vertexShader = FogVertexShader(shader.vertexShader);
   // Данные
-  shader.uniforms = {
-    ...shader.uniforms,
-    time: { value: 0 }
-  };
+  shader.uniforms = UniformsUtils.merge([shader.uniforms, { time: { value: 0 } }]);
   // Туман
   shader.fragmentShader = FogFragmentShader(shader.fragmentShader);
   // Запомнить шейдер
