@@ -148,11 +148,11 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night"
   },
   sunLight: {
     day: { min: 0.2, max: 1 },
-    night: { min: 0.2, max: 0.3 }
+    night: { min: 0.2, max: 0.22 }
   },
   atmosphereLight: {
-    day: { min: 0.2, max: 0.6 },
-    night: { min: 0.2, max: 0.4 }
+    day: { min: 0.2, max: 0.5 },
+    night: { min: 0.2, max: 0.2 }
   },
   atmSkyColorR: {
     day: { min: 0.6, max: 0.7 },

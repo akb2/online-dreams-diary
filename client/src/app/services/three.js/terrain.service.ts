@@ -2,7 +2,7 @@ import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { AoMapTextureName, LightMapName, MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { AoMapTextureName, LightMapTextureName, MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -155,10 +155,10 @@ export class DreamMapTerrainService implements OnDestroy {
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
-      mapTexture: this.loadTexture(TexturePaths.face + "." + ImageExtension.jpg, MapTextureName),
-      normalMapTexture: this.loadTexture(TexturePaths.normal + "." + ImageExtension.jpg, NormalMapTextureName),
-      aoMapTexture: this.loadTexture(TexturePaths.ao + "." + ImageExtension.jpg, AoMapTextureName),
-      lightMap: this.loadTexture(TexturePaths.light + "." + ImageExtension.jpg, LightMapName)
+      [MapTextureName]: this.loadTexture(TexturePaths.face + "." + ImageExtension.jpg, MapTextureName),
+      [NormalMapTextureName]: this.loadTexture(TexturePaths.normal + "." + ImageExtension.jpg, NormalMapTextureName),
+      [AoMapTextureName]: this.loadTexture(TexturePaths.ao + "." + ImageExtension.jpg, AoMapTextureName),
+      [LightMapTextureName]: this.loadTexture(TexturePaths.light + "." + ImageExtension.jpg, LightMapTextureName)
     };
     // Значения
     const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
