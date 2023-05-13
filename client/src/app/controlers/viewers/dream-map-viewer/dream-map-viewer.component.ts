@@ -1,14 +1,15 @@
 import { CreateArray } from "@_datas/app";
-import { DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
+import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
 import { AngleToRad, IsOdd, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
-import { ArrayFilter, ArrayForEach, XYForEach } from "@_helpers/objects";
+import { ArrayFilter, ArrayForEach, ArraySome, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, MapObject, MapObjectRaycastBoxData, ObjectSetting } from "@_models/dream-map-objects";
 import { NumberDirection } from "@_models/math";
+import { ShearableInstancedMesh } from "@_models/three.js/shearable-instanced-mesh";
 import { DreamService } from "@_services/dream.service";
 import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { DreamMapObjectService } from "@_services/three.js/object.service";
@@ -920,6 +921,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const objects: MapObject[][] = mixedObjects.map(mixedObject => Array.isArray(mixedObject) ? mixedObject : [mixedObject]);
           const defaultColor: Color = new Color();
           const defaultMatrix: Matrix4 = new Matrix4();
+          const defaultSkew: Vector3 = new Vector3();
           const mapObjects: MapObject[] = objects.reduce((o, d) => ([...o, ...d]), []);
           // Цикл по объектам
           ArrayForEach(mapObjects, object => {
@@ -934,20 +936,24 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const keyType: string = type + (splitBySubType ? "-" + subType : "");
                 const oldObjects: ObjectSetting[] = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType));
                 const isOldObject: boolean = !!oldObjects?.length;
-                const mesh: InstancedMesh = isOldObject ? oldObjects[0].mesh : new InstancedMesh(object.geometry, object.material, count * size);
+                const mesh: ShearableInstancedMesh = isOldObject ? oldObjects[0].mesh : new ShearableInstancedMesh(object.geometry, object.material, count * size);
                 const coords: XYCoord = object.coords;
                 const isDefault: boolean = object.isDefault;
                 const startIndex: number = this.objectCounts[keyType] ?? 0;
-                const indexKeys: number[] = CreateArray(length).map(i => startIndex + i);
+                const indexKeys: number[] = CreateArray(count).map(i => startIndex + i);
                 const translates: CoordDto[] = object.translates ?? [];
-                const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault, translates };
+                const moreClosestsUpdate: boolean = !!object?.moreClosestsUpdate;
+                const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault, translates, moreClosestsUpdate };
                 let raycastCoords: MapObjectRaycastBoxData;
                 // Цикл по ключам
                 ArrayForEach(indexKeys, (index, k) => {
+                  const hasMatrix: boolean = !!object.matrix[k];
+                  // Установить параметры
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
                   mesh.setColorAt(index, object.color[k] ?? defaultColor);
+                  mesh.setShearAt(index, object.skews[k] ?? defaultSkew);
                   // Коробка для пересечений
-                  if (!!object?.raycastBox) {
+                  if (!!object?.raycastBox && hasMatrix) {
                     raycastCoords = GetInstanceBoundingBox(mesh, index, raycastCoords);
                   }
                 }, true);
@@ -960,6 +966,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                   mesh.updateMatrix();
                   mesh.instanceMatrix.needsUpdate = true;
                   mesh.instanceColor.needsUpdate = true;
+                  mesh.instanceShear.needsUpdate = true;
                 }
                 // Обновить новый объект
                 else {
@@ -1018,7 +1025,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 }
                 // Общие настройки
                 this.objectSettings.push(objectSetting);
-                this.objectCounts[keyType] = !!this.objectCounts[keyType] ? this.objectCounts[keyType] + length : length;
+                this.objectCounts[keyType] = !!this.objectCounts[keyType] ? this.objectCounts[keyType] + count : count;
                 mesh.count = this.objectCounts[keyType];
               }
             }
@@ -1037,8 +1044,10 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const objectSettingKeys: number[] = this.getObjectSettingByCoords(x, y);
     const defaultColor: Color = new Color();
     const defaultMatrix: Matrix4 = new Matrix4();
-    const color: Color = new Color();
-    const matrix: Matrix4 = new Matrix4();
+    const defaultShear: Vector3 = new Vector3();
+    const color: Color = defaultColor.clone();
+    const matrix: Matrix4 = defaultMatrix.clone();
+    const shear: Vector3 = defaultShear.clone();
     const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(this.objectRaycastBoxes, ({ ceilCoords: { x: tX, y: tY } }) => tX === x && tY === y);
     const allRaycastMeshLength = allRaycastMesh?.length ?? 0;
     let ksB: CustomObjectKey<string, number[]> = {};
@@ -1052,7 +1061,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         const subType: string = this.objectSettings[kA].subType;
         const splitBySubType: boolean = this.objectSettings[kA].splitBySubType;
         const keyType: string = type + (splitBySubType ? "-" + subType : "");
-        const mesh: InstancedMesh = this.objectSettings[kA].mesh;
+        const mesh: ShearableInstancedMesh = this.objectSettings[kA].mesh;
         const lastIndexPreffix: number = this.objectCounts[keyType] ?? 0;
         const objectCount: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType))?.length - 1;
         // Обновить
@@ -1076,12 +1085,15 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               // Получить матрицу и цвет
               mesh.getMatrixAt(lastIndex, matrix);
               mesh.getColorAt(lastIndex, color);
+              mesh.getShearAt(lastIndex, shear);
               // Переместить последний фрагмент
               mesh.setMatrixAt(index, matrix);
               mesh.setColorAt(index, color);
+              mesh.setShearAt(index, shear);
               // Удалить последний фрагмент
               mesh.setMatrixAt(lastIndex, defaultMatrix);
               mesh.setColorAt(lastIndex, defaultColor);
+              mesh.setShearAt(lastIndex, defaultShear);
               // Обновить
               this.objectSettings[kB].indexKeys[lastIndexKey] = index;
               this.objectSettings[kA].indexKeys[k] = -1;
@@ -1090,6 +1102,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             else {
               mesh.setMatrixAt(index, defaultMatrix);
               mesh.setColorAt(index, defaultColor);
+              mesh.setShearAt(index, defaultShear);
             }
             // Обновить количества
             this.objectCounts[keyType] -= 1;
@@ -1146,7 +1159,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const subType: string = objectSetting.subType;
       const splitBySubType: boolean = objectSetting.splitBySubType;
       const keyType: string = type + (splitBySubType ? "-" + subType : "");
-      const mesh: InstancedMesh = objectSetting.mesh;
+      const mesh: ShearableInstancedMesh = objectSetting.mesh;
       const typeLength: number = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType)).length;
       const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(
         this.objectRaycastBoxes,
@@ -1289,47 +1302,37 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       // Цикл по объектам
       if (updateObjects) {
         const usedCeils: DreamMapCeil[] = [];
+        const size: number = 2;
         // Активные ячейки
-        ArrayForEach(ceils, ceil => {
-          const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => ceil.coord.x === x && ceil.coord.y === y);
-          // Если существуют объекты
-          ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
-            objectSetting,
-            this.dreamMap,
-            ceil,
-            this.terrainMesh,
-            this.clock,
-            this.terrainService.displacementTexture,
-            this.getClosestCeils(ceil),
-            this.dreamMapSettings
-          ), true);
-          // Запомнить ячейку и не изменять больше
-          usedCeils.push(ceil);
-        }, true);
-        // Удалить/выставить объекты по умолчанию в соседних ячейках
-        ArrayForEach(ceils, ceil => {
-          const nCeils: DreamMapCeil[] = Object
-            .values(this.getClosestCeils(ceil))
-            .map(({ coords: { x, y } }) => this.getCeil(x, y))
-            .filter(ceil => !usedCeils.includes(ceil));
-          // Добавить обратанные ячейки в массив
-          ArrayForEach(nCeils, nCeil => {
-            const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
-            // Если существуют объекты
-            ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
-              objectSetting,
-              this.dreamMap,
-              nCeil,
-              this.terrainMesh,
-              this.clock,
-              this.terrainService.displacementTexture,
-              this.getClosestCeils(nCeil),
-              this.dreamMapSettings
-            ), true);
-            // Запомнить ячейку и не изменять больше
-            usedCeils.push(nCeil);
-          }, true);
-        }, true);
+        ArrayForEach(ceils, ceil => XYForEach((size * 2) + 1, (size * 2) + 1,
+          (x, y) => ({ x: ceil.coord.x + x - size, y: ceil.coord.y + y - size }),
+          ({ x, y }, cX, cY) => {
+            const nCeil: DreamMapCeil = this.getCeil(x, y);
+            // Исключить повторы ячеек
+            if (!usedCeils.includes(nCeil)) {
+              const corrX: number = Math.abs(cX - size);
+              const corrY: number = Math.abs(cY - size);
+              const isAdvanceCeil: boolean = (corrX === 2 && corrY === 0) || (corrX === 0 && corrY === 2);
+              const objectSettings: ObjectSetting[] = ArrayFilter(this.objectSettings, ({ coords: { x, y } }) => nCeil.coord.x === x && nCeil.coord.y === y);
+              const moreClosestsUpdate: boolean = isAdvanceCeil ? ArraySome(objectSettings, ({ moreClosestsUpdate }) => moreClosestsUpdate) : false;
+              // Добавить ячейки
+              if ((corrX < 2 && corrY < 2) || moreClosestsUpdate) {
+                ArrayForEach(objectSettings, objectSetting => this.objectService.updateHeight(
+                  objectSetting,
+                  this.dreamMap,
+                  nCeil,
+                  this.terrainMesh,
+                  this.clock,
+                  this.terrainService.displacementTexture,
+                  this.getClosestCeils(nCeil),
+                  this.dreamMapSettings
+                ), true);
+                // Запомнить ячейку и не изменять больше
+                usedCeils.push(nCeil);
+              }
+            }
+          }
+        ), true);
         // обновить пост отрисовку
         this.updatePostProcessors();
       }
@@ -1605,18 +1608,6 @@ export enum CursorType {
 
 
 
-
-// Координаты соседних блоков
-const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: NumberDirection, y: NumberDirection } } = {
-  top: { x: 0, y: -1 },
-  left: { x: -1, y: 0 },
-  bottom: { x: 0, y: 1 },
-  right: { x: 1, y: 0 },
-  topLeft: { x: -1, y: -1 },
-  topRight: { x: 1, y: -1 },
-  bottomLeft: { x: -1, y: 1 },
-  bottomRight: { x: 1, y: 1 },
-};
 
 // Геометрия и материал для объектов пересечения
 const ObjectRaycastGeometry: BoxGeometry = new BoxGeometry(DreamCeilSize, DreamCeilSize, DreamCeilSize);
