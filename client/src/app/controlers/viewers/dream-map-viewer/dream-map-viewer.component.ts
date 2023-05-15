@@ -3,7 +3,7 @@ import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, D
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleToRad, IsOdd, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleToRad, IsOdd, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach, ArraySome, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -11,10 +11,10 @@ import { DreamMapObject, MapObject, MapObjectRaycastBoxData, ObjectSetting } fro
 import { NumberDirection } from "@_models/math";
 import { ShearableInstancedMesh } from "@_models/three.js/shearable-instanced-mesh";
 import { DreamService } from "@_services/dream.service";
-import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
 import { DreamMapTerrainService, GeometryQuality } from "@_services/three.js/terrain.service";
+import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
@@ -311,7 +311,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     private changeDetectorRef: ChangeDetectorRef,
     private skyBoxService: DreamMapSkyBoxService,
     private terrainService: DreamMapTerrainService,
-    private alphaFogService: DreamMapAlphaFogService,
     private objectService: DreamMapObjectService,
     private dreamService: DreamService
   ) { }
@@ -604,7 +603,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const depthOfFieldEffect: DepthOfFieldEffect = new DepthOfFieldEffect(this.camera, {
       focalLength: 0.1,
       focusRange: 0.3,
-      bokehScale: 5,
+      bokehScale: 3,
       resolutionX: this.width,
       resolutionY: this.height
     });
@@ -659,25 +658,37 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const sunDirection: Vector3 = new Vector3().subVectors(this.sun.position, position).normalize();
       // Создать океан
       this.ocean = new Water(geometry, {
-        textureWidth: 1024,
-        textureHeight: 1024,
+        textureWidth: 512,
+        textureHeight: 512,
         waterNormals: new TextureLoader().load("../../assets/dream-map/water/ocean.jpg", texture => texture.wrapS = texture.wrapT = RepeatWrapping),
         sunColor: this.sun.color,
         eye: this.camera.position,
-        waterColor: 0x001E33,
+        waterColor: 0x004587,
         distortionScale: 2,
         fog: true,
         sunDirection,
         side: FrontSide,
-        alpha: 0.95
+        alpha: 1
       });
       // Свойства
-      this.ocean.material = this.alphaFogService.getShaderMaterial(this.ocean.material);
+      this.ocean.material.transparent = true;
       this.ocean.rotation.x = AngleToRad(-90);
       this.ocean.position.set(position.x, position.y, position.z);
       this.ocean.material.uniforms.size.value = DreamCeilSize * 10;
       this.ocean.receiveShadow = true;
       this.ocean.name = DreamMapOceanName;
+      // Туман
+      AddMaterialBeforeCompile(this.ocean.material, shader => shader.fragmentShader = shader.fragmentShader.replace("#include <fog_fragment>", `
+        #ifdef USE_FOG
+          #ifdef FOG_EXP2
+            float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+          #else
+            float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+          #endif
+
+          gl_FragColor.a = saturate(gl_FragColor.a - fogFactor);
+        #endif
+      `));
       // Добавить в сцену
       this.octree.add(this.ocean);
       this.scene.add(this.ocean);
@@ -917,7 +928,12 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const keyType: string = type + (splitBySubType ? "-" + subType : "");
                 const oldObjects: ObjectSetting[] = this.objectSettings.filter(os => this.getFilterObjectsFunc(os, type, subType, splitBySubType));
                 const isOldObject: boolean = !!oldObjects?.length;
-                const mesh: ShearableInstancedMesh = isOldObject ? oldObjects[0].mesh : new ShearableInstancedMesh(object.geometry, object.material, count * size);
+                const mesh: ShearableInstancedMesh = isOldObject ? oldObjects[0].mesh : new ShearableInstancedMesh({
+                  geometry: object.geometry,
+                  material: object.material,
+                  count: count * size,
+                  noize: object?.noize
+                });
                 const coords: XYCoord = object.coords;
                 const isDefault: boolean = object.isDefault;
                 const startIndex: number = this.objectCounts[keyType] ?? 0;
@@ -933,6 +949,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
                   mesh.setColorAt(index, object.color[k] ?? defaultColor);
                   mesh.setShearAt(index, object.skews[k] ?? defaultSkew);
+                  mesh.setDistanceAt(index, ParseFloat(object.lodDistances[k], 0, 2));
                   // Коробка для пересечений
                   if (!!object?.raycastBox && hasMatrix) {
                     raycastCoords = GetInstanceBoundingBox(mesh, index, raycastCoords);
@@ -1029,6 +1046,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const color: Color = defaultColor.clone();
     const matrix: Matrix4 = defaultMatrix.clone();
     const shear: Vector3 = defaultShear.clone();
+    let distance: number = 0;
     const allRaycastMesh: ObjectRaycastMesh[] = ArrayFilter(this.objectRaycastBoxes, ({ ceilCoords: { x: tX, y: tY } }) => tX === x && tY === y);
     const allRaycastMeshLength = allRaycastMesh?.length ?? 0;
     let ksB: CustomObjectKey<string, number[]> = {};
@@ -1067,14 +1085,17 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               mesh.getMatrixAt(lastIndex, matrix);
               mesh.getColorAt(lastIndex, color);
               mesh.getShearAt(lastIndex, shear);
+              distance = mesh.getDistanceAt(lastIndex);
               // Переместить последний фрагмент
               mesh.setMatrixAt(index, matrix);
               mesh.setColorAt(index, color);
               mesh.setShearAt(index, shear);
+              mesh.setDistanceAt(index, distance);
               // Удалить последний фрагмент
               mesh.setMatrixAt(lastIndex, defaultMatrix);
               mesh.setColorAt(lastIndex, defaultColor);
               mesh.setShearAt(lastIndex, defaultShear);
+              mesh.setDistanceAt(lastIndex, 0);
               // Обновить
               this.objectSettings[kB].indexKeys[lastIndexKey] = index;
               this.objectSettings[kA].indexKeys[k] = -1;
@@ -1084,6 +1105,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
               mesh.setMatrixAt(index, defaultMatrix);
               mesh.setColorAt(index, defaultColor);
               mesh.setShearAt(index, defaultShear);
+              mesh.setDistanceAt(index, 0);
             }
             // Обновить количества
             this.objectCounts[keyType] -= 1;

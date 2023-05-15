@@ -1,6 +1,5 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { NoizeShader } from "@_datas/three.js/shaders/noise.shader";
 import { AngleToRad, Cos, MathRound, Random, Sin } from "@_helpers/math";
 import { ArrayForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
@@ -88,6 +87,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       count: 1,
       matrix: matrix,
       skews: [],
+      lodDistances: [],
       color: colors,
       geometry: geometry as BufferGeometry,
       material,
@@ -151,6 +151,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       count: this.leafCount,
       matrix: matrix,
       skews: [],
+      lodDistances: [],
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
@@ -163,7 +164,8 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       recieveShadow: true,
       isDefault: false,
       translates,
-      raycastBox: true
+      raycastBox: true,
+      noize: this.noize
     };
   }
 
@@ -213,17 +215,18 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
       const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"]);
-      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+      const treeMaterial: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.1,
         lightMapIntensity: 1,
+        transparent: true,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
-      })) as MeshStandardMaterial;
-      const leafMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+      });
+      const leafMaterial: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -236,7 +239,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafSize * 2
-      })) as MeshStandardMaterial;
+      });
       // Свойства для оптимизации
       const leafItterator: number[] = CreateArray(this.leafCount);
       // Настройки
@@ -298,10 +301,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   // Создание шейдера
   private createShader(): void {
     if (!this.params.shader) {
-      AddMaterialBeforeCompile(this.params.material.leaf, subShader => {
-        NoizeShader(this.params.material.leaf, subShader, this.noize, false);
-        this.params.shader = subShader;
-      });
+      AddMaterialBeforeCompile(this.params.material.leaf, subShader => this.params.shader = subShader);
     }
   }
 }

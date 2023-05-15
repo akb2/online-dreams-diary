@@ -1,7 +1,6 @@
 import { DreamMapObjectTemplate } from "@_datas/three.js/objects/_base";
 import { CustomObjectKey, IconType } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
-import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { BufferGeometry, Clock, Color, DataTexture, Material, Matrix4, Mesh, Vector3 } from "three";
 import { ShearableInstancedMesh } from "./three.js/shearable-instanced-mesh";
 
@@ -79,6 +78,7 @@ export interface MapObject {
   matrix: Matrix4[];
   color: Color[];
   skews: Vector3[];
+  lodDistances: number[];
   geometry: BufferGeometry;
   material: Material;
   type: string;
@@ -93,6 +93,7 @@ export interface MapObject {
   animate?: () => void;
   raycastBox?: boolean;
   moreClosestsUpdate?: boolean;
+  noize?: number;
 };
 
 // Тип ответа
@@ -118,7 +119,6 @@ export type ObjectController = {
     ceil: DreamMapCeil,
     terrain: Mesh,
     clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
     dreamMapSettings: DreamMapSettings,
@@ -131,7 +131,6 @@ export type ObjectControllerParams = [
   DreamMapCeil,
   Mesh,
   Clock,
-  DreamMapAlphaFogService,
   DataTexture,
   ClosestHeights,
   DreamMapSettings

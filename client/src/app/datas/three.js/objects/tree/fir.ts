@@ -1,6 +1,5 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { NoizeShader } from "@_datas/three.js/shaders/noise.shader";
 import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -95,6 +94,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       count: 1,
       matrix: matrix,
       skews: [],
+      lodDistances: [],
       color: colors,
       geometry: geometry as BufferGeometry,
       material,
@@ -186,6 +186,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       count: this.leafACount,
       matrix: matrix,
       skews: [],
+      lodDistances: [],
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
@@ -198,7 +199,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       recieveShadow: true,
       isDefault: false,
       translates,
-      raycastBox: true
+      raycastBox: true,
+      noize: this.noize
     };
   }
 
@@ -265,6 +267,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       count: this.leafBCount,
       matrix: matrix,
       skews: [],
+      lodDistances: [],
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
@@ -277,7 +280,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       recieveShadow: true,
       isDefault: false,
       translates,
-      raycastBox: true
+      raycastBox: true,
+      noize: this.noize
     };
   }
 
@@ -337,17 +341,18 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       });
       const leafATextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureKeys);
       const leafBTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureKeys]);
-      const treeMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+      const treeMaterial: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.3,
         lightMapIntensity: 0.5,
+        transparent: true,
         roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
-      })) as MeshStandardMaterial;
-      const leafAMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+      });
+      const leafAMaterial: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -360,8 +365,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafASize
-      })) as MeshStandardMaterial;
-      const leafBMaterial: MeshStandardMaterial = this.alphaFogService.getMaterial(new MeshStandardMaterial({
+      });
+      const leafBMaterial: MeshStandardMaterial = new MeshStandardMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -374,7 +379,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafBSize
-      })) as MeshStandardMaterial;
+      });
       // Свойства для оптимизации
       const leafAItterator: number[] = CreateArray(this.leafACount);
       const leafBItterator: number[] = CreateArray(this.leafBCount);
@@ -451,17 +456,11 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
   // Создание шейдера
   private createShader(): void {
     if (!this.params.shaderA) {
-      AddMaterialBeforeCompile(this.params.material.leafA, subShader => {
-        NoizeShader(this.params.material.leafA, subShader, this.noize, false);
-        this.params.shaderA = subShader;
-      });
+      AddMaterialBeforeCompile(this.params.material.leafA, subShader => this.params.shaderA = subShader);
     }
     // Второй шейдер
     if (!this.params.shaderB) {
-      AddMaterialBeforeCompile(this.params.material.leafB, subShader => {
-        NoizeShader(this.params.material.leafB, subShader, this.noize, false);
-        this.params.shaderA = subShader;
-      });
+      AddMaterialBeforeCompile(this.params.material.leafB, subShader => this.params.shaderA = subShader);
     }
   }
 }

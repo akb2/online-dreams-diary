@@ -1,10 +1,10 @@
-import { DreamCeilSize } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamFogFar, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { BoxGeometry, BufferGeometry, DoubleSide, FrontSide, Matrix4, MeshLambertMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
+import { BoxGeometry, BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { CreateTerrainTriangles, GetHeightByTerrain, GetTextures } from "../_functions";
 import { CreateTerrainTrianglesObject, DefTranslate, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -28,7 +28,8 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
 
   private type: string = "fence-rabitz-net";
 
-  private columnRadius: number = 0.01;
+  private columnRadius: number = 0.03;
+  private columnHorizontalScale: number = 0.3;
   private columnHeight: number = 0.65;
   private netHeight: number = 0.5;
   private netPositionTop: number = 0.06;
@@ -70,9 +71,13 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     const x: number = cX + (DreamCeilSize / 2);
     const y: number = cY + (DreamCeilSize / 2);
     const z: number = GetHeightByTerrain(params, x, y) + columnHeightHalf;
+    const lodDistances: number[] = [];
+    const color: Color[] = [];
     // Настройки
     const matrix: Matrix4[] = MapCycle(count, i => {
       const dummy: Object3D = defaultDummy.clone();
+      // Дальность прорисовки
+      lodDistances.push(DreamFogFar);
       // Горизонтальные опоры
       if (i < wallSettings.length) {
         const setting = wallSettings[i];
@@ -93,29 +98,30 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         // Левая грань
         if (angle === 180) {
           dummy.position.set(x - (netWidth / 2), tempZ, y);
-          dummy.scale.set(horizontalScale, verticalScale, 1);
+          dummy.scale.set(horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale);
           dummy.rotateZ(AngleToRad(90) - correctAngle);
         }
         // Правая грань
         else if (angle === 0) {
           dummy.position.set(x + (netWidth / 2), tempZ, y);
-          dummy.scale.set(horizontalScale, verticalScale, 1);
+          dummy.scale.set(horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale);
           dummy.rotateZ(AngleToRad(90) + correctAngle);
         }
         // Нижняя грань
         else if (angle === 270) {
           dummy.position.set(x, tempZ, y + (netWidth / 2));
-          dummy.scale.set(1, verticalScale, horizontalScale);
+          dummy.scale.set(this.columnHorizontalScale, verticalScale, horizontalScale * this.columnHorizontalScale);
           dummy.rotateX(AngleToRad(90) - correctAngle);
         }
         // Верхняя грань
         else if (angle === 90) {
           dummy.position.set(x, tempZ, y - (netWidth / 2));
-          dummy.scale.set(1, verticalScale, horizontalScale);
+          dummy.scale.set(this.columnHorizontalScale, verticalScale, horizontalScale * this.columnHorizontalScale);
           dummy.rotateX(AngleToRad(90) + correctAngle);
         }
         // Обновить матрицу
         dummy.updateMatrix();
+        color.push(null);
         // Вернуть матрицу
         return dummy.matrix.clone();
       }
@@ -123,10 +129,12 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       else if (i === count - 1) {
         dummy.position.set(x, z, y);
         dummy.updateMatrix();
+        color.push(new Color(3, 3, 3));
         // Вернуть матрицу
         return dummy.matrix.clone();
       }
       // Нет фрагмента
+      color.push(null);
       return null;
     });
     // Вернуть объект
@@ -137,7 +145,8 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       count,
       matrix,
       skews: [],
-      color: [],
+      lodDistances,
+      color,
       geometry: geometry as BufferGeometry,
       material,
       coords: {
@@ -172,6 +181,7 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     const y: number = cY + (DreamCeilSize / 2);
     const z: number = GetHeightByTerrain(params, x, y) + netPositionTop;
     const skews: Vector3[] = [];
+    const lodDistances: number[] = [];
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = MapCycle(count, i => {
       if (i < wallSettings.length) {
@@ -194,6 +204,7 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         dummy.translateY((netHeight / 2) + (diffZ / 4));
         dummy.updateMatrix();
         skews.push(new Vector3(0, diffZ, 0));
+        lodDistances.push(LODMaxDistance);
         // Вернуть матрицу
         return dummy.matrix.clone();
       }
@@ -208,13 +219,14 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       count,
       matrix,
       color: [],
+      lodDistances,
+      skews,
       geometry: geometry as BufferGeometry,
       material,
       coords: {
         x: this.ceil.coord.x,
         y: this.ceil.coord.y
       },
-      skews,
       animate: this.animate.bind(this),
       castShadow: false,
       recieveShadow: false,
@@ -248,10 +260,11 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys, texture => {
         texture.repeat = new Vector2(textureRepeat, (netHeight / netWidth) * textureRepeat);
       });
-      const columnMeterial: MeshLambertMaterial = new MeshLambertMaterial({ color: 0x888888, side: FrontSide });
+      const columnMeterial: MeshStandardMaterial = new MeshStandardMaterial({ color: 0x888888, side: FrontSide, transparent: true, flatShading: true });
       const netMeterial: MeshStandardMaterial = new MeshStandardMaterial({
         ...textures,
         side: DoubleSide,
+        flatShading: true,
         transparent: true,
         alphaTest: 0.5
       });
@@ -276,7 +289,7 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         material: {
           column: columnMeterial,
           net: netMeterial
-        },
+        }
       };
     }
     // Вернуть данные
@@ -465,7 +478,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     net: PlaneGeometry
   };
   material: {
-    column: MeshLambertMaterial,
+    column: MeshStandardMaterial,
     net: MeshStandardMaterial
   };
 }

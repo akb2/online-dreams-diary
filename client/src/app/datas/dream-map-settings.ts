@@ -33,8 +33,7 @@ export const DreamFogNear: number = DreamMapSize * 0.5;
 export const DreamFogFar: number = DreamMapSize;
 export const DreamHorizont: number = DreamFogFar * 3;
 export const DreamOutsideSize: number = 1;
-export const DreamLODDistance: number = 20;
-export const DreamLODCount: number = Math.floor(DreamFogFar / DreamLODDistance);
+export const LODMaxDistance: number = (DreamFogFar + DreamFogNear) / 2;
 
 // Заголовок по умолчанию
 export const DreamTitle: string = "*** Новое сновидение ***";
@@ -54,7 +53,7 @@ export enum DreamObjectElmsValues {
   Ultra,
   Awesome
 };
-export const DreamBaseElmsCount: number = 32;
+export const DreamBaseElmsCount: number = 64;
 export const DreamShadowQualitySize: number = 1024;
 export const DreamMaxElmsCount: (d: DreamObjectElmsValues) => number = (d: DreamObjectElmsValues) => DreamBaseElmsCount * (d + 1);
 export const DreamMapMinShadowQuality: number = 1;

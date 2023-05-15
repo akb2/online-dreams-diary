@@ -1,6 +1,5 @@
 import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { DreamMapAlphaFogService } from "@_services/three.js/alphaFog.service";
 import { Clock, DataTexture, Mesh, PlaneGeometry, Ray, Triangle, Vector3 } from "three";
 import { CreateTerrainTriangles } from "./_functions";
 import { BaseObjectControllerParams, CreateTerrainTrianglesObject } from "./_models";
@@ -17,7 +16,6 @@ export abstract class DreamMapObjectTemplate {
   ceil: DreamMapCeil;
   terrain: Mesh;
   clock: Clock;
-  alphaFogService: DreamMapAlphaFogService;
   displacementTexture: DataTexture;
   neighboringCeils: ClosestHeights;
   dreamMapSettings: DreamMapSettings;
@@ -60,7 +58,6 @@ export abstract class DreamMapObjectTemplate {
     ceil: DreamMapCeil,
     terrain: Mesh,
     clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
     dreamMapSettings: DreamMapSettings
@@ -69,7 +66,6 @@ export abstract class DreamMapObjectTemplate {
     this.ceil = ceil;
     this.terrain = terrain;
     this.clock = clock;
-    this.alphaFogService = alphaFogService;
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
     this.dreamMapSettings = dreamMapSettings;
@@ -81,7 +77,6 @@ export abstract class DreamMapObjectTemplate {
     ceil: DreamMapCeil,
     terrain: Mesh,
     clock: Clock,
-    alphaFogService: DreamMapAlphaFogService,
     displacementTexture: DataTexture,
     neighboringCeils: ClosestHeights,
     dreamMapSettings: DreamMapSettings
@@ -90,7 +85,6 @@ export abstract class DreamMapObjectTemplate {
     this.ceil = ceil;
     this.terrain = terrain;
     this.clock = clock;
-    this.alphaFogService = alphaFogService;
     this.displacementTexture = displacementTexture;
     this.neighboringCeils = neighboringCeils;
     this.dreamMapSettings = dreamMapSettings;
