@@ -1,5 +1,8 @@
+import { DreamFogFar } from "@_datas/dream-map-settings";
+import { InstancedDistanceShaderKey, InstancedShader, InstancedShearShaderKey } from "@_datas/three.js/shaders/instanced-mesh.shader";
+import { ParseFloat } from "@_helpers/math";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { BufferGeometry, InstancedBufferAttribute, InstancedMesh, Material, Shader, Vector3 } from "three";
+import { BufferGeometry, InstancedBufferAttribute, InstancedMesh, Material, Vector3 } from "three";
 
 
 
@@ -8,20 +11,22 @@ import { BufferGeometry, InstancedBufferAttribute, InstancedMesh, Material, Shad
 export class ShearableInstancedMesh extends InstancedMesh {
 
   instanceShear: InstancedBufferAttribute;
+  instanceDistance: InstancedBufferAttribute;
 
 
 
 
 
-  constructor(geometry: BufferGeometry, material: Material, count: number) {
-    AddMaterialBeforeCompile(material, shader => shader = VertexShader(shader));
+  constructor(params: ShearableInstancedMeshParams) {
+    AddMaterialBeforeCompile(params.material, shader => shader = InstancedShader(shader, ParseFloat(params.noize, 0, 5)));
     // Родительский конструктор
-    super(geometry, material, count);
-    // Параметры
-    const shearMatrices = new Float32Array(count * 3);
+    super(params.geometry, params.material, params.count);
+    // Объявить аттрибуты
+    this.instanceShear = new InstancedBufferAttribute(new Float32Array(params.count * 3), 3);
+    this.instanceDistance = new InstancedBufferAttribute(new Float32Array(params.count), 1);
     // Установить аттрибуты
-    this.instanceShear = new InstancedBufferAttribute(shearMatrices, 3);
-    this.geometry.setAttribute(ShearShaderKey, this.instanceShear);
+    this.geometry.setAttribute(InstancedShearShaderKey, this.instanceShear);
+    this.geometry.setAttribute(InstancedDistanceShaderKey, this.instanceDistance);
   }
 
 
@@ -34,14 +39,31 @@ export class ShearableInstancedMesh extends InstancedMesh {
     this.instanceShear.needsUpdate = true;
   }
 
+  // Установить матрицы расстояния
+  setDistanceAt(index: number, distance: number = DreamFogFar / 2): void {
+    this.instanceDistance.setX(index, distance);
+    this.instanceDistance.needsUpdate = true;
+  }
+
+
+
+
+
   // Получить матрицы преобразования
   getShearAt(index: number, shear: Vector3): void {
-    const shearAttribute: InstancedBufferAttribute = this.geometry.getAttribute(ShearShaderKey) as InstancedBufferAttribute;
+    const shearAttribute: InstancedBufferAttribute = this.geometry.getAttribute(InstancedShearShaderKey) as InstancedBufferAttribute;
     const target: Vector3 = new Vector3();
     // Добавить матрицу
     target.fromArray(shearAttribute.array as number[], index * 3);
     // Вернуть матрицу
     shear.copy(target);
+  }
+
+  // Получить матрицы преобразования
+  getDistanceAt(index: number): number {
+    const attribute: InstancedBufferAttribute = this.geometry.getAttribute(InstancedDistanceShaderKey) as InstancedBufferAttribute;
+    // Вернуть матрицу
+    return attribute.getX(index);
   }
 }
 
@@ -49,38 +71,10 @@ export class ShearableInstancedMesh extends InstancedMesh {
 
 
 
-// Название переменной в шейдере
-const ShearShaderKey: string = "customShearMatrix"
-
-// Вершинный шейдер
-const VertexShader = (shader: Shader) => {
-  if (!(new RegExp(ShearShaderKey, "gmi")).test(shader.vertexShader)) {
-    shader.vertexShader = shader.vertexShader.replace("#include <common>", `
-      #include <common>
-
-      attribute vec3 ${ShearShaderKey};
-    `);
-    // Изменить тело
-    shader.vertexShader = shader.vertexShader.replace("#include <project_vertex>", `
-      vec4 mvPosition = vec4(transformed, 1.0);
-
-      #ifdef USE_INSTANCING
-        mat4 skewMatrix = mat4(
-          1.0, ${ShearShaderKey}.y, ${ShearShaderKey}.z, 0.0,
-          ${ShearShaderKey}.x, 1.0, ${ShearShaderKey}.z, 0.0,
-          ${ShearShaderKey}.x, -${ShearShaderKey}.y, 1.0, 0.0,
-          0.0, 0.0, 0.0, 1.0
-        );
-        mvPosition = skewMatrix * mvPosition;
-        mvPosition = instanceMatrix * mvPosition;
-        mvPosition = modelViewMatrix * mvPosition;
-      #else
-        mvPosition = modelViewMatrix * mvPosition;
-      #endif
-
-      gl_Position = projectionMatrix * mvPosition;
-    `);
-  }
-  // Вернуть шейдер
-  return shader;
+// Параметры
+export interface ShearableInstancedMeshParams {
+  geometry: BufferGeometry;
+  material: Material;
+  count: number;
+  noize?: number;
 }
