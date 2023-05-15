@@ -8,7 +8,6 @@ import { ClosestHeights, DreamMap, DreamMapCeil, DreamMapSettings } from "@_mode
 import { DreamMapObject, MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Clock, DataTexture, Mesh } from "three";
-import { DreamMapAlphaFogService } from "./alphaFog.service";
 
 
 
@@ -39,7 +38,7 @@ export class DreamMapObjectService implements OnDestroy {
     const objects: (MapObject | MapObject[])[] = [];
     const objectId: number = ceil?.object ?? 0;
     const terrainId: number = ceil?.terrain ?? DreamTerrain;
-    const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils, dreamMapSettings];
+    const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, displacementTexture, closestsCeils, dreamMapSettings];
     let useDefault: boolean = true;
     // Требуется объект
     if (!!objectId) {
@@ -108,7 +107,7 @@ export class DreamMapObjectService implements OnDestroy {
     closestsCeils: ClosestHeights,
     dreamMapSettings: DreamMapSettings
   ): void {
-    const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, this.alphaFogService, displacementTexture, closestsCeils, dreamMapSettings];
+    const params: ObjectControllerParams = [dreamMap, ceil, terrain, clock, displacementTexture, closestsCeils, dreamMapSettings];
     const type: string = objectSetting.type;
     const isDefault: boolean = objectSetting.isDefault;
     const objectId: number = ceil?.object ?? 0;
@@ -158,10 +157,6 @@ export class DreamMapObjectService implements OnDestroy {
 
 
 
-
-  constructor(
-    private alphaFogService: DreamMapAlphaFogService
-  ) { }
 
   ngOnDestroy(): void {
     Object.values(this.objectControllers).forEach(controllers => Object.values(controllers).filter(([c]) => !!c).forEach(([controller]) => controller.destroy()));

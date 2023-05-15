@@ -12,8 +12,7 @@ import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
-import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Mesh, NearestMipMapNearestFilter, PlaneGeometry, ShaderLib, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
-import { DreamMapAlphaFogService } from "./alphaFog.service";
+import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Mesh, NearestMipMapNearestFilter, PlaneGeometry, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
 
 
 
@@ -23,8 +22,6 @@ import { DreamMapAlphaFogService } from "./alphaFog.service";
 
 export class DreamMapTerrainService implements OnDestroy {
 
-
-  private materialType: keyof typeof ShaderLib = "standard";
 
   outsideMapSize: number = DreamOutsideSize;
 
@@ -172,6 +169,7 @@ export class DreamMapTerrainService implements OnDestroy {
       uniforms,
       lights: true,
       fog: true,
+      transparent: true,
       defines: TerrainDefines,
       side: FrontSide,
       wireframe: false,
@@ -187,7 +185,7 @@ export class DreamMapTerrainService implements OnDestroy {
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
     // Вернуть материал
-    return this.alphaFogService.getShaderMaterial(this.material);
+    return this.material;
   }
 
   // Получить данные о местности
@@ -236,7 +234,6 @@ export class DreamMapTerrainService implements OnDestroy {
 
 
   constructor(
-    private alphaFogService: DreamMapAlphaFogService,
     private screenService: ScreenService
   ) { }
 
