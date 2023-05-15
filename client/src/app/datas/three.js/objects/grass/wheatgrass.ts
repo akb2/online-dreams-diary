@@ -1,7 +1,7 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/math";
-import { MapCycle } from "@_helpers/objects";
+import { ArrayFilter, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
@@ -65,7 +65,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const color: Color[] = [];
       const LODItemPerStep: number = this.count / this.lodLevels;
       // Цикл по количеству фрагментов
-      const matrix: Matrix4[] = MapCycle(this.count, key => {
+      const matrix: Matrix4[] = ArrayFilter(MapCycle(this.count, key => {
         if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
           lX = Random(0, DreamCeilSize, true, 5);
           lY = Random(0, DreamCeilSize, true, 5);
@@ -78,9 +78,6 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         const x: number = cX + lX;
         const y: number = cY + lY;
         const LODStep: number = Math.floor(key / LODItemPerStep) + 1;
-        // Дистанция отрисовки
-        lodDistances.push(LODStep * this.lodDistance);
-        color.push(GetRandomColorByRange(GrassColorRange));
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
           const scaleY: number = Random(this.scaleY[0], this.scaleY[1], false, 5);
@@ -95,12 +92,15 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
           dummy.rotation.y = AngleToRad(Random(0, 180, false, 1));
           dummy.scale.set(scaleX, scaleY, 0);
           dummy.updateMatrix();
+          // Дистанция отрисовки
+          lodDistances.push(LODStep * this.lodDistance);
+          color.push(GetRandomColorByRange(GrassColorRange));
           // Вернуть геометрию
           return new Matrix4().copy(dummy.matrix);
         }
         // Не отрисовывать геометрию
         return null;
-      }, false);
+      }, true), instance => !!instance);
       // Вернуть объект
       return {
         type: "wheatgrass",

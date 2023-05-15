@@ -1,6 +1,7 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, IsMultiple, Random } from "@_helpers/math";
+import { ArrayFilter, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
@@ -11,7 +12,6 @@ import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextu
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
 import { CheckCeilForm, GetGrassSubType } from "./_functions";
 import { GrassColorRange } from "./_models";
-import { MapCycle } from "@_helpers/objects";
 
 
 
@@ -61,7 +61,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       const lodDistances: number[] = [];
       const color: Color[] = [];
       // Цикл по количеству фрагментов
-      const matrix: Matrix4[] = MapCycle(this.count, key => {
+      const matrix: Matrix4[] = ArrayFilter(MapCycle(this.count, key => {
         if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
           lX = Random(0, DreamCeilSize, true, 5);
           lY = Random(0, DreamCeilSize, true, 5);
@@ -75,9 +75,6 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         const y: number = cY + lY;
         const stepAngle: number = 360 / countStep;
         const LODStep: number = Math.floor(key / LODItemPerStep) + 1;
-        // Дистанция отрисовки
-        lodDistances.push(LODStep * this.lodDistance);
-        color.push(GetRandomColorByRange(GrassColorRange));
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
           const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
@@ -89,12 +86,15 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
           dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1])));
           dummy.scale.setScalar(scale);
           dummy.updateMatrix();
+          // Дистанция отрисовки
+          lodDistances.unshift(LODStep * this.lodDistance);
+          color.unshift(GetRandomColorByRange(GrassColorRange));
           // Вернуть геометрию
           return new Matrix4().copy(dummy.matrix);
         }
         // Не отрисовывать геометрию
         return null;
-      });
+      }, true), instance => !!instance);
       // Вернуть объект
       return {
         type: "plantaingrass",
