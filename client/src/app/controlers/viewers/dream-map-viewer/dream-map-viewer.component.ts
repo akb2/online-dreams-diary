@@ -1216,9 +1216,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
         null;
       const distance: number = this.control.getDistance();
-      const focusDistance: number = LineFunc(1, 0.2, distance, 0, this.control.maxDistance);
+      const focusDistance: number = LineFunc(0.5, 0.4, distance, 0, this.control.maxDistance);
       // Обновить дальность
-      blendMode.opacity.value = LineFunc(0.2, 1, distance, this.control.minDistance, this.control.maxDistance);
+      blendMode.opacity.value = LineFunc(0.6, 1, distance, this.control.minDistance, this.control.maxDistance);
       depthOfFieldEffect.resolution.width = this.width;
       depthOfFieldEffect.resolution.height = this.height;
       // Найдены объекты
