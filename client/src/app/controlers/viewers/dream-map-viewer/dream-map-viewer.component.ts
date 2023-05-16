@@ -569,7 +569,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.scene.add(this.camera);
     // Пересечения
     this.octree = new Octree({
-      scene: this.scene,
+      // scene: this.scene,
       undeferred: false,
       depthMax: 1,
       objectsThreshold,
