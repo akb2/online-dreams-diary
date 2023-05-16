@@ -29,7 +29,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   private width: number = 0.05;
   private height: number = 90;
 
-  private lodLevels: number = 10;
+  private lodLevels: number = 15;
   private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 1;

@@ -7,7 +7,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -29,7 +29,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private width: number = 0.06;
   private height: number = 70;
 
-  private lodLevels: number = 10;
+  private lodLevels: number = 15;
   private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 3;
@@ -214,7 +214,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       const leafSize: number = objWidth * 15;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
-      const leafGeometry: PlaneGeometry = new PlaneGeometry(leafSize, leafSize, 2, 2);
+      const leafGeometry: CircleGeometry = new CircleGeometry(leafSize / 2, 15);
       const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 2;
         // Настройки
@@ -320,7 +320,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   leafSize: number;
   geometry: {
     tree: TreeGeometry[],
-    leaf: PlaneGeometry
+    leaf: CircleGeometry
   };
   material: {
     tree: MeshStandardMaterial,
