@@ -4,7 +4,7 @@ import { AngleToRad, CheckInRange, Cos, LineFunc, ParseInt } from "@_helpers/mat
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMapSettings } from "@_models/dream-map";
 import { Injectable } from "@angular/core";
-import { AmbientLight, BackSide, BoxGeometry, BufferGeometry, Color, DirectionalLight, Fog, IUniform, SphereGeometry, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
 
@@ -27,11 +27,14 @@ export class DreamMapSkyBoxService {
 
   // Объект для отрисовки
   getObject(renderer: WebGLRenderer, size: number, time: number, settings: DreamMapSettings = DefaultDreamMapSettings): SkyBoxOutput {
+    const near: number = FogNear * DreamCeilSize;
+    const far: number = FogFar * DreamCeilSize;
+    const horizontSize: number = far * 10000;
     const color: Color | number = new Color(1, 1, 1);
     const sky: Sky = new Sky();
     const sun: DirectionalLight = new DirectionalLight(color, 1.2);
     const atmosphere: AmbientLight = new AmbientLight(0xFFFFFF, 0.5);
-    const fog: Fog = new Fog(color, FogNear * DreamCeilSize, FogFar * DreamCeilSize);
+    const fog: Fog = new Fog(color, near, far);
     const boxSize: number = DreamHorizont;
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
@@ -41,7 +44,7 @@ export class DreamMapSkyBoxService {
       mieDirectionalG: { value: 0.7 },
     };
     // Настройки
-    sky.geometry = new SphereGeometry(1, 32, 16) as BufferGeometry as BoxGeometry;
+    sky.geometry = new BoxGeometry(horizontSize, horizontSize, horizontSize);
     sky.scale.setScalar(boxSize);
     sky.material.uniforms = uniforms;
     sky.material.side = BackSide;
