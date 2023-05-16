@@ -1,7 +1,7 @@
 import { CreateArray } from "@_datas/app";
-import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, MathRound, Random, Sin } from "@_helpers/math";
-import { ArrayForEach } from "@_helpers/objects";
+import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
@@ -28,6 +28,9 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private noize: number = 0.25;
   private width: number = 0.06;
   private height: number = 70;
+
+  private lodLevels: number = 10;
+  private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 3;
   private radiusSegments: number = 3;
@@ -87,7 +90,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       count: 1,
       matrix: matrix,
       skews: [],
-      lodDistances: [],
+      lodDistances: [LODMaxDistance],
       color: colors,
       geometry: geometry as BufferGeometry,
       material,
@@ -105,15 +108,17 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
 
   // Горизонтальные части
   private getLeafParts(bX: number, bY: number, scale: number, rotate: number, bZ: number, geometryIndex: number): MapObject {
-    const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material }, leafItterator }: Params = this.getParams;
+    const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material } }: Params = this.getParams;
     const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
     const branchEnds: Vector3[] = treeGeometry.getEndsOfBranches;
     const color: Color = GetRandomColorByRange(LeafColorRange);
+    const lodDistances: number[] = [];
+    const lodItemPerStep: number = this.leafCount / this.lodLevels;
     let branchIndex: number = 0;
     // Цикл по количеству фрагментов
     const translates: CoordDto[] = [];
-    const matrix: Matrix4[] = leafItterator.map(() => {
+    const matrix: Matrix4[] = MapCycle(this.leafCount, k => {
       branchIndex = Random(0, branchEnds.length - 1);
       // Если найдена ветка
       if (!!branchEnds[branchIndex]) {
@@ -121,6 +126,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         const branchEnd: Vector3 = branchEnds[branchIndex];
         const leafScale: number = Random(0.7, 1, false, 4);
         const translate: CoordDto = { x: branchEnd.x * scale, y: branchEnd.y * scale, z: branchEnd.z * scale };
+        const lodStep: number = Math.floor(k / lodItemPerStep);
         // Преобразования
         dummy.rotation.y = AngleToRad(rotate);
         dummy.position.set(bX, bZ, bY);
@@ -130,6 +136,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         dummy.rotation.set(Random(0, 180), Random(0, 180), Random(0, 180));
         dummy.scale.setScalar(leafScale);
         dummy.updateMatrix();
+        lodDistances.unshift(lodStep * this.lodDistance) + 1;
         // Массив преобразований
         translate.x = (translate.x * Cos(-rotate)) - (translate.z * Sin(-rotate), 5);
         translate.z = (translate.x * Sin(-rotate)) + (translate.z * Cos(-rotate), 5);
@@ -142,7 +149,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       }
       // Ветка не найдена
       return null;
-    }).filter(matrix => !!matrix);
+    });
     // Вернуть объект
     return {
       type,
@@ -151,7 +158,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       count: this.leafCount,
       matrix: matrix,
       skews: [],
-      lodDistances: [],
+      lodDistances,
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
@@ -191,7 +198,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     };
     // Параметры уже существуют
     if (!!this.params) {
-      this.params.leafItterator = CreateArray(this.leafCount);
       this.params.geometry.tree = CreateArray(this.treeCount).map(i =>
         this.params.geometry.tree[i] ??
         new TreeGeometry(treeGeometryParams(this.params.objWidth, this.params.objHeight))
@@ -240,8 +246,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         normalScale: new Vector2(1, 1),
         displacementScale: leafSize * 2
       });
-      // Свойства для оптимизации
-      const leafItterator: number[] = CreateArray(this.leafCount);
       // Настройки
       leafGeometry.setAttribute("uv2", leafGeometry.getAttribute("uv"));
       leafGeometry.attributes.uv2.needsUpdate = true;
@@ -263,8 +267,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         texture: {
           tree: treeTextures,
           leaf: leafTextures
-        },
-        leafItterator
+        }
       };
       // Создание шейдера
       this.createShader();
@@ -327,7 +330,6 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
     leaf: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
   };
-  leafItterator: number[];
   shader?: Shader;
 }
 

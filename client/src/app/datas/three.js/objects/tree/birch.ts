@@ -1,6 +1,7 @@
 import { CreateArray } from "@_datas/app";
-import { DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_helpers/math";
+import { MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
@@ -25,8 +26,11 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   private leafCount: number = 0;
   private posRange: number = 0.2;
   private noize: number = 0.15;
-  private width: number = 0.03;
+  private width: number = 0.05;
   private height: number = 90;
+
+  private lodLevels: number = 10;
+  private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 1;
   private radiusSegments: number = 3;
@@ -93,7 +97,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       matrix: matrix,
       skews: [],
       color: colors,
-      lodDistances: [],
+      lodDistances: [LODMaxDistance],
       geometry: geometry as BufferGeometry,
       material,
       coords: {
@@ -110,7 +114,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
 
   // Горизонтальные части
   private getLeafParts(bX: number, bY: number, scale: number, rotate: number, bZ: number, geometryIndex: number): MapObject {
-    const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material }, leafItterator }: Params = this.getParams;
+    const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material } }: Params = this.getParams;
     const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
     const branchEnds: Vector3[] = treeGeometry.getPositionsOfBranches(this.leafSkipSegments < this.segmentsCount ? this.leafSkipSegments : 0);
@@ -118,6 +122,8 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     const minY: number = branchEnds.reduce((o, { y }) => y < o ? y : o, maxY);
     const color: Color = GetRandomColorByRange(LeafColorRange);
     const translates: CoordDto[] = [];
+    const lodDistances: number[] = [];
+    const lodItemPerStep: number = this.leafCount / this.lodLevels;
     let rotationCorr: Euler;
     let branchIndex: number = 0;
     let translate: CoordDto;
@@ -125,11 +131,12 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     let leafRotate: number;
     let isEven: boolean;
     // Цикл по количеству фрагментов
-    const matrix: Matrix4[] = leafItterator.map(k => {
+    const matrix: Matrix4[] = MapCycle(this.leafCount, k => {
       isEven = IsMultiple(k, this.leafBranchCount);
       branchIndex = isEven ? Random(0, branchEnds.length - 1) : branchIndex;
       const dummy: Object3D = new Object3D();
       const branchEnd: Vector3 = branchEnds[branchIndex].clone();
+      const lodStep: number = Math.floor(k / lodItemPerStep);
       // Новый фрагмент
       if (isEven) {
         const beforePoint: Vector3 = branchIndex > 0 ? branchEnds[branchIndex - 1].clone() : new Vector3(0, 0, 0);
@@ -166,6 +173,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       dummy.rotateOnAxis(this.zAxis, rotationCorr.z);
       dummy.scale.setScalar(leafScale);
       dummy.updateMatrix();
+      lodDistances.unshift(lodStep * this.lodDistance);
       // Массив преобразований
       const saveTranslate: CoordDto = {
         x: (translate.x * Cos(-rotate)) - (translate.z * Sin(-rotate)),
@@ -175,7 +183,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       translates.push(saveTranslate);
       // Вернуть геометрию
       return dummy.matrix.clone();
-    }).filter(matrix => !!matrix);
+    });
     // Вернуть объект
     return {
       type,
@@ -184,7 +192,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       count: this.leafCount,
       matrix: matrix,
       skews: [],
-      lodDistances: [],
+      lodDistances,
       color: matrix.map(() => color),
       geometry: geometry as BufferGeometry,
       material,
@@ -226,7 +234,6 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     };
     // Параметры уже существуют
     if (!!this.params) {
-      this.params.leafItterator = CreateArray(this.leafCount);
       this.params.geometry.tree = CreateArray(this.treeCount).map(i =>
         this.params.geometry.tree[i] ??
         new TreeGeometry(treeGeometryParams(this.params.objWidth, this.params.objHeight))
@@ -240,8 +247,8 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
-      const leafWidth: number = objWidth * 7;
-      const leafHeight: number = leafWidth * 2;
+      const leafWidth: number = objWidth * 5;
+      const leafHeight: number = leafWidth * 1.5;
       const leafSize: number = 0;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
@@ -277,8 +284,6 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         normalScale: new Vector2(1, 1),
         displacementScale: leafSize
       });
-      // Свойства для оптимизации
-      const leafItterator: number[] = CreateArray(this.leafCount);
       // Настройки
       leafGeometry.setAttribute("uv2", leafGeometry.getAttribute("uv"));
       leafGeometry.translate(0, leafHeight / 2, 0);
@@ -304,8 +309,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         texture: {
           tree: treeTextures,
           leaf: leafTextures
-        },
-        leafItterator
+        }
       };
       // Создание шейдера
       this.createShader();
@@ -370,7 +374,6 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
     leaf: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
   };
-  leafItterator: number[];
   shader?: Shader;
 }
 
@@ -387,8 +390,8 @@ export const LeafCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
   [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 2),
   [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 2.5),
   [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 3),
-  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 3.5),
-  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 4)
+  [DreamObjectElmsValues.Ultra]: Math.round(DreamTreeElmsCount * 4),
+  [DreamObjectElmsValues.Awesome]: Math.round(DreamTreeElmsCount * 5)
 };
 
 // Список фрагментов в одной ветке
