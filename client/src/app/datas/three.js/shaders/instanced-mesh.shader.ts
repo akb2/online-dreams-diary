@@ -100,34 +100,35 @@ const InstancedVertexShader = () => `
       mvPosition = modelViewMatrix * mvPosition;
     #endif
 
-    // DISPLACEMENT
-    if (noize > 0.) {
-      float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
-      noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
-
-      // here the displacement is made stronger on the blades tips.
-      float dispPower = 1. - cos( uv.y * 3.1416 * noize );
-
-      float displacement = noise * ( 0.3 * dispPower );
-      mvPosition.z += displacement;
-    }
-
-    gl_Position = projectionMatrix * mvPosition;
-
-    if(${InstancedDistanceShaderKey} < length(mvPosition.xyz)){
+    if (${InstancedDistanceShaderKey} < length(mvPosition.xyz)) {
       vHide = 1.;
     }
 
-    #include <logdepthbuf_vertex>
-    #include <clipping_planes_vertex>
-    vViewPosition = - mvPosition.xyz;
-    #include <worldpos_vertex>
-    #include <shadowmap_vertex>
-    #include <fog_vertex>
+    else {
+      if (noize > 0.) {
+        float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
+        noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
 
-    #ifdef USE_TRANSMISSION
-      vWorldPosition = worldPosition.xyz;
-    #endif
+        // here the displacement is made stronger on the blades tips.
+        float dispPower = 1. - cos( uv.y * 3.1416 * noize );
+
+        float displacement = noise * ( 0.3 * dispPower );
+        mvPosition.z += displacement;
+      }
+
+      gl_Position = projectionMatrix * mvPosition;
+
+      #include <logdepthbuf_vertex>
+      #include <clipping_planes_vertex>
+      vViewPosition = - mvPosition.xyz;
+      #include <worldpos_vertex>
+      #include <shadowmap_vertex>
+      #include <fog_vertex>
+
+      #ifdef USE_TRANSMISSION
+        vWorldPosition = worldPosition.xyz;
+      #endif
+    }
   }
 `;
 
