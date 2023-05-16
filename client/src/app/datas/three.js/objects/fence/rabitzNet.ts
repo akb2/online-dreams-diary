@@ -350,25 +350,25 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         if (angle === 180) {
           matrix.makeRotationZ(AngleToRad(90) - correctAngle);
           matrix.setPosition(x - (params.netWidth / 2), tempZ, y);
-          matrix.scale(new Vector3(1, verticalScale, 1));
+          matrix.scale(new Vector3(params.horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale));
         }
         // Правая грань
         else if (angle === 0) {
           matrix.makeRotationZ(AngleToRad(90) + correctAngle);
           matrix.setPosition(x + (params.netWidth / 2), tempZ, y);
-          matrix.scale(new Vector3(1, verticalScale, 1));
+          matrix.scale(new Vector3(params.horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale));
         }
         // Нижняя грань
         else if (angle === 270) {
           matrix.makeRotationX(AngleToRad(90) - correctAngle);
           matrix.setPosition(x, tempZ, y + (params.netWidth / 2));
-          matrix.scale(new Vector3(1, verticalScale, 1));
+          matrix.scale(new Vector3(this.columnHorizontalScale, verticalScale, params.horizontalScale * this.columnHorizontalScale));
         }
         // Верхняя грань
         else if (angle === 90) {
           matrix.makeRotationX(AngleToRad(90) + correctAngle);
           matrix.setPosition(x, tempZ, y - (params.netWidth / 2));
-          matrix.scale(new Vector3(1, verticalScale, 1));
+          matrix.scale(new Vector3(this.columnHorizontalScale, verticalScale, params.horizontalScale * this.columnHorizontalScale));
         }
       }
       // Основной столб
