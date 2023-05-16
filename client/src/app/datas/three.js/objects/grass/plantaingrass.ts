@@ -53,7 +53,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     if (this.count > 0) {
       const params: Params = this.getParams;
       const { dummy, cX, cY, geometry, material } = params;
-      const LODItemPerStep: number = this.count / this.lodLevels;
+      const lodItemPerStep: number = this.count / this.lodLevels;
       let lX: number;
       let lY: number;
       let i: number = -1;
@@ -74,7 +74,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         const x: number = cX + lX;
         const y: number = cY + lY;
         const stepAngle: number = 360 / countStep;
-        const LODStep: number = Math.floor(key / LODItemPerStep) + 1;
+        const lodStep: number = Math.floor(key / lodItemPerStep) + 1;
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
           const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
@@ -87,7 +87,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
           dummy.scale.setScalar(scale);
           dummy.updateMatrix();
           // Дистанция отрисовки
-          lodDistances.unshift(LODStep * this.lodDistance);
+          lodDistances.unshift(lodStep * this.lodDistance);
           color.unshift(GetRandomColorByRange(GrassColorRange));
           // Вернуть геометрию
           return new Matrix4().copy(dummy.matrix);
