@@ -7,7 +7,7 @@ import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TriangleGeometry } from "@_threejs/triangle.geometry";
-import { BufferGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
+import { BufferGeometry, Color, DoubleSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
@@ -141,11 +141,11 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const objHeight: number = this.height * this.heightPart;
       const hyp2: number = objWidth / 2;
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
       // Данные фигуры
       const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
-      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("wheatgrass.png", "grass", useTextureKeys);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({
+      const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("wheatgrass.png", "grass", useTextureKeys);
+      const material: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -154,7 +154,6 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         ...textures,
         aoMapIntensity: -0.1,
         lightMapIntensity: 0.8,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, -1)
       });
@@ -248,7 +247,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   hyp2: number;
   leg: number;
   geometry: TriangleGeometry;
-  material: MeshStandardMaterial;
+  material: MeshPhongMaterial;
   dummy: Object3D;
   facesCount: number;
   facesCountI: number[];

@@ -4,7 +4,7 @@ import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
-import { BoxGeometry, BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
+import { BoxGeometry, BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { CreateTerrainTriangles, GetHeightByTerrain, GetTextures } from "../_functions";
 import { CreateTerrainTrianglesObject, DefTranslate, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -256,12 +256,12 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       const netPositionTop: number = DreamCeilSize * this.netPositionTop;
       const columnGeometry: BoxGeometry = new BoxGeometry(columnDiameter, columnHeight, columnDiameter);
       const netGeometry: PlaneGeometry = new PlaneGeometry(netWidth, netWidth);
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map"/* , "aoMap", "normalMap", "lightMap" */];
-      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys, texture => {
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map"/* , "aoMap", "normalMap", "lightMap" */];
+      const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys, texture => {
         texture.repeat = new Vector2(textureRepeat, (netHeight / netWidth) * textureRepeat);
       });
-      const columnMeterial: MeshStandardMaterial = new MeshStandardMaterial({ color: 0x888888, side: FrontSide, transparent: true, flatShading: true });
-      const netMeterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const columnMeterial: MeshPhongMaterial = new MeshPhongMaterial({ color: 0x888888, side: FrontSide, transparent: true, flatShading: true });
+      const netMeterial: MeshPhongMaterial = new MeshPhongMaterial({
         ...textures,
         side: DoubleSide,
         flatShading: true,
@@ -478,7 +478,7 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     net: PlaneGeometry
   };
   material: {
-    column: MeshStandardMaterial,
-    net: MeshStandardMaterial
+    column: MeshPhongMaterial,
+    net: MeshPhongMaterial
   };
 }

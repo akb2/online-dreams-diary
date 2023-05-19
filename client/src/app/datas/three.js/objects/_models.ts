@@ -1,6 +1,6 @@
 import { DreamCeilParts, DreamCeilSize, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { ClosestHeightName, CoordDto } from "@_models/dream-map";
-import { Float32BufferAttribute, Matrix4, MeshStandardMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
+import { Float32BufferAttribute, Matrix4, MeshPhongMaterial, PlaneGeometry, Ray, TextureLoader, Triangle, Vector3 } from "three";
 
 
 
@@ -69,7 +69,7 @@ export const DefTranslate: CoordDto = { x: 0, y: 0, z: 0 };
 export const MaxHeight: number = (DreamCeilSize / DreamCeilParts) * DreamMaxHeight;
 
 // Сопоставление текстурных ключей материала к папкам
-export const TextureKeys: [keyof MeshStandardMaterial, string][] = [
+export const TextureKeys: [keyof MeshPhongMaterial, string][] = [
   ["map", "face"],
   ["aoMap", "ao"],
   ["lightMap", "light"],

@@ -6,7 +6,7 @@ import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { BufferGeometry, CircleGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
+import { BufferGeometry, CircleGeometry, Color, DoubleSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
@@ -133,11 +133,11 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     else {
       const objSize: number = this.size * this.widthPart;
       const geometryRadius: number = objSize;
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
       // Данные фигуры
-      const textures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("plantaingrass.png", "grass", useTextureKeys);
+      const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("plantaingrass.png", "grass", useTextureKeys);
       const geometry: CircleGeometry = new CircleGeometry(geometryRadius, 6);
-      const material: MeshStandardMaterial = new MeshStandardMaterial({
+      const material: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -146,7 +146,6 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         ...textures,
         aoMapIntensity: -0.1,
         lightMapIntensity: 0.8,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
       });
@@ -237,7 +236,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject {
   objSize: number;
   geometry: CircleGeometry;
-  material: MeshStandardMaterial;
+  material: MeshPhongMaterial;
   dummy: Object3D;
   terrainGeometry: PlaneGeometry;
   facesCountI: number[];

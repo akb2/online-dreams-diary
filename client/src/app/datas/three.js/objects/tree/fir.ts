@@ -7,7 +7,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { BufferGeometry, CircleGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, CircleGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -331,7 +331,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     }
     // Определить параметры
     else {
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
@@ -339,30 +339,29 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const leafHeight: number = leafWidth * 2;
       const leafDiameter: number = (leafHeight * 2) * 1.2;
       const leafASize: number = 0;
-      const leafBSize: number = leafDiameter;
+      const leafBSize: number = leafDiameter * 2;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometryA: PlaneGeometry = new PlaneGeometry(leafWidth, leafHeight, 2, 2);
       const leafGeometryB: CircleGeometry = new CircleGeometry(leafDiameter / 2, 15);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("fir-branch.jpg", "tree", useTextureKeys, texture => {
+      const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 1;
         // Настройки
         texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
-      const leafATextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureKeys);
-      const leafBTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureKeys]);
-      const treeMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafATextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureKeys);
+      const leafBTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureKeys]);
+      const treeMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.3,
         lightMapIntensity: 0.5,
         transparent: true,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
       });
-      const leafAMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafAMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -371,12 +370,11 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         ...leafATextures,
         aoMapIntensity: -2,
         lightMapIntensity: 1,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafASize
       });
-      const leafBMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafBMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -385,7 +383,6 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         ...leafBTextures,
         aoMapIntensity: -2,
         lightMapIntensity: 1,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafBSize
@@ -488,14 +485,14 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     leafB: CircleGeometry
   };
   material: {
-    tree: MeshStandardMaterial,
-    leafA: MeshStandardMaterial,
-    leafB: MeshStandardMaterial
+    tree: MeshPhongMaterial,
+    leafA: MeshPhongMaterial,
+    leafB: MeshPhongMaterial
   };
   texture: {
-    tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
-    leafA: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
-    leafB: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
+    tree: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
+    leafA: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
+    leafB: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
   };
   shaderA?: Shader;
   shaderB?: Shader;
@@ -520,8 +517,8 @@ export const LeafACounts: CustomObjectKey<DreamObjectElmsValues, number> = {
 
 // Список количества листвы на деревьях
 export const LeafBCounts: CustomObjectKey<DreamObjectElmsValues, number> = {
-  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 0.9),
-  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 1.0),
+  [DreamObjectElmsValues.VeryLow]: Math.round(DreamTreeElmsCount * 1),
+  [DreamObjectElmsValues.Low]: Math.round(DreamTreeElmsCount * 1.1),
   [DreamObjectElmsValues.Middle]: Math.round(DreamTreeElmsCount * 1.2),
   [DreamObjectElmsValues.High]: Math.round(DreamTreeElmsCount * 1.3),
   [DreamObjectElmsValues.VeryHigh]: Math.round(DreamTreeElmsCount * 1.4),

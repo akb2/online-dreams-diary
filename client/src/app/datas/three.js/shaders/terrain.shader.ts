@@ -12,7 +12,7 @@ import { ShaderLib, UniformsUtils } from "three";
 
 // Основные значения
 const TerrainColorCount: number = 4;
-const MaterialType: keyof typeof ShaderLib = "standard";
+const MaterialType: keyof typeof ShaderLib = "phong";
 const BaseShader = ShaderLib[MaterialType];
 const TerrainTileSize: number = 512;
 const TerrainTileSetSize: number = TerrainTileSize * 4;
@@ -148,10 +148,7 @@ export const TerrainFragmentShader: string = `
       #endif
     `)
     // Удаление лишней закраски
-    .replace("vec4 diffuseColor = vec4( diffuse, opacity );", `
-      #ifdef USE_MAP
-      #endif
-    `)
+    .replace("vec4 diffuseColor = vec4( diffuse, opacity );", "")
     // Карта нормалей: фрагмент 1
     .replace("#include <normalmap_pars_fragment>", `
       #ifdef USE_NORMALMAP
@@ -228,12 +225,12 @@ export const TerrainDefines: CustomObject<boolean> = {
   USE_NORMALMAP: true,
   USE_BUMPMAP: false,
   USE_LIGHTMAP: true,
-  USE_DISPLACEMENTMAP: true,
+  USE_DISPLACEMENTMAP: false,
   PHYSICALLY_CORRECT_LIGHTS: false,
   FLAT_SHADED: false,
   USE_TANGENT: true,
-  DOUBLE_SIDED: true,
-  USE_CLEARCOAT: true,
-  USE_SHEEN: true,
-  USE_ENVMAP: true,
+  DOUBLE_SIDED: false,
+  USE_CLEARCOAT: false,
+  USE_SHEEN: false,
+  USE_ENVMAP: false
 }

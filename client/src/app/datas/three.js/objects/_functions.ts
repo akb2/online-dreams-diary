@@ -7,7 +7,7 @@ import { CoordDto } from "@_models/dream-map";
 import { DreamMapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { GeometryQuality } from "@_services/three.js/terrain.service";
-import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";
+import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, Matrix4, MeshPhongMaterial, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Texture, Triangle, Vector3, sRGBEncoding } from "three";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, TextureKeys } from "./_models";
 
 
@@ -171,7 +171,7 @@ export const AnimateNoizeShader = (uniforms: Uniforms, clock: Clock) => {
 };
 
 // Пакет текстур
-export const GetTextures = (name: string, path: string, useKeys: (keyof MeshStandardMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
+export const GetTextures = (name: string, path: string, useKeys: (keyof MeshPhongMaterial)[] = null, callback: (texture: Texture) => void = null) => TextureKeys
   .filter(([key]) => !useKeys || useKeys.includes(key))
   .map(([key, type]) => ([key, GetTextureLoader.load("/assets/dream-map/object/" + path + "/" + type + "/" + name, texture => {
     texture.encoding = sRGBEncoding;

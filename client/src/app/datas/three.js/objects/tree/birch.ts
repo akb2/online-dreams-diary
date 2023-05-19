@@ -7,7 +7,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshStandardMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -243,7 +243,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
     }
     // Определить параметры
     else {
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
@@ -253,24 +253,23 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: PlaneGeometry = new PlaneGeometry(leafWidth, leafHeight, 2, 2);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-branch.jpg", "tree", useTextureKeys, texture => {
+      const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("birch-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 1;
         // Настройки
         texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys);
-      const treeMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("birch-leaf.png", "tree", useTextureKeys);
+      const treeMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.9,
         lightMapIntensity: 0.6,
         transparent: true,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
       });
-      const leafMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -279,7 +278,6 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         ...leafTextures,
         aoMapIntensity: 0.01,
         lightMapIntensity: 1,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafSize
@@ -367,12 +365,12 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     leaf: PlaneGeometry
   };
   material: {
-    tree: MeshStandardMaterial,
-    leaf: MeshStandardMaterial
+    tree: MeshPhongMaterial,
+    leaf: MeshPhongMaterial
   };
   texture: {
-    tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
-    leaf: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
+    tree: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
+    leaf: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
   };
   shader?: Shader;
 }

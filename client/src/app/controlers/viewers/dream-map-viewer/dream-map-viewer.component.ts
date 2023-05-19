@@ -20,7 +20,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, MOUSE, Material, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -548,11 +548,11 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(this.sceneColor, 0);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputEncoding = sRGBEncoding;
     this.renderer.toneMapping = CineonToneMapping;
-    this.renderer.physicallyCorrectLights = true;
     // Сцена
     this.scene = new Scene();
     // Камера
@@ -603,7 +603,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const depthOfFieldEffect: DepthOfFieldEffect = new DepthOfFieldEffect(this.camera, {
       focalLength: 0.1,
       focusRange: 0.3,
-      bokehScale: 3,
+      bokehScale: 5,
       resolutionX: this.width,
       resolutionY: this.height
     });
@@ -1290,6 +1290,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       ringMaterial.displacementBias = -z + this.cursor.ring.zOffset;
       ringTexture.repeat.set(displacementRepeatX, displacementRepeatY);
       ringTexture.offset.set(displacementOffsetX, displacementOffsetY);
+      ringTexture.needsUpdate = true;
     }
     // Убрать свечение
     else if (!ceil && !!this.cursor.coords) {
@@ -1615,9 +1616,8 @@ export enum CursorType {
 
 // Геометрия и материал для объектов пересечения
 const ObjectRaycastGeometry: BoxGeometry = new BoxGeometry(DreamCeilSize, DreamCeilSize, DreamCeilSize);
-const ObjectRaycastMaterial: MeshBasicMaterial = new MeshBasicMaterial({
+const ObjectRaycastMaterial: LineBasicMaterial = new LineBasicMaterial({
   color: 0xbb00bb,
-  wireframe: true,
   transparent: true,
   opacity: 0,
   depthWrite: false,

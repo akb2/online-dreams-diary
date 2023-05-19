@@ -4,7 +4,7 @@ import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
 import { AoMapTextureName, LightMapTextureName, MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
-import { ArrayFind, ArrayForEach, ArraySome, ForCycle, XYForEach, XYMapEach } from "@_helpers/objects";
+import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, ReliefType, XYCoord } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
@@ -12,7 +12,7 @@ import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
-import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Mesh, NearestMipMapNearestFilter, PlaneGeometry, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
+import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Mesh, NearestMipMapLinearFilter, PlaneGeometry, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
 
 
 
@@ -125,14 +125,16 @@ export class DreamMapTerrainService implements OnDestroy {
   private loadTexture(src: string, name: string): Texture {
     return this.textureLoader.load(src, texture => {
       if (!!this.material && !!this.material?.uniforms[name]) {
-        this.material.uniforms[name].value = texture;
-        this.material.uniformsNeedUpdate = true;
-        // Настройки
         texture.wrapS = ClampToEdgeWrapping;
         texture.wrapT = ClampToEdgeWrapping;
         texture.encoding = sRGBEncoding;
-        texture.minFilter = NearestMipMapNearestFilter;
-        texture.magFilter = NearestMipMapNearestFilter;
+        texture.minFilter = NearestMipMapLinearFilter;
+        texture.magFilter = NearestMipMapLinearFilter;
+        texture.generateMipmaps = true;
+        texture.needsUpdate = true;
+        // Обновить
+        this.material.uniforms[name].value = texture;
+        this.material.uniformsNeedUpdate = true;
       }
     });
   }
@@ -184,6 +186,7 @@ export class DreamMapTerrainService implements OnDestroy {
     this.material.clipShadows = true;
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
+    this.material.needsUpdate = true;
     // Вернуть материал
     return this.material;
   }
@@ -259,7 +262,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const size: number = width * height;
     const depth: number = TerrainColorDepth;
     // Цикл по слоям
-    return CreateArray(depth).map(d => {
+    return MapCycle(depth, d => {
       const data: Uint8Array = new Uint8Array(4 * size);
       // Цикл по размеру
       CreateArray(size).forEach(s => {
@@ -270,7 +273,7 @@ export class DreamMapTerrainService implements OnDestroy {
         const y: number = Math.ceil(realY);
         const terrain: MapTerrain = this.getTerrain(x, y);
         // Цвета
-        CreateArray(3).forEach(k => data[stride + k] = this.getColor(d, k, terrain));
+        ForCycle(3, k => data[stride + k] = this.getColor(d, k, terrain));
         // Прозрачный канал
         data[stride + 3] = 255;
       });
@@ -278,6 +281,7 @@ export class DreamMapTerrainService implements OnDestroy {
       const texture: DataTexture = new DataTexture(data, width, height);
       texture.magFilter = LinearFilter;
       texture.minFilter = LinearFilter;
+      texture.needsUpdate = true;
       // Вернуть текстуру
       return texture;
     });

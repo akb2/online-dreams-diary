@@ -7,7 +7,7 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshStandardMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
+import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
@@ -207,7 +207,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     }
     // Определить параметры
     else {
-      const useTextureKeys: (keyof MeshStandardMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
@@ -215,24 +215,23 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: CircleGeometry = new CircleGeometry(leafSize / 2, 15);
-      const treeTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
+      const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureKeys, texture => {
         const repeat: number = 2;
         // Настройки
         texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
-      const leafTextures: CustomObjectKey<keyof MeshStandardMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"]);
-      const treeMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("oak-leaf.png", "tree", [...useTextureKeys, "displacementMap"]);
+      const treeMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: FrontSide,
         ...treeTextures,
         aoMapIntensity: 0.1,
         lightMapIntensity: 1,
         transparent: true,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1)
       });
-      const leafMaterial: MeshStandardMaterial = new MeshStandardMaterial({
+      const leafMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: DoubleSide,
         transparent: true,
@@ -241,7 +240,6 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         ...leafTextures,
         aoMapIntensity: 0.1,
         lightMapIntensity: 1,
-        roughness: 0.8,
         normalMapType: TangentSpaceNormalMap,
         normalScale: new Vector2(1, 1),
         displacementScale: leafSize * 2
@@ -323,12 +321,12 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
     leaf: CircleGeometry
   };
   material: {
-    tree: MeshStandardMaterial,
-    leaf: MeshStandardMaterial
+    tree: MeshPhongMaterial,
+    leaf: MeshPhongMaterial
   };
   texture: {
-    tree: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
-    leaf: CustomObjectKey<keyof MeshStandardMaterial, Texture>;
+    tree: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
+    leaf: CustomObjectKey<keyof MeshPhongMaterial, Texture>;
   };
   shader?: Shader;
 }

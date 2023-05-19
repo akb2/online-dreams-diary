@@ -53,7 +53,7 @@ export enum DreamObjectElmsValues {
   Ultra,
   Awesome
 };
-export const DreamBaseElmsCount: number = 32;
+export const DreamBaseElmsCount: number = 128;
 export const DreamShadowQualitySize: number = 1024;
 export const DreamMaxElmsCount: (d: DreamObjectElmsValues) => number = (d: DreamObjectElmsValues) => DreamBaseElmsCount * (d + 1);
 export const DreamMapMinShadowQuality: number = 1;
