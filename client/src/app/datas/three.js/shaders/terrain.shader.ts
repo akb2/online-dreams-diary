@@ -196,7 +196,6 @@ export const TerrainFragmentShader: string = `
       uniform sampler2D ${LightMapTextureName};
     `)
     // Карта освещения: фрагмент 2
-    // gl_FragColor = gl_FragColor * texture2D(lightMap, vUv2);
     .replace("#include <lights_fragment_maps>", `
       #ifdef USE_LIGHTMAP
         ${LightMap.map((n, k) => `vec4 ${n} = getTileTexture(${LightMapTextureName}, ${MapTileCoords[k]}, vUv);`).join("\n")}
