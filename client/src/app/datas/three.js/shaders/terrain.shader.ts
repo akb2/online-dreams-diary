@@ -1,4 +1,5 @@
 import { MapTerrains } from "@_datas/dream-map";
+import { DreamFogFar, DreamFogNear } from "@_datas/dream-map-settings";
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -69,50 +70,51 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   tileSetSize: { type: "v2", value: { x: TerrainTileSetSize, y: TerrainTileSetSize } },
   normalScale: { type: "v2", value: { x: -1, y: 1 } },
   aoMapIntensity: { type: "f", value: 0.5 },
-  lightMapIntensity: { type: "f", value: 0.05 }
+  lightMapIntensity: { type: "f", value: 0.05 },
+  fogNear: { type: "f", value: DreamFogNear },
+  fogFar: { type: "f", value: DreamFogFar }
 }]);
 
 // Вершинный шейдер
 export const TerrainFragmentShader: string = `
-    uniform vec2 tileSize;
-    uniform vec2 tileSetSize;
-    uniform vec2 mapRepeat;
-    uniform vec2 ${MapTileCoords.join(", ")};
-    uniform vec2 ${MapRepeats.join(", ")};
+  uniform vec2 tileSize;
+  uniform vec2 tileSetSize;
+  uniform vec2 mapRepeat;
+  uniform vec2 ${MapTileCoords.join(", ")};
+  uniform vec2 ${MapRepeats.join(", ")};
 
-    uniform sampler2D ${MaskNames.join(", ")};
-    uniform sampler2D ${MapTextureName};
+  uniform sampler2D ${MaskNames.join(", ")};
+  uniform sampler2D ${MapTextureName};
 
-    vec2 vec2LineFunc (vec2 min, vec2 max, vec2 value, vec2 valueMin, vec2 valueMax) {
-      return clamp((((min - max) / valueMax) * (value - valueMin)) + max, max, min);
-    }
+  vec2 vec2LineFunc (vec2 min, vec2 max, vec2 value, vec2 valueMin, vec2 valueMax) {
+    return clamp((((min - max) / valueMax) * (value - valueMin)) + max, max, min);
+  }
 
-    vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {
-      vec2 allTiles = floor((tileSetSize / tileSize) + vec2(0.5, 0.5)) - vec2(1, 1);
-      vec2 coords = vec2(tileCoords.x, allTiles.y - tileCoords.y);
-      vec2 uvMin = vec2(0.0, 0.0);
-      vec2 uvMax = vec2(1.0, 1.0);
-      vec2 tilingUV = (uv - uvMin) * mapRepeat;
-      vec2 epsilon = vec2(0.0001);
-      vec2 offset = (tileSize * coords) + (tileSize * (fract(tilingUV) - epsilon));
-      vec2 textureUV = vec2LineFunc(uvMax, uvMin, offset, uvMin, tileSetSize);
+  vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {
+    vec2 allTiles = floor((tileSetSize / tileSize) + vec2(0.5, 0.5)) - vec2(1, 1);
+    vec2 coords = vec2(tileCoords.x, allTiles.y - tileCoords.y);
+    vec2 uvMin = vec2(0.0, 0.0);
+    vec2 uvMax = vec2(1.0, 1.0);
+    vec2 tilingUV = (uv - uvMin) * mapRepeat;
+    vec2 offset = (tileSize * coords) + (tileSize * (fract(tilingUV)));
+    vec2 textureUV = vec2LineFunc(uvMax, uvMin, offset, uvMin, tileSetSize);
 
-      return texture2D(texture, textureUV);
-    }
+    return texture2D(texture, textureUV);
+  }
 
-    vec4 lightMapTexelToLinear(vec4 texel) {
-      return vec4(pow(texel.rgb, vec3(2.2)), texel.a);
-    }
+  vec4 lightMapTexelToLinear(vec4 texel) {
+    return vec4(pow(texel.rgb, vec3(2.2)), texel.a);
+  }
 
-    #if defined( USE_NORMALMAP )
-      uniform sampler2D ${NormalMapTextureName};
-    #endif
+  #if defined( USE_NORMALMAP )
+    uniform sampler2D ${NormalMapTextureName};
+  #endif
 
-    #if defined( USE_AOMAP )
-      uniform sampler2D ${AoMapTextureName};
-    #endif
+  #if defined( USE_AOMAP )
+    uniform sampler2D ${AoMapTextureName};
+  #endif
 
-    ${BaseShader.fragmentShader
+  ${BaseShader.fragmentShader
     // Общие переменные
     .replace("void main() {", `
       void main() {
@@ -180,6 +182,10 @@ export const TerrainFragmentShader: string = `
     `)
     // Карта нормалей: фрагмент 2
     .replace("#include <normal_fragment_maps>", `
+      #ifdef USE_CLEARCOAT
+        vec3 clearcoatNormal = geometryNormal;
+      #endif
+
       #ifdef USE_NORMALMAP
         normal = perturbNormal2Arb(-vViewPosition, normal);
       #endif
@@ -219,18 +225,20 @@ export const TerrainVertexShader: string = BaseShader.vertexShader;
 
 // Настройки шейдера материала
 export const TerrainDefines: CustomObject<boolean> = {
-  USE_MAP: true,
   USE_UV: true,
+  USE_MAP: true,
   USE_AOMAP: true,
   USE_NORMALMAP: true,
-  USE_BUMPMAP: false,
   USE_LIGHTMAP: true,
+  USE_BUMPMAP: false,
   USE_DISPLACEMENTMAP: false,
   PHYSICALLY_CORRECT_LIGHTS: false,
   FLAT_SHADED: false,
   USE_TANGENT: true,
   DOUBLE_SIDED: false,
   USE_CLEARCOAT: false,
+  USE_FOG: true,
+  FOG_EXP2: false,
   USE_SHEEN: false,
   USE_ENVMAP: false
 }
