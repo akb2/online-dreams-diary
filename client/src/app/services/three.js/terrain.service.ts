@@ -2,7 +2,7 @@ import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapDefaultTextureQuality, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { AoMapTextureName, MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -11,8 +11,8 @@ import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
-import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
-import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipMapNearestFilter, Mesh, NearestFilter, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils, sRGBEncoding } from "three";
+import { Observable, Subject, filter, forkJoin, map, mergeMap, of, takeUntil, tap, timer } from "rxjs";
+import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, Mesh, NearestFilter, NearestMipmapNearestFilter, PlaneGeometry, RGBFormat, RepeatWrapping, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -129,17 +129,24 @@ export class DreamMapTerrainService implements OnDestroy {
       return Math.pow(2, quality);
     };
     const currentQuality: number = DreamMapDefaultTextureQuality;
-    const currentSize: number = getSize(currentQuality);
-    // Вернуть текстуру
-    return this.textureLoader.load(src + currentSize + "." + ext, texture => {
-      if (!!this.material && !!this.material?.uniforms[name]) {
-        texture.wrapS = ClampToEdgeWrapping;
-        texture.wrapT = ClampToEdgeWrapping;
-        texture.encoding = sRGBEncoding;
-        texture.anisotropy = 1;
-        texture.format = RGBAFormat;
-        texture.minFilter = LinearMipMapNearestFilter;
+    const blankCanvas: HTMLCanvasElement = document.createElement("canvas", {});
+    const texture: CanvasTexture = new CanvasTexture(blankCanvas);
+    // Свойства полотна
+    blankCanvas.width = 1;
+    blankCanvas.height = 1;
+    // Свойства текстуры
+    timer(1)
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => !!this.material && !!this.material?.uniforms[name])
+      )
+      .subscribe(() => {
+        texture.format = RGBFormat;
         texture.magFilter = NearestFilter;
+        texture.encoding = LinearEncoding;
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+        texture.anisotropy = 0;
         // Mipmaps
         if (createMipmaps && currentQuality >= 0) {
           forkJoin(MapCycle(currentQuality + 1, quality => {
@@ -149,6 +156,8 @@ export class DreamMapTerrainService implements OnDestroy {
           }, false))
             .pipe(takeUntil(this.destroyed$))
             .subscribe(datas => {
+              const mipmaps: HTMLCanvasElement[] = [];
+              // Цикл по MipMaps
               ArrayForEach(datas, ({ size, image: { image } }) => {
                 const imageCanvas: HTMLCanvasElement = document.createElement("canvas");
                 const context: CanvasRenderingContext2D = imageCanvas.getContext("2d");
@@ -157,12 +166,12 @@ export class DreamMapTerrainService implements OnDestroy {
                 imageCanvas.height = size;
                 context.drawImage(image, 0, 0);
                 // Добавить в массив
-                texture.mipmaps = texture.mipmaps ?? [];
-                texture.mipmaps.push(context.getImageData(0, 0, size, size));
+                mipmaps.push(imageCanvas);
               }, true);
-              console.log(texture.mipmaps);
               // Обновить текстуру
+              texture.minFilter = NearestMipmapNearestFilter;
               texture.generateMipmaps = false;
+              texture.mipmaps = mipmaps;
               texture.needsUpdate = true;
               // Обновить
               this.material.uniforms[name].value = texture;
@@ -171,14 +180,16 @@ export class DreamMapTerrainService implements OnDestroy {
         }
         // Обычные текстуры
         else {
+          texture.minFilter = NearestMipmapNearestFilter;
           texture.generateMipmaps = true;
           texture.needsUpdate = true;
           // Обновить
           this.material.uniforms[name].value = texture;
           this.material.uniformsNeedUpdate = true;
         }
-      }
-    });
+      });
+    // Вернуть текстуру
+    return texture;
   }
 
   // Шейдер смешивания текстур (Splat Map)
@@ -198,7 +209,7 @@ export class DreamMapTerrainService implements OnDestroy {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
       [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.jpg, MapTextureName, true),
       // [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.jpg, NormalMapTextureName),
-      [AoMapTextureName]: this.loadTexture(TexturePaths.ao, ImageExtension.jpg, AoMapTextureName, true),
+      // [AoMapTextureName]: this.loadTexture(TexturePaths.ao, ImageExtension.jpg, AoMapTextureName, true),
       // [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.jpg, LightMapTextureName)
     };
     // Значения
