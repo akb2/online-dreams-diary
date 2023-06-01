@@ -33,7 +33,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
   private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 1;
-  private radiusSegments: number = 3;
+  private radiusSegments: number = 6;
   private leafBranchCount: number = 2;
   private leafSkipSegments: number = 2;
   private segmentsCount: number = 5;
@@ -267,6 +267,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
         lightMapIntensity: 0.6,
         transparent: true,
         normalMapType: TangentSpaceNormalMap,
+        color: 0xffffff,
         normalScale: new Vector2(1, 1)
       });
       const leafMaterial: MeshPhongMaterial = new MeshPhongMaterial({

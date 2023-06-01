@@ -33,7 +33,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 3;
-  private radiusSegments: number = 3;
+  private radiusSegments: number = 6;
   private segmentsCount: number = 7;
 
   private params: Params;
