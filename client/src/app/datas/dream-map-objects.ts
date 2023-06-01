@@ -116,6 +116,7 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
     ],
     subTypeFunctions: {
       "fence-rabitz-net-column": DreamMapRabitzNetObject.getSubType,
+      "fence-rabitz-net-border": DreamMapRabitzNetObject.getSubType,
       "fence-rabitz-net-wall": DreamMapRabitzNetObject.getSubType
     },
     settings: {

@@ -45,6 +45,7 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     // Вернуть массив объектов
     return [
       this.getColumnInstance(),
+      this.getBorderInstance(),
       this.getNetInstance()
     ];
   }
@@ -58,6 +59,53 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       cY,
       geometry: { column: geometry },
       material: { column: material },
+      columnHeight,
+      dummy: defaultDummy
+    } = params;
+    const columnHeightHalf: number = columnHeight / 2;
+    const x: number = cX + (DreamCeilSize / 2);
+    const y: number = cY + (DreamCeilSize / 2);
+    const z: number = GetHeightByTerrain(params, x, y) + columnHeightHalf;
+    const lodDistances: number[] = [];
+    const dummy: Object3D = defaultDummy.clone();
+    // Настройки
+    dummy.position.set(x, z, y);
+    dummy.updateMatrix();
+    // Вернуть матрицу
+    const matrix: Matrix4 = dummy.matrix.clone();
+    // Вернуть объект
+    return {
+      type,
+      subType: DreamMapRabitzNetObject.getSubType(this.ceil, this.neighboringCeils),
+      splitBySubType: false,
+      count: 1,
+      matrix: [matrix],
+      skews: [],
+      lodDistances,
+      color: [],
+      geometry: geometry as BufferGeometry,
+      material,
+      coords: {
+        x: this.ceil.coord.x,
+        y: this.ceil.coord.y
+      },
+      animate: this.animate.bind(this),
+      castShadow: true,
+      recieveShadow: true,
+      isDefault: false,
+      raycastBox: true
+    };
+  }
+
+  // Перегородки
+  private getBorderInstance(): MapObject {
+    const type: string = this.type + "-border";
+    const params: Params = this.getParams;
+    const {
+      cX,
+      cY,
+      geometry: { border: geometry },
+      material: { border: material },
       columnHeight,
       dummy: defaultDummy,
       netWidth,
@@ -122,14 +170,6 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         // Обновить матрицу
         dummy.updateMatrix();
         color.push(null);
-        // Вернуть матрицу
-        return dummy.matrix.clone();
-      }
-      // Основной столб
-      else if (i === count - 1) {
-        dummy.position.set(x, z, y);
-        dummy.updateMatrix();
-        color.push(new Color(3, 3, 3));
         // Вернуть матрицу
         return dummy.matrix.clone();
       }
@@ -245,10 +285,11 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     }
     // Определить параметры
     else {
-      const columnCount: number = 5;
+      const columnCount: number = 4;
       const netCount: number = 4;
       const horizontalScale: number = 0.7;
-      const textureRepeat: number = 12;
+      const columnTextureRepeat: number = 0.5;
+      const netTextureRepeat: number = 12;
       const columnDiameter: number = (this.columnRadius * DreamCeilSize) * 2;
       const columnHeight: number = this.columnHeight * DreamCeilSize;
       const netHeight: number = this.netHeight * DreamCeilSize;
@@ -257,12 +298,27 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
       const columnGeometry: BoxGeometry = new BoxGeometry(columnDiameter, columnHeight, columnDiameter);
       const netGeometry: PlaneGeometry = new PlaneGeometry(netWidth, netWidth);
       const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map"/* , "aoMap", "normalMap", "lightMap" */];
-      const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys, texture => {
-        texture.repeat = new Vector2(textureRepeat, (netHeight / netWidth) * textureRepeat);
+      const netTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("rabitz.png", "fence", useTextureKeys,
+        texture => texture.repeat = new Vector2(netTextureRepeat, (netHeight / netWidth) * netTextureRepeat)
+      );
+      const wallTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("wall.jpg", "fence", useTextureKeys,
+        texture => texture.repeat = new Vector2(columnTextureRepeat, (columnHeight / columnDiameter) * columnTextureRepeat)
+      );
+      const columnMeterial: MeshPhongMaterial = new MeshPhongMaterial({
+        ...wallTextures,
+        color: 0xffffff,
+        side: FrontSide,
+        transparent: true,
+        flatShading: false
       });
-      const columnMeterial: MeshPhongMaterial = new MeshPhongMaterial({ color: 0x888888, side: FrontSide, transparent: true, flatShading: true });
+      const borderMeterial: MeshPhongMaterial = new MeshPhongMaterial({
+        color: 0x888888,
+        side: FrontSide,
+        transparent: true,
+        flatShading: true
+      });
       const netMeterial: MeshPhongMaterial = new MeshPhongMaterial({
-        ...textures,
+        ...netTextures,
         side: DoubleSide,
         flatShading: true,
         transparent: true,
@@ -284,10 +340,12 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         netPositionTop,
         geometry: {
           column: columnGeometry,
+          border: columnGeometry,
           net: netGeometry
         },
         material: {
           column: columnMeterial,
+          border: borderMeterial,
           net: netMeterial
         }
       };
@@ -304,6 +362,9 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
   updateHeight(objectSetting: ObjectSetting): void {
     if (objectSetting.count > 0) {
       if (objectSetting.type === this.type + "-column") {
+      }
+      // Перегородки
+      if (objectSetting.type === this.type + "-border") {
         this.updateColumnHeight(objectSetting);
       }
       // Сетка
@@ -475,10 +536,12 @@ interface Params extends GetHeightByTerrainObject, CreateTerrainTrianglesObject 
   dummy: Object3D;
   geometry: {
     column: BoxGeometry,
+    border: BoxGeometry,
     net: PlaneGeometry
   };
   material: {
     column: MeshPhongMaterial,
+    border: MeshPhongMaterial,
     net: MeshPhongMaterial
   };
 }
