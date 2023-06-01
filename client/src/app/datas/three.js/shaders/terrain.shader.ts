@@ -90,7 +90,7 @@ export const TerrainFragmentShader: string = `
   uniform sampler2D ${MapTextureName};
 
   vec2 vec2LineFunc (vec2 min, vec2 max, vec2 value, vec2 valueMin, vec2 valueMax) {
-    return clamp((((min - max) / valueMax) * (value - valueMin)) + max, max, min);
+    return (((min - max) / valueMax) * (value - valueMin)) + max;
   }
 
   vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {

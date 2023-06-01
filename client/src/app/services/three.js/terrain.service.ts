@@ -2,7 +2,7 @@ import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapDefaultTextureQuality, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { LightMapTextureName, MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -12,7 +12,7 @@ import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, filter, forkJoin, map, mergeMap, of, takeUntil, tap, timer } from "rxjs";
-import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, Mesh, NearestFilter, NearestMipmapNearestFilter, PlaneGeometry, RGBFormat, RepeatWrapping, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { BackSide, CanvasTexture, ClampToEdgeWrapping, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, Mesh, NearestFilter, NearestMipmapNearestFilter, PlaneGeometry, RGBFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -144,8 +144,8 @@ export class DreamMapTerrainService implements OnDestroy {
         texture.format = RGBFormat;
         texture.magFilter = NearestFilter;
         texture.encoding = LinearEncoding;
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
+        texture.wrapS = ClampToEdgeWrapping;
+        texture.wrapT = ClampToEdgeWrapping;
         texture.anisotropy = 0;
         // Mipmaps
         if (createMipmaps && currentQuality >= 0) {
@@ -207,10 +207,10 @@ export class DreamMapTerrainService implements OnDestroy {
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
-      [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.jpg, MapTextureName, true),
+      [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.png, MapTextureName, true),
       // [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.jpg, NormalMapTextureName),
       // [AoMapTextureName]: this.loadTexture(TexturePaths.ao, ImageExtension.jpg, AoMapTextureName, true),
-      // [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.jpg, LightMapTextureName)
+      [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.jpg, LightMapTextureName)
     };
     // Значения
     const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
