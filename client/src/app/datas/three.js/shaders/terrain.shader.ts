@@ -15,10 +15,10 @@ import { ShaderLib, UniformsUtils } from "three";
 const TerrainColorCount: number = 4;
 const MaterialType: keyof typeof ShaderLib = "phong";
 const BaseShader = ShaderLib[MaterialType];
-const TerrainTileSize: number = 512;
-const TerrainTileSpacing: number = 0;
+const TerrainTileSize: number = 1536;
+const TerrainTileSpacing: number = 512;
 const TerrainTileSetSize: number = TerrainTileSize * 4;
-export const TerrainRepeat: number = 1.2;
+export const TerrainRepeat: number = 1;
 export const TerrainColorDepth: number = MapTerrains.filter((t, k) => k / TerrainColorCount === Math.round(k / TerrainColorCount)).length;
 
 // Именованный массив
@@ -94,13 +94,15 @@ export const TerrainFragmentShader: string = `
   }
 
   vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {
-    vec2 allTiles = floor((tileSetSize / tileSize) + vec2(0.5, 0.5)) - vec2(1, 1);
-    vec2 coords = vec2(tileCoords.x, allTiles.y - tileCoords.y);
     vec2 uvMin = vec2(0., 0.);
     vec2 uvMax = vec2(1., 1.);
-    vec2 tileMaxSize = tileSize - uvMax - (tileSpacing * vec2(2., 2.));
+    vec2 halfVec2 = vec2(.5, .5);
+    vec2 doubleVec2 = vec2(2., 2.);
+    vec2 tileMaxSize = tileSize - (tileSpacing * doubleVec2);
+    vec2 allTiles = floor((tileSetSize / tileSize) + halfVec2) - vec2(1, 1);
+    vec2 coords = vec2(tileCoords.x, allTiles.y - tileCoords.y);
     vec2 tilingUV = fract(uv * mapRepeat);
-    vec2 offset = (tileSize * coords) + tileSpacing + (tileMaxSize * tilingUV);
+    vec2 offset = ((tileSize * coords) + tileSpacing) + (tileMaxSize * tilingUV);
     vec2 textureUV = fract(vec2LineFunc(uvMax, uvMin, offset, uvMin, tileSetSize));
 
     return texture2D(texture, textureUV);
@@ -231,8 +233,8 @@ export const TerrainDefines: CustomObject<boolean> = {
   USE_UV: true,
   USE_MAP: true,
   USE_AOMAP: false,
-  USE_NORMALMAP: true,
-  USE_LIGHTMAP: true,
+  USE_NORMALMAP: false,
+  USE_LIGHTMAP: false,
   USE_BUMPMAP: false,
   USE_DISPLACEMENTMAP: false,
   PHYSICALLY_CORRECT_LIGHTS: false,

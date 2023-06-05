@@ -11,7 +11,7 @@ export const BaseTexturePath: string = "assets/dream-map/terrain/";
 // Путь к файлам текстур местности
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
   icons: BaseTexturePath + "icons/",
-  face: BaseTexturePath + "face/",
+  face: BaseTexturePath + "face",
   normal: BaseTexturePath + "normal/",
   ao: BaseTexturePath + "ao/",
   light: BaseTexturePath + "light/",

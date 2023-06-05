@@ -64,5 +64,3 @@ export const DefaultDreamMapSettings: DreamMapSettings = {
   detalization: DreamObjectElmsValues.Middle,
   shadowQuality: DreamMapDefaultShadowQuality,
 };
-
-export const DreamMapDefaultTextureQuality: number = 11;

@@ -1,8 +1,8 @@
 import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapDefaultTextureQuality, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { LightMapTextureName, MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
+import { MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -11,8 +11,8 @@ import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
-import { Observable, Subject, filter, forkJoin, map, mergeMap, of, takeUntil, tap, timer } from "rxjs";
-import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, Mesh, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, PlaneGeometry, RGBFormat, RepeatWrapping, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
+import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -122,74 +122,21 @@ export class DreamMapTerrainService implements OnDestroy {
   }
 
   // Загрузить текстуру
-  private loadTexture(src: string, ext: ImageExtension, name: string, createMipmaps: boolean = false): Texture {
-    const getSize = (quality: number) => {
-      quality = CheckInRange(quality, 11, 0);
-      // Вернуть актуальный размер
-      return Math.pow(2, quality);
-    };
-    const currentQuality: number = DreamMapDefaultTextureQuality;
-    const blankCanvas: HTMLCanvasElement = document.createElement("canvas", {});
-    const texture: CanvasTexture = new CanvasTexture(blankCanvas);
-    // Свойства полотна
-    blankCanvas.width = 1;
-    blankCanvas.height = 1;
-    // Свойства текстуры
-    timer(1)
-      .pipe(
-        takeUntil(this.destroyed$),
-        filter(() => !!this.material && !!this.material?.uniforms[name])
-      )
-      .subscribe(() => {
-        texture.format = RGBFormat;
-        texture.magFilter = NearestFilter;
-        texture.encoding = LinearEncoding;
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
-        texture.anisotropy = 0;
-        // Mipmaps
-        if (createMipmaps && currentQuality >= 0) {
-          forkJoin(MapCycle(currentQuality + 1, quality => {
-            const size: number = getSize(quality);
-            // Загрузка картинки
-            return this.screenService.loadImage(src + size + "." + ext).pipe(map(image => ({ size, image })));
-          }, false))
-            .pipe(takeUntil(this.destroyed$))
-            .subscribe(datas => {
-              const mipmaps: HTMLCanvasElement[] = [];
-              // Цикл по MipMaps
-              ArrayForEach(datas, ({ size, image: { image } }) => {
-                const imageCanvas: HTMLCanvasElement = document.createElement("canvas");
-                const context: CanvasRenderingContext2D = imageCanvas.getContext("2d");
-                // Отрисовка текстуры
-                imageCanvas.width = size;
-                imageCanvas.height = size;
-                context.drawImage(image, 0, 0);
-                // Добавить в массив
-                mipmaps.push(imageCanvas);
-              }, true);
-              // Обновить текстуру
-              texture.minFilter = NearestMipmapLinearFilter;
-              texture.generateMipmaps = false;
-              texture.mipmaps = mipmaps;
-              texture.needsUpdate = true;
-              // Обновить
-              this.material.uniforms[name].value = texture;
-              this.material.uniformsNeedUpdate = true;
-            });
-        }
-        // Обычные текстуры
-        else {
-          texture.minFilter = NearestMipmapNearestFilter;
-          texture.generateMipmaps = true;
-          texture.needsUpdate = true;
-          // Обновить
-          this.material.uniforms[name].value = texture;
-          this.material.uniformsNeedUpdate = true;
-        }
-      });
-    // Вернуть текстуру
-    return texture;
+  private loadTexture(src: string, ext: ImageExtension, name: string): Texture {
+    return this.textureLoader.load(src + "." + ext, texture => {
+      texture.format = RGBFormat;
+      texture.magFilter = LinearFilter;
+      texture.minFilter = LinearMipmapLinearFilter;
+      texture.encoding = LinearEncoding;
+      texture.wrapS = MirroredRepeatWrapping;
+      texture.wrapT = MirroredRepeatWrapping;
+      texture.anisotropy = 0;
+      texture.generateMipmaps = true;
+      texture.needsUpdate = true;
+      // Обновить
+      this.material.uniforms[name].value = texture;
+      this.material.uniformsNeedUpdate = true;
+    })
   }
 
   // Шейдер смешивания текстур (Splat Map)
@@ -207,10 +154,10 @@ export class DreamMapTerrainService implements OnDestroy {
     // Текстуры
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
-      [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.png, MapTextureName, true),
-      [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.png, NormalMapTextureName, true),
+      [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.png, MapTextureName),
+      // [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.png, NormalMapTextureName, true),
       // [AoMapTextureName]: this.loadTexture(TexturePaths.ao, ImageExtension.png, AoMapTextureName, true),
-      [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.png, LightMapTextureName, true)
+      // [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.png, LightMapTextureName, true)
     };
     // Значения
     const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
