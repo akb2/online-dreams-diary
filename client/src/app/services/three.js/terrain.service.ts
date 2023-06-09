@@ -2,7 +2,7 @@ import { CreateArray, VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { MapTextureName, MaskNames, MaskTextureNamePreffix, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -155,7 +155,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const textures: CustomObject<Texture | CanvasTexture> = {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: colorTextures[k] }), {}),
       [MapTextureName]: this.loadTexture(TexturePaths.face, ImageExtension.png, MapTextureName),
-      // [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.png, NormalMapTextureName, true),
+      [NormalMapTextureName]: this.loadTexture(TexturePaths.normal, ImageExtension.png, NormalMapTextureName),
       // [AoMapTextureName]: this.loadTexture(TexturePaths.ao, ImageExtension.png, AoMapTextureName, true),
       // [LightMapTextureName]: this.loadTexture(TexturePaths.light, ImageExtension.png, LightMapTextureName, true)
     };

@@ -233,7 +233,7 @@ export const TerrainDefines: CustomObject<boolean> = {
   USE_UV: true,
   USE_MAP: true,
   USE_AOMAP: false,
-  USE_NORMALMAP: false,
+  USE_NORMALMAP: true,
   USE_LIGHTMAP: false,
   USE_BUMPMAP: false,
   USE_DISPLACEMENTMAP: false,

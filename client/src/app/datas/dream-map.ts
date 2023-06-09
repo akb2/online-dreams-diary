@@ -12,7 +12,7 @@ export const BaseTexturePath: string = "assets/dream-map/terrain/";
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
   icons: BaseTexturePath + "icons/",
   face: BaseTexturePath + "face",
-  normal: BaseTexturePath + "normal/",
+  normal: BaseTexturePath + "normal",
   ao: BaseTexturePath + "ao/",
   light: BaseTexturePath + "light/",
 };
