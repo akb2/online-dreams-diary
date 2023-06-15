@@ -1,22 +1,30 @@
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeights } from "@_models/dream-map";
+import { ClosestHeightName, ClosestHeights } from "@_models/dream-map";
 
 
 
 
 
-// Перечисление типов геометрий травы для ячеек
-export type CeilFenceWallGeometryType = "none" | "once" | "line" | "corner" | "tee" | "chair";
-
-// Массив типов геометрий травы для ячеек
-export const CeilFenceWallGeometry: CeilFenceWallGeometryType[] = [
-  "none",
-  "once",
-  "line",
-  "corner",
-  "tee",
-  "chair",
+// Порядок сортировки соседних ячеек
+export const ClosestHeightNameSortOrder: ClosestHeightName[] = [
+  "top",
+  "topRight",
+  "right",
+  "bottomRight",
+  "bottom",
+  "bottomLeft",
+  "left",
+  "topLeft"
 ];
 
 // Углы для поворота стен забора
-export const AnglesA: CustomObjectKey<keyof ClosestHeights, number> = { top: 90, right: 0, bottom: 270, left: 180 };
+export const AnglesA: CustomObjectKey<keyof ClosestHeights, number> = {
+  top: 90,
+  topRight: 45,
+  right: 0,
+  bottomRight: 315,
+  bottom: 270,
+  bottomLeft: 225,
+  left: 180,
+  topLeft: 135
+};

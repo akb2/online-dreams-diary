@@ -1,5 +1,5 @@
 import { DreamCeilSize, DreamFogFar, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad } from "@_helpers/math";
+import { AngleToRad, Cos, GetLengthFromSquareCenter, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMapCeil } from "@_models/dream-map";
@@ -139,35 +139,22 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
         const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + columnHeightHalf;
         const diffZ: number = neighboringZ - z;
-        const size: number = Math.sqrt(Math.pow(netWidth, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
-        const verticalScale: number = size / columnHeight;
-        const correctAngle: number = (Math.atan2(diffZ / 2, netWidth));
-        const tempZ: number = z - columnHeightHalf + netPositionTop + netHeight + (diffZ / 4);
-        // Левая грань
-        if (angle === 180) {
-          dummy.position.set(x - (netWidth / 2), tempZ, y);
-          dummy.scale.set(horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale);
-          dummy.rotateZ(AngleToRad(90) - correctAngle);
-        }
-        // Правая грань
-        else if (angle === 0) {
-          dummy.position.set(x + (netWidth / 2), tempZ, y);
-          dummy.scale.set(horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale);
-          dummy.rotateZ(AngleToRad(90) + correctAngle);
-        }
-        // Нижняя грань
-        else if (angle === 270) {
-          dummy.position.set(x, tempZ, y + (netWidth / 2));
-          dummy.scale.set(this.columnHorizontalScale, verticalScale, horizontalScale * this.columnHorizontalScale);
-          dummy.rotateX(AngleToRad(90) - correctAngle);
-        }
-        // Верхняя грань
-        else if (angle === 90) {
-          dummy.position.set(x, tempZ, y - (netWidth / 2));
-          dummy.scale.set(this.columnHorizontalScale, verticalScale, horizontalScale * this.columnHorizontalScale);
-          dummy.rotateX(AngleToRad(90) + correctAngle);
-        }
-        // Обновить матрицу
+        const width: number = GetLengthFromSquareCenter(netWidth, angle);
+        const size: number = Math.sqrt(Math.pow(width * 2, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
+        const positionX: number = x + (width * Cos(angle));
+        const positionY: number = z - columnHeightHalf + netPositionTop + netHeight + (diffZ / 4);
+        const positionZ: number = y - (width * Sin(angle));
+        const scaleX: number = horizontalScale * this.columnHorizontalScale;
+        const scaleY: number = size / columnHeight;
+        const scaleZ: number = this.columnHorizontalScale;
+        const rotateY: number = AngleToRad(angle);
+        const rotateZ: number = AngleToRad(90) + Math.atan2(diffZ / 2, width * 2);
+        // Свойства
+        dummy.position.set(positionX, positionY, positionZ);
+        dummy.scale.set(scaleX, scaleY, scaleZ);
+        dummy.rotateY(rotateY);
+        dummy.updateMatrix();
+        dummy.rotateZ(rotateZ);
         dummy.updateMatrix();
         color.push(null);
         // Вернуть матрицу
@@ -228,6 +215,7 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         const dummy: Object3D = defaultDummy.clone();
         const setting = wallSettings[i];
         const angle: number = AnglesA[setting.neighboringName];
+        const width: number = GetLengthFromSquareCenter(netWidth, angle);
         const neighboringParams: Params = {
           ...params,
           ...this.createParamsHelpers(),
@@ -238,9 +226,10 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + netPositionTop;
         const diffZ: number = neighboringZ - z;
         // Настройки
+        dummy.scale.set(width / (netWidth / 2), 1, 1);
         dummy.position.set(x, z, y);
         dummy.rotation.set(0, AngleToRad(angle), 0);
-        dummy.translateX(netWidth / 2);
+        dummy.translateX(width);
         dummy.translateY((netHeight / 2) + (diffZ / 4));
         dummy.updateMatrix();
         skews.push(new Vector3(0, diffZ, 0));
@@ -285,8 +274,8 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     }
     // Определить параметры
     else {
-      const columnCount: number = 4;
-      const netCount: number = 4;
+      const columnCount: number = 8;
+      const netCount: number = 8;
       const horizontalScale: number = 0.7;
       const columnTextureRepeat: number = 0.5;
       const netTextureRepeat: number = 12;
@@ -362,10 +351,11 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
   updateHeight(objectSetting: ObjectSetting): void {
     if (objectSetting.count > 0) {
       if (objectSetting.type === this.type + "-column") {
+        this.updateColumnHeight(objectSetting);
       }
       // Перегородки
-      if (objectSetting.type === this.type + "-border") {
-        this.updateColumnHeight(objectSetting);
+      else if (objectSetting.type === this.type + "-border") {
+        this.updateBorderHeight(objectSetting);
       }
       // Сетка
       else if (objectSetting.type === this.type + "-wall") {
@@ -374,8 +364,33 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
     }
   }
 
-  // Обновить позицию по оси Z: опоры
+  // Обновить позицию по оси Z: столб
   private updateColumnHeight(objectSetting: ObjectSetting): void {
+    const params: Params = this.getParams;
+    const matrix: Matrix4 = DefaultMatrix.clone();
+    const position: Vector3 = new Vector3();
+    const columnHeightHalf: number = params.columnHeight / 2;
+    // Цикл по фрагментам
+    ArrayForEach(objectSetting.indexKeys, (index, i) => {
+      objectSetting.mesh.getMatrixAt(index, matrix);
+      position.setFromMatrixPosition(matrix);
+      // Основной столб
+      const translate: CoordDto = objectSetting?.translates?.length > i ? objectSetting.translates[i] ?? DefTranslate : DefTranslate;
+      const x: number = position.x - translate.x;
+      const z: number = position.z - translate.z;
+      const y: number = GetHeightByTerrain(params, x, z) + columnHeightHalf;
+      // Обновить свойства
+      matrix.setPosition(x + translate.x, y + translate.y, z + translate.z);
+      // Запомнить позицию
+      objectSetting.mesh.setMatrixAt(index, matrix);
+    }, true);
+    // Обновить
+    objectSetting.mesh.updateMatrix();
+    objectSetting.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // Обновить позицию по оси Z: перегородки
+  private updateBorderHeight(objectSetting: ObjectSetting): void {
     const params: Params = this.getParams;
     const matrix: Matrix4 = DefaultMatrix.clone();
     const position: Vector3 = new Vector3();
@@ -401,45 +416,23 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
         const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + columnHeightHalf;
         const diffZ: number = neighboringZ - z;
-        const size: number = Math.sqrt(Math.pow(params.netWidth, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
-        const verticalScale: number = size / params.columnHeight;
-        const correctAngle: number = (Math.atan2(diffZ / 2, params.netWidth));
-        const tempZ: number = z - columnHeightHalf + params.netPositionTop + params.netHeight + (diffZ / 4);
+        const width: number = GetLengthFromSquareCenter(params.netWidth, angle);
+        const size: number = Math.sqrt(Math.pow(width * 2, 2) + Math.pow(Math.abs(diffZ) / 2, 2));
+        const positionX: number = x + (width * Cos(angle));
+        const positionY: number = z - columnHeightHalf + params.netPositionTop + params.netHeight + (diffZ / 4);
+        const positionZ: number = y - (width * Sin(angle));
+        const scaleX: number = params.horizontalScale * this.columnHorizontalScale;
+        const scaleY: number = size / params.columnHeight;
+        const scaleZ: number = this.columnHorizontalScale;
+        const rotateY: Matrix4 = DefaultMatrix.clone().makeRotationY(AngleToRad(angle));
+        const rotateZ: Matrix4 = DefaultMatrix.clone().makeRotationZ(AngleToRad(90) + Math.atan2(diffZ / 2, width * 2));
+        const scale: Matrix4 = DefaultMatrix.clone().makeScale(scaleX, scaleY, scaleZ);
         // Сбросить матрицу
         matrix.identity();
-        // Левая грань
-        if (angle === 180) {
-          matrix.makeRotationZ(AngleToRad(90) - correctAngle);
-          matrix.setPosition(x - (params.netWidth / 2), tempZ, y);
-          matrix.scale(new Vector3(params.horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale));
-        }
-        // Правая грань
-        else if (angle === 0) {
-          matrix.makeRotationZ(AngleToRad(90) + correctAngle);
-          matrix.setPosition(x + (params.netWidth / 2), tempZ, y);
-          matrix.scale(new Vector3(params.horizontalScale * this.columnHorizontalScale, verticalScale, this.columnHorizontalScale));
-        }
-        // Нижняя грань
-        else if (angle === 270) {
-          matrix.makeRotationX(AngleToRad(90) - correctAngle);
-          matrix.setPosition(x, tempZ, y + (params.netWidth / 2));
-          matrix.scale(new Vector3(this.columnHorizontalScale, verticalScale, params.horizontalScale * this.columnHorizontalScale));
-        }
-        // Верхняя грань
-        else if (angle === 90) {
-          matrix.makeRotationX(AngleToRad(90) + correctAngle);
-          matrix.setPosition(x, tempZ, y - (params.netWidth / 2));
-          matrix.scale(new Vector3(this.columnHorizontalScale, verticalScale, params.horizontalScale * this.columnHorizontalScale));
-        }
-      }
-      // Основной столб
-      else if (i === params.columnCount - 1) {
-        const translate: CoordDto = objectSetting?.translates?.length > i ? objectSetting.translates[i] ?? DefTranslate : DefTranslate;
-        const x: number = position.x - translate.x;
-        const z: number = position.z - translate.z;
-        const y: number = GetHeightByTerrain(params, x, z) + columnHeightHalf;
-        // Обновить свойства
-        matrix.setPosition(x + translate.x, y + translate.y, z + translate.z);
+        matrix.multiply(rotateY);
+        matrix.multiply(rotateZ);
+        matrix.setPosition(positionX, positionY, positionZ);
+        matrix.multiply(scale);
       }
       // Запомнить позицию
       objectSetting.mesh.setMatrixAt(index, matrix);
@@ -471,30 +464,17 @@ export class DreamMapRabitzNetObject extends DreamMapObjectTemplate implements D
         const neighboringX: number = neighboringParams.cX + (DreamCeilSize / 2);
         const neighboringY: number = neighboringParams.cY + (DreamCeilSize / 2);
         const neighboringZ: number = GetHeightByTerrain(neighboringParams, neighboringX, neighboringY) + params.netPositionTop;
+        const width: number = GetLengthFromSquareCenter(params.netWidth, angle);
         const diffZ: number = neighboringZ - z;
+        const positionX: number = x + (width * Cos(angle));
+        const positionY: number = z + (params.netHeight / 2) + (diffZ / 4);
+        const positionZ: number = y - (width * Sin(angle));
         // Сбросить матрицу
         objectSetting.mesh.getMatrixAt(index, matrix);
         objectSetting.mesh.getShearAt(index, skews);
-        matrix.identity();
         // Настройки
-        matrix.makeRotationY(AngleToRad(angle));
+        matrix.setPosition(positionX, positionY, positionZ);
         skews.set(0, diffZ, 0);
-        // Левая стена
-        if (setting.neighboringName === "left") {
-          matrix.setPosition(x - (params.netWidth / 2), z + (params.netHeight / 2) + (diffZ / 4), y);
-        }
-        // Правая стена
-        if (setting.neighboringName === "right") {
-          matrix.setPosition(x + (params.netWidth / 2), z + (params.netHeight / 2) + (diffZ / 4), y);
-        }
-        // Верхняя стена
-        if (setting.neighboringName === "top") {
-          matrix.setPosition(x, z + (params.netHeight / 2) + (diffZ / 4), y - (params.netWidth / 2));
-        }
-        // Нижняя стена
-        if (setting.neighboringName === "bottom") {
-          matrix.setPosition(x, z + (params.netHeight / 2) + (diffZ / 4), y + (params.netWidth / 2));
-        }
         // Запомнить позицию
         objectSetting.mesh.setMatrixAt(index, matrix);
         objectSetting.mesh.setShearAt(index, skews);
