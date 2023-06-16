@@ -141,7 +141,7 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       const objHeight: number = this.height * this.heightPart;
       const hyp2: number = objWidth / 2;
       const leg: number = Math.sqrt(Math.pow(hyp2, 2) + Math.pow(objHeight, 2));
-      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap"];
       // Данные фигуры
       const geometry: TriangleGeometry = new TriangleGeometry(leg, objWidth, leg);
       const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("wheatgrass.png", "grass", useTextureKeys);

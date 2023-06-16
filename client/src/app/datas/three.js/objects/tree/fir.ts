@@ -331,7 +331,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     }
     // Определить параметры
     else {
-      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
+      const useTextureTreeKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
+      const useTextureLeafKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap"];
       // Параметры геометрии
       const objWidth: number = MathRound(this.width * WidthPart, 4);
       const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
@@ -344,13 +345,13 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometryA: PlaneGeometry = new PlaneGeometry(leafWidth, leafHeight, 2, 2);
       const leafGeometryB: CircleGeometry = new CircleGeometry(leafDiameter / 2, 15);
-      const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-branch.jpg", "tree", useTextureKeys, texture => {
+      const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-branch.jpg", "tree", useTextureTreeKeys, texture => {
         const repeat: number = 1;
         // Настройки
         texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
       });
-      const leafATextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureKeys);
-      const leafBTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureKeys]);
+      const leafATextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureLeafKeys);
+      const leafBTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureLeafKeys]);
       const treeMaterial: MeshPhongMaterial = new MeshPhongMaterial({
         fog: true,
         side: FrontSide,

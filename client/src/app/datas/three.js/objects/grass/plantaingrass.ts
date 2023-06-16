@@ -133,7 +133,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
     else {
       const objSize: number = this.size * this.widthPart;
       const geometryRadius: number = objSize;
-      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "normalMap", "lightMap"];
+      const useTextureKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap"];
       // Данные фигуры
       const textures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("plantaingrass.png", "grass", useTextureKeys);
       const geometry: CircleGeometry = new CircleGeometry(geometryRadius, 6);
