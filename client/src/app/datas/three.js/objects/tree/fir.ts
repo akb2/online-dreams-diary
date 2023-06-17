@@ -34,7 +34,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
   private lodDistance: number = DreamFogFar / this.lodLevels;
 
   private maxGeneration: number = 1;
-  private radiusSegments: number = 6;
+  private radiusSegments: number = 3;
   private leafBranchCount: number = 2;
   private leafSkipSegments: number = 1;
   private segmentsCount: number = 5;
