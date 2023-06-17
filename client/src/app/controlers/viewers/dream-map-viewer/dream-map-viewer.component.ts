@@ -3,8 +3,8 @@ import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, D
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleToRad, IsOdd, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
-import { ArrayFilter, ArrayForEach, ArraySome, XYForEach } from "@_helpers/objects";
+import { AngleToRad, Cos, LineFunc, ParseFloat, ParseInt, RadToAngle, Sin } from "@_helpers/math";
+import { ArrayFilter, ArrayForEach, ArraySome, MapCycle, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, MapObject, MapObjectRaycastBoxData, ObjectSetting } from "@_models/dream-map-objects";
@@ -13,14 +13,14 @@ import { ShearableInstancedMesh } from "@_models/three.js/shearable-instanced-me
 import { DreamService } from "@_services/dream.service";
 import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
-import { DreamMapTerrainService, GeometryQuality } from "@_services/three.js/terrain.service";
+import { DreamMapTerrainService } from "@_services/three.js/terrain.service";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, CineonToneMapping, Clock, Color, DataTexture, DirectionalLight, DoubleSide, Float32BufferAttribute, FrontSide, Group, InstancedMesh, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, RingGeometry, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, CylinderGeometry, DirectionalLight, DoubleSide, FrontSide, Group, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshPhongMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -174,6 +174,22 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
     // Настройки
     raycaster.setFromCamera({ x, y }, this.camera);
+    // Объекты в фокусе
+    const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
+    // Обработка объектов
+    return intersect?.length ? intersect : null;
+  }
+
+  // Получить пересечения по мировым координатам
+  private getIntercectionObjectByCoords(x: number, y: number): Intersection[] {
+    const min: number = Math.min(0, DreamMinHeight);
+    const max: number = DreamMaxHeight;
+    const far: number = max - min;
+    const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
+    const origin: Vector3 = new Vector3(x, max + DreamCeilSize, y);
+    const direction: Vector3 = new Vector3(0, -1, 0);
+    // Настройки
+    raycaster.set(origin, direction);
     // Объекты в фокусе
     const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
     // Обработка объектов
@@ -672,6 +688,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       });
       // Свойства
       this.ocean.material.transparent = true;
+      this.ocean.material.alphaTest = 0;
+      this.ocean.material.depthTest = true;
+      this.ocean.material.depthWrite = true;
       this.ocean.rotation.x = AngleToRad(-90);
       this.ocean.position.set(position.x, position.y, position.z);
       this.ocean.material.uniforms.size.value = DreamCeilSize * 10;
@@ -727,41 +746,29 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Создание курсора
   private createCursor(): void {
-    const heightPart: number = DreamCeilSize / DreamCeilParts;
-    const ringDisplacementMap: DataTexture = this.terrainService.displacementTexture;
-    const toolSize: number = 1;
-    const ringInnerRadius: number = toolSize / 2;
-    const ringOuterRadius: number = ringInnerRadius + this.cursor.borderSize;
-    const ringGeometry: RingGeometry = new RingGeometry(ringInnerRadius, ringOuterRadius, this.cursor.ring.quality, 1);
-    const ringMaterial: MeshStandardMaterial = new MeshStandardMaterial({
-      emissive: new Color(0.8, 0.3, 1),
-      displacementMap: ringDisplacementMap,
-      displacementScale: DreamMaxHeight * heightPart,
+    const ringRadius: number = 0.5;
+    const ringGeometry: CylinderGeometry = new CylinderGeometry(ringRadius, ringRadius, this.cursor.ring.height, this.cursor.ring.quality, 1, true);
+    const ringMaterial: MeshPhongMaterial = new MeshPhongMaterial({
+      emissive: 0x3f52b5,
+      color: 0x3f52b5,
+      transparent: true,
+      alphaTest: 0.5,
+      opacity: 0.5,
       side: DoubleSide,
       fog: false,
+      depthWrite: true,
+      depthTest: true
     });
-    const ringSpacing: number = this.cursor.ring.height / this.cursor.ring.repeats;
-    const mesh: InstancedMesh = new InstancedMesh(ringGeometry, ringMaterial, this.cursor.ring.repeats);
-    const dummy: Object3D = new Object3D();
+    const mesh: Mesh = new Mesh(ringGeometry, ringMaterial);
     const light: PointLight = new PointLight(new Color(1, 1, 1), DreamCeilSize, DreamCeilSize * 3, 2);
     // Настройки
-    mesh.matrixAutoUpdate = false;
-    ringGeometry.rotateX(AngleToRad(-90));
-    // Цикл по элементам
-    CreateArray(this.cursor.ring.repeats).map(i => {
-      dummy.position.y = i * ringSpacing;
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    });
+    // ringGeometry.rotateX(AngleToRad(-90));
     // Настройки
     light.name = this.cursor.names.light;
     mesh.name = this.cursor.names.ring;
-    ringDisplacementMap.encoding = sRGBEncoding;
-    mesh.updateMatrix();
     // Запомнить все данные
-    this.cursor.group.position.set(0, 20, 0);
+    this.cursor.group.position.set(-15, 20, -7);
     this.cursor.group.add(mesh, light);
-    this.cursor.ring.displacementMap = ringDisplacementMap;
     this.cursor.ring.geometry = ringGeometry;
     this.cursor.ring.material = ringMaterial;
     this.cursor.group.visible = false;
@@ -800,8 +807,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   private clearScene(): void {
     if (this.scene) {
       // Очистить переменные
-      this.cursor.ring.displacementMap.dispose();
-      this.cursor.ring.displacementMap = undefined;
       this.cursor = undefined;
       this.control = undefined;
       this.terrainMesh = undefined;
@@ -1231,66 +1236,60 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Обновить статус свечения местности
   setTerrainHoverStatus(ceil: DreamMapCeil = null, oToolSize: number = 0): void {
     if (!!ceil && (ceil.coord.x !== this.cursor.coords?.x || ceil.coord.y !== this.cursor.coords?.y)) {
+      const minY: number = Math.min(0, DreamMinHeight);
+      const maxY: number = DreamMaxHeight;
+      const fullCircle: number = 360;
+      const circleStepAngle: number = fullCircle / this.cursor.ring.intersectionCount;
       const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
       const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
-      const borderOSize: number = this.terrainService.outsideMapSize * Math.max(oWidth, oHeight);
       const widthCorrect: number = -oWidth * DreamCeilSize / 2;
       const heightCorrect: number = -oHeight * DreamCeilSize / 2;
-      const borderSize: number = borderOSize * DreamCeilSize;
-      const width: number = (oWidth + (borderOSize * 2)) * DreamCeilSize;
-      const height: number = (oHeight + (borderOSize * 2)) * DreamCeilSize;
       const x: number = widthCorrect + (ceil.coord.x * DreamCeilSize) + (DreamCeilSize / 2);
       const y: number = heightCorrect + (ceil.coord.y * DreamCeilSize) + (DreamCeilSize / 2);
-      const sX: number = (borderSize + (ceil.coord.x * DreamCeilSize)) * GeometryQuality;
-      const sY: number = (borderSize + (ceil.coord.y * DreamCeilSize)) * GeometryQuality;
-      const wdth: number = (((oWidth * DreamCeilSize) + (borderSize * 2)) * GeometryQuality) + 1;
-      const vertexes: Float32BufferAttribute = this.terrainMesh.geometry.getAttribute("position") as Float32BufferAttribute;
-      const quality: number = GeometryQuality + 1;
-      const qualityCenterCount: number = IsOdd(quality) ? 1 : 2;
-      const qualitySpacing: number = (quality - qualityCenterCount) / 2;
-      const toolSize: number = (oToolSize * 2) + 1;
-      const light: PointLight = this.cursor.group.getObjectByName(this.cursor.names.light) as PointLight;
-      const ringInnerRadius: number = toolSize / 2;
-      const ringOuterRadius: number = ringInnerRadius + this.cursor.borderSize;
-      const ringGeometry: RingGeometry = this.cursor.ring.geometry;
-      const needUpdateGeometry: boolean = ringGeometry.parameters.innerRadius !== ringInnerRadius || ringGeometry.parameters.outerRadius !== ringOuterRadius;
-      const ringSize: number = toolSize + (this.cursor.borderSize * 2);
-      const displacementRepeatX: number = ringSize / width;
-      const displacementRepeatY: number = ringSize / height;
-      const displacementOffsetX: number = ((1 - displacementRepeatX) / 2) + (x * (100 / width) / 100);
-      const displacementOffsetY: number = ((1 - displacementRepeatY) / 2) - (y * (100 / height) / 100);
-      const ringTexture: DataTexture = this.cursor.ring.displacementMap;
-      const ringMaterial: MeshStandardMaterial = this.cursor.ring.material;
-      const mesh: InstancedMesh = this.cursor.group.getObjectByName(this.cursor.names.ring) as InstancedMesh;
-      // Поиск максимальной высоты
-      const z: number = CreateArray(qualityCenterCount).map(h => h + qualitySpacing)
-        .map(h => CreateArray(qualityCenterCount).map(w => w + qualitySpacing).map(w => {
-          const index: number = ((sY + h) * wdth) + sX + w;
-          return vertexes.getZ(index);
-        }))
-        .reduce((o, z) => ([...o, ...z]), [])
-        .reduce((o, z) => o < z ? z : o, 0);
-      // Общие настройки курсора
-      this.cursor.coords = { x: ceil.coord.x, y: ceil.coord.y };
-      this.cursor.group.visible = true;
-      this.cursor.group.position.setX(x);
-      this.cursor.group.position.setY(z + this.cursor.zOffset);
-      this.cursor.group.position.setZ(y);
-      // Настройки освещения
-      light.distance = toolSize;
-      light.intensity = toolSize;
-      light.power = Math.pow(toolSize, 2);
-      // Обновить геометрию
-      if (needUpdateGeometry) {
-        ringGeometry.parameters.innerRadius = ringInnerRadius;
-        ringGeometry.parameters.outerRadius = ringOuterRadius;
-        mesh.matrix.makeScale(toolSize, 1, toolSize);
+      const needUpdatePosition: boolean = this.cursor.group.position.x !== x || this.cursor.group.position.z !== y;
+      // Пересчет позиции
+      if (needUpdatePosition) {
+        const toolSize: number = ((oToolSize * 2) + 1) * DreamCeilSize;
+        const light: PointLight = this.cursor.group.getObjectByName(this.cursor.names.light) as PointLight;
+        const ringRadius: number = toolSize / 2;
+        let ringGeometry: CylinderGeometry = this.cursor.ring.geometry as CylinderGeometry;
+        // const ringMaterial: MeshPhongMaterial = this.cursor.ring.material;
+        const mesh: Mesh = this.cursor.group.getObjectByName(this.cursor.names.ring) as Mesh;
+        // Координаты пересечений
+        const yPositions: number[] = MapCycle(this.cursor.ring.intersectionCount + 1, step => {
+          const lastStep: boolean = step === this.cursor.ring.intersectionCount;
+          const xPos: number = lastStep ? x : x + (ringRadius * Cos(circleStepAngle * step));
+          const yPos: number = lastStep ? y : y + (ringRadius * Sin(circleStepAngle * step));
+          const objects: Intersection[] = this.getIntercectionObjectByCoords(xPos, yPos).filter(({ object }) => object === this.terrainMesh || object === this.ocean);
+          // Вернуть позицию по Z
+          return objects.reduce((o, { point: { y } }) => y > o ? y : o, minY);
+        });
+        const minYPosition: number = yPositions.reduce((o, y) => y < o ? y : o, maxY);
+        const maxYPosition: number = yPositions.reduce((o, y) => y > o ? y : o, minY);
+        const yCorrection: number = (maxYPosition - minYPosition) / 2;
+        const height: number = maxYPosition - minYPosition + this.cursor.ring.height;
+        const needUpdateGeometry: boolean = ringGeometry.parameters.radiusTop !== ringRadius ||
+          ringGeometry.parameters.radiusBottom !== ringRadius ||
+          ringGeometry.parameters.height !== height;
+        // Общие настройки курсора
+        this.cursor.coords = { x: ceil.coord.x, y: ceil.coord.y };
+        this.cursor.group.visible = true;
+        this.cursor.group.position.setX(x);
+        this.cursor.group.position.setZ(y);
+        this.cursor.group.position.setY(minYPosition + yCorrection);
+        // Настройки освещения
+        light.position.y = yCorrection + this.cursor.ring.height;
+        // Обновить геометрию
+        if (needUpdateGeometry) {
+          ringGeometry.dispose();
+          ringGeometry = new CylinderGeometry(ringRadius, ringRadius, height, this.cursor.ring.quality, 1, true);
+          light.distance = toolSize;
+          light.intensity = toolSize;
+          light.power = Math.pow(toolSize, 2);
+          mesh.geometry = ringGeometry;
+          this.cursor.ring.geometry = ringGeometry;
+        }
       }
-      // Настройки кольца границы
-      ringMaterial.displacementBias = -z + this.cursor.ring.zOffset;
-      ringTexture.repeat.set(displacementRepeatX, displacementRepeatY);
-      ringTexture.offset.set(displacementOffsetX, displacementOffsetY);
-      ringTexture.needsUpdate = true;
     }
     // Убрать свечение
     else if (!ceil && !!this.cursor.coords) {
@@ -1573,16 +1572,12 @@ export interface ObjectHoverEvent {
 // Данные о курсоре
 interface CursorData {
   coords: XYCoord;
-  borderSize: number;
-  zOffset: number;
   ring: {
     quality: number;
-    zOffset: number;
-    repeats: number;
+    intersectionCount: number;
     height: number;
-    displacementMap: DataTexture;
-    geometry: RingGeometry;
-    material: MeshStandardMaterial;
+    geometry: CylinderGeometry;
+    material: MeshPhongMaterial;
   },
   type: CursorType;
   group: Group;
@@ -1627,14 +1622,10 @@ const ObjectRaycastMaterial: LineBasicMaterial = new LineBasicMaterial({
 // Стартовый объект курсора
 const DefaultCursorData: CursorData = {
   coords: null,
-  borderSize: DreamCeilSize * 0.02,
-  zOffset: 0.0001,
   ring: {
-    quality: 12,
-    zOffset: (DreamCeilParts / DreamCeilSize) * 0.02,
-    height: (DreamCeilParts / DreamCeilSize) * 0.002,
-    repeats: 60,
-    displacementMap: null,
+    quality: 24,
+    intersectionCount: 6,
+    height: (DreamCeilParts / DreamCeilSize) * 0.03,
     geometry: null,
     material: null,
   },
