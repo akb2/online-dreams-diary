@@ -186,6 +186,9 @@ export class DreamMapTerrainService implements OnDestroy {
     this.material.dithering = true;
     this.material.shadowSide = BackSide;
     this.material.needsUpdate = true;
+    this.material.alphaTest = 0;
+    this.material.depthTest = true;
+    this.material.depthWrite = true;
     // Вернуть материал
     return this.material;
   }
