@@ -114,14 +114,14 @@ export class ScrollService implements OnDestroy {
                 // Вернуть прослушивание событий
                 this.restoreScrollEvents();
               },
-              error => !!error ? this.restoreScrollEvents() : null
+              error => !!error ? this.restoreScrollEvents(error) : null
             );
           // Запонить предыдущие значения скролла
           this.scrollLastX = scrollData.x;
           this.scrollLastY = scrollData.y;
           this.scrollLastTime = currentDate;
         },
-        () => this.restoreScrollEvents()
+        event => this.restoreScrollEvents(event)
       );
     // Заблокировать прокрутку для пользователя
     merge(
@@ -334,8 +334,12 @@ export class ScrollService implements OnDestroy {
   }
 
   // Сбросить ограничения на скролл
-  private restoreScrollEvents(): void {
+  private restoreScrollEvents(event?: any): void {
     this.emitEvent = true;
     this.addingScrollY = 0;
+    // Вывод ошибки
+    if (!!event) {
+      console.error(event);
+    }
   }
 }
