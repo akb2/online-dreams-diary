@@ -394,7 +394,7 @@ export class AccountService implements OnDestroy {
   // Преобразовать данные с сервера
   userConverter(data: any): User {
     try {
-      const background: number = parseInt(data?.settings?.profileBackground as unknown as string);
+      const background: number = ParseInt(typeof data?.settings?.profileBackground === "object" ? data?.settings?.profileBackground?.id : data?.settings?.profileBackground);
       const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
       let notifications = {};
       // Настройки уведомлений из объекта
