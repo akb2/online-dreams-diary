@@ -411,7 +411,7 @@
 <!-- Содержимое пункта меню для нижнего меню -->
 <ng-template #mobileMenuBottomItemContent
              let-item>
-  <mat-icon *ngIf="!item?.image">{{item.id !== 'notifications' || !isShowNotifications? item.icon: 'close'}}</mat-icon>
+  <mat-icon *ngIf="!item?.image">{{item.id !== 'notifications' || !isShowNotifications? item.icon: 'notifications_off'}}</mat-icon>
   <!-- Картинка -->
   <img [src]="item.image"
        *ngIf="!!item?.image" />
