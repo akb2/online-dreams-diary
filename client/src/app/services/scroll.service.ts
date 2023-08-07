@@ -6,7 +6,7 @@ import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, filter, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
+import { BehaviorSubject, Observable, Subject, filter, fromEvent, map, merge, mergeMap, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
 
 
@@ -81,8 +81,12 @@ export class ScrollService implements OnDestroy {
       .pipe(
         takeUntil(this.destroyed$),
         tap(() => this.scrollElement = ScrollElement()),
-        mergeMap(() => fromEvent(this.scrollElement, "scroll"), () => this.getCurrentScroll),
+        mergeMap(
+          () => fromEvent(this.scrollElement, "scroll"),
+          () => this.getCurrentScroll
+        ),
         switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY ? of(scrollData) : throwError(scrollData)),
+        retry()
       )
       .subscribe(
         scrollData => {
@@ -114,14 +118,18 @@ export class ScrollService implements OnDestroy {
                 // Вернуть прослушивание событий
                 this.restoreScrollEvents();
               },
-              error => !!error ? this.restoreScrollEvents(error) : null
+              error => {
+                !!error ? this.restoreScrollEvents(error) : null;
+              }
             );
           // Запонить предыдущие значения скролла
           this.scrollLastX = scrollData.x;
           this.scrollLastY = scrollData.y;
           this.scrollLastTime = currentDate;
         },
-        event => this.restoreScrollEvents(event)
+        event => {
+          this.restoreScrollEvents(event);
+        }
       );
     // Заблокировать прокрутку для пользователя
     merge(
