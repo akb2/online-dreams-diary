@@ -13,12 +13,18 @@
   $textIndent: $fontSize * 2;
   $tablePaddingY: math.div($fontSize, 2);
   $tablePaddingX: $fontSize;
+  $footerSizes: (
+    default: 0,
+    small: vars.$headerHeight,
+    xsmall: vars.$headerHeight
+  );
   // Карта
   &__map {
     width: 100%;
     // Адаптив
-    @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
-      height: calc(100vh - #{vars.$headerHeight + ($paddingY * 2)});
+    @include screens.adaptiveFor(containers.$paddingsY, $footerSizes) using($paddingY, $footerSize) {
+      // Свойства
+      height: calc(100vh - #{vars.$headerHeight + $footerSize + ($paddingY * 2)});
     }
   }
   // Текст
@@ -111,7 +117,7 @@
   $commentsWidths: (
     default: 100%,
     xlarge: 30%,
-    large: 38%,
+    large: 38%
   );
   $shadowCorrection: 8px;
   $keyWordsGapY: 8px;
@@ -138,7 +144,9 @@
     z-index: 3;
     overflow: hidden;
     position: relative;
-    transition: max-height #{screens.$animationTime}, box-shadow #{screens.$animationTime};
+    transition:
+      max-height #{screens.$animationTime},
+      box-shadow #{screens.$animationTime};
     padding-right: vars.$buttonSize + $keyWordsGapX;
     // Элемент прокручен
     &.scrolled {
@@ -307,7 +315,9 @@
   border-radius: math.div(vars.$buttonSize, 2);
   background-color: map.get(colors.$matDisabled, 100);
   color: map.get(colors.$matDisabled, contrast, 100);
-  transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
+  transition:
+    background-color #{screens.$animationTime},
+    color #{screens.$animationTime};
   user-select: none;
   cursor: pointer;
   // Выделение
