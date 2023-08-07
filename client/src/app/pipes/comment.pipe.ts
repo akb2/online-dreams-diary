@@ -31,6 +31,34 @@ export class CommentPipe implements PipeTransform {
     return "<img class='smile' src='/assets/dream-map/transparent.png' alt='" + emoji.name + "' style='" + this.emojiStyles(emoji) + "'/>";
   }
 
+  // Поиск ссылок
+  private getLinks(text: string): string {
+    const urlRegex: RegExp = /(https?:\/\/[^\s<>\[\],!?]*[^\s<>\[\],!?.,])(?=\s|[.,!?]|$)/g;
+    let lastIndex: number = 0;
+    let match: RegExpExecArray;
+    let result: string = "";
+    // Перебираем все совпадения с регулярным выражением
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Совпадение с регулярным выражением
+      const matchedUrl = match[0];
+      // Проверяем, находится ли URL внутри HTML- или BB-тега
+      if (!this.isInsideTag(text, match.index)) {
+        result += text.substring(lastIndex, match.index) + "<a href='" + matchedUrl + "' target='_blank'>" + matchedUrl + "</a>";
+        // Обновляем индекс последнего обработанного символа
+        lastIndex = match.index + matchedUrl.length;
+      }
+    }
+    // Добавляем оставшийся текст после последнего URL
+    result += text.substring(lastIndex);
+    // Вернуть исправления
+    return result;
+  }
+
+  // Проверка ссылки внутри тегов
+  private isInsideTag(text: string, position: number = 0) {
+    return text.lastIndexOf('<', position) > text.lastIndexOf('>', position) || text.lastIndexOf('[', position) > text.lastIndexOf(']', position);
+  }
+
 
 
 
@@ -61,6 +89,8 @@ export class CommentPipe implements PipeTransform {
     }
     // Замена тегов
     text = text.replace(new RegExp("\\[br\\]", "ig"), "<br>");
+    // Поиск прочих данных
+    text = this.getLinks(text);
     // Вернуть изначальный текст
     return this.domSanitizer.bypassSecurityTrustHtml(text);
   }
