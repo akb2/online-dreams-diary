@@ -1,10 +1,11 @@
 @use "sass:map";
 @use "sass:math";
+@use "vars";
 @use "colors";
 @use "screens";
 @use "containers";
 
-$headerHeight: 60px;
+$headerHeight: vars.$headerHeight;
 $tabsHeight: 49px;
 
 // Главный блок вкладки
@@ -107,6 +108,10 @@ $tabsHeight: 49px;
   // Адаптив
   @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
     height: calc(100vh - #{($paddingY * 2) + $headerHeight + $tabsHeight + $ckPanelHeight});
+    // Для телефонов
+    @include screens.adaptive(xsmall, small) {
+      height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
+    }
   }
 }
 
@@ -126,7 +131,7 @@ $tabsHeight: 49px;
     large: 2,
     middle: 2,
     small: 1,
-    xsmall: 1,
+    xsmall: 1
   );
   // Свойства
   display: grid;
@@ -146,10 +151,18 @@ $tabsHeight: 49px;
   // Секция внутри таба
   &.tabs {
     min-height: calc(100vh - #{$headerHeight + $tabsHeight});
+    // Для телефонов
+    @include screens.adaptive(xsmall, small) {
+      min-height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
+    }
   }
 }
 
 // Занять все пространство
 .all-height {
   height: calc(100vh - #{$headerHeight + $tabsHeight});
+  // Для телефонов
+  @include screens.adaptive(xsmall, small) {
+    height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
+  }
 }
