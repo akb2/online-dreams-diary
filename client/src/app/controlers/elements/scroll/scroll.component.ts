@@ -1,12 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { WaitObservable } from "@_datas/api";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
-import { concatMap, fromEvent, Observable, of, Subject, tap, timer } from "rxjs";
-import { filter, map, pairwise, startWith, takeUntil } from "rxjs/operators";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { Observable, Subject, animationFrameScheduler, concatMap, fromEvent, of, tap, timer } from "rxjs";
+import { filter, map, observeOn, pairwise, startWith, takeUntil } from "rxjs/operators";
 
 
 
@@ -175,6 +175,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     // Передвижение мышки по странице
     fromEvent(window, "mousemove")
       .pipe(
+        observeOn(animationFrameScheduler),
         takeUntil(this.destroyed$),
         filter(() => !!this.scrollMoveDimension)
       )
@@ -186,6 +187,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     // Мотание скролла по циклу
     timer(0, this.scrollAddSpeed)
       .pipe(
+        observeOn(animationFrameScheduler),
         takeUntil(this.destroyed$),
         filter(() => !!this.scrollAddDimension)
       )
@@ -202,6 +204,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(() => this.onScrollRender());
     // Скролл
     this.getWaitObservable(() => fromEvent(this.listElm.nativeElement, "scroll"))
+      .pipe(observeOn(animationFrameScheduler))
       .subscribe(() => this.onScrollRender());
   }
 

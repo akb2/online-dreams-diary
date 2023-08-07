@@ -6,7 +6,7 @@ import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, filter, fromEvent, map, merge, mergeMap, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
+import { BehaviorSubject, Observable, Subject, animationFrameScheduler, filter, fromEvent, map, merge, mergeMap, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
 
 
@@ -79,6 +79,7 @@ export class ScrollService implements OnDestroy {
   constructor() {
     WaitObservable(() => !ScrollElement())
       .pipe(
+        observeOn(animationFrameScheduler),
         takeUntil(this.destroyed$),
         tap(() => this.scrollElement = ScrollElement()),
         mergeMap(
