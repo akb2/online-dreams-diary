@@ -48,6 +48,12 @@ export interface BrowserInfo {
   version: string;
 }
 
+// Массив иконок для Material icons
+export interface CustomMaterialIcon {
+  keys: string[];
+  path: string;
+}
+
 // Цветовые схемы всплывающих сообщений
 type SnackbarPropMode = "success" | "error" | "info";
 

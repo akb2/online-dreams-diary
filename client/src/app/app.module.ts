@@ -1,5 +1,6 @@
 import { PageLoaderModule } from "@_controlers/page-loader/page-loader.module";
-import { ForCycle } from "@_helpers/objects";
+import { ArrayForEach, MapCycle } from "@_helpers/objects";
+import { CustomMaterialIcon } from "@_models/app";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
 import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
@@ -10,6 +11,33 @@ import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
+
+
+
+
+
+const materialIcons: CustomMaterialIcon[] = [
+  // Логотип
+  {
+    keys: ["dreams_diary_logo", "main_logo", "site_logo"],
+    path: "assets/images/logo.svg"
+  },
+  // Балончик с краской
+  {
+    keys: ["paint_spray"],
+    path: "assets/images/icons/material-icons/paint_spray.svg"
+  },
+  // Забор
+  {
+    keys: ["fence"],
+    path: "assets/images/icons/material-icons/fence.svg"
+  },
+  // Уровни детализации графики
+  ...MapCycle(7, i => ({
+    keys: ["detalization_level_" + i],
+    path: "assets/images/icons/material-icons/detalization_level_" + i + ".svg"
+  }))
+];
 
 
 
@@ -49,20 +77,9 @@ export class AppModule {
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer
   ) {
-    // Балончик с краской
-    this.matIconRegistry.addSvgIcon(
-      "paint_spray",
-      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/paint_spray.svg")
-    );
-    // Уровни детализации графики
-    ForCycle(7, i => this.matIconRegistry.addSvgIcon(
-      "detalization_level_" + i,
-      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/detalization_level_" + i + ".svg")
-    ));
-    // Забор
-    this.matIconRegistry.addSvgIcon(
-      "fence",
-      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/images/icons/material-icons/fence.svg")
-    );
+    ArrayForEach(materialIcons, ({ keys, path }) => ArrayForEach(keys, key => this.matIconRegistry.addSvgIcon(
+      key,
+      this.domSanitizer.bypassSecurityTrustResourceUrl(path)
+    )));
   }
 }
