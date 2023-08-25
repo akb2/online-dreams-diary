@@ -25,6 +25,7 @@ export class PanelsHeaderComponent {
   @Input() avatarImage: string = "";
   @Input() avatarBlink: boolean = false;
   @Input() avatarIcon: string = "";
+  @Input() avatarCustomIcon: string = "";
   @Input() mainTitle: string = "";
   @Input() subTitle: string = "";
 
@@ -64,7 +65,7 @@ export class PanelsHeaderComponent {
 
   // Проверить есть ли аватарка
   get hasAvatar(): boolean {
-    return !!this.avatarImage || !!this.avatarIcon;
+    return !!this.avatarImage || !!this.avatarIcon || !!this.avatarCustomIcon;
   }
 
 

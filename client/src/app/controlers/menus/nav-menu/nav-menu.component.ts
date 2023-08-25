@@ -41,6 +41,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   @Input() subTitle: string = "";
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";
+  @Input() avatarCustomIcon: string = "";
   @Input() avatarBlink: boolean = false;
 
   @Input() floatButtonIcon: string = "";
@@ -111,15 +112,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     {
       CssNamesVar.title = "title";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
+      if ((this.backButtonLink || this.isMobile) && this.hasAvatar) {
         CssNamesVar.title = "titleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
+      else if ((this.backButtonLink || this.isMobile) && !this.hasAvatar) {
         CssNamesVar.title = "titleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
+      if (!(this.backButtonLink || this.isMobile) && this.hasAvatar) {
         CssNamesVar.title = "titleWithAvatar";
       }
     }
@@ -127,15 +128,15 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     {
       CssNamesVar.subtitle = "subtitle";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
+      if ((this.backButtonLink || this.isMobile) && this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile) && !(this.avatarImage || this.avatarIcon)) {
+      else if ((this.backButtonLink || this.isMobile) && !this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile) && (this.avatarImage || this.avatarIcon)) {
+      if (!(this.backButtonLink || this.isMobile) && this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithAvatar";
       }
     }
@@ -173,6 +174,11 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   // Проверка пола
   get userIsMale(): boolean {
     return this.user.sex === UserSex.Male;
+  }
+
+  // Проверить есть ли аватарка
+  get hasAvatar(): boolean {
+    return !!this.avatarImage || !!this.avatarIcon || !!this.avatarCustomIcon;
   }
 
 

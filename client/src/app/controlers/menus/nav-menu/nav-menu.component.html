@@ -65,11 +65,15 @@
         <!-- Аватарка -->
         <div class="main-menu__avatar"
              [ngStyle]="css.avatar"
-             *ngIf="avatarImage || avatarIcon">
+             *ngIf="hasAvatar">
           <img [src]="avatarImage"
                (error)="onAvatarError()"
                *ngIf="avatarImage" />
-          <mat-icon *ngIf="!avatarImage && avatarIcon">{{avatarIcon}}</mat-icon>
+          <!-- Кастомная иконка -->
+          <mat-icon [svgIcon]="avatarCustomIcon"
+                    *ngIf="!avatarImage && !!avatarCustomIcon"></mat-icon>
+          <!-- Иконка -->
+          <mat-icon *ngIf="!avatarImage && !avatarCustomIcon && avatarIcon">{{avatarIcon}}</mat-icon>
         </div>
         <!-- Заголовок -->
         <div class="main-menu__title"
@@ -348,6 +352,7 @@
                      [subTitle]="subTitle"
                      [avatarImage]="avatarImage"
                      [avatarIcon]="avatarIcon"
+                     [avatarCustomIcon]="avatarCustomIcon"
                      [avatarBlink]="avatarBlink"
                      (closeClick)="toggleMobileMenu(-1)"
                      *ngIf="!user"></app-panels-header>
