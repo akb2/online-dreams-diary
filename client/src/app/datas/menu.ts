@@ -290,7 +290,7 @@ export const MenuItems: MenuItemsListDevices = {
         children: [
           // Вход
           {
-            icon: "lock",
+            icon: "key",
             text: "Вход",
             link: "/auth",
             mobileView: {
