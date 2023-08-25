@@ -531,7 +531,9 @@ $breakpointMobile: small;
       justify-content: flex-start;
       align-items: center;
       cursor: pointer;
-      transition: background-color screens.$animationTime, color screens.$animationTime;
+      transition:
+        background-color screens.$animationTime,
+        color screens.$animationTime;
       background-color: transparent;
       border: none;
       // Текст
@@ -554,7 +556,9 @@ $breakpointMobile: small;
       opacity: 0;
       visibility: hidden;
       border-style: solid;
-      transition: opacity #{screens.$animationTime}, visibility #{screens.$animationTime};
+      transition:
+        opacity #{screens.$animationTime},
+        visibility #{screens.$animationTime};
       // Потомки
       > #{$__elm} {
         // Декорация
@@ -728,8 +732,46 @@ $breakpointMobile: small;
 
 // Кнопка до контента
 .to-content-button {
+  $speed: 2s;
+  $copies: 3;
+  // Свойства
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  text-align: center;
+  // Иконка
+  > mat-icon {
+    display: block;
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    line-height: inherit;
+    animation: toContentButtonAnimation #{$speed} linear infinite;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    // Последующая иконка
+    @for $i from 2 through $copies {
+      + mat-icon:nth-child(#{$i}) {
+        animation-delay: math.div($speed, $copies) * ($i - 1);
+      }
+    }
+  }
+}
+
+// Анимация для стрелки вниз
+@keyframes toContentButtonAnimation {
+  0% {
+    transform: scale(0) translateY(-80%);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) translateY(80%);
+    opacity: 0;
+  }
 }
