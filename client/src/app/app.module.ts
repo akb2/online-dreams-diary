@@ -20,7 +20,7 @@ const materialIcons: CustomMaterialIcon[] = [
   // Логотип
   {
     keys: ["dreams_diary_logo", "main_logo", "site_logo"],
-    path: "assets/images/logo.svg"
+    path: "assets/images/icons/logos/logo-flower.svg"
   },
   // Балончик с краской
   {
