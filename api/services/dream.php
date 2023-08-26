@@ -12,6 +12,7 @@ class DreamService
   private array $config;
 
   private DataBaseService $dataBaseService;
+  private UserService $userService;
   private TokenService $tokenService;
   private FriendService $friendService;
   private OpenAIChatGPTService $openAIChatGPTService;
@@ -24,6 +25,7 @@ class DreamService
     $this->dataBaseService = new DataBaseService($this->pdo);
     $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->friendService = new FriendService($this->pdo, $this->config);
+    $this->userService = new UserService($this->pdo, $this->config);
     $this->openAIChatGPTService = new OpenAIChatGPTService($this->config);
   }
 
@@ -260,11 +262,12 @@ class DreamService
     $dream = is_array($mixedDream) ? $mixedDream : $this->getById($mixedDream);
     // Сновидение найдено
     if (!!$dream && $dream['id']) {
+      $user = $this->userService->getUser($dream['user_id']);
       $hasInterpretation = !!$dream['interpretation'] && strlen($dream['interpretation']) > 0;
       $hasText = ($dream['mode'] == 0 || $dream['mode'] == 2) && !!$dream['text'] && strlen($dream['text']) > 0;
       // Новая интерпритация
       if ($override || (!$hasInterpretation && $hasText)) {
-        $interpretation = $this->openAIChatGPTService->dreamInterpretate($dream);
+        $interpretation = $this->openAIChatGPTService->dreamInterpretate($dream, $user);
         // Сохранить интерпритацию
         if (!!$interpretation) {
           $sqlData = array(
