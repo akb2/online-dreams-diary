@@ -1,10 +1,11 @@
 <!-- Список сновидений -->
 <div class="list"
-     [ngClass]="{ oneLine }"
+     [ngClass]="{ oneLine, 'in-attachment': inAttachment }"
      [attr.items]="elmsPerLine"
      *ngIf="dreams?.length > 0">
   <!-- Блок сновидения -->
   <div class="list__item dream"
+       [ngClass]="{ 'in-attachment': inAttachment }"
        *ngFor="let dream of dreams; trackBy: listTrackBy">
     <!-- Обложка -->
     <div class="dream__image"
@@ -50,7 +51,8 @@
            [ngClass]="{
              'no-content': !dream.description,
              'has-image': isHasImage(dream),
-             'no-keywords': !dream.keywords.length
+             'no-keywords': !dream.keywords.length,
+             'in-attachment': inAttachment
            }">
         <!-- Обычное описание -->
         <div class="dream__text-description"
@@ -64,7 +66,11 @@
       </div>
       <!-- Ключевые слова -->
       <div class="dream__text keywords"
-           [ngClass]="{ 'no-content': !dream.keywords.length, 'has-image': isHasImage(dream) }">
+           [ngClass]="{
+             'no-content': !dream.keywords.length,
+             'has-image': isHasImage(dream),
+             'in-attachment': inAttachment
+           }">
         <div class="dream__text-keywords">
           <ng-container *ngFor="let keyword of dream.keywords; let key = index">
             <div class="keyword">
@@ -86,7 +92,8 @@
       </div>
     </div>
     <!-- Автор и действие -->
-    <div class="dream__text actions">
+    <div class="dream__text actions"
+         [ngClass]="{ 'in-attachment': inAttachment }">
       <!-- Отметки -->
       <ng-container [ngTemplateOutlet]="dreamAuthor"
                     [ngTemplateOutletContext]="{ $implicit: showProfile, user: dream.user, dream }"></ng-container>
