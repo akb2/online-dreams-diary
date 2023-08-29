@@ -31,7 +31,7 @@ $colorDisabled: #666;
     A100: lighten(saturate(mix($black, $baseDark, 15%), 80%), 65%),
     A200: lighten(saturate(mix($black, $baseDark, 15%), 80%), 55%),
     A400: lighten(saturate(mix($black, $baseDark, 15%), 100%), 45%),
-    A700: lighten(saturate(mix($black, $baseDark, 15%), 100%), 40%),
+    A700: lighten(saturate(mix($black, $baseDark, 15%), 100%), 40%)
   );
 
   $contrast: ();
@@ -39,7 +39,7 @@ $colorDisabled: #666;
     $contrast: map.merge(
       $contrast,
       (
-        $v: getContrast(map_get($palette, $v)),
+        $v: getContrast(map_get($palette, $v))
       )
     );
   }
@@ -47,7 +47,7 @@ $colorDisabled: #666;
   $palette: map.merge(
     $palette,
     (
-      contrast: $contrast,
+      contrast: $contrast
     )
   );
 
@@ -79,6 +79,12 @@ $colorDisabled: #666;
   } @else {
     @return #fff;
   }
+}
+
+// Затемнение
+@function darker($color, $tone) {
+  $adjust: -16 * $tone;
+  @return adjust-color($color, $red: $adjust, $green: $adjust, $blue: $adjust);
 }
 
 $matPrimary: createPalette($colorPrimary);
