@@ -1,3 +1,4 @@
+import { CreateArray } from "@_datas/app";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 
@@ -11,4 +12,6 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class PageLoaderComponent { }
+export class PageLoaderComponent {
+  leafCount: number[] = CreateArray(14);
+}
