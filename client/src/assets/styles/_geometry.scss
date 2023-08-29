@@ -1,0 +1,29 @@
+@use "sass:math";
+
+// Удалить единицу измерения
+@function stripUnit($number) {
+  @if type-of($number) == "number" and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+  // Вернуть само число
+  @return $number;
+}
+
+// Поиск гипотенузы
+@function hypotenuse($a, $b: $a) {
+  $aValue: stripUnit($a);
+  $bValue: stripUnit($b);
+  $result: math.sqrt(($aValue * $aValue) + ($bValue * $bValue));
+  $temp: math.div($a, stripUnit($a));
+  // Вернуть вычисление
+  @return $result * $temp;
+}
+
+// Поиск катета
+@function cathetus($h, $a: null) {
+  @if $a == null {
+    @return $h / math.sqrt(2);
+  }
+  // Для неравнобедренного треугольника
+  @return math.sqrt(($h * $h) - ($a * $a));
+}
