@@ -1,17 +1,10 @@
-@use "sass:math";
-@use "sass:map";
 @use "colors";
-@use "geometry";
 
 // Прелоадер
 .preloader {
   position: fixed;
   inset: 0;
   z-index: 100000;
-
-  // Фон
-  &__background {
-  }
 
   // Контент
   &__content {
@@ -41,124 +34,5 @@
       color: colors.$subTitleDark;
       margin-top: 2px;
     }
-  }
-}
-
-// Лоадер
-.loader {
-  $leafsCount: 20;
-  $loaderSize: 120px;
-  $circleSize: 30px;
-  $leafSpacing: 4px;
-  $leafHeight: math.div($loaderSize - $circleSize - ($leafSpacing * 2), 2);
-  $leafWidth: geometry.hypotenuse(math.div($leafHeight, 2));
-  $loaderColor: map.get(colors.$matPrimary, contrast, 500);
-  $loaderColorA: $loaderColor;
-  $loaderColorB: colors.darker($loaderColorA, 3);
-  $speed: 6s;
-  // Свойства
-  position: relative;
-  width: $loaderSize;
-  height: $loaderSize;
-  // Круг по середине
-  &__circle {
-    width: $circleSize;
-    height: $circleSize;
-    margin: math.div($loaderSize - $circleSize, 2);
-    border-radius: 50%;
-    background-color: $loaderColor;
-  }
-  // Лепестки
-  &__leaf {
-    $top: math.div($leafHeight - $leafWidth, 2);
-    $radius: math.div($leafWidth, 2);
-    $leafCornerCat: geometry.cathetus($radius);
-    $leafCornerHyp: geometry.hypotenuse($radius);
-    $leafCornerPosition: $radius - $leafCornerCat - math.div($radius, 2);
-    // Свойства
-    position: absolute;
-    top: $top;
-    left: math.div($loaderSize - $leafWidth, 2);
-    width: $leafWidth;
-    height: $leafWidth;
-    border-radius: 50%;
-    transform-origin: 50% #{$leafWidth + $top + $leafSpacing + math.div($circleSize, 2)};
-    // Уголки
-    &::before,
-    &::after {
-      content: "";
-      display: block;
-      position: absolute;
-      width: $radius;
-      height: $radius;
-      left: math.div($leafWidth - $radius, 2);
-      border: #{math.div($radius, 2)} solid transparent;
-      transform: rotate(45deg);
-      mix-blend-mode: inherit;
-    }
-    // Верхний
-    &::before {
-      top: $leafCornerPosition;
-    }
-    // Нижний
-    &::after {
-      bottom: $leafCornerPosition;
-    }
-    // Анимация
-    &:nth-child(odd) {
-      animation: loaderAnimation #{$speed} linear infinite;
-      background-color: $loaderColorA;
-      z-index: 2;
-      // Верхний
-      &::before {
-        border-top-color: $loaderColorA;
-        border-left-color: $loaderColorA;
-      }
-      // Нижний
-      &::after {
-        border-bottom-color: $loaderColorA;
-        border-right-color: $loaderColorA;
-      }
-    }
-    // Анимация
-    &:nth-child(even) {
-      z-index: 1;
-      animation: loaderAnimation #{$speed * 0.7} linear infinite;
-      background-color: $loaderColorB;
-      // Верхний
-      &::before {
-        border-top-color: $loaderColorB;
-        border-left-color: $loaderColorB;
-      }
-      // Нижний
-      &::after {
-        border-bottom-color: $loaderColorB;
-        border-right-color: $loaderColorB;
-      }
-    }
-  }
-  // Разное количество лепестков
-  @for $leafCount from 1 through $leafsCount {
-    $leafsAngle: math.div(360deg, $leafCount);
-    // Свойства
-    &[leafs="#{$leafCount}"] &__leaf {
-      @for $i from 1 through $leafCount {
-        $angle: $leafsAngle * ($i - 1);
-        // Свойства
-        &:nth-of-type(#{$i}) {
-          transform: rotate(#{$angle});
-        }
-      }
-    }
-  }
-}
-
-// Анимация
-@keyframes loaderAnimation {
-  0% {
-    rotate: 0deg;
-  }
-  100% {
-    rotate: 360deg;
   }
 }

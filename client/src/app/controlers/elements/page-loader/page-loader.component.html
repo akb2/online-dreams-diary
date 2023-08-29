@@ -3,16 +3,8 @@
     <app-main-background></app-main-background>
   </div>
   <div class="preloader__content">
-    <div class="loader"
-         [attr.leafs]="leafCount.length"
-         *ngIf="!!leafCount?.length">
-      <div class="loader__leaf"
-           *ngFor="let i of leafCount">
-        <div class="loader__leaf-helper"></div>
-      </div>
-      <!-- Центральный элемент -->
-      <div class="loader__circle"></div>
-    </div>
+    <app-loader color="white"
+                [size]="160"></app-loader>
     <div class="preloader__content-title">Загрузка страницы</div>
     <div class="preloader__content-desc">Пожалуйста подождите</div>
   </div>
