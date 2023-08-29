@@ -104,7 +104,7 @@
   // Цвета
   @each $colorName, $loaderColor in $loaderColors {
     &[color="#{$colorName}"] & {
-      $invertLoaderColor: colors.darker($loaderColor, 3);
+      $invertLoaderColor: colors.darker($loaderColor, 4);
       // Круг по середине
       &__circle {
         background-color: $loaderColor;
