@@ -53,47 +53,49 @@ if ($input['mood'] >= 0) : ?>
   AND `mood` = :mood
 <? endif; ?>
 
-<? // Фильтр по статусам: собственные сновидения */
-// ? draft(0), private(1), hash(2), friends(3), users(4), public(5) */
-if ($input['user_id'] > 0 && $input['check_token'] && $input["user_id"] === $input["current_user"]) : ?>
-  <? if ($input['status'] >= 0) : ?>
-    AND `status` = :status
-  <? endif; ?>
-<? // Фильтр по статусам: определенного пользователя */
-// ? !friends(3)!, *users(4)*, public(5) */
-elseif ($input['user_id'] > 0 && $input['check_token'] && $input["user_id"] !== $input["current_user"]) : ?>
-  <? if ($input['status'] >= 0) : ?>
-    <? if (($input['status'] == 3 && $input['are_friends']) || $input['status'] == 4 || $input['status'] == 5) : ?>
+<? if (count($input['ids']) == 0) : ?>
+  <? // Фильтр по статусам: собственные сновидения */
+  // ? draft(0), private(1), hash(2), friends(3), users(4), public(5) */
+  if ($input['user_id'] > 0 && $input['check_token'] && $input["user_id"] === $input["current_user"]) : ?>
+    <? if ($input['status'] >= 0) : ?>
       AND `status` = :status
-    <? else : ?>
-      AND `status` = -2
     <? endif; ?>
-  <? // Все доступные статусы
-  else : ?>
-    AND (
-    `status` = 5 OR
-    `status` = 4
-    <? if ($input['are_friends']) : ?> OR `status` = 3 <? endif; ?>
-    )
-  <? endif; ?>
-<? // Фильтр по статусам: Общий дневник: Авторизованный пользователь
-// ? *users(4)*, public(5) */
-elseif ($input['check_token']) : ?>
-  <? if ($input['status'] >= 0) : ?>
-    <? if ($input['status'] == 4 || $input['status'] == 5) : ?>
-      AND `status` = :status
-    <? else : ?>
-      AND `status` = -2
+  <? // Фильтр по статусам: определенного пользователя */
+  // ? !friends(3)!, *users(4)*, public(5) */
+  elseif ($input['user_id'] > 0 && $input['check_token'] && $input["user_id"] !== $input["current_user"]) : ?>
+    <? if ($input['status'] >= 0) : ?>
+      <? if (($input['status'] == 3 && $input['are_friends']) || $input['status'] == 4 || $input['status'] == 5) : ?>
+        AND `status` = :status
+      <? else : ?>
+        AND `status` = -2
+      <? endif; ?>
+    <? // Все доступные статусы
+    else : ?>
+      AND (
+      `status` = 5 OR
+      `status` = 4
+      <? if ($input['are_friends']) : ?> OR `status` = 3 <? endif; ?>
+      )
     <? endif; ?>
-  <? // Все доступные статусы
+  <? // Фильтр по статусам: Общий дневник: Авторизованный пользователь
+  // ? *users(4)*, public(5) */
+  elseif ($input['check_token']) : ?>
+    <? if ($input['status'] >= 0) : ?>
+      <? if ($input['status'] == 4 || $input['status'] == 5) : ?>
+        AND `status` = :status
+      <? else : ?>
+        AND `status` = -2
+      <? endif; ?>
+    <? // Все доступные статусы
+    else : ?>
+      AND (
+      `status` = 5 OR
+      `status` = 4
+      )
+    <? endif; ?>
+  <? // Фильтр по статусам: Общий дневник: Неавторизованный пользователь
+  // ? public(5)
   else : ?>
-    AND (
-    `status` = 5 OR
-    `status` = 4
-    )
+    AND `status` = 5
   <? endif; ?>
-<? // Фильтр по статусам: Общий дневник: Неавторизованный пользователь
-// ? public(5)
-else : ?>
-  AND `status` = 5
 <? endif; ?>
