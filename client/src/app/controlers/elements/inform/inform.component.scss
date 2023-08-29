@@ -1,5 +1,4 @@
 @use "sass:map";
-@use "sass:math";
 @use "colors";
 @use "containers";
 @use "screens";
@@ -8,72 +7,27 @@
 // Переменные
 $sizes: (
   default: 400px,
-  xsmall: 256px,
+  xsmall: 256px
 );
 $elm: &;
 // Размеры фигуры
-$figure-size: 140px;
-$figure-color-1: map.get(colors.$matPrimary, 500);
-$figure-line-1: 8px;
-$figure-size-1: 100%;
-$figure-time-1: 0.5s;
-$figure-color-2: map.get(colors.$matPrimary, 400);
-$figure-size-2: $figure-size - ($figure-line-1 * 4);
-$figure-line-2: math.div($figure-line-1, 2);
-$figure-time-2: $figure-time-1 * 2;
+$figureSize: 140px;
+$figureColor: map.get(colors.$matPrimary, 500);
 
 // Загрузчик
 .loader {
   $elm: &;
   // Свойства
-  width: $figure-size;
-  height: $figure-size;
+  width: $figureSize;
+  height: $figureSize;
   position: relative;
-
-  // Фигура
-  &__figure {
-    $__elm: &;
-    // Свойства
-    position: absolute;
-    border-radius: 50%;
-
-    // Граница 1
-    &-1 {
-      @include mixins.inset(calc(50% - #{math.div($figure-size-1, 2)}));
-      // Свойства
-      width: $figure-size-1;
-      height: $figure-size-1;
-      border: $figure-line-1 solid transparent;
-      border-top-color: $figure-color-1;
-      animation: loader-animation #{$figure-time-1} linear infinite;
-      // Белый цвет
-      &.white {
-        border-top-color: #fff;
-      }
-    }
-    // Граница 2
-    &-2 {
-      @include mixins.inset(calc(50% - #{math.div($figure-size-2, 2)}));
-      // Свойства
-      width: $figure-size-2;
-      height: $figure-size-2;
-      border: $figure-line-2 solid transparent;
-      border-bottom-color: $figure-color-2;
-      animation: loader-animation #{$figure-time-2} linear infinite;
-      // Белый цвет
-      &.white {
-        border-bottom-color: #fff;
-        opacity: 0.8;
-      }
-    }
-  }
   // Иконка
   &__icon {
-    width: $figure-size;
-    height: $figure-size;
-    line-height: $figure-size;
-    font-size: $figure-size;
-    color: $figure-color-1;
+    width: $figureSize;
+    height: $figureSize;
+    line-height: $figureSize;
+    font-size: $figureSize;
+    color: $figureColor;
     text-align: center;
     position: static;
   }
@@ -177,19 +131,4 @@ $figure-time-2: $figure-time-1 * 2;
   justify-content: center;
   align-items: center;
   gap: 5px;
-}
-
-// Правила анимации
-@keyframes loader-animation {
-  0% {
-    transform: rotate(0deg);
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    transform: rotate(360deg);
-    opacity: 1;
-  }
 }

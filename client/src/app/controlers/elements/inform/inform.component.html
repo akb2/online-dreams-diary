@@ -16,12 +16,10 @@
     </span>
   </div>
   <!-- Загрузчик -->
-  <div class="loader"
-       [ngClass]="{ smallMargins }"
-       *ngIf="icon == 'loader'">
-    <div class="loader__figure loader__figure-1 {{color}}"></div>
-    <div class="loader__figure loader__figure-2 {{color}}"></div>
-  </div>
+  <app-loader [color]="color"
+              [ngClass]="{ smallMargins }"
+              [size]="140"
+              *ngIf="icon == 'loader'"></app-loader>
   <!-- Иконка -->
   <mat-icon class="loader__icon"
             [ngClass]="{ smallMargins }"

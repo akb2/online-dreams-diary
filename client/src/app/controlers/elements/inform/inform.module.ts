@@ -1,7 +1,8 @@
-import { NgModule } from "@angular/core";
+import { LoaderModule } from "@_controlers/loader/loader.module";
 import { CommonModule } from "@angular/common";
-import { InformComponent } from "./inform.component";
+import { NgModule } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
+import { InformComponent } from "./inform.component";
 
 
 
@@ -16,7 +17,8 @@ import { MatIconModule } from "@angular/material/icon";
   ],
   imports: [
     CommonModule,
-    MatIconModule
+    MatIconModule,
+    LoaderModule
   ]
 })
 
