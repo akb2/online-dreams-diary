@@ -1,0 +1,13 @@
+<div class="loader"
+     [style.width]="size"
+     [style.height]="size"
+     [attr.leafs]="leafCount.length"
+     [attr.color]="color"
+     *ngIf="!!leafCount?.length">
+  <div class="loader__leaf"
+       *ngFor="let i of leafCount">
+    <div class="loader__leaf-helper"></div>
+  </div>
+  <!-- Центральный элемент -->
+  <div class="loader__circle"></div>
+</div>
