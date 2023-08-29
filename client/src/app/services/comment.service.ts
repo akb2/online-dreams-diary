@@ -32,7 +32,7 @@ export class CommentService implements OnDestroy {
     const userId: number = ParseInt(comment?.userId);
     const replyToUserId: number = ParseInt(comment?.replyToUserId);
     let attachment: CommentAttachment = {};
-    const getUser = (id: number) => !!id ? this.accountService.user$(userId).pipe(take(1)) : of(null);
+    const getUser = (id: number) => !!id ? this.accountService.user$(id).pipe(take(1)) : of(null);
     // Закрепления
     try {
       attachment = (typeof comment?.attachment === "string" ? JSON.parse(comment?.attachment) : comment?.attachment) ?? {};
