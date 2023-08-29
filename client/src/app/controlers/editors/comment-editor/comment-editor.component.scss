@@ -17,16 +17,28 @@ $adaptiveMin: xsmall;
 $adaptiveMax: large;
 
 // Общая обертка
-:host {
+.overlay {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0 #{$spacing};
   align-items: center;
   position: relative;
   z-index: 10;
+  grid-template-areas: "editor actions" "attachments attachments";
+  // С ответом
+  &.with-reply {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "reply editor actions" "attachments attachments attachments";
+  }
   // Адаптив
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
     grid-template-columns: 1fr;
+    grid-template-areas: "editor" "actions" "attachments";
+    // С ответом
+    &.with-reply {
+      grid-template-columns: 1fr;
+      grid-template-areas: "reply" "editor" "actions" "attachments";
+    }
   }
   // Принудительный перенос
   &.wrap-controls {
@@ -52,8 +64,12 @@ $adaptiveMax: large;
   padding: $blockSpacing;
   // Обертка
   &__overlay {
-    padding-top: containers.$cardPaddingY;
     padding-left: $paddingX;
+    grid-area: reply;
+    // Адаптив
+    @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+      padding-top: containers.$cardPaddingY;
+    }
   }
   // Аватарка
   &__avatar {
@@ -119,6 +135,7 @@ $adaptiveMax: large;
   cursor: text;
   padding-top: containers.$cardPaddingY;
   padding-bottom: containers.$cardPaddingY;
+  grid-area: editor;
   // Скролл
   &__scroll {
     flex-grow: 1;
@@ -182,6 +199,7 @@ $adaptiveMax: large;
   align-items: flex-start;
   gap: $spacing;
   padding: #{containers.$cardPaddingY} 0;
+  grid-area: actions;
   // Адаптив
   @include screens.adaptive($adaptiveMin, $adaptiveMax) {
     padding-top: 0;
@@ -270,6 +288,7 @@ $adaptiveMax: large;
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
+  grid-area: attachments;
   // Изображение
   &__image {
     position: relative;

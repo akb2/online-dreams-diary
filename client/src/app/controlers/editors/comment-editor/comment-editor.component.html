@@ -1,102 +1,105 @@
-<!-- Ответ -->
-<div #replyElement
-     class="reply__overlay"
-     *ngIf="!!replyUser">
-  <!-- Элемент с пользователем -->
-  <div class="reply">
-    <!-- Аватарка -->
-    <div class="reply__avatar">
-      <!-- Картинка -->
-      <img [src]="replyUser.avatars.small"
-           *ngIf="replyUser.avatars.small.length > 0" />
-      <!-- Иконка -->
-      <mat-icon *ngIf="replyUser.avatars.small.length === 0">person</mat-icon>
-      <!-- Метка онлайн -->
-      <div class="reply__avatar-online"
-           *ngIf="replyUser.online"></div>
-    </div>
-    <!-- Данные -->
-    <div class="reply__content">
-      <div class="reply__content-mainTitle">Вы отвечаете</div>
-      <div class="reply__content-subTitle">
-        {{replyUser | petrovich: [3, 'first'] }}
-        {{replyUser | petrovich: [3, 'last'] }}
+<div class="overlay"
+     [ngClass]="{ 'with-reply': !!replyUser }">
+  <!-- Ответ -->
+  <div #replyElement
+       class="reply__overlay"
+       *ngIf="!!replyUser">
+    <!-- Элемент с пользователем -->
+    <div class="reply">
+      <!-- Аватарка -->
+      <div class="reply__avatar">
+        <!-- Картинка -->
+        <img [src]="replyUser.avatars.small"
+             *ngIf="replyUser.avatars.small.length > 0" />
+        <!-- Иконка -->
+        <mat-icon *ngIf="replyUser.avatars.small.length === 0">person</mat-icon>
+        <!-- Метка онлайн -->
+        <div class="reply__avatar-online"
+             *ngIf="replyUser.online"></div>
       </div>
+      <!-- Данные -->
+      <div class="reply__content">
+        <div class="reply__content-mainTitle">Вы отвечаете</div>
+        <div class="reply__content-subTitle">
+          {{replyUser | petrovich: [3, 'first'] }}
+          {{replyUser | petrovich: [3, 'last'] }}
+        </div>
+      </div>
+      <!-- Удалить -->
+      <button mat-icon-button
+              class="reply__delete"
+              color="primary"
+              (click)="onReplyUserDelete()"><mat-icon>close</mat-icon></button>
     </div>
-    <!-- Удалить -->
+  </div>
+
+  <!-- Поле ввода -->
+  <div #editorContainer
+       class="editor"
+       (click)="editor.focus()">
+    <app-scroll class="editor__scroll"
+                (click)="$event.stopPropagation()">
+      <div #editor
+           class="editor__area"
+           [attr.contenteditable]="!sendLoader"
+           [attr.placeholder]="placeholder"
+           (blur)="onBlur()"
+           (keyup)="onEdit($event)"
+           (change)="onEdit($event)"
+           (paste)="onPaste($event)"
+           (keydown)="onCheckEnterKey($event)"></div>
+    </app-scroll>
+  </div>
+
+  <!-- Действия -->
+  <div class="actions">
+    <!-- Перенос события на поле ввода -->
+    <div class="event-helper"
+         (click)="editor.focus()"></div>
+    <!-- Смайлики -->
+    <div class="smiles">
+      <button #emojiListToggleButton
+              mat-icon-button
+              color="primary"
+              customToolTip
+              (click)="onToggleEmojilist()"
+              *ngIf="!sendLoader">
+        <mat-icon>sentiment_very_satisfied</mat-icon>
+      </button>
+      <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
+    </div>
+    <!-- Прикрепить -->
     <button mat-icon-button
-            class="reply__delete"
             color="primary"
-            (click)="onReplyUserDelete()"><mat-icon>close</mat-icon></button>
-  </div>
-</div>
-
-<!-- Поле ввода -->
-<div #editorContainer
-     class="editor"
-     (click)="editor.focus()">
-  <app-scroll class="editor__scroll"
-              (click)="$event.stopPropagation()">
-    <div #editor
-         class="editor__area"
-         [attr.contenteditable]="!sendLoader"
-         [attr.placeholder]="placeholder"
-         (blur)="onBlur()"
-         (keyup)="onEdit($event)"
-         (change)="onEdit($event)"
-         (paste)="onPaste($event)"
-         (keydown)="onCheckEnterKey($event)"></div>
-  </app-scroll>
-</div>
-
-<!-- Действия -->
-<div class="actions">
-  <!-- Перенос события на поле ввода -->
-  <div class="event-helper"
-       (click)="editor.focus()"></div>
-  <!-- Смайлики -->
-  <div class="smiles">
-    <button #emojiListToggleButton
-            mat-icon-button
-            color="primary"
-            customToolTip
-            (click)="onToggleEmojilist()"
+            matTooltip="Прикрепить"
+            [matMenuTriggerFor]="attachMenuPanel"
             *ngIf="!sendLoader">
-      <mat-icon>sentiment_very_satisfied</mat-icon>
+      <mat-icon>attach_file</mat-icon>
     </button>
-    <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
+    <!-- Отправить -->
+    <button mat-flat-button
+            color="primary"
+            [attr.button-loader]="sendLoader"
+            wait-pointers
+            [disabled]="!sendIsAvail"
+            (click)="onSend($event)">
+      <mat-icon iconPositionEnd>send</mat-icon>
+      {{sendLoader? 'Отправка': 'Отправить'}}
+    </button>
   </div>
-  <!-- Прикрепить -->
-  <button mat-icon-button
-          color="primary"
-          matTooltip="Прикрепить"
-          [matMenuTriggerFor]="attachMenuPanel"
-          *ngIf="!sendLoader">
-    <mat-icon>attach_file</mat-icon>
-  </button>
-  <!-- Отправить -->
-  <button mat-flat-button
-          color="primary"
-          [attr.button-loader]="sendLoader"
-          wait-pointers
-          [disabled]="!sendIsAvail"
-          (click)="onSend($event)">
-    <mat-icon iconPositionEnd>send</mat-icon>
-    {{sendLoader? 'Отправка': 'Отправить'}}
-  </button>
-</div>
 
-<!-- Прикрепленные материалы -->
-<div class="attachments"
-     *ngIf="hasAttachment">
-  <!-- Граффити -->
-  <ng-container [ngTemplateOutlet]="attachedImage"
-                [ngTemplateOutletContext]="{
+  <!-- Прикрепленные материалы -->
+  <div class="attachments"
+       *ngIf="hasAttachment">
+    <!-- Граффити -->
+    <ng-container [ngTemplateOutlet]="attachedImage"
+                  [ngTemplateOutletContext]="{
                   url: graffityData.image,
                   callback: onGraffityPopupOpen.bind(this),
                   overlayIcon: 'edit'
                 }"
-                *ngIf="!!graffityData?.image"></ng-container>
+                  *ngIf="!!graffityData?.image"></ng-container>
+  </div>
 </div>
 
 
