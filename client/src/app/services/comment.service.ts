@@ -1,13 +1,17 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
+import { UniqueArray } from "@_helpers/objects";
+import { GetLinksFromString } from "@_helpers/string";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
+import { SearchRequestDream } from "@_models/dream";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
+import { DreamService } from "./dream.service";
 import { MediaService } from "./media.service";
 
 
@@ -32,7 +36,12 @@ export class CommentService implements OnDestroy {
     const userId: number = ParseInt(comment?.userId);
     const replyToUserId: number = ParseInt(comment?.replyToUserId);
     let attachment: CommentAttachment = {};
-    const getUser = (id: number) => !!id ? this.accountService.user$(id).pipe(take(1)) : of(null);
+    const getUser = (id: number) => !!id ?
+      this.accountService.user$(id).pipe(take(1)) :
+      of(null);
+    const getDreams = (ids: number[]) => !!ids?.length ?
+      this.dreamService.search({ ids, limit: ids.length, checkPrivate: true }, ["0002"]) :
+      of(null);
     // Закрепления
     try {
       attachment = (typeof comment?.attachment === "string" ? JSON.parse(comment?.attachment) : comment?.attachment) ?? {};
@@ -45,10 +54,25 @@ export class CommentService implements OnDestroy {
       concatMap(() => getUser(userId), (data, user) => ({ ...data, user })),
       concatMap(() => getUser(replyToUserId), (data, replyToUser) => ({ ...data, replyToUser })),
       concatMap(
-        () => !!attachment?.graffity ? this.mediaService.convertData(attachment.graffity) : of(null),
-        (data, graffity) => ({ ...data, attachment: { ...attachment, graffity } })
+        data => {
+          const text: string = (data?.comment?.text ?? "").replace(new RegExp("\\[br\\]", "ig"), " <br> ");
+          const domain: string = window.location.hostname;
+          const regExp: RegExp = new RegExp("^https?:\/\/" + domain + "(:[0-9]{1,5})?\/diary\/viewer\/([0-9]+)(.*)?$", "i");
+          const dreamIds: number[] = UniqueArray(GetLinksFromString(text)
+            .filter(url => regExp.test(url))
+            .map(url => ParseInt(url.replace(regExp, "$2")))
+            .filter(id => id > 0)
+          );
+          // Вернуть подписчик
+          return dreamIds.length > 0 ? getDreams(dreamIds) : of({} as SearchRequestDream);
+        },
+        (data, dreams) => ({ ...data, dreams: dreams?.result ?? [] })
       ),
-      map(({ comment, user, replyToUser }) => ({
+      concatMap(
+        () => !!attachment?.graffity ? this.mediaService.convertData(attachment.graffity) : of(null),
+        (data, graffity) => ({ ...data, graffity })
+      ),
+      map(({ comment, user, replyToUser, graffity, dreams }) => ({
         id: ParseInt(comment?.id),
         user,
         replyToUser,
@@ -57,7 +81,7 @@ export class CommentService implements OnDestroy {
         materialOwner: ParseInt(comment?.materialOwner),
         text: comment?.text ?? "",
         createDate: ToDate(comment?.createDate),
-        attachment
+        attachment: { graffity, dreams }
       }))
     );
   }
@@ -70,7 +94,8 @@ export class CommentService implements OnDestroy {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private accountService: AccountService,
-    private mediaService: MediaService
+    private mediaService: MediaService,
+    private dreamService: DreamService
   ) { }
 
   ngOnDestroy(): void {
