@@ -192,9 +192,9 @@ class DreamService
     }
     // Сон не найден
     return array(
-      "count" => $count,
-      "limit" => $limit,
-      "result" => $result
+      'count' => $count,
+      'limit' => $limit,
+      'result' => $result
     );
   }
 
