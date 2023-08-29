@@ -121,7 +121,7 @@
     // ? Вариаты
     // Есть графити
     &.graffity {
-      $padding: 12px;
+      $padding: vars.$commentAttachmentPaddings;
       // Свойства
       display: flex;
       flex-flow: row nowrap;
@@ -137,10 +137,6 @@
           border-radius: 3px;
         }
       }
-    }
-    // Адаптив
-    @include screens.adaptive(xsmall, middle) {
-      margin-top: containers.$cardPaddingY;
     }
   }
   // Действия

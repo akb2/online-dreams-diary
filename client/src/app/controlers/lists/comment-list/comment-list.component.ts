@@ -12,8 +12,8 @@ import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subject, of } from "rxjs";
-import { catchError, map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
+import { Subject } from "rxjs";
+import { map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
 
 
 

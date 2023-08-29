@@ -48,15 +48,18 @@
            *ngIf="!!comment?.text"></div>
       <!-- Прикрепления -->
       <ng-container *ngVar="comment?.attachment?.graffity as graffity">
-        <!-- Граффити -->
-        <div class="comment__attachment"
-             [ngClass]="{ graffity }"
-             *ngIf="!!graffity">
+        <ng-container *ngVar="comment?.attachment?.dreams as dreams">
           <!-- Граффити -->
-          <ng-container [ngTemplateOutlet]="graffityAttachment"
-                        [ngTemplateOutletContext]="{ media: graffity }"
-                        *ngIf="!!graffity"></ng-container>
-        </div>
+          <div class="comment__attachment graffity"
+               *ngIf="!!graffity">
+            <ng-container [ngTemplateOutlet]="graffityAttachment"
+                          [ngTemplateOutletContext]="{ graffity }"></ng-container>
+          </div>
+          <!-- Сновидения -->
+          <ng-container [ngTemplateOutlet]="dreamAttachment"
+                        [ngTemplateOutletContext]="{ dreams }"
+                        *ngIf="!!dreams?.length"></ng-container>
+        </ng-container>
       </ng-container>
       <!-- Действия -->
       <div class="comment__actions">
@@ -109,11 +112,27 @@
               [aboveIcon]="true"></app-inform>
 </ng-template>
 
+
+
 <!-- Граффити в закреплении -->
 <ng-template #graffityAttachment
-             let-media="media">
+             let-graffity="graffity">
   <div class="comment__attachment-graffity"
-       *ngIf="!!media">
-    <img [src]="media.url" />
+       *ngIf="!!graffity">
+    <img [src]="graffity.url" />
+  </div>
+</ng-template>
+
+<!-- Сновидение в закреплении -->
+<ng-template #dreamAttachment
+             let-dreams="dreams">
+  <div class="comment__attachment dreams"
+       *ngIf="!!dreams?.length">
+    <app-dream-list [dreams]="dreams"
+                    sourcePlace="profile"
+                    [oneLine]="false"
+                    [elmsPerLine]="3"
+                    [showProfile]="false"
+                    [inAttachment]="true"></app-dream-list>
   </div>
 </ng-template>
