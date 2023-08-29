@@ -19,7 +19,7 @@ $userProfileBlocksGaps: (
   default: 30px,
   middle: 20px,
   small: 15px,
-  xsmall: 15px,
+  xsmall: 15px
 );
 
 $dreamCardSpacingX: 18px;
@@ -31,3 +31,6 @@ $scrollSize: 15px;
 $scrollSpacing: 1px;
 $scrollSliderSize: $scrollSize * 0.6;
 $scrollSliderMinHeight: $scrollSize * 5;
+
+$commentAttachmentPaddings: 12px;
+$commentAttachmentBorderRadius: 6px;
