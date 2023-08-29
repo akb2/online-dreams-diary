@@ -69,6 +69,16 @@
       line-height: 18px;
       font-weight: 300;
       color: colors.$text;
+      // Дочерние элементы
+      time,
+      a {
+        font: inherit;
+        text-decoration: none;
+      }
+      // Время
+      time {
+        color: inherit;
+      }
     }
   }
   // Текст

@@ -30,8 +30,16 @@
           <a class="comment__header-name"
              routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
           <!-- Дата -->
-          <time class="comment__header-state"
-                [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
+          <div class="comment__header-state">
+            <time [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
+            <!-- Ответ пользователю -->
+            <ng-container *ngIf="!!comment.replyToUser && comment.user.id !== comment.replyToUser.id">
+              - Ответ
+              <a routerLink="/profile/{{comment.replyToUser.id}}">
+                {{comment.replyToUser | petrovich: [3, 'first'] }} {{comment.replyToUser | petrovich: [3, 'last'] }}
+              </a>
+            </ng-container>
+          </div>
         </div>
       </div>
       <!-- Текст комментариев -->
