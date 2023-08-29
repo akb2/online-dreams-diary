@@ -1,7 +1,8 @@
+import { ParseInt } from "@_helpers/math";
+import { SearchUrlRegExp } from "@_helpers/string";
 import { Pipe, PipeTransform } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiData, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { ParseInt } from "@_helpers/math";
 
 
 
@@ -33,7 +34,7 @@ export class CommentPipe implements PipeTransform {
 
   // Поиск ссылок
   private getLinks(text: string): string {
-    const urlRegex: RegExp = /(https?:\/\/[^\s<>\[\],!?]*[^\s<>\[\],!?.,])(?=\s|[.,!?]|$)/g;
+    const urlRegex: RegExp = SearchUrlRegExp;
     let lastIndex: number = 0;
     let match: RegExpExecArray;
     let result: string = "";
@@ -88,7 +89,7 @@ export class CommentPipe implements PipeTransform {
       });
     }
     // Замена тегов
-    text = text.replace(new RegExp("\\[br\\]", "ig"), "<br>");
+    text = text.replace(new RegExp("\\[br\\]", "ig"), " <br> ");
     // Поиск прочих данных
     text = this.getLinks(text);
     // Вернуть изначальный текст

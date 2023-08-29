@@ -22,3 +22,23 @@ export const CapitalizeFirstLetter = (mixedText: string) => {
   // Поднять первую бкуву
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+// Регулярное выражение для поиска URL в тексте
+export const SearchUrlRegExp: RegExp = /(https?:\/\/[^\s<>\[\],!]+(?<![.,!?]))/gi;
+
+// Получить список всех ссылок
+export const GetLinksFromString = (text: string) => {
+  const urlRegex: RegExp = SearchUrlRegExp;
+  const result: string[] = [];
+  let match: RegExpExecArray;
+  // Перебираем все совпадения с регулярным выражением
+  while ((match = urlRegex.exec(text)) !== null) {
+    const matchedUrl = match[0];
+    // Проверяем на уникальность
+    if (!result.includes(matchedUrl)) {
+      result.push(matchedUrl);
+    }
+  }
+  // Вернуть результат
+  return result;
+};
