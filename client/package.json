@@ -10,7 +10,10 @@
     "watch": "npm run build --watch --configuration development",
     "test": "ng test",
     "stop-server": "httpd -k stop | mysqld -u root shutdown",
-    "dev-start": "concurrently \"mysqld --console\" \"httpd -k start\" \"npm run start\""
+    "dev-start": "concurrently \"mysqld --console\" \"httpd -k start\" \"npm run start\"",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:console:run": "cypress run --reporter junit --reporter-options mochaFile=cypress/results/results-[hash].xml"
   },
   "private": true,
   "dependencies": {
