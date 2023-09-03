@@ -8,6 +8,7 @@ import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";
 import { DreamMapBirchTreeObject } from "./three.js/objects/tree/birch";
 import { DreamMapFirTreeObject } from "./three.js/objects/tree/fir";
 import { DreamMapOakTreeObject } from "./three.js/objects/tree/oak";
+import { DreamMapWillowTreeObject } from "./three.js/objects/tree/willow";
 
 
 
@@ -99,6 +100,23 @@ const DreamMapPartialObjects: Partial<DreamMapObject>[] = [
       "tree-fir-branch": DreamMapFirTreeObject.getSubType,
       "tree-fir-leaf-a": DreamMapFirTreeObject.getSubType,
       "tree-fir-leaf-b": DreamMapFirTreeObject.getSubType
+    },
+    settings: {
+      mixWithDefault: true,
+      multiCeils: true
+    }
+  },
+  // Плакучая ива
+  {
+    id: 5,
+    sortIndex: 2,
+    name: "Плакучая ива",
+    catalog: 1,
+    controllers: [DreamMapWillowTreeObject],
+    subTypeFunctions: {
+      "tree-willow-branch": DreamMapWillowTreeObject.getSubType,
+      "tree-willow-leaf-a": DreamMapWillowTreeObject.getSubType,
+      "tree-willow-leaf-b": DreamMapWillowTreeObject.getSubType
     },
     settings: {
       mixWithDefault: true,
