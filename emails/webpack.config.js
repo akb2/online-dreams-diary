@@ -71,6 +71,11 @@ module.exports = (env, option) => {
         pluginsAfterOptions.push({
           apply: () => {
             const outFile = path.join(__dirname, config.folders.output.base, filename);
+            const outDir = path.dirname(outFile);
+            // Очистить / создать файлы
+            fs.mkdirSync(outDir, { recursive: true });
+            fs.writeFileSync(outFile, "");
+            // Прочитать файлы
             const source = fs.readFileSync(outFile, "utf-8");
             // Удаление дубликатов стилей
             const search = new RegExp("style=('|\")([a-z0-9\-_\\s:;\.,\#\%]*)('|\")", "gmi");
