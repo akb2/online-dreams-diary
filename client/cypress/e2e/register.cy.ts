@@ -5,6 +5,12 @@ import { Random } from "cypress/models/math";
 
 
 
+const testSite: string = "https://test.dreams-diary.ru";
+
+
+
+
+
 describe("Регистрация", () => {
   const password: string = "password-" + Random(100000000, 999999999);
   const birthDate: string = Random(1, 28) + "-" + Random(1, 12) + "-" + Random(1950, 2004);
@@ -15,7 +21,7 @@ describe("Регистрация", () => {
 
   // Открыть сайт
   const openForm = () => {
-    cy.visit("http://localhost:4200");
+    cy.visit(testSite);
     // Переход к регистрации
     getElm("main-menu-item-register").click({ force: true });
   };
