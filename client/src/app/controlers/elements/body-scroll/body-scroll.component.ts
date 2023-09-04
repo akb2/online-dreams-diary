@@ -84,9 +84,8 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
       .pipe(
         takeUntil(this.destroyed$),
         concatMap(({ scrollElement, pageComponentElement }) => forkJoin([
-          this.screenService.elmResize(document.body).pipe(tap(() => this.onWindowScroll())),
+          this.screenService.elmResize([document.body, scrollElement, pageComponentElement]).pipe(tap(() => this.onWindowScroll())),
           this.scrollService.onAlwaysScroll().pipe(tap(() => this.onWindowScroll())),
-          this.screenService.elmResize([scrollElement, pageComponentElement]).pipe(tap(() => this.onWindowScroll())),
           fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
           fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
         ])),

@@ -1,6 +1,6 @@
-import { Injectable, OnDestroy } from "@angular/core";
 import { ElmSize, LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
-import { BehaviorSubject, fromEvent, Observable, Subject, Subscriber, timer } from "rxjs";
+import { Injectable, OnDestroy } from "@angular/core";
+import { BehaviorSubject, Observable, Subject, Subscriber, fromEvent, timer } from "rxjs";
 import { filter, map, pairwise, skipWhile, startWith, takeUntil, takeWhile } from "rxjs/operators";
 
 
@@ -123,11 +123,11 @@ export class ScreenService implements OnDestroy {
   elmResize(elm: HTMLElement | HTMLElement[]): Observable<ElmSize[]> {
     const elms: HTMLElement[] = Array.isArray(elm) ? elm : [elm];
     const observable: Observable<ElmSize[]> = new Observable((subscriber: Subscriber<ElmSize[]>) => {
-      const resizeObserver = new ResizeObserver(entries => subscriber.next(entries.map(e => e.target as HTMLElement).map(element => ({
+      const resizeObserver = new ResizeObserver(entries => requestAnimationFrame(() => subscriber.next(entries.map(e => e.target as HTMLElement).map(element => ({
         element,
         width: element.offsetWidth,
         height: element.offsetHeight
-      }))));
+      })))));
       elms.forEach(e => resizeObserver.observe(e));
       return () => resizeObserver.disconnect();
     });
