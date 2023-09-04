@@ -16,6 +16,7 @@ export interface MenuItem {
   text?: string;
   desc?: string;
   link?: string;
+  testAttr?: string;
   mobileView?: MenuItemMobileView;
   linkParams?: SimpleObject;
   callback?: () => void;

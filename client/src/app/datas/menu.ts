@@ -128,6 +128,7 @@ export const MenuItems: MenuItemsListDevices = {
         sort: 1000,
         text: "Вход",
         link: "/auth",
+        testAttr: "main-menu-item-list-auth",
         children: [
           // Вход
           {
@@ -137,6 +138,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Регистрация
           {
             text: "Регистрация",
+            testAttr: "main-menu-item-register",
             link: "/register"
           }
         ]

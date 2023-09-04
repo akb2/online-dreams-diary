@@ -13,6 +13,7 @@
            [name]="name ?? autocomplete"
            [id]="id ?? name ?? autocomplete"
            [maxlength]="maxLength"
+           [attr.test-id]="testAttr"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
            (keyup)="onKeyUp($event)"
@@ -27,6 +28,7 @@
               [cdkAutosizeMaxRows]="multiLineMaxLines"
               [formControl]="control"
               [maxlength]="maxLength"
+              [attr.test-id]="testAttr"
               (keydown)="onKeyDown($event)"
               (keypress)="onKeyPress($event)"
               (keyup)="onKeyUp($event)"
@@ -57,10 +59,10 @@
            [name]="name ?? autocomplete"
            [id]="id ?? name ?? autocomplete"
            [matDatepicker]="datePicker"
+           [attr.test-id]="testAttr"
            (keydown)="onKeyDown($event)"
            (keypress)="onKeyPress($event)"
-           (keyup)="onKeyUp($event)"
-           (click)="datePicker.open()" />
+           (keyup)="onKeyUp($event)" />
     <mat-icon class="showPassword"
               matSuffix="matSuffix"
               (click)="datePicker.open()">today</mat-icon>

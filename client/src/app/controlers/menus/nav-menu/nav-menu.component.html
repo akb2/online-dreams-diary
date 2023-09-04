@@ -202,6 +202,7 @@
      [ngClass]="{ active: item.active }"
      [ngStyle]="style"
      [id]="item.id"
+     [attr.test-id]="item?.testAttr"
      [routerLink]="item.link"
      *ngIf="!item.isSeparate && item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
@@ -212,6 +213,7 @@
           [ngClass]="{ active: item.active }"
           [ngStyle]="style"
           [id]="item.id"
+          [attr.test-id]="item?.testAttr"
           (click)="item.callback()"
           *ngIf="!item.isSeparate && !item.link && item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
@@ -222,6 +224,7 @@
        [ngClass]="{ active: item.active }"
        [ngStyle]="style"
        [id]="item.id"
+       [attr.test-id]="item?.testAttr"
        (click)="onMenuItemClick(item)"
        *ngIf="!item.isSeparate && !item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mainMenuItemContent"
@@ -304,12 +307,14 @@
   <a class="mobile-menu__list-link"
      [ngClass]="{ active: item.active }"
      [routerLink]="item.link"
+     [attr.test-id]="item?.testAttr"
      *ngIf="!item.isSeparate && item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mobileMenuItemContent"
                   [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
   </a>
   <!-- Кнопка без ссылки -->
   <button class="mobile-menu__list-link"
+          [attr.test-id]="item?.testAttr"
           (click)="item.callback()"
           *ngIf="!item.isSeparate && !item.link && item.callback">
     <ng-container [ngTemplateOutlet]="mobileMenuItemContent"
@@ -317,6 +322,7 @@
   </button>
   <!-- Кнопка без действия -->
   <div class="mobile-menu__list-link"
+       [attr.test-id]="item?.testAttr"
        *ngIf="!item.isSeparate && !item.link && !item.callback"></div>
 </ng-template>
 
@@ -395,12 +401,14 @@
   <a class="bottom-menu__item"
      [ngClass]="{ active: item.active }"
      [routerLink]="item.link"
+     [attr.test-id]="item?.testAttr"
      *ngIf="!item.isSeparate && item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mobileMenuBottomItemContent"
                   [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
   </a>
   <!-- Кнопка без ссылки -->
   <button class="bottom-menu__item"
+          [attr.test-id]="item?.testAttr"
           (click)="item.callback()"
           *ngIf="!item.isSeparate && !item.link && !!item.callback">
     <ng-container [ngTemplateOutlet]="mobileMenuBottomItemContent"
@@ -408,6 +416,7 @@
   </button>
   <!-- Кнопка без действия -->
   <div class="bottom-menu__item"
+       [attr.test-id]="item?.testAttr"
        (click)="onMenuItemClick(item)"
        *ngIf="!item.isSeparate && !item.link && !item.callback">
     <ng-container [ngTemplateOutlet]="mobileMenuBottomItemContent"

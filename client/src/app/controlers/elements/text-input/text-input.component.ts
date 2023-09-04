@@ -31,6 +31,7 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   @Input() maxDate: Date;
   @Input() submitAfterActivity: boolean = false;
   @Input() activityTimer: number = 500;
+  @Input() testAttr: string = null;
 
   @Output() submit: EventEmitter<string> = new EventEmitter<string>();
 

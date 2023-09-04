@@ -27,6 +27,7 @@
                               formControlName="login"
                               [errors]="errors.login"
                               [maxLength]="formData.loginMaxLength"
+                              testAttr="register-form-login-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Пароль -->
               <app-text-input required
@@ -35,6 +36,7 @@
                               [errors]="errors.password"
                               [maxLength]="formData.passwordMaxLength"
                               type="password"
+                              testAttr="register-form-password-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Подтверждение пароля -->
               <app-text-input required
@@ -43,6 +45,7 @@
                               [errors]="errors.confirmPassword"
                               [maxLength]="formData.passwordMaxLength"
                               type="password"
+                              testAttr="register-form-password-confirm-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
             </form>
             <!-- Действия -->
@@ -52,6 +55,7 @@
                  routerLink="/auth">Вход</a>
               <a mat-flat-button
                  color="primary"
+                 test-id="register-form-step-1-next-button"
                  (click)="nextStep()">Далее</a>
             </ng-container>
           </app-card>
@@ -71,6 +75,7 @@
                               formControlName="name"
                               [errors]="errors.name"
                               [maxLength]="formData.nameMaxLength"
+                              testAttr="register-form-name-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Фамилия -->
               <app-text-input required
@@ -78,6 +83,7 @@
                               formControlName="lastName"
                               [errors]="errors.lastName"
                               [maxLength]="formData.nameMaxLength"
+                              testAttr="register-form-lastName-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Дата рождения -->
               <app-text-input required
@@ -86,7 +92,8 @@
                               formControlName="birthDate"
                               [errors]="errors.birthDate"
                               [minDate]="ageToDate(formData.birthDateMaxAge)"
-                              [maxDate]="ageToDate(formData.birthDateMinAge)"></app-text-input>
+                              [maxDate]="ageToDate(formData.birthDateMinAge)"
+                              testAttr="register-form-birthDate-field"></app-text-input>
               <!-- Пол -->
               <mat-form-field>
                 <mat-label>Ваш пол</mat-label>
@@ -95,9 +102,11 @@
                        hidden />
                 <mat-radio-group formControlName="sex">
                   <mat-radio-button color="primary"
-                                    [value]="sexes.Male">Мужской</mat-radio-button>
+                                    [value]="sexes.Male"
+                                    test-id="register-form-sex-male-field">Мужской</mat-radio-button>
                   <mat-radio-button color="primary"
-                                    [value]="sexes.Female">Женский</mat-radio-button>
+                                    [value]="sexes.Female"
+                                    test-id="register-form-sex-female-field">Женский</mat-radio-button>
                 </mat-radio-group>
               </mat-form-field>
             </form>
@@ -108,6 +117,7 @@
                  (click)="prevStep()">Назад</a>
               <a mat-flat-button
                  color="primary"
+                 test-id="register-form-step-2-next-button"
                  (click)="nextStep()">Далее</a>
             </ng-container>
           </app-card>
@@ -128,10 +138,12 @@
                               formControlName="email"
                               [errors]="errors.email"
                               [maxLength]="formData.emailMaxLength"
+                              test-id="register-form-email-field"
                               (keyup)="onKeySubmit($event)"></app-text-input>
               <!-- Капча -->
               <app-recaptcha formControlName="captcha"
-                             [errors]="errors.captcha"></app-recaptcha>
+                             [errors]="errors.captcha"
+                             *ngIf="!!reCaptchaKey"></app-recaptcha>
             </form>
             <!-- Действия -->
             <ng-container actions>
@@ -140,6 +152,7 @@
                  (click)="prevStep()">Назад</a>
               <a mat-flat-button
                  color="primary"
+                 test-id="register-form-register-button"
                  (click)="nextStep()">Регистрация</a>
             </ng-container>
           </app-card>
@@ -147,13 +160,14 @@
       </mat-tab>
     </mat-tab-group>
     <!-- Загрузка регистрации -->
-    <app-inform *ngIf="loading"
-                mainTitle="Регистрация"
-                subTitle="Пожалуйста подождите"></app-inform>
+    <app-inform mainTitle="Регистрация"
+                subTitle="Пожалуйста подождите"
+                *ngIf="loading"></app-inform>
     <!-- Окончание регистрации -->
-    <app-inform *ngIf="registed"
-                icon="done"
+    <app-inform icon="done"
                 mainTitle="Вы зарегистрированны"
-                description="Мы отправили письмо на {{registerEmail}}. Обязательно перейдите по ссылке из письма для окончания регистрации."></app-inform>
+                test-id="register-form-success-block"
+                description="Мы отправили письмо на {{registerEmail}}. Обязательно перейдите по ссылке из письма для окончания регистрации."
+                *ngIf="registed"></app-inform>
   </div>
 </div>
