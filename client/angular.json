@@ -67,6 +67,30 @@
               "vendorChunk": false,
               "buildOptimizer": true,
               "outputHashing": "all"
+            },
+            "test": {},
+            "cypress": {
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "250kb",
+                  "maximumError": "1mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.cypress.ts"
+                }
+              ],
+              "optimization": true,
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": ""
@@ -79,6 +103,10 @@
           "configurations": {
             "production": {
               "browserTarget": "Online_Dreams_Diary:build:production"
+            },
+            "test": {},
+            "cypress": {
+              "browserTarget": "Online_Dreams_Diary:build:cypress"
             }
           }
         },

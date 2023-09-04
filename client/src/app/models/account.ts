@@ -94,6 +94,7 @@ export interface UserRegister extends UserBase {
   login: string;
   password: string;
   captcha: string;
+  checkCaptcha: boolean;
 }
 
 // Интерфейс данных для обновления аккаунта

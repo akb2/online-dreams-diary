@@ -152,12 +152,12 @@ class UserService
     $message = '';
     $id = '';
     $sqlData = array();
-
+    $isTestRequest = ($data['checkCaptcha'] == false || $data['checkCaptcha'] == 'false') && !!$this->config['isTest'];
     // Если получены данные
     if (strlen($data['login']) > 0 && strlen($data['email']) > 0) {
       $this->reCaptchaService->setCaptchaCode($data['captcha']);
       // Проверить капчу
-      if ($this->reCaptchaService->checkCaptcha()) {
+      if ($this->reCaptchaService->checkCaptcha() || $isTestRequest) {
         $login = $data['login'];
         $password = $this->hashPassword($data['password']);
         $sqlData = array(
@@ -176,30 +176,36 @@ class UserService
         $checkLogin = $this->dataBaseService->getDatasFromFile('account/checkLoginEmail.sql', array($data['login'], $data['email']));
         // Проверить логин
         if (count($checkLogin) == 0) {
+          // Тестовый запрос
+          if ($isTestRequest) {
+            $code = '0001';
+          }
           // Регистрация пользователя
-          if ($this->dataBaseService->executeFromFile('account/registerUser.sql', $sqlData)) {
-            $sqlData = array($login, $password);
-            // Запрос авторизации
-            $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
-            $code = '9018';
-            // Проверить авторизацию
-            if (count($auth) > 0) {
-              if (strlen($auth[0]['id']) > 0) {
-                $user = array(
-                  'id' => $auth[0]['id'],
-                  'name' => $data['name'],
-                  'email' => $data['email']
-                );
-                // Отправка письма
-                if ($this->sendActivationCode($user)) {
-                  $code = '0001';
+          else {
+            if ($this->dataBaseService->executeFromFile('account/registerUser.sql', $sqlData)) {
+              $sqlData = array($login, $password);
+              // Запрос авторизации
+              $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
+              $code = '9018';
+              // Проверить авторизацию
+              if (count($auth) > 0) {
+                if (strlen($auth[0]['id']) > 0) {
+                  $user = array(
+                    'id' => $auth[0]['id'],
+                    'name' => $data['name'],
+                    'email' => $data['email']
+                  );
+                  // Отправка письма
+                  if ($this->sendActivationCode($user)) {
+                    $code = '0001';
+                  }
                 }
               }
             }
-          }
-          // Регистрация неудалась
-          else {
-            $code = '9021';
+            // Регистрация неудалась
+            else {
+              $code = '9021';
+            }
           }
         }
         // Логин или почта повторяются
@@ -226,13 +232,13 @@ class UserService
     else {
       $code = '9030';
     }
-
     // Вернуть массив
     return array(
       'code' => $code,
       'message' => $message,
       'data' => array(
         'id' => $id,
+        'isTest' => $isTestRequest,
         'result' => $code == '0001'
       )
     );

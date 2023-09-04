@@ -1,4 +1,5 @@
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
+import { environment } from "@_environments/environment";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { CanonicalService } from "@_services/canonical.service";
@@ -46,6 +47,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   sexes: typeof UserSex = UserSex;
 
+  reCaptchaKey: string = environment.reCaptchaKey;
+
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -70,51 +73,66 @@ export class RegisterComponent implements OnInit, OnDestroy {
   ) {
     this.localStorageService.itemKey = this.cookieKey;
     this.localStorageService.itemLifeTime = this.cookieLifeTime;
+    // Данные формы контактных данных
+    const formContactDatas: any = {
+      testEmail: [[], null],
+      email: [this.localStorageService.getItem("email"), AccountValidatorData.email],
+    };
     // Данные формы
     this.form = [
       // Данные входа
-      this.formBuilder.group({
-        testLogin: [[], null],
-        login: [this.localStorageService.getItem("login"), AccountValidatorData.login],
-        password: [this.localStorageService.getItem("password"), AccountValidatorData.password],
-        confirmPassword: [this.localStorageService.getItem("confirmPassword"), AccountValidatorData.password]
-      }, {
-        validators: [
-          CustomValidators.passwordMatchValidator,
-          CustomValidators.uniqueLoginData
-        ]
-      }),
+      this.formBuilder.group(
+        // Данные
+        {
+          testLogin: [[], null],
+          login: [this.localStorageService.getItem("login"), AccountValidatorData.login],
+          password: [this.localStorageService.getItem("password"), AccountValidatorData.password],
+          confirmPassword: [this.localStorageService.getItem("confirmPassword"), AccountValidatorData.password]
+        },
+        // Валидаторы
+        {
+          validators: [
+            CustomValidators.passwordMatchValidator,
+            CustomValidators.uniqueLoginData
+          ]
+        }
+      ),
       // Сведения
-      this.formBuilder.group({
-        name: [this.localStorageService.getItem("name"), AccountValidatorData.name],
-        lastName: [this.localStorageService.getItem("lastName"), AccountValidatorData.name],
-        birthDate: [
-          this.localStorageService.getItem("birthDate") ?
-            new Date(this.localStorageService.getItem("birthDate")) :
-            null, AccountValidatorData.birthDate
-        ],
-        sex: [!!this.localStorageService.getItem("sex") ? UserSex.Female : UserSex.Male]
-      }),
+      this.formBuilder.group(
+        // Данные
+        {
+          name: [this.localStorageService.getItem("name"), AccountValidatorData.name],
+          lastName: [this.localStorageService.getItem("lastName"), AccountValidatorData.name],
+          birthDate: [
+            this.localStorageService.getItem("birthDate") ?
+              new Date(this.localStorageService.getItem("birthDate")) :
+              null, AccountValidatorData.birthDate
+          ],
+          sex: [!!this.localStorageService.getItem("sex") ? UserSex.Female : UserSex.Male]
+        }
+      ),
       // Контакты
-      this.formBuilder.group({
-        testEmail: [[], null],
-        email: [this.localStorageService.getItem("email"), AccountValidatorData.email],
-        captcha: ["", Validators.required]
-      }, {
-        validators: [
-          CustomValidators.uniqueEmailData
-        ]
-      })
+      this.formBuilder.group(
+        // Данные
+        !!this.reCaptchaKey ? { ...formContactDatas, captcha: ["", Validators.required] } : formContactDatas,
+        // Валидаторы
+        {
+          validators: [
+            CustomValidators.uniqueEmailData
+          ]
+        }
+      )
     ];
     this.canonicalService.setURL("register");
   }
 
   ngOnInit(): void {
-    // Переключить на нужную форму, если есть заполненные данные
     let skipForm: boolean = false;
+    // Переключить на нужную форму, если есть заполненные данные
     this.form.map((group, key) => {
       if (!skipForm) {
         this.step = key;
+        // Остановиться на форме, если есть незаполненные поля
         if (!group.valid) {
           skipForm = true;
         }
@@ -136,7 +154,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
   // Изменение формы
   private onChange(datas: LocalStorageFormDatas): void {
     Object.entries(datas).map(data => {
-      // Преобразовать дату
       if (data[0] === "birthDate") {
         data[1] = data[1] ? (typeof data[1] === "string" ? data[1] : data[1].toString()) : "";
       }
@@ -144,7 +161,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       else if (data[0] === "sex") {
         data[1] = data[1] ? "true" : "false";
       }
-
+      // Сохранить значение
       this.localStorageService.setItem(data[0], typeof data[1] === "string" ? data[1] : "");
     });
   }
@@ -162,7 +179,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   // Попытка регистрации
   private tryRegister(): void {
-    // Форма без ошибок
     if (this.form.every(group => group.valid)) {
       const birthDate: Date = new Date(this.form[1].get("birthDate").value);
       this.loading = true;
@@ -175,51 +191,54 @@ export class RegisterComponent implements OnInit, OnDestroy {
         birthDate: formatDate(birthDate, "yyyy-MM-dd", "en-US"),
         sex: !!this.form[1].get("sex").value ? 1 : 0,
         email: this.form[2].get("email").value,
-        captcha: this.form[2].get("captcha").value
+        captcha: this.form[2]?.get("captcha")?.value ?? "",
+        checkCaptcha: !!this.reCaptchaKey
       };
       // Регистрация
-      this.accountService.register(userRegister, ["9010", "9011", "9012"]).subscribe(
-        code => {
-          this.loading = false;
-          this.form[2].get("captcha").setValue(null);
-          // Успешная регистрация
-          if (code == "0001") {
-            this.registed = true;
-            this.registerEmail = userRegister.email;
-            // Удалить данные из кэша
-            this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorageService.deleteItem(key)));
-          }
-          // Ошибка капчи
-          else if (code == "9010") {
-            this.form[2].get("captcha").setValue(null);
-            this.setStep(2);
-          }
-          // Ошибка логина
-          else if (code == "9011") {
-            const testLogin: string[] = this.form[0].get("testLogin").value;
-            if (testLogin.every(login => login !== userRegister.login)) {
-              testLogin.push(userRegister.login);
-              this.setStep(0);
+      this.accountService.register(userRegister, ["9010", "9011", "9012"])
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(
+          code => {
+            this.loading = false;
+            this.form[2].get("captcha")?.setValue(null);
+            // Успешная регистрация
+            if (code == "0001") {
+              this.registed = true;
+              this.registerEmail = userRegister.email;
+              // Удалить данные из кэша
+              this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorageService.deleteItem(key)));
             }
-          }
-          // Ошибка почты
-          else if (code == "9012") {
-            const testEmail: string[] = this.form[2].get("testEmail").value;
-            if (testEmail.every(email => email !== userRegister.email)) {
-              testEmail.push(userRegister.email);
+            // Ошибка капчи
+            else if (code == "9010") {
               this.setStep(2);
             }
+            // Ошибка логина
+            else if (code == "9011") {
+              const testLogin: string[] = this.form[0].get("testLogin").value;
+              // Добавить логин в список как невалидный
+              if (testLogin.every(login => login !== userRegister.login)) {
+                testLogin.push(userRegister.login);
+                this.setStep(0);
+              }
+            }
+            // Ошибка почты
+            else if (code == "9012") {
+              const testEmail: string[] = this.form[2].get("testEmail").value;
+              // Добавить почту в список как невалидную
+              if (testEmail.every(email => email !== userRegister.email)) {
+                testEmail.push(userRegister.email);
+                this.setStep(2);
+              }
+            }
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          },
+          () => {
+            this.loading = false;
+            this.form[2].get("captcha")?.setValue(null);
           }
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        },
-        () => {
-          this.loading = false;
-          this.form[2].get("captcha").setValue(null);
-        }
-      );
+        );
     }
-
     // Есть ошибки
     else {
       this.form.every((group, index) => {
