@@ -47,9 +47,9 @@ module.exports = (env, option) => {
     pages.forEach(function (file) {
       let base = path.relative(__dirname + "/" + config.folders.input.pages, file);
       base = base.replace(/\.pug$/, "");
-      const filename = config.folders.output.pages + "/" + base + "." + (production ? config.pages.ext : "html");
-      const template = config.folders.input.pages + "/" + base + ".pug";
-      const entryFile = config.folders.input.pages + "/" + base + ".js";
+      const filename = path.join(config.folders.output.pages, base + "." + (production ? config.pages.ext : "html"));
+      const template = path.resolve(path.join(config.folders.input.pages, base + ".pug"));
+      const entryFile = path.join(config.folders.input.pages, base + ".js");
       const entryKey = base.replace(/([\/]+)/i, "-");
 
       pluginsOptions.push(
@@ -70,7 +70,7 @@ module.exports = (env, option) => {
       else {
         pluginsAfterOptions.push({
           apply: () => {
-            const outFile = path.join(__dirname, config.folders.output.base, filename);
+            const outFile = path.resolve(path.join(__dirname, config.folders.output.base, filename));
             const outDir = path.dirname(outFile);
             // Очистить / создать файлы
             fs.mkdirSync(outDir, { recursive: true });
