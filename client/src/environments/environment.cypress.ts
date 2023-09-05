@@ -7,7 +7,8 @@ export const environment = {
   baseUrl: "http://localhost:4200/",
   baseApiUrl: "https://api-test.dreams-diary.ru/",
   reCaptchaKey: null,
-  httpHeader: {}
+  httpHeader: {},
+  withCredentials: false
 };
 
 /*

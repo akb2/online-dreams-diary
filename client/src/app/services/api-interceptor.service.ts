@@ -41,7 +41,7 @@ export class ApiInterceptorService implements HttpInterceptor {
       Object.entries(environment.httpHeader).reduce((o, [k, v]) => o.set(k, v?.toString() ?? ""), req.headers) :
       req.headers;
     const params: HttpParams = Object.entries(paramsData).reduce((o, [k, v]) => o.set(k, v), req.params);
-    const withCredentials: boolean = params.get("withCredentials") === "false" ? false : true;
+    const withCredentials: boolean = params.get("withCredentials") === "false" ? false : environment.withCredentials;
     // URL
     url = url.replace(new RegExp("([^https?:\/\/]+)([\/]+)", "gi"), "$1/");
     // Новый запрос
