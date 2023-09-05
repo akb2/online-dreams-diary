@@ -45,3 +45,7 @@ package-lock.json
 # System Files
 .DS_Store
 Thumbs.db
+
+# CyPress results
+cypress/results/*
+cypress/screenshots/*
