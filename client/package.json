@@ -5,7 +5,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",
-    "build": "ng build --configuration production --aot --build-optimizer",
+    "build": "ng build --configuration=production --aot --build-optimizer",
+    "cypress-build": "ng build --configuration=cypress",
     "bundle-stats": "npm run build --stats-json && webpack-bundle-analyzer ../app/stats.json",
     "watch": "npm run build --watch --configuration development",
     "test": "ng test",
