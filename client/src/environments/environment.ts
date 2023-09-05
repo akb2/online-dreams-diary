@@ -8,7 +8,7 @@ export const environment = {
   baseApiUrl: "https://api-test.dreams-diary.ru/",
   reCaptchaKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
   httpHeader: {},
-  withCredentials: false
+  withCredentials: true
 };
 
 /*
