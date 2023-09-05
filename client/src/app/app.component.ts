@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (showPreLoader) {
       this.showPreLoader = true;
       this.changeDetectorRef.detectChanges();
+      // Запретить скролл
       document.querySelectorAll("body, html").forEach(elm => elm.classList.add("no-scroll"));
     }
   }
