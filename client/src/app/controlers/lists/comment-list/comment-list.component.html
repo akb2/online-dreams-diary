@@ -25,9 +25,13 @@
              *ngIf="comment.user.online"></div>
       </a>
       <!-- Коммантарий -->
-      <div class="comment__data">
+      <div class="comment__data"
+           *ngVar="getAttachmentCount(comment) as attachmentCount">
         <!-- Описание -->
-        <div class="comment__header">
+        <div class="comment__header"
+             [attr.attachments-count]="attachmentCount"
+             [attr.attachments-per-line]="attachmentPerLine"
+             [ngClass]="{ 'no-text': !comment?.html['changingThisBreaksApplicationSecurity']?.length }">
           <!-- Имя -->
           <div class="comment__header-text">
             <a class="comment__header-name"
@@ -66,13 +70,14 @@
         <!-- Содержимое -->
         <div class="comment__body"
              [attr.attachments-count]="attachmentCount"
-             *ngVar="getAttachmentCount(comment) as attachmentCount">
+             [attr.attachments-per-line]="attachmentPerLine"
+             [ngClass]="{ 'no-text': !comment?.html['changingThisBreaksApplicationSecurity']?.length }">
           <!-- Прикрепления -->
           <ng-container *ngIf="attachmentCount > 0">
             <!-- Граффити -->
             <ng-container *ngVar="comment?.attachment?.graffity as graffity">
-              <ng-container [ngTemplateOutlet]="imageAttachment"
-                            [ngTemplateOutletContext]="{ $implicit: { src: graffity?.url } }"></ng-container>
+              <ng-container [ngTemplateOutlet]="graffityAttachment"
+                            [ngTemplateOutletContext]="{ graffity }"></ng-container>
             </ng-container>
             <!-- Сновидение -->
             <ng-container *ngVar="comment?.attachment?.dreams as dreams">
@@ -82,8 +87,8 @@
           </ng-container>
           <!-- Текст комментария -->
           <p class="comment__body-text"
-             [innerHTML]="comment.text | comment"
-             *ngIf="!!comment?.text"></p>
+             [innerHTML]="comment.html"
+             *ngIf="!!comment?.html['changingThisBreaksApplicationSecurity']?.length"></p>
         </div>
       </div>
     </div>
@@ -133,13 +138,17 @@
 
 
 <!-- Граффити в закреплении -->
-<ng-template #imageAttachment
-             let-image>
+<ng-template #graffityAttachment
+             let-graffity="graffity">
   <div class="comment__body-attachment"
-       *ngIf="!!image?.src">
+       *ngIf="!!graffity?.url">
     <div class="comment__body-attachment-data">
-      <img class="image"
-           [src]="image.src" />
+      <img class="graffity"
+           [src]="graffity.url" />
+      <div class="comment__body-attachment-overlay">
+        <mat-icon svgIcon="paint_spray"></mat-icon>
+        <title>Увеличить граффити</title>
+      </div>
     </div>
   </div>
 </ng-template>
@@ -151,7 +160,19 @@
     <div class="comment__body-attachment"
          *ngFor="let dream of dreams">
       <div class="comment__body-attachment-data">
-        <div class="dream"></div>
+        <div class="dream">
+          <div class="dream__image"
+               [attr.imageOverlay]="dream.headerBackground.imageOverlay? 'true': 'false'"
+               [attr.positionX]="dream.headerBackground.positionX"
+               [attr.positionY]="dream.headerBackground.positionY"
+               *ngIf="isHasImage(dream)">
+            <img [src]="imagePrefix + dream.headerBackground.imageNameShort" />
+          </div>
+        </div>
+        <div class="comment__body-attachment-overlay">
+          <mat-icon>nights_stay</mat-icon>
+          <title>Читать сон</title>
+        </div>
       </div>
     </div>
   </ng-container>

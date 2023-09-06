@@ -6,10 +6,37 @@
 @use "screens";
 @use "mixins";
 
+// Массив количества элемента вложений в одну строку
+$attachmentCounts: (
+  6: (
+    default: 5
+  ),
+  5: (
+    default: 2,
+    xlarge: 5,
+    large: 4,
+    middle: 3,
+    xxsmall: 1
+  ),
+  4: (
+    default: 4
+  ),
+  3: (
+    default: 3
+  ),
+  2: (
+    default: 2
+  ),
+  1: (
+    default: 1
+  )
+);
+
 // Элемент комментария
 .comment {
   $__elm: &;
   $__marginElms: (#{&}, "#{&}__more-loader.loading");
+  $spacing: containers.$cardPaddingY;
   // Свойства
   display: flex;
   // Данные
@@ -97,11 +124,11 @@
     $__elm: &;
     // Свойства
     background-color: colors.$card;
-    padding: containers.$cardPaddingY;
+    padding: $spacing;
     padding-bottom: 0;
     box-shadow: containers.$cardBoxShadow;
     border-radius: containers.$cardBorderRadius;
-    margin-top: containers.$cardPaddingY;
+    margin-top: 6px;
     text-align: left;
     width: 100%;
     display: block;
@@ -111,36 +138,77 @@
       margin-bottom: 0;
       text-indent: 0;
       display: block;
-      padding-bottom: containers.$cardPaddingY;
+      padding-bottom: $spacing;
+      word-wrap: break-word;
+      line-height: 24px;
+      font-size: 15px;
+      font-weight: 300;
+      // Смайлики
+      ::ng-deep > .smile {
+        display: inline-block;
+        line-height: 24px;
+        vertical-align: top;
+        margin: 0 1px;
+      }
     }
     // Прикрепленные данные
     &-attachment {
       $borderRadius: 6px;
       $attachCount: 4;
-      $targetSize: calc((100% - #{containers.$cardPaddingY * ($attachCount - 1)}) / #{$attachCount});
       // Свойства
       display: block;
-      float: right;
-      width: $targetSize;
-      padding-bottom: $targetSize;
+      float: left;
       background-color: colors.$background;
       border-radius: $borderRadius;
+      overflow: hidden;
       position: relative;
-      margin-left: containers.$cardPaddingY;
-      margin-bottom: containers.$cardPaddingY;
+      margin-right: $spacing;
+      margin-bottom: $spacing;
+      cursor: pointer;
+      user-select: none;
       // Данные
       &-data {
         @include mixins.inset;
         // Свойства
         position: absolute;
-        // Граффити
-        > .image {
-          margin: $borderRadius;
-          width: calc(100% - #{$borderRadius * 2});
-          height: calc(100% - #{$borderRadius * 2});
-          object-fit: cover;
-          border-radius: math.div($borderRadius, 2);
+      }
+      // Затенение
+      &-overlay {
+        @include mixins.inset;
+        // Свойства
+        position: absolute;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background-color: colors.$overlayColor;
+        opacity: 0;
+        transition: opacity #{screens.$animationTime};
+        // Иконка
+        > mat-icon {
+          $size: vars.$textMessageAttachmentIconSize;
+          // Свойства
+          display: block;
+          width: $size;
+          height: $size;
+          line-height: $size;
+          font-size: $size;
+          text-align: center;
+          color: colors.$titleDark;
         }
+        // Заголовок
+        > title {
+          color: colors.$titleDark;
+          font-size: 16px;
+          line-height: 20px;
+          font-weight: 400;
+          display: block;
+        }
+      }
+      // Выделение
+      &:hover &-overlay {
+        opacity: 1;
       }
     }
     // Сбросить плавание
@@ -150,39 +218,67 @@
       width: 100%;
       clear: both;
     }
-    // Количество вложений
-    &[attachments-count="4"] {
-      // Потомки
-      & #{$__elm} {
-        // Прикрепленные данные
-        &-attachment:nth-of-type(4n) {
-          margin-left: 0;
-        }
-      }
-    }
-  }
-  // Текст
-  &__text {
-    padding-left: containers.$cardPaddingY + containers.$avatarSize;
-    line-height: 24px;
-    font-size: 15px;
-    font-weight: 300;
-    // Смайлики
-    ::ng-deep > .smile {
-      display: inline-block;
-      line-height: 24px;
-      vertical-align: top;
-      margin: 0 1px;
-    }
-    // Для телефона
-    @include screens.adaptive(auto, xsmall) {
-      padding-left: 0;
-      margin-top: containers.$cardPaddingY;
-    }
   }
   // Смещения для блоков определения загрузки
   &__more-loader {
     position: relative;
+  }
+  // Цикл по количеству вложений на строке
+  @each $maxCountPerLine, $countsPerLine in $attachmentCounts {
+    @include screens.adaptiveFor($countsPerLine) using($countPerLine) {
+      &__body {
+        $__elm: &;
+        // Стили для разного числа элементов
+        &[attachments-per-line="#{$maxCountPerLine}"] {
+          // Потомки
+          & #{$__elm} {
+            // Прикрепленные данные
+            &-attachment {
+              $size: calc((100% - #{$spacing * ($countPerLine - 1)}) / #{$countPerLine});
+              // Свойства
+              width: $size;
+              padding-bottom: $size;
+              // Сбросить отступ слева
+              &:nth-of-type(#{$countPerLine}n) {
+                margin-right: 0;
+              }
+            }
+            // Отступ текста
+            &-attachment:nth-of-type(#{$countPerLine}) ~ #{$__elm}-text {
+            }
+          }
+          // Вложений меньше чем максимальное число на одной строке
+          @for $count from 1 through $countPerLine {
+            &.no-text[attachments-count="#{$count}"] {
+              & #{$__elm} {
+                // Прикрепленные данные
+                &-attachment {
+                  $size: calc((100% - #{$spacing * ($count - 1)}) / #{$count});
+                  // Свойства
+                  width: $size;
+                  padding-bottom: $size;
+                  // Сбросить отступ слева
+                  &:nth-of-type(#{$count}n) {
+                    margin-right: 0;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      // Вложений меньше чем максимальное число на одной строке
+      &__header,
+      &__body {
+        &[attachments-per-line="#{$maxCountPerLine}"] {
+          @for $count from 1 through $countPerLine {
+            &.no-text[attachments-count="#{$count}"] {
+              width: math.div(100%, $countPerLine) * $count;
+            }
+          }
+        }
+      }
+    }
   }
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
@@ -202,6 +298,59 @@
       &.next {
         top: -#{$gap};
         bottom: auto;
+      }
+    }
+  }
+}
+
+// Вложение: граффити
+.graffity {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Вложение: сновидение
+.dream {
+  @include mixins.inset;
+  // Свойства
+  position: absolute;
+  background-color: map.get(colors.$matPrimary, 500);
+  // Фон
+  &__image {
+    $positions-x: left center right;
+    $positions-y: top center bottom;
+    // Миксины
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    z-index: 0;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    // Затенение
+    &[imageOverlay="true"]:after {
+      @include mixins.inset;
+      // Свойства
+      position: absolute;
+      display: block;
+      content: "";
+      background-color: #000;
+      opacity: 0.4;
+      z-index: 1;
+    }
+    // Позиция по ширине
+    @each $position-x in $positions-x {
+      // Позиция по высоте
+      @each $position-y in $positions-y {
+        &[positionX="#{$position-x}"][positionY="#{$position-y}"] {
+          > img {
+            object-position: $position-x $position-y;
+          }
+        }
       }
     }
   }

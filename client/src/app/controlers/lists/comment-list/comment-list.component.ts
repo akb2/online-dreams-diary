@@ -4,7 +4,9 @@ import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
+import { Dream } from "@_models/dream";
 import { NumberDirection } from "@_models/math";
+import { NavMenuType } from "@_models/nav-menu";
 import { ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { CommentService } from "@_services/comment.service";
@@ -35,6 +37,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
   @Input() writeAccess: boolean = false;
   @Input() goToCommentScrollSubtrahend: number = DrawDatas.minHeight;
+  @Input() attachmentPerLine: number = 5;
 
   @Output() replyEvent: EventEmitter<User> = new EventEmitter();
 
@@ -54,6 +57,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
   maxDate: Date;
   minId: number;
   maxId: number;
+
+  imagePrefix: string = "../../../../assets/images/backgrounds/";
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -109,6 +114,11 @@ export class CommentListComponent implements OnInit, OnDestroy {
     }
     // Вернуть количество комментариев
     return count;
+  }
+
+  // У сна есть обложка
+  isHasImage(dream: Dream): boolean {
+    return dream.headerType === NavMenuType.full || dream.headerType === NavMenuType.short;
   }
 
 
