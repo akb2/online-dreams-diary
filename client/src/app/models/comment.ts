@@ -1,4 +1,4 @@
-import { SafeUrl } from "@angular/platform-browser";
+import { SafeHtml, SafeUrl } from "@angular/platform-browser";
 import { User } from "./account";
 import { BaseSearch, SearchResponce } from "./api";
 import { Dream } from "./dream";
@@ -18,6 +18,7 @@ export interface Comment {
   materialId: number;
   materialOwner: number;
   text: string;
+  html: SafeHtml;
   createDate: Date;
   attachment: CommentAttachment;
   uploadAttachment?: CommentUploadAttachment;
