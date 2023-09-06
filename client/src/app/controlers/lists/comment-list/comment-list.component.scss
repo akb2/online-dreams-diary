@@ -87,17 +87,17 @@ $attachmentCounts: (
     }
     // Имя
     &-name {
-      font-size: 15px;
-      line-height: 20px;
+      @include mixins.lineClamp(1, 20px, 15px);
+      // Свойства
       font-weight: 500;
       text-decoration: none;
       color: map.get(colors.$matPrimary, 500);
     }
     // Статус
     &-state {
+      @include mixins.lineClamp(2, 18px, 12px);
+      // Свойства
       display: block;
-      font-size: 12px;
-      line-height: 18px;
       font-weight: 300;
       color: colors.$text;
       // Дочерние элементы
