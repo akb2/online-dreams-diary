@@ -8,38 +8,44 @@
 // Текущие данные о токене
 .token {
   $counts: (
+    xxsmall: auto,
     xsmall: auto,
     small: 2,
     middle: 3,
     large: 4,
-    xlarge: 5,
+    xlarge: 5
   );
   $gaps-x: (
     default: 45px,
     middle: 30px,
     small: 20px,
     xsmall: 10px,
+    xxsmall: 10px
   );
   $gaps-y: (
     default: 30px,
     middle: 25px,
     small: 20px,
     xsmall: 15px,
+    xxsmall: 15px
   );
   $image-sizes: (
     default: 64px,
     small: 50px,
     xsmall: 40px,
+    xxsmall: 40px
   );
   $text-spacings: (
     default: 10px,
     small: 3px,
     xsmall: 0px,
+    xxsmall: 0px
   );
   $title-heights: (
     default: 18px,
     small: 17px,
     xsmall: 15px,
+    xxsmall: 15px
   );
   // Свойства
   display: flex;
@@ -49,7 +55,7 @@
   @include screens.adaptiveFor($gaps-x, $gaps-y) using($gap-x, $gap-y) {
     gap: #{$gap-y} #{$gap-x};
   }
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     flex-flow: column nowrap;
   }
   // Элемент
@@ -149,12 +155,12 @@
   $paddings: (
     default: 7px 12px,
     xlarge: 14px 20px,
-    large: 10px 15px,
+    large: 10px 15px
   );
   $font-sizes: (
     default: 12px,
     xlarge: 15px,
-    large: 14px,
+    large: 14px
   );
   // Свойства
   border-radius: containers.$cardBorderRadius;
@@ -420,14 +426,16 @@
 // Форма смены пароля
 .pass-form {
   $templates: (
+    xxsmall: 1fr,
     xsmall: 1fr,
     small: 1fr 1fr,
-    default: repeat(3, minmax(1px, 1fr)) auto,
+    default: repeat(3, minmax(1px, 1fr)) auto
   );
   $actionsAlignX: (
+    xxsmall: center,
     xsmall: center,
     small: flex-end,
-    default: flex-end,
+    default: flex-end
   );
   // Свойства
   display: grid;

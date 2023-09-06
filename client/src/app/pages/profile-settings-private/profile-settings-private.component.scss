@@ -13,17 +13,19 @@
     middle: "type type" "whiteList blackList",
     small: "type" "whiteList" "blackList",
     xsmall: "type" "whiteList" "blackList",
+    xxsmall: "type" "whiteList" "blackList"
   );
   $gridColumns: (
     xlarge: 1fr 2fr 2fr,
     large: 1fr 1fr 1fr,
     middle: 1fr 1fr,
-    default: 1fr,
+    default: 1fr
   );
   $containerSpacings: (
     default: 30px,
     small: 15px,
     xsmall: 15px,
+    xxsmall: 15px
   );
   // Свойства
   display: grid;
@@ -101,6 +103,7 @@
     middle: 2,
     small: 3,
     xsmall: 2,
+    xxsmall: 2
   );
   $iconSize: 40px;
   $textSpacing: math.div($iconSize, 8);

@@ -10,11 +10,12 @@ $counts: (
   middle: 2,
   small: 1,
   xsmall: 1,
+  xxsmall: 1
 );
 $heights-default: (
   full: 280px,
   short: 140px,
-  collapse: 24px,
+  collapse: 24px
 );
 $heights: (
   default: $heights-default,
@@ -22,27 +23,34 @@ $heights: (
     map.merge(
       $heights-default,
       (
-        full: 240px,
+        full: 240px
       )
     ),
   middle:
     map.merge(
       $heights-default,
       (
-        full: 240px,
+        full: 240px
       )
     ),
   xsmall:
     map.merge(
       $heights-default,
       (
-        full: 55vw,
+        full: 55vw
       )
     ),
+  xxsmall:
+    map.merge(
+      $heights-default,
+      (
+        full: 55vw
+      )
+    )
 );
 $gaps: (
   default: 30px,
-  xsmall: 15px,
+  xsmall: 15px
 );
 
 $positions-x: left center right;
@@ -241,41 +249,41 @@ $keys: full short collapse;
   $data-image-sizes: (
     default: (
       default: 48px,
-      collapse: 18px,
-    ),
+      collapse: 18px
+    )
   );
   $data-button-sizes: (
     default: (
       default: 34px,
-      collapse: map.get($heights, default, collapse),
-    ),
+      collapse: map.get($heights, default, collapse)
+    )
   );
   $data-gaps-y: (
     default: (
       default: 4px,
-      collapse: 2px,
-    ),
+      collapse: 2px
+    )
   );
   $data-paddings-y: (
     default: (
       default: 6px,
-      collapse: 1px,
-    ),
+      collapse: 1px
+    )
   );
   $data-paddings-x: (
-    default: 30px,
+    default: 30px
   );
   $data-menu-sizes: (
     default: (
       default: 9px,
-      collapse: 5px,
-    ),
+      collapse: 5px
+    )
   );
   $data-menu-spacings: (
     default: (
       default: 4px,
-      collapse: 3px,
-    ),
+      collapse: 3px
+    )
   );
   // Свойства
   position: relative;

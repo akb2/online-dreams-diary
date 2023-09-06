@@ -16,7 +16,8 @@
   $footerSizes: (
     default: 0,
     small: vars.$headerHeight,
-    xsmall: vars.$headerHeight
+    xsmall: vars.$headerHeight,
+    xxsmall: vars.$headerHeight
   );
   // Карта
   &__map {

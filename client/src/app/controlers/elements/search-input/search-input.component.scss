@@ -34,7 +34,7 @@ $mobileBorderRadius: math.div($mobileHeight, 2);
   line-height: $lineHeight;
   font-size: $fontSize;
   // Мобильный вид
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     height: $mobileHeight;
     line-height: $mobileLineHeight;
     font-size: $mobileFontSize;
@@ -51,7 +51,7 @@ $mobileBorderRadius: math.div($mobileHeight, 2);
   border-right-width: 0;
   background-color: colors.$card;
   // Мобильный вид
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     padding: #{$mobilePaddingY} 18px;
     border-radius: #{$mobileBorderRadius} 0 0 #{$mobileBorderRadius};
   }
@@ -85,7 +85,7 @@ $mobileBorderRadius: math.div($mobileHeight, 2);
     cursor: pointer;
     border-radius: 50%;
     // Мобильный вид
-    @include screens.adaptive(xsmall, xsmall) {
+    @include screens.adaptive(xxsmall, xsmall) {
       $size: math.min(36px, $mobileHeight - 2px);
       // Свойства
       width: $size;
@@ -95,7 +95,7 @@ $mobileBorderRadius: math.div($mobileHeight, 2);
     }
   }
   // Мобильный вид
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     width: $mobileHeight;
   }
 }
@@ -110,7 +110,7 @@ $mobileBorderRadius: math.div($mobileHeight, 2);
   padding: #{$paddingY} 48px;
   cursor: pointer;
   // Мобильный вид
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     padding: #{$mobilePaddingY} 15px #{$mobilePaddingY} 10px;
     border-radius: 0 #{$mobileBorderRadius} #{$mobileBorderRadius} 0;
   }

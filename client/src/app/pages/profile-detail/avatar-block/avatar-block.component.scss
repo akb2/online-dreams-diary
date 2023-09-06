@@ -54,7 +54,9 @@
       // Иконка
       > mat-icon {
         cursor: pointer;
-        transition: background-color #{screens.$animationTime}, color #{screens.$animationTime};
+        transition:
+          background-color #{screens.$animationTime},
+          color #{screens.$animationTime};
 
         // Выделение
         &:hover {
@@ -99,7 +101,7 @@
     }
   }
   // Для мобильного телефона
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     // Для аватарки
     &:not(.no-avatar) {
       padding-top: containers.$paddingX;

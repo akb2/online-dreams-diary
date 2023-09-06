@@ -5,26 +5,30 @@
 @use "mixins";
 
 $properties: (
+  xxsmall: (
+    count: 1,
+    gap: map.get(containers.$paddingsY, xxsmall)
+  ),
   xsmall: (
     count: 1,
-    gap: map.get(containers.$paddingsY, xsmall),
+    gap: map.get(containers.$paddingsY, xsmall)
   ),
   small: (
     count: 1,
-    gap: map.get(containers.$paddingsY, small),
+    gap: map.get(containers.$paddingsY, small)
   ),
   middle: (
     count: 2,
-    gap: map.get(containers.$paddingsY, middle),
+    gap: map.get(containers.$paddingsY, middle)
   ),
   large: (
     count: 3,
-    gap: 30px,
+    gap: 30px
   ),
   xlarge: (
     count: 4,
-    gap: 30px,
-  ),
+    gap: 30px
+  )
 );
 
 // Контейнер
@@ -73,7 +77,7 @@ $properties: (
       justify-content: space-between;
     }
     // Адаптив кнопок
-    @include screens.adaptive(xsmall, small) {
+    @include screens.adaptive(xxsmall, small) {
       justify-content: center;
     }
   }

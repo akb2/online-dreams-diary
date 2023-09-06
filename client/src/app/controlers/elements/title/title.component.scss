@@ -11,12 +11,14 @@ $fontSizes: (
   middle: 24px,
   small: 22px,
   xsmall: 20px,
+  xxsmall: 20px
 );
 
 $breaksActions: (
   default: false,
   small: true,
   xsmall: true,
+  xxsmall: true
 );
 
 $spacings: containers.$paddingsY;
@@ -90,7 +92,7 @@ $gapKoof: 0.5;
       }
 
       // Адаптив
-      @include screens.adaptive(xsmall, small) {
+      @include screens.adaptive(xxsmall, small) {
         &:not(.one-line) {
           // Панель
           &.actions {
@@ -162,7 +164,7 @@ $gapKoof: 0.5;
       gap: 5px;
 
       // Адаптив
-      @include screens.adaptive(xsmall, small) {
+      @include screens.adaptive(xxsmall, small) {
         justify-content: space-between;
         margin-top: 5px;
       }

@@ -3,11 +3,12 @@
 @use "./colors";
 
 $breakpoints: (
+  xxsmall: 400,
   xsmall: 600,
   small: 900,
   middle: 1200,
   large: 1800,
-  xlarge: 100000,
+  xlarge: 100000
 );
 
 $animationTime: 0.3s;

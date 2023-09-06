@@ -108,10 +108,10 @@ $tabsHeight: 49px;
   // Адаптив
   @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
     height: calc(100vh - #{($paddingY * 2) + $headerHeight + $tabsHeight + $ckPanelHeight});
-    // Для телефонов
-    @include screens.adaptive(xsmall, small) {
-      height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
-    }
+  }
+  // Для телефонов
+  @include screens.adaptive(xxsmall, small) {
+    height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
   }
 }
 
@@ -131,7 +131,8 @@ $tabsHeight: 49px;
     large: 2,
     middle: 2,
     small: 1,
-    xsmall: 1
+    xsmall: 1,
+    xxsmall: 1
   );
   // Свойства
   display: grid;
@@ -152,7 +153,7 @@ $tabsHeight: 49px;
   &.tabs {
     min-height: calc(100vh - #{$headerHeight + $tabsHeight});
     // Для телефонов
-    @include screens.adaptive(xsmall, small) {
+    @include screens.adaptive(xxsmall, small) {
       min-height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
     }
   }
@@ -162,7 +163,7 @@ $tabsHeight: 49px;
 .all-height {
   height: calc(100vh - #{$headerHeight + $tabsHeight});
   // Для телефонов
-  @include screens.adaptive(xsmall, small) {
+  @include screens.adaptive(xxsmall, small) {
     height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
   }
 }

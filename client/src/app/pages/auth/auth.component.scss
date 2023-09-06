@@ -18,11 +18,12 @@
 // Контейнер
 .container {
   $counts: (
+    xxsmall: 1,
     xsmall: 1,
     small: 1.5,
     middle: 2,
     large: 3,
-    xlarge: 4,
+    xlarge: 4
   );
 
   display: flex;

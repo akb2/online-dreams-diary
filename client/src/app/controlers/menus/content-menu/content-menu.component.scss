@@ -16,11 +16,12 @@
   &__item {
     $elm: &;
     $counts: (
+      xxsmall: 1,
       xsmall: 1,
       small: 1,
       middle: 2,
       large: 2,
-      xlarge: 3,
+      xlarge: 3
     );
     $padding-x: 15px;
     $padding-y: 15px;

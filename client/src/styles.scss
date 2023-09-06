@@ -13,8 +13,8 @@ $mat-theme: mat.define-light-theme(
     color: (
       primary: mat.define-palette(colors.$matPrimary),
       accent: mat.define-palette(colors.$matSecondary, A200, A100, A400),
-      warn: mat.define-palette(colors.$matStatusWarn),
-    ),
+      warn: mat.define-palette(colors.$matStatusWarn)
+    )
   )
 );
 @include mat.all-component-themes($mat-theme);
@@ -183,7 +183,7 @@ html {
       justify-content: center;
     }
     // Для телефона
-    @include screens.adaptive(xsmall, small) {
+    @include screens.adaptive(xxsmall, small) {
       min-height: calc(100vh - #{vars.$headerHeight + vars.$mobileMenuBottomHeight});
     }
   }
@@ -242,7 +242,7 @@ pre {
   // Свойства
   margin: $spacing;
   // Для телефонов
-  @include screens.adaptive(xsmall, small) {
+  @include screens.adaptive(xxsmall, small) {
     margin-bottom: $spacing + vars.$mobileMenuBottomHeight;
   }
 }

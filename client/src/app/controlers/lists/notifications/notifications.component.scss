@@ -21,13 +21,16 @@ $spacing: 10px;
   opacity: 0;
   visibility: hidden;
   margin-top: 200px;
-  transition: opacity #{screens.$animationTime}, visibility #{screens.$animationTime}, margin-top #{screens.$animationTime};
+  transition:
+    opacity #{screens.$animationTime},
+    visibility #{screens.$animationTime},
+    margin-top #{screens.$animationTime};
   // Позиция справа
   @include screens.adaptiveFor(containers.$widths) using ($width) {
     right: calc(50vw - #{math.div($width, 2) - containers.$paddingX});
   }
   // Позиция справа для телефонов
-  @include screens.adaptive(xsmall, xsmall) {
+  @include screens.adaptive(xxsmall, xsmall) {
     right: 0 !important;
     left: 0;
     bottom: 0;
@@ -113,7 +116,7 @@ $spacing: 10px;
       primary: colors.$matPrimary 50,
       accent: colors.$matSecondary 50,
       warn: colors.$matStatusWarn 50,
-      disabled: colors.$matDisabled 50,
+      disabled: colors.$matDisabled 50
     );
     // Свойства
     @each $color, $value in $colors {
