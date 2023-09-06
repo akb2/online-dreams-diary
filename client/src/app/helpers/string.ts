@@ -1,5 +1,5 @@
 import { CreateArray } from "@_datas/app";
-import { Random } from "./math";
+import { ParseInt, Random } from "./math";
 
 
 
@@ -26,6 +26,9 @@ export const CapitalizeFirstLetter = (mixedText: string) => {
 // Регулярное выражение для поиска URL в тексте
 export const SearchUrlRegExp: RegExp = /(https?:\/\/[^\s<>\[\],!]+(?<![.,!?]))/gi;
 
+// Регулярное выражение для проверки ссылки, что она является ссылкой на сон
+export const SearchDreamUrlRegExp: RegExp = new RegExp("^https?:\/\/" + window.location.hostname + "(:[0-9]{1,5})?\/diary\/viewer\/([0-9]+)(.*)?$", "i");
+
 // Получить список всех ссылок
 export const GetLinksFromString = (text: string) => {
   const urlRegex: RegExp = SearchUrlRegExp;
@@ -42,3 +45,9 @@ export const GetLinksFromString = (text: string) => {
   // Вернуть результат
   return result;
 };
+
+// Ссылка я вляется ссылкой на дневник сновидений
+export const IsDreamUrl = (url: string) => SearchDreamUrlRegExp.test(url);
+
+// Ид сновидения по ссылке
+export const GetDreamIdByUrl = (url: string) => ParseInt(url.replace(SearchDreamUrlRegExp, "$2"));
