@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 @use "containers";
 @use "colors";
 @use "vars";
@@ -10,10 +11,41 @@
   $__elm: &;
   $__marginElms: (#{&}, "#{&}__more-loader.loading");
   // Свойства
-  background-color: colors.$card;
-  padding: #{containers.$cardPaddingY} #{containers.$cardPaddingX};
-  box-shadow: containers.$cardBoxShadow;
-  border-radius: containers.$cardBorderRadius;
+  display: flex;
+  // Данные
+  &__data {
+    flex-grow: 1;
+  }
+  // Аватарка
+  &__avatar {
+    @include mixins.customsColors(containers.$avatarSize);
+    // Свойства
+    display: block;
+    position: relative;
+    flex-basis: containers.$avatarSize;
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    // Иконка
+    > mat-icon {
+      width: containers.$avatarSize;
+      height: containers.$avatarSize;
+      line-height: containers.$avatarSize;
+      font-size: containers.$avatarSize * 0.7;
+      display: block;
+      text-align: center;
+      color: inherit;
+      border-radius: 50%;
+    }
+    // Метка онлайн
+    &-online {
+      @include mixins.onlineBlinkPoint(6px, 4px);
+    }
+  }
   // Шапка
   &__header {
     display: flex;
@@ -21,35 +53,7 @@
     align-items: center;
     flex-flow: row nowrap;
     column-gap: containers.$cardPaddingY;
-    // Аватарка
-    &-avatar {
-      @include mixins.customsColors(containers.$avatarSize);
-      // Свойства
-      display: block;
-      position: relative;
-      // Картинка
-      > img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-      }
-      // Иконка
-      > mat-icon {
-        width: containers.$avatarSize;
-        height: containers.$avatarSize;
-        line-height: containers.$avatarSize;
-        font-size: containers.$avatarSize * 0.7;
-        display: block;
-        text-align: center;
-        color: inherit;
-        border-radius: 50%;
-      }
-      // Метка онлайн
-      &-online {
-        @include mixins.onlineBlinkPoint(6px, 4px);
-      }
-    }
+    min-height: containers.$avatarSize;
     // Текст
     &-text {
       flex-grow: 1;
@@ -80,6 +84,82 @@
         color: inherit;
       }
     }
+    // Действия
+    &-actions {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+  // Тело
+  &__body {
+    $__elm: &;
+    // Свойства
+    background-color: colors.$card;
+    padding: containers.$cardPaddingY;
+    padding-bottom: 0;
+    box-shadow: containers.$cardBoxShadow;
+    border-radius: containers.$cardBorderRadius;
+    margin-top: containers.$cardPaddingY;
+    text-align: left;
+    width: 100%;
+    display: block;
+    // Текст комментария
+    &-text {
+      margin-top: 0;
+      margin-bottom: 0;
+      text-indent: 0;
+      display: block;
+      padding-bottom: containers.$cardPaddingY;
+    }
+    // Прикрепленные данные
+    &-attachment {
+      $borderRadius: 6px;
+      $attachCount: 4;
+      $targetSize: calc((100% - #{containers.$cardPaddingY * ($attachCount - 1)}) / #{$attachCount});
+      // Свойства
+      display: block;
+      float: right;
+      width: $targetSize;
+      padding-bottom: $targetSize;
+      background-color: colors.$background;
+      border-radius: $borderRadius;
+      position: relative;
+      margin-left: containers.$cardPaddingY;
+      margin-bottom: containers.$cardPaddingY;
+      // Данные
+      &-data {
+        @include mixins.inset;
+        // Свойства
+        position: absolute;
+        // Граффити
+        > .image {
+          margin: $borderRadius;
+          width: calc(100% - #{$borderRadius * 2});
+          height: calc(100% - #{$borderRadius * 2});
+          object-fit: cover;
+          border-radius: math.div($borderRadius, 2);
+        }
+      }
+    }
+    // Сбросить плавание
+    &::after {
+      content: "";
+      display: block;
+      width: 100%;
+      clear: both;
+    }
+    // Количество вложений
+    &[attachments-count="4"] {
+      // Потомки
+      & #{$__elm} {
+        // Прикрепленные данные
+        &-attachment:nth-of-type(4n) {
+          margin-left: 0;
+        }
+      }
+    }
   }
   // Текст
   &__text {
@@ -100,58 +180,13 @@
       margin-top: containers.$cardPaddingY;
     }
   }
-  // Прикрепленные данные
-  &__attachment {
-    $__elmAttachment: &;
-    $graffitySize: 452px;
-    // Отступ после текста
-    margin-top: containers.$cardPaddingY;
-    // Граффити
-    &-graffity {
-      display: block;
-      overflow: hidden;
-      background-color: colors.$background;
-      // Картинка
-      > img {
-        object-fit: contain;
-        display: block;
-        max-width: 100%;
-      }
-    }
-    // ? Вариаты
-    // Есть графити
-    &.graffity {
-      $padding: vars.$commentAttachmentPaddings;
-      // Свойства
-      display: flex;
-      flex-flow: row nowrap;
-      justify-content: center;
-      // Граффити
-      #{$__elmAttachment}-graffity {
-        width: $graffitySize + ($padding * 2);
-        max-width: 100%;
-        border-radius: 6px;
-        padding: $padding;
-        // Картинка
-        > img {
-          border-radius: 3px;
-        }
-      }
-    }
-  }
-  // Действия
-  &__actions {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-  }
   // Смещения для блоков определения загрузки
   &__more-loader {
     position: relative;
   }
   // Адаптив
   @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    gap: 0 #{$gap};
     // Последующие блоки
     @each $elmA in $__marginElms {
       @each $elmB in $__marginElms {

@@ -1,9 +1,10 @@
-import { DreamListModule } from "@_controlers/dream-list/dream-list.module";
 import { InformModule } from "@_controlers/inform/inform.module";
 import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
 import { CommentListComponent } from "./comment-list.component";
 
@@ -24,7 +25,8 @@ import { CommentListComponent } from "./comment-list.component";
     RouterModule,
     MatIconModule,
     CoreModule,
-    DreamListModule
+    MatTooltipModule,
+    MatButtonModule
   ]
 })
 

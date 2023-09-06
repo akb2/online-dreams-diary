@@ -10,63 +10,81 @@
          class="comment"
          [attr.comment-id]="comment.id"
          *ngFor="let comment of comments; trackBy: listTrackBy">
-      <div class="comment__header">
-        <!-- Аватарка -->
-        <a class="comment__header-avatar"
-           routerLink="/profile/{{comment.user.id}}"
-           background="fill"
-           color="primary">
-          <!-- Картинка -->
-          <img [src]="comment.user.avatars.small"
-               *ngIf="comment.user.avatars.small.length > 0" />
-          <!-- Иконка -->
-          <mat-icon *ngIf="comment.user.avatars.small.length === 0">person</mat-icon>
-          <!-- Метка онлайн -->
-          <div class="comment__header-avatar-online"
-               *ngIf="comment.user.online"></div>
-        </a>
-        <!-- Имя -->
-        <div class="comment__header-text">
-          <a class="comment__header-name"
-             routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
-          <!-- Дата -->
-          <div class="comment__header-state">
-            <time [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
-            <!-- Ответ пользователю -->
-            <ng-container *ngIf="!!comment.replyToUser && comment.user.id !== comment.replyToUser.id">
-              - Ответ
-              <a routerLink="/profile/{{comment.replyToUser.id}}">
-                {{comment.replyToUser | petrovich: [3, 'first'] }} {{comment.replyToUser | petrovich: [3, 'last'] }}
-              </a>
-            </ng-container>
+      <!-- Аватарка -->
+      <a class="comment__avatar"
+         routerLink="/profile/{{comment.user.id}}"
+         background="fill"
+         color="primary">
+        <!-- Картинка -->
+        <img [src]="comment.user.avatars.small"
+             *ngIf="comment.user.avatars.small.length > 0" />
+        <!-- Иконка -->
+        <mat-icon *ngIf="comment.user.avatars.small.length === 0">person</mat-icon>
+        <!-- Метка онлайн -->
+        <div class="comment__header-avatar-online"
+             *ngIf="comment.user.online"></div>
+      </a>
+      <!-- Коммантарий -->
+      <div class="comment__data">
+        <!-- Описание -->
+        <div class="comment__header">
+          <!-- Имя -->
+          <div class="comment__header-text">
+            <a class="comment__header-name"
+               routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
+            <!-- Дата -->
+            <div class="comment__header-state">
+              <time [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
+              <!-- Ответ пользователю -->
+              <ng-container *ngIf="!!comment.replyToUser && comment.user.id !== comment.replyToUser.id">
+                - Ответ
+                <a routerLink="/profile/{{comment.replyToUser.id}}">
+                  {{comment.replyToUser | petrovich: [3, 'first'] }} {{comment.replyToUser | petrovich: [3, 'last'] }}
+                </a>
+              </ng-container>
+            </div>
+          </div>
+          <!-- Действия -->
+          <div class="comment____header-actions">
+            <!-- Ответить -->
+            <button mat-icon-button
+                    color="primary"
+                    matTooltip="Ответить"
+                    (click)="onReply(comment.user)"
+                    *ngIf="isReplyAvail(comment)">
+              <mat-icon>reply</mat-icon>
+            </button>
+            <!-- Удалить -->
+            <button mat-icon-button
+                    color="warn"
+                    matTooltip="Удалить"
+                    *ngIf="isDeleteAvail(comment)">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
         </div>
-      </div>
-      <!-- Текст комментариев -->
-      <div class="comment__text"
-           [innerHTML]="comment.text | comment"
-           *ngIf="!!comment?.text"></div>
-      <!-- Прикрепления -->
-      <ng-container *ngVar="comment?.attachment?.graffity as graffity">
-        <ng-container *ngVar="comment?.attachment?.dreams as dreams">
-          <!-- Граффити -->
-          <div class="comment__attachment graffity"
-               *ngIf="!!graffity">
-            <ng-container [ngTemplateOutlet]="graffityAttachment"
-                          [ngTemplateOutletContext]="{ graffity }"></ng-container>
-          </div>
-          <!-- Сновидения -->
-          <ng-container [ngTemplateOutlet]="dreamAttachment"
-                        [ngTemplateOutletContext]="{ dreams }"
-                        *ngIf="!!dreams?.length"></ng-container>
-        </ng-container>
-      </ng-container>
-      <!-- Действия -->
-      <div class="comment__actions">
-        <!-- Ответить -->
-        <button class="link"
-                (click)="onReply(comment.user)"
-                *ngIf="isReplyAvail(comment)">Ответить</button>
+        <!-- Содержимое -->
+        <div class="comment__body"
+             [attr.attachments-count]="attachmentCount"
+             *ngVar="getAttachmentCount(comment) as attachmentCount">
+          <!-- Прикрепления -->
+          <ng-container *ngIf="attachmentCount > 0">
+            <!-- Граффити -->
+            <ng-container *ngVar="comment?.attachment?.graffity as graffity">
+              <ng-container [ngTemplateOutlet]="imageAttachment"
+                            [ngTemplateOutletContext]="{ $implicit: { src: graffity?.url } }"></ng-container>
+            </ng-container>
+            <!-- Сновидение -->
+            <ng-container *ngVar="comment?.attachment?.dreams as dreams">
+              <ng-container [ngTemplateOutlet]="dreamAttachment"
+                            [ngTemplateOutletContext]="{ dreams }"></ng-container>
+            </ng-container>
+          </ng-container>
+          <!-- Текст комментария -->
+          <p class="comment__body-text"
+             [innerHTML]="comment.text | comment"
+             *ngIf="!!comment?.text"></p>
+        </div>
       </div>
     </div>
     <!-- Загрузчик предыдущих комментариев -->
@@ -115,24 +133,26 @@
 
 
 <!-- Граффити в закреплении -->
-<ng-template #graffityAttachment
-             let-graffity="graffity">
-  <div class="comment__attachment-graffity"
-       *ngIf="!!graffity">
-    <img [src]="graffity.url" />
+<ng-template #imageAttachment
+             let-image>
+  <div class="comment__body-attachment"
+       *ngIf="!!image?.src">
+    <div class="comment__body-attachment-data">
+      <img class="image"
+           [src]="image.src" />
+    </div>
   </div>
 </ng-template>
 
 <!-- Сновидение в закреплении -->
 <ng-template #dreamAttachment
              let-dreams="dreams">
-  <div class="comment__attachment dreams"
-       *ngIf="!!dreams?.length">
-    <app-dream-list [dreams]="dreams"
-                    sourcePlace="profile"
-                    [oneLine]="false"
-                    [elmsPerLine]="3"
-                    [showProfile]="false"
-                    [inAttachment]="true"></app-dream-list>
-  </div>
+  <ng-container *ngIf="!!dreams?.length">
+    <div class="comment__body-attachment"
+         *ngFor="let dream of dreams">
+      <div class="comment__body-attachment-data">
+        <div class="dream"></div>
+      </div>
+    </div>
+  </ng-container>
 </ng-template>

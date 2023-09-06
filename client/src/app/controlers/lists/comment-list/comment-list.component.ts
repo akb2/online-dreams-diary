@@ -83,9 +83,32 @@ export class CommentListComponent implements OnInit, OnDestroy {
     return this.writeAccess && !!this.user?.id && !!comment?.user?.id && this.user.id !== comment.user.id;
   }
 
+  // Доступность удаления
+  isDeleteAvail(comment: Comment): boolean {
+    return !!this.user && comment?.user?.id === this.user?.id;
+  }
+
   // Получить элемент комментария
   private getCommentElm(commentId: number): HTMLElement {
     return this.commentElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
+  }
+
+  // Количество закреплений
+  getAttachmentCount(comment: Comment): number {
+    let count: number = 0;
+    // Есть закрепления
+    if (!!comment?.attachment) {
+      // Граффити
+      if (!!comment.attachment?.graffity) {
+        count++;
+      }
+      // Сновидения
+      if (!!comment.attachment?.dreams) {
+        count += comment.attachment.dreams.length;
+      }
+    }
+    // Вернуть количество комментариев
+    return count;
   }
 
 
