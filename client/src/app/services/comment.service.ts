@@ -2,12 +2,15 @@ import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_dat
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
-import { GetLinksFromString } from "@_helpers/string";
+import { GetDreamIdByUrl, GetLinksFromString, IsDreamUrl } from "@_helpers/string";
+import { TextMessage } from "@_helpers/text-massage";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
+import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
@@ -22,7 +25,7 @@ import { MediaService } from "./media.service";
   providedIn: "root"
 })
 
-export class CommentService implements OnDestroy {
+export class CommentService extends TextMessage implements OnDestroy {
 
 
   private destroyed$: Subject<void> = new Subject();
@@ -56,11 +59,9 @@ export class CommentService implements OnDestroy {
       concatMap(
         data => {
           const text: string = (data?.comment?.text ?? "").replace(new RegExp("\\[br\\]", "ig"), " <br> ");
-          const domain: string = window.location.hostname;
-          const regExp: RegExp = new RegExp("^https?:\/\/" + domain + "(:[0-9]{1,5})?\/diary\/viewer\/([0-9]+)(.*)?$", "i");
           const dreamIds: number[] = UniqueArray(GetLinksFromString(text)
-            .filter(url => regExp.test(url))
-            .map(url => ParseInt(url.replace(regExp, "$2")))
+            .filter(url => IsDreamUrl(url))
+            .map(url => GetDreamIdByUrl(url))
             .filter(id => id > 0)
           );
           // Вернуть подписчик
@@ -80,6 +81,7 @@ export class CommentService implements OnDestroy {
         materialId: ParseInt(comment?.materialId),
         materialOwner: ParseInt(comment?.materialOwner),
         text: comment?.text ?? "",
+        html: this.textTransform(comment?.text ?? ""),
         createDate: ToDate(comment?.createDate),
         attachment: { graffity, dreams }
       }))
@@ -95,8 +97,12 @@ export class CommentService implements OnDestroy {
     private apiService: ApiService,
     private accountService: AccountService,
     private mediaService: MediaService,
-    private dreamService: DreamService
-  ) { }
+    private dreamService: DreamService,
+    emojiService: EmojiService,
+    domSanitizer: DomSanitizer
+  ) {
+    super(emojiService, domSanitizer);
+  }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
