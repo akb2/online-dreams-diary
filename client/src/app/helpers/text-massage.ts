@@ -1,6 +1,5 @@
 import { ParseInt } from "@_helpers/math";
-import { SearchUrlRegExp } from "@_helpers/string";
-import { Pipe, PipeTransform } from "@angular/core";
+import { IsDreamUrl, SearchUrlRegExp } from "@_helpers/string";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiData, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 
@@ -8,9 +7,7 @@ import { EmojiData, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 
 
 
-@Pipe({ name: "comment" })
-
-export class CommentPipe implements PipeTransform {
+export class TextMessage {
 
   private smileSize: number = 24;
 
@@ -44,7 +41,10 @@ export class CommentPipe implements PipeTransform {
       const matchedUrl = match[0];
       // Проверяем, находится ли URL внутри HTML- или BB-тега
       if (!this.isInsideTag(text, match.index)) {
-        result += text.substring(lastIndex, match.index) + "<a href='" + matchedUrl + "' target='_blank'>" + matchedUrl + "</a>";
+        result += text.substring(lastIndex, match.index) + (!IsDreamUrl(matchedUrl) ?
+          "<a href='" + matchedUrl + "' target='_blank'>" + matchedUrl + "</a>" :
+          ""
+        );
         // Обновляем индекс последнего обработанного символа
         lastIndex = match.index + matchedUrl.length;
       }
@@ -74,7 +74,7 @@ export class CommentPipe implements PipeTransform {
 
 
   // Трансформация
-  transform(text: string): SafeHtml {
+  textTransform(text: string): SafeHtml {
     const emojiRegExp: RegExp = new RegExp("\\[emoji=([a-z0-9\-_\+]+)(:([0-9]+))?(:([a-z]+))?\\]", "ig");
     const emojies: string[] = text.match(emojiRegExp) ?? [];
     // Замена смайликов
@@ -92,6 +92,11 @@ export class CommentPipe implements PipeTransform {
     text = text.replace(new RegExp("\\[br\\]", "ig"), " <br> ");
     // Поиск прочих данных
     text = this.getLinks(text);
+    // Убрать лишние пробелы
+    text = text.replace(/([\s\t]+)/gi, " ");
+    text = text.replace(/([\n\r]+)/gi, "\n");
+    text = text.replace(/^([\s\n\r\t]+)$/gi, "");
+    text = text.replace(/^([(<br>)\s\n\r\t]+)$/gi, "");
     // Вернуть изначальный текст
     return this.domSanitizer.bypassSecurityTrustHtml(text);
   }
