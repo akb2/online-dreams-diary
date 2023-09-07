@@ -37,9 +37,10 @@
                                   *ngIf="!!highlightWords?.length"></app-highlight-keywords>
         </div>
         <!-- Когда приснился -->
-        <div class="dream__text-subtitle"
-             routerLink="/diary/viewer/{{dream.id}}"
-             [queryParams]="viewerQueryParams(dream)">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</div>
+        <time class="dream__text-subtitle"
+              routerLink="/diary/viewer/{{dream.id}}"
+              [queryParams]="viewerQueryParams(dream)"
+              [attr.datetime]="(dream.date || today).toISOString()">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</time>
         <!-- Меню -->
         <app-card-menu class="dream__text-menu"
                        menuIcon="more_vert"
