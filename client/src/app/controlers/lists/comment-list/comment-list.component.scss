@@ -273,7 +273,7 @@ $attachmentCounts: (
         &[attachments-per-line="#{$maxCountPerLine}"] {
           @for $count from 1 through $countPerLine {
             &.no-text[attachments-count="#{$count}"] {
-              width: math.div(100%, $countPerLine) * $count;
+              width: calc((((100% - #{($spacing * ($countPerLine + 1))}) / #{$countPerLine}) * #{$count}) + #{$spacing * ($count + 1)});
             }
           }
         }
