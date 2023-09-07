@@ -16,6 +16,7 @@ class MailService
     // Конфигурирование
     $this->headers = array(
       'From' => "Online Dreams Diary <" . $this->config['mail']['sender'] . ">",
+      'Evelope-From' => "Online Dreams Diary <" . $this->config['mail']['sender'] . ">",
       'Return-Path' => $this->config['mail']['sender'],
       'Content-type' => 'text/html; charset=utf-8',
       'X-Mailer' => 'PHP/' . phpversion()
