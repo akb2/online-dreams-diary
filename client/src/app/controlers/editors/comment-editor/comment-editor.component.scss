@@ -41,8 +41,14 @@ $adaptiveMax: large;
     }
   }
   // Принудительный перенос
-  &.wrap-controls {
+  :host.wrap-controls & {
     grid-template-columns: 1fr;
+    grid-template-areas: "editor" "actions" "attachments";
+    // С ответом
+    &.with-reply {
+      grid-template-columns: 1fr;
+      grid-template-areas: "reply editor actions attachments";
+    }
   }
 }
 
