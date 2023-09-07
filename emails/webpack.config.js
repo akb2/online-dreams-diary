@@ -43,10 +43,10 @@ module.exports = (env, option) => {
   // Поиск страниц PUG
   {
     const pages = glob.sync(path.join(__dirname, config.folders.input.pages + "\\**\\*.pug"));
+    log.info(pages);
 
     pages.forEach(function (file) {
       file = path.resolve(file);
-      log.info(file);
       let base = path.relative(path.join(__dirname, config.folders.input.pages), file);
       base = base.replace(/\.pug$/, "");
       const filename = path.join(config.folders.output.pages, base + "." + (production ? config.pages.ext : "html"));
@@ -73,7 +73,6 @@ module.exports = (env, option) => {
         pluginsAfterOptions.push({
           apply: () => {
             const outFile = path.resolve(path.join(__dirname, config.folders.output.base, filename));
-            log.info(outFile);
             const outDir = path.dirname(outFile);
             // Очистить / создать файлы
             fs.mkdirSync(outDir, { recursive: true });
