@@ -108,10 +108,10 @@ $tabsHeight: 49px;
   // Адаптив
   @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
     height: calc(100vh - #{($paddingY * 2) + $headerHeight + $tabsHeight + $ckPanelHeight});
-  }
-  // Для телефонов
-  @include screens.adaptive(xxsmall, small) {
-    height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
+    // Для телефонов
+    @include screens.adaptive(xxsmall, small) {
+      height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
+    }
   }
 }
 
