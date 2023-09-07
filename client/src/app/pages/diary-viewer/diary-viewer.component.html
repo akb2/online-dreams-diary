@@ -119,6 +119,7 @@
         </div>
         <!-- Список комментариев -->
         <app-comment-list #commentListElm
+                          [attachmentPerLine]="2"
                           [materialType]="commentMaterialType"
                           [materialId]="dream.id"
                           [writeAccess]="writeAccess"
