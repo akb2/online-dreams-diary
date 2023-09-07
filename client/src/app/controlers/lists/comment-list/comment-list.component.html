@@ -145,6 +145,7 @@
     <div class="comment__body-attachment-data">
       <img class="graffity"
            [src]="graffity.url" />
+      <!-- Эффект наведения -->
       <div class="comment__body-attachment-overlay">
         <mat-icon svgIcon="paint_spray"></mat-icon>
         <title>Увеличить граффити</title>
@@ -157,8 +158,9 @@
 <ng-template #dreamAttachment
              let-dreams="dreams">
   <ng-container *ngIf="!!dreams?.length">
-    <div class="comment__body-attachment"
-         *ngFor="let dream of dreams">
+    <a class="comment__body-attachment"
+       routerLink="/diary/viewer/{{dream.id}}"
+       *ngFor="let dream of dreams">
       <div class="comment__body-attachment-data">
         <div class="dream">
           <div class="dream__image"
@@ -168,12 +170,70 @@
                *ngIf="isHasImage(dream)">
             <img [src]="imagePrefix + dream.headerBackground.imageNameShort" />
           </div>
+          <!-- Заголовок -->
+          <div class="dream__header">
+            <mat-icon class="dream__header-icon">nights_stay</mat-icon>
+            <title class="dream__header-title">{{dream.title ?? defaultDreamTitle}}</title>
+            <time class="dream__header-date"
+                  [attr.datetime]="(dream.date || today).toISOString()">{{(dream.date || today) | date: 'dd MMMM YYYY'}}</time>
+          </div>
+          <!-- Отметки -->
+          <div class="dream__icons">
+            <!-- Автор сновидения -->
+            <a class="dream__icons-icon"
+               routerLink="/profile/{{dream.user.id}}"
+               background="fill"
+               color="primary">
+              <!-- Картинка -->
+              <img [src]="dream.user.avatars.small"
+                   *ngIf="dream.user.avatars.small.length > 0" />
+              <!-- Иконка -->
+              <mat-icon *ngIf="dream.user.avatars.small.length === 0">person</mat-icon>
+              <!-- Метка онлайн -->
+              <div class="dream__icons-icon-online"
+                   *ngIf="dream.user.online"></div>
+            </a>
+            <!-- Уровень доступности -->
+            <div class="dream__icons-icon"
+                 [attr.color]="status.iconColor"
+                 [attr.background]="status.iconBackground"
+                 [attr.position]="status.imagePosition"
+                 *ngIf="getDreamPrivate(dream) as status">
+              <mat-icon>{{status.icon}}</mat-icon>
+            </div>
+            <!-- Тип сновидения -->
+            <div class="dream__icons-icon"
+                 [ngClass]="{ colorized: item.iconBackground === 'fill' }"
+                 [attr.color]="item.iconColor"
+                 [attr.background]="item.iconBackground"
+                 [attr.position]="item.imagePosition"
+                 *ngIf="getDreamType(dream) as item">
+              <img [src]="item.image" />
+            </div>
+            <!-- Настроение сновидения -->
+            <div class="dream__icons-icon"
+                 [ngClass]="{ colorized: item.iconBackground === 'fill' }"
+                 [attr.color]="item.iconColor"
+                 [attr.background]="item.iconBackground"
+                 [attr.position]="item.imagePosition"
+                 *ngIf="getDreamMood(dream) as item">
+              <img [src]="item.image" />
+            </div>
+            <!-- Карта сновидения -->
+            <div class="dream__icons-icon"
+                 color="warn"
+                 background="fill"
+                 *ngIf="dreamHasMap(dream)">
+              <mat-icon>explore</mat-icon>
+            </div>
+          </div>
         </div>
+        <!-- Эффект наведения -->
         <div class="comment__body-attachment-overlay">
           <mat-icon>nights_stay</mat-icon>
           <title>Читать сон</title>
         </div>
       </div>
-    </div>
+    </a>
   </ng-container>
 </ng-template>

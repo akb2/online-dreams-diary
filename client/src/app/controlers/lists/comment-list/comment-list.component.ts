@@ -1,10 +1,13 @@
 import { WaitObservable } from "@_datas/api";
 import { VoidFunctionVar } from "@_datas/app";
+import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
+import { DreamTitle } from "@_datas/dream-map-settings";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
-import { Dream } from "@_models/dream";
+import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
+import { OptionData } from "@_models/form";
 import { NumberDirection } from "@_models/math";
 import { NavMenuType } from "@_models/nav-menu";
 import { ScrollData } from "@_models/screen";
@@ -59,6 +62,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
   maxId: number;
 
   imagePrefix: string = "../../../../assets/images/backgrounds/";
+
+  defaultDreamTitle: string = DreamTitle;
+  today: Date = new Date();
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -119,6 +125,26 @@ export class CommentListComponent implements OnInit, OnDestroy {
   // У сна есть обложка
   isHasImage(dream: Dream): boolean {
     return dream.headerType === NavMenuType.full || dream.headerType === NavMenuType.short;
+  }
+
+  // Подробные сведения о приватности сновидения
+  getDreamPrivate(dream: Dream): OptionData {
+    return DreamStatuses.find(({ key }) => key === dream.status.toString()) ?? DreamStatuses[0];
+  }
+
+  // Тип сновидения
+  getDreamType(dream: Dream): OptionData {
+    return DreamTypes.find(({ key }) => key === dream.type.toString()) ?? DreamTypes.find(({ key }) => key === DreamType.Simple.toString());
+  }
+
+  // Настроение сновидения
+  getDreamMood(dream: Dream): OptionData {
+    return DreamMoods.find(({ key }) => key === dream.mood.toString()) ?? DreamMoods.find(({ key }) => key === DreamMood.Nothing.toString());
+  }
+
+  // Есть карта сновидений
+  dreamHasMap(dream: Dream): boolean {
+    return dream.mode === DreamMode.map || dream.mode === DreamMode.mixed;
   }
 
 

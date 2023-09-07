@@ -25,18 +25,20 @@ $attachmentCounts: (
     default: 3
   ),
   2: (
-    default: 2
+    default: 2,
+    middle: 4,
+    xxsmall: 1
   ),
   1: (
     default: 1
   )
 );
+$spacing: containers.$cardPaddingY;
 
 // Элемент комментария
 .comment {
   $__elm: &;
   $__marginElms: (#{&}, "#{&}__more-loader.loading");
-  $spacing: containers.$cardPaddingY;
   // Свойства
   display: flex;
   // Данные
@@ -183,8 +185,10 @@ $attachmentCounts: (
         align-items: center;
         gap: 10px;
         background-color: colors.$overlayColor;
+        padding: $spacing;
         opacity: 0;
         transition: opacity #{screens.$animationTime};
+        z-index: 1;
         // Иконка
         > mat-icon {
           $size: vars.$textMessageAttachmentIconSize;
@@ -236,7 +240,7 @@ $attachmentCounts: (
           width: $size;
           padding-bottom: $size;
           // Сбросить отступ слева
-          &:nth-of-type(#{$countPerLine}n) {
+          &:nth-child(#{$countPerLine}n) {
             margin-right: 0;
           }
         }
@@ -256,8 +260,8 @@ $attachmentCounts: (
         &__body[attachments-per-line="#{$maxCountPerLine}"][attachments-count="#{$count}"] &__body-attachment {
           width: $blockSize;
           padding-bottom: $blockSize;
-          // Сбросить отступ слева
-          &:nth-of-type(#{$multiplierPerLine}) {
+          // Сбросить отступ справа
+          &:nth-child(#{$multiplierPerLine}) {
             margin-right: 0;
           }
         }
@@ -265,12 +269,12 @@ $attachmentCounts: (
         &__body.no-text[attachments-per-line="#{$maxCountPerLine}"][attachments-count="#{$count}"] &__body-attachment {
           width: $blockSizeNoText;
           padding-bottom: $blockSizeNoText;
-          // Вернуть отступ слева
-          &:nth-of-type(#{$multiplierPerLine}) {
+          // Вернуть отступ справа
+          &:nth-child(#{$multiplierPerLine}) {
             margin-right: $spacing;
           }
-          // Сбросить отступ слева
-          &:nth-of-type(#{$count}) {
+          // Сбросить отступ справа
+          &:nth-child(#{$count}) {
             margin-right: 0;
           }
         }
@@ -319,7 +323,12 @@ $attachmentCounts: (
   @include mixins.inset;
   // Свойства
   position: absolute;
-  background-color: map.get(colors.$matPrimary, 500);
+  background: map.get(colors.$matPrimary, 500);
+  background: radial-gradient(circle, #{map.get(colors.$matPrimary, 500)} 0%, map.get(colors.$matPrimary, 700) 60%, map.get(colors.$matPrimary, 900) 100%);
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  align-items: flex-start;
   // Фон
   &__image {
     $positions-x: left center right;
@@ -355,6 +364,101 @@ $attachmentCounts: (
             object-position: $position-x $position-y;
           }
         }
+      }
+    }
+  }
+  // Заголовок
+  &__header {
+    $iconSize: vars.$iconsMediumSize;
+    $titleLHeight: 18px;
+    $dateLHeight: $titleLHeight * 0.8;
+    $headerSpacingY: math.div($iconSize - $titleLHeight - $dateLHeight, 2);
+    // Свойства
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: #{$iconSize} 1fr;
+    grid-template-areas: "icon empty-1" "icon title" "icon date" "icon empty-2";
+    grid-template-rows: #{$headerSpacingY} #{$titleLHeight} #{$dateLHeight} #{$headerSpacingY};
+    padding: 5px;
+    // Иконка
+    &-icon {
+      grid-area: icon;
+      width: $iconSize;
+      height: $iconSize;
+      line-height: $iconSize;
+      font-size: $iconSize * 0.7;
+      color: colors.$titleDark;
+      display: block;
+      text-align: center;
+    }
+    // Заголовок
+    &-title {
+      @include mixins.lineClamp(1, $titleLHeight, 15px);
+      // Свойства
+      grid-area: title;
+      display: block;
+      font-weight: 300;
+      color: colors.$titleDark;
+    }
+    // Дата
+    &-date {
+      @include mixins.lineClamp(1, $dateLHeight, 12px);
+      // Свойства
+      grid-area: date;
+      font-weight: 200;
+      color: colors.$subTitleDark;
+    }
+  }
+  // Отметки
+  &__icons {
+    $iconSize: 26px;
+    // Свойства
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+    z-index: 1;
+    padding: 5px;
+    // Иконка
+    &-icon {
+      @include mixins.customsColors($iconSize);
+      // Свойства
+      position: relative;
+      width: $iconSize;
+      height: $iconSize;
+      grid-area: icon;
+      display: block;
+      text-decoration: none;
+      // Картинка
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      // Иконка
+      > mat-icon {
+        width: $iconSize;
+        height: $iconSize;
+        line-height: $iconSize;
+        font-size: $iconSize * 0.7;
+        display: block;
+        text-align: center;
+        color: inherit;
+        border-radius: 50%;
+      }
+      // Убрать скругление
+      & > img,
+      & > mat-icon {
+        &.no-circle {
+          border-radius: 0;
+        }
+      }
+      // Метка онлайн
+      &-online {
+        @include mixins.onlineBlinkPoint(6px, 0);
       }
     }
   }
