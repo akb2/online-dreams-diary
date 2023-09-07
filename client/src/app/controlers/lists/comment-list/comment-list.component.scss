@@ -204,6 +204,7 @@ $attachmentCounts: (
           line-height: 20px;
           font-weight: 400;
           display: block;
+          text-align: center;
         }
       }
       // Выделение
@@ -229,52 +230,55 @@ $attachmentCounts: (
       &__body {
         $__elm: &;
         // Стили для разного числа элементов
-        &[attachments-per-line="#{$maxCountPerLine}"] {
-          // Потомки
-          & #{$__elm} {
-            // Прикрепленные данные
-            &-attachment {
-              $size: calc((100% - #{$spacing * ($countPerLine - 1)}) / #{$countPerLine});
-              // Свойства
-              width: $size;
-              padding-bottom: $size;
-              // Сбросить отступ слева
-              &:nth-of-type(#{$countPerLine}n) {
-                margin-right: 0;
-              }
-            }
-            // Отступ текста
-            &-attachment:nth-of-type(#{$countPerLine}) ~ #{$__elm}-text {
-            }
-          }
-          // Вложений меньше чем максимальное число на одной строке
-          @for $count from 1 through $countPerLine {
-            &.no-text[attachments-count="#{$count}"] {
-              & #{$__elm} {
-                // Прикрепленные данные
-                &-attachment {
-                  $size: calc((100% - #{$spacing * ($count - 1)}) / #{$count});
-                  // Свойства
-                  width: $size;
-                  padding-bottom: $size;
-                  // Сбросить отступ слева
-                  &:nth-of-type(#{$count}n) {
-                    margin-right: 0;
-                  }
-                }
-              }
-            }
+        &[attachments-per-line="#{$maxCountPerLine}"] #{$__elm}-attachment {
+          $size: calc((100% - #{$spacing * ($countPerLine - 1)}) / #{$countPerLine});
+          // Свойства
+          width: $size;
+          padding-bottom: $size;
+          // Сбросить отступ слева
+          &:nth-of-type(#{$countPerLine}n) {
+            margin-right: 0;
           }
         }
       }
       // Вложений меньше чем максимальное число на одной строке
-      &__header,
-      &__body {
-        &[attachments-per-line="#{$maxCountPerLine}"] {
-          @for $count from 1 through $countPerLine {
-            &.no-text[attachments-count="#{$count}"] {
-              width: calc((((100% - #{($spacing * ($countPerLine + 1))}) / #{$countPerLine}) * #{$count}) + #{$spacing * ($count + 1)});
-            }
+      @for $count from 1 through $countPerLine {
+        $multiplierPerLine: $count;
+        // Увеличенный размер
+        @if ($count * 2 <= $countPerLine + 1) {
+          $multiplierPerLine: math.ceil(math.div($countPerLine, 2));
+        }
+        // Настройки
+        $containerSizeNoText: calc((((100% - #{($spacing * ($multiplierPerLine + 1))}) / #{$multiplierPerLine}) * #{$count}) + #{$spacing * ($count + 1)});
+        $blockSizeNoText: calc((100% - #{$spacing * ($count - 1)}) / #{$count});
+        $blockSize: calc((100% - #{$spacing * ($multiplierPerLine - 1)}) / #{$multiplierPerLine});
+        // Вложение с текстом
+        &__body[attachments-per-line="#{$maxCountPerLine}"][attachments-count="#{$count}"] &__body-attachment {
+          width: $blockSize;
+          padding-bottom: $blockSize;
+          // Сбросить отступ слева
+          &:nth-of-type(#{$multiplierPerLine}) {
+            margin-right: 0;
+          }
+        }
+        // Вложение без текста
+        &__body.no-text[attachments-per-line="#{$maxCountPerLine}"][attachments-count="#{$count}"] &__body-attachment {
+          width: $blockSizeNoText;
+          padding-bottom: $blockSizeNoText;
+          // Вернуть отступ слева
+          &:nth-of-type(#{$multiplierPerLine}) {
+            margin-right: $spacing;
+          }
+          // Сбросить отступ слева
+          &:nth-of-type(#{$count}) {
+            margin-right: 0;
+          }
+        }
+        // Родитель
+        &__header,
+        &__body {
+          &.no-text[attachments-per-line="#{$maxCountPerLine}"][attachments-count="#{$count}"] {
+            width: $containerSizeNoText;
           }
         }
       }
