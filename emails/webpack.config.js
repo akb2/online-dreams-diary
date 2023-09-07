@@ -43,7 +43,6 @@ module.exports = (env, option) => {
   // Поиск страниц PUG
   {
     const pages = glob.sync(path.join(__dirname, config.folders.input.pages, "**", "*.pug"));
-    log.info(pages);
 
     pages.forEach(function (file) {
       file = path.resolve(file);
