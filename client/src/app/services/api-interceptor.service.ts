@@ -1,4 +1,5 @@
 import { environment } from "@_environments/environment";
+import { GetBaseApiUrl } from "@_helpers/app";
 import { SimpleObject } from "@_models/app";
 import { LocalStorageService } from "@_services/local-storage.service";
 import { HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
@@ -35,7 +36,7 @@ export class ApiInterceptorService implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     this.updateState();
     // Параметры
-    let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : environment.baseApiUrl + req.url;
+    let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : GetBaseApiUrl() + req.url;
     const paramsData: SimpleObject = { "token_user_id": this.id };
     const headers: HttpHeaders = !!environment.httpHeader ?
       Object.entries(environment.httpHeader).reduce((o, [k, v]) => o.set(k, v?.toString() ?? ""), req.headers) :

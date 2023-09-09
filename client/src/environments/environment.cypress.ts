@@ -4,8 +4,12 @@
 
 export const environment = {
   production: false,
-  baseUrl: "http://localhost:4200/",
-  baseApiUrl: "https://api-test.dreams-diary.ru/",
+  baseUrl: {
+    default: "http://localhost:4200/"
+  },
+  baseApiUrl: {
+    default: "https://api-test.dreams-diary.ru/"
+  },
   reCaptchaKey: null,
   httpHeader: {},
   withCredentials: true

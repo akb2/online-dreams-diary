@@ -4,6 +4,7 @@ import { ObjectToStringParams } from "@_datas/api";
 import { environment } from "@_environments/environment";
 import { ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject } from "@_models/app";
+import { GetBaseUrl } from "@_helpers/app";
 
 
 
@@ -21,7 +22,7 @@ export class CanonicalService {
 
   // Установить URL
   setURL(url: string = this.dom.URL, params: CustomObject<any> = {}, excludeParams: ExcludeUrlObjectValues = {}) {
-    let canURL: string = /^http(s)?/i.test(url) || /^(\/)?assets(s)?/i.test(url) ? url : environment.baseUrl + url;
+    let canURL: string = /^http(s)?/i.test(url) || /^(\/)?assets(s)?/i.test(url) ? url : GetBaseUrl() + url;
     let link: HTMLLinkElement = document.querySelector("link[rel=canonical]");
     let linkExists: boolean = true;
     // URL
