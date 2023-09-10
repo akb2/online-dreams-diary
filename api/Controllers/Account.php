@@ -98,7 +98,7 @@ class Account
   }
 
   // Создание ключа активации аккаунта
-  #[Request('get')]
+  #[Request('post')]
   public function createActivationCode(array $data): array
   {
     return $this->userService->createActivationCodeApi($data);
