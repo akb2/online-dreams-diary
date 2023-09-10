@@ -37,8 +37,7 @@ class MailService
             $receiver,
             $title,
             $content,
-            $this->headers,
-            '-f' . $this->config['mail']['sender']
+            $this->headers
           );
         }
       }
