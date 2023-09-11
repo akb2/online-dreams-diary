@@ -1,4 +1,5 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
+import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
@@ -218,6 +219,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         filter(({ listElm, buttonElm, target }) => !CompareElementByElement(target, listElm) && !CompareElementByElement(target, buttonElm))
       )
       .subscribe(() => this.onCloseEmojiList());
+    // Test: тест загрузки фото
+    this.onPhotoPopupOpen();
   }
 
   ngOnDestroy(): void {
@@ -413,6 +416,14 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
       .subscribe(data => {
         this.graffityData = data;
         this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Открыть окно загрузки фото
+  onPhotoPopupOpen(): void {
+    PopupPhotoUploaderComponent.open(this.matDialog, {}).afterClosed()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => {
       });
   }
 

@@ -10,6 +10,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { PickerModule } from "@ctrl/ngx-emoji-mart";
 import { CommentEditorComponent } from "./comment-editor.component";
 import { CoreModule } from "@_modules/core.module";
+import { PopupPhotoUploaderModule } from "@_controlers/photo-uploader/photo-uploader.module";
 
 
 
@@ -31,7 +32,8 @@ import { CoreModule } from "@_modules/core.module";
     PickerModule,
     MatMenuModule,
     PopupGraffityModule,
-    CoreModule
+    CoreModule,
+    PopupPhotoUploaderModule
   ],
   providers: [
     StringTemplatePipe

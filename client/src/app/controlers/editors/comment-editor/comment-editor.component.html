@@ -137,6 +137,12 @@
 <!-- Меню прикрепления материалов -->
 <mat-menu #attachMenuPanel="matMenu">
   <ng-container *ngIf="!sendLoader">
+    <!-- Фотография -->
+    <button mat-menu-item
+            (click)="onPhotoPopupOpen()">
+      <mat-icon>photo_library</mat-icon>
+      Фото
+    </button>
     <!-- Граффити -->
     <button mat-menu-item
             (click)="onGraffityPopupOpen()">
