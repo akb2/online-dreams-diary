@@ -220,7 +220,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
       )
       .subscribe(() => this.onCloseEmojiList());
     // Test: тест загрузки фото
-    this.onPhotoPopupOpen();
+    // this.onPhotoPopupOpen();
   }
 
   ngOnDestroy(): void {
@@ -421,7 +421,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   // Открыть окно загрузки фото
   onPhotoPopupOpen(): void {
-    PopupPhotoUploaderComponent.open(this.matDialog, {}).afterClosed()
+    PopupPhotoUploaderComponent.open(this.matDialog, { multiUpload: true }).afterClosed()
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
       });
