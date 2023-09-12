@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild } from "@angular/core";
-import { FormBuilder, FormControl } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
 import { AvatarMaxSize, ConvertFileSize, FileTypesDefault } from "@_datas/app";
+import { ImageRightRotate } from "@_helpers/image";
 import { User, UserAvatarCropDataElement, UserAvatarCropDataKeys } from "@_models/account";
 import { FileTypes } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { Observable, Subject, takeUntil } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild } from "@angular/core";
+import { FormBuilder, FormControl } from "@angular/forms";
+import { MatDialog } from "@angular/material/dialog";
+import { Subject, takeUntil } from "rxjs";
 
 @Component({
   selector: "app-avatar-block",
@@ -55,51 +56,6 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     );
   }
 
-  private getOrientation(mixedBuffer: string | ArrayBuffer): number {
-    const encoder: TextEncoder = new TextEncoder();
-    const buffer: ArrayBuffer = typeof mixedBuffer === "string" ? encoder.encode(mixedBuffer).buffer : mixedBuffer;
-    const view: DataView = new DataView(buffer);
-    // Формат JPEG
-    if (view.getUint16(0, false) === 0xFFD8) {
-      const length: number = view.byteLength;
-      let offset: number = 2;
-      // Чтение байтов
-      while (offset < length) {
-        const marker: number = view.getUint16(offset, false);
-        // Увеличить сдвиг
-        offset += 2;
-        // Считывание
-        if (marker === 0xFFE1) {
-          if (view.getUint32(offset += 2, false) === 0x45786966) {
-            const little: boolean = view.getUint16(offset += 6, false) === 0x4949;
-            offset += view.getUint32(offset + 4, little);
-            //
-            const tags = view.getUint16(offset, little);
-            offset += 2;
-            //
-            for (let i = 0; i < tags; i++) {
-              if (view.getUint16(offset + (i * 12), little) === 0x0112) {
-                return view.getUint16(offset + (i * 12) + 8, little);
-              }
-            }
-          }
-        }
-        //
-        else if ((marker & 0xFF00) !== 0xFF00) {
-          break;
-        }
-        //
-        else {
-          offset += view.getUint16(offset, false);
-        }
-      }
-
-      return -1;
-    }
-
-    return -2;
-  }
-
 
 
 
@@ -139,16 +95,14 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     // Файлы выбраны
     if (files?.length > 0) {
       const file: File = files[0];
-      const fileReader: FileReader = new FileReader();
       // Установить новую временную картинку
       if (file.size <= this.fileSize) {
         this.loadingAvatar = true;
         this.changeDetectorRef.detectChanges();
         // Работа с файлом
-        fileReader.readAsDataURL(file);
-        fileReader.onload = event => this.rotateImage(file, this.getOrientation(event.target?.result))
+        ImageRightRotate(file)
           .pipe(takeUntil(this.destroyed$))
-          .subscribe(file => {
+          .subscribe(({ file }) => {
             this.avatarForm.setValue(file);
             this.onUploadAvatar(file);
           });
@@ -321,41 +275,5 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = "";
     }
-  }
-
-  // Повернуть картинку
-  private rotateImage(file: File, orientation: number): Observable<File> {
-    return new Observable((observer) => {
-      let rotatedBlob: Blob = new Blob([file], { type: file.type });
-      if (orientation > 1) {
-        const canvas: HTMLCanvasElement = document.createElement('canvas');
-        const img: HTMLImageElement = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.onload = () => {
-          const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
-          canvas.width = orientation >= 5 ? img.height : img.width;
-          canvas.height = orientation >= 5 ? img.width : img.height;
-          switch (orientation) {
-            case 2: ctx.transform(-1, 0, 0, 1, canvas.width, 0); break;
-            case 3: ctx.transform(-1, 0, 0, -1, canvas.width, canvas.height); break;
-            case 4: ctx.transform(1, 0, 0, -1, 0, canvas.height); break;
-            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-            case 6: ctx.transform(0, 1, -1, 0, canvas.height, 0); break;
-            case 7: ctx.transform(0, -1, -1, 0, canvas.height, canvas.width); break;
-            case 8: ctx.transform(0, -1, 1, 0, 0, canvas.width); break;
-            default: break;
-          }
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-          canvas.toBlob((blob) => {
-            rotatedBlob = blob!;
-            observer.next(new File([rotatedBlob], file.name, { type: file.type }));
-            observer.complete();
-          }, file.type, 1);
-        };
-      } else {
-        observer.next(file);
-        observer.complete();
-      }
-    });
   }
 }
