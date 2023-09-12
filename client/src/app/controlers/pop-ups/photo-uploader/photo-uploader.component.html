@@ -1,0 +1,66 @@
+<!-- Шапка окна -->
+<div mat-dialog-title
+     class="title">
+  <div class="title__title">Загрузка фотографий</div>
+  <mat-icon class="title__button"
+            mat-dialog-close>close</mat-icon>
+</div>
+
+<!-- Содержимое -->
+<div mat-dialog-content>
+  <!-- Поле переноса файлов -->
+  <ng-container [ngTemplateOutlet]="dragInput"></ng-container>
+  <!-- Стартовое поле загрузки файлов -->
+  <ng-container [ngTemplateOutlet]="uploadInput"></ng-container>
+</div>
+
+<!-- Панель действия -->
+<div mat-dialog-actions>
+</div>
+
+
+
+<!-- Загрузчик файла -->
+<input #fileInput
+       class="file-input"
+       type="file"
+       [accept]="fileTypes.join(',')"
+       [multiple]="multiUpload"
+       (change)="onSelectFiles($event)">
+
+<!-- Поле для загрузки drag & drop -->
+<ng-template #dragInput>
+  <div #dragInputElm
+       class="drag-input"
+       [ngClass]="{ show: dragStart, hover: dragEnter }">
+    <mat-icon class="drag-input__icon">download</mat-icon>
+    <!-- Заголовок -->
+    <div class="drag-input__title">
+      <!-- Файл внутри поля -->
+      <ng-container *ngIf="dragEnter">Отпустите мышку</ng-container>
+      <!-- Файл за пределами поля -->
+      <ng-container *ngIf="!dragEnter">Перенесите файл в этот блок</ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Поле для загрузки файлов -->
+<ng-template #uploadInput>
+  <div class="drag-input light"
+       [ngClass]="{ show: !dragStart }">
+    <mat-icon class="drag-input__icon">add_a_photo</mat-icon>
+    <!-- Заголовок -->
+    <div class="drag-input__title small-margin">
+      Выберите {{multiUpload? 'файлы': 'файл'}} с вашего устройства
+      <ng-container *ngIf="!isMobile">или перетащите {{multiUpload? 'их': 'его'}} из проводника</ng-container>
+    </div>
+    <!-- Кнопка загрузки файла/файлов -->
+    <button mat-flat-button
+            color="primary"
+            class="drag-input__button"
+            (click)="fileInput.click()">
+      <mat-icon>add_a_photo</mat-icon>
+      Выбрать {{multiUpload? 'файлы': 'файл'}}
+    </button>
+  </div>
+</ng-template>

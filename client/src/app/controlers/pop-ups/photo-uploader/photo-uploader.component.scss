@@ -1,0 +1,124 @@
+@use "sass:map";
+@use "material";
+@use "containers";
+@use "screens";
+@use "colors";
+@use "vars";
+
+// Базовый стиль окна
+@include material.matDialog;
+
+// Поле ввода Drag & Drop
+.drag-input {
+  $figureSize: 140px;
+  $background: map.get(colors.$matDisabled, 500);
+  $border: map.get(colors.$matDisabled, contrast, 500);
+  $color: $border;
+  $backgroundHover: map.get(colors.$matPrimary, 500);
+  $borderHover: map.get(colors.$matPrimary, contrast, 500);
+  $colorHover: map.get(colors.$matPrimary, contrast, 500);
+  $backgroundLight: colors.$background;
+  $borderLight: map.get(colors.$matPrimary, 500);
+  $colorLight: colors.$title;
+  $__elm: &;
+  // Свойства
+  display: none;
+  padding-left: containers.$paddingX;
+  padding-right: containers.$paddingX;
+  width: calc(100% - #{containers.$paddingX * 2});
+  max-height: calc(#{vars.$dialogContentMaxHeight} - #{containers.$paddingX * 2});
+  height: 500px;
+  margin: containers.$paddingX;
+  border: 1px dashed #{$border};
+  background-color: $background;
+  box-shadow: 0 0 0 #{containers.$paddingX} #{$background};
+  border-radius: containers.$cardBorderRadius;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  transition:
+    background-color #{screens.$animationTime},
+    box-shadow #{screens.$animationTime},
+    border-color #{screens.$animationTime};
+  // Иконка
+  &__icon {
+    display: block;
+    width: $figureSize;
+    height: $figureSize;
+    line-height: $figureSize;
+    font-size: $figureSize;
+    text-align: center;
+    color: $color;
+    transition: color #{screens.$animationTime};
+  }
+  // Заголовок
+  &__title {
+    font-size: 15px;
+    line-height: 20px;
+    text-align: center;
+    font-weight: 300;
+    color: $color;
+    transition: color #{screens.$animationTime};
+    // Уменьшить отступ
+    &.small-margin {
+      margin-top: containers.$paddingX;
+    }
+  }
+  // Кнопка загрузки
+  &__button {
+    margin-top: containers.$paddingX;
+  }
+  // Показать элемент
+  &.show {
+    display: flex;
+  }
+  // Наведение
+  &:hover:not(.light),
+  &.hover {
+    background-color: $backgroundHover;
+    box-shadow: 0 0 0 #{containers.$paddingX} #{$backgroundHover};
+    border-color: $borderHover;
+    // Дочерние элементы
+    & #{$__elm} {
+      // Иконка
+      &__icon {
+        color: $colorHover;
+      }
+      // Заголовок
+      &__title {
+        color: $colorHover;
+      }
+    }
+  }
+  // Светлый фон
+  &.light {
+    background-color: $backgroundLight;
+    box-shadow: 0 0 0 #{containers.$paddingX} #{$backgroundLight};
+    border-color: $borderLight;
+    // Дочерние элементы
+    & #{$__elm} {
+      // Иконка
+      &__icon {
+        color: $borderLight;
+      }
+      // Заголовок
+      &__title {
+        color: $colorLight;
+      }
+    }
+  }
+  // Адаптив
+  @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+    padding-top: $paddingY;
+    padding-bottom: $paddingY;
+    // Заголовок
+    &__title:not(.small-margin) {
+      padding-top: $paddingY;
+    }
+  }
+}
+
+// Загрузчик файла
+.file-input {
+  display: none;
+}
