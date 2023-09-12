@@ -68,8 +68,13 @@ export const FileTypesDefault: FileTypes[] = [
   "image/png"
 ];
 
-// Минимальный размер аватара
+// Максимальный размер аватара
+// ? 10 Mb
 export const AvatarMaxSize: number = 10485760;
+
+// Максимальный размер фотографии
+// ? 10 Mb
+export const PhotoMaxSize: number = 10485760;
 
 
 
