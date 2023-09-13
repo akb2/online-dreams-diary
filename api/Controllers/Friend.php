@@ -277,4 +277,5 @@ class Friend
 }
 
 
+
 return new Friend();
