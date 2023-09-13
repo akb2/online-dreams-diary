@@ -10,12 +10,46 @@
 <div mat-dialog-content>
   <!-- Поле переноса файлов -->
   <ng-container [ngTemplateOutlet]="dragInput"></ng-container>
+  <!-- Загруженные файлы -->
+  <div class="file__list"
+       [ngClass]="{ multi: multiUpload }"
+       *ngIf="!!uploadedFiles?.length">
+    <!-- Один файл -->
+    <ng-container [ngTemplateOutlet]="uploadedFileTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: uploadedFiles[0] }"
+                  *ngIf="!multiUpload"></ng-container>
+    <!-- Несколько файлов -->
+    <ng-container *ngIf="multiUpload">
+      <ng-container [ngTemplateOutlet]="uploadedFileTemplate"
+                    [ngTemplateOutletContext]="{ $implicit: file }"
+                    *ngFor="let file of uploadedFiles"></ng-container>
+    </ng-container>
+  </div>
   <!-- Стартовое поле загрузки файлов -->
-  <ng-container [ngTemplateOutlet]="uploadInput"></ng-container>
+  <ng-container [ngTemplateOutlet]="uploadInput"
+                *ngIf="!uploadedFiles?.length"></ng-container>
 </div>
 
 <!-- Панель действия -->
-<div mat-dialog-actions>
+<div mat-dialog-actions
+     class="dialog__actions"
+     [ngClass]="{ between: multiUpload }"
+     *ngIf="!!uploadedFiles?.length">
+  <!-- Загрузить еще файлы -->
+  <button mat-stroked-button
+          color="basic"
+          (click)="fileInput.click()"
+          *ngIf="multiUpload && !!uploadedFiles?.length">
+    <mat-icon>add_a_photo</mat-icon>
+    Добавить файлы
+  </button>
+  <!-- Сохранить файлы -->
+  <button mat-flat-button
+          [disabled]="!filesReady"
+          color="primary">
+    <mat-icon>check</mat-icon>
+    Сохранить
+  </button>
 </div>
 
 
@@ -62,5 +96,43 @@
       <mat-icon>add_a_photo</mat-icon>
       Выбрать {{multiUpload? 'файлы': 'файл'}}
     </button>
+  </div>
+</ng-template>
+
+<!-- Шаблон загрузки файла -->
+<ng-template #uploadedFileTemplate
+             let-file>
+  <div class="file">
+    <!-- Фото -->
+    <div class="file__img"
+         [ngClass]="{ loading: !file.uploaded }"
+         [ngStyle]="{ filter: getWBFilter(file), opacity: getOpacity(file) }">
+      <img [src]="file.src" />
+    </div>
+    <!-- Загрузка -->
+    <ng-container *ngIf="!file.uploaded">
+      <!-- Лоадер -->
+      <div class="file__icon"
+           [ngClass]="{ multi: multiUpload }">
+        <app-loader size="100%"
+                    color="white"
+                    class="file__loader"
+                    [ngClass]="{ multi: multiUpload }"></app-loader>
+      </div>
+      <!-- Прогресс -->
+      <div class="file__progress"
+           [ngClass]="{ multi: multiUpload }">
+        <div class="file__progress-line"
+             [ngStyle]="{ width: file.progress + '%', animationDuration: getAnimationTime(file) }"></div>
+      </div>
+    </ng-container>
+    <!-- Результат загрузки -->
+    <div class="file__icon"
+         [ngClass]="{ multi: multiUpload }"
+         [attr.color]="file.loadError === loadErrors.success? 'primary': 'warn'"
+         [matTooltip]="getErrorText(file)"
+         *ngIf="file.uploaded && !!file.loadError">
+      <mat-icon>{{file.loadError === loadErrors.success? 'check': 'priority_high'}}</mat-icon>
+    </div>
   </div>
 </ng-template>

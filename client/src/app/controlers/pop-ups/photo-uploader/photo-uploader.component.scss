@@ -1,12 +1,30 @@
 @use "sass:map";
+@use "sass:math";
 @use "material";
 @use "containers";
 @use "screens";
 @use "colors";
 @use "vars";
+@use "mixins";
+
+$colors: (
+  primary: map.get(colors.$matPrimary, 500),
+  accent: map.get(colors.$matSecondary, 500),
+  warn: map.get(colors.$matStatusWarn, 500),
+  disabled: map.get(colors.$matDisabled, 600)
+);
 
 // Базовый стиль окна
 @include material.matDialog;
+
+// Свойства диалогового окна
+.dialog__actions {
+  justify-content: flex-end;
+  // Несколько кнопок
+  &.between {
+    justify-content: space-between;
+  }
+}
 
 // Поле ввода Drag & Drop
 .drag-input {
@@ -121,4 +139,143 @@
 // Загрузчик файла
 .file-input {
   display: none;
+}
+
+// Загруженный файл
+.file {
+  $spacing: 15px;
+  $multiSpacing: 5px;
+  $loaderSize: 48px;
+  $multiLoaderSize: 30px;
+  $multiCount: 3;
+  // Свойства
+  display: block;
+  padding-bottom: 100%;
+  background-color: colors.$background;
+  border-radius: vars.$commentAttachmentBorderRadius;
+  overflow: hidden;
+  position: relative;
+  // Картинка
+  &__img {
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // Загружается
+    &.loading {
+      opacity: 0.7;
+      filter: grayscale(1);
+    }
+    // Картинка
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  // Загрузчик
+  &__loader {
+    width: math.round($loaderSize * 0.8);
+    height: math.round($loaderSize * 0.8);
+    // Для нескольких файлов
+    &.multi {
+      width: math.round($multiLoaderSize * 0.8);
+      height: math.round($multiLoaderSize * 0.8);
+    }
+  }
+  // Загрузчкик с прогрессом
+  &__progress {
+    $height: 3px;
+    $padding: math.div($spacing - $height, 2);
+    // Модули
+    @include mixins.inset($padding);
+    // Свойства
+    position: absolute;
+    top: auto;
+    height: $height;
+    // Для нескольких файлов
+    &.multi {
+      @include mixins.inset(0);
+      // Свойства
+      top: auto;
+    }
+    // Линия прогресса
+    &-line {
+      height: 100%;
+      width: 0;
+      border-radius: math.div($height, 2);
+      background-color: map.get(colors.$matPrimary, 500);
+      overflow: hidden;
+      position: relative;
+      // Свечение
+      &::before {
+        @include mixins.inset;
+        // Свойства
+        content: "";
+        position: absolute;
+        display: block;
+        opacity: 0.5;
+        background: linear-gradient(90deg, transparent 0, #fff 50%, transparent 100%);
+        background-size: 100px;
+        background-repeat: no-repeat;
+        animation: ease-in-out progressBarLight 2s infinite;
+        animation-duration: inherit;
+      }
+    }
+  }
+  // Иконка
+  &__icon {
+    position: absolute;
+    top: $spacing;
+    left: $spacing;
+    width: $loaderSize;
+    height: $loaderSize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: map.get($colors, disabled);
+    border-radius: 50%;
+    // Цвета
+    @each $color, $value in $colors {
+      &[color="#{$color}"] {
+        background-color: $value;
+      }
+    }
+    // Для нескольких файлов
+    &.multi {
+      top: $multiSpacing;
+      left: $multiSpacing;
+      width: $multiLoaderSize;
+      height: $multiLoaderSize;
+    }
+    // Иконка
+    > mat-icon {
+      color: colors.$titleDark;
+    }
+  }
+  // Список
+  &__list {
+    display: block;
+    gap: 10px;
+    // Несколько файлов
+    &.multi {
+      display: grid;
+      grid-template-columns: repeat(#{$multiCount}, 1fr);
+    }
+  }
+}
+
+// Анимация свечения прогресс бара
+@keyframes progressBarLight {
+  0% {
+    background-position: -50px center;
+  }
+  50% {
+    background-position: calc(100% + 50px) center;
+  }
+  100% {
+    background-position: -50px center;
+  }
 }

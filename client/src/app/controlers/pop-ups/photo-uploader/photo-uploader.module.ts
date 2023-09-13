@@ -4,6 +4,8 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { PopupPhotoUploaderComponent } from "./photo-uploader.component";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
+import { LoaderModule } from "@_controlers/loader/loader.module";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 
 
@@ -20,7 +22,9 @@ import { MatButtonModule } from "@angular/material/button";
     CommonModule,
     MatDialogModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    LoaderModule,
+    MatTooltipModule
   ]
 })
 
