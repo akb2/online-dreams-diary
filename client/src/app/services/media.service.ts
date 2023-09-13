@@ -1,9 +1,13 @@
+import { ObjectToFormData } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
+import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { MediaFile, MediaFileDto, MediaFileExtension } from "@_models/media";
+import { HttpClient, HttpEventType } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { Observable, Subject, concatMap, map, of, take, takeUntil } from "rxjs";
+import { Observable, Subject, concatMap, map, of, switchMap, take, takeUntil } from "rxjs";
 import { AccountService } from "./account.service";
+import { ApiService } from "./api.service";
 
 
 
@@ -15,7 +19,6 @@ import { AccountService } from "./account.service";
 
 export class MediaService implements OnDestroy {
 
-
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -23,12 +26,42 @@ export class MediaService implements OnDestroy {
 
 
   constructor(
-    private accountService: AccountService
+    private accountService: AccountService,
+    private httpClient: HttpClient,
+    private apiService: ApiService
   ) { }
 
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Загрузить файл
+  upload(file: File, codes: string[] = []): Observable<number> {
+    return this.httpClient.post<ApiResponse>("media/upload", ObjectToFormData({ file }), { reportProgress: true, observe: "events" }).pipe(
+      takeUntil(this.destroyed$),
+      switchMap(event => {
+        if (event.type === HttpEventType.UploadProgress && !!event.total) {
+          of(Math.round(100 * event.loaded / event.total));
+        }
+        // Загрузка завершена
+        else if (event.type === HttpEventType.Response) {
+          const code: ApiResponseCodes = event?.body?.result?.code?.toString();
+          // Проверить код ответа
+          if (code === "0001" || codes.some(testCode => testCode === code)) {
+            return of(100);
+          }
+          // Ошибка
+          return this.apiService.checkResponse(code, codes);
+        }
+        // Нулевой прогресс
+        return of(0);
+      })
+    );
   }
 
 
