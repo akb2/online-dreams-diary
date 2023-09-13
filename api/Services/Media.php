@@ -59,17 +59,14 @@ class MediaService
           // Удалось вычислить хэш файла
           if (!!$fileHash) {
             $fileSrc = $this->getMediaFileSrc($fileHash, $fileExt);
-            $create = false;
+            $needCreate = !file_exists($fileSrc);
+            $successReplace = false;
             // Файл уже существует
-            if (file_exists($fileSrc)) {
-              $create = true;
-            }
-            // Записать новый файл
-            else {
-              $create = move_uploaded_file($file['tmp_name'], $fileSrc);
+            if ($needCreate) {
+              $successReplace = move_uploaded_file($file['tmp_name'], $fileSrc);
             }
             // Создать новую запись в базе данных
-            if ($create) {
+            if ($needCreate && $successReplace) {
               $sqlData = array(
                 'user_id' => $userId,
                 'hash' => $fileHash,
@@ -83,6 +80,12 @@ class MediaService
               if ($this->dataBaseService->executeFromFile('media/create.sql', $sqlData)) {
                 return $this->pdo->lastInsertId();
               }
+            }
+            // Загрузить существующий файл
+            else if (!$needCreate) {
+              $tempData = $this->getByHash($fileHash);
+              // Вернуть ID
+              return $tempData['id'] ?? 0;
             }
           }
         }
@@ -110,10 +113,26 @@ class MediaService
     return null;
   }
 
+  // Получить медиа файл по хэшу
+  public function getByHash(string $hash): array|null
+  {
+    if (strlen($hash) > 0) {
+      $testMedia = $this->dataBaseService->getDatasFromFile('media/getByHash.sql', array($hash));
+      // Запись найдена
+      if (is_array($testMedia) && count($testMedia) > 0) {
+        $testMedia = $testMedia[0];
+        // Обработка файла
+        return $this->convertMediaData($testMedia);
+      }
+    }
+    // Запись не найдена
+    return null;
+  }
+
 
 
   // Получения хэша файла
-  private function getFileHash(string $fileSrc): string
+  public function getFileHash(string $fileSrc): string
   {
     if (file_exists($fileSrc)) {
       if (is_file($fileSrc)) {
