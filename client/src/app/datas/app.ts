@@ -62,10 +62,16 @@ export const BrowserNames: SimpleObject = {
 // Цикл из числа
 export const CreateArray: (length: number) => number[] = (length: number) => Array.from(Array(length).keys());
 
-// Типы файлов по умолчанию
+// Типы изображений по умолчанию
 export const FileTypesDefault: FileTypes[] = [
   "image/jpeg",
   "image/png"
+];
+
+// JPEG типы
+export const JpegTypesDefault: FileTypes[] = [
+  "image/jpeg",
+  "image/jpg"
 ];
 
 // Максимальный размер аватара

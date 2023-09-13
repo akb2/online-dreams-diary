@@ -63,5 +63,8 @@ export type IconColor = "primary" | "accent" | "warn" | "disabled";
 // Интерфейс цветов фона
 export type IconBackground = "fill" | "transparent";
 
-// Допустимые типы файлов
-export type FileTypes = "image/gif" | "image/jpeg" | "image/png";
+// Допустимые типы JPG
+export type JpegTypes = "image/jpeg" | "image/jpg";
+
+// Допустимые типы изображений
+export type FileTypes = JpegTypes | "image/gif" | "image/png";
