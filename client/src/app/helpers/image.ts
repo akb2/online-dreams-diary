@@ -5,7 +5,7 @@ import { Observable, Subscriber, concatMap, from, map } from "rxjs";
 
 
 // Интерфейс загруженной картинки
-interface UploadedImage {
+export interface UploadedImage {
   file: File;
   blob: Blob;
   htmlImage: HTMLImageElement;
