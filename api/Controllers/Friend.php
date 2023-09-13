@@ -7,7 +7,6 @@ use Decorators\Request;
 use PDO;
 use Services\FriendService;
 use Services\UserService;
-use Services\TokenService;
 
 
 
@@ -17,7 +16,6 @@ class Friend
   private PDO $pdo;
 
   private UserService $userService;
-  private TokenService $tokenService;
   private FriendService $friendService;
 
 
@@ -38,7 +36,6 @@ class Friend
   public function setServices(): void
   {
     $this->userService = new UserService($this->pdo, $this->config);
-    $this->tokenService = new TokenService($this->pdo, $this->config);
     $this->friendService = new FriendService($this->pdo, $this->config);
   }
 
