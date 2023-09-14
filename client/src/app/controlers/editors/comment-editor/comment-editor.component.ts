@@ -7,6 +7,7 @@ import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
+import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
 import { StringTemplatePipe } from "@_pipes/string-template-pipe";
 import { CommentService } from "@_services/comment.service";
@@ -58,6 +59,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   private smileSize: number = 24;
 
   graffityData: GraffityDrawData;
+  photos: MediaFile[] = [];
 
   showEmojiList: boolean = false;
   i18nEmoji: MultiObject<string> = I18nEmoji;
@@ -152,12 +154,12 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   // Состояние кнопки отправить
   get sendIsAvail(): boolean {
-    return !!this.getEditorValue || !!this.graffityData?.image;
+    return !!this.getEditorValue || !!this.graffityData?.image || !!this.photos?.length;
   }
 
   // Есть закрепленные данные
   get hasAttachment(): boolean {
-    return !!this.graffityData?.image;
+    return !!this.graffityData?.image || !!this.photos?.length;
   }
 
 
@@ -219,8 +221,6 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         filter(({ listElm, buttonElm, target }) => !CompareElementByElement(target, listElm) && !CompareElementByElement(target, buttonElm))
       )
       .subscribe(() => this.onCloseEmojiList());
-    // Test: тест загрузки фото
-    // this.onPhotoPopupOpen();
   }
 
   ngOnDestroy(): void {
@@ -355,6 +355,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
       this.onEdit(event);
       // Параметры
       const text: string = this.getEditorValue;
+      const mediaPhotos: number[] = !!this.photos?.length ? this.photos.map(({ id }) => id) : [];
       const data: Partial<Comment> = {
         materialType: this.materialType,
         materialId: this.materialId,
@@ -362,11 +363,12 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
         replyToUser: this.replyUser,
         text,
         uploadAttachment: {
-          graffity: !!this.graffityData?.blob ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type }) : null
+          graffity: !!this.graffityData?.blob ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type }) : null,
+          mediaPhotos
         }
       };
       // Проверка текста
-      if (!!text || data?.uploadAttachment?.graffity) {
+      if (!!text || data?.uploadAttachment?.graffity || !!mediaPhotos) {
         this.sendLoader = true;
         this.changeDetectorRef.detectChanges();
         // Отправка
@@ -381,6 +383,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
               }
               // Очистить другие данные
               this.graffityData = null;
+              this.photos = [];
               this.onReplyUserDelete();
               // Обновить
               this.sendLoader = false;
@@ -422,9 +425,28 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   // Открыть окно загрузки фото
   onPhotoPopupOpen(): void {
     PopupPhotoUploaderComponent.open(this.matDialog, { multiUpload: true }).afterClosed()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => {
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(data => !!data?.mediaFiles?.length)
+      )
+      .subscribe(({ mediaFiles: photos }) => {
+        photos
+          .filter(photo => !this.photos.some(({ id }) => id === photo.id))
+          .forEach(photo => this.photos.push(photo));
+        // Обновить
+        this.changeDetectorRef.detectChanges();
       });
+  }
+
+  // Удалить фото из закреплений
+  onPhotoDelete(photoId: number): void {
+    const index: number = this.photos.findIndex(({ id }) => id === photoId);
+    // Элемент найден
+    if (index >= 0) {
+      this.photos.splice(index, 1);
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   // Удалить адресата ответа

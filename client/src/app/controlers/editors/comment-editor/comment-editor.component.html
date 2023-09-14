@@ -94,11 +94,21 @@
     <!-- Граффити -->
     <ng-container [ngTemplateOutlet]="attachedImage"
                   [ngTemplateOutletContext]="{
-                  url: graffityData.image,
-                  callback: onGraffityPopupOpen.bind(this),
-                  overlayIcon: 'edit'
-                }"
+                    url: graffityData.image,
+                    callback: onGraffityPopupOpen.bind(this),
+                    overlayIcon: 'edit'
+                  }"
                   *ngIf="!!graffityData?.image"></ng-container>
+    <!-- Фотографии -->
+    <ng-container *ngIf="!!photos?.length">
+      <ng-container [ngTemplateOutlet]="attachedImage"
+                    [ngTemplateOutletContext]="{
+                      url: photo.url,
+                      callback: onPhotoDelete.bind(this, photo.id),
+                      overlayIcon: 'close'
+                    }"
+                    *ngFor="let photo of photos"></ng-container>
+    </ng-container>
   </div>
 </div>
 
@@ -138,11 +148,11 @@
 <mat-menu #attachMenuPanel="matMenu">
   <ng-container *ngIf="!sendLoader">
     <!-- Фотография -->
-    <!-- <button mat-menu-item
+    <button mat-menu-item
             (click)="onPhotoPopupOpen()">
       <mat-icon>photo_library</mat-icon>
       Фото
-    </button> -->
+    </button>
     <!-- Граффити -->
     <button mat-menu-item
             (click)="onGraffityPopupOpen()">
