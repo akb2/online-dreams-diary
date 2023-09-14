@@ -13,7 +13,7 @@
   <!-- Загруженные файлы -->
   <div class="file__list"
        [ngClass]="{ multi: multiUpload }"
-       *ngIf="!!uploadedFiles?.length">
+       *ngIf="!!uploadedFiles?.length && !dragStart">
     <!-- Один файл -->
     <ng-container [ngTemplateOutlet]="uploadedFileTemplate"
                   [ngTemplateOutletContext]="{ $implicit: uploadedFiles[0] }"
@@ -46,7 +46,8 @@
   <!-- Сохранить файлы -->
   <button mat-flat-button
           [disabled]="!filesReady"
-          color="primary">
+          color="primary"
+          (click)="onSave()">
     <mat-icon>check</mat-icon>
     Сохранить
   </button>
