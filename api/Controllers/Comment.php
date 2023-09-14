@@ -52,9 +52,9 @@ class Comment
     $ownerId = $data['materialOwner'];
     // Проверка доступа
     if ($this->userSettingsService->checkPrivate('myCommentsWrite', $ownerId, $userId)) {
-      $data['attachment'] = $data['attachment'] ?? array();
+      $data['attachment'] = isset($data['attachment']) ? @json_decode($data['attachment']) ?? array() : array();
       // Создание медиафайла для графити
-      if (!!$_FILES['graffityUpload']) {
+      if (!!$_FILES && !!$_FILES['graffityUpload']) {
         $graffityMediaId = $this->mediaService->createFromUpload($_FILES['graffityUpload'], 'графити');
         // Файл граффити создан
         if ($graffityMediaId > 0) {
@@ -163,9 +163,20 @@ class Comment
         if ($this->userSettingsService->checkPrivate('myCommentsRead', intval($comment['material_owner']), $userId)) {
           $comment['attachment'] = json_decode($comment['attachment'], true);
           $graffityId = intval($comment['attachment']['graffity'] ?? 0);
+          $mediaPhotoIds = isset($comment['attachment']['mediaPhotos']) && is_array($comment['attachment']['mediaPhotos']) && count($comment['attachment']['mediaPhotos']) > 0;
           // Загрузка данных о графити
           if ($graffityId > 0) {
             $comment['attachment']['graffity'] = $this->mediaService->getById($graffityId);
+          }
+          // Загрузка данных об изображениях из медиа файлов
+          if (!!$mediaPhotoIds) {
+            $mediaPhotos = array();
+            // Цикл по файлам
+            foreach ($comment['attachment']['mediaPhotos'] as $mediaId) {
+              $mediaPhotos[] = $this->mediaService->getById($mediaId);
+            }
+            // Перезаписать массив
+            $comment['attachment']['mediaPhotos'] = $mediaPhotos;
           }
           // Данные комментария
           $comments[] = array(
