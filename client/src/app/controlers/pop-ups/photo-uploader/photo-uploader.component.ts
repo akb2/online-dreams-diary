@@ -1,9 +1,9 @@
 import { WaitObservable } from "@_datas/api";
 import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMaxSize } from "@_datas/app";
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
-import { LineFunc, ParseInt } from "@_helpers/math";
+import { CheckInRange, LineFunc, ParseInt } from "@_helpers/math";
 import { CustomObjectKey, FileTypes } from "@_models/app";
-import { MediaFileExtension } from "@_models/media";
+import { MediaFile, MediaFileExtension } from "@_models/media";
 import { MediaService } from "@_services/media.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
@@ -75,11 +75,11 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
     const max: number = 0.7;
     // Для ошибки
     if (loadError !== LoadError.success) {
-      return "grayscale(" + max + ")";
+      return max?.toString();
     }
     // Для уже загруженного файла
     else if (uploaded) {
-      return "grayscale(" + min + ")";
+      return min?.toString();
     }
     // Расчет для загрузчика
     return LineFunc(min, max, progress, 0, 100)?.toString();
@@ -105,6 +105,7 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
 
   constructor(
     @Inject(MAT_DIALOG_DATA) private data: PopupPhotoUploaderData,
+    private matDialogRef: MatDialogRef<PopupPhotoUploaderComponent, PopupPhotoUploaderResult>,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
     private mediaService: MediaService
@@ -213,7 +214,20 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
         takeWhile(result => !!result)
       )))
         .pipe(takeUntil(this.destroyed$))
-        .subscribe(file => this.changeDetectorRef.detectChanges());
+        .subscribe(() => this.changeDetectorRef.detectChanges());
+    }
+  }
+
+  // Сохранить и закрыть окно
+  onSave(): void {
+    if (this.filesReady) {
+      const mediaFiles: MediaFile[] = this.uploadedFiles
+        .filter(({ mediaData, uploaded, loadError }) => !!mediaData && uploaded && loadError === LoadError.success)
+        .map(({ mediaData }) => mediaData);
+      // Файлы загружены
+      if (!!mediaFiles?.length) {
+        this.matDialogRef.close({ mediaFiles });
+      }
     }
   }
 
@@ -235,7 +249,8 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
             uploaded: false,
             loadError: LoadError.success,
             src: file.src,
-            hash: file.hash
+            hash: file.hash,
+            mediaData: null
           };
           // Добавить файл
           this.uploadedFiles.push(uploadedFile);
@@ -244,8 +259,18 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
           // Начать загрузку
           return this.mediaService.upload(file.file).pipe(
             takeUntil(this.destroyed$),
-            map(progress => {
-              uploadedFile.progress = progress;
+            map(result => {
+              if (typeof result === "number") {
+                const progress: number = CheckInRange(result, 100, 0);
+                // Установить свойства файла
+                uploadedFile.progress = progress;
+              }
+              // Файл загружен
+              else {
+                uploadedFile.progress = 100;
+                uploadedFile.uploaded = true;
+                uploadedFile.mediaData = result;
+              }
               // Вернуть объект
               return uploadedFile;
             }),
@@ -269,7 +294,7 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
 
 
   // Открыть текущее окно
-  static open(matDialog: MatDialog, data?: PopupPhotoUploaderData): MatDialogRef<PopupPhotoUploaderComponent> {
+  static open(matDialog: MatDialog, data?: PopupPhotoUploaderData): MatDialogRef<PopupPhotoUploaderComponent, PopupPhotoUploaderResult> {
     const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
     matDialogConfig.width = PopupPhotoUploaderComponent.popUpWidth;
     matDialogConfig.data = data;
@@ -286,6 +311,10 @@ export interface PopupPhotoUploaderData {
   multiUpload?: boolean;
 }
 
+export interface PopupPhotoUploaderResult {
+  mediaFiles: MediaFile[];
+}
+
 interface SelectedFile {
   file: File;
   progress: number;
@@ -293,6 +322,7 @@ interface SelectedFile {
   loadError: LoadError;
   src: string;
   hash: string;
+  mediaData: MediaFile;
 }
 
 enum LoadError {
