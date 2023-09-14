@@ -68,7 +68,7 @@ class Media
     // Вернуть результат
     return array(
       'code' => $code,
-      'media' => $media
+      'data' => $media
     );
   }
 }
