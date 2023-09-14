@@ -41,7 +41,7 @@ export class MediaService implements OnDestroy {
 
 
   // Загрузить файл
-  upload(file: File, codes: string[] = []): Observable<number> {
+  upload(file: File, codes: string[] = []): Observable<MediaFile | number> {
     return this.httpClient.post<ApiResponse>("media/upload", ObjectToFormData({ file }), { reportProgress: true, observe: "events" }).pipe(
       takeUntil(this.destroyed$),
       switchMap(event => {
@@ -53,7 +53,7 @@ export class MediaService implements OnDestroy {
           const code: ApiResponseCodes = event?.body?.result?.code?.toString();
           // Проверить код ответа
           if (code === "0001" || codes.some(testCode => testCode === code)) {
-            return of(100);
+            return this.convertData(event?.body?.result?.data);
           }
           // Ошибка
           return this.apiService.checkResponse(code, codes);
