@@ -73,7 +73,13 @@ export class CommentService extends TextMessage implements OnDestroy {
         () => !!attachment?.graffity ? this.mediaService.convertData(attachment.graffity) : of(null),
         (data, graffity) => ({ ...data, graffity })
       ),
-      map(({ comment, user, replyToUser, graffity, dreams }) => ({
+      concatMap(
+        () => !!attachment?.mediaPhotos?.length ?
+          forkJoin(attachment.mediaPhotos.map(id => this.mediaService.convertData(id))) :
+          of([]),
+        (data, mediaPhotos) => ({ ...data, mediaPhotos })
+      ),
+      map(({ comment, user, replyToUser, graffity, dreams, mediaPhotos }) => ({
         id: ParseInt(comment?.id),
         user,
         replyToUser,
@@ -83,7 +89,7 @@ export class CommentService extends TextMessage implements OnDestroy {
         text: comment?.text ?? "",
         html: this.textTransform(comment?.text ?? ""),
         createDate: ToDate(comment?.createDate),
-        attachment: { graffity, dreams }
+        attachment: { graffity, dreams, mediaPhotos }
       }))
     );
   }
@@ -121,7 +127,10 @@ export class CommentService extends TextMessage implements OnDestroy {
       materialOwner: data.materialOwner,
       replyToUserId: ParseInt(data?.replyToUser?.id),
       text: data.text,
-      graffityUpload: data?.uploadAttachment?.graffity
+      graffityUpload: data?.uploadAttachment?.graffity,
+      attachment: JSON.stringify({
+        mediaPhotos: data?.uploadAttachment?.mediaPhotos ?? []
+      })
     })).pipe(
       takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes))
