@@ -3,9 +3,10 @@ import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
+import { CustomObjectKey } from "@_models/app";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
@@ -16,10 +17,10 @@ import { AccountService } from "@_services/account.service";
 import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subject } from "rxjs";
-import { map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
+import { Subject, merge } from "rxjs";
+import { concatMap, filter, map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
 
 
 
@@ -45,11 +46,15 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   @Output() replyEvent: EventEmitter<User> = new EventEmitter();
 
+  @ViewChild("list", { read: ElementRef }) listElm: ElementRef;
   @ViewChildren("comment", { read: ElementRef }) commentElms: QueryList<ElementRef>;
+  @ViewChildren("commentAvatar", { read: ElementRef }) commentAvatarElms: QueryList<ElementRef>;
 
   private user: User;
   comments: Comment[] = [];
   count: number = 0;
+  private inScreenComments: number[] = [];
+  private avatarTopPositions: CustomObjectKey<number, number> = {};
 
   loading: boolean = true;
   prevLoading: boolean = false;
@@ -105,6 +110,11 @@ export class CommentListComponent implements OnInit, OnDestroy {
     return this.commentElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
   }
 
+  // Получить элемент комментария
+  private getCommentAvatarElm(commentId: number): HTMLElement {
+    return this.commentAvatarElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
+  }
+
   // Количество закреплений
   getAttachmentCount(comment: Comment): number {
     let count: number = 0;
@@ -152,6 +162,11 @@ export class CommentListComponent implements OnInit, OnDestroy {
     return dream.mode === DreamMode.map || dream.mode === DreamMode.mixed;
   }
 
+  // Позиция аватарки сверху
+  getAvatarTopPosition(commentId: number): number {
+    return ParseInt(this.avatarTopPositions?.[commentId]);
+  }
+
 
 
 
@@ -178,6 +193,37 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
+        this.changeDetectorRef.detectChanges();
+      });
+    // Скольжение аватарок видимых комментариев
+    WaitObservable(() => !this.listElm?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => merge(
+          this.scrollService.onAlwaysScroll(),
+          this.screenService.breakpoint$.pipe(
+            takeUntil(this.destroyed$),
+            map(() => this.scrollService.getCurrentScroll)
+          )
+        )),
+        filter(() => !!this.inScreenComments.length)
+      )
+      .subscribe(({ y }) => {
+        const listElm: HTMLElement = this.listElm.nativeElement;
+        const gapY: number = ParseInt(window.getComputedStyle(listElm)?.rowGap);
+        const avatarTop: number = y + DrawDatas.minHeight + gapY;
+        // Цикл по элементам
+        this.inScreenComments.forEach(commentId => {
+          const commentElm: HTMLElement = this.getCommentElm(commentId);
+          const commentAvatarElm: HTMLElement = this.getCommentAvatarElm(commentId);
+          const minTop: number = y + commentElm.getBoundingClientRect().top;
+          const maxTop: number = minTop + commentElm.getBoundingClientRect().height - commentAvatarElm.getBoundingClientRect().height;
+          // Элемент найден
+          if (!!commentElm) {
+            this.avatarTopPositions[commentId] = CheckInRange(avatarTop, maxTop, minTop) - minTop;
+          }
+        });
+        // Обновить
         this.changeDetectorRef.detectChanges();
       });
   }
@@ -236,6 +282,22 @@ export class CommentListComponent implements OnInit, OnDestroy {
         },
         VoidFunctionVar
       );
+  }
+
+  // Комментарий находится на экране
+  onCommentInScreen(commentId: number): void {
+    if (!this.inScreenComments.includes(commentId)) {
+      this.inScreenComments.push(commentId);
+    }
+  }
+
+  // Комментарий находится на экране
+  onCommentOutOfScreen(commentId: number): void {
+    const index: number = this.inScreenComments.findIndex(id => id === commentId);
+    // Элемент найден
+    if (index >= 0) {
+      this.inScreenComments.splice(index, 1);
+    }
   }
 
 

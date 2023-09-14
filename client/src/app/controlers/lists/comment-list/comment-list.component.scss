@@ -35,6 +35,13 @@ $attachmentCounts: (
 );
 $spacing: containers.$cardPaddingY;
 
+// Список
+.list {
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+    gap: #{$gap} 0;
+  }
+}
+
 // Элемент комментария
 .comment {
   $__elm: &;

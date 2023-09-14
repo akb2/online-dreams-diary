@@ -1,6 +1,7 @@
 <!-- Список комментариев -->
 <ng-container *ngIf="!loading; else loader">
-  <div class="list"
+  <div #list
+       class="list"
        *ngIf="!!comments?.length; else noComments">
     <!-- Загрузчик следующих комментариев -->
     <ng-container [ngTemplateOutlet]="moreCommentsDetector"
@@ -9,9 +10,15 @@
     <div #comment
          class="comment"
          [attr.comment-id]="comment.id"
+         scrollDetector
+         (inScreenEvent)="onCommentInScreen(comment.id)"
+         (outOfScreenEvent)="onCommentOutOfScreen(comment.id)"
          *ngFor="let comment of comments; trackBy: listTrackBy">
       <!-- Аватарка -->
-      <a class="comment__avatar"
+      <a #commentAvatar
+         [attr.comment-id]="comment.id"
+         class="comment__avatar"
+         [ngStyle]="{ top: getAvatarTopPosition(comment.id) + 'px' }"
          routerLink="/profile/{{comment.user.id}}"
          background="fill"
          color="primary">
@@ -21,7 +28,7 @@
         <!-- Иконка -->
         <mat-icon *ngIf="comment.user.avatars.small.length === 0">person</mat-icon>
         <!-- Метка онлайн -->
-        <div class="comment__header-avatar-online"
+        <div class="comment__avatar-online"
              *ngIf="comment.user.online"></div>
       </a>
       <!-- Коммантарий -->
