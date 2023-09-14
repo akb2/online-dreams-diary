@@ -28,11 +28,13 @@ export interface Comment {
 export interface CommentAttachment {
   graffity?: MediaFile;
   dreams?: Dream[];
+  mediaPhotos?: MediaFile[];
 }
 
 // Интерфейс прикрепленных данных для сохранения на сервер
 export interface CommentUploadAttachment {
   graffity?: File;
+  mediaPhotos?: number[];
 }
 
 // Интерфейс данных рисовалки
