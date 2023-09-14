@@ -4,6 +4,7 @@ import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
+import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
@@ -114,8 +115,12 @@ export class CommentListComponent implements OnInit, OnDestroy {
         count++;
       }
       // Сновидения
-      if (!!comment.attachment?.dreams) {
-        count += comment.attachment.dreams.length;
+      if (!!comment.attachment?.dreams?.length) {
+        count += UniqueArray(comment.attachment.dreams).length;
+      }
+      // Фотографии
+      if (!!comment.attachment?.mediaPhotos?.length) {
+        count += UniqueArray(comment.attachment.mediaPhotos).length;
       }
     }
     // Вернуть количество комментариев

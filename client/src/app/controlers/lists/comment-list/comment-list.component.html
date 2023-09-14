@@ -79,6 +79,11 @@
               <ng-container [ngTemplateOutlet]="graffityAttachment"
                             [ngTemplateOutletContext]="{ graffity }"></ng-container>
             </ng-container>
+            <!-- Фотография из медиа файлов -->
+            <ng-container *ngVar="comment?.attachment?.mediaPhotos as mediaPhotos">
+              <ng-container [ngTemplateOutlet]="mediaPhotosAttachment"
+                            [ngTemplateOutletContext]="{ mediaPhotos }"></ng-container>
+            </ng-container>
             <!-- Сновидение -->
             <ng-container *ngVar="comment?.attachment?.dreams as dreams">
               <ng-container [ngTemplateOutlet]="dreamAttachment"
@@ -152,6 +157,26 @@
       </div>
     </div>
   </div>
+</ng-template>
+
+<!-- Фотография из медиа файлов в закреплении -->
+<ng-template #mediaPhotosAttachment
+             let-mediaPhotos="mediaPhotos">
+  <ng-container *ngIf="!!mediaPhotos?.length">
+    <div class="comment__body-attachment"
+         *ngFor="let mediaPhoto of mediaPhotos">
+      <div class="comment__body-attachment-data">
+        <img class="media-photo"
+             [src]="mediaPhoto.url"
+             [alt]="mediaPhoto.description" />
+        <!-- Эффект наведения -->
+        <div class="comment__body-attachment-overlay">
+          <mat-icon>image_search</mat-icon>
+          <title>Увеличить фотографию</title>
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </ng-template>
 
 <!-- Сновидение в закреплении -->
