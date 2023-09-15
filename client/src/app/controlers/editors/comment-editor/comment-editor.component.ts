@@ -9,7 +9,7 @@ import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
-import { StringTemplatePipe } from "@_pipes/string-template-pipe";
+import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
 import { ScrollService } from "@_services/scroll.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
