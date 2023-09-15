@@ -1,4 +1,5 @@
 import { ScrollDetectorDirective } from "@_directives/scroll-detector.directive";
+import { SwipeDirective } from "@_directives/swipe.directive";
 import { VarDirective } from "@_directives/var.directive";
 import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
 import { PetrovichPipe } from "@_pipes/petrovich.pipe";
@@ -22,7 +23,8 @@ const components = [
 // Директивы
 const directives = [
   VarDirective,
-  ScrollDetectorDirective
+  ScrollDetectorDirective,
+  SwipeDirective
 ];
 
 // Пайпы
