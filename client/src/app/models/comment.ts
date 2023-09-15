@@ -72,5 +72,7 @@ export interface SearchRequestComment extends Pick<BaseSearch, "limit"> {
 // Типы материалов комментариев
 export enum CommentMaterialType {
   Profile,
-  Dream
+  Dream,
+  Media,
+  Photo
 }
