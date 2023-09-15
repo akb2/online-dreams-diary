@@ -4,7 +4,12 @@
 @use "screens";
 @use "vars";
 
-$maxHeight: calc(100vh - #{vars.$headerHeight + (containers.$paddingX * 2)});
+$maxHeights: (
+  default: calc(100vh - #{vars.$headerHeight + (containers.$paddingX * 2)}),
+  small: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
+  xsmall: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
+  xxsmall: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)})
+);
 
 $commentWidths: (
   default: 420px
@@ -86,7 +91,6 @@ $commentWidths: (
     flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
-    max-height: $maxHeight;
     position: fixed;
     left: 200vw;
     top: 200vh;
@@ -110,8 +114,9 @@ $commentWidths: (
       }
     }
     // Адаптив
-    @include screens.adaptiveFor(containers.$widths, $commentWidths) using($width, $commentWidth) {
+    @include screens.adaptiveFor(containers.$widths, $commentWidths, $maxHeights) using($width, $commentWidth, $maxHeight) {
       width: $width - (containers.$paddingX * 2);
+      max-height: $maxHeight;
       // Расположение элементов
       &-template {
         // Показать комментарии
@@ -122,15 +127,15 @@ $commentWidths: (
     }
   }
   // Адаптив
-  @include screens.adaptive(auto, xsmall) {
+  @include screens.adaptive(auto, small) {
     pointer-events: auto;
+    padding-bottom: vars.$headerHeight + containers.$paddingX;
   }
 }
 
 // Фотография
 .photo {
   max-width: 100%;
-  max-height: $maxHeight;
   background-color: map.get(colors.$matDisabled, 900);
   border-radius: 0;
   border: none;
@@ -142,7 +147,6 @@ $commentWidths: (
   // Картинка
   > img {
     max-width: 100%;
-    max-height: $maxHeight;
     vertical-align: middle;
     line-height: 1;
   }
@@ -164,6 +168,14 @@ $commentWidths: (
   // Показать подпись
   &:hover > &__label {
     opacity: 0.75;
+  }
+  // Адаптив
+  @include screens.adaptiveFor($maxHeights) using($maxHeight) {
+    max-height: $maxHeight;
+    // Картинка
+    > img {
+      max-height: $maxHeight;
+    }
   }
 }
 
