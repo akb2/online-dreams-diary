@@ -18,12 +18,13 @@
     <!-- Следующее фото -->
     <button class="viewer__toggler next"
             [ngStyle]="{ paddingLeft: togglerSpacing + 'px' }"
-            mat-dialog-close>
+            (click)="onClose()">
       <mat-icon>close</mat-icon>
     </button>
   </ng-container>
   <!-- Контейнер с данными -->
-  <div class="viewer__container"
+  <div #viewerTemplateContainer
+       class="viewer__container"
        [ngClass]="{ show: !loading }">
     <div #viewerTemplate
          class="viewer__container-template"
@@ -32,7 +33,8 @@
       <!-- Фотография -->
       <button class="photo"
               (click)="onNext()">
-        <img [src]="file.url"
+        <img #imageElm
+             [src]="file.url"
              [alt]="file.description"
              (load)="onPhotoLoaded()"
              (error)="onClose()" />
@@ -42,10 +44,32 @@
         </div>
       </button>
       <!-- Комментарии -->
-      <div class="comments"
-           *ngIf="showComments">
-        <app-scroll></app-scroll>
-      </div>
+      <ng-container *ngVar="commentType as type">
+        <div #commentBlock
+             class="comments"
+             *ngIf="showComments && !!type && !loading">
+          <div #commentEditor
+               class="comments__editor">
+            <app-comment-editor [materialType]="type"
+                                [materialId]="file.id"
+                                [materialOwner]="file.user.id"
+                                placeholder="Что вы думаете об этой фотографии?"
+                                [wrapControls]="true"
+                                [bottomSmiles]="true"
+                                [(replyUser)]="replyUser"></app-comment-editor>
+          </div>
+          <!-- Список комментариев -->
+          <app-scroll class="comments__list"
+                      [ngStyle]="{ minHeight: commentListMinHeight + 'px', maxHeight: commentListMaxHeight + 'px' }">
+            <div class="comments__list-helper">
+              <app-comment-list [materialType]="type"
+                                [materialId]="file.id"
+                                [attachmentPerLine]="2"
+                                (replyEvent)="onReplyUserChange($event)"></app-comment-list>
+            </div>
+          </app-scroll>
+        </div>
+      </ng-container>
     </div>
   </div>
   <!-- Загрузчик -->

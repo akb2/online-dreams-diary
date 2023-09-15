@@ -15,6 +15,13 @@ $commentWidths: (
   default: 420px
 );
 
+// Убрать стили по умолчанию
+::ng-deep .popup-photo-viewer .mat-mdc-dialog-surface.mdc-dialog__surface {
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
 // Просмотрщик
 .viewer {
   position: fixed;
@@ -181,5 +188,47 @@ $commentWidths: (
 
 // Комментарии
 .comments {
-  background-color: colors.$card;
+  background-color: colors.$background;
+  // Редактор
+  &__editor {
+    padding-right: containers.$paddingX;
+    background-color: colors.$card;
+    width: 100%;
+  }
+  // Список
+  &__list {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    flex-grow: 1;
+    position: relative;
+    // Обертка
+    &-helper {
+      padding: containers.$paddingX;
+    }
+    // Тени
+    &::before,
+    &::after {
+      content: "";
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      box-shadow: containers.$cardBoxShadow;
+    }
+    // Тень слева
+    &::before {
+      height: 100%;
+    }
+    // Тень сверху
+    &::after {
+      width: 100%;
+    }
+  }
+  // Адаптив
+  @include screens.adaptiveFor(containers.$widths, $commentWidths, $maxHeights) using($width, $commentWidth, $maxHeight) {
+    max-height: $maxHeight;
+  }
 }
