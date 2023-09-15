@@ -121,6 +121,10 @@ $commentWidths: (
       }
     }
   }
+  // Адаптив
+  @include screens.adaptive(auto, xsmall) {
+    pointer-events: auto;
+  }
 }
 
 // Фотография
