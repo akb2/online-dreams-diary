@@ -1,3 +1,4 @@
+import { MediaFileView, MediaFileViewType, PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
 import { WaitObservable } from "@_datas/api";
 import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
@@ -18,6 +19,7 @@ import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
 import { Subject, merge } from "rxjs";
 import { concatMap, filter, map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
@@ -177,7 +179,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
     private scrollService: ScrollService,
     private accountService: AccountService,
     private activatedRoute: ActivatedRoute,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private matDialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -298,6 +301,16 @@ export class CommentListComponent implements OnInit, OnDestroy {
     if (index >= 0) {
       this.inScreenComments.splice(index, 1);
     }
+  }
+
+  // Увеличить фото вложения
+  onViewPhoto(comment: Comment, mediaFileId: number): void {
+    const mediaFiles: MediaFileView[] = [
+      { ...comment.attachment.graffity, viewType: MediaFileViewType.graffity },
+      ...comment.attachment.mediaPhotos.map(file => ({ ...file, viewType: MediaFileViewType.media }))
+    ].filter(file => !!file?.id);
+    // Открыть окно
+    PopupPhotoViewerComponent.open(this.matDialog, { mediaFiles, mediaFileId });
   }
 
 

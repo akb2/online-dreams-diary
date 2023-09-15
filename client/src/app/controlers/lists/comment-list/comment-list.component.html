@@ -84,12 +84,12 @@
             <!-- Граффити -->
             <ng-container *ngVar="comment?.attachment?.graffity as graffity">
               <ng-container [ngTemplateOutlet]="graffityAttachment"
-                            [ngTemplateOutletContext]="{ graffity }"></ng-container>
+                            [ngTemplateOutletContext]="{ graffity, comment }"></ng-container>
             </ng-container>
             <!-- Фотография из медиа файлов -->
             <ng-container *ngVar="comment?.attachment?.mediaPhotos as mediaPhotos">
               <ng-container [ngTemplateOutlet]="mediaPhotosAttachment"
-                            [ngTemplateOutletContext]="{ mediaPhotos }"></ng-container>
+                            [ngTemplateOutletContext]="{ mediaPhotos, comment }"></ng-container>
             </ng-container>
             <!-- Сновидение -->
             <ng-container *ngVar="comment?.attachment?.dreams as dreams">
@@ -151,10 +151,12 @@
 
 <!-- Граффити в закреплении -->
 <ng-template #graffityAttachment
+             let-comment="comment"
              let-graffity="graffity">
   <div class="comment__body-attachment"
        *ngIf="!!graffity?.url">
-    <div class="comment__body-attachment-data">
+    <div class="comment__body-attachment-data"
+         (click)="onViewPhoto(comment, graffity.id)">
       <img class="graffity"
            [src]="graffity.url" />
       <!-- Эффект наведения -->
@@ -168,9 +170,11 @@
 
 <!-- Фотография из медиа файлов в закреплении -->
 <ng-template #mediaPhotosAttachment
-             let-mediaPhotos="mediaPhotos">
+             let-mediaPhotos="mediaPhotos"
+             let-comment="comment">
   <ng-container *ngIf="!!mediaPhotos?.length">
     <div class="comment__body-attachment"
+         (click)="onViewPhoto(comment, mediaPhoto.id)"
          *ngFor="let mediaPhoto of mediaPhotos">
       <div class="comment__body-attachment-data">
         <img class="media-photo"

@@ -1,4 +1,5 @@
 import { InformModule } from "@_controlers/inform/inform.module";
+import { PopupPhotoViewerModule } from "@_controlers/photo-viewer/photo-viewer.module";
 import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -26,7 +27,8 @@ import { CommentListComponent } from "./comment-list.component";
     MatIconModule,
     CoreModule,
     MatTooltipModule,
-    MatButtonModule
+    MatButtonModule,
+    PopupPhotoViewerModule
   ]
 })
 

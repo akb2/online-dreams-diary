@@ -1,0 +1,54 @@
+<section mat-dialog-content
+         class="viewer"
+         appSwipe
+         (swipeLeft)="onNext()"
+         (swipeRight)="onPrev()"
+         (swipeUp)="onClose()"
+         (swipeDown)="onClose()"
+         *ngVar="getCurrentMediaFile as file">
+  <!-- Перелистывание -->
+  <ng-container *ngIf="getTotalCount > 1 && !loading">
+    <!-- Предыдущее фото -->
+    <button class="viewer__toggler prev"
+            [ngStyle]="{ paddingRight: togglerSpacing + 'px' }"
+            (click)="onPrev()">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <!-- Следующее фото -->
+    <button class="viewer__toggler next"
+            [ngStyle]="{ paddingLeft: togglerSpacing + 'px' }"
+            mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </ng-container>
+  <!-- Контейнер с данными -->
+  <div class="viewer__container"
+       [ngClass]="{ show: !loading }">
+    <div #viewerTemplate
+         class="viewer__container-template"
+         [ngClass]="{ showComments }"
+         *ngVar="getShowComments as showComments">
+      <!-- Фотография -->
+      <button class="photo"
+              (click)="onNext()">
+        <img [src]="file.url"
+             [alt]="file.description"
+             (load)="onPhotoLoaded()"
+             (error)="onClose()" />
+        <div class="photo__label"
+             *ngIf="getTotalCount > 1">
+          {{getCurrentPosition}} / {{getTotalCount}}
+        </div>
+      </button>
+      <!-- Комментарии -->
+      <div class="comments"
+           *ngIf="showComments">
+        <app-scroll></app-scroll>
+      </div>
+    </div>
+  </div>
+  <!-- Загрузчик -->
+  <app-loader size="120px"
+              color="white"
+              *ngIf="loading"></app-loader>
+</section>

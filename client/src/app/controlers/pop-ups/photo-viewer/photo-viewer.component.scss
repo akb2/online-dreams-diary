@@ -1,0 +1,168 @@
+@use "sass:map";
+@use "colors";
+@use "containers";
+@use "screens";
+@use "vars";
+
+$maxHeight: calc(100vh - #{vars.$headerHeight + (containers.$paddingX * 2)});
+
+$commentWidths: (
+  default: 420px
+);
+
+// Просмотрщик
+.viewer {
+  position: fixed;
+  border-radius: 0;
+  box-shadow: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: initial;
+  z-index: 1;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  padding: containers.$paddingX;
+  padding-top: vars.$headerHeight + containers.$paddingX;
+  // Переключение
+  &__toggler {
+    $iconSize: 128px;
+    // Свойства
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity #{screens.$animationTime};
+    // Иконка
+    > mat-icon {
+      display: block;
+      text-align: center;
+      width: $iconSize;
+      height: $iconSize;
+      line-height: $iconSize;
+      font-size: $iconSize * 0.7;
+      color: colors.$titleDark;
+    }
+    // Назад
+    &.prev {
+      left: 0;
+      justify-content: flex-end;
+    }
+    // Вперед
+    &.next {
+      right: 0;
+      justify-content: flex-start;
+    }
+    // Наведение
+    &:hover {
+      opacity: 1;
+    }
+    // Адаптив
+    @include screens.adaptive(auto, xsmall) {
+      display: none;
+    }
+  }
+  // Контейнер
+  &__container {
+    z-index: 2;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    max-height: $maxHeight;
+    pointer-events: none;
+    position: fixed;
+    left: 200vw;
+    top: 200vh;
+    // Показать
+    &.show {
+      position: relative;
+      left: auto;
+      top: auto;
+    }
+    // Расположение элементов
+    &-template {
+      max-height: 100%;
+      pointer-events: auto;
+      border-radius: containers.$cardBorderRadius;
+      overflow: hidden;
+      // Показать комментарии
+      &.showComments {
+        display: grid;
+        justify-content: center;
+        align-items: stretch;
+      }
+    }
+    // Адаптив
+    @include screens.adaptiveFor(containers.$widths, $commentWidths) using($width, $commentWidth) {
+      width: $width - (containers.$paddingX * 2);
+      // Расположение элементов
+      &-template {
+        // Показать комментарии
+        &.showComments {
+          grid-template-columns: auto #{$commentWidth};
+        }
+      }
+    }
+  }
+}
+
+// Фотография
+.photo {
+  max-width: 100%;
+  max-height: $maxHeight;
+  background-color: map.get(colors.$matDisabled, 900);
+  border-radius: 0;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+  // Картинка
+  > img {
+    max-width: 100%;
+    max-height: $maxHeight;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  // Количество
+  &__label {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 5px 8px;
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 400;
+    opacity: 0;
+    border-radius: 5px;
+    background-color: map.get(colors.$matDisabled, 900);
+    color: map.get(colors.$matDisabled, contrast, 900);
+    transition: opacity #{screens.$animationTime};
+  }
+  // Показать подпись
+  &:hover > &__label {
+    opacity: 0.75;
+  }
+}
+
+// Комментарии
+.comments {
+  background-color: colors.$card;
+}
