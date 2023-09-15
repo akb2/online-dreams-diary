@@ -5,6 +5,7 @@
          (swipeRight)="onPrev()"
          (swipeUp)="onClose()"
          (swipeDown)="onClose()"
+         (swipeDestroyed)="onClose()"
          *ngVar="getCurrentMediaFile as file">
   <!-- Перелистывание -->
   <ng-container *ngIf="getTotalCount > 1 && !loading">
