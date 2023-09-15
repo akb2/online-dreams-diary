@@ -2,7 +2,7 @@ import { WaitObservable } from "@_datas/api";
 import { ParseInt } from "@_helpers/math";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Observable, Subject, fromEvent } from 'rxjs';
-import { concatMap, filter, last, map, skipWhile, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
+import { concatMap, filter, last, map, skipWhile, switchMap, takeUntil } from 'rxjs/operators';
 
 
 
