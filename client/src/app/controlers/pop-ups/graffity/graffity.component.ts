@@ -70,7 +70,7 @@ export class PopupGraffityComponent {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupGraffityData): MatDialogRef<PopupGraffityComponent> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     // Настройки
     matDialogConfig.width = PopupGraffityComponent.popUpWidth;
     matDialogConfig.data = data;

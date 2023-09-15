@@ -295,7 +295,7 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data?: PopupPhotoUploaderData): MatDialogRef<PopupPhotoUploaderComponent, PopupPhotoUploaderResult> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     matDialogConfig.width = PopupPhotoUploaderComponent.popUpWidth;
     matDialogConfig.data = data;
     // Вернуть диалог

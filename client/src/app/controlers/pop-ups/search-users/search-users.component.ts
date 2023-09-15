@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
-import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { AppMatDialogConfig } from "@_datas/app";
 import { SearchUser, User, UserPrivate, UserPrivateItem } from "@_models/account";
 import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Subject, takeUntil } from "rxjs";
 
 
@@ -131,7 +131,7 @@ export class PopupSearchUsersComponent implements OnInit, OnDestroy {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupSearchUsersData): MatDialogRef<PopupSearchUsersComponent> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     matDialogConfig.width = PopupSearchUsersComponent.popUpWidth;
     matDialogConfig.data = data;
     // Вернуть диалог

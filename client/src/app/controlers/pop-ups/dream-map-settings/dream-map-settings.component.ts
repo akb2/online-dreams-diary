@@ -90,7 +90,7 @@ export class PopupDreamMapSettingsComponent {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupDreamMapSettingsData): MatDialogRef<PopupDreamMapSettingsComponent> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     matDialogConfig.width = PopupDreamMapSettingsComponent.popUpWidth;
     matDialogConfig.data = data;
     // Вернуть диалог

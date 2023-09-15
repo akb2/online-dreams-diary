@@ -1,12 +1,12 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { UserAvatarCropDataElement } from "@_models/account";
 import { AppMatDialogConfig } from "@_datas/app";
-import { ScreenService } from "@_services/screen.service";
-import { forkJoin, fromEvent, mergeMap, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { CheckInRange } from "@_helpers/math";
+import { UserAvatarCropDataElement } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { ScreenKeys } from "@_models/screen";
-import { CheckInRange } from "@_helpers/math";
+import { ScreenService } from "@_services/screen.service";
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
+import { Subject, forkJoin, fromEvent, mergeMap, skipWhile, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -478,7 +478,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupCropImageData): MatDialogRef<PopupCropImageComponent> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     matDialogConfig.width = PopupCropImageComponent.popUpWidth;
     matDialogConfig.data = data;
     // Вернуть диалог

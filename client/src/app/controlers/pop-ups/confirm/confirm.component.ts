@@ -1,6 +1,6 @@
-import { Component, Inject } from "@angular/core";
-import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { AppMatDialogConfig } from "@_datas/app";
+import { Component, Inject } from "@angular/core";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 
 
 
@@ -44,7 +44,7 @@ export class PopupConfirmComponent {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupConfirmData): MatDialogRef<PopupConfirmComponent> {
-    const matDialogConfig: MatDialogConfig = AppMatDialogConfig;
+    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     matDialogConfig.width = PopupConfirmComponent.popUpWidth;
     matDialogConfig.data = data;
     // Вернуть диалог
