@@ -28,6 +28,7 @@ $commentWidths: (
   align-items: center;
   padding: containers.$paddingX;
   padding-top: vars.$headerHeight + containers.$paddingX;
+  pointer-events: none;
   // Переключение
   &__toggler {
     $iconSize: 128px;
@@ -48,6 +49,7 @@ $commentWidths: (
     cursor: pointer;
     opacity: 0.4;
     transition: opacity #{screens.$animationTime};
+    pointer-events: auto;
     // Иконка
     > mat-icon {
       display: block;
@@ -85,7 +87,6 @@ $commentWidths: (
     justify-content: center;
     align-items: center;
     max-height: $maxHeight;
-    pointer-events: none;
     position: fixed;
     left: 200vw;
     top: 200vh;
