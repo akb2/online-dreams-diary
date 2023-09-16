@@ -47,7 +47,7 @@ $adaptiveMax: large;
     // С ответом
     &.with-reply {
       grid-template-columns: 1fr;
-      grid-template-areas: "reply editor actions attachments";
+      grid-template-areas: "reply" "editor" "actions" "attachments";
     }
   }
 }
@@ -74,6 +74,10 @@ $adaptiveMax: large;
     grid-area: reply;
     // Адаптив
     @include screens.adaptive($adaptiveMin, $adaptiveMax) {
+      padding-top: containers.$cardPaddingY;
+    }
+    // С переносом
+    :host.wrap-controls & {
       padding-top: containers.$cardPaddingY;
     }
   }
