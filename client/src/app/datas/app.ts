@@ -6,6 +6,9 @@ import { MatDialogConfig } from "@angular/material/dialog";
 
 
 
+// Класс для определения окна как на переднем плане
+export const FrontDialogClass: string = "front-dialog";
+
 // Настройки для диалоговых окон по умолчанию
 export const AppMatDialogConfig: MatDialogConfig = {
   width: "auto",
@@ -108,6 +111,17 @@ export const ArrayRandom: <T>(data: T[]) => T = function <T>(data: T[]) {
 export const ToArray: <T>(d: any, c?: (d: any) => T) => T[] = function <T>(data: any, mapCallback = d => d as T) {
   return (Array.isArray(data) ? data : [data]).map(mapCallback);
 };
+
+// Поиск ближайшего предыдущего элемента по селектору
+export const FirstPrevBySelector = <T>(elm: Element, selector: string): T => {
+  while (elm = elm.previousElementSibling) {
+    if (elm.matches(selector)) {
+      return elm as T;
+    }
+  }
+  // Ничего не найдено
+  return undefined;
+}
 
 // Пересечение элемента по селектору
 export const CompareElementBySelector = (target: any, selector: string) => {

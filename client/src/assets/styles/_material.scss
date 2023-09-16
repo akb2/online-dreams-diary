@@ -290,7 +290,7 @@
         $colors: (
           info: colors.$matDisabled 900,
           success: colors.$matPrimary 700,
-          error: colors.$matStatusWarn 600,
+          error: colors.$matStatusWarn 600
         );
         // Цикл по стилям
         @each $class, $color in $colors {
@@ -311,6 +311,18 @@
           }
         }
       }
+    }
+  }
+}
+
+// Порядок отрисовки окон
+@mixin matDialogSort {
+  ::ng-deep .cdk-global-overlay-wrapper,
+  ::ng-deep .cdk-overlay-backdrop {
+    z-index: 1000;
+    // Передний план
+    &.front-dialog {
+      z-index: 1001;
     }
   }
 }
@@ -402,6 +414,8 @@
       }
     }
   }
+  // Порядок отрисовки
+  @include matDialogSort;
 }
 
 // Выпадающие списки

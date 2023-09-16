@@ -3,6 +3,7 @@
 @use "containers";
 @use "screens";
 @use "vars";
+@use "material";
 
 $maxHeights: (
   default: calc(100vh - #{vars.$headerHeight + (containers.$paddingX * 2)}),
@@ -14,6 +15,9 @@ $maxHeights: (
 $commentWidths: (
   default: 420px
 );
+
+// Заготовки стилей
+@include material.matDialogSort;
 
 // Убрать стили по умолчанию
 ::ng-deep .popup-photo-viewer .mat-mdc-dialog-surface.mdc-dialog__surface {

@@ -1,14 +1,15 @@
 import { WaitObservable } from "@_datas/api";
-import { AppMatDialogConfig, CompareElementByElement } from "@_datas/app";
+import { AppMatDialogConfig, CompareElementByElement, FirstPrevBySelector, FrontDialogClass } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { CustomObjectKey } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { MediaFile } from "@_models/media";
+import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { Subject, concatMap, filter, fromEvent, takeUntil, timer } from "rxjs";
+import { BehaviorSubject, Subject, concatMap, filter, forkJoin, fromEvent, map, merge, of, pairwise, switchMap, takeUntil, timer } from "rxjs";
 
 
 
@@ -51,6 +52,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   loading: boolean = true;
 
   replyUser: User;
+  readAccess: boolean = false;
 
   commentListMinHeight: number = 0;
   commentListMaxHeight: number = 0;
@@ -58,6 +60,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   prevControlKeys: string[] = ["ArrowLeft"];
   nextControlKeys: string[] = ["ArrowRight", "Space"];
 
+  writeAccess$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -83,7 +86,12 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
 
   // Показать комментарии
   get getShowComments(): boolean {
-    return !!this.showCommentsTypes?.[this.getCurrentMediaFile?.viewType];
+    return (
+      !!this.showCommentsTypes?.[this.getCurrentMediaFile?.viewType] &&
+      !!this.commentType &&
+      !this.loading &&
+      this.readAccess
+    );
   }
 
   // Тип комментариев
@@ -99,7 +107,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) private data: PopupPhotoViewerData,
     private matDialogRef: MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult>,
     private changeDetectorRef: ChangeDetectorRef,
-    private screenService: ScreenService
+    private screenService: ScreenService,
+    private accountService: AccountService
   ) {
     this.mediaFiles = data?.mediaFiles ?? [];
     this.mediaFileId = ParseInt(data?.mediaFileId);
@@ -110,6 +119,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
     this.viewerTemplateResizeEvent();
     this.viewerTemplateContainerResizeEvent();
     this.keyboardEvents();
+    this.checkCommentPrivate();
   }
 
   ngOnDestroy(): void {
@@ -131,8 +141,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
         this.mediaFileId = index > 0 ?
           this.mediaFiles[index - 1].id :
           this.mediaFiles[this.getTotalCount - 1].id;
-        // Обновить
-        this.changeDetectorRef.detectChanges();
+        // Проверка доступа к комментариям
+        this.checkCommentPrivate();
       }
     }
   }
@@ -147,8 +157,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
         this.mediaFileId = index + 1 < this.getTotalCount ?
           this.mediaFiles[index + 1].id :
           this.mediaFiles[0].id;
-        // Обновить
-        this.changeDetectorRef.detectChanges();
+        // Проверка доступа к комментариям
+        this.checkCommentPrivate();
       }
     }
   }
@@ -196,16 +206,29 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
 
   // Изменение размеров шаблона отображения
   private viewerTemplateContainerResizeEvent(): void {
-    WaitObservable(() => !this.viewerTemplateContainer?.nativeElement || !this.imageElm?.nativeElement)
+    WaitObservable(() => !this.viewerTemplateContainer?.nativeElement || !this.imageElm?.nativeElement || this.loading)
       .pipe(
         takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize([this.viewerTemplateContainer.nativeElement])),
+        concatMap(() => merge(
+          this.screenService.elmResize([this.viewerTemplateContainer.nativeElement, this.imageElm.nativeElement]),
+          this.writeAccess$.pipe(
+            pairwise(),
+            filter(([p, v]) => p !== v),
+            map(writeAccess => writeAccess),
+            concatMap(() => WaitObservable(() => !this.commentEditor?.nativeElement), writeAccess => writeAccess),
+            switchMap(writeAccess => writeAccess ? this.screenService.elmResize([this.commentEditor.nativeElement]) : of(null))
+          )
+        )),
         filter(() => !!this.commentBlock?.nativeElement)
       )
-      .subscribe(([{ element }]) => {
+      .subscribe(() => {
+        const element: HTMLElement = this.viewerTemplateContainer.nativeElement;
+        const imageHeight = this.imageElm.nativeElement.getBoundingClientRect().height;
         const editorHeight: number = ParseInt(this.commentEditor?.nativeElement?.getBoundingClientRect()?.height);
-        this.commentListMaxHeight = ParseInt(window.getComputedStyle(element).maxHeight) - editorHeight;
-        this.commentListMinHeight = CheckInRange(this.imageElm.nativeElement.getBoundingClientRect().height - editorHeight, this.commentListMaxHeight, 0);
+        const elementMaxHeight: number = ParseInt(window.getComputedStyle(element).maxHeight);
+        // Обновить параметры
+        this.commentListMaxHeight = elementMaxHeight - editorHeight;
+        this.commentListMinHeight = CheckInRange(imageHeight - editorHeight, this.commentListMaxHeight, 0);
         // Обновить
         this.changeDetectorRef.detectChanges();
       });
@@ -221,7 +244,6 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
         filter(({ target }) => !this.commentBlock?.nativeElement || (!!this.commentBlock?.nativeElement && CompareElementByElement(this.commentBlock.nativeElement, target)))
       )
       .subscribe(({ code, target }) => {
-        console.log(target);
         if (this.prevControlKeys.includes(code)) {
           this.onPrev();
         }
@@ -232,6 +254,30 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Проверка доступа к коммнтариям
+  private checkCommentPrivate(): void {
+    const mediaFile: MediaFile = this.getCurrentMediaFile;
+    // Обновить состояния комментариев
+    this.readAccess = false;
+    this.writeAccess$.next(false);
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+    // Медиа файл существует
+    if (!!mediaFile) {
+      forkJoin({
+        writeAccess: this.accountService.checkPrivate("myCommentsWrite", mediaFile.user.id, ["8100"]),
+        readAccess: this.accountService.checkPrivate("myCommentsRead", mediaFile.user.id, ["8100"])
+      })
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(({ readAccess, writeAccess }) => {
+          this.readAccess = readAccess;
+          this.writeAccess$.next(writeAccess);
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        });
+    }
+  }
+
 
 
 
@@ -239,10 +285,34 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   // Открыть текущее окно
   static open(matDialog: MatDialog, data?: PopupPhotoViewerData): MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult> {
     const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
+    const mediaFiles: number[] = (data?.mediaFiles ?? []).map(({ id }) => id);
+    const mediaFileId: number = ParseInt(data?.mediaFileId);
+    const dialogId: string = "popup-photo-viewer--files-" + (mediaFiles.join("-")) + "--file-" + (mediaFileId);
+    const existsDialog: MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult> = matDialog.getDialogById(dialogId);
+    // Настройки окна
     matDialogConfig.width = PopupPhotoViewerComponent.popUpWidth;
     matDialogConfig.data = data;
     matDialogConfig.panelClass = "popup-photo-viewer";
-    // Вернуть диалог
+    matDialogConfig.id = dialogId;
+    // Открыть существующий
+    if (!!existsDialog) {
+      const existsElm: HTMLElement = document.getElementById(dialogId).closest(".cdk-global-overlay-wrapper");
+      const existsBackdrop: HTMLElement = FirstPrevBySelector(existsElm, ".cdk-overlay-backdrop");
+      // Убрать отметки о верхнем уровне
+      matDialog.openDialogs.forEach(({ id }) => {
+        const elm: HTMLElement = document.getElementById(id).closest(".cdk-global-overlay-wrapper");
+        const backdrop: HTMLElement = FirstPrevBySelector(elm, ".cdk-overlay-backdrop");
+        // Удалить классы
+        elm.classList.remove(FrontDialogClass);
+        backdrop.classList.remove(FrontDialogClass);
+      });
+      // Добавить классы
+      existsElm.classList.add(FrontDialogClass);
+      existsBackdrop.classList.add(FrontDialogClass);
+      // Вернуть диалог
+      return existsDialog;
+    }
+    // Вернуть новый диалог
     return matDialog.open(PopupPhotoViewerComponent, matDialogConfig);
   }
 }

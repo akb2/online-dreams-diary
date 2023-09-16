@@ -47,9 +47,10 @@
       <ng-container *ngVar="commentType as type">
         <div #commentBlock
              class="comments"
-             *ngIf="showComments && !!type && !loading">
+             *ngIf="showComments">
           <div #commentEditor
-               class="comments__editor">
+               class="comments__editor"
+               *ngIf="writeAccess$ | async">
             <app-comment-editor [materialType]="type"
                                 [materialId]="file.id"
                                 [materialOwner]="file.user.id"
