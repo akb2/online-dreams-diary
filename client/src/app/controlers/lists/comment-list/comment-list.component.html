@@ -98,9 +98,9 @@
             </ng-container>
           </ng-container>
           <!-- Текст комментария -->
-          <p class="comment__body-text"
-             [innerHTML]="comment.html"
-             *ngIf="!!comment?.html['changingThisBreaksApplicationSecurity']?.length"></p>
+          <div class="comment__body-text"
+               [innerHTML]="comment.html"
+               *ngIf="!!comment?.html['changingThisBreaksApplicationSecurity']?.length"></div>
         </div>
       </div>
     </div>

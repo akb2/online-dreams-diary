@@ -149,15 +149,26 @@ $spacing: containers.$cardPaddingY;
       display: block;
       padding-bottom: $spacing;
       word-wrap: break-word;
-      line-height: 24px;
+      line-height: 26px;
       font-size: 15px;
       font-weight: 300;
-      // Смайлики
-      ::ng-deep > .smile {
-        display: inline-block;
-        line-height: 24px;
-        vertical-align: top;
-        margin: 0 1px;
+      // Абзацы
+      > ::ng-deep p {
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        line-height: inherit;
+        // Перенос абзацев
+        + p {
+          margin-top: 10px;
+        }
+        // Смайлики
+        > .smile {
+          display: inline-block;
+          line-height: 24px;
+          vertical-align: top;
+          margin: 1px;
+        }
       }
     }
     // Прикрепленные данные
