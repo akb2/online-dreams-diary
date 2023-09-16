@@ -66,6 +66,7 @@
               <app-comment-list [materialType]="type"
                                 [materialId]="file.id"
                                 [attachmentPerLine]="2"
+                                [writeAccess]="writeAccess$ | async"
                                 (replyEvent)="onReplyUserChange($event)"></app-comment-list>
             </div>
           </app-scroll>

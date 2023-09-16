@@ -69,6 +69,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   authState: boolean;
   writeAccess: boolean = false;
   readAccess: boolean = false;
+  replyUser: User;
 
   topPanelHelperShift: number = 0;
   leftPanelHelperShift: number = 0;
@@ -373,6 +374,13 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   // Раскрыть/скрыть список
   onKeywordsExpandStateChange(): void {
     this.topPanelOpen = !this.topPanelOpen;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Был выбран пользователеь для ответа
+  onReplyUserChange(replyUser: User): void {
+    this.replyUser = replyUser;
+    // Обновить
     this.changeDetectorRef.detectChanges();
   }
 

@@ -115,7 +115,8 @@
                               [materialOwner]="dream.user.id"
                               placeholder="Что вы об этом думаете?"
                               [wrapControls]="true"
-                              [bottomSmiles]="true"></app-comment-editor>
+                              [bottomSmiles]="true"
+                              [(replyUser)]="replyUser"></app-comment-editor>
         </div>
         <!-- Список комментариев -->
         <app-comment-list #commentListElm
@@ -123,7 +124,8 @@
                           [materialType]="commentMaterialType"
                           [materialId]="dream.id"
                           [writeAccess]="writeAccess"
-                          *ngIf="readAccess"></app-comment-list>
+                          *ngIf="readAccess"
+                          (replyEvent)="onReplyUserChange($event)"></app-comment-list>
       </div>
     </div>
   </div>
