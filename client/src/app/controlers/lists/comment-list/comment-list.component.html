@@ -154,11 +154,11 @@
              let-comment="comment"
              let-graffity="graffity">
   <div class="comment__body-attachment"
-       *ngIf="!!graffity?.url">
+       *ngIf="!!graffity?.urlSmall">
     <div class="comment__body-attachment-data"
          (click)="onViewPhoto(comment, graffity.id)">
       <img class="graffity"
-           [src]="graffity.url" />
+           [src]="graffity.urlSmall" />
       <!-- Эффект наведения -->
       <div class="comment__body-attachment-overlay">
         <mat-icon svgIcon="paint_spray"></mat-icon>
@@ -178,7 +178,7 @@
          *ngFor="let mediaPhoto of mediaPhotos">
       <div class="comment__body-attachment-data">
         <img class="media-photo"
-             [src]="mediaPhoto.url"
+             [src]="mediaPhoto.urlSmall"
              [alt]="mediaPhoto.description" />
         <!-- Эффект наведения -->
         <div class="comment__body-attachment-overlay">

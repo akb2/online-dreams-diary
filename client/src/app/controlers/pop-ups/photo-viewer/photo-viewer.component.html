@@ -34,7 +34,7 @@
       <button class="photo"
               (click)="onNext()">
         <img #imageElm
-             [src]="file.url"
+             [src]="file.urlLarge"
              [alt]="file.description"
              (load)="onPhotoLoaded()"
              (error)="onClose()" />

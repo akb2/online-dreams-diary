@@ -91,7 +91,10 @@ export class CommentListComponent implements OnInit, OnDestroy {
       comment.user.avatars?.small,
       comment.user.online ? "true" : "false",
       comment.text,
-      comment?.attachment?.graffity?.url
+      comment?.attachment?.graffity?.url,
+      comment?.attachment?.graffity?.urlLarge,
+      comment?.attachment?.graffity?.urlMiddle,
+      comment?.attachment?.graffity?.urlSmall
     ];
     // Объединить данные
     return dataStrings.join("-");

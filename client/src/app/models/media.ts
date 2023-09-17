@@ -17,6 +17,9 @@ export interface MediaFile {
   keywords: string[];
   description: string;
   url: string;
+  urlLarge: string;
+  urlMiddle: string;
+  urlSmall: string;
 }
 
 // Данные получаемые с сервера
@@ -32,6 +35,9 @@ export interface MediaFileDto {
   keywords: string[];
   description: string;
   url: string;
+  urlLarge: string;
+  urlMiddle: string;
+  urlSmall: string;
 }
 
 

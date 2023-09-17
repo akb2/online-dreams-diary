@@ -103,7 +103,7 @@
     <ng-container *ngIf="!!photos?.length">
       <ng-container [ngTemplateOutlet]="attachedImage"
                     [ngTemplateOutletContext]="{
-                      url: photo.url,
+                      url: photo.urlSmall,
                       callback: onPhotoDelete.bind(this, photo.id),
                       overlayIcon: 'close'
                     }"

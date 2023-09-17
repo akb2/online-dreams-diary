@@ -88,7 +88,10 @@ export class MediaService implements OnDestroy {
         originalName: data?.originalName?.toString(),
         keywords: (data?.keywords ?? []).map(keyword => keyword.trim()),
         description: data?.description?.toString(),
-        url: data?.url?.toString()
+        url: data?.url?.toString(),
+        urlLarge: data?.urlLarge?.toString(),
+        urlMiddle: data?.urlMiddle?.toString(),
+        urlSmall: data?.urlSmall?.toString()
       }))
     );
   }
