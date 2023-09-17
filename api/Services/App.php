@@ -33,13 +33,13 @@ class App
       $fileData = file_get_contents($src);
       $jsonData = json_decode($fileData, true);
       if (count($jsonData) > 0) {
-        $this->config = $jsonData;
-        // Текущий хости
         $currentDomain = $_SERVER['HTTP_HOST'];
         // Определить домены
-        $this->config['appDomain'] = $jsonData['appDomain'][$currentDomain] ?? $jsonData['appDomain']['default'];
-        $this->config['apiDomain'] = $jsonData['apiDomain'][$currentDomain] ?? $jsonData['apiDomain']['default'];
-        $this->config['mediaDomain'] = $jsonData['mediaDomain'][$currentDomain] ?? $jsonData['mediaDomain']['default'];
+        $jsonData['appDomain'] = $jsonData['appDomain'][$currentDomain] ?? $jsonData['appDomain']['default'];
+        $jsonData['apiDomain'] = $jsonData['apiDomain'][$currentDomain] ?? $jsonData['apiDomain']['default'];
+        $jsonData['mediaDomain'] = $jsonData['mediaDomain'][$currentDomain] ?? $jsonData['mediaDomain']['default'];
+        // Запомнить настройки
+        $this->config = $jsonData;
         // Вернуть данные
         return $jsonData;
       }
