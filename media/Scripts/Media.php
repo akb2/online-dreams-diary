@@ -44,15 +44,16 @@ $pdo = $app->dbConnect();
 $mediaService = new MediaService($pdo, $appConfig);
 
 // Данные
+$sizes = array('small', 'middle', 'large', 'original');
 $mixedUrl = explode("/", trim($_SERVER['REQUEST_URI'], "/"));
-[$mediaId, $accessHash] = $mixedUrl;
+[$mediaId, $accessHash, $size] = $mixedUrl;
 $media = $mediaService->getById($mediaId);
 
 
 
 // Вернуть файл
-if (isset($media['id']) && isset($media['accessHash']) && $media['id'] === intval($mediaId) && $media['accessHash'] === $accessHash) {
-  $fileSrc = realpath($mediaService->getMediaFileSrc($media['hash'], $media['extension']));
+if (isset($media['id']) && isset($media['accessHash']) && $media['id'] === intval($mediaId) && $media['accessHash'] === $accessHash && in_array($size, $sizes, true)) {
+  $fileSrc = realpath($mediaService->getMediaFileSrc($media['hash'], $media['extension'], $size));
   $finfo = new finfo(FILEINFO_MIME_TYPE);
   $mimeType = $finfo->file($fileSrc);
   $fileSize = filesize($fileSrc);
