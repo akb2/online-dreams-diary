@@ -13,7 +13,10 @@ class MediaService
 
   private DataBaseService $dataBaseService;
 
-  private string $imagesPath;
+  private string $imagesPathOriginal;
+  private string $imagesPathLarge;
+  private string $imagesPathMiddle;
+  private string $imagesPathSmall;
   private string $otherPath;
 
   private int $imagesMaxSize;
@@ -30,7 +33,10 @@ class MediaService
     // Подключить сервисы
     $this->dataBaseService = new DataBaseService($this->pdo);
     // Пути к файлам
-    $this->imagesPath = strval($this->config['media']['path']['images']);
+    $this->imagesPathOriginal = strval($this->config['media']['path']['images']['original']);
+    $this->imagesPathLarge = strval($this->config['media']['path']['images']['large']);
+    $this->imagesPathMiddle = strval($this->config['media']['path']['images']['middle']);
+    $this->imagesPathSmall = strval($this->config['media']['path']['images']['small']);
     $this->otherPath = strval($this->config['media']['path']['other']);
     // Размеры файлов
     $this->imagesMaxSize = intval($this->config['media']['sizes']['images']);
@@ -158,7 +164,13 @@ class MediaService
     $path = "";
     // Картинки
     if ($this->allExtensions[$ext] === 'images') {
-      $path = $this->imagesPath;
+      $pathes = array(
+        "original" => $this->imagesPathOriginal,
+        "large" => $this->imagesPathLarge,
+        "middle" => $this->imagesPathMiddle,
+        "small" => $this->imagesPathSmall,
+      );
+      $path = $pathes[$size];
     }
     // Остальные файлы
     else {
