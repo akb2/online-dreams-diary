@@ -153,7 +153,7 @@ class MediaService
   }
 
   // Получить конечный путь к файлу
-  private function getMediaFileSrc(string $hash, string $ext): string
+  public function getMediaFileSrc(string $hash, string $ext, string $size = 'original'): string
   {
     $path = "";
     // Картинки
@@ -175,7 +175,8 @@ class MediaService
       $fileSrc = $this->getMediaFileSrc($media['hash'], $media['extension']);
       // Файл найден
       if (file_exists($fileSrc) &&  is_file($fileSrc)) {
-        $fileUrl = $this->mediaDomain . '/' . $media['id'] . '/' . $this->getAccessHash($media);
+        $accessHash = $this->getAccessHash($media);
+        $fileUrl = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash;
         // Вернуть массив
         return array(
           'id' => intval($media['id']),
@@ -183,11 +184,12 @@ class MediaService
           'userId' => intval($media['user_id']),
           'hash' => $media['hash'],
           'size' => intval($media['size']),
-          'extension' => intval($media['extension']),
+          'extension' => strval($media['extension']),
           'originalName' => intval($media['original_name']),
           'keywords' => explode(',', $media['keywords']),
           'description' => $media['description'],
-          'url' => $fileUrl
+          'url' => $fileUrl,
+          'accessHash' => $accessHash
         );
       }
     }
