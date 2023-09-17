@@ -115,7 +115,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     return this.commentElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
   }
 
-  // Получить элемент комментария
+  // Получить элемент аватарки комментария
   private getCommentAvatarElm(commentId: number): HTMLElement {
     return this.commentAvatarElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
   }
