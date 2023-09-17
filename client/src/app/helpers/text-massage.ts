@@ -98,7 +98,7 @@ export class TextMessage {
     text = text.replace(/^([\s\n\r\t]+)$/gi, "");
     text = text.replace(/^([(<br>)\s\n\r\t]+)$/gi, "");
     text = text.replace(/<br>/gi, "</p><p>");
-    text = "<p>" + text + "</p>";
+    text = !!text ? "<p>" + text + "</p>" : "";
     // Вернуть изначальный текст
     return this.domSanitizer.bypassSecurityTrustHtml(text);
   }
