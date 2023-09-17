@@ -3,6 +3,7 @@
 namespace Services;
 
 use PDO;
+use Libs\Thumbs;
 
 
 
@@ -18,6 +19,10 @@ class MediaService
   private string $imagesPathMiddle;
   private string $imagesPathSmall;
   private string $otherPath;
+
+  private array $imagesLargeSize;
+  private array $imagesMiddleSize;
+  private array $imagesSmallSize;
 
   private int $imagesMaxSize;
   private int $otherMaxSize;
@@ -38,6 +43,9 @@ class MediaService
     $this->imagesPathMiddle = strval($this->config['media']['path']['images']['middle']);
     $this->imagesPathSmall = strval($this->config['media']['path']['images']['small']);
     $this->otherPath = strval($this->config['media']['path']['other']);
+    $this->imagesLargeSize = $this->config['media']['imagesResolutions']['large'];
+    $this->imagesMiddleSize = $this->config['media']['imagesResolutions']['middle'];
+    $this->imagesSmallSize = $this->config['media']['imagesResolutions']['small'];
     // Размеры файлов
     $this->imagesMaxSize = intval($this->config['media']['sizes']['images']);
     $this->otherMaxSize = intval($this->config['media']['sizes']['other']);
@@ -64,7 +72,7 @@ class MediaService
           $fileHash = $this->getFileHash($file['tmp_name']);
           // Удалось вычислить хэш файла
           if (!!$fileHash) {
-            $fileSrc = $this->getMediaFileSrc($fileHash, $fileExt);
+            $fileSrc = $this->getMediaFileSrc($fileHash, $fileExt, 'original');
             $needCreate = !file_exists($fileSrc);
             $successReplace = false;
             // Файл уже существует
@@ -137,6 +145,47 @@ class MediaService
 
 
 
+  // Получить новые размеры картинки
+  private function getNewImageResolution(string $fileSrc, string $size): array
+  {
+    list($originalWidth, $originalHeight) = getimagesize($fileSrc);
+    // Размеры
+    $resolutions = array(
+      'large' => $this->imagesLargeSize,
+      'middle' => $this->imagesMiddleSize,
+      'small' => $this->imagesSmallSize
+    );
+    // Определение преобразования
+    if (isset($resolutions[$size])) {
+      ['width' => $maxWidth, 'height' => $maxHeight] = $resolutions[$size];
+      // Изображение должно быть больше максимальных размеров
+      if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
+        $originalAspectRatio = $originalWidth / $originalHeight;
+        $maxAspectRatio = $maxWidth / $maxHeight;
+        $newWidth = $maxWidth;
+        $newHeight = $maxHeight;
+        // Ограничить по ширине
+        if ($originalAspectRatio > $maxAspectRatio) {
+          $newHeight = $newWidth / $originalAspectRatio;
+        }
+        // Ограничить по высоте
+        else {
+          $newWidth = $newHeight * $originalAspectRatio;
+        }
+        // Вернуть новые размеры
+        return array(
+          'width' => round($newWidth),
+          'height' => round($newHeight)
+        );
+      }
+    }
+    // Вернуть оригинальное разрешение
+    return array(
+      'width' => $originalWidth,
+      'height' => $originalHeight
+    );
+  }
+
   // Получения хэша файла
   public function getFileHash(string $fileSrc): string
   {
@@ -184,11 +233,34 @@ class MediaService
   private function convertMediaData(array $media): array|null
   {
     if (is_array($media) && count($media) > 0) {
-      $fileSrc = $this->getMediaFileSrc($media['hash'], $media['extension']);
+      $fileSrcOriginal = $this->getMediaFileSrc($media['hash'], $media['extension'], 'original');
+      $fileSrcLarge = $this->getMediaFileSrc($media['hash'], $media['extension'], 'large');
+      $fileSrcMiddle = $this->getMediaFileSrc($media['hash'], $media['extension'], 'middle');
+      $fileSrcSmall = $this->getMediaFileSrc($media['hash'], $media['extension'], 'small');
       // Файл найден
-      if (file_exists($fileSrc) &&  is_file($fileSrc)) {
+      if (file_exists($fileSrcOriginal) &&  is_file($fileSrcOriginal)) {
         $accessHash = $this->getAccessHash($media);
-        $fileUrl = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash;
+        $fileUrlOriginal = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash . '/original';
+        $fileUrlLarge = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash . '/large';
+        $fileUrlMiddle = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash . '/middle';
+        $fileUrlSmall = $this->mediaDomain . '/' . $media['id'] . '/' . $accessHash . '/small';
+        $resizeArray = array(
+          'large' => $fileSrcLarge,
+          'middle' => $fileSrcMiddle,
+          'small' => $fileSrcSmall,
+        );
+        // Создать большую картинку
+        foreach ($resizeArray as $size => $src) {
+          if (!(file_exists($src) && is_file($src))) {
+            ['width' => $width, 'height' => $height] = $this->getNewImageResolution($fileSrcOriginal, $size);
+            // Копировать файл
+            copy($fileSrcOriginal, $src);
+            // Изменить размер
+            $image = new Thumbs($src);
+            $image->resize($width, $height);
+            $image->save();
+          }
+        }
         // Вернуть массив
         return array(
           'id' => intval($media['id']),
@@ -200,7 +272,10 @@ class MediaService
           'originalName' => intval($media['original_name']),
           'keywords' => explode(',', $media['keywords']),
           'description' => $media['description'],
-          'url' => $fileUrl,
+          'url' => $fileUrlOriginal,
+          'urlLarge' => $fileUrlLarge,
+          'urlMiddle' => $fileUrlMiddle,
+          'urlSmall' => $fileUrlSmall,
           'accessHash' => $accessHash
         );
       }
