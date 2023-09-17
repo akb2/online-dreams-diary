@@ -10,4 +10,5 @@ SELECT
   `description`
 FROM `media_files`
 WHERE
-  `hash` = ?
+  `hash` = ? AND
+  `extension` = ?
