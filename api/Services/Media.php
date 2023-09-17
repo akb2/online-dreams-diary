@@ -83,7 +83,7 @@ class MediaService
             }
             // Загрузить существующий файл
             else if (!$needCreate) {
-              $tempData = $this->getByHash($fileHash);
+              $tempData = $this->getByHash($fileHash, $fileExt);
               // Вернуть ID
               return $tempData['id'] ?? 0;
             }
@@ -114,10 +114,10 @@ class MediaService
   }
 
   // Получить медиа файл по хэшу
-  public function getByHash(string $hash): array|null
+  public function getByHash(string $hash, string $ext): array|null
   {
     if (strlen($hash) > 0) {
-      $testMedia = $this->dataBaseService->getDatasFromFile('media/getByHash.sql', array($hash));
+      $testMedia = $this->dataBaseService->getDatasFromFile('media/getByHash.sql', array($hash, $ext));
       // Запись найдена
       if (is_array($testMedia) && count($testMedia) > 0) {
         $testMedia = $testMedia[0];
@@ -139,6 +139,17 @@ class MediaService
         return hash_file('sha512', $fileSrc);
       }
     }
+  }
+
+  // Генерация хэша доступа
+  public function getAccessHash(array $media): string
+  {
+    $del = '___';
+    $fileString = $media['id'] . $del . $media['hash'] . $del . $media['size'] . $del . $media['create_date'];
+    $userString = $_SERVER['REMOTE_ADDR'] . $del . $_SERVER['HTTP_USER_AGENT'] . $del . $_SERVER['HTTP_ACCEPT_LANGUAGE'] . $del . $_SERVER['HTTP_ACCEPT_ENCODING'];
+    $originalString = $this->config['media']['secret'] . $del . $fileString . $del . $userString;
+    // Вернуть хэш
+    return hash('sha512', $originalString);
   }
 
   // Получить конечный путь к файлу
@@ -164,7 +175,7 @@ class MediaService
       $fileSrc = $this->getMediaFileSrc($media['hash'], $media['extension']);
       // Файл найден
       if (file_exists($fileSrc) &&  is_file($fileSrc)) {
-        $fileUrl = str_replace($this->mediaPath, $this->mediaDomain . '/', $fileSrc);
+        $fileUrl = $this->mediaDomain . '/' . $media['id'] . '/' . $this->getAccessHash($media);
         // Вернуть массив
         return array(
           'id' => intval($media['id']),
