@@ -1,6 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormControl } from "@angular/forms";
-import { ActivatedRoute, Router } from "@angular/router";
 import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { SearchUser, User } from "@_models/account";
@@ -14,7 +11,10 @@ import { AccountService } from "@_services/account.service";
 import { CanonicalService } from "@_services/canonical.service";
 import { DreamService } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
-import { forkJoin, Subject, takeUntil } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder, FormControl } from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { Subject, forkJoin, takeUntil } from "rxjs";
 
 
 
@@ -85,7 +85,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   // Мобильный макет
   get isMobileMaket(): boolean {
-    return this.breakpoint === "xsmall" || this.breakpoint === "small";
+    return this.breakpoint === "xxsmall" || this.breakpoint === "xsmall" || this.breakpoint === "small";
   }
 
 

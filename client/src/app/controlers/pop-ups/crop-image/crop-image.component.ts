@@ -33,7 +33,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   sizeKoof: number = 0;
 
   showPreview: boolean = true;
-  private hidePreviewBreakpoints: ScreenKeys[] = ["xsmall"];
+  private hidePreviewBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall"];
 
   private mouseListener: boolean;
   private mouseMoveStart: [number, number] = [0, 0];

@@ -61,6 +61,7 @@ export class DrawDatas {
     default: [this.minHeight, 90, "px"],
     small: [this.minHeight, 76, "px"],
     xsmall: [this.minHeight, 76, "px"],
+    xxsmall: [this.minHeight, 76, "px"],
   };
   private static menuItemSizes: DrawDataArray = {
     default: [this.minHeight, this.minHeight, "px"],
@@ -73,13 +74,15 @@ export class DrawDatas {
     middle: [20, 60, "px"],
     small: [20, 40, "px"],
     xsmall: [20, 32, "px"],
+    xxsmall: [20, 32, "px"],
   };
   private static avatarSizes: DrawDataArray = {
     default: [38, 152, "px"],
     large: [38, 118, "px"],
     middle: [38, 84, "px"],
     small: [38, 60, "px"],
-    xsmall: [38, 48, "px"]
+    xsmall: [38, 48, "px"],
+    xxsmall: [38, 48, "px"],
   };
   private static avatarSpacings: DrawDataArray = {
     default: [10, 40, "px"],
@@ -87,9 +90,11 @@ export class DrawDatas {
     middle: [10, 28, "px"],
     small: [10, 15, "px"],
     xsmall: [10, 15, "px"],
+    xxsmall: [10, 15, "px"],
   };
   private static subTitlesLineHeights: DrawDataArray = {
     default: [18, 52, "px"],
+    xxsmall: [18, 22, "px"],
     xsmall: [18, 22, "px"],
     small: [18, 30, "px"],
     middle: [18, 32, "px"],
@@ -278,7 +283,8 @@ export class DrawDatas {
         data: {
           default: { min: 0, max: this.defaultSpacing, unit: "px" },
           small: { min: 0, max: 0, unit: "px" },
-          xsmall: { min: 0, max: 0, unit: "px" }
+          xsmall: { min: 0, max: 0, unit: "px" },
+          xxsmall: { min: 0, max: 0, unit: "px" }
         }
       },
       //
@@ -294,7 +300,8 @@ export class DrawDatas {
         data: {
           default: { min: 32, max: 48, unit: "px" },
           small: { min: 24, max: 24, unit: "px" },
-          xsmall: { min: 24, max: 24, unit: "px" }
+          xsmall: { min: 24, max: 24, unit: "px" },
+          xxsmall: { min: 24, max: 24, unit: "px" }
         }
       }
     ];
@@ -340,7 +347,8 @@ export class DrawDatas {
         data: {
           default: { min: 0, max: 15, unit: "px" },
           small: { min: 0, max: 10, unit: "px" },
-          xsmall: { min: 0, max: 5, unit: "px" }
+          xsmall: { min: 0, max: 5, unit: "px" },
+          xxsmall: { min: 0, max: 5, unit: "px" }
         }
       },
       // Прозрачность
@@ -385,7 +393,8 @@ export class DrawDatas {
         data: {
           default: { min: 0, max: 0, unit: "px" },
           small: { min: 0, max: this.defaultSpacing, unit: "px" },
-          xsmall: { min: 0, max: this.defaultSpacing, unit: "px" }
+          xsmall: { min: 0, max: this.defaultSpacing, unit: "px" },
+          xxsmall: { min: 0, max: this.defaultSpacing, unit: "px" }
         }
       }
     ];
@@ -422,6 +431,7 @@ export class DrawDatas {
           default: { value: { default: "flex" } },
           small: { value: { default: "none" } },
           xsmall: { value: { default: "none" } },
+          xxsmall: { value: { default: "none" } },
         }
       }
     ];
@@ -434,6 +444,7 @@ export class DrawDatas {
           default: { value: { default: "minmax(1px, 1fr) auto auto" } },
           small: { value: { default: "minmax(1px, 1fr) auto" } },
           xsmall: { value: { default: "minmax(1px, 1fr) auto" } },
+          xxsmall: { value: { default: "minmax(1px, 1fr) auto" } },
         }
       },
       // Макет блоков в сетке
@@ -443,6 +454,7 @@ export class DrawDatas {
           default: { value: { default: "'left center right' 'full full full'" } },
           small: { value: { default: "'left right' 'full full'" } },
           xsmall: { value: { default: "'left right' 'full full'" } },
+          xxsmall: { value: { default: "'left right' 'full full'" } },
         }
       },
       // Макет внутренних отступов сетки
@@ -451,7 +463,8 @@ export class DrawDatas {
         data: {
           default: { min: [0, this.defaultSpacing], max: [0, this.defaultSpacing], unit: "px", separatorUnit: " " },
           small: { min: 0, max: 0, unit: "px" },
-          xsmall: { min: 0, max: 0, unit: "px" }
+          xsmall: { min: 0, max: 0, unit: "px" },
+          xxsmall: { min: 0, max: 0, unit: "px" }
         }
       }
     ];
@@ -736,7 +749,7 @@ export class DrawDatas {
         let min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
         let max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
         // Для мобильного меню
-        if (s === "small" || s === "xsmall") {
+        if (s === "small" || s === "xsmall" || s === "xxsmall") {
           min = ParseInt(height.min);
           max = ParseInt(height.max);
         }
@@ -753,7 +766,7 @@ export class DrawDatas {
         let min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
         let max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
         // Для мобильного меню
-        if (s === "small" || s === "xsmall") {
+        if (s === "small" || s === "xsmall" || s === "xxsmall") {
           min = this.screenHeight - (ParseInt(height.min) * 2);
           max = this.screenHeight - (ParseInt(height.max) * 2);
         }
@@ -795,6 +808,7 @@ export class DrawDatas {
           default: { min: this.defaultIconSize, max: 0, unit: "px" },
           small: { min: this.defaultIconSize, max: this.defaultSpacing, unit: "px" },
           xsmall: { min: this.defaultIconSize, max: this.defaultSpacing, unit: "px" },
+          xxsmall: { min: this.defaultIconSize, max: this.defaultSpacing, unit: "px" },
         }
       }
     ];
@@ -838,7 +852,8 @@ export class DrawDatas {
         data: {
           default: { min: this.defaultIconSize, max: 0, unit: "px" },
           small: { min: this.defaultIconSize, max: 15, unit: "px" },
-          xsmall: { min: this.defaultIconSize, max: 15, unit: "px" }
+          xsmall: { min: this.defaultIconSize, max: 15, unit: "px" },
+          xxsmall: { min: this.defaultIconSize, max: 15, unit: "px" }
         }
       },
       // Ширина
@@ -848,6 +863,7 @@ export class DrawDatas {
           default: { min: this.containerLeftWidth - this.defaultIconSize, max: this.containerWidth, unit: "px" },
           small: { min: this.containerWidth - this.defaultIconSize, max: this.containerWidth - 15, unit: "px" },
           xsmall: { min: this.containerWidth - this.defaultIconSize, max: this.containerWidth - 15, unit: "px" },
+          xxsmall: { min: this.containerWidth - this.defaultIconSize, max: this.containerWidth - 15, unit: "px" },
         }
       }
     ];

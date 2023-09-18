@@ -222,7 +222,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
 
   // Посчитать смещение левой колонки
   private onLeftPanelPosition({ elm: scrollElm, y: scrollY, lastScrollAddedY }: ScrollData): void {
-    if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement && this.breakpoint !== "xsmall") {
+    if (!!this.leftPanel?.nativeElement && !!this.leftPanelHelper?.nativeElement && this.breakpoint !== "xsmall" && this.breakpoint !== "xxsmall") {
       const elm: HTMLElement = this.leftPanel.nativeElement;
       const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
       const elmInformation: HTMLElement = this.informationElm.nativeElement;

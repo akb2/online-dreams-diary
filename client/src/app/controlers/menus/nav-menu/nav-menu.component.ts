@@ -67,6 +67,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private clearTempImageTimeout: number = 300;
   isShowNotifications: boolean = false;
 
+  private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
+
   user: User;
   isAutorizedUser: boolean = false;
 
@@ -225,7 +227,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       .subscribe(breakpoint => {
         const scrollElement: HTMLElement = ScrollElement();
         // Добавить класс мобильного меню снизу
-        if (breakpoint === "small" || breakpoint === "xsmall") {
+        if (this.mobileBreakpoints.includes(breakpoint)) {
           scrollElement.classList.add(this.mobileMenuBottomBodyClass);
         }
         // Убрать класс мобильного меню снизу

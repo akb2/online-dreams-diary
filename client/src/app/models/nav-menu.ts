@@ -9,6 +9,7 @@ export interface DrawInterface {
 // Данные для отрисовки
 export interface DrawData {
   default: DrawDataPeriod;
+  xxsmall?: DrawDataPeriod;
   xsmall?: DrawDataPeriod;
   small?: DrawDataPeriod;
   middle?: DrawDataPeriod;
@@ -17,7 +18,7 @@ export interface DrawData {
 }
 
 // Список ключей данных для отрисовки
-export const DrawDataKeys: (keyof DrawData)[] = ["default", "xsmall", "small", "middle", "large", "xlarge"];
+export const DrawDataKeys: (keyof DrawData)[] = ["default", "xxsmall", "xsmall", "small", "middle", "large", "xlarge"];
 
 // Данные размеров
 export interface DrawDataPeriod {

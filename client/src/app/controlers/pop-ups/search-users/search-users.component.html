@@ -35,12 +35,12 @@
             <a mat-stroked-button
                color="basic"
                (click)="onUserChoice(user.id)"
-               *ngIf="breakpoint !== 'xsmall'">Выбрать</a>
+               *ngIf="breakpoint !== 'xsmall' && breakpoint !== 'xxsmall'">Выбрать</a>
             <!-- Для телефона -->
             <a mat-icon-button
                color="basic"
                (click)="onUserChoice(user.id)"
-               *ngIf="breakpoint === 'xsmall'">
+               *ngIf="breakpoint === 'xsmall' || breakpoint === 'xxsmall'">
               <mat-icon>add</mat-icon>
             </a>
           </div>
