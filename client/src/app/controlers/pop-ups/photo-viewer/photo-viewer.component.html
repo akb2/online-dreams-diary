@@ -3,9 +3,6 @@
          appSwipe
          (swipeLeft)="onNext()"
          (swipeRight)="onPrev()"
-         (swipeUp)="onClose()"
-         (swipeDown)="onClose()"
-         (swipeDestroyed)="onClose()"
          *ngVar="getCurrentMediaFile as file">
   <!-- Перелистывание -->
   <ng-container *ngIf="getTotalCount > 1 && !loading">
@@ -59,16 +56,16 @@
                                 [bottomSmiles]="true"
                                 [(replyUser)]="replyUser"></app-comment-editor>
           </div>
-          <!-- Список комментариев -->
+          <!-- Список комментариев: телефон -->
+          <ng-container [ngTemplateOutlet]="commentList"
+                        [ngTemplateOutletContext]="{ type, file }"
+                        *ngIf="isMobile"></ng-container>
+          <!-- Список комментариев: десктоп -->
           <app-scroll class="comments__list"
-                      [ngStyle]="{ minHeight: commentListMinHeight + 'px', maxHeight: commentListMaxHeight + 'px' }">
-            <div class="comments__list-helper">
-              <app-comment-list [materialType]="type"
-                                [materialId]="file.id"
-                                [attachmentPerLine]="2"
-                                [writeAccess]="writeAccess$ | async"
-                                (replyEvent)="onReplyUserChange($event)"></app-comment-list>
-            </div>
+                      [ngStyle]="{ minHeight: commentListMinHeight + 'px', maxHeight: commentListMaxHeight + 'px' }"
+                      *ngIf="!isMobile">
+            <ng-container [ngTemplateOutlet]="commentList"
+                          [ngTemplateOutletContext]="{ type, file }"></ng-container>
           </app-scroll>
         </div>
       </ng-container>
@@ -79,3 +76,18 @@
               color="white"
               *ngIf="loading"></app-loader>
 </section>
+
+
+
+<!-- Список комментариев -->
+<ng-template #commentList
+             let-type="type"
+             let-file="file">
+  <div class="comments__list-helper">
+    <app-comment-list [materialType]="type"
+                      [materialId]="file.id"
+                      [attachmentPerLine]="2"
+                      [writeAccess]="writeAccess$ | async"
+                      (replyEvent)="onReplyUserChange($event)"></app-comment-list>
+  </div>
+</ng-template>

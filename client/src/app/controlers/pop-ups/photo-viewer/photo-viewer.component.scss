@@ -45,6 +45,7 @@ $commentWidths: (
   padding: containers.$paddingX;
   padding-top: vars.$headerHeight + containers.$paddingX;
   pointer-events: none;
+  user-select: none;
   // Переключение
   &__toggler {
     $iconSize: 128px;
@@ -105,6 +106,7 @@ $commentWidths: (
     position: fixed;
     left: 200vw;
     top: 200vh;
+    pointer-events: none;
     // Показать
     &.show {
       position: relative;
@@ -130,16 +132,39 @@ $commentWidths: (
       max-height: $maxHeight;
       // Расположение элементов
       &-template {
+        max-height: $maxHeight;
         // Показать комментарии
         &.showComments {
           grid-template-columns: auto #{$commentWidth};
         }
       }
     }
+    // Адаптив
+    @include screens.adaptive(auto, middle) {
+      pointer-events: none;
+      // Расположение элементов
+      &-template {
+        overflow-y: scroll;
+        // Показать комментарии
+        &.showComments {
+          display: flex;
+          position: relative;
+          flex-flow: column nowrap;
+          justify-content: flex-start;
+          align-items: center;
+        }
+      }
+    }
+    // Адаптив
+    @include screens.adaptive(auto, small) {
+      // Расположение элементов
+      &-template {
+        overflow-y: scroll;
+      }
+    }
   }
   // Адаптив
   @include screens.adaptive(auto, small) {
-    pointer-events: auto;
     padding-bottom: vars.$headerHeight + containers.$paddingX;
   }
 }
@@ -155,6 +180,7 @@ $commentWidths: (
   margin: 0;
   cursor: pointer;
   position: relative;
+  pointer-events: auto;
   // Картинка
   > img {
     max-width: 100%;
@@ -188,11 +214,18 @@ $commentWidths: (
       max-height: $maxHeight;
     }
   }
+  // Адаптив
+  @include screens.adaptive(auto, middle) {
+    position: sticky;
+    top: 0;
+    width: 100%;
+  }
 }
 
 // Комментарии
 .comments {
   background-color: colors.$background;
+  pointer-events: auto;
   // Редактор
   &__editor {
     padding-right: containers.$paddingX;
@@ -234,5 +267,21 @@ $commentWidths: (
   // Адаптив
   @include screens.adaptiveFor(containers.$widths, $commentWidths, $maxHeights) using($width, $commentWidth, $maxHeight) {
     max-height: $maxHeight;
+  }
+  // Адаптив
+  @include screens.adaptive(auto, middle) {
+    position: relative;
+    max-height: none;
+    width: 100%;
+    // Список
+    &__editor {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    // Список
+    &__list {
+      z-index: 0;
+    }
   }
 }

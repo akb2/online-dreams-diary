@@ -5,6 +5,7 @@ import { User } from "@_models/account";
 import { CustomObjectKey } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { MediaFile } from "@_models/media";
+import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
@@ -47,12 +48,15 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
     [MediaFileViewType.photo]: CommentMaterialType.Photo,
   };
 
+  private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small", "middle"];
+
   togglerSpacing: number = 0;
 
   loading: boolean = true;
 
   replyUser: User;
   readAccess: boolean = false;
+  isMobile: boolean = false;
 
   commentListMinHeight: number = 0;
   commentListMaxHeight: number = 0;
@@ -120,6 +124,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
     this.viewerTemplateContainerResizeEvent();
     this.keyboardEvents();
     this.checkCommentPrivate();
+    this.mobileViewChange();
   }
 
   ngOnDestroy(): void {
@@ -223,9 +228,9 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         const element: HTMLElement = this.viewerTemplateContainer.nativeElement;
-        const imageHeight = this.imageElm.nativeElement.getBoundingClientRect().height;
         const editorHeight: number = ParseInt(this.commentEditor?.nativeElement?.getBoundingClientRect()?.height);
         const elementMaxHeight: number = ParseInt(window.getComputedStyle(element).maxHeight);
+        const imageHeight: number = this.imageElm.nativeElement.getBoundingClientRect().height;
         // Обновить параметры
         this.commentListMaxHeight = elementMaxHeight - editorHeight;
         this.commentListMinHeight = CheckInRange(imageHeight - editorHeight, this.commentListMaxHeight, 0);
@@ -251,6 +256,16 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
         else if (this.nextControlKeys.includes(code)) {
           this.onNext();
         }
+      });
+  }
+
+  // Мобильный вид
+  private mobileViewChange(): void {
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        this.isMobile = this.mobileBreakpoints.includes(breakpoint);
+        this.changeDetectorRef.detectChanges();
       });
   }
 
