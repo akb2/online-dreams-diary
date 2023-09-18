@@ -5,7 +5,7 @@ import { NumberDirection } from "./math";
 
 
 // Ключи названий экранов
-export type ScreenKeys = "default" | "xsmall" | "small" | "middle" | "large" | "xlarge";
+export type ScreenKeys = "default" | "xxsmall" | "xsmall" | "small" | "middle" | "large" | "xlarge";
 
 // Направление движения скролла
 export type ScrollAddDimension = "top" | "right" | "bottom" | "left";
@@ -13,6 +13,7 @@ export type ScrollAddDimension = "top" | "right" | "bottom" | "left";
 // Тип данных для размеров экрана
 export interface ScreenBreakpoints {
   default: number;
+  xxsmall: number;
   xsmall: number;
   small: number;
   middle: number;

@@ -16,6 +16,7 @@ export class ScreenService implements OnDestroy {
 
   private breakpoints: ScreenBreakpoints = {
     default: 0,
+    xxsmall: 400,
     xsmall: 600,
     small: 900,
     middle: 1200,
@@ -23,7 +24,7 @@ export class ScreenService implements OnDestroy {
     xlarge: 10000
   };
 
-  private mobileBreakpoints: ScreenKeys[] = ["xsmall", "small"];
+  private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
 
   private isMobile: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   readonly isMobile$: Observable<boolean>;
