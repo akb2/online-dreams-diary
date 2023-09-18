@@ -2,7 +2,7 @@
 // Загрузить настройки
 function getSettings(): array
 {
-  $src = "../Config/settings.json";
+  $src = '../Config/settings.json';
   // Проверить настройки
   if (file_exists($src)) {
     $fileData = file_get_contents($src);
@@ -45,7 +45,7 @@ $mediaService = new MediaService($pdo, $appConfig);
 
 // Данные
 $sizes = array('small', 'middle', 'large', 'original');
-$mixedUrl = explode("/", trim($_SERVER['REQUEST_URI'], "/"));
+$mixedUrl = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
 [$mediaId, $accessHash, $size] = $mixedUrl;
 $media = $mediaService->getById($mediaId);
 
@@ -58,10 +58,15 @@ if (isset($media['id']) && isset($media['accessHash']) && $media['id'] === intva
   $mimeType = $finfo->file($fileSrc);
   $fileSize = filesize($fileSrc);
   $fileName = basename($fileSrc);
+  $maxAgeByHours = 5;
+  $maxAgeBySeconds = $maxAgeByHours * 3600;
   // Отправка заголовков
   header('Content-Type: ' . $mimeType);
   header('Content-Length: ' . $fileSize);
   header('Content-Disposition: inline; filename="' . $fileName . '"');
+  header('Cache-Control: private, max-age=' . $maxAgeBySeconds . ', pre-check=' . $maxAgeBySeconds);
+  header('Pragma: private');
+  header('Expires: ' . date(DATE_RFC822, strtotime(' ' . $maxAgeByHours . ' hour')));
   // Вывод содержимого файла
   readfile($fileSrc);
   // Выход
