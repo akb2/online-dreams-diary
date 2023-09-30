@@ -1,0 +1,34 @@
+@use "sass:map";
+@use "colors";
+@use "containers";
+@use "screens";
+
+// Обертка
+:host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: colors.$card;
+  border-radius: containers.$cardBorderRadius;
+  box-shadow: containers.$cardBoxShadow;
+  display: grid;
+  grid-template-areas: "controls" "text";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+// Панель управления
+.controls {
+  grid-area: controls;
+}
+
+// Текст
+.text {
+  grid-area: text;
+  outline: none;
+  // Адаптив
+  @include screens.adaptiveFor(containers.$cardPaddings) using($padding) {
+    padding: #{map.get($padding, y)} #{map.get($padding, x)};
+    gap: #{map.get($padding, y)} #{map.get($padding, x)};
+  }
+}

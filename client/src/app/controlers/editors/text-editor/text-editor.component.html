@@ -1,2 +1,30 @@
-<div [innerHtml]="value"
-     [attr.contenteditable]="true"></div>
+<!-- Панель управления -->
+<div class="controls"></div>
+
+<!-- Редактор текста -->
+<div #editor
+     class="text"
+     [innerHtml]="editingText"
+     [attr.contenteditable]="true"
+     (blur)="onBlur()"
+     (keyup)="onEdit($event)"
+     (change)="onEdit($event)"
+     (paste)="onPaste($event)"
+     (keydown)="onCheckEnterKey($event)"></div>
+
+<!-- Смайлик -->
+<ng-template #smile
+             let-styles="styles"
+             let-src="src"
+             let-alt="alt"
+             let-id="id"
+             let-set="set"
+             let-skin="skin">
+  <img [class]="emojiClassName"
+       src="/assets/dream-map/transparent.png"
+       [ngStyle]="styles"
+       [alt]="alt"
+       [attr.data-emoji-id]="id"
+       [attr.data-emoji-skin]="skin"
+       [attr.data-emoji-set]="set" />
+</ng-template>
