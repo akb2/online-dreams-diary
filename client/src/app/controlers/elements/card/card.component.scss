@@ -11,7 +11,7 @@ $colors: (
   primary: colors.$matPrimary,
   accent: colors.$matSecondary,
   warn: colors.$matStatusWarn,
-  disabled: colors.$matDisabled,
+  disabled: colors.$matDisabled
 );
 
 // Родительский блок
@@ -75,20 +75,22 @@ $colors: (
 
     // Заголовок
     #{$base_elm}-title {
+      @include mixins.margin;
+      // Свойства
       font-size: 18px;
       font-weight: 500;
       line-height: 24px;
       color: colors.$title;
-      @include mixins.margin;
     }
 
     // Подзаголовок
     #{$base_elm}-subtitle {
+      @include mixins.margin;
+      // Свойства
       font-size: 14px;
       font-weight: 400;
       line-height: 18px;
       color: colors.$subtitle;
-      @include mixins.margin;
     }
 
     // Аватарка
@@ -195,13 +197,12 @@ $colors: (
 // Прикрепленные свойства
 :host ::ng-deep .attachment {
   containers.$avatarSize: 28px;
-
+  // Свойства
   display: grid;
   gap: 0 8px;
   grid-template: "image title" "image subtitle";
   grid-template-columns: containers.$avatarSize 1fr;
   align-items: center;
-
   // Список элементов
   &__list {
     display: grid;
@@ -214,20 +215,18 @@ $colors: (
       gap: 15px;
     }
   }
-
   // Картинка
   &__image {
     $sizes: (
       small: 0.5,
       middle: 0.75,
-      large: 1,
+      large: 1
     );
-
+    // Свойства
     display: block;
     width: containers.$avatarSize;
     height: containers.$avatarSize;
     grid-area: image;
-
     // Иконка
     > mat-icon {
       width: containers.$avatarSize;
@@ -237,14 +236,12 @@ $colors: (
       color: map.get(colors.$matPrimary, $image-color);
       text-align: center;
     }
-
     // Разные цвета
     @each $key, $color in $colors {
       &[color="#{$key}"] > mat-icon {
         color: map.get($color, $image-color);
       }
     }
-
     // Разные размеры
     @each $key, $size in $sizes {
       &[size="#{$key}"] > mat-icon {
@@ -252,7 +249,6 @@ $colors: (
       }
     }
   }
-
   // Заголовок
   &__title {
     font-size: 14px;
@@ -261,7 +257,6 @@ $colors: (
     color: colors.$title;
     grid-area: title;
   }
-
   // Подзаголовок
   &__subtitle {
     font-size: 13px;
