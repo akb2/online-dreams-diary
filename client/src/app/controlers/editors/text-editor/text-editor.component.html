@@ -1,5 +1,41 @@
 <!-- Панель управления -->
-<div class="controls"></div>
+<div class="controls">
+  <!-- Заголовки -->
+  <div class="controls__group">
+    <button mat-mini-fab
+            class="mat-elevation-z"
+            [color]="selected? 'primary': 'basic'"
+            [matMenuTriggerFor]="controlTitle"
+            *ngVar="isCaretInTitles as selected"><mat-icon>title</mat-icon></button>
+  </div>
+  <!-- Стиль текста -->
+  <div class="controls__group">
+    <!-- Жирность -->
+    <button mat-mini-fab
+            [color]="selected? 'primary': 'basic'"
+            class="mat-elevation-z"
+            [matTooltip]="selected? 'Убрать жирность': 'Сделать жирным'"
+            *ngVar="isCaretInBold as selected"><mat-icon>format_bold</mat-icon></button>
+    <!-- Наклон -->
+    <button mat-mini-fab
+            [color]="selected? 'primary': 'basic'"
+            class="mat-elevation-z"
+            [matTooltip]="selected? 'Убрать наклон': 'Сделать наклонным'"
+            *ngVar="isCaretInItalic as selected"><mat-icon>format_italic</mat-icon></button>
+    <!-- Подчеркнутый -->
+    <button mat-mini-fab
+            [color]="selected? 'primary': 'basic'"
+            class="mat-elevation-z"
+            [matTooltip]="selected? 'Убрать подчеркивание': 'Подчеркнуть текст'"
+            *ngVar="isCaretInUnderline as selected"><mat-icon>format_underlined</mat-icon></button>
+    <!-- Зачеркнутый -->
+    <button mat-mini-fab
+            [color]="selected? 'primary': 'basic'"
+            class="mat-elevation-z"
+            [matTooltip]="selected? 'Убрать зачеркивание': 'Зачеркнуть текст'"
+            *ngVar="isCaretInStrikeThrough as selected"><mat-icon>format_strikethrough</mat-icon></button>
+  </div>
+</div>
 
 <!-- Редактор текста -->
 <div #editor
@@ -11,6 +47,30 @@
      (change)="onEdit($event)"
      (paste)="onPaste($event)"
      (keydown)="onCheckEnterKey($event)"></div>
+
+
+
+<!-- Заголовок меню -->
+<mat-menu #controlTitle="matMenu">
+  <button mat-menu-item
+          class="title"
+          [disabled]="true">
+    <mat-icon>title</mat-icon>
+    Заголовок
+  </button>
+  <mat-divider></mat-divider>
+  <!-- Уровни заголовков -->
+  <ng-container *ngFor="let i of controlTitleItterator">
+    <button mat-menu-item
+            [attr.selected]="selected"
+            *ngVar="isCaretInTitle(i) as selected">
+      <mat-icon>format_h{{i}}</mat-icon>
+      Уровень {{i}}
+    </button>
+  </ng-container>
+</mat-menu>
+
+
 
 <!-- Смайлик -->
 <ng-template #smile

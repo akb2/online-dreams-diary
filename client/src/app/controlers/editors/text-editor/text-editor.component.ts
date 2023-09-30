@@ -1,4 +1,5 @@
 import { WaitObservable } from "@_datas/api";
+import { CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ParseInt } from "@_helpers/math";
 import { TextMessage } from "@_helpers/text-message";
@@ -7,7 +8,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Subject, concatMap, filter, map, startWith, takeUntil } from "rxjs";
+import { Subject, concatMap, filter, map, pairwise, startWith, takeUntil, timer } from "rxjs";
 
 
 
@@ -30,8 +31,10 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   private lastPosition: CaretPosition;
 
   emojiClassName: string = "emoji-elm";
+  controlTitleItterator: number[] = CreateArray(5).map(i => i + 2);
 
   editingText: SafeHtml = "";
+  caretElements: HTMLElement[] = [];
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -50,10 +53,14 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       if (editor !== document.activeElement && forceFocus) {
         editor.focus();
       }
+      // Параметры
+      const selection: Selection = document.getSelection();
       // Запомнить значения
-      range = document.getSelection().getRangeAt(0);
-      start = range.startOffset;
-      end = range.endOffset;
+      if (selection.rangeCount > 0) {
+        range = selection.getRangeAt(0);
+        start = range.startOffset;
+        end = range.endOffset;
+      }
     }
     // Вернуть позиции
     return { start, end, range };
@@ -86,6 +93,80 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     return tempEditor.innerHTML;
   }
 
+  // Древо элементов от каретки до редактора
+  private get getCaretElementsTree(): HTMLElement[] {
+    const elements: HTMLElement[] = [];
+    const editorElement: HTMLElement = this.editor?.nativeElement;
+    // Редактор определен
+    if (!!editorElement) {
+      const position: CaretPosition = this.getRangePosition(true);
+      let startElement: Node = position.range.startContainer;
+      let endElement: Node = position.range.endContainer;
+      // Если начальная позиция - текстовый узел, начнем с его родительского элемента.
+      if (startElement.nodeType === Node.TEXT_NODE) {
+        startElement = startElement.parentElement;
+      }
+      // Если конечная позиция - текстовый узел, начнем с его родительского элемента.
+      if (endElement.nodeType === Node.TEXT_NODE) {
+        endElement = endElement.parentElement;
+      }
+      // Сначала обработаем начальный узел
+      while (startElement && startElement !== editorElement && startElement !== document.body) {
+        elements.push(startElement as HTMLElement);
+        startElement = startElement.parentElement;
+      }
+      // Теперь обработаем конечный узел
+      while (endElement && endElement !== editorElement && endElement !== document.body && !elements.includes(endElement as HTMLElement)) {
+        elements.push(endElement as HTMLElement);
+        endElement = endElement.parentElement;
+      }
+    }
+    // Массив элементов
+    return elements;
+  }
+
+  // Курсор внутри заголовка
+  isCaretInTitle(level: number): boolean {
+    const levels: string[] = ["", "h1", "h2", "h3", "h4", "h5", "h6"];
+    // Проверить
+    return this.isCaretInElm(levels[level]);
+  }
+
+  // Курсор внутри одного из заголовков
+  get isCaretInTitles(): boolean {
+    return this.controlTitleItterator.reduce(
+      (o, i) => o || this.isCaretInTitle(i),
+      false
+    );
+  }
+
+  // Курсор внутри жирности
+  get isCaretInBold(): boolean {
+    return this.isCaretInElm("b", "strong");
+  }
+
+  // Курсор внутри наклона
+  get isCaretInItalic(): boolean {
+    return this.isCaretInElm("i", "em");
+  }
+
+  // Курсор внутри подчеркивания
+  get isCaretInUnderline(): boolean {
+    return this.isCaretInElm("u");
+  }
+
+  // Курсор внутри подчеркивания
+  get isCaretInStrikeThrough(): boolean {
+    return this.isCaretInElm("s", "del");
+  }
+
+  // Курсор внутри элемента по выбору
+  private isCaretInElm(...tags: string[]): boolean {
+    tags = tags.map(tag => tag?.toUpperCase());
+    // Вернуть проверку
+    return !!this.caretElements?.length && !!tags?.length && this.caretElements.some(elm => tags.includes(elm.tagName?.toUpperCase()));
+  }
+
 
 
 
@@ -115,6 +196,24 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   }
 
   ngOnInit(): void {
+    timer(0, 50)
+      .pipe(
+        takeUntil(this.destroyed$),
+        map(() => this.getRangePosition()),
+        pairwise(),
+        filter(([prev, next]) => (
+          !!next && (
+            prev?.start !== next?.start ||
+            prev?.end !== next?.end ||
+            prev?.range?.startContainer !== next?.range?.startContainer ||
+            prev?.range?.endContainer !== next?.range?.endContainer
+          )
+        ))
+      )
+      .subscribe(() => {
+        this.caretElements = this.getCaretElementsTree;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewChecked(): void {

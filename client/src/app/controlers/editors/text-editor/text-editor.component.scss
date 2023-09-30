@@ -20,15 +20,72 @@
 // Панель управления
 .controls {
   grid-area: controls;
+  border-radius: #{containers.$cardBorderRadius} #{containers.$cardBorderRadius} 0 0;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px 15px;
+  padding: 5px;
+  user-select: none;
+  // Группа
+  &__group {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 2px;
+  }
 }
 
 // Текст
 .text {
   grid-area: text;
   outline: none;
+  border-radius: 0 0 #{containers.$cardBorderRadius} #{containers.$cardBorderRadius};
+  // Граница сверху
+  * + & {
+    border-top: 1px solid #{colors.$border};
+  }
   // Адаптив
   @include screens.adaptiveFor(containers.$cardPaddings) using($padding) {
     padding: #{map.get($padding, y)} #{map.get($padding, x)};
-    gap: #{map.get($padding, y)} #{map.get($padding, x)};
+  }
+}
+
+// Меню
+.mat-mdc-menu {
+  &-item {
+    // Выбранный пункт меню
+    &[selected="true"] {
+      background-color: map.get(colors.$matPrimary, 500);
+      // Содержимое
+      &,
+      > mat-icon,
+      ::ng-deep > .mdc-list-item__primary-text {
+        color: map.get(colors.$matPrimary, contrast, 500);
+      }
+      // Выделение
+      &:hover {
+        background-color: map.get(colors.$matPrimary, 50);
+        // Содержимое
+        &,
+        > mat-icon,
+        ::ng-deep > .mdc-list-item__primary-text {
+          color: map.get(colors.$matPrimary, contrast, 50);
+        }
+      }
+    }
+    // Заголовок
+    &.title {
+      &,
+      &[disabled] {
+        &,
+        > mat-icon,
+        ::ng-deep > .mdc-list-item__primary-text {
+          opacity: 1;
+          color: colors.$title;
+        }
+      }
+    }
   }
 }
