@@ -101,22 +101,16 @@ $tabsHeight: 49px;
   }
 }
 
-// Задать высоту редактора
-:host ::ng-deep .ck-editor__editable_inline,
-.filler-image {
-  $ckPanelHeight: 40px;
-  // Адаптив
-  @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
-    height: calc(100vh - #{($paddingY * 2) + $headerHeight + $tabsHeight + $ckPanelHeight});
-    // Для телефонов
-    @include screens.adaptive(xxsmall, small) {
-      height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight + $ckPanelHeight});
-    }
-  }
-}
-
 // Размер заполняющей картинки
 .filler-image {
+  @include screens.adaptiveFor(containers.$paddingsY) using($paddingY) {
+    height: calc(100vh - #{($paddingY * 2) + $headerHeight + $tabsHeight});
+    // Для телефонов
+    @include screens.adaptive(xxsmall, small) {
+      height: calc(100vh - #{($paddingY * 2) + ($headerHeight * 2) + $tabsHeight});
+    }
+  }
+  // Картинка
   > img {
     width: 100%;
     height: 100%;
@@ -165,5 +159,12 @@ $tabsHeight: 49px;
   // Для телефонов
   @include screens.adaptive(xxsmall, small) {
     height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
+  }
+  // Растянуть потомков
+  &.grow-child {
+    display: flex;
+    justify-content: stretch;
+    align-items: stretch;
+    flex-flow: column nowrap;
   }
 }
