@@ -2,6 +2,7 @@ import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
 import { WaitObservable } from "@_datas/api";
 import { CompareElementByElement } from "@_datas/app";
+import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
@@ -9,6 +10,7 @@ import { MultiObject, SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
+import { CaretPosition } from "@_models/text";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
 import { ScrollService } from "@_services/scroll.service";
@@ -96,26 +98,6 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   // Стили смайлика
   private smileStyles(data: EmojiData): SimpleObject {
     return this.emojiService.emojiSpriteStyles(data.sheet, data.set, this.smileSize);
-  }
-
-  // Установить текст
-  private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {
-    if (!this.lastPosition) {
-      this.lastPosition = this.getRangePosition(true);
-    }
-    // Убрать контент
-    this.lastPosition.range.deleteContents();
-    // Вставить текст
-    if (typeof content === "string") {
-      this.lastPosition.range.insertNode(document.createTextNode(content));
-    }
-    // Вставить HTML
-    else {
-      this.lastPosition.range.insertNode(content);
-    }
-    // Убрать выделение
-    this.lastPosition.range.collapse();
-    this.onEdit(event);
   }
 
   // Получить шаблон смайлика
@@ -460,6 +442,26 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
 
 
+  // Установить текст
+  private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {
+    if (!this.lastPosition) {
+      this.lastPosition = this.getRangePosition(true);
+    }
+    // Убрать контент
+    this.lastPosition.range.deleteContents();
+    // Вставить текст
+    if (typeof content === "string") {
+      this.lastPosition.range.insertNode(document.createTextNode(content));
+    }
+    // Вставить HTML
+    else {
+      this.lastPosition.range.insertNode(content);
+    }
+    // Убрать выделение
+    this.lastPosition.range.collapse();
+    this.onEdit(event);
+  }
+
   // Замена смайликов
   private editorEmojiReplace(editor: HTMLElement): void {
     const emojiNodes: Element[] = Array.from(editor.getElementsByClassName(this.emojiClassName));
@@ -478,16 +480,12 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
   // Замена div'ов
   private editorBlockReplace(editor: HTMLElement): void {
-    const tags: string[] = ["div", "p"];
-    // Цикл по тегам
-    tags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, true)));
+    ShortModeBlockRemoveTags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, true)));
   }
 
   // Замена div'ов
   private editorInlineReplace(editor: HTMLElement): void {
-    const tags: string[] = ["span", "i", "b", "u", "bold", "strong", "italic"];
-    // Цикл по тегам
-    tags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, false)));
+    ShortModeInlineRemoveTags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, false)));
   }
 
   // Убрать обертку элемента
@@ -522,13 +520,6 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
 
 
 
-
-// Позиция каретки в поле
-interface CaretPosition {
-  range: Range;
-  start: number;
-  end: number;
-}
 
 // Переводы для списка смайликов
 const I18nEmoji: MultiObject<string> = {

@@ -3,12 +3,13 @@ import { ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { GetDreamIdByUrl, GetLinksFromString, IsDreamUrl } from "@_helpers/string";
-import { TextMessage } from "@_helpers/text-massage";
+import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
+import { Injectable, OnDestroy, Optional, Self } from "@angular/core";
+import { NgControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
@@ -99,6 +100,7 @@ export class CommentService extends TextMessage implements OnDestroy {
 
 
   constructor(
+    @Optional() @Self() controlDir: NgControl,
     private httpClient: HttpClient,
     private apiService: ApiService,
     private accountService: AccountService,
@@ -107,7 +109,7 @@ export class CommentService extends TextMessage implements OnDestroy {
     emojiService: EmojiService,
     domSanitizer: DomSanitizer
   ) {
-    super(emojiService, domSanitizer);
+    super(controlDir, emojiService, domSanitizer);
   }
 
   ngOnDestroy(): void {

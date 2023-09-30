@@ -1,6 +1,6 @@
+import { FormErrorsKeys } from "@_models/form";
 import { Directive, DoCheck, Input, Optional, Self } from "@angular/core";
 import { ControlValueAccessor, FormControl, NgControl, ValidationErrors } from "@angular/forms";
-import { FormErrorsKeys } from "@_models/form";
 
 
 
@@ -28,7 +28,7 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
 
   // Контроллер
   get control(): FormControl {
-    return this.controlDir.control as FormControl;
+    return this.controlDir?.control as FormControl;
   }
 
   // Есть ли валидаторы
@@ -52,7 +52,9 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
   constructor(
     @Optional() @Self() public controlDir: NgControl
   ) {
-    controlDir.valueAccessor = this;
+    if (!!controlDir) {
+      controlDir.valueAccessor = this;
+    }
   }
 
   ngDoCheck(): void {
