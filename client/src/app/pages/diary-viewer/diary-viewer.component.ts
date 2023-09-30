@@ -20,7 +20,6 @@ import { ScrollService } from "@_services/scroll.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { Subject, concatMap, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
 
 
