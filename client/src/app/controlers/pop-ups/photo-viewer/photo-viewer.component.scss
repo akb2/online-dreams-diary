@@ -81,6 +81,10 @@ $commentWidths: (
     &.prev {
       left: 0;
       justify-content: flex-end;
+      // Иконка
+      > mat-icon {
+        margin-left: -($iconSize);
+      }
     }
     // Вперед
     &.next {
