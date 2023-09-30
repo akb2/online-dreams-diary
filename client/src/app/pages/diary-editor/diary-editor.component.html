@@ -124,11 +124,7 @@
               <div class="section root-section tabs">
                 <div class="container all-height"
                      [formGroup]="dreamForm">
-                  <ckeditor #dreamTextEditor
-                            formControlName="text"
-                            [editor]="editor"
-                            [config]="config"
-                            (ready)="onTextEditorReady($event)"></ckeditor>
+                  <app-text-editor formControlName="text"></app-text-editor>
                 </div>
               </div>
             </div>

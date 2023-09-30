@@ -7,13 +7,13 @@ import { NavMenuSettingsModule } from '@_controlers/nav-menu-settings/nav-menu-s
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { SliderInputModule } from "@_controlers/slider-input/slider-input.module";
+import { TextEditorModule } from "@_controlers/text-editor/text-editor.module";
 import { TextInputModule } from '@_controlers/text-input/text-input.module';
 import { CoreModule } from '@_modules/core.module';
 import { DiaryEditorRoutingModule } from '@_pages/diary-editor/diary-editor-routing.module';
 import { DiaryEditorComponent } from '@_pages/diary-editor/diary-editor.component';
 import { NgModule } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 
 
@@ -28,7 +28,6 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
     DiaryEditorRoutingModule,
     NavMenuModule,
     PageLoaderModule,
-    CKEditorModule,
     MatTabsModule,
     NavMenuSettingsModule,
     ChipsInputModule,
@@ -37,7 +36,8 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
     AutocompleteInputModule,
     DreamMapEditorModule,
     SliderInputModule,
-    InformModule
+    InformModule,
+    TextEditorModule
   ]
 })
 

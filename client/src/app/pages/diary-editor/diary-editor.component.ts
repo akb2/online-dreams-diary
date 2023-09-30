@@ -18,13 +18,10 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { CKEditor5, CKEditorComponent } from "@ckeditor/ckeditor5-angular";
-import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
 import { Subject, of, throwError } from "rxjs";
 import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
@@ -35,7 +32,8 @@ import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
 @Component({
   selector: "app-diary-editor",
   templateUrl: "./diary-editor.component.html",
-  styleUrls: ["./diary-editor.component.scss"]
+  styleUrls: ["./diary-editor.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class DiaryEditorComponent implements OnInit, OnDestroy {
@@ -43,15 +41,12 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   @ViewChild(NavMenuComponent) mainMenu!: NavMenuComponent;
   @ViewChild(DreamMapEditorComponent) mapEditor!: DreamMapEditorComponent;
-  @ViewChild("dreamTextEditor") dreamTextEditor!: CKEditorComponent;
 
-  editor: any = ClassicEditor;
-  config: CKEditor5.Config = EditorConfig;
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
   loading: boolean = false;
   tabAnimation: boolean = false;
-  selectedTab: number = 2;
+  selectedTab: number = 1;
   private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -305,10 +300,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     this.tabAnimation = false;
   }
 
-  // Редактор текста загружен
-  onTextEditorReady(editor: CKEditor5.Editor): void {
-  }
-
 
 
 
@@ -370,20 +361,3 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     ]));
   }
 }
-
-
-
-
-
-// Настройки редактора
-const EditorConfig: CKEditor5.Config = {
-  language: "ru",
-  toolbar: [
-    "undo", "redo", "|",
-    "toggleImageCaption", "|",
-    "bold", "italic", "|",
-    "blockQuote", "|",
-    "bulletedList", "numberedList", "|",
-    "imageStyle:inline", "imageStyle:block", "imageStyle:side", "toggleImageCaption", "imageTextAlternative"
-  ]
-};
