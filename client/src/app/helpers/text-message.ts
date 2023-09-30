@@ -1,5 +1,10 @@
+import { DefaultTagSettings, FullModeSaveTags, ShortModeSaveTags, TagSettings } from "@_datas/text";
+import { BaseInputDirective } from "@_directives/base-input.directive";
 import { ParseInt } from "@_helpers/math";
 import { IsDreamUrl, SearchUrlRegExp } from "@_helpers/string";
+import { TagSetting } from "@_models/text";
+import { Optional, Self } from "@angular/core";
+import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiData, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 
@@ -7,7 +12,7 @@ import { EmojiData, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 
 
 
-export class TextMessage {
+export class TextMessage extends BaseInputDirective {
 
   private smileSize: number = 24;
 
@@ -65,18 +70,24 @@ export class TextMessage {
 
 
   constructor(
+    @Optional() @Self() controlDir: NgControl,
     private emojiService: EmojiService,
     private domSanitizer: DomSanitizer
-  ) { }
+  ) {
+    super(controlDir);
+  }
 
 
 
 
 
   // Трансформация
-  textTransform(text: string): SafeHtml {
+  textTransform(text: string, fullMode: boolean = false): SafeHtml {
     const emojiRegExp: RegExp = new RegExp("\\[emoji=([a-z0-9\-_\+]+)(:([0-9]+))?(:([a-z]+))?\\]", "ig");
     const emojies: string[] = text.match(emojiRegExp) ?? [];
+    const saveTags: string[] = fullMode ? FullModeSaveTags : ShortModeSaveTags;
+    // Подготовка к замене
+    text = text.replace(new RegExp("([\\\\]+)(\\[|\\]|\\/)", "ig"), "$2");
     // Замена смайликов
     if (!!emojies?.length) {
       emojies.forEach(textEmoji => {
@@ -92,6 +103,27 @@ export class TextMessage {
     text = text.replace(new RegExp("\\[br\\]", "ig"), " <br> ");
     // Поиск прочих данных
     text = this.getLinks(text);
+    // Добавить теги
+    saveTags.forEach(tag => {
+      const settings: TagSetting = TagSettings[tag] ?? DefaultTagSettings;
+      const regExp: RegExp = new RegExp(`\\[${tag}(?:=(.*?))?\\]((?:(?!\\[${tag}|\\[/${tag}\\]).)*)(?:\\[/${tag}\\])?`, 'ig');
+      // Заменить текст
+      text = text.replace(regExp, (match, mainAttrValue, content) => {
+        const mainAttr: string = settings.mainAttr ? (!!mainAttrValue ? mainAttrValue : (settings.provideContentToMainAttr && !!content ? content : "")) : "";
+        const html: string = settings.mustClose ? (!!content ? content : (settings.provideMainAttrToHtml && !!mainAttrValue ? mainAttrValue : "")) : "";
+        const contentAttr: string = settings.contentAttr ? (!!content ? content : (settings.provideContentToMainAttr && !!mainAttrValue ? mainAttrValue : "")) : "";
+        const mainAttrTag: string = !!mainAttr ? " " + settings.mainAttr + "='" + mainAttr + "' " : "";
+        const contentAttrTag: string = !!contentAttr ? " " + settings.contentAttr + "='" + contentAttr + "' " : "";
+        // Закрытый тег
+        if (settings.mustClose) {
+          return "<" + tag + " " + mainAttrTag + " " + contentAttrTag + ">" + html + "</" + tag + ">";
+        }
+        // Открытый тег
+        else {
+          return "<" + tag + " " + mainAttrTag + " " + contentAttrTag + "/>";
+        }
+      });
+    });
     // Убрать лишние пробелы
     text = text.replace(/([\s\t]+)/gi, " ");
     text = text.replace(/([\n\r]+)/gi, "\n");
