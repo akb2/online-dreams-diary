@@ -19,7 +19,6 @@ $mat-theme: mat.define-light-theme(
 );
 @include mat.all-component-themes($mat-theme);
 
-@import "https://fonts.googleapis.com/icon?family=Material+Icons&display=block";
 @import "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@200;300;400;500&display=swap";
 @import "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&display=swap";
 @import "../node_modules/@ctrl/ngx-emoji-mart/picker.css";
@@ -213,21 +212,10 @@ html {
 // Материал иконки
 .material-icons,
 mat-icon {
-  font-family: "Material Icons";
-  font-weight: normal;
-  font-style: normal;
+  font-family: "Material Symbols Outlined";
   font-size: 24px;
   display: inline-block;
   line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "liga";
 }
 
 // Для вывода JSON
