@@ -23,14 +23,6 @@ $mat-theme: mat.define-light-theme(
 @import "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&display=swap";
 @import "../node_modules/@ctrl/ngx-emoji-mart/picker.css";
 
-// Шрифт иконок
-@font-face {
-  font-family: "Material Icons";
-  font-style: normal;
-  font-weight: 400;
-  src: local("./assets/fonts/material-icons.woff");
-}
-
 // Базовый стиль
 html {
   $scroll-size: 0;
