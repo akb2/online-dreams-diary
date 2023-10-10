@@ -1,5 +1,6 @@
 // Позиция каретки в поле
 export interface CaretPosition {
+  selection: Selection;
   range: Range;
   start: number;
   end: number;

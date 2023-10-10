@@ -80,19 +80,22 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     const editor: HTMLElement = this.editor?.nativeElement;
     let start: number = 0;
     let end: number = 0;
+    let selection: Selection = new Selection();
     let range: Range = new Range();
     // Поиск позиции
     if (!!editor) {
       if (editor !== document.activeElement && forceFocus) {
         editor.focus();
       }
+      // Параметры
+      selection = document.getSelection();
       // Запомнить значения
-      range = document.getSelection().getRangeAt(0);
+      range = selection.getRangeAt(0);
       start = range.startOffset;
       end = range.endOffset;
     }
     // Вернуть позиции
-    return { start, end, range };
+    return { start, end, range, selection };
   }
 
   // Стили смайлика
