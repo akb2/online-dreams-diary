@@ -15,24 +15,28 @@
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать жирность': 'Сделать жирным'"
+            (click)="onToggleBold()"
             *ngVar="isCaretInBold as selected"><mat-icon>format_bold</mat-icon></button>
     <!-- Наклон -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать наклон': 'Сделать наклонным'"
+            (click)="onToggleItalic()"
             *ngVar="isCaretInItalic as selected"><mat-icon>format_italic</mat-icon></button>
     <!-- Подчеркнутый -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать подчеркивание': 'Подчеркнуть текст'"
-            *ngVar="isCaretInUnderline as selected"><mat-icon>format_underlined</mat-icon></button>
+            (click)="onToggleUnderLine()"
+            *ngVar="isCaretInUnderLine as selected"><mat-icon>format_underlined</mat-icon></button>
     <!-- Зачеркнутый -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать зачеркивание': 'Зачеркнуть текст'"
+            (click)="onToggleStrikeThrough()"
             *ngVar="isCaretInStrikeThrough as selected"><mat-icon>format_strikethrough</mat-icon></button>
   </div>
 </div>
@@ -45,6 +49,7 @@
      (blur)="onBlur()"
      (keyup)="onEdit($event)"
      (change)="onEdit($event)"
+     (click)="onEdit($event)"
      (paste)="onPaste($event)"
      (keydown)="onCheckEnterKey($event)"></div>
 
@@ -63,6 +68,7 @@
   <ng-container *ngFor="let i of controlTitleItterator">
     <button mat-menu-item
             [attr.selected]="selected"
+            (click)="onToggleTitle(i)"
             *ngVar="isCaretInTitle(i) as selected">
       <mat-icon>format_h{{i}}</mat-icon>
       Уровень {{i}}

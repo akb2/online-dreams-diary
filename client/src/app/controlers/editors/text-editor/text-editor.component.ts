@@ -1,8 +1,10 @@
 import { WaitObservable } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
+import { ElementParentsArray, TreeWalkerToArray } from "@_helpers/app";
 import { ParseInt } from "@_helpers/math";
 import { TextMessage } from "@_helpers/text-message";
+import { SimpleObject } from "@_models/app";
 import { CaretPosition } from "@_models/text";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
@@ -30,8 +32,11 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   private firstLaunch: boolean = true;
   private lastPosition: CaretPosition;
 
+  private emptySymbol: string = "\u200B";
+
   emojiClassName: string = "emoji-elm";
   controlTitleItterator: number[] = CreateArray(5).map(i => i + 2);
+  private titleTags: string[] = CreateArray(this.controlTitleItterator.length + this.controlTitleItterator[0]).map(i => (i > 0 ? "h" + i : ""));
 
   editingText: SafeHtml = "";
   caretElements: HTMLElement[] = [];
@@ -47,23 +52,24 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     const editor: HTMLElement = this.editor?.nativeElement;
     let start: number = 0;
     let end: number = 0;
-    let range: Range = new Range();
+    let selection: Selection;
+    let range: Range;
     // Поиск позиции
     if (!!editor) {
       if (editor !== document.activeElement && forceFocus) {
         editor.focus();
       }
       // Параметры
-      const selection: Selection = document.getSelection();
+      selection = document.getSelection();
       // Запомнить значения
-      if (selection.rangeCount > 0) {
+      if (!!selection && selection.rangeCount > 0) {
         range = selection.getRangeAt(0);
         start = range.startOffset;
         end = range.endOffset;
       }
     }
     // Вернуть позиции
-    return { start, end, range };
+    return { start, end, range, selection };
   }
 
   // Получить содержимое поля ввода
@@ -100,36 +106,26 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     // Редактор определен
     if (!!editorElement) {
       const position: CaretPosition = this.getRangePosition(true);
-      let startElement: Node = position.range.startContainer;
-      let endElement: Node = position.range.endContainer;
-      // Если начальная позиция - текстовый узел, начнем с его родительского элемента.
-      if (startElement.nodeType === Node.TEXT_NODE) {
-        startElement = startElement.parentElement;
-      }
-      // Если конечная позиция - текстовый узел, начнем с его родительского элемента.
-      if (endElement.nodeType === Node.TEXT_NODE) {
-        endElement = endElement.parentElement;
-      }
-      // Сначала обработаем начальный узел
-      while (startElement && startElement !== editorElement && startElement !== document.body) {
-        elements.push(startElement as HTMLElement);
-        startElement = startElement.parentElement;
-      }
-      // Теперь обработаем конечный узел
-      while (endElement && endElement !== editorElement && endElement !== document.body && !elements.includes(endElement as HTMLElement)) {
-        elements.push(endElement as HTMLElement);
-        endElement = endElement.parentElement;
+      const range = position.range;
+      const treeWalker: TreeWalker = document.createTreeWalker(editorElement, NodeFilter.SHOW_ELEMENT, {
+        acceptNode: (node: Node) => range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+      });
+      // Поиск по элементам
+      while (treeWalker.nextNode()) {
+        const node: HTMLElement = treeWalker.currentNode as HTMLElement;
+        // Исключить редактор
+        if (node !== editorElement) {
+          elements.push(node);
+        }
       }
     }
-    // Массив элементов
+    // Вернуть список
     return elements;
   }
 
   // Курсор внутри заголовка
   isCaretInTitle(level: number): boolean {
-    const levels: string[] = ["", "h1", "h2", "h3", "h4", "h5", "h6"];
-    // Проверить
-    return this.isCaretInElm(levels[level]);
+    return this.isCaretInElm(this.titleTags[level]);
   }
 
   // Курсор внутри одного из заголовков
@@ -142,22 +138,22 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Курсор внутри жирности
   get isCaretInBold(): boolean {
-    return this.isCaretInElm("b", "strong");
+    return this.isCaretInElm(...BoldTags.map(({ tag }) => tag));
   }
 
   // Курсор внутри наклона
   get isCaretInItalic(): boolean {
-    return this.isCaretInElm("i", "em");
+    return this.isCaretInElm(...ItalicTags.map(({ tag }) => tag));
   }
 
   // Курсор внутри подчеркивания
-  get isCaretInUnderline(): boolean {
-    return this.isCaretInElm("u");
+  get isCaretInUnderLine(): boolean {
+    return this.isCaretInElm(...UnderLineTags.map(({ tag }) => tag));
   }
 
   // Курсор внутри подчеркивания
   get isCaretInStrikeThrough(): boolean {
-    return this.isCaretInElm("s", "del");
+    return this.isCaretInElm(...StrikeThroughTags.map(({ tag }) => tag));
   }
 
   // Курсор внутри элемента по выбору
@@ -165,6 +161,108 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     tags = tags.map(tag => tag?.toUpperCase());
     // Вернуть проверку
     return !!this.caretElements?.length && !!tags?.length && this.caretElements.some(elm => tags.includes(elm.tagName?.toUpperCase()));
+  }
+
+  // Текстовый узел
+  private isTextNode(node: Node) {
+    return node?.nodeType === Node.TEXT_NODE;
+  }
+
+  // Проверка элемента условию
+  private filterElement(params: SearchAndReplaceNode, element: HTMLElement): boolean {
+    if (!!element && !this.isTextNode(element) && element.nodeType !== Node.COMMENT_NODE && !!this.editor?.nativeElement && element !== this.editor.nativeElement) {
+      if (element.tagName.toLowerCase() === params.tag.toLowerCase()) {
+        if (!params?.class || (!!params?.class && !element.classList.contains(params.class))) {
+          let checkAttr: boolean = true;
+          // Проверка атрибутов
+          if (!!params?.attrs) {
+            Object.entries(params.attrs).forEach(([key, value]) => {
+              const attrValue: string = element.getAttribute(key);
+              // Проверка атрибута
+              checkAttr = value === "" && attrValue !== "" ?
+                false : attrValue !== value ?
+                  false :
+                  checkAttr;
+            });
+          }
+          // Результат проверки
+          return checkAttr;
+        }
+      }
+    }
+    // Элемент не соответствует
+    return false;
+  }
+
+  // Создать элемент по условию
+  private createElement(params: SearchAndReplaceNode): HTMLElement {
+    const element: HTMLElement = document.createElement(params.tag);
+    // Добавить класс
+    if (!!params?.class) {
+      element.classList.add(params.class);
+    }
+    // Добавить атрибуты
+    if (!!params?.attrs) {
+      Object.entries(params.attrs).forEach(([key, value]) => !!value || value === "" ?
+        element.setAttribute(key, value) :
+        element.removeAttribute(key)
+      );
+    }
+    // Создать текстовый узел
+    element.appendChild(document.createTextNode(this.emptySymbol));
+    // Вернуть элемент
+    return element;
+  }
+
+  // Создать выделение
+  private createRange(startElm: HTMLElement | Node, endElm: HTMLElement | Node, startPosition: number, endPosition: number): Range {
+    const newRange: Range = document.createRange();
+    // Установить параметры
+    newRange.setStart(startElm, startPosition);
+    newRange.setEnd(endElm, endPosition);
+    // Вернуть выделение
+    return newRange;
+  }
+
+  // Проверка длины содержимого
+  private containsSelectableContent(fragment: DocumentFragment): boolean {
+    const tags: string[] = ["img"];
+    const isNodeSelectable = (node: Node): boolean => {
+      if (this.isTextNode(node) && !!node.textContent) {
+        return true;
+      }
+      // Проверка для элемента <img>
+      else if (node.nodeType === Node.ELEMENT_NODE && tags.some(tag => tag?.toLowerCase() === (node as HTMLElement).tagName?.toLowerCase())) {
+        return true;
+      }
+      // Рекурсивный обход дочерних узлов
+      for (let i = 0; i < node.childNodes.length; i++) {
+        return isNodeSelectable(node.childNodes[i]);
+      }
+      // Ничего нет
+      return false;
+    }
+    // Проверка
+    return isNodeSelectable(fragment);
+  }
+
+  // Элемент содержит потомков
+  private isNodeHasChild(node: Node, noHasChildAvail: string[] = []): boolean {
+    if (!!node && node.nodeType !== Node.COMMENT_NODE) {
+      if (this.isTextNode(node)) {
+        return !!node.textContent.replace(this.emptySymbol, "").replace(new RegExp("([\\s\\n\\r\\t]+)", "ui"), "")?.length;
+      }
+      // Исключения
+      else if (noHasChildAvail.includes(node.nodeName.toLowerCase())) {
+        return true;
+      }
+      // Сканировать потомков
+      else if (!!node.childNodes?.length) {
+        return Array.from(node.childNodes).reduce((o, childNode) => o || this.isNodeHasChild(childNode, noHasChildAvail), false);
+      }
+    }
+    // Нет потомков
+    return false;
   }
 
 
@@ -210,10 +308,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           )
         ))
       )
-      .subscribe(() => {
-        this.caretElements = this.getCaretElementsTree;
-        this.changeDetectorRef.detectChanges();
-      });
+      .subscribe(() => this.updateStates());
   }
 
   ngAfterViewChecked(): void {
@@ -243,11 +338,6 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   // Ввод
   onEdit(event: Event): void {
     if (!!this.editor?.nativeElement) {
-      // Проверка дочерних элементов
-      const hasChildNodes = (node: Node) => !!node ? (node.nodeName.toLowerCase() === "#text" ?
-        !!node.textContent :
-        !!node.childNodes?.length || noHasChildAvail.includes(node.nodeName.toLowerCase())) :
-        false;
       // Предыдущий узел
       const getBeforeNode = (node: Node) => {
         if (node !== editor) {
@@ -292,7 +382,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
         if (clearNode && !clearIgnore.includes(nodeName)) {
           const testChildren: ChildNode[] = Array.from(node.childNodes);
           // Удалить если нет дочерних элементов
-          if (testChildren?.every(child => !hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+          if (testChildren?.every(child => !this.isNodeHasChild(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
             node.remove();
           }
         }
@@ -302,12 +392,13 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       const editor: HTMLElement = this.editor.nativeElement;
       const clearIgnore: string[] = ["#text", "br", "img"];
       const noHasChildAvail: string[] = ["img"];
-      const selection: Selection = document.getSelection();
-      const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
+      const { selection } = this.getRangePosition();
+      const key: string = event?.["key"] ?? "";
+      const keyEnter: boolean = !!key && ignoreKeys.includes(key);
       const firstChild: Node = editor.childNodes[0] ?? null;
       const noRemoveNode: Node = keyEnter ? selection.anchorNode : null;
-      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && getBeforeNode(noRemoveNode) === firstChild && hasChildNodes(noRemoveNode) ?
-        firstChild : null;
+      const hasChild: boolean = this.isNodeHasChild(noRemoveNode, noHasChildAvail);
+      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && getBeforeNode(noRemoveNode) === firstChild && hasChild ? firstChild : null;
       // Начать очистку
       removeEmptyBr(editor);
       clearChild(editor, false);
@@ -349,29 +440,57 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     }
   }
 
-
-
-
-
-  // Установить текст
-  private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {
-    if (!this.lastPosition) {
-      this.lastPosition = this.getRangePosition(true);
-    }
-    // Убрать контент
-    this.lastPosition.range.deleteContents();
-    // Вставить текст
-    if (typeof content === "string") {
-      this.lastPosition.range.insertNode(document.createTextNode(content));
-    }
-    // Вставить HTML
-    else {
-      this.lastPosition.range.insertNode(content);
-    }
-    // Убрать выделение
-    this.lastPosition.range.collapse();
-    this.onEdit(event);
+  // Сделать жирным
+  onToggleBold(): void {
+    this.onToggleTags(BoldTags);
   }
+
+  // Сделать курсивом
+  onToggleItalic(): void {
+    this.onToggleTags(ItalicTags);
+  }
+
+  // Сделать подчеркнутым
+  onToggleUnderLine(): void {
+    this.onToggleTags(UnderLineTags);
+  }
+
+  // Сделать зачеркнутым
+  onToggleStrikeThrough(): void {
+    this.onToggleTags(StrikeThroughTags);
+  }
+
+  // Назначить заголовком
+  onToggleTitle(level: number): void {
+    const tags: SearchAndReplaceNode[] = this.titleTags.map(tag => ({ tag }));
+    const currentLevel: number = this.controlTitleItterator.reduce((o, i) => this.isCaretInTitle(i) ? i : o, -1);
+    // Удалить заголовки
+    if (currentLevel > 0) {
+      this.onToggleTags(tags);
+    }
+    // Сделать заголовком
+    if (currentLevel !== level) {
+      this.onToggleTags([tags[level]]);
+    }
+  }
+
+  // Обновить теги
+  private onToggleTags(tags: SearchAndReplaceNode[]): void {
+    if (this.isCaretInElm(...tags.map(({ tag }) => tag))) {
+      tags.forEach(tag => this.searchAndReplaceNode(tag, false));
+    }
+    // Добавить тег
+    else {
+      this.searchAndReplaceNode(tags[0], true);
+    }
+    // Обновить
+    this.onSave();
+    this.updateStates();
+  }
+
+
+
+
 
   // Замена смайликов
   private editorEmojiReplace(editor: HTMLElement): void {
@@ -422,13 +541,6 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     editor.innerHTML = text.replace(nodeText, tagCode);
   }
 
-  // Интерполяция тегов
-  private editorTagInterpolate(editor: HTMLElement): void {
-    const regExp: RegExp = new RegExp("(\\[([a-z0-9\-_]+(=[a-z0-9\-_]+)?)+\\])+?", "ig");
-    // Интерполяция
-    editor.innerHTML = editor.innerHTML.replace(regExp, "\\[$2\\]");
-  }
-
   // Замена пробелов
   private editorSpacingReplace(editor: HTMLElement): void {
     editor.innerHTML = editor.innerHTML.replace(new RegExp("(\&nbsp;+)", "ig"), " ");
@@ -439,4 +551,285 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     editor.innerHTML = editor.innerHTML.replace(new RegExp("([\\s\\n\\r\\t])+", "ig"), " ");
     editor.innerHTML = editor.innerHTML.trim();
   }
+
+  // Поиск элементов по параметрам
+  private searchAndReplaceNode(params: SearchAndReplaceNode, isAdd: boolean = true): void {
+    const { selection, range } = this.getRangePosition();
+    const parentElement: Node = range.commonAncestorContainer;
+    const treeWalker: TreeWalker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_ALL, {
+      acceptNode: (node: Node) => range.intersectsNode(node) ?
+        NodeFilter.FILTER_ACCEPT :
+        NodeFilter.FILTER_REJECT
+    });
+    // Добавить
+    if (isAdd) {
+      const newElm: HTMLElement = this.createElement(params);
+      // Каретка
+      if (range.collapsed) {
+        const currentNode: Node = range.startContainer;
+        // Текстовый узел
+        if (this.isTextNode(currentNode)) {
+          const wordsRegExp: RegExp = new RegExp("[а-яёЁ\\w\\d\\-_]", "ui");
+          const textContent: string = (currentNode as Text).textContent ?? "";
+          const position: number = range.startOffset;
+          const isLeftPartOfWord: boolean = position > 0 && wordsRegExp.test(textContent[position - 1]);
+          const isRightPartOfWord: boolean = position < textContent.length && wordsRegExp.test(textContent[position]);
+          // Выделение внутри слова
+          if (isLeftPartOfWord && isRightPartOfWord) {
+            let start: number = position;
+            let end: number = position;
+            // Поиск начала слова
+            while (start > 0 && wordsRegExp.test(textContent[start - 1])) {
+              start--;
+            }
+            // Поиск конца слова
+            while (end < textContent.length && wordsRegExp.test(textContent[end])) {
+              end++;
+            }
+            // Выделение слова и оборачивание
+            range.setStart(currentNode, start);
+            range.setEnd(currentNode, end);
+            range.surroundContents(newElm);
+            // Вернуть каретку обратно
+            selection.removeAllRanges();
+            selection.addRange(this.createRange(newElm.firstChild, newElm.firstChild, position - start, position - start));
+          }
+          // Вне слов
+          else {
+            const newRange: Range = this.createRange(newElm.firstChild, newElm.firstChild, 0, (newElm.firstChild as Text).length);
+            // Установить позицию
+            newRange.collapse(false);
+            range.insertNode(newElm);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
+        }
+      }
+      // Выделение
+      else {
+        const startContainer: Node = range.startContainer;
+        const startOffset: number = range.startOffset;
+        const endContainer: Node = range.endContainer;
+        const endOffset: number = range.endOffset;
+        let firstInsered: Node;
+        let lastInsered: Node;
+        // Перенос текста
+        const handleTextWrap = (node: Node): void => {
+          const wrapper: HTMLElement = newElm.cloneNode() as HTMLElement;
+          const text: Text = node as Text;
+          const wrapStart: number = node === startContainer ? startOffset : 0;
+          const wrapEnd = node === endContainer ? endOffset : text.length;
+          const textToWrap: Text = text.splitText(wrapStart);
+          // Обработка
+          textToWrap.splitText(wrapEnd - wrapStart);
+          wrapper.appendChild(textToWrap.cloneNode(true));
+          text.parentNode.replaceChild(wrapper, textToWrap);
+          firstInsered = firstInsered ?? wrapper;
+          lastInsered = wrapper ?? lastInsered;
+        };
+        // Обработать всех потомков
+        TreeWalkerToArray(treeWalker, range)
+          .filter(node => this.isTextNode(node) && !this.filterElement(params, node.parentNode as HTMLElement))
+          .forEach(node => handleTextWrap(node));
+        // Обновить выделение
+        if (!!firstInsered?.firstChild && !!lastInsered?.firstChild) {
+          const lastSize: number = ParseInt((lastInsered?.firstChild as Text)?.length);
+          const newRange: Range = this.createRange(firstInsered?.firstChild, lastInsered?.firstChild, 0, lastSize);
+          // Обновить выделение
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      }
+    }
+    // Удалить
+    else {
+      if (range.collapsed) {
+        ElementParentsArray(parentElement, this.editor.nativeElement, true)
+          .filter(currentNode => this.filterElement(params, currentNode as HTMLElement))
+          .forEach(currentNode => {
+            const position: number = range.startOffset;
+            const newNode: Node = this.unwrapElement(currentNode as HTMLElement);
+            const parentNode: Node = newNode.parentNode;
+            const newRange: Range = this.createRange(newNode, newNode, position, position);
+            // Восстановить позицию
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            // Объединить все текстовые узлы
+            this.normalizeTextNodes(parentNode);
+          });
+      }
+      // Выделение
+      else {
+        const nodes: Node[] = TreeWalkerToArray(treeWalker, range);
+        const nodeSize: number = nodes.length;
+        let startPosition: number = range.startOffset;
+        let endPosition: number = range.endOffset;
+        let startRemoved: Node = range.startContainer;
+        let endRemoved: Node = range.endContainer;
+        // Обход элементов
+        nodes
+          .map((node, key) => ({ node, key }))
+          .filter(({ node }) => node !== this.editor?.nativeElement)
+          .map(data => ({ ...data, parents: ElementParentsArray(data.node, this.editor?.nativeElement, true) }))
+          .forEach(({ key, parents }) => parents.forEach((node, subKey) => {
+            if (this.filterElement(params, node as HTMLElement)) {
+              const updatedElm: Node = this.partialUnwrapElement(node, range);
+              // Первый элемент
+              if (key === 0) {
+                startRemoved = this.isTextNode(updatedElm) ? updatedElm : updatedElm.firstChild;
+                startPosition = 0;
+              }
+              // Последний элемент
+              if (key + 1 === nodeSize) {
+                endRemoved = this.isTextNode(updatedElm) ? updatedElm : updatedElm.firstChild;
+                endPosition = endRemoved.textContent.length;
+              }
+            }
+          }));
+        // Обновить выделение
+        if (!!startRemoved && !!endRemoved) {
+          const newRange: Range = this.createRange(startRemoved, endRemoved, startPosition, endPosition);
+          // Обновить выделение
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+        // Нормализация
+        this.normalizeTextNodes(parentElement);
+      }
+    }
+  }
+
+  // Удалить тег, сохранив содержимое
+  private unwrapElement(element: HTMLElement): Node {
+    const parentNode: ParentNode = element.parentNode;
+    // Перемещение
+    while (element.firstChild) {
+      parentNode?.insertBefore(element.firstChild, element);
+    }
+    // Новый элемент
+    const newNode: Node = element.previousSibling;
+    // Удалить
+    parentNode?.removeChild(element);
+    // Вернуть элемент
+    return newNode;
+  }
+
+  // Удалить фрагмент частично, сохранив содержимое
+  private partialUnwrapElement(element: Node, range: Range): Node {
+    if (element instanceof HTMLElement) {
+      const startOutside: boolean = range.isPointInRange(element, 0);
+      const endOutside: boolean = range.isPointInRange(element, element.childNodes.length);
+      let newElm: Node;
+      // Выделение полностью вокруг элемента
+      if (startOutside && endOutside) {
+        newElm = this.unwrapElement(element);
+      }
+      // Выделение начинается до элемента и заканчивается внутри элемента
+      else if (startOutside && !endOutside) {
+        const newRange: Range = this.createRange(element, range.endContainer, 0, range.endOffset);
+        const contentToMove: DocumentFragment = newRange.extractContents();
+        // Перенести
+        element.parentNode.insertBefore(contentToMove, element);
+        newElm = element.previousSibling;
+      }
+      // Выделение начинается внутри элемента и заканчивается после элемента
+      else if (!startOutside && endOutside) {
+        const newRange: Range = this.createRange(range.startContainer, element, range.startOffset, element.childNodes.length);
+        const contentToMove: DocumentFragment = newRange.extractContents();
+        // Перенести
+        element.parentNode.insertBefore(contentToMove, element.nextSibling);
+        newElm = element.nextSibling;
+      }
+      // Выделение полностью внутри элемента
+      else if (!startOutside && !endOutside) {
+        const beforeSelectionElement: HTMLElement = element.cloneNode(false) as HTMLElement;
+        const afterSelectionElement: HTMLElement = element.cloneNode(false) as HTMLElement;
+        const beforeSelectionRange: Range = this.createRange(element, range.startContainer, 0, range.startOffset);
+        const afterSelectionRange: Range = this.createRange(range.endContainer, element, range.endOffset, element.childNodes.length);
+        const beforeSelectionContent: DocumentFragment = beforeSelectionRange.extractContents();
+        const afterSelectionContent: DocumentFragment = afterSelectionRange.extractContents();
+        // Перенести содержимое спереди
+        if (this.containsSelectableContent(beforeSelectionContent)) {
+          beforeSelectionElement.appendChild(beforeSelectionContent);
+          element.parentNode.insertBefore(beforeSelectionElement, element);
+        }
+        // Перенести содержимое позади
+        if (this.containsSelectableContent(afterSelectionContent)) {
+          afterSelectionElement.appendChild(afterSelectionContent);
+          element.parentNode.insertBefore(afterSelectionElement, element.nextSibling);
+        }
+        // Очистить от тега сам элемент
+        newElm = this.unwrapElement(element);
+      }
+      // Удалить элемент
+      if (!this.isNodeHasChild(element)) {
+        element.remove();
+      }
+      // Обновленный элемент
+      return newElm;
+    }
+    // Ничего не поменялось
+    return element;
+  }
+
+  // Объединить все текстовые узлы
+  private normalizeTextNodes(container: Node): void {
+    if (container.nodeType === Node.ELEMENT_NODE) {
+      (container as HTMLElement).normalize();
+    }
+    // Рекурсивно обходим дочерние узлы
+    for (let i = 0; i < container.childNodes.length; i++) {
+      this.normalizeTextNodes(container.childNodes[i]);
+    }
+  }
+
+  // Установить состояния кнопок
+  private updateStates(): void {
+    this.caretElements = this.getCaretElementsTree;
+    this.changeDetectorRef.detectChanges();
+  }
 }
+
+
+
+
+
+// Интерфейс для поиска и замены тегов
+interface SearchAndReplaceNode {
+  tag: string;
+  class?: string;
+  attrs?: SimpleObject;
+}
+
+// Интерфейс визуального выделения
+interface VisualSelection {
+  node: Node;
+  offset: number;
+}
+
+
+
+
+
+// Жирные теги
+const BoldTags: SearchAndReplaceNode[] = [
+  { tag: "b" },
+  { tag: "strong" }
+];
+
+// Наклонные теги
+const ItalicTags: SearchAndReplaceNode[] = [
+  { tag: "i" },
+  { tag: "em" }
+];
+
+// Подчеркнутые теги
+const UnderLineTags: SearchAndReplaceNode[] = [
+  { tag: "u" }
+];
+
+// Зачеркнутые теги
+const StrikeThroughTags: SearchAndReplaceNode[] = [
+  { tag: "s" },
+  { tag: "del" }
+];
