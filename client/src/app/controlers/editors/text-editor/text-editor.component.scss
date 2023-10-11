@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:list";
 @use "colors";
 @use "containers";
 @use "screens";
@@ -39,12 +40,91 @@
 
 // Текст
 .text {
+  $fontSize: 15px;
+  $lineHeight: 1.3;
+  // Свойства
   grid-area: text;
   outline: none;
   border-radius: 0 0 #{containers.$cardBorderRadius} #{containers.$cardBorderRadius};
+  font-size: $fontSize;
+  line-height: $lineHeight;
+  font-weight: 200;
+  font-style: normal;
+  text-decoration: none;
+  letter-spacing: 0;
   // Граница сверху
   * + & {
     border-top: 1px solid #{colors.$border};
+  }
+  // Дочерние элементы
+  &::ng-deep {
+    $blockTags: p h1 h2 h3 h4 h5 h6;
+    $inlineTags: b strong i em u s del;
+    $titles: (
+      1: 2 700,
+      2: 1.75 700,
+      3: 1.5 700,
+      4: 1.25 600,
+      5: 1.125 500,
+      6: 1 400
+    );
+    // Блочные элементы
+    @each $tag in $blockTags {
+      > #{$tag} {
+        display: block;
+        margin-top: 0;
+        margin-bottom: 0;
+        font: inherit;
+        // Отступы сверху
+        @each $nextTag in $blockTags {
+          & + #{$nextTag} {
+            margin-top: $fontSize * $lineHeight;
+          }
+        }
+      }
+    }
+    // Строчные элементы
+    @each $tag in $inlineTags {
+      #{$tag} {
+        display: inline;
+        font: inherit;
+      }
+    }
+    // Заголовки
+    @each $level, $properties in $titles {
+      $size: list.nth($properties, 1);
+      $fontWeight: list.nth($properties, 2);
+      // Заголовок
+      h#{$level} {
+        font-size: $fontSize * $size;
+        font-weight: $fontWeight;
+      }
+      // Отступы сверху
+      @each $nextTag in $blockTags {
+        #{$nextTag} + h#{$level} {
+          margin-top: $size * $fontSize * $lineHeight;
+        }
+      }
+    }
+    // Жирность
+    b,
+    strong {
+      font-weight: 700;
+    }
+    // Жирность
+    i,
+    em {
+      font-style: italic;
+    }
+    // Подчеркивание
+    u {
+      text-decoration: underline;
+    }
+    // Зачеркивание
+    s,
+    del {
+      text-decoration: line-through;
+    }
   }
   // Адаптив
   @include screens.adaptiveFor(containers.$cardPaddings) using($padding) {

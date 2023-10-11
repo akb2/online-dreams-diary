@@ -1,7 +1,7 @@
 import { WaitObservable } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
-import { ElementParentsArray, TreeWalkerToArray } from "@_helpers/app";
+import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
 import { ParseInt } from "@_helpers/math";
 import { TextMessage } from "@_helpers/text-message";
 import { SimpleObject } from "@_models/app";
@@ -10,7 +10,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Subject, concatMap, filter, map, pairwise, startWith, takeUntil, timer } from "rxjs";
+import { Subject, concatMap, delay, filter, map, pairwise, startWith, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -36,7 +36,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   emojiClassName: string = "emoji-elm";
   controlTitleItterator: number[] = ControlTitleItterator;
-  private titleTags: string[] = TitleTags;
+  private titleTags: SearchAndReplaceNode[] = TitleTags;
 
   editingText: SafeHtml = "";
   caretElements: HTMLElement[] = [];
@@ -125,7 +125,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Курсор внутри заголовка
   isCaretInTitle(level: number): boolean {
-    return this.isCaretInElm(this.titleTags[level]);
+    return this.isCaretInElm(this.titleTags?.find(({ tag }) => tag === "h" + level)?.tag);
   }
 
   // Курсор внутри одного из заголовков
@@ -164,8 +164,11 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   }
 
   // Текстовый узел
-  private isTextNode(node: Node) {
-    return node?.nodeType === Node.TEXT_NODE;
+  private isTextNode(node: Node, checkTags: boolean = false) {
+    const tagName: string = (node as HTMLElement)?.tagName ?? "";
+    const nodeSetting: SearchAndReplaceNode = AllTags.find(({ tag }) => tag === tagName);
+    // Результат проверки
+    return node?.nodeType === Node.TEXT_NODE || (checkTags && !!nodeSetting && !nodeSetting?.isBlock);
   }
 
   // Проверка элемента условию
@@ -284,13 +287,15 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           startWith(null)
         )),
         map(() => this.firstLaunch ? this.htmlToText(this.value) : this.value),
-        filter(text => text !== this.htmlToText(this.editor?.nativeElement?.innerHTML))
+        filter(text => text !== this.htmlToText(this.editor?.nativeElement?.innerHTML)),
+        tap(text => {
+          this.editingText = this.textTransform(text ?? "", true);
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        }),
+        delay(1)
       )
-      .subscribe(text => {
-        this.editingText = this.textTransform(text ?? "", true);
-        // Обновить
-        this.changeDetectorRef.detectChanges();
-      });
+      .subscribe(() => this.onEdit(null));
   }
 
   ngOnInit(): void {
@@ -462,35 +467,36 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Назначить заголовком
   onToggleTitle(level: number): void {
-    const tags: SearchAndReplaceNode[] = this.titleTags.map(tag => ({ tag, removeAllTag: true }));
     const currentLevel: number = this.controlTitleItterator.reduce((o, i) => this.isCaretInTitle(i) ? i : o, -1);
     // Удалить заголовки
     if (currentLevel > 0) {
-      this.onToggleTags(tags, false);
+      this.onToggleTags(this.titleTags, false);
       this.wrapTextNodes();
       this.editor.nativeElement.normalize();
     }
     // Сделать заголовком
     if (currentLevel !== level) {
       this.onToggleTags(ParagraphTags, false);
-      this.onToggleTags([tags[level]]);
+      this.onToggleTags(this.titleTags.filter(({ tag }) => tag === "h" + level));
     }
   }
 
   // Обновить теги
   private onToggleTags(tags: SearchAndReplaceNode[], forceOperation: boolean | null = null): void {
-    const hasTag: boolean = this.isCaretInElm(...tags.map(({ tag }) => tag));
-    // Удалить тег
-    if (hasTag || forceOperation === false) {
-      tags.forEach(tag => this.searchAndReplaceNode(tag, false));
+    if (!!tags?.length) {
+      const hasTag: boolean = this.isCaretInElm(...tags.map(({ tag }) => tag));
+      // Удалить тег
+      if (hasTag || forceOperation === false) {
+        tags.forEach(tag => this.searchAndReplaceNode(tag, false));
+      }
+      // Добавить тег
+      else if (!hasTag || !!forceOperation) {
+        this.searchAndReplaceNode(tags[0], true);
+      }
+      // Обновить
+      this.onSave();
+      this.updateStates();
     }
-    // Добавить тег
-    else if (!hasTag || !!forceOperation) {
-      this.searchAndReplaceNode(tags[0], true);
-    }
-    // Обновить
-    this.onSave();
-    this.updateStates();
   }
 
 
@@ -516,7 +522,10 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   // Замена блочных элементов
   // ? Добавляет абзац
   private editorBlockReplace(editor: HTMLElement): void {
-    FullModeBlockRemoveTags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, true)));
+    FullModeBlockRemoveTags.forEach(tag => Array
+      .from(editor.getElementsByTagName(tag))
+      .forEach(node => this.editorTagRemove(editor, node, true))
+    );
   }
 
   // Замена строчных элементов
@@ -715,12 +724,12 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
               const updatedElm: Node = this.partialUnwrapElement(node, range);
               // Первый элемент
               if (key === 0) {
-                startRemoved = this.isTextNode(updatedElm) ? updatedElm : updatedElm.firstChild;
+                startRemoved = GetTextNodes(updatedElm)[0];
                 startPosition = 0;
               }
               // Последний элемент
               if (key + 1 === nodeSize) {
-                endRemoved = this.isTextNode(updatedElm) ? updatedElm : updatedElm.firstChild;
+                endRemoved = GetTextNodes(updatedElm)[0];
                 endPosition = endRemoved.textContent.length;
               }
             }
@@ -831,27 +840,57 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   // Обернуть текстовые узлы в абзацы
   private wrapTextNodes(): void {
     if (!!this.editor?.nativeElement) {
-      const { selection, range } = this.getRangePosition();
+      let { selection, range: { startOffset, endOffset, startContainer, endContainer } } = this.getRangePosition();
       const parentNode: Node = this.editor.nativeElement;
+      // Нормализация
+      this.editor.nativeElement.normalize();
       // Поиск узлов
       Array.from(this.editor.nativeElement.childNodes)
-        .filter(node => this.isTextNode(node))
+        .filter(node => this.isTextNode(node, true))
         .filter(node => this.isNodeHasChild(node))
         .forEach(node => {
           const newElm: HTMLElement = this.createElement(ParagraphTags[0]);
-          const position: number = range.startOffset;
-          // Каретка
-          if (range.collapsed) {
-            parentNode.insertBefore(newElm, node);
-            newElm.innerText = node.textContent;
-            node.remove();
-            // Обновить выделение
-            selection.removeAllRanges();
-            selection.addRange(this.createRange(newElm.firstChild, newElm.firstChild, position, position));
+          const previousNode: HTMLElement = node?.previousSibling as HTMLElement;
+          const nextNode: HTMLElement = node?.nextSibling as HTMLElement;
+          const previousNodeIsP: boolean = previousNode?.tagName === "P";
+          const nextNodeIsP: boolean = nextNode?.tagName === "P";
+          const isStartSelected: boolean = startContainer === node;
+          const isEndSelected: boolean = endContainer === node;
+          // Переместить в предыдущий абзац
+          if (previousNodeIsP) {
+            const previousNodeTextLength: number = ParseInt(previousNode?.textContent?.length);
+            // Перемещение
+            previousNode.appendChild(node);
+            previousNode.normalize();
+            // Обновить начало
+            if (isStartSelected) {
+              startContainer = GetTextNodes(previousNode)[0];
+              startOffset = previousNodeTextLength + startOffset;
+            }
+            // Обновить конец
+            if (isEndSelected) {
+              endContainer = GetTextNodes(previousNode)[0];
+              endOffset = previousNodeTextLength + endOffset;
+            }
+            // Обновить ссылку на узел
+            node = previousNode;
           }
-          // Выделение
+          // Обернуть в абзац
           else {
+            parentNode.insertBefore(newElm, node);
+            newElm.appendChild(node);
+            newElm.normalize();
+            // Обновить ссылку на узел
+            node = newElm;
           }
+          // Соеденить со следующим абзацем
+          if (nextNodeIsP) {
+            Array.from(nextNode.childNodes).forEach(n => node.appendChild(n));
+            nextNode.remove();
+          }
+          // Обновить выделение
+          selection.removeAllRanges();
+          selection.addRange(this.createRange(startContainer, endContainer, startOffset, endOffset));
         });
     }
   }
@@ -864,6 +903,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 // Интерфейс для поиска и замены тегов
 interface SearchAndReplaceNode {
   tag: string;
+  isBlock?: boolean;
   class?: string;
   attrs?: SimpleObject;
   removeAllTag?: boolean;
@@ -882,8 +922,20 @@ interface VisualSelection {
 // Цикл по допустимым уровням заголовкам
 const ControlTitleItterator: number[] = CreateArray(5).map(i => i + 2);
 
+// Параграфы
+const ParagraphTags: SearchAndReplaceNode[] = [
+  { tag: "p", isBlock: true }
+];
+
 // Теги заголовков
-const TitleTags: string[] = CreateArray(ControlTitleItterator.length + ControlTitleItterator[0]).map(i => (i > 0 ? "h" + i : ""));
+const TitleTags: SearchAndReplaceNode[] = CreateArray(ControlTitleItterator.length + ControlTitleItterator[0])
+  .map(i => i > 0 ? "h" + i : "")
+  .filter(tag => !!tag)
+  .map(tag => ({
+    tag,
+    isBlock: true,
+    removeAllTag: true
+  }));
 
 // Жирные теги
 const BoldTags: SearchAndReplaceNode[] = [
@@ -908,7 +960,12 @@ const StrikeThroughTags: SearchAndReplaceNode[] = [
   { tag: "del" }
 ];
 
-// Параграфы
-const ParagraphTags: SearchAndReplaceNode[] = [
-  { tag: "p" }
+// Перечисление всех тегов
+const AllTags: SearchAndReplaceNode[] = [
+  ...ParagraphTags,
+  ...TitleTags,
+  ...BoldTags,
+  ...ItalicTags,
+  ...UnderLineTags,
+  ...StrikeThroughTags
 ];
