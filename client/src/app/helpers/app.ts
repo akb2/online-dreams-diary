@@ -39,3 +39,21 @@ export const ElementParentsArray = (elm: Node | HTMLElement, lastParent: Node | 
   // Вернуть список
   return nodes;
 };
+
+// Найти первый текстовый узел
+export const GetTextNodes = (elm: Node | ChildNode | HTMLElement): Node[] => {
+  const textNodes: Node[] = [];
+  // Проверить сам элемент
+  if (elm.nodeType === Node.TEXT_NODE) {
+    textNodes.push(elm);
+  }
+  // Поиск по вложениям
+  else if (elm.hasChildNodes()) {
+    Array.from(elm.childNodes).forEach(node => node.nodeType === Node.TEXT_NODE ?
+      textNodes.push(node) :
+      textNodes.push(...GetTextNodes(node))
+    );
+  }
+  // Вернуть текстовые узлы
+  return textNodes;
+};
