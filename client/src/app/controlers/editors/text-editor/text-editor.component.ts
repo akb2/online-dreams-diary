@@ -407,6 +407,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
         firstChild :
         null;
       // Начать очистку
+      this.wrapTextNodes();
       removeEmptyBr(editor);
       clearChild(editor, false);
       // Сохранить
@@ -844,7 +845,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   // Обернуть текстовые узлы в абзацы
   private wrapTextNodes(): void {
     if (!!this.editor?.nativeElement) {
-      let { selection, range: { startOffset, endOffset, startContainer, endContainer } } = this.getRangePosition();
+      let { selection, range: { startOffset, endOffset, startContainer, endContainer } } = this.getRangePosition(true);
       const parentNode: Node = this.editor.nativeElement;
       // Нормализация
       this.editor.nativeElement.normalize();
