@@ -8,9 +8,11 @@ export interface CaretPosition {
 
 // Параметры тега
 export interface TagSetting {
+  replaceTag?: string;
   mustClose: boolean;
   mainAttr: string;
   contentAttr: string;
   provideMainAttrToHtml: boolean;
   provideContentToMainAttr: boolean;
+  provideMainAttrToStyleProperty?: string;
 }

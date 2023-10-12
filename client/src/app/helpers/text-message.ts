@@ -114,13 +114,17 @@ export class TextMessage extends BaseInputDirective {
         const contentAttr: string = settings.contentAttr ? (!!content ? content : (settings.provideContentToMainAttr && !!mainAttrValue ? mainAttrValue : "")) : "";
         const mainAttrTag: string = !!mainAttr ? " " + settings.mainAttr + "='" + mainAttr + "' " : "";
         const contentAttrTag: string = !!contentAttr ? " " + settings.contentAttr + "='" + contentAttr + "' " : "";
+        const styleAttrTag: string = !!mainAttr && !!settings?.provideMainAttrToStyleProperty ?
+          " style='" + settings.provideMainAttrToStyleProperty + ": " + mainAttr + ";' " :
+          "";
+        const resultTag: string = !!settings?.replaceTag ? settings.replaceTag : tag;
         // Закрытый тег
         if (settings.mustClose) {
-          return "<" + tag + " " + mainAttrTag + " " + contentAttrTag + ">" + html + "</" + tag + ">";
+          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTag + ">" + html + "</" + resultTag + ">";
         }
         // Открытый тег
         else {
-          return "<" + tag + " " + mainAttrTag + " " + contentAttrTag + "/>";
+          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTag + "/>";
         }
       });
     });

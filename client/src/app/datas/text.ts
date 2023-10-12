@@ -2,12 +2,12 @@ import { CustomObject } from "@_models/app";
 import { TagSetting } from "@_models/text";
 
 // Теги, которые будут сохранены для редактора
-export const FullModeSaveTags: string[] = ["h2", "h3", "h4", "h5", "h6", "i", "em", "b", "strong", "u", "s", "del"];
+export const FullModeSaveTags: string[] = ["h2", "h3", "h4", "h5", "h6", "i", "em", "b", "strong", "u", "s", "del", "color"];
 export const ShortModeSaveTags: string[] = [];
 
 // Теги, которые будут удалены в редакторе
-export const FullModeInlineRemoveTags: string[] = ["span"];
-export const ShortModeInlineRemoveTags: string[] = ["span", "i", "b", "u", "s", "del", "bold", "strong", "italic"];
+export const FullModeInlineRemoveTags: string[] = [];
+export const ShortModeInlineRemoveTags: string[] = ["i", "b", "u", "s", "del", "bold", "strong", "italic"];
 export const FullModeBlockRemoveTags: string[] = ["h1", "div", "p"];
 export const ShortModeBlockRemoveTags: string[] = ["div", "p"];
 
@@ -35,5 +35,14 @@ export const TagSettings: CustomObject<TagSetting> = {
     contentAttr: "alt",
     provideMainAttrToHtml: false,
     provideContentToMainAttr: false,
+  },
+  color: {
+    replaceTag: "span",
+    mustClose: true,
+    mainAttr: "color",
+    contentAttr: null,
+    provideMainAttrToHtml: false,
+    provideContentToMainAttr: false,
+    provideMainAttrToStyleProperty: "color"
   }
 };

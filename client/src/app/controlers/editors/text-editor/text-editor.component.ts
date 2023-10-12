@@ -101,6 +101,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     // this.editorTagInterpolate(tempEditor);
     this.editorBlockReplace(tempEditor);
     this.editorInlineReplace(tempEditor);
+    this.editorColorReplace(tempEditor);
     this.editorTagReplace(tempEditor);
     this.editorEmojiReplace(tempEditor);
     this.editorSpacingReplace(tempEditor);
@@ -598,7 +599,30 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   // Замена строчных элементов
   // ? Без добавления абзаца
   private editorInlineReplace(editor: HTMLElement): void {
-    FullModeInlineRemoveTags.forEach(tag => Array.from(editor.getElementsByTagName(tag)).forEach(node => this.editorTagRemove(editor, node, false)));
+    FullModeInlineRemoveTags.forEach(tag => Array
+      .from(editor.getElementsByTagName(tag))
+      .forEach(node => this.editorTagRemove(editor, node, false))
+    );
+  }
+
+  // Замена цветовых блоков
+  private editorColorReplace(editor: HTMLElement): void {
+    const colorTag: SearchAndReplaceNode = ColorTag();
+    const colorAttr: string = Object.keys(colorTag.attrs)[0];
+    const attrs: string = "[" + colorAttr + "]";
+    const nodes: Element[] = Array.from(editor.querySelectorAll(colorTag.tag + attrs));
+    // Замена элементов
+    nodes.forEach(node => {
+      const nodeText: string = node.outerHTML;
+      const text: string = editor.innerHTML;
+      const color: string = new Color(node.getAttribute(colorAttr))?.toHexString(false);
+      // Замена
+      if (!!color && color !== this.defaultColor?.toHexString(false)) {
+        const tagCode: string = "[color=" + color + "]" + node.innerHTML + "[/color]";
+        // Замена текста
+        editor.innerHTML = text.replace(nodeText, tagCode);
+      }
+    });
   }
 
   // Замена HTML тегов на BB теги
