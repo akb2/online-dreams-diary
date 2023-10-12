@@ -530,10 +530,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     const currentColorHex: string[] = this.getCurrentColor.map(color => color?.toHexString(false));
     const defaultColor: string = this.defaultColor?.toHexString(false);
     // Удалить цвета
-    if (
-      (colorHex !== defaultColor || currentColorHex.length > 1 || !currentColorHex.includes(colorHex)) &&
-      (currentColorHex.length > 1 || !currentColorHex.includes(colorHex))
-    ) {
+    if (currentColorHex.length > 1 || !currentColorHex.includes(colorHex)) {
       this.onToggleTags([ColorTag()], false);
       this.editor.nativeElement.normalize();
       // Установить цвет
