@@ -346,7 +346,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       // Предыдущий узел
       const getBeforeNode = (node: Node) => {
         if (node !== editor) {
-          if (!!node.previousSibling) {
+          if (!!node?.previousSibling) {
             return node.previousSibling;
           }
           // Поиск по родителям
@@ -373,7 +373,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
         // Проверка
         const testChildren: ChildNode[] = Array.from(node.childNodes);
         // Удалить пустые переносы
-        if (!!testChildren?.length && testChildren.every(child => child.nodeName.toLowerCase() === "br") && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+        if (!!testChildren?.length && testChildren.every(child => child.nodeName.toLowerCase() === "br") && !noRemoveNode.includes(node) && noRemoveBeforeNode !== node) {
           testChildren.forEach(child => child.remove());
         }
       };
@@ -387,7 +387,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
         if (clearNode && !clearIgnore.includes(nodeName)) {
           const testChildren: ChildNode[] = Array.from(node.childNodes);
           // Удалить если нет дочерних элементов
-          if (testChildren?.every(child => !this.isNodeHasChild(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+          if (testChildren?.every(child => !this.isNodeHasChild(child)) && !noRemoveNode.includes(node) && noRemoveBeforeNode !== node) {
             node.remove();
           }
         }
@@ -401,14 +401,18 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       const key: string = event?.["key"] ?? "";
       const keyEnter: boolean = !!key && ignoreKeys.includes(key);
       const firstChild: Node = editor.childNodes[0] ?? null;
-      const noRemoveNode: Node = keyEnter ? selection.anchorNode : null;
-      const hasChild: boolean = this.isNodeHasChild(noRemoveNode, noHasChildAvail);
-      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && getBeforeNode(noRemoveNode) === firstChild && hasChild ? firstChild : null;
+      const noRemoveNode: Node[] = keyEnter ? ElementParentsArray(selection.anchorNode, this.editor.nativeElement, true) : [];
+      const hasChild: boolean = noRemoveNode.reduce((o, node) => o || this.isNodeHasChild(node, noHasChildAvail), false);
+      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && noRemoveNode.some(node => getBeforeNode(node) === firstChild) && hasChild ?
+        firstChild :
+        null;
       // Начать очистку
       removeEmptyBr(editor);
       clearChild(editor, false);
       // Сохранить
       this.onSave();
+      // Обновить
+      this.changeDetectorRef.detectChanges();
     }
   }
 

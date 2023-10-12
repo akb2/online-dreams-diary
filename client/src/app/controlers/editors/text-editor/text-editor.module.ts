@@ -1,3 +1,4 @@
+import { ScrollModule } from "@_controlers/scroll/scroll.module";
 import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -27,7 +28,8 @@ import { TextEditorComponent } from "./text-editor.component";
     MatButtonModule,
     MatMenuModule,
     MatTooltipModule,
-    MatDividerModule
+    MatDividerModule,
+    ScrollModule
   ]
 })
 

@@ -42,16 +42,18 @@
 </div>
 
 <!-- Редактор текста -->
-<div #editor
-     class="text"
-     [innerHtml]="editingText"
-     [attr.contenteditable]="true"
-     (blur)="onBlur()"
-     (keyup)="onEdit($event)"
-     (change)="onEdit($event)"
-     (click)="onEdit($event)"
-     (paste)="onPaste($event)"
-     (keydown)="onCheckEnterKey($event)"></div>
+<app-scroll class="text__overlay">
+  <div #editor
+       class="text"
+       [innerHtml]="editingText"
+       [attr.contenteditable]="true"
+       (blur)="onBlur()"
+       (keyup)="onEdit($event)"
+       (change)="onEdit($event)"
+       (click)="onEdit($event)"
+       (paste)="onPaste($event)"
+       (keydown)="onCheckEnterKey($event)"></div>
+</app-scroll>
 
 
 
