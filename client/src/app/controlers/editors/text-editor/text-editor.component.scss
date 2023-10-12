@@ -26,7 +26,7 @@
   flex-flow: row wrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 5px 15px;
+  gap: 5px 20px;
   padding: 5px;
   user-select: none;
   // Группа
@@ -40,8 +40,8 @@
 
 // Текст
 .text {
-  $fontSize: 15px;
-  $lineHeight: 1.3;
+  $fontSize: 16px;
+  $lineHeight: 1.4;
   // Свойства
   outline: none;
   border-radius: 0 0 #{containers.$cardBorderRadius} #{containers.$cardBorderRadius};
@@ -78,6 +78,7 @@
         margin-top: 0;
         margin-bottom: 0;
         font: inherit;
+        line-height: inherit;
         // Отступы сверху
         @each $nextTag in $blockTags {
           & + #{$nextTag} {
@@ -91,6 +92,7 @@
       #{$tag} {
         display: inline;
         font: inherit;
+        line-height: inherit;
       }
     }
     // Заголовки
@@ -127,6 +129,12 @@
     s,
     del {
       text-decoration: line-through;
+    }
+    // Цвет
+    span[color] {
+      display: inline;
+      font: inherit;
+      line-height: inherit;
     }
   }
   // Адаптив
@@ -170,5 +178,16 @@
         }
       }
     }
+  }
+}
+
+// Выбор цвета
+.color-picker {
+  position: relative;
+  // Цветовое поле
+  &__tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
   }
 }

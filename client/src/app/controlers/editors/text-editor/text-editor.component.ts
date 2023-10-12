@@ -1,5 +1,5 @@
 import { WaitObservable } from "@_datas/api";
-import { CreateArray } from "@_datas/app";
+import { CompareElementByElement, CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
 import { ParseInt } from "@_helpers/math";
@@ -10,7 +10,8 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Subject, concatMap, delay, filter, map, pairwise, startWith, takeUntil, tap, timer } from "rxjs";
+import { Color, ColorPickerControl } from "@iplab/ngx-color-picker";
+import { Subject, concatMap, delay, filter, fromEvent, map, merge, mergeMap, pairwise, startWith, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -28,18 +29,26 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   @Output() acceptEvent: EventEmitter<void> = new EventEmitter();
 
   @ViewChild("editor", { read: ElementRef }) editor: ElementRef<HTMLElement>;
+  @ViewChild("colorPicker", { read: ElementRef }) colorPicker: ElementRef;
+  @ViewChild("colorPickerButton", { read: ElementRef }) colorPickerButton: ElementRef;
 
   private firstLaunch: boolean = true;
-  private lastPosition: CaretPosition;
 
   private emptySymbol: string = "\u200B";
 
   emojiClassName: string = "emoji-elm";
   controlTitleItterator: number[] = ControlTitleItterator;
   private titleTags: SearchAndReplaceNode[] = TitleTags;
+  colorPickerControl: ColorPickerControl = new ColorPickerControl()
+    .setColorPresets(BaseColors.map(color => color.toHexString(false)))
+    .hideAlphaChannel();
 
   editingText: SafeHtml = "";
   caretElements: HTMLElement[] = [];
+
+  defaultColor: Color = new Color("black");
+
+  showColorPicker: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -156,6 +165,26 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     return this.isCaretInElm(...StrikeThroughTags.map(({ tag }) => tag));
   }
 
+  // Курсор внутри цвета
+  isCaretInColor(mixedColor: string): boolean {
+    const color: Color = this.stringToColor(mixedColor);
+    // Результат проверки
+    return !!this.caretElements?.length && this.caretElements.some(node => this.filterElement(ColorTag(color.toHexString(false)), node));
+  }
+
+  // Текущий цвет
+  get getCurrentColor(): Color[] {
+    const colorElms: HTMLElement[] = this.caretElements.filter(node => this.filterElement(ColorTag(), node));
+    const colors: Color[] = colorElms?.map(node => this.stringToColor(node?.getAttribute("color")));
+    // Ближайший цвет
+    return !!colors?.length ? colors : [this.defaultColor];
+  }
+
+  // Преобразовать строковый цвет в объект
+  private stringToColor(mixedColor: string): Color {
+    return !!mixedColor ? new Color(mixedColor) : this.defaultColor;
+  }
+
   // Курсор внутри элемента по выбору
   private isCaretInElm(...tags: string[]): boolean {
     tags = tags.map(tag => tag?.toUpperCase());
@@ -183,7 +212,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
               const attrValue: string = element.getAttribute(key);
               // Проверка атрибута
               checkAttr = value === "" && attrValue !== "" ?
-                false : attrValue !== value ?
+                false : !!value && attrValue !== value ?
                   false :
                   checkAttr;
             });
@@ -314,6 +343,17 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
         ))
       )
       .subscribe(() => this.updateStates());
+    // Закрыть выбор цвета
+    WaitObservable(() => !this.colorPickerButton?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
+        filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement))
+      )
+      .subscribe(() => {
+        this.showColorPicker = false;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewChecked(): void {
@@ -335,8 +375,6 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Потеря фокуса
   onBlur(): void {
-    this.lastPosition = this.getRangePosition();
-    // Сохранить
     this.onSave();
   }
 
@@ -486,6 +524,25 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     }
   }
 
+  // Сменить цвет
+  onToggleColor(mixedColor: string): void {
+    const colorHex: string = new Color(mixedColor).toHexString(false);
+    const currentColorHex: string[] = this.getCurrentColor.map(color => color?.toHexString(false));
+    const defaultColor: string = this.defaultColor?.toHexString(false);
+    // Удалить цвета
+    if (
+      (colorHex !== defaultColor || currentColorHex.length > 1 || !currentColorHex.includes(colorHex)) &&
+      (currentColorHex.length > 1 || !currentColorHex.includes(colorHex))
+    ) {
+      this.onToggleTags([ColorTag()], false);
+      this.editor.nativeElement.normalize();
+      // Установить цвет
+      if (colorHex !== defaultColor) {
+        this.onToggleTags([ColorTag(colorHex)], true);
+      }
+    }
+  }
+
   // Обновить теги
   private onToggleTags(tags: SearchAndReplaceNode[], forceOperation: boolean | null = null): void {
     if (!!tags?.length) {
@@ -501,6 +558,14 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       // Обновить
       this.onSave();
       this.updateStates();
+    }
+  }
+
+  // Переключить цветовую панель
+  onShowColorPicker(event: MouseEvent): void {
+    if (!this.colorPicker?.nativeElement || !CompareElementByElement(event?.target, this.colorPicker?.nativeElement)) {
+      this.showColorPicker = !this.showColorPicker;
+      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -924,6 +989,20 @@ interface VisualSelection {
 
 
 
+// Список цветов
+const BaseColors: Color[] = [
+  new Color("black"),
+  new Color("gray"),
+  new Color("white"),
+  new Color("red"),
+  new Color("fuchsia"),
+  new Color("green"),
+  new Color("orangered"),
+  new Color("yellow"),
+  new Color("blue"),
+  new Color("aqua")
+];
+
 // Цикл по допустимым уровням заголовкам
 const ControlTitleItterator: number[] = CreateArray(5).map(i => i + 2);
 
@@ -965,8 +1044,21 @@ const StrikeThroughTags: SearchAndReplaceNode[] = [
   { tag: "del" }
 ];
 
+// Цвета
+const ColorTag = (color: string = ""): SearchAndReplaceNode => {
+  const baseTag: SearchAndReplaceNode = {
+    tag: "span",
+    attrs: { color: null }
+  };
+  // Вернуть цвет
+  return !!color ?
+    { ...baseTag, attrs: { ...baseTag.attrs, color, style: "color: " + color + ";" } } :
+    baseTag;
+};
+
 // Перечисление всех тегов
 const AllTags: SearchAndReplaceNode[] = [
+  ColorTag(),
   ...ParagraphTags,
   ...TitleTags,
   ...BoldTags,

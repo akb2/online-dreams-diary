@@ -6,7 +6,9 @@
             class="mat-elevation-z"
             [color]="selected? 'primary': 'basic'"
             [matMenuTriggerFor]="controlTitle"
-            *ngVar="isCaretInTitles as selected"><mat-icon>title</mat-icon></button>
+            *ngVar="isCaretInTitles as selected">
+      <mat-icon>title</mat-icon>
+    </button>
   </div>
   <!-- Стиль текста -->
   <div class="controls__group">
@@ -16,28 +18,58 @@
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать жирность': 'Сделать жирным'"
             (click)="onToggleBold()"
-            *ngVar="isCaretInBold as selected"><mat-icon>format_bold</mat-icon></button>
+            *ngVar="isCaretInBold as selected">
+      <mat-icon>format_bold</mat-icon>
+    </button>
     <!-- Наклон -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать наклон': 'Сделать наклонным'"
             (click)="onToggleItalic()"
-            *ngVar="isCaretInItalic as selected"><mat-icon>format_italic</mat-icon></button>
+            *ngVar="isCaretInItalic as selected">
+      <mat-icon>format_italic</mat-icon>
+    </button>
     <!-- Подчеркнутый -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать подчеркивание': 'Подчеркнуть текст'"
             (click)="onToggleUnderLine()"
-            *ngVar="isCaretInUnderLine as selected"><mat-icon>format_underlined</mat-icon></button>
+            *ngVar="isCaretInUnderLine as selected">
+      <mat-icon>format_underlined</mat-icon>
+    </button>
     <!-- Зачеркнутый -->
     <button mat-mini-fab
             [color]="selected? 'primary': 'basic'"
             class="mat-elevation-z"
             [matTooltip]="selected? 'Убрать зачеркивание': 'Зачеркнуть текст'"
             (click)="onToggleStrikeThrough()"
-            *ngVar="isCaretInStrikeThrough as selected"><mat-icon>format_strikethrough</mat-icon></button>
+            *ngVar="isCaretInStrikeThrough as selected">
+      <mat-icon>format_strikethrough</mat-icon>
+    </button>
+  </div>
+  <!-- Цвета -->
+  <div class="controls__group">
+    <!-- Цвет текста -->
+    <ng-container *ngVar="defaultColor.toHexString(false) as defaultColor">
+      <button #colorPickerButton
+              mat-mini-fab
+              [color]="defaultColor !== currentColor? 'gray': 'basic'"
+              class="mat-elevation-z color-picker"
+              matTooltip="Цвет текста"
+              (click)="onShowColorPicker($event)"
+              *ngVar="getCurrentColor?.[0]?.toHexString(false) as currentColor">
+        <mat-icon [ngStyle]="{ color: currentColor }">format_color_text</mat-icon>
+        <!-- Цветовая палитра -->
+        <chrome-picker #colorPicker
+                       [color]="currentColor"
+                       [control]="colorPickerControl"
+                       class="color-picker__tooltip"
+                       (colorChange)="onToggleColor($event)"
+                       *ngIf="showColorPicker"></chrome-picker>
+      </button>
+    </ng-container>
   </div>
 </div>
 
@@ -57,7 +89,7 @@
 
 
 
-<!-- Заголовок меню -->
+<!-- Меню для заголовков -->
 <mat-menu #controlTitle="matMenu">
   <button mat-menu-item
           class="title"
@@ -65,6 +97,7 @@
     <mat-icon>title</mat-icon>
     Заголовок
   </button>
+  <!-- Разделитель -->
   <mat-divider></mat-divider>
   <!-- Уровни заголовков -->
   <ng-container *ngFor="let i of controlTitleItterator">

@@ -7,6 +7,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { ColorPickerModule } from "@iplab/ngx-color-picker";
 import { TextEditorComponent } from "./text-editor.component";
 
 
@@ -29,7 +30,8 @@ import { TextEditorComponent } from "./text-editor.component";
     MatMenuModule,
     MatTooltipModule,
     MatDividerModule,
-    ScrollModule
+    ScrollModule,
+    ColorPickerModule
   ]
 })
 
