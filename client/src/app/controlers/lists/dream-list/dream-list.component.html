@@ -43,7 +43,7 @@
               [attr.datetime]="(dream.date || today).toISOString()">Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}</time>
         <!-- Меню -->
         <app-card-menu class="dream__text-menu"
-                       menuIcon="more_vert"
+                       menuIcon="menu"
                        [menuItems]="dreamsMenuItems[dream.id]"
                        *ngIf="dreamsMenuItems[dream.id]?.length > 0"></app-card-menu>
       </div>
