@@ -160,15 +160,20 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
         concatMap(() => this.screenService.elmResize(this.listElm.nativeElement))
       )
       .subscribe(() => this.onScrollRender());
-    // Изменение количества элементов списка
+    // Анализ дочерних элементов
     WaitObservable(() => !this.listElm?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
         concatMap(() => timer(0, this.scrollAddSpeed)),
-        map(() => this.listElm.nativeElement?.childNodes?.length),
-        startWith(0),
+        map(() => Array.from(this.listElm.nativeElement.childNodes).map(node => ({
+          node,
+          tag: (node as HTMLElement)?.tagName,
+          width: (node as HTMLElement)?.offsetWidth,
+          height: (node as HTMLElement)?.offsetHeight
+        }))),
+        startWith(null),
         pairwise(),
-        filter(([prev, next]) => prev !== next),
+        filter(([prev, next]) => CompareObjects(prev, next)),
         map(([, next]) => next)
       )
       .subscribe(() => this.onScrollRender());

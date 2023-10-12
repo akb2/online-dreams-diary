@@ -40,6 +40,12 @@ export const ElementParentsArray = (elm: Node | HTMLElement, lastParent: Node | 
   return nodes;
 };
 
+// Элемент экземпляр DOM
+export const IsDOM = (obj: any): boolean => typeof obj === "object" && obj instanceof Element;
+
+// Проверка на объект
+export const IsSimpleObject = (obj: any): boolean => typeof obj === "object" && !IsDOM(obj);
+
 // Найти первый текстовый узел
 export const GetTextNodes = (elm: Node | ChildNode | HTMLElement): Node[] => {
   const textNodes: Node[] = [];
