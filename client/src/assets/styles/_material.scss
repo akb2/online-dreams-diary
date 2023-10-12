@@ -80,6 +80,18 @@
           }
         }
       }
+      // Цвета
+      & {
+        &[mat-mini-fab] {
+          &.mat-gray {
+            background-color: map.get(colors.$matDisabled, 500);
+            // Иконка
+            > .mat-icon {
+              color: map.get(colors.$matDisabled, contrast, 500);
+            }
+          }
+        }
+      }
       // Загрузчик
       &[button-loader="true"] {
         pointer-events: none;
@@ -95,6 +107,17 @@
           // Статус: disabled
           &.mat-mdc-unelevated-button[disabled][disabled] > .mat-icon {
             @include mixins.loaderColors(map.get(colors.$matDisabled, 500));
+          }
+        }
+        // Расскрасить кнопки
+        &[mat-mini-fab] {
+          // Общий цвет
+          > .mat-icon {
+            @include mixins.loaderColors(colors.$textDark);
+          }
+          // Статус: warn
+          &.mat-gray > .mat-icon {
+            @include mixins.loaderColors(map.get(colors.$matDisabled, contrast, 500));
           }
         }
         // Расскрасить кнопки
