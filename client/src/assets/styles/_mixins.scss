@@ -208,7 +208,7 @@
     primary: colors.$matPrimary 500,
     accent: colors.$matSecondary 500,
     warn: colors.$matStatusWarn 500,
-    disabled: colors.$matDisabled 500,
+    disabled: colors.$matDisabled 500
   );
   // Свойства
   width: $size;
@@ -277,4 +277,106 @@
   }
 
   @content;
+}
+
+// Редактор текста
+@mixin wysiwigContent($fontSize: 16px, $lineHeight: 1.4) {
+  font-size: $fontSize;
+  line-height: $lineHeight;
+  font-weight: 200;
+  font-style: normal;
+  text-decoration: none;
+  letter-spacing: 0;
+  // Дочерние элементы
+  ::ng-deep {
+    $blockTags: p h1 h2 h3 h4 h5 h6;
+    $inlineTags: b strong i em u s del;
+    $decorationTags: u s del;
+    $titles: (
+      1: 2 700,
+      2: 1.75 700,
+      3: 1.5 700,
+      4: 1.25 600,
+      5: 1.125 500,
+      6: 1 400
+    );
+    // Блочные элементы
+    @each $tag in $blockTags {
+      #{$tag} {
+        display: block;
+        margin-top: 0;
+        margin-bottom: 0;
+        font: inherit;
+        line-height: inherit;
+        // Отступы сверху
+        @each $nextTag in $blockTags {
+          & + #{$nextTag} {
+            margin-top: $fontSize * $lineHeight;
+          }
+        }
+      }
+    }
+    // Строчные элементы
+    @each $tag in $inlineTags {
+      #{$tag} {
+        display: inline;
+        font: inherit;
+        line-height: inherit;
+      }
+    }
+    // Заголовки
+    @each $level, $properties in $titles {
+      $size: list.nth($properties, 1);
+      $fontWeight: list.nth($properties, 2);
+      // Заголовок
+      h#{$level} {
+        font-size: $fontSize * $size;
+        font-weight: $fontWeight;
+      }
+      // Отступы сверху
+      @each $nextTag in $blockTags {
+        #{$nextTag} + h#{$level} {
+          margin-top: $size * $fontSize * $lineHeight;
+        }
+      }
+    }
+    // Жирность
+    b,
+    strong {
+      @debug &;
+      font-weight: 700;
+    }
+    // Жирность
+    i,
+    em {
+      font-style: italic;
+    }
+    // Подчеркивание
+    u {
+      text-decoration: underline;
+    }
+    // Зачеркивание
+    s,
+    del {
+      text-decoration: line-through;
+    }
+    // Подчеркивание и зачеркивание одновременно
+    @each $tag in $decorationTags {
+      @each $subTag in $decorationTags {
+        #{$tag} #{$subTag} {
+          text-decoration: underline line-through;
+        }
+      }
+    }
+    // Цвета
+    span[color],
+    span[background] {
+      display: inline;
+      font: inherit;
+      line-height: inherit;
+      background-color: inherit;
+      color: inherit;
+      text-decoration: inherit;
+    }
+  }
 }
