@@ -10,7 +10,7 @@
     primary: colors.$matPrimary 500,
     accent: colors.$matSecondary 500,
     warn: colors.$matStatusWarn 500,
-    disabled: colors.$matDisabled 500,
+    disabled: colors.$matDisabled 500
   );
   // Свойства
   line-height: inherit !important;
@@ -21,7 +21,8 @@
     font: inherit;
     letter-spacing: inherit;
     word-spacing: inherit;
-    font-weight: inherit !important;
+    font-weight: 200 !important;
+    font-style: normal;
     vertical-align: baseline;
     padding: 0 0.15rem;
     text-indent: 0;
