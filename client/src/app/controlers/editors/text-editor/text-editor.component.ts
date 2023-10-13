@@ -31,6 +31,8 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   @ViewChild("editor", { read: ElementRef }) editor: ElementRef<HTMLElement>;
   @ViewChild("colorPicker", { read: ElementRef }) colorPicker: ElementRef;
   @ViewChild("colorPickerButton", { read: ElementRef }) colorPickerButton: ElementRef;
+  @ViewChild("backgroundPicker", { read: ElementRef }) backgroundPicker: ElementRef;
+  @ViewChild("backgroundPickerButton", { read: ElementRef }) backgroundPickerButton: ElementRef;
 
   private firstLaunch: boolean = true;
 
@@ -47,8 +49,10 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   caretElements: HTMLElement[] = [];
 
   defaultColor: Color = new Color("black");
+  defaultBackground: Color = new Color("white");
 
   showColorPicker: boolean = false;
+  showBackgroundPicker: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -102,6 +106,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     this.editorBlockReplace(tempEditor);
     this.editorInlineReplace(tempEditor);
     this.editorColorReplace(tempEditor);
+    this.editorBackgroundReplace(tempEditor);
     this.editorTagReplace(tempEditor);
     this.editorEmojiReplace(tempEditor);
     this.editorSpacingReplace(tempEditor);
@@ -135,7 +140,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Курсор внутри заголовка
   isCaretInTitle(level: number): boolean {
-    return this.isCaretInElm(this.titleTags?.find(({ tag }) => tag === "h" + level)?.tag);
+    return this.isCaretInElm(this.titleTags?.find(({ tag }) => tag === "h" + level));
   }
 
   // Курсор внутри одного из заголовков
@@ -148,22 +153,22 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
 
   // Курсор внутри жирности
   get isCaretInBold(): boolean {
-    return this.isCaretInElm(...BoldTags.map(({ tag }) => tag));
+    return this.isCaretInElm(...BoldTags);
   }
 
   // Курсор внутри наклона
   get isCaretInItalic(): boolean {
-    return this.isCaretInElm(...ItalicTags.map(({ tag }) => tag));
+    return this.isCaretInElm(...ItalicTags);
   }
 
   // Курсор внутри подчеркивания
   get isCaretInUnderLine(): boolean {
-    return this.isCaretInElm(...UnderLineTags.map(({ tag }) => tag));
+    return this.isCaretInElm(...UnderLineTags);
   }
 
   // Курсор внутри подчеркивания
   get isCaretInStrikeThrough(): boolean {
-    return this.isCaretInElm(...StrikeThroughTags.map(({ tag }) => tag));
+    return this.isCaretInElm(...StrikeThroughTags);
   }
 
   // Курсор внутри цвета
@@ -181,16 +186,27 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     return !!colors?.length ? colors : [this.defaultColor];
   }
 
+  // Текущий фон
+  get getCurrentBackground(): Color[] {
+    const backgroundElms: HTMLElement[] = this.caretElements.filter(node => this.filterElement(BackgroundTag(), node));
+    const backgrounds: Color[] = backgroundElms?.map(node => this.stringToBackground(node?.getAttribute("background")));
+    // Ближайший цвет
+    return !!backgrounds?.length ? backgrounds : [this.defaultBackground];
+  }
+
   // Преобразовать строковый цвет в объект
   private stringToColor(mixedColor: string): Color {
     return !!mixedColor ? new Color(mixedColor) : this.defaultColor;
   }
 
+  // Преобразовать строковый цвет в объект
+  private stringToBackground(mixedColor: string): Color {
+    return !!mixedColor ? new Color(mixedColor) : this.defaultBackground;
+  }
+
   // Курсор внутри элемента по выбору
-  private isCaretInElm(...tags: string[]): boolean {
-    tags = tags.map(tag => tag?.toUpperCase());
-    // Вернуть проверку
-    return !!this.caretElements?.length && !!tags?.length && this.caretElements.some(elm => tags.includes(elm.tagName?.toUpperCase()));
+  private isCaretInElm(...params: SearchAndReplaceNode[]): boolean {
+    return !!this.caretElements?.length && !!params?.length && this.caretElements.some(elm => params.some(param => this.filterElement(param, elm)));
   }
 
   // Текстовый узел
@@ -210,12 +226,20 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           // Проверка атрибутов
           if (!!params?.attrs) {
             Object.entries(params.attrs).forEach(([key, value]) => {
+              const hasAttr: boolean = element.hasAttribute(key);
               const attrValue: string = element.getAttribute(key);
-              // Проверка атрибута
-              checkAttr = value === "" && attrValue !== "" ?
-                false : !!value && attrValue !== value ?
-                  false :
-                  checkAttr;
+              // Атрибут должен быть пустым
+              if (value === "" && (!hasAttr || !!attrValue)) {
+                checkAttr = false;
+              }
+              // Атрибут должен существовать
+              else if (!value && !hasAttr) {
+                checkAttr = false;
+              }
+              // Атрибут должен содержать определенное значение
+              else if (!!value && attrValue !== value) {
+                checkAttr = false;
+              }
             });
           }
           // Результат проверки
@@ -345,14 +369,19 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       )
       .subscribe(() => this.updateStates());
     // Закрыть выбор цвета
-    WaitObservable(() => !this.colorPickerButton?.nativeElement)
+    WaitObservable(() => !this.colorPickerButton?.nativeElement || !this.backgroundPickerButton?.nativeElement)
       .pipe(
         takeUntil(this.destroyed$),
         mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
-        filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement))
+        map(event => ({
+          isColorButton: CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement),
+          isBackgroundButton: CompareElementByElement(event?.target, this.backgroundPickerButton?.nativeElement)
+        })),
+        filter(({ isColorButton, isBackgroundButton }) => !isColorButton || !isBackgroundButton)
       )
-      .subscribe(() => {
-        this.showColorPicker = false;
+      .subscribe(({ isColorButton, isBackgroundButton }) => {
+        this.showColorPicker = !isColorButton ? false : this.showColorPicker;
+        this.showBackgroundPicker = !isBackgroundButton ? false : this.showBackgroundPicker;
         this.changeDetectorRef.detectChanges();
       });
   }
@@ -541,10 +570,26 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     }
   }
 
+  // Сменить цвет фона
+  onToggleBackground(mixedColor: string): void {
+    const backgroundHex: string = new Color(mixedColor).toHexString(false);
+    const currentBackgroundHex: string[] = this.getCurrentBackground.map(background => background?.toHexString(false));
+    const defaultBackground: string = this.defaultBackground?.toHexString(false);
+    // Удалить цвета
+    if (currentBackgroundHex.length > 1 || !currentBackgroundHex.includes(backgroundHex)) {
+      this.onToggleTags([BackgroundTag()], false);
+      this.editor.nativeElement.normalize();
+      // Установить цвет
+      if (backgroundHex !== defaultBackground) {
+        this.onToggleTags([BackgroundTag(backgroundHex)], true);
+      }
+    }
+  }
+
   // Обновить теги
   private onToggleTags(tags: SearchAndReplaceNode[], forceOperation: boolean | null = null): void {
     if (!!tags?.length) {
-      const hasTag: boolean = this.isCaretInElm(...tags.map(({ tag }) => tag));
+      const hasTag: boolean = this.isCaretInElm(...tags);
       // Удалить тег
       if (hasTag || forceOperation === false) {
         tags.forEach(tag => this.searchAndReplaceNode(tag, false));
@@ -559,10 +604,18 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     }
   }
 
-  // Переключить цветовую панель
+  // Переключить панель выбора цвета текста
   onShowColorPicker(event: MouseEvent): void {
     if (!this.colorPicker?.nativeElement || !CompareElementByElement(event?.target, this.colorPicker?.nativeElement)) {
       this.showColorPicker = !this.showColorPicker;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Переключить панель выбора цвета фона текста
+  onShowBackgroundPicker(event: MouseEvent): void {
+    if (!this.backgroundPicker?.nativeElement || !CompareElementByElement(event?.target, this.backgroundPicker?.nativeElement)) {
+      this.showBackgroundPicker = !this.showBackgroundPicker;
       this.changeDetectorRef.detectChanges();
     }
   }
@@ -619,6 +672,26 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       // Замена
       if (!!color && color !== this.defaultColor?.toHexString(false)) {
         const tagCode: string = "[color=" + color + "]" + node.innerHTML + "[/color]";
+        // Замена текста
+        editor.innerHTML = text.replace(nodeText, tagCode);
+      }
+    });
+  }
+
+  // Замена фоновых блоков
+  private editorBackgroundReplace(editor: HTMLElement): void {
+    const backgroundTag: SearchAndReplaceNode = BackgroundTag();
+    const backgroundAttr: string = Object.keys(backgroundTag.attrs)[0];
+    const attrs: string = "[" + backgroundAttr + "]";
+    const nodes: Element[] = Array.from(editor.querySelectorAll(backgroundTag.tag + attrs));
+    // Замена элементов
+    nodes.forEach(node => {
+      const nodeText: string = node.outerHTML;
+      const text: string = editor.innerHTML;
+      const background: string = new Color(node.getAttribute(backgroundAttr))?.toHexString(false);
+      // Замена
+      if (!!background && background !== this.defaultBackground?.toHexString(false)) {
+        const tagCode: string = "[background=" + background + "]" + node.innerHTML + "[/background]";
         // Замена текста
         editor.innerHTML = text.replace(nodeText, tagCode);
       }
@@ -757,8 +830,10 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           const position: number = range.startOffset;
           const isLeftPartOfWord: boolean = position > 0 && wordsRegExp.test(textContent[position - 1]);
           const isRightPartOfWord: boolean = position < textContent.length && wordsRegExp.test(textContent[position]);
+          const parents: Node[] = ElementParentsArray(currentNode, this.editor.nativeElement, true);
+          const parent: Node = parents.find(node => this.filterElement(params, node as HTMLElement));
           // Выделение внутри слова
-          if (isLeftPartOfWord && isRightPartOfWord && this.filterElement(params, currentNode.parentNode as HTMLElement) && !params?.removeAllTag) {
+          if (isLeftPartOfWord && isRightPartOfWord && !!parent && !params?.removeAllTag) {
             let start: number = position;
             let end: number = position;
             // Поиск начала слова
@@ -773,9 +848,9 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
             range.setStart(currentNode, start);
             range.setEnd(currentNode, end);
             // Удаление элемента
-            let newElm: Node = this.partialUnwrapElement(currentNode.parentNode, range);
+            let newElm: Node = this.partialUnwrapElement(parent, range);
             // Вернуть каретку обратно
-            newElm = this.isTextNode(newElm) ? newElm : newElm.firstChild;
+            newElm = GetTextNodes(newElm)[0];
             selection.removeAllRanges();
             selection.addRange(this.createRange(newElm, newElm, position - start, position - start));
           }
@@ -1000,12 +1075,6 @@ interface SearchAndReplaceNode {
   removeAllTag?: boolean;
 }
 
-// Интерфейс визуального выделения
-interface VisualSelection {
-  node: Node;
-  offset: number;
-}
-
 
 
 
@@ -1073,13 +1142,33 @@ const ColorTag = (color: string = ""): SearchAndReplaceNode => {
   };
   // Вернуть цвет
   return !!color ?
-    { ...baseTag, attrs: { ...baseTag.attrs, color, style: "color: " + color + ";" } } :
+    {
+      ...baseTag,
+      attrs: {
+        ...baseTag.attrs,
+        color,
+        style: "color: " + color + "; text-decoration-color: " + color + ";"
+      }
+    } :
+    baseTag;
+};
+
+// Цвета
+const BackgroundTag = (background: string = ""): SearchAndReplaceNode => {
+  const baseTag: SearchAndReplaceNode = {
+    tag: "span",
+    attrs: { background: null }
+  };
+  // Вернуть цвет
+  return !!background ?
+    { ...baseTag, attrs: { ...baseTag.attrs, background, style: "background-color: " + background + ";" } } :
     baseTag;
 };
 
 // Перечисление всех тегов
 const AllTags: SearchAndReplaceNode[] = [
   ColorTag(),
+  BackgroundTag(),
   ...ParagraphTags,
   ...TitleTags,
   ...BoldTags,

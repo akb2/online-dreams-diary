@@ -63,6 +63,7 @@
   &::ng-deep {
     $blockTags: p h1 h2 h3 h4 h5 h6;
     $inlineTags: b strong i em u s del;
+    $decorationTags: u s del;
     $titles: (
       1: 2 700,
       2: 1.75 700,
@@ -130,11 +131,23 @@
     del {
       text-decoration: line-through;
     }
-    // Цвет
-    span[color] {
+    // Подчеркивание и зачеркивание одновременно
+    @each $tag in $decorationTags {
+      @each $subTag in $decorationTags {
+        #{$tag} #{$subTag} {
+          text-decoration: underline line-through;
+        }
+      }
+    }
+    // Цвета
+    span[color],
+    span[background] {
       display: inline;
       font: inherit;
       line-height: inherit;
+      background-color: inherit;
+      color: inherit;
+      text-decoration: inherit;
     }
   }
   // Адаптив

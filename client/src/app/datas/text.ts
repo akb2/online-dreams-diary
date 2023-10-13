@@ -2,7 +2,7 @@ import { CustomObject } from "@_models/app";
 import { TagSetting } from "@_models/text";
 
 // Теги, которые будут сохранены для редактора
-export const FullModeSaveTags: string[] = ["h2", "h3", "h4", "h5", "h6", "i", "em", "b", "strong", "u", "s", "del", "color"];
+export const FullModeSaveTags: string[] = ["h2", "h3", "h4", "h5", "h6", "i", "em", "b", "strong", "u", "s", "del", "color", "background"];
 export const ShortModeSaveTags: string[] = [];
 
 // Теги, которые будут удалены в редакторе
@@ -43,6 +43,15 @@ export const TagSettings: CustomObject<TagSetting> = {
     contentAttr: null,
     provideMainAttrToHtml: false,
     provideContentToMainAttr: false,
-    provideMainAttrToStyleProperty: "color"
+    provideMainAttrToStyleProperty: ["color", "text-decoration-color"]
+  },
+  background: {
+    replaceTag: "span",
+    mustClose: true,
+    mainAttr: "background",
+    contentAttr: null,
+    provideMainAttrToHtml: false,
+    provideContentToMainAttr: false,
+    provideMainAttrToStyleProperty: ["background-color"]
   }
 };

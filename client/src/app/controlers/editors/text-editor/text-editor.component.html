@@ -70,6 +70,26 @@
                        *ngIf="showColorPicker"></chrome-picker>
       </button>
     </ng-container>
+    <!-- Цвет фона -->
+    <ng-container *ngVar="defaultBackground.toHexString(false) as defaultBackground">
+      <button #backgroundPickerButton
+              mat-mini-fab
+              [color]="defaultBackground !== currentBackground? 'gray': 'basic'"
+              class="mat-elevation-z color-picker"
+              matTooltip="Цвет текста"
+              [ngStyle]="{ backgroundColor: currentBackground }"
+              (click)="onShowBackgroundPicker($event)"
+              *ngVar="getCurrentBackground?.[0]?.toHexString(false) as currentBackground">
+        <mat-icon>format_color_fill</mat-icon>
+        <!-- Цветовая палитра -->
+        <chrome-picker #backgroundPicker
+                       [color]="currentBackground"
+                       [control]="colorPickerControl"
+                       class="color-picker__tooltip"
+                       (colorChange)="onToggleBackground($event)"
+                       *ngIf="showBackgroundPicker"></chrome-picker>
+      </button>
+    </ng-container>
   </div>
 </div>
 
