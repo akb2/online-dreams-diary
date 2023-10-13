@@ -9,7 +9,7 @@
 // Данные сновидения
 .dream {
   $fontSize: 20px;
-  $lineHeight: $fontSize * 1.3;
+  $lineHeight: 1.3;
   $textIndent: $fontSize * 2;
   $tablePaddingY: math.div($fontSize, 2);
   $tablePaddingX: $fontSize;
@@ -30,75 +30,35 @@
   // Текст
   &__text {
     display: block;
-    // Общий стиль
-    &,
-    ::ng-deep * {
-      font-size: $fontSize;
-      font-weight: 300;
-      line-height: $lineHeight;
-      margin: 0;
-      // Цвет
-      &:not(.mat-icon):not(.mat-mdc-button-base) {
-        color: colors.$text;
-      }
-    }
-    // Абзацы
-    ::ng-deep p {
-      text-indent: $textIndent;
-    }
-    // Ссылки
-    ::ng-deep a {
-      color: map.get(colors.$matPrimary, 400);
-      text-decoration: none;
-      transition: color #{screens.$animationTime};
-      // Наведение машкой
-      &:hover {
-        color: colors.$text;
-      }
-    }
-    // Жирность
-    ::ng-deep b,
-    ::ng-deep strong {
-      font-weight: 500;
-    }
-    // Таблица
-    ::ng-deep .table {
-      margin: 0;
-      // Тело
-      table {
-        max-width: 100%;
-        border-collapse: collapse;
-        // Ячейки
-        td {
-          border: 1px solid #{colors.$border};
-          padding: #{$tablePaddingY} #{$tablePaddingX};
-          background-color: colors.$card;
-        }
-      }
-    }
-    // Отступы
-    ::ng-deep p,
-    ::ng-deep .table {
-      & + ::ng-deep p,
-      & + ::ng-deep .table {
-        margin-top: $lineHeight;
-      }
+    color: colors.$text;
+    font-size: $fontSize;
+    line-height: $lineHeight;
+    // Вложения
+    > ::ng-deep .text {
+      @include mixins.wysiwigContent($fontSize, $lineHeight);
     }
     // Цитата
     ::ng-deep blockquote {
       border-left: 6px solid #{colors.$text};
       margin-left: 0;
       margin-right: 0;
-      padding: 1rem;
+      padding: 1.5rem 2rem;
+      font: inherit;
       font-style: italic;
       background-color: colors.$card;
+      margin-top: $fontSize * $lineHeight;
+      margin-bottom: 0;
     }
-    // Последующие блоки
-    ::ng-deep > * + *,
-    ::ng-deep > .text > * + * {
-      &:not(.no-margin) {
-        margin-top: $lineHeight;
-      }
+    // Абзац
+    ::ng-deep p {
+      font: inherit;
+      line-height: inherit;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    // Убрать отступы
+    ::ng-deep p + p {
+      margin-top: $fontSize * $lineHeight;
     }
   }
   // Адаптив

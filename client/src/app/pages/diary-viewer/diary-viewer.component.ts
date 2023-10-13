@@ -4,6 +4,7 @@ import { WaitObservable } from "@_datas/api";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { CheckInRange, ParseInt } from "@_helpers/math";
+import { TextMessage } from "@_helpers/text-message";
 import { User } from "@_models/account";
 import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
@@ -17,9 +18,11 @@ import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { Title } from "@angular/platform-browser";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
+import { NgControl } from "@angular/forms";
+import { DomSanitizer, Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
+import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { Subject, concatMap, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
 
 
@@ -33,7 +36,7 @@ import { Subject, concatMap, map, merge, mergeMap, of, switchMap, takeUntil, thr
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DiaryViewerComponent implements OnInit, OnDestroy {
+export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestroy {
 
 
   @ViewChild("mainMenu", { read: NavMenuComponent }) private mainMenu: NavMenuComponent;
@@ -63,6 +66,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
   dreamId: number = 0;
   private fromMark: string;
   dream: Dream;
+  dreamText: string;
   otherDreams: Dream[];
   user: User;
   authState: boolean;
@@ -228,6 +232,9 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
 
 
   constructor(
+    @Optional() @Self() controlDir: NgControl,
+    emojiService: EmojiService,
+    domSanitizer: DomSanitizer,
     private activatedRoute: ActivatedRoute,
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
@@ -239,6 +246,8 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
     private scrollService: ScrollService,
     private canonicalService: CanonicalService
   ) {
+    super(controlDir, emojiService, domSanitizer);
+    // Идентификатор сновидения
     this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
   }
@@ -275,6 +284,13 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
         this.isMobile = isMobile;
         this.changeDetectorRef.detectChanges();
       });
+    // Изменение размеров блока ключевых слов
+    WaitObservable(() => !this.keywordsPanelHelper?.nativeElement)
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => this.screenService.elmResize(this.keywordsPanelHelper.nativeElement))
+      )
+      .subscribe(() => this.changeDetectorRef.detectChanges());
   }
 
   ngOnDestroy() {
@@ -424,6 +440,7 @@ export class DiaryViewerComponent implements OnInit, OnDestroy {
           this.readAccess = readAccess;
           this.fromMark = params.from?.toString() || "";
           this.dream = dream;
+          this.dreamText = this.textTransform(dream?.text, true)?.["changingThisBreaksApplicationSecurity"];
           this.otherDreams = otherDreams ?? [];
           this.ready = true;
           // Заменить переносы на теги
