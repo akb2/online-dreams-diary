@@ -119,7 +119,7 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
     };
     // Редакировать
     if (this.user?.id === this.dream.user.id) {
-      data.icon = "edit";
+      data.icon = "stylus";
       data.link = "/diary/editor/" + this.dream.id;
       data.params.from = this.fromMark + (this.fromMark.length > 0 ? "|" : "") + "diary-viewer";
     }

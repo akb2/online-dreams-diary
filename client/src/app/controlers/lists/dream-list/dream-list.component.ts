@@ -199,7 +199,7 @@ export class DreamListComponent implements OnInit, OnChanges {
       if (dream.user.id === this.user?.id) {
         // Редактирование
         menuItemAdvance.push({
-          icon: "edit",
+          icon: "stylus",
           title: "Редактировать",
           routerLink: "/diary/editor/" + dream.id,
           queryParams: this.viewerQueryParams(dream)
