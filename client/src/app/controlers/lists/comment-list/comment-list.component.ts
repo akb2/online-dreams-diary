@@ -7,7 +7,7 @@ import { DrawDatas } from "@_helpers/draw-datas";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObject, CustomObjectKey } from "@_models/app";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
@@ -18,6 +18,7 @@ import { AccountService } from "@_services/account.service";
 import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { Location } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
@@ -73,6 +74,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   defaultDreamTitle: string = DreamTitle;
   today: Date = new Date();
+
+  private goToCommentUrlParam: string = "goToComment";
+  private openMediaViewerId: string = "openMediaViewer";
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -182,6 +186,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     private scrollService: ScrollService,
     private accountService: AccountService,
     private activatedRoute: ActivatedRoute,
+    private location: Location,
     private changeDetectorRef: ChangeDetectorRef,
     private matDialog: MatDialog
   ) { }
@@ -191,7 +196,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroyed$),
         take(1),
-        map(params => ParseInt(params.goToComment))
+        map(params => ParseInt(params?.[this.goToCommentUrlParam]))
       )
       .subscribe(startWithId => this.loadComments(true, startWithId));
     // Загрузка данных о текущем пользователе
@@ -290,14 +295,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
       );
   }
 
-  // Комментарий находится на экране
+  // Комментарий появился на экране
   onCommentInScreen(commentId: number): void {
     if (!this.inScreenComments.includes(commentId)) {
       this.inScreenComments.push(commentId);
     }
   }
 
-  // Комментарий находится на экране
+  // Комментарий ушел за экран
   onCommentOutOfScreen(commentId: number): void {
     const index: number = this.inScreenComments.findIndex(id => id === commentId);
     // Элемент найден
@@ -312,6 +317,11 @@ export class CommentListComponent implements OnInit, OnDestroy {
       { ...comment.attachment.graffity, viewType: MediaFileViewType.graffity },
       ...comment.attachment.mediaPhotos.map(file => ({ ...file, viewType: MediaFileViewType.media }))
     ].filter(file => !!file?.id);
+    // Обновить URL
+    this.updateUrl({
+      [this.goToCommentUrlParam]: comment.id,
+      [this.openMediaViewerId]: mediaFileId
+    });
     // Открыть окно
     PopupPhotoViewerComponent.open(this.matDialog, { mediaFiles, mediaFileId });
   }
@@ -431,5 +441,16 @@ export class CommentListComponent implements OnInit, OnDestroy {
         this.onGoToComment(goToComment);
       }
     }
+  }
+
+  // Обновить URL
+  private updateUrl(params: CustomObject<string | number>): void {
+    const currentUrl: string = this.location?.path() ?? "";
+    const currentPath: string = currentUrl.split('?')?.[0] ?? "";
+    const queryString: URLSearchParams = new URLSearchParams(currentUrl.split('?')?.[1] ?? "");
+    // Добавить параметры
+    Object.entries(params).forEach(([key, value]) => queryString.set(key, value?.toString()));
+    // Обновить URL
+    this.location.replaceState(currentPath + "?" + queryString.toString());
   }
 }
