@@ -1,6 +1,7 @@
 import { CompareArrays } from "@_helpers/objects";
 import { IconColor } from "@_models/app";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import * as snowballFactory from "snowball-stemmers";
 
 
@@ -26,13 +27,14 @@ export class HighlightKeywordsComponent implements OnChanges {
 
   private stemmer: Stemmer = snowballFactory.newStemmer("russian");
 
-  highlightingText: string;
+  highlightingText: SafeHtml;
 
 
 
 
 
   constructor(
+    private domSanitizer: DomSanitizer,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
@@ -51,7 +53,7 @@ export class HighlightKeywordsComponent implements OnChanges {
 
 
   // Форматированный текст
-  private highlightText(): string {
+  private highlightText(): SafeHtml {
     let count: number = 0;
     let text: string = this.text;
     // Ключевые слова найдены
@@ -81,7 +83,7 @@ export class HighlightKeywordsComponent implements OnChanges {
     // Отправить найденное количество
     this.foundCount.emit(count);
     // Вернуть текст
-    return text;
+    return this.domSanitizer.bypassSecurityTrustHtml(text);
   }
 
   private getAllWordForms(word: string, searchExcludes: boolean = true): string[] {
