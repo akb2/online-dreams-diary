@@ -58,7 +58,7 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
   }
 
   ngDoCheck(): void {
-    if (this.controlDir.control instanceof FormControl) {
+    if (!!this.controlDir?.control && this.controlDir.control instanceof FormControl) {
       const validator: ValidationErrors = this.controlDir.control.validator && this.controlDir.control.validator(new FormControl(""));
       this.required = !!validator && validator.hasOwnProperty("required");
 
