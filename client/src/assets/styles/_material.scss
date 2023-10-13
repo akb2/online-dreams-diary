@@ -84,11 +84,7 @@
       & {
         &[mat-mini-fab] {
           &.mat-gray {
-            background-color: map.get(colors.$matDisabled, 500);
-            // Иконка
-            > .mat-icon {
-              color: map.get(colors.$matDisabled, contrast, 500);
-            }
+            border: 1px solid #{map.get(colors.$matDisabled, 50)};
           }
         }
       }
@@ -117,7 +113,7 @@
           }
           // Статус: warn
           &.mat-gray > .mat-icon {
-            @include mixins.loaderColors(map.get(colors.$matDisabled, contrast, 500));
+            @include mixins.loaderColors(colors.$title);
           }
         }
         // Расскрасить кнопки
