@@ -109,22 +109,26 @@ export class TextMessage extends BaseInputDirective {
       const regExp: RegExp = new RegExp(`\\[${tag}(?:=(.*?))?\\]((?:(?!\\[${tag}|\\[/${tag}\\]).)*)(?:\\[/${tag}\\])?`, 'ig');
       // Заменить текст
       text = text.replace(regExp, (match, mainAttrValue, content) => {
+        const provideMainAttrToStyleProperty: string[] = !!settings.provideMainAttrToStyleProperty ?
+          (Array.isArray(settings.provideMainAttrToStyleProperty) ? settings.provideMainAttrToStyleProperty : [settings.provideMainAttrToStyleProperty]) :
+          [];
+        // Настройки
         const mainAttr: string = settings.mainAttr ? (!!mainAttrValue ? mainAttrValue : (settings.provideContentToMainAttr && !!content ? content : "")) : "";
         const html: string = settings.mustClose ? (!!content ? content : (settings.provideMainAttrToHtml && !!mainAttrValue ? mainAttrValue : "")) : "";
         const contentAttr: string = settings.contentAttr ? (!!content ? content : (settings.provideContentToMainAttr && !!mainAttrValue ? mainAttrValue : "")) : "";
         const mainAttrTag: string = !!mainAttr ? " " + settings.mainAttr + "='" + mainAttr + "' " : "";
         const contentAttrTag: string = !!contentAttr ? " " + settings.contentAttr + "='" + contentAttr + "' " : "";
-        const styleAttrTag: string = !!mainAttr && !!settings?.provideMainAttrToStyleProperty ?
-          " style='" + settings.provideMainAttrToStyleProperty + ": " + mainAttr + ";' " :
+        const styleAttrTags: string = !!mainAttr && !!settings?.provideMainAttrToStyleProperty ?
+          " style='" + provideMainAttrToStyleProperty.map(property => property + ": " + mainAttr).join(";") + ";' " :
           "";
         const resultTag: string = !!settings?.replaceTag ? settings.replaceTag : tag;
         // Закрытый тег
         if (settings.mustClose) {
-          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTag + ">" + html + "</" + resultTag + ">";
+          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTags + ">" + html + "</" + resultTag + ">";
         }
         // Открытый тег
         else {
-          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTag + "/>";
+          return "<" + resultTag + " " + mainAttrTag + " " + contentAttrTag + " " + styleAttrTags + "/>";
         }
       });
     });

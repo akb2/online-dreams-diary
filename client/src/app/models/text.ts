@@ -14,5 +14,5 @@ export interface TagSetting {
   contentAttr: string;
   provideMainAttrToHtml: boolean;
   provideContentToMainAttr: boolean;
-  provideMainAttrToStyleProperty?: string;
+  provideMainAttrToStyleProperty?: string | string[];
 }
