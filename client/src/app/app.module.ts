@@ -3,13 +3,14 @@ import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomMaterialIcon } from "@_models/app";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
+import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 
@@ -17,6 +18,7 @@ import { AppComponent } from "./app.component";
 
 
 
+// Кастомные иконки
 const materialIcons: CustomMaterialIcon[] = [
   // Логотип
   {
@@ -40,6 +42,9 @@ const materialIcons: CustomMaterialIcon[] = [
   }))
 ];
 
+// Загрузчик переводов
+const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http, "./assets/i18n/", ".json");
+
 
 
 
@@ -58,7 +63,13 @@ const materialIcons: CustomMaterialIcon[] = [
     CoreModule,
     PageLoaderModule,
     MatIconModule,
-    TranslateModule.forRoot()
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: CreateTranslateLoader,
+        deps: [HttpClient]
+      }
+    })
   ],
   bootstrap: [
     AppComponent
