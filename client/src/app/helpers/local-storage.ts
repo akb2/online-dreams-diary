@@ -10,7 +10,7 @@ export const LocalStorageDefaultTtl: number = 604800;
 // Сохранить данные
 export const LocalStorageSet = (key: string, value: any, ttl: number = LocalStorageDefaultTtl): void => {
   const now: number = (new Date()).getTime();
-  const expiry: number = now + (ttl * 1000);
+  const expiry: number = !!ttl ? now + (ttl * 1000) : 0;
   // Сохранить
   localStorage.setItem(key, JSON.stringify({ value, expiry }));
 };
@@ -27,11 +27,11 @@ export const LocalStorageGet = <T = any>(key: string, typeCallback: (d: any) => 
     try {
       const item: LocalStorageItemInterface = JSON.parse(itemStr) as LocalStorageItemInterface;
       // Вернуть данные
-      if (now <= item.expiry) {
+      if (now <= item.expiry || item.expiry <= 0) {
         try {
           return typeCallback(JSON.parse(item.value));
         }
-        // Удалить в случае ошибки
+        // Вернуть в виде строки
         catch (e: any) {
           return typeCallback(item.value);
         }
