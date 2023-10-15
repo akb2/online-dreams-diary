@@ -9,6 +9,7 @@ import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateModule } from "@ngx-translate/core";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 
@@ -56,7 +57,8 @@ const materialIcons: CustomMaterialIcon[] = [
     MatSnackBarModule,
     CoreModule,
     PageLoaderModule,
-    MatIconModule
+    MatIconModule,
+    TranslateModule.forRoot()
   ],
   bootstrap: [
     AppComponent
