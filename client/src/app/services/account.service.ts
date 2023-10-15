@@ -32,7 +32,7 @@ export class AccountService implements OnDestroy {
   private localStorageTtl: number = LocalStorageDefaultTtl;
   private usersLocalStorageKey: string = "users";
 
-  private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
+  private users$: BehaviorSubject<User[]> = new BehaviorSubject([]);
   private destroyed$: Subject<void> = new Subject<void>();
 
 
@@ -65,7 +65,7 @@ export class AccountService implements OnDestroy {
     // Обновить счетчик
     let firstCall: boolean = true;
     // Подписки
-    const observable: Observable<unknown> = this.users.asObservable().pipe(
+    const observable: Observable<unknown> = this.users$.asObservable().pipe(
       takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
@@ -86,7 +86,7 @@ export class AccountService implements OnDestroy {
       filter(([prev, next]) => !CompareObjects(prev, next)),
       map(([, next]) => next)
     );
-    const user: User = [...this.users.getValue()].find(({ id }) => id === userId);
+    const user: User = [...this.users$.getValue()].find(({ id }) => id === userId);
     const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId, codes) : of(null))).pipe(
       takeUntil(this.destroyed$),
       concatMap(() => <Observable<User>>observable)
@@ -97,7 +97,7 @@ export class AccountService implements OnDestroy {
 
   // Загрузить пользоватлей из стора
   private getUsersFromStore(): void {
-    this.users.next(LocalStorageGet(
+    this.users$.next(LocalStorageGet(
       this.usersLocalStorageKey,
       d => ToArray(d).map(user => this.userConverter(user)).filter(u => !!u)
     ));
@@ -126,7 +126,7 @@ export class AccountService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.users.complete();
+    this.users$.complete();
     this.destroyed$.next();
     this.destroyed$.complete();
   }
@@ -211,7 +211,7 @@ export class AccountService implements OnDestroy {
     // Параметры
     let connect: boolean = false;
     const observable = (id: number = 0, lastEditDate: Date = null) => {
-      const user: User = this.users.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.id));
+      const user: User = this.users$.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.id));
       // Параметры
       id = user?.id ?? id ?? 0;
       lastEditDate = user?.lastEditDate ?? lastEditDate ?? new Date(0);
@@ -253,7 +253,7 @@ export class AccountService implements OnDestroy {
   syncAnonymousUser(): Observable<User> {
     return of(true).pipe(
       takeUntil(this.destroyed$),
-      tap(() => this.users.next([...this.users.getValue()])),
+      tap(() => this.users$.next([...this.users$.getValue()])),
       map(() => null)
     );
   }
@@ -461,7 +461,7 @@ export class AccountService implements OnDestroy {
 
   // Сохранить данные о пользователе в стор
   private saveUserToStore(user: User): void {
-    const users: User[] = [...(this.users?.getValue() ?? [])];
+    const users: User[] = [...(this.users$?.getValue() ?? [])];
     const index: number = users.findIndex(({ id }) => id === user.id);
     // Обновить запись
     if (index >= 0) {
@@ -473,12 +473,12 @@ export class AccountService implements OnDestroy {
     }
     // Обновить
     LocalStorageSet(this.usersLocalStorageKey, users, this.localStorageTtl);
-    this.users.next(users);
+    this.users$.next(users);
   }
 
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
     LocalStorageRemove(this.usersLocalStorageKey);
-    this.users.next([]);
+    this.users$.next([]);
   }
 }
