@@ -15,5 +15,4 @@ export type SiteDomain = "dreams-diary.ru"
 // Настройки языка
 export interface LanguageSetting {
   defaultLanguage: Language;
-  availlanguages?: Language[];
 }

@@ -10,8 +10,7 @@ export const DefaultLanguage: Language = Language.en;
 
 // Настройка языка по умолчанию
 export const DefaultLanguageSetting: LanguageSetting = {
-  defaultLanguage: Language.en,
-  availlanguages: [Language.ru]
+  defaultLanguage: Language.en
 };
 
 // Основной домен для языка
@@ -30,8 +29,5 @@ export const LanguageSettings: CustomObjectKey<SiteDomain, LanguageSetting> = {
   },
   "дневник-сновидений.рф": {
     defaultLanguage: Language.ru
-  },
-  "dreams-diary.com": DefaultLanguageSetting,
-  "dreams-diary.net": DefaultLanguageSetting,
-  "dreams-diary.org": DefaultLanguageSetting
+  }
 };

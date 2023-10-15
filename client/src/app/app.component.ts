@@ -1,6 +1,4 @@
-import { DefaultLanguage, DefaultLanguageSetting, LanguageSettings } from "@_datas/translate";
 import { CustomObject, RouteData } from "@_models/app";
-import { Language, LanguageSetting, SiteDomain } from "@_models/translate";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
 import { LanguageService } from "@_services/language.service";
@@ -61,10 +59,6 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    const currentDomain: SiteDomain = window.location.hostname as SiteDomain;
-    const languageSettings: LanguageSetting = LanguageSettings?.[currentDomain] ?? DefaultLanguageSetting;
-    const defaultLanguage: Language = languageSettings?.defaultLanguage ?? DefaultLanguage;
-    // События старта и окочания лоадера
     this.router.events
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
@@ -78,8 +72,12 @@ export class AppComponent implements OnInit, OnDestroy {
           this.afterLoadPage(event);
         }
       });
-    // Определение языка
-    this.translateService.setDefaultLang(defaultLanguage);
+    // Установка языка по умолчанию
+    this.translateService.setDefaultLang(this.languageService.getFromDomainSetting());
+    // Изменения языка
+    this.languageService.onLanguageChange()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(language => this.translateService.use(language));
   }
 
   ngOnDestroy() {

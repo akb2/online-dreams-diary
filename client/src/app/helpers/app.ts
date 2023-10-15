@@ -4,6 +4,9 @@ import { environment } from "@_environments/environment";
 
 
 
+// Проверить значение внутри Enum
+export const IsInEnum = <T>(value: string | number, enumType: T): boolean => Object.values(enumType).includes(value);
+
 // Любой тип в булев
 export const ToBoolean = (value: any): boolean => {
   const trueValues: (string | number | boolean)[] = ["true", "on", "enabled", "1", 1, true];
