@@ -1,9 +1,13 @@
+import { DefaultLanguage, DefaultLanguageSetting, LanguageSettings } from "@_datas/translate";
+import { CustomObject, RouteData } from "@_models/app";
+import { Language, LanguageSetting, SiteDomain } from "@_models/translate";
+import { AccountService } from "@_services/account.service";
+import { GlobalService } from "@_services/global.service";
+import { LanguageService } from "@_services/language.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
-import { CustomObject, RouteData } from "@_models/app";
-import { AccountService } from "@_services/account.service";
-import { GlobalService } from "@_services/global.service";
+import { TranslateService } from "@ngx-translate/core";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -51,10 +55,15 @@ export class AppComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private titleService: Title,
     private changeDetectorRef: ChangeDetectorRef,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private translateService: TranslateService,
+    private languageService: LanguageService
   ) { }
 
   ngOnInit() {
+    const currentDomain: SiteDomain = window.location.hostname as SiteDomain;
+    const languageSettings: LanguageSetting = LanguageSettings?.[currentDomain] ?? DefaultLanguageSetting;
+    const defaultLanguage: Language = languageSettings?.defaultLanguage ?? DefaultLanguage;
     // События старта и окочания лоадера
     this.router.events
       .pipe(takeUntil(this.destroy$))
@@ -69,6 +78,8 @@ export class AppComponent implements OnInit, OnDestroy {
           this.afterLoadPage(event);
         }
       });
+    // Определение языка
+    this.translateService.setDefaultLang(defaultLanguage);
   }
 
   ngOnDestroy() {

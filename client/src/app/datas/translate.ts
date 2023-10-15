@@ -6,10 +6,10 @@ import { Language, LanguageSetting, SiteDomain } from "@_models/translate";
 
 
 // Язык по умолчанию
-export const DefaultLanguage: Language = Language.ru;
+export const DefaultLanguage: Language = Language.en;
 
 // Настройка языка по умолчанию
-const DefaultLanguageSetting: LanguageSetting = {
+export const DefaultLanguageSetting: LanguageSetting = {
   defaultLanguage: Language.en,
   availlanguages: [Language.ru]
 };
