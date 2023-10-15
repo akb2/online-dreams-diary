@@ -12,6 +12,7 @@ export interface MenuItem {
   sort?: number;
   counter?: number;
   icon?: string;
+  isSvgIcon?: boolean;
   image?: string;
   text?: string;
   desc?: string;

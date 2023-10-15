@@ -242,9 +242,16 @@
              let-item
              let-lineStyle="lineStyle">
   <!-- Иконка -->
-  <mat-icon class="menu-list__item-icon"
-            [ngStyle]="css[!!item?.text? 'menuItemIconAndText': 'menuItemIcon']"
-            *ngIf="!!item?.icon">{{item.icon}}</mat-icon>
+  <ng-container *ngIf="!!item?.icon">
+    <mat-icon [ngStyle]="css[!!item?.text? 'menuItemIconAndText': 'menuItemIcon']"
+              class="menu-list__item-icon"
+              *ngIf="!item?.isSvgIcon">{{item.icon}}</mat-icon>
+    <!-- SVG иконка -->
+    <mat-icon [ngStyle]="css[!!item?.text? 'menuItemIconAndText': 'menuItemIcon']"
+              class="menu-list__item-icon"
+              [svgIcon]="item.icon"
+              *ngIf="!!item?.isSvgIcon"></mat-icon>
+  </ng-container>
   <!-- Текст -->
   <span class="menu-list__item-text"
         *ngIf="!!item?.text">{{item.text}}</span>
