@@ -1,12 +1,12 @@
 import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToArray } from "@_datas/app";
+import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { ApiResponse, SearchResponce } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
-import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
@@ -23,8 +23,7 @@ import { BehaviorSubject, Observable, Subject, catchError, filter, finalize, map
 export class FriendService implements OnDestroy {
 
 
-  private cookieKey: string = "friend_service_";
-  private cookieLifeTime: number = 604800;
+  private localStorageTtl: number = LocalStorageDefaultTtl;
   private friendsLocalStorageKey: string = "friends";
 
   private syncFriend: [number, number, number] = [0, 0, 0];
@@ -39,9 +38,7 @@ export class FriendService implements OnDestroy {
 
   // Загрузить статусы из стора
   private getFriendsFromStore(): void {
-    this.configLocalStorage();
-    // Добавить в наблюдение
-    this.friends.next(this.localStorageService.getItem(
+    this.friends.next(LocalStorageGet(
       this.friendsLocalStorageKey,
       d => ToArray(d).map(u => u as Friend).filter(u => !!u)
     ));
@@ -116,7 +113,6 @@ export class FriendService implements OnDestroy {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private tokenService: TokenService,
-    private localStorageService: LocalStorageService,
     private accountService: AccountService
   ) {
     this.getFriendsFromStore();
@@ -326,12 +322,6 @@ export class FriendService implements OnDestroy {
 
 
 
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-  }
-
   // Сохранить данные о статусе дружбы в стор
   private saveFriendToStore(friend: Friend): void {
     const friends: Friend[] = [...(this.friends.getValue() ?? [])];
@@ -345,8 +335,8 @@ export class FriendService implements OnDestroy {
       friends.push(friend);
     }
     // Обновить
-    this.configLocalStorage();
-    this.localStorageService.setItem(this.friendsLocalStorageKey, friends);
+    LocalStorageSet(this.friendsLocalStorageKey, friends, this.localStorageTtl);
+    // Обновить список
     this.friends.next(friends);
   }
 
@@ -359,8 +349,8 @@ export class FriendService implements OnDestroy {
       friends.splice(index, 1);
     }
     // Обновить
-    this.configLocalStorage();
-    this.localStorageService.setItem(this.friendsLocalStorageKey, friends);
+    LocalStorageSet(this.friendsLocalStorageKey, friends, this.localStorageTtl);
+    // Обновить список
     this.friends.next(friends);
   }
 
@@ -389,8 +379,8 @@ export class FriendService implements OnDestroy {
 
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
-    this.configLocalStorage();
-    this.localStorageService.deleteItem(this.friendsLocalStorageKey);
+    LocalStorageRemove(this.friendsLocalStorageKey);
+    // Обновить список
     this.friends.next([]);
   }
 }

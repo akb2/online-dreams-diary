@@ -1,5 +1,8 @@
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { environment } from "@_environments/environment";
+import { ToBoolean } from "@_helpers/app";
+import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
+import { CustomObject, SimpleObject } from "@_models/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { CanonicalService } from "@_services/canonical.service";
@@ -10,7 +13,6 @@ import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/ap
 import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister, UserSex } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
-import { LocalStorageService } from "@app/services/local-storage.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
@@ -22,10 +24,7 @@ import { takeUntil } from "rxjs/operators";
   selector: "app-register",
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    LocalStorageService
-  ]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class RegisterComponent implements OnInit, OnDestroy {
@@ -39,11 +38,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
   navMenuType: NavMenuType = NavMenuType.collapse;
 
   step: number = 0;
-  private cookieKey: string = "register_form_data_";
-  private cookieLifeTime: number = 60 * 30 * 10000000000;
   loading: boolean = false;
   registed: boolean = false;
   registerEmail: string;
+
+  private registerFormLocalStorageKey: string = "register_form";
+  private localStorageTtl: number = 60 * 30 * 10000000000;
 
   sexes: typeof UserSex = UserSex;
 
@@ -66,17 +66,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   constructor(
     private formBuilder: FormBuilder,
-    private localStorageService: LocalStorageService,
     private accountService: AccountService,
     private changeDetectorRef: ChangeDetectorRef,
     private canonicalService: CanonicalService
   ) {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-    // Данные формы контактных данных
+    const preSaveForm: SimpleObject = LocalStorageGet(this.registerFormLocalStorageKey);
     const formContactDatas: any = {
       testEmail: [[], null],
-      email: [this.localStorageService.getItem("email"), AccountValidatorData.email],
+      email: [preSaveForm.email, AccountValidatorData.email],
     };
     // Данные формы
     this.form = [
@@ -85,9 +82,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
         // Данные
         {
           testLogin: [[], null],
-          login: [this.localStorageService.getItem("login"), AccountValidatorData.login],
-          password: [this.localStorageService.getItem("password"), AccountValidatorData.password],
-          confirmPassword: [this.localStorageService.getItem("confirmPassword"), AccountValidatorData.password]
+          login: [preSaveForm.login, AccountValidatorData.login],
+          password: [preSaveForm.password, AccountValidatorData.password],
+          confirmPassword: [preSaveForm.confirmPassword, AccountValidatorData.password]
         },
         // Валидаторы
         {
@@ -101,14 +98,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
       this.formBuilder.group(
         // Данные
         {
-          name: [this.localStorageService.getItem("name"), AccountValidatorData.name],
-          lastName: [this.localStorageService.getItem("lastName"), AccountValidatorData.name],
+          name: [preSaveForm.name, AccountValidatorData.name],
+          lastName: [preSaveForm.lastName, AccountValidatorData.name],
           birthDate: [
-            this.localStorageService.getItem("birthDate") ?
-              new Date(this.localStorageService.getItem("birthDate")) :
-              null, AccountValidatorData.birthDate
+            preSaveForm.birthDate ? new Date(preSaveForm.birthDate) : null,
+            AccountValidatorData.birthDate
           ],
-          sex: [!!this.localStorageService.getItem("sex") ? UserSex.Female : UserSex.Male]
+          sex: [!!ToBoolean(preSaveForm.sex) ? UserSex.Female : UserSex.Male]
         }
       ),
       // Контакты
@@ -153,17 +149,11 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   // Изменение формы
   private onChange(datas: LocalStorageFormDatas): void {
-    Object.entries(datas).map(data => {
-      if (data[0] === "birthDate") {
-        data[1] = data[1] ? (typeof data[1] === "string" ? data[1] : data[1].toString()) : "";
-      }
-      // Преобразовать булев
-      else if (data[0] === "sex") {
-        data[1] = data[1] ? "true" : "false";
-      }
-      // Сохранить значение
-      this.localStorageService.setItem(data[0], typeof data[1] === "string" ? data[1] : "");
-    });
+    const currentLocalStorageForm: SimpleObject = LocalStorageGet(this.registerFormLocalStorageKey);
+    const form: CustomObject<string> = Object.entries({ ...currentLocalStorageForm, ...datas })
+      .reduce((o, [key, value]) => ({ ...o, [key]: value?.toString() }), {});
+    // Запомнить форму
+    LocalStorageSet(this.registerFormLocalStorageKey, form, this.localStorageTtl)
   }
 
   // Нажатие Enter в форме
@@ -206,7 +196,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
               this.registed = true;
               this.registerEmail = userRegister.email;
               // Удалить данные из кэша
-              this.form.forEach(form => Object.entries(form.controls).forEach(([key]) => this.localStorageService.deleteItem(key)));
+              LocalStorageRemove(this.registerFormLocalStorageKey)
             }
             // Ошибка капчи
             else if (code == "9010") {
@@ -315,4 +305,5 @@ interface LocalStorageFormDatas {
   name?: string;
   lastName?: string;
   birthDate?: string;
+  sex?: string;
 }

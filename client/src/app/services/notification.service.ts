@@ -1,5 +1,6 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
+import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -7,7 +8,6 @@ import { ApiResponse, SearchResponce } from "@_models/api";
 import { Notification, NotificationData, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
-import { LocalStorageService } from "@_services/local-storage.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, catchError, concatMap, filter, finalize, map, of, pairwise, share, startWith, switchMap, takeUntil, tap, timer } from "rxjs";
@@ -24,8 +24,7 @@ import { TokenService } from "./token.service";
 export class NotificationService implements OnDestroy {
 
 
-  private cookieKey: string = "notification_service_";
-  private cookieLifeTime: number = 604800;
+  private localStorageTtl: number = LocalStorageDefaultTtl;
   private notificationsLocalStorageKey: string = "notifications";
 
   private user: User;
@@ -45,9 +44,7 @@ export class NotificationService implements OnDestroy {
 
   // Загрузить статусы из стора
   private getNotificationsFromStore(): void {
-    this.configLocalStorage();
-    // Добавить в наблюдение
-    this.notifications.next(this.localStorageService.getItem(
+    this.notifications.next(LocalStorageGet(
       this.notificationsLocalStorageKey,
       d => ToArray(d).map(u => u as any).filter(u => !!u)
     ));
@@ -104,8 +101,7 @@ export class NotificationService implements OnDestroy {
     private httpClient: HttpClient,
     private accountService: AccountService,
     private tokenService: TokenService,
-    private apiService: ApiService,
-    private localStorageService: LocalStorageService
+    private apiService: ApiService
   ) {
     this.newNotificationsCount$ = this.newNotificationsCount.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -181,8 +177,9 @@ export class NotificationService implements OnDestroy {
   // Количество непрочитанных уведомлений
   getNewNotifications(codes: string[] = []): Observable<Notification> {
     let connect: boolean = false;
-    const observable = (id: string | number = 0) => {
-      id = this.user?.id ?? id ?? 0;
+    const observable = (mixedId: string | number = 0) => {
+      const id: number = ParseInt(this.user?.id ?? mixedId ?? 0);
+      // Подключение установлено
       connect = true;
       // Подписка
       return id > 0 ?
@@ -260,22 +257,15 @@ export class NotificationService implements OnDestroy {
         notifications.push(notification);
       }
       // Обновить
-      this.configLocalStorage();
-      this.localStorageService.setItem(this.notificationsLocalStorageKey, notifications);
+      LocalStorageSet(this.notificationsLocalStorageKey, notifications, this.localStorageTtl);
+      // Обновить список
       this.notifications.next(notifications);
     }
   }
 
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-  }
-
   // Очистить данные о пользователях в сторе
   private clearNotificationsFromStore(): void {
-    this.configLocalStorage();
-    this.localStorageService.deleteItem(this.notificationsLocalStorageKey);
+    LocalStorageRemove(this.notificationsLocalStorageKey);
     this.newNotificationsCount.next(0);
     this.notifications.next([]);
   }

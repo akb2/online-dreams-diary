@@ -1,12 +1,14 @@
+import { CurrentUserIdLocalStorageKey, CurrentUserIdLocalStorageTtl } from "@_datas/account";
 import { ObjectToFormData } from "@_datas/api";
 import { BrowserNames, OsNames, ToDate } from "@_datas/app";
+import { GetCurrentUserId } from "@_helpers/account";
+import { LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
-import { LocalStorageService } from "@_services/local-storage.service";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
@@ -24,9 +26,10 @@ import { map, switchMap, tap } from "rxjs/operators";
 export class TokenService {
 
 
-  private cookieKey: string = "token_service_";
-  private cookieLifeTime: number = 604800;
-  id: string = "";
+  private currentIdLocalStorageKey: string = CurrentUserIdLocalStorageKey;
+  private localStorageTtl: number = CurrentUserIdLocalStorageTtl;
+
+  id: number = 0;
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   readonly user$: Observable<User> = this.user.asObservable();
@@ -40,12 +43,6 @@ export class TokenService {
     return !!this.id;
   }
 
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-  }
-
 
 
 
@@ -53,8 +50,7 @@ export class TokenService {
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
-    private router: Router,
-    private localStorageService: LocalStorageService
+    private router: Router
   ) {
     this.updateState();
   }
@@ -65,8 +61,7 @@ export class TokenService {
 
   // Получить данные из Local Storage
   updateState(): void {
-    this.configLocalStorage();
-    this.id = this.localStorageService.getItem("current_user");
+    this.id = GetCurrentUserId();
   }
 
 
@@ -143,9 +138,8 @@ export class TokenService {
       tap(() => this.deleteCurrentUser()),
       switchMap(result => this.apiService.checkResponse(result.result.code)),
       tap(() => {
-        this.id = "";
-        this.configLocalStorage();
-        this.localStorageService.deleteItem("current_user");
+        this.id = 0;
+        this.deleteCurrentUser();
         this.router.navigate([""]);
       })
     );
@@ -173,14 +167,14 @@ export class TokenService {
   }
 
   // Запомнить авторизацию
-  saveAuth(id: string): void {
-    this.id = id;
-    this.configLocalStorage();
-    this.localStorageService.setItem("current_user", this.id);
+  saveAuth(id: string | number): void {
+    this.id = ParseInt(id);
+    // Запомнить
+    LocalStorageSet(this.currentIdLocalStorageKey, this.id, this.localStorageTtl);
   }
 
   // Удалить сведения о текущем пользователе
   private deleteCurrentUser(): void {
-    this.localStorageService.deleteItem("current_user");
+    LocalStorageRemove(this.currentIdLocalStorageKey);
   }
 }

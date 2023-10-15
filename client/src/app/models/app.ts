@@ -20,8 +20,8 @@ export enum IconType {
 }
 
 // Данные для Local Storage
-export interface LocalStorageItemInterface {
-  value: any;
+export interface LocalStorageItemInterface<T = any> {
+  value: T;
   expiry: number;
 }
 

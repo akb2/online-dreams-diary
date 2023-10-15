@@ -2,6 +2,7 @@ import { DefaultUserPriv, DefaultUserPrivItem, OnlinePeriod, UserPrivateNames } 
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToArray, ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
+import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
@@ -10,7 +11,6 @@ import { ApiResponse, ApiResponseCodes, SearchResponce } from "@_models/api";
 import { NavMenuType } from "@_models/nav-menu";
 import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
-import { LocalStorageService } from "@_services/local-storage.service";
 import { TokenService } from "@_services/token.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
@@ -29,8 +29,7 @@ import { catchError, concatMap, filter, map, pairwise, share, startWith, switchM
 export class AccountService implements OnDestroy {
 
 
-  private cookieKey: string = "account_service_";
-  private cookieLifeTime: number = 604800;
+  private localStorageTtl: number = LocalStorageDefaultTtl;
   private usersLocalStorageKey: string = "users";
 
   private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
@@ -98,9 +97,7 @@ export class AccountService implements OnDestroy {
 
   // Загрузить пользоватлей из стора
   private getUsersFromStore(): void {
-    this.configLocalStorage();
-    // Добавить в наблюдение
-    this.users.next(this.localStorageService.getItem(
+    this.users.next(LocalStorageGet(
       this.usersLocalStorageKey,
       d => ToArray(d).map(user => this.userConverter(user)).filter(u => !!u)
     ));
@@ -123,7 +120,6 @@ export class AccountService implements OnDestroy {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private router: Router,
-    private localStorageService: LocalStorageService,
     private tokenService: TokenService
   ) {
     this.getUsersFromStore();
@@ -385,12 +381,6 @@ export class AccountService implements OnDestroy {
 
 
 
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-  }
-
   // Преобразовать данные с сервера
   userConverter(data: any): User {
     try {
@@ -482,15 +472,13 @@ export class AccountService implements OnDestroy {
       users.push(user);
     }
     // Обновить
-    this.configLocalStorage();
-    this.localStorageService.setItem(this.usersLocalStorageKey, users);
+    LocalStorageSet(this.usersLocalStorageKey, users, this.localStorageTtl);
     this.users.next(users);
   }
 
   // Очистить данные о пользователях в сторе
   private clearUsersFromStore(): void {
-    this.configLocalStorage();
-    this.localStorageService.deleteItem(this.usersLocalStorageKey);
+    LocalStorageRemove(this.usersLocalStorageKey);
     this.users.next([]);
   }
 }

@@ -1,7 +1,7 @@
 import { environment } from "@_environments/environment";
+import { GetCurrentUserId } from "@_helpers/account";
 import { GetBaseApiUrl } from "@_helpers/app";
-import { SimpleObject } from "@_models/app";
-import { LocalStorageService } from "@_services/local-storage.service";
+import { CustomObject } from "@_models/app";
 import { HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
@@ -14,19 +14,7 @@ import { Observable } from "rxjs";
 
 export class ApiInterceptorService implements HttpInterceptor {
 
-
-  private cookieKey: string = "token_service_";
-  private cookieLifeTime: number = 604800;
-
-  private id: string = "";
-
-
-
-
-
-  constructor(
-    private localStorageService: LocalStorageService
-  ) { }
+  private id: number = 0;
 
 
 
@@ -37,7 +25,7 @@ export class ApiInterceptorService implements HttpInterceptor {
     this.updateState();
     // Параметры
     let url: string = /^http(s)?/i.test(req.url) || /^(\/)?assets(s)?/i.test(req.url) ? req.url : GetBaseApiUrl() + req.url;
-    const paramsData: SimpleObject = { "token_user_id": this.id };
+    const paramsData: CustomObject<number> = { "token_user_id": this.id };
     const headers: HttpHeaders = !!environment.httpHeader ?
       Object.entries(environment.httpHeader).reduce((o, [k, v]) => o.set(k, v?.toString() ?? ""), req.headers) :
       req.headers;
@@ -51,15 +39,8 @@ export class ApiInterceptorService implements HttpInterceptor {
     return next.handle(apiReq);
   }
 
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.cookieKey;
-    this.localStorageService.itemLifeTime = this.cookieLifeTime;
-  }
-
   // Получить данные из Local Storage
   private updateState(): void {
-    this.configLocalStorage();
-    this.id = this.localStorageService.getItem("current_user");
+    this.id = GetCurrentUserId();
   }
 }

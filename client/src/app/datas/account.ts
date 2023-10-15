@@ -1,3 +1,4 @@
+import { LocalStorageDefaultTtl } from "@_helpers/local-storage";
 import { PrivateType, UserPrivate, UserPrivateItem, UserPrivateNameItem } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { OptionData } from "@_models/form";
@@ -96,3 +97,9 @@ export const DefaultUserPriv: UserPrivate = {
   myCommentsWrite: DefaultUserPrivItem,
   myCommentsRead: DefaultUserPrivItem
 };
+
+// Ключ в Local Storage
+export const CurrentUserIdLocalStorageKey: string = "current-user__id";
+
+// Время жизни
+export const CurrentUserIdLocalStorageTtl: number = LocalStorageDefaultTtl;

@@ -2,6 +2,7 @@ import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
@@ -11,7 +12,6 @@ import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, D
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
-import { LocalStorageService } from "@_services/local-storage.service";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, of } from "rxjs";
@@ -28,9 +28,8 @@ import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/opera
 export class DreamService implements OnDestroy {
 
 
-  private localStorageKey: string = "dream_service";
-  private localStorageLifeTime: number = 60 * 60 * 24 * 365;
-  private localStorageDreamMapSettings: string = "_map_settings";
+  private localStorageTtl: number = 60 * 60 * 24 * 365;
+  private dreamMapSettingsLocalStorageKey: string = "dream_map-settings";
 
   private user: User;
 
@@ -82,10 +81,8 @@ export class DreamService implements OnDestroy {
 
   // Настройки редактора карт
   get getDreamMapSettings(): DreamMapSettings {
-    this.configLocalStorage();
-    // Настройки
-    return this.localStorageService.getItem(
-      this.localStorageDreamMapSettings,
+    return LocalStorageGet(
+      this.dreamMapSettingsLocalStorageKey,
       settings => ({
         detalization: CheckInRange(ParseInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
         shadowQuality: ParseInt(settings?.shadowQuality)
@@ -119,8 +116,7 @@ export class DreamService implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private httpClient: HttpClient,
-    private apiService: ApiService,
-    private localStorageService: LocalStorageService
+    private apiService: ApiService
   ) {
     // Подписка на актуальные сведения о пользователе
     this.accountService.user$()
@@ -224,9 +220,7 @@ export class DreamService implements OnDestroy {
 
   // Сохранить настройки карты
   saveSettings(settings: DreamMapSettings): void {
-    this.configLocalStorage();
-    // Сохранение параметров
-    this.localStorageService.setItem(this.localStorageDreamMapSettings, settings);
+    LocalStorageSet(this.dreamMapSettingsLocalStorageKey, settings, this.localStorageTtl);
   }
 
 
@@ -416,15 +410,5 @@ export class DreamService implements OnDestroy {
       sky: dreamMap.sky,
       relief: dreamMap.relief
     };
-  }
-
-
-
-
-
-  // Инициализация Local Storage
-  private configLocalStorage(): void {
-    this.localStorageService.itemKey = this.localStorageKey;
-    this.localStorageService.itemLifeTime = this.localStorageLifeTime;
   }
 }
