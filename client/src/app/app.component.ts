@@ -72,8 +72,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this.afterLoadPage(event);
         }
       });
-    // Установка языка по умолчанию
-    this.translateService.setDefaultLang(this.languageService.getFromDomainSetting());
     // Изменения языка
     this.languageService.onLanguageChange()
       .pipe(takeUntil(this.destroy$))
