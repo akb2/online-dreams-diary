@@ -66,10 +66,11 @@ export class LanguageService implements OnDestroy {
 
   constructor() {
     const language: Language = this.getDetectedLanguage();
-    // Сохнарить язык
+    // Сохранить язык
     this.setLanguage(language)
       .pipe(takeUntil(this.destroyed$))
       .subscribe();
+    // Стриггерить язык
     this.language$.next(language);
   }
 
