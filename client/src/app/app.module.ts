@@ -13,6 +13,7 @@ import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
+import { Language } from "@_models/translate";
 
 
 
@@ -39,6 +40,11 @@ const materialIcons: CustomMaterialIcon[] = [
   ...MapCycle(7, i => ({
     keys: ["detalization_level_" + i],
     path: "assets/images/icons/material-icons/detalization_level_" + i + ".svg"
+  })),
+  // Языки
+  ...Object.values(Language).map(language => ({
+    keys: [language, "language-" + language],
+    path: "assets/images/icons/languages/" + language + ".svg"
   }))
 ];
 
