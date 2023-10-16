@@ -199,7 +199,7 @@
              let-lineStyle="lineStyle">
   <!-- Кнопка с ссылкой -->
   <a class="menu-list__item-link"
-     [ngClass]="{ active: item.active }"
+     [ngClass]="{ active: item.active, withIcon: !!item?.icon }"
      [ngStyle]="style"
      [id]="item.id"
      [attr.test-id]="item?.testAttr"
@@ -210,7 +210,7 @@
   </a>
   <!-- Кнопка без ссылки -->
   <button class="menu-list__item-link"
-          [ngClass]="{ active: item.active }"
+          [ngClass]="{ active: item.active, withIcon: !!item?.icon }"
           [ngStyle]="style"
           [id]="item.id"
           [attr.test-id]="item?.testAttr"
@@ -221,7 +221,7 @@
   </button>
   <!-- Кнопка без действия -->
   <div class="menu-list__item-link"
-       [ngClass]="{ active: item.active }"
+       [ngClass]="{ active: item.active, withIcon: !!item?.icon }"
        [ngStyle]="style"
        [id]="item.id"
        [attr.test-id]="item?.testAttr"

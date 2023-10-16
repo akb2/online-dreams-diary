@@ -584,6 +584,15 @@ $breakpointMobile: small;
           > #{$__elm}-line {
             height: 100%;
           }
+          // С иконкой
+          &.withIcon {
+            padding-left: 0 !important;
+          }
+          // Иконка
+          > #{$__elm}-icon {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+          }
           // Выделение
           &:hover {
             background-color: map.get(colors.$matPrimary, 900);
