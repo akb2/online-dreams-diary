@@ -78,11 +78,11 @@
         <!-- Заголовок -->
         <div class="main-menu__title"
              [ngStyle]="css.title"
-             *ngIf="!!mainTitle">{{mainTitle}}</div>
+             *ngIf="!!mainTitle">{{mainTitle | translate}}</div>
         <!-- Подзаголовок -->
         <div class="main-menu__subtitle"
              [ngStyle]="css.subtitle"
-             *ngIf="!!subTitle">{{subTitle}}</div>
+             *ngIf="!!subTitle">{{subTitle | translate}}</div>
       </div>
       <!-- Слой посередине -->
       <div class="main-menu__layer-container_center"
