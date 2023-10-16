@@ -1,6 +1,7 @@
-import { NgModule } from '@angular/core';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { CoreModule } from '@_modules/core.module';
+import { NgModule } from '@angular/core';
+import { TranslateModule } from "@ngx-translate/core";
 import { HomeRoutingModule } from './home-routing.module';
 import { HomeComponent } from './home.component';
 
@@ -15,7 +16,8 @@ import { HomeComponent } from './home.component';
   imports: [
     CoreModule,
     HomeRoutingModule,
-    NavMenuModule
+    NavMenuModule,
+    TranslateModule
   ]
 })
 
