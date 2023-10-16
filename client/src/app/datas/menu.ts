@@ -1,4 +1,5 @@
 import { MenuItem, MenuItemsListDevices } from "@_models/menu";
+import { Language } from "@_models/translate";
 
 
 
@@ -51,6 +52,35 @@ export const MenuItems: MenuItemsListDevices = {
           //   text: "Форум",
           //   link: "/forum"
           // }
+        ]
+      },
+      // Язык
+      {
+        id: "current-language",
+        sort: 1500,
+        neverActive: true,
+        isSvgIcon: true,
+        children: [
+          // Русский язык
+          {
+            id: "change-language",
+            icon: "language-ru",
+            isSvgIcon: true,
+            text: "Русский",
+            linkParams: {
+              language: Language.ru
+            }
+          },
+          // Английский язык
+          {
+            id: "change-language",
+            icon: "language-en",
+            isSvgIcon: true,
+            text: "English",
+            linkParams: {
+              language: Language.en
+            }
+          }
         ]
       }
     ],

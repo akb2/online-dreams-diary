@@ -1,14 +1,17 @@
-import { Injectable, OnDestroy } from "@angular/core";
-import { NavigationEnd, Router } from "@angular/router";
 import { MenuItems } from "@_datas/menu";
+import { IsInEnum } from "@_helpers/app";
 import { CompareArrays } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
+import { Language } from "@_models/translate";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
 import { NotificationService } from "@_services/notification.service";
 import { ScreenService } from "@_services/screen.service";
-import { BehaviorSubject, filter, map, Observable, pairwise, startWith, Subject, takeUntil } from "rxjs";
+import { Injectable, OnDestroy } from "@angular/core";
+import { NavigationEnd, Router } from "@angular/router";
+import { BehaviorSubject, Observable, Subject, filter, map, pairwise, startWith, takeUntil } from "rxjs";
+import { LanguageService } from "./language.service";
 
 
 
@@ -21,6 +24,7 @@ export class MenuService implements OnDestroy {
 
   private user: User;
   private notificationsCount: number = -1;
+  private language: Language;
 
   isMobile: boolean = false;
 
@@ -38,7 +42,8 @@ export class MenuService implements OnDestroy {
     private friendService: FriendService,
     private notificationService: NotificationService,
     private router: Router,
-    private screenService: ScreenService
+    private screenService: ScreenService,
+    private languageService: LanguageService
   ) {
     this.menuItems$ = this.menuItems.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -56,6 +61,7 @@ export class MenuService implements OnDestroy {
         }
         // Обновить данные
         this.notificationsCount = count;
+        // Обновить меню
         this.createMenuItems();
       });
     // Подписка на тип устройства
@@ -63,6 +69,7 @@ export class MenuService implements OnDestroy {
       .pipe(takeUntil(this.destroyed$))
       .subscribe(isMobile => {
         this.isMobile = isMobile;
+        // Обновить меню
         this.createMenuItems();
       });
     // Подписка на текущего пользователя
@@ -70,6 +77,7 @@ export class MenuService implements OnDestroy {
       .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
+        // Обновить меню
         this.createMenuItems();
       });
     // Подписка на изменение роута
@@ -79,6 +87,14 @@ export class MenuService implements OnDestroy {
         filter(event => event instanceof NavigationEnd)
       )
       .subscribe(() => this.createMenuItems());
+    // Смена языка
+    this.languageService.onLanguageChange()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(language => {
+        this.language = language;
+        // Обновить меню
+        this.createMenuItems();
+      });
   }
 
   ngOnDestroy(): void {
@@ -96,6 +112,17 @@ export class MenuService implements OnDestroy {
     this.accountService.quit();
     this.friendService.quit();
     this.notificationService.quit();
+  }
+
+  // Смена языки
+  private onChangeLanguage(mixedLanguage: string): void {
+    const language: Language = IsInEnum(mixedLanguage, Language) ?
+      mixedLanguage as Language :
+      this.languageService.getFromDomainSetting();
+    // Смена языка
+    this.languageService.setLanguage(language)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
   }
 
 
@@ -135,20 +162,26 @@ export class MenuService implements OnDestroy {
 
   // Активные пункты
   private checkActive(item: MenuItem): boolean {
-    let active: boolean = false;
-    // Есть потомки
-    if (item.children) {
-      item.children?.map(subItem => active = this.checkActive(subItem) ? true : active);
-    }
-    // Есть ссылка
-    if (item.link) {
-      let url: string = this.router.url;
-      url = (url.split("?"))[0];
-      // Активность
-      return item.link === url ? true : active;
+    if (!item?.neverActive) {
+      let active: boolean = !!item?.callback && !item?.children?.length ?
+        !!item?.active :
+        false;
+      // Есть потомки
+      if (!!item?.children?.length) {
+        item.children?.map(subItem => active = this.checkActive(subItem) ? true : active);
+      }
+      // Есть ссылка
+      if (item.link) {
+        let url: string = this.router.url;
+        url = (url.split("?"))[0];
+        // Активность
+        return item.link === url ? true : active;
+      }
+      // Проверить
+      return active;
     }
     // Не активен
-    return active;
+    return false;
   }
 
   // Установить методы и значения
@@ -159,16 +192,28 @@ export class MenuService implements OnDestroy {
       item.link = item.link.replace(currentUserIDRegExp, this.user?.id?.toString() ?? "0");
     }
     // Выход
-    if (!!item?.id && item.id === "quit") {
+    if (item?.id === "quit") {
       item.callback = this.onLogOut.bind(this);
     }
     // Количество уведомлений
-    else if (!!item?.id && item.id === "notifications") {
+    else if (item?.id === "notifications") {
       item.counter = Math.max(0, this.notificationsCount);
     }
     // Моя страница
-    else if (!!item?.id && item.id === "my-profie" && !!this.user?.avatars?.small) {
+    else if (item?.id === "my-profie" && !!this.user?.avatars?.small) {
       item.image = this.user.avatars.small;
+    }
+    // Текущий язык
+    else if (item?.id === "current-language") {
+      item.icon = "language-" + this.language;
+    }
+    // Сменить язык
+    else if (item?.id === "change-language") {
+      const mixedLanguage: string = item?.linkParams?.language;
+      // Свойства
+      item.active = mixedLanguage === this.language;
+      item.callback = this.onChangeLanguage.bind(this, mixedLanguage);
+      console.log(item);
     }
   }
 

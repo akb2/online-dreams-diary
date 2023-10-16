@@ -9,6 +9,7 @@ export interface MenuItem {
   id?: string;
   isSeparate?: boolean;
   active?: boolean;
+  neverActive?: boolean;
   sort?: number;
   counter?: number;
   icon?: string;
