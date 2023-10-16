@@ -14,5 +14,5 @@
                   (error)="onError()"></re-captcha>
     </div>
   </div>
-  <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+  <mat-error *ngIf="control.invalid">{{getErrorMessageKey() | translate: errorsData}}</mat-error>
 </div>

@@ -1,10 +1,11 @@
-import { NgModule } from "@angular/core";
+import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
+import { NgModule } from "@angular/core";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { TranslateModule } from "@ngx-translate/core";
 import { RecaptchaModule } from "ng-recaptcha";
-import { CoreModule } from "@_modules/core.module";
 import { AppRecaptchaComponent } from "./app-recaptcha.component";
 
 
@@ -25,7 +26,8 @@ import { AppRecaptchaComponent } from "./app-recaptcha.component";
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule
   ]
 })
 
