@@ -1,14 +1,15 @@
+import { CustomDateAdapter } from "@_helpers/custom-date-adapter";
+import { CoreModule } from "@_modules/core.module";
 import { TextFieldModule } from "@angular/cdk/text-field";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
-import { DateAdapter, MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { CustomDateAdapter } from "@_helpers/custom-date-adapter";
-import { CoreModule } from "@_modules/core.module";
+import { TranslateModule } from "@ngx-translate/core";
 import { TextInputComponent } from "./text-input.component";
 
 
@@ -43,7 +44,8 @@ import { TextInputComponent } from "./text-input.component";
     ReactiveFormsModule,
     MatDatepickerModule,
     TextFieldModule,
-    MatButtonModule
+    MatButtonModule,
+    TranslateModule
   ]
 })
 

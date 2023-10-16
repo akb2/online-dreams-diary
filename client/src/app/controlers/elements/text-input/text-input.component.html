@@ -3,7 +3,7 @@
   <mat-form-field #field
                   [appearance]="appearance"
                   [class]="hasValidators? '': 'disabled-validators'">
-    <mat-label (click)="onFocus()">{{label}}</mat-label>
+    <mat-label (click)="onFocus()">{{label | translate}}</mat-label>
     <!-- Текстовое поле -->
     <input #input
            matInput
@@ -40,7 +40,7 @@
             *ngIf="type=='password'">
       <mat-icon>{{showPassword?'visibility_off':'visibility'}}</mat-icon>
     </button>
-    <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+    <mat-error *ngIf="control.invalid">{{getErrorMessageKey() | translate}}</mat-error>
   </mat-form-field>
 </ng-container>
 <!-- Дата -->
@@ -48,7 +48,7 @@
   <mat-form-field #field
                   [appearance]="appearance"
                   [class]="hasValidators? '': 'disabled-validators'">
-    <mat-label (click)="onFocus()">{{label}}</mat-label>
+    <mat-label (click)="onFocus()">{{label | translate}}</mat-label>
     <!-- Текстовое поле -->
     <input #input
            matInput
@@ -68,6 +68,6 @@
               (click)="datePicker.open()">today</mat-icon>
     <mat-datepicker #datePicker
                     [startAt]="control.value"></mat-datepicker>
-    <mat-error *ngIf="control.invalid">{{getErrorMessageKey()}}</mat-error>
+    <mat-error *ngIf="control.invalid">{{getErrorMessageKey() | translate}}</mat-error>
   </mat-form-field>
 </ng-container>
