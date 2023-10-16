@@ -17,12 +17,12 @@ export const MenuItems: MenuItemsListDevices = {
       // Поиск
       {
         sort: 100,
-        text: "Поиск",
+        text: "menus.nav_menu.items.search",
         link: "/search",
         children: [
           // Люди
           {
-            text: "Люди",
+            text: "menus.nav_menu.items.search_people",
             link: "/people"
           },
           // Разделитель
@@ -31,7 +31,7 @@ export const MenuItems: MenuItemsListDevices = {
           },
           // Дневники
           {
-            text: "Дневники снов",
+            text: "menus.nav_menu.items.search_dreams",
             link: "/diary/all"
           },
           // // Разделитель
@@ -89,39 +89,39 @@ export const MenuItems: MenuItemsListDevices = {
       // Личный кабинет
       {
         sort: 0,
-        text: "Моя страница",
+        text: "menus.nav_menu.items.profile",
         link: "/profile/:currentUserID",
         children: [
           // Настройки аккаунта
           {
-            text: "Настройки",
+            text: "menus.nav_menu.items.profile_settings",
             link: "/profile/settings",
           },
           // Разделитель
           Separator,
           // Персональные данные
           {
-            text: "Мои данные",
+            text: "menus.nav_menu.items.profile_info",
             link: "/profile/settings/person",
           },
           // Персональные данные
           {
-            text: "Уведомления",
+            text: "menus.nav_menu.items.profile_notifications",
             link: "/profile/settings/notifications",
           },
           // Приватность
           {
-            text: "Приватность",
+            text: "menus.nav_menu.items.profile_private",
             link: "/profile/settings/private",
           },
           // Настройки внешнего вида
           {
-            text: "Персонализация",
+            text: "menus.nav_menu.items.profile_appearance",
             link: "/profile/settings/appearance",
           },
           // Настройки безопасности
           {
-            text: "Безопасность",
+            text: "menus.nav_menu.items.profile_security",
             link: "/profile/settings/security",
           },
           // Разделитель
@@ -129,14 +129,14 @@ export const MenuItems: MenuItemsListDevices = {
           // Выход
           {
             id: "quit",
-            text: "Выход"
+            text: "menus.nav_menu.items.profile_log_out"
           }
         ]
       },
       // Дневник
       {
         sort: 50,
-        text: "Мой дневник",
+        text: "menus.nav_menu.items.my_diary",
         link: "/diary/:currentUserID"
       },
       // Уведомления
@@ -150,24 +150,24 @@ export const MenuItems: MenuItemsListDevices = {
     notAuth: [
       // Главная
       {
-        text: "Главная",
+        text: "menus.nav_menu.items.home",
         link: "/home"
       },
       // Личный кабинет
       {
         sort: 1000,
-        text: "Вход",
+        text: "menus.nav_menu.items.log_in",
         link: "/auth",
         testAttr: "main-menu-item-list-auth",
         children: [
           // Вход
           {
-            text: "Вход",
+            text: "menus.nav_menu.items.log_in",
             link: "/auth"
           },
           // Регистрация
           {
-            text: "Регистрация",
+            text: "menus.nav_menu.items.sign_up",
             testAttr: "main-menu-item-register",
             link: "/register"
           }
@@ -182,7 +182,7 @@ export const MenuItems: MenuItemsListDevices = {
       // Поиск
       {
         sort: 3,
-        text: "Поиск",
+        text: "menus.nav_menu.items.search",
         mobileView: {
           leftPanel: true,
           bottomPanel: true
@@ -191,7 +191,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Общий поиск
           {
             icon: "search",
-            text: "Поиск",
+            text: "menus.nav_menu.items.search",
             link: "/search",
             mobileView: {
               leftPanel: false,
@@ -201,7 +201,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Люди
           {
             icon: "group",
-            text: "Люди",
+            text: "menus.nav_menu.items.search_people",
             link: "/people",
             mobileView: {
               leftPanel: true,
@@ -211,7 +211,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Дневники
           {
             icon: "collections_bookmark",
-            text: "Дневники снов",
+            text: "menus.nav_menu.items.search_dreams",
             link: "/diary/all",
             mobileView: {
               leftPanel: true,
@@ -240,7 +240,7 @@ export const MenuItems: MenuItemsListDevices = {
         sort: 1,
         id: "my-profie",
         icon: "person",
-        text: "Моя страница",
+        text: "menus.nav_menu.items.profile",
         link: "/profile/:currentUserID",
         mobileView: {
           leftPanel: true,
@@ -251,7 +251,7 @@ export const MenuItems: MenuItemsListDevices = {
       {
         sort: 2,
         icon: "book",
-        text: "Мой дневник",
+        text: "menus.nav_menu.items.my_diary",
         link: "/diary/:currentUserID",
         mobileView: {
           leftPanel: true,
@@ -261,7 +261,7 @@ export const MenuItems: MenuItemsListDevices = {
       // Настройки
       {
         sort: 500,
-        text: "Настройки",
+        text: "menus.nav_menu.items.profile_settings",
         mobileView: {
           leftPanel: true,
           bottomPanel: false
@@ -270,7 +270,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Настройки
           {
             icon: "settings",
-            text: "Настройки",
+            text: "menus.nav_menu.items.profile_settings",
             link: "/profile/settings",
             mobileView: {
               leftPanel: true,
@@ -281,7 +281,7 @@ export const MenuItems: MenuItemsListDevices = {
           {
             id: "quit",
             icon: "exit_to_app",
-            text: "Выход",
+            text: "menus.nav_menu.items.profile_log_out",
             mobileView: {
               leftPanel: true,
               bottomPanel: false
@@ -305,7 +305,7 @@ export const MenuItems: MenuItemsListDevices = {
       // Главная
       {
         icon: "home",
-        text: "Главная",
+        text: "menus.nav_menu.items.home",
         link: "/home",
         mobileView: {
           leftPanel: true,
@@ -323,7 +323,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Вход
           {
             icon: "key",
-            text: "Вход",
+            text: "menus.nav_menu.items.log_in",
             link: "/auth",
             mobileView: {
               leftPanel: true,
@@ -333,7 +333,7 @@ export const MenuItems: MenuItemsListDevices = {
           // Регистрация
           {
             icon: "person_add",
-            text: "Регистрация",
+            text: "menus.nav_menu.items.sign_up",
             link: "/register",
             mobileView: {
               leftPanel: true,

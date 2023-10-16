@@ -1,4 +1,25 @@
 {
+  "menus": {
+    "nav_menu": {
+      "items": {
+        "home": "Главная",
+        "log_in": "Вход",
+        "sign_up": "Регистрация",
+        "search": "Поиск",
+        "search_people": "Люди",
+        "search_dreams": "Дневники снов",
+        "profile": "Моя страница",
+        "profile_settings": "Настройки",
+        "profile_info": "Мои данные",
+        "profile_notifications": "Уведомления",
+        "profile_private": "Приватность",
+        "profile_appearance": "Персонализация",
+        "profile_security": "Безопасность",
+        "profile_log_out": "Выход",
+        "my_diary": "Мой дневник"
+      }
+    }
+  },
   "pages": {
     "home": {
       "page_title": "Дневник сновидений онлайн",

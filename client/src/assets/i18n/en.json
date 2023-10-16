@@ -1,4 +1,25 @@
 {
+  "menus": {
+    "nav_menu": {
+      "items": {
+        "home": "Home",
+        "log_in": "Log in",
+        "sign_up": "Sign up",
+        "search": "Search",
+        "search_people": "People",
+        "search_dreams": "Dreams diaries",
+        "profile": "My account",
+        "profile_settings": "Settings",
+        "profile_info": "My data",
+        "profile_notifications": "Notifications",
+        "profile_private": "Confidentiality",
+        "profile_appearance": "Personalization",
+        "profile_security": "Security",
+        "profile_log_out": "Log Out",
+        "my_diary": "My diary"
+      }
+    }
+  },
   "pages": {
     "home": {
       "page_title": "The Online Dreams Diary",
