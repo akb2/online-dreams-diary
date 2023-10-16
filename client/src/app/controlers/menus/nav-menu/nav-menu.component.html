@@ -336,7 +336,12 @@
 <!-- Соджержимое пункта мобильного меню -->
 <ng-template #mobileMenuItemContent
              let-item>
-  <mat-icon *ngIf="!item?.image">{{item.icon}}</mat-icon>
+  <ng-container *ngIf="!!item?.icon && !item?.image">
+    <mat-icon *ngIf="!item?.isSvgIcon">{{item.icon}}</mat-icon>
+    <!-- Встроенная иконка -->
+    <mat-icon [svgIcon]="item.icon"
+              *ngIf="!!item?.isSvgIcon"></mat-icon>
+  </ng-container>
   <!-- Картинка -->
   <img [src]="item.image"
        *ngIf="!!item?.image" />

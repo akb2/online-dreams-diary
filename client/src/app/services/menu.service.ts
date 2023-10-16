@@ -207,6 +207,11 @@ export class MenuService implements OnDestroy {
     else if (item?.id === "current-language") {
       item.icon = "language-" + this.language;
     }
+    // Текущий язык
+    else if (item?.id === "current-language-mobile") {
+      item.icon = "language-" + this.language;
+      item.callback = () => alert();
+    }
     // Сменить язык
     else if (item?.id === "change-language") {
       const mixedLanguage: string = item?.linkParams?.language;

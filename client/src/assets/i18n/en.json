@@ -16,7 +16,8 @@
         "profile_appearance": "Personalization",
         "profile_security": "Security",
         "profile_log_out": "Log Out",
-        "my_diary": "My diary"
+        "my_diary": "My diary",
+        "language": "Language"
       }
     }
   },

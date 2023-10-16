@@ -231,7 +231,19 @@ export const MenuItems: MenuItemsListDevices = {
           //   link: "/forum"
           // }
         ]
-      }
+      },
+      // Язык
+      {
+        id: "current-language-mobile",
+        text: "menus.nav_menu.items.language",
+        sort: 1500,
+        neverActive: true,
+        isSvgIcon: true,
+        mobileView: {
+          leftPanel: true,
+          bottomPanel: false
+        }
+      },
     ],
     // Авторизованных
     auth: [
