@@ -1,0 +1,18 @@
+@use "material";
+
+// Базовый стиль окна
+@include material.matDialog;
+
+// Содержимое
+.content {
+  text-align: center;
+}
+
+// Список
+.list {
+  display: inline-flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 5px;
+}
