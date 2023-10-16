@@ -1,4 +1,5 @@
-import { FormErrorsKeys } from "@_models/form";
+import { FormData } from "@_datas/form";
+import { FormDataType, FormErrorsKeys } from "@_models/form";
 import { Directive, DoCheck, Input, Optional, Self } from "@angular/core";
 import { ControlValueAccessor, FormControl, NgControl, ValidationErrors } from "@angular/forms";
 
@@ -18,6 +19,8 @@ export abstract class BaseInputDirective implements ControlValueAccessor, DoChec
   text: string;
   disabled: boolean = false;
   required: boolean = false;
+
+  errorsData: FormDataType = FormData;
 
   onChange: Function = (_: any) => { };
   onTouched: Function = () => { };
