@@ -45,6 +45,11 @@ const materialIcons: CustomMaterialIcon[] = [
   ...Object.values(Language).map(language => ({
     keys: [language, "language-" + language],
     path: "assets/images/icons/languages/small/" + language + ".svg"
+  })),
+  // Языки
+  ...Object.values(Language).map(language => ({
+    keys: ["language-large-" + language],
+    path: "assets/images/icons/languages/large/" + language + ".svg"
   }))
 ];
 
