@@ -5,13 +5,13 @@
   <!-- Заголовок -->
   <div class="loader__title {{color}}"
        [ngClass]="{ smallMargins }"
-       *ngIf="mainTitle">{{mainTitle}}</div>
+       *ngIf="mainTitle">{{mainTitle | translate}}</div>
   <!-- Подзаголовок -->
   <div class="loader__subtitle {{color}}"
        [ngClass]="{ smallMargins, waitPointers }"
        *ngIf="subTitle">
     <span class="text">
-      {{subTitle}}
+      {{subTitle | translate}}
       <span *ngIf="waitPointers">{{' .'.repeat(currentPointers)}}</span>
     </span>
   </div>
@@ -29,7 +29,7 @@
        class="loader__description {{color}}"
        [ngClass]="{ smallMargins }"
        [hidden]="!showDescriptionPanel">
-    <span *ngIf="description">{{description}}</span>
+    <span *ngIf="description">{{description | translate}}</span>
     <ng-content *ngIf="!description"></ng-content>
   </div>
 </div>
