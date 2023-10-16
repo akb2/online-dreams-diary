@@ -1,6 +1,7 @@
 import { PageLoaderModule } from "@_controlers/page-loader/page-loader.module";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomMaterialIcon } from "@_models/app";
+import { Language } from "@_models/translate";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
 import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from "@angular/common/http";
@@ -13,7 +14,6 @@ import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { Language } from "@_models/translate";
 
 
 
@@ -44,7 +44,7 @@ const materialIcons: CustomMaterialIcon[] = [
   // Языки
   ...Object.values(Language).map(language => ({
     keys: [language, "language-" + language],
-    path: "assets/images/icons/languages/" + language + ".svg"
+    path: "assets/images/icons/languages/small/" + language + ".svg"
   }))
 ];
 
