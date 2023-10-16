@@ -94,17 +94,17 @@ export const DreamValidatorData: ValidatorDataType = {
 // Тексты ошибок для аккаунтов
 export const AccountErrorMessages: ErrorMessagesType = {
   login: {
-    required: "Введите логин",
-    minlength: `Минимум ${FormData.loginMinLength} символа`,
-    maxlength: `Максимум ${FormData.loginMaxLength} символа`,
-    pattern: "Допустимы только цифры, латиница, тире и подчеркивание",
-    noUniqueLogin: "Такой логин уже используется"
+    required: "general.forms.errors.login.required",
+    minlength: "general.forms.errors.login.minlength",
+    maxlength: "general.forms.errors.login.maxlength",
+    pattern: "general.forms.errors.login.pattern",
+    noUniqueLogin: "general.forms.errors.login.noUniqueLogin"
   },
   password: {
-    required: "Введите пароль",
-    newPasswordIsMatchWithOld: "Новый пароль не должен повторять текущий",
-    minlength: `Минимум ${FormData.passwordMinLength} символа`,
-    maxlength: `Максимум ${FormData.passwordMaxLength} символа`
+    required: "general.forms.errors.password.required",
+    newPasswordIsMatchWithOld: "general.forms.errors.password.newPasswordIsMatchWithOld",
+    minlength: "general.forms.errors.password.minlength",
+    maxlength: "general.forms.errors.password.maxlength"
   },
   confirmPassword: {
     required: "Подтвердите пароль",
@@ -147,7 +147,7 @@ export const AccountErrorMessages: ErrorMessagesType = {
     required: `Укажите возраст в пределе ${FormData.birthDateMinAge} - ${FormData.birthDateMaxAge} лет`
   },
   captcha: {
-    required: `Пройдите капчу`
+    required: "general.forms.errors.captcha.required"
   }
 };
 

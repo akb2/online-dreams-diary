@@ -1,7 +1,7 @@
 <app-main-menu [autoCollapse]="true"
                [type]="navMenuType"
-               mainTitle="Вход на сайт"
-               subTitle="Online Dreams Map"
+               mainTitle="pages.auth.page_title"
+               subTitle="pages.auth.page_sub_title"
                backButtonLink="/"
                floatButtonIcon="person_add"
                floatButtonLink="/register"></app-main-menu>
@@ -11,14 +11,14 @@
   <div class="container">
     <!-- Форма входа -->
     <ng-container *ngIf="!loading; else authLoader">
-      <app-card mainTitle="Авторизация на сайте"
+      <app-card [mainTitle]="'pages.auth.form.title' | translate"
                 *ngIf="!showActivate; else accauntActivateTemplate">
         <!-- Контент -->
         <form [formGroup]="form"
               content>
           <!-- Логин -->
           <app-text-input required
-                          label="Логин"
+                          label="pages.auth.form.login"
                           formControlName="login"
                           autocomplete="login"
                           [errors]="errors.login"
@@ -26,7 +26,7 @@
                           (submit)="tryLogin()"></app-text-input>
           <!-- Пароль -->
           <app-text-input required
-                          label="Пароль"
+                          label="pages.auth.form.password"
                           formControlName="password"
                           autocomplete="password"
                           [errors]="errors.password"
@@ -35,17 +35,17 @@
                           (submit)="tryLogin()"></app-text-input>
           <!-- Восстановление пароля -->
           <div class="restore">
-            <a routerLink="/restore">Забыли пароль?</a>
+            <a routerLink="/restore">{{'pages.auth.form.restore' | translate}}</a>
           </div>
         </form>
         <!-- Действия -->
         <ng-container actions>
           <a mat-stroked-button
              color="basic"
-             routerLink="/register">Регистрация</a>
+             routerLink="/register">{{'general.buttons.sign_up' | translate}}</a>
           <a mat-flat-button
              color="primary"
-             (click)="tryLogin()">Вход</a>
+             (click)="tryLogin()">{{'general.buttons.log_in' | translate}}</a>
         </ng-container>
       </app-card>
     </ng-container>
@@ -54,7 +54,7 @@
 
 <!-- Активация аккаунта -->
 <ng-template #accauntActivateTemplate>
-  <app-card mainTitle="Активация аккаунта"
+  <app-card mainTitle="pages.auth.activation.title"
             *ngIf="!endActivation; else activationCodeSended">
     <form [formGroup]="form"
           content>
@@ -73,35 +73,29 @@
       <!-- Отмена -->
       <a mat-stroked-button
          color="basic"
-         (click)="onActivationCancel()">Отмена</a>
+         (click)="onActivationCancel()">{{'general.buttons.cancel' | translate}}</a>
       <!-- Выслать код -->
       <a mat-flat-button
          color="primary"
-         (click)="sendActivationCode()">Выслать код</a>
+         (click)="sendActivationCode()">{{'pages.auth.activation.send_code' | translate}}</a>
     </ng-container>
   </app-card>
 
   <!-- Код уже есть -->
-  <ng-template #activationTextAvail>
-    Пожалуйста, перейдите по ссылке из письма. Если письмо не пришло, проверьте папку спам.
-    Если в папке спам нет письма, то нажмите на кнопку ниже.
-  </ng-template>
+  <ng-template #activationTextAvail>{{'pages.auth.activation.messages.has_code' | translate}}</ng-template>
   <!-- Требуется новый код -->
-  <ng-template #activationTextNonAvail>
-    Ваш аккаунт требует активации. Нажмите на кнопку ниже, чтобы мы отправили
-    письмо для активации аккаунта на почту, которую вы указали при регистрации.
-  </ng-template>
+  <ng-template #activationTextNonAvail>{{'pages.auth.activation.messages.no_has_code' | translate}}</ng-template>
 </ng-template>
 
 <!-- Загрузка авторизации / отправки письма -->
 <ng-template #authLoader>
-  <app-inform [mainTitle]="showActivate? 'Отправка письма': 'Авторизация'"
-              subTitle="Пожалуйста подождите"></app-inform>
+  <app-inform [mainTitle]="showActivate? 'pages.auth.loaders.activation_email.title': 'pages.auth.loaders.log_in.title'"
+              subTitle="general.labels.please_wait"></app-inform>
 </ng-template>
 
 <!-- Письмо отправлено -->
 <ng-template #activationCodeSended>
   <app-inform icon="done"
-              mainTitle="Код выслан"
-              description="Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке в письме чтобы выполнить вход на сайт."></app-inform>
+              mainTitle="pages.auth.activation.success_send.title"
+              description="pages.auth.activation.success_send.description"></app-inform>
 </ng-template>
