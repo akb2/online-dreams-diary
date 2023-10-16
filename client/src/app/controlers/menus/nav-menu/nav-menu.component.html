@@ -254,7 +254,7 @@
   </ng-container>
   <!-- Текст -->
   <span class="menu-list__item-text"
-        *ngIf="!!item?.text">{{item.text}}</span>
+        *ngIf="!!item?.text">{{item.text | translate}}</span>
   <!-- Подчеркивание для текущего пункта меню -->
   <div class="menu-list__item-line"
        [ngStyle]="lineStyle"></div>
@@ -341,7 +341,7 @@
   <img [src]="item.image"
        *ngIf="!!item?.image" />
   <!-- Текст -->
-  <span>{{item.text}}</span>
+  <span>{{item.text | translate}}</span>
 </ng-template>
 
 <!-- Информация о странице в мобильном меню -->
