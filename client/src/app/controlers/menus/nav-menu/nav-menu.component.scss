@@ -592,6 +592,7 @@ $breakpointMobile: small;
           > #{$__elm}-icon {
             margin-left: 0 !important;
             margin-right: 0 !important;
+            z-index: 1;
           }
           // Выделение
           &:hover {
