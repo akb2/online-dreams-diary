@@ -1,10 +1,11 @@
+import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatMenuModule } from "@angular/material/menu";
 import { RouterModule } from "@angular/router";
-import { CoreModule } from "@_modules/core.module";
+import { TranslateModule } from "@ngx-translate/core";
 import { CardComponent } from "./card.component";
 
 
@@ -24,7 +25,8 @@ import { CardComponent } from "./card.component";
     MatCardModule,
     MatMenuModule,
     MatButtonModule,
-    RouterModule
+    RouterModule,
+    TranslateModule
   ]
 })
 

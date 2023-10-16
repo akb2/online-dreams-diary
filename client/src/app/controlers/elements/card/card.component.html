@@ -19,13 +19,13 @@
     </a>
     <!-- Заголовок -->
     <mat-card-title *ngIf="mainTitle">
-      <a *ngIf="routerLink || queryParams">{{mainTitle}}</a>
-      <ng-container *ngIf="!routerLink && !queryParams">{{mainTitle}}</ng-container>
+      <a *ngIf="routerLink || queryParams">{{mainTitle| translate}}</a>
+      <ng-container *ngIf="!routerLink && !queryParams">{{mainTitle | translate}}</ng-container>
     </mat-card-title>
     <!-- Подзаголовок -->
     <mat-card-subtitle *ngIf="subTitle">
-      <a *ngIf="routerLink || queryParams">{{subTitle}}</a>
-      <ng-container *ngIf="!routerLink && !queryParams">{{subTitle}}</ng-container>
+      <a *ngIf="routerLink || queryParams">{{subTitle | translate}}</a>
+      <ng-container *ngIf="!routerLink && !queryParams">{{subTitle | translate}}</ng-container>
     </mat-card-subtitle>
     <!-- Раскрывающееся меню -->
     <a mat-icon-button
