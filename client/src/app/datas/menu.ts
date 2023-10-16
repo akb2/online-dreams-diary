@@ -240,6 +240,7 @@ export const MenuItems: MenuItemsListDevices = {
         neverActive: true,
         isSvgIcon: true,
         mobileView: {
+          showContent: true,
           leftPanel: true,
           bottomPanel: false
         }

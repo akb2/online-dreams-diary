@@ -1,4 +1,5 @@
 import { BodyScrollModule } from "@_controlers/body-scroll/body-scroll.module";
+import { PopupLanguageListModule } from "@_controlers/language-list/language-list.module";
 import { MainBackgroundModule } from "@_controlers/main-background/main-background.module";
 import { NotificationsModule } from "@_controlers/notifications/notifications.module";
 import { PanelsHeaderModule } from "@_controlers/panels-header/panels-header.module";
@@ -28,7 +29,8 @@ import { NavMenuComponent } from "./nav-menu.component";
     BodyScrollModule,
     PanelsHeaderModule,
     NotificationsModule,
-    TranslateModule
+    TranslateModule,
+    PopupLanguageListModule
   ]
 })
 

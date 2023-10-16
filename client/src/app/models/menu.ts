@@ -27,6 +27,7 @@ export interface MenuItem {
 
 // Параметры мобильного вида
 export interface MenuItemMobileView {
+  showContent?: boolean;
   leftPanel: boolean;
   bottomPanel: boolean;
 }

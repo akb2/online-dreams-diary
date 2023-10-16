@@ -1,3 +1,4 @@
+import { PopupLanguageListComponent } from "@_controlers/language-list/language-list.component";
 import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { User, UserSex } from "@_models/account";
@@ -11,6 +12,7 @@ import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { Subject, forkJoin, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
 
 
@@ -192,7 +194,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     private screenService: ScreenService,
     private accountService: AccountService,
     private menuService: MenuService,
-    private scrollService: ScrollService
+    private scrollService: ScrollService,
+    private matDialog: MatDialog
   ) {
     DrawDatas.dataRender();
     // Запретить скролл к предыдущему месту
@@ -416,6 +419,13 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       this.isShowNotifications ?
         this.hideNotifications() :
         this.showNotifications();
+    }
+    // Язык
+    if (menuItem?.id === "current-language-mobile") {
+      PopupLanguageListComponent.open(this.matDialog)
+        .afterClosed()
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe();
     }
   }
 

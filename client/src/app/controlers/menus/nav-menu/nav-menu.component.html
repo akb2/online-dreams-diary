@@ -330,7 +330,12 @@
   <!-- Кнопка без действия -->
   <div class="mobile-menu__list-link"
        [attr.test-id]="item?.testAttr"
-       *ngIf="!item.isSeparate && !item.link && !item.callback"></div>
+       (click)="onMenuItemClick(item)"
+       *ngIf="!item.isSeparate && !item.link && !item.callback">
+    <ng-container [ngTemplateOutlet]="mobileMenuItemContent"
+                  [ngTemplateOutletContext]="{ $implicit: item }"
+                  *ngIf="!!item?.mobileView?.showContent"></ng-container>
+  </div>
 </ng-template>
 
 <!-- Соджержимое пункта мобильного меню -->
