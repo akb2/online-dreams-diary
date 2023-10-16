@@ -213,7 +213,6 @@ export class MenuService implements OnDestroy {
       // Свойства
       item.active = mixedLanguage === this.language;
       item.callback = this.onChangeLanguage.bind(this, mixedLanguage);
-      console.log(item);
     }
   }
 
