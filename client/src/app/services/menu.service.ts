@@ -204,13 +204,8 @@ export class MenuService implements OnDestroy {
       item.image = this.user.avatars.small;
     }
     // Текущий язык
-    else if (item?.id === "current-language") {
+    else if (item?.id === "current-language" || item?.id === "current-language-mobile") {
       item.icon = "language-" + this.language;
-    }
-    // Текущий язык
-    else if (item?.id === "current-language-mobile") {
-      item.icon = "language-" + this.language;
-      item.callback = () => alert();
     }
     // Сменить язык
     else if (item?.id === "change-language") {
