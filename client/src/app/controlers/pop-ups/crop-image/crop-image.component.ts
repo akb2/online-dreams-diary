@@ -1,5 +1,5 @@
 import { AppMatDialogConfig } from "@_datas/app";
-import { CheckInRange } from "@_helpers/math";
+import { CheckInRange, MathRound } from "@_helpers/math";
 import { UserAvatarCropDataElement } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { ScreenKeys } from "@_models/screen";
@@ -113,21 +113,19 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     // Данные фотки
     this.screenService.loadImage(this.data.image)
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(
-        image => {
-          this.loading = false;
-          this.imageWidth = image.width;
-          this.imageHeight = image.height;
-          // Проверка данных
-          const startX: number = this.data.coords?.startX || 0;
-          const startY: number = this.data.coords?.startY || 0;
-          const width: number = this.data.coords?.width || this.imageWidth;
-          const height: number = this.data.coords?.height || this.imageHeight;
-          this.data.coords = { startX, startY, width, height };
-          // Сохранить координаты
-          this.cropSizesToCoords();
-        }
-      );
+      .subscribe(image => {
+        this.loading = false;
+        this.imageWidth = image.width;
+        this.imageHeight = image.height;
+        // Проверка данных
+        const startX: number = this.data.coords?.startX || 0;
+        const startY: number = this.data.coords?.startY || 0;
+        const width: number = this.data.coords?.width || this.imageWidth;
+        const height: number = this.data.coords?.height || this.imageHeight;
+        this.data.coords = { startX, startY, width, height };
+        // Сохранить координаты
+        this.cropSizesToCoords();
+      });
     // Брейкпоинт
     this.screenService.breakpoint$
       .pipe(takeUntil(this.destroyed$))
@@ -266,12 +264,16 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Преобразовать локальные данные в исходящие
   private cropCoordsToSizes(): void {
-    this.data.coords = {
-      startX: Math.round(this.position.x1),
-      startY: Math.round(this.position.y1),
-      width: Math.round(this.position.x2 - this.position.x1),
-      height: Math.round(this.position.y2 - this.position.y1)
-    };
+    if (!!this.position) {
+      this.data.coords = {
+        startX: MathRound(this.position.x1),
+        startY: MathRound(this.position.y1),
+        width: MathRound(this.position.x2 - this.position.x1),
+        height: MathRound(this.position.y2 - this.position.y1)
+      };
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   // Отрисовка превью
