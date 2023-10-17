@@ -29,9 +29,9 @@
       "please_wait": "Please wait",
       "online": "Online",
       "last_visit": {
-        "male": "Last seen: {{date}}",
-        "female": "Last seen: {{date}}",
-        "undetected": "Last seen: {{date}}"
+        "male": "Seen: {{date}}",
+        "female": "Seen: {{date}}",
+        "undetected": "Seen: {{date}}"
       }
     }
   },

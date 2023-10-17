@@ -31,7 +31,7 @@
       "last_visit": {
         "male": "Был {{date}}",
         "female": "Была {{date}}",
-        "undetected": "Последний визит: {{date}}"
+        "undetected": "Был: {{date}}"
       }
     }
   },
