@@ -6,7 +6,7 @@ import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, filter, fromEvent, map, merge, mergeMap, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
+import { BehaviorSubject, Observable, Subject, animationFrameScheduler, filter, fromEvent, map, merge, mergeMap, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
 
 
@@ -79,11 +79,13 @@ export class ScrollService implements OnDestroy {
   constructor() {
     WaitObservable(() => !ScrollElement())
       .pipe(
-        // observeOn(animationFrameScheduler),
         takeUntil(this.destroyed$),
         tap(() => this.scrollElement = ScrollElement()),
         mergeMap(
-          () => fromEvent(this.scrollElement, "scroll"),
+          () => fromEvent(this.scrollElement, "scroll").pipe(
+            takeUntil(this.destroyed$),
+            observeOn(animationFrameScheduler)
+          ),
           () => this.getCurrentScroll
         ),
         switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY ? of(scrollData) : throwError(scrollData)),
@@ -119,18 +121,16 @@ export class ScrollService implements OnDestroy {
                 // Вернуть прослушивание событий
                 this.restoreScrollEvents();
               },
-              error => {
-                !!error ? this.restoreScrollEvents(error) : null;
-              }
+              error => !!error ?
+                this.restoreScrollEvents(error) :
+                null
             );
           // Запонить предыдущие значения скролла
           this.scrollLastX = scrollData.x;
           this.scrollLastY = scrollData.y;
           this.scrollLastTime = currentDate;
         },
-        event => {
-          this.restoreScrollEvents(event);
-        }
+        event => this.restoreScrollEvents(event)
       );
     // Заблокировать прокрутку для пользователя
     merge(
@@ -347,7 +347,7 @@ export class ScrollService implements OnDestroy {
     this.emitEvent = true;
     this.addingScrollY = 0;
     // Вывод ошибки
-    if (!!event) {
+    if (!!event && event !== true) {
       console.error(event);
     }
   }
