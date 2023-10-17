@@ -90,8 +90,8 @@ export const PhotoMaxSize: number = 10485760;
 
 
 // Получить размер файла
-export const ConvertFileSize = (size: number) => {
-  const strings: string[] = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+export const ConvertFileSize = (size: number, translatedStrings?: string[]) => {
+  const strings: string[] = translatedStrings ?? ["Б", "КБ", "МБ", "ГБ", "ТБ"];
   let key: number = 0;
   // Преобразовать данные
   while (size > 1024 && key < strings.length) {
