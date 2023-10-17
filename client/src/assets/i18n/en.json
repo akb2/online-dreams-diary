@@ -93,6 +93,12 @@
       }
     },
     "profile": {
+      "un_avail": {
+        "private": {
+          "title": "Account is unavailable",
+          "sub_title": "The user chose to hide his account using privacy settings"
+        }
+      },
       "blocks": {
         "actions": {
           "friend_state": {
