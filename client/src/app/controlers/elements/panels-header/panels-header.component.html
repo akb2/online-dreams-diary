@@ -25,9 +25,17 @@
   </div>
   <!-- Текст -->
   <div class="data__text">
-    <div class="data__text-title">{{mainTitle}}</div>
+    <div class="data__text-title">{{mainTitle | translate}}</div>
     <div class="data__text-subtitle"
-         *ngIf="!!subTitle">{{subTitle}}</div>
+         *ngIf="!!subTitle || !!lastSeenUser">
+      <!-- Текстовый заголовок -->
+      <ng-container *ngIf="!!subTitle">{{subTitle | translate}}</ng-container>
+      <!-- Последний визит -->
+      <app-last-seen [online]="lastSeenUser.online"
+                     [date]="lastSeenUser.lastActionDate"
+                     [sex]="lastSeenUser.sex"
+                     *ngIf="!!lastSeenUser && !subTitle"></app-last-seen>
+    </div>
   </div>
 </div>
 <!-- Закрытие меню -->

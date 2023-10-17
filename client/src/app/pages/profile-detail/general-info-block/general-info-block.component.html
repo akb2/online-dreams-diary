@@ -5,17 +5,29 @@
     <div content>
       <!-- Имя -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Имя', value: user.name + ' ' + user.lastName }"></ng-container>
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.name',
+                      value: user.name + ' ' + user.lastName
+                    }"></ng-container>
       <!-- Никнейм -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Отчество (никнейм)', value: user.patronymic }"
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.middle_name',
+                      value: user.patronymic
+                    }"
                     *ngIf="!!user.patronymic?.length"></ng-container>
       <!-- Пол -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Пол', value: getUserSexLabel }"></ng-container>
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.gender.title',
+                      value: 'pages.profile.blocks.user_info.gender.values.' + user.sex
+                    }"></ng-container>
       <!-- День рождения -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'День рождения', value: user.birthDate | date: 'd MMMM y' }"></ng-container>
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.birth_date',
+                      value: user.birthDate | date: 'd MMMM y'
+                    }"></ng-container>
     </div>
   </app-card>
   <!-- Технические данные -->
@@ -23,14 +35,23 @@
     <div content>
       <!-- Дата регистрации -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Дата регистрации', value: user.registerDate | date: 'd MMMM y' }"></ng-container>
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.register',
+                      value: user.registerDate | date: 'd MMMM y'
+                    }"></ng-container>
       <!-- Последний визит: онлайн -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Последний визит', value: 'Сейчас на сайте' }"
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.online.title',
+                      value: 'pages.profile.blocks.user_info.online.value'
+                    }"
                     *ngIf="user.online"></ng-container>
       <!-- Последний визит: дата -->
       <ng-container [ngTemplateOutlet]="userGeneralDataField"
-                    [ngTemplateOutletContext]="{ $implicit: 'Последний визит', value: user.lastActionDate | date: 'd MMMM y - hh:mm' }"
+                    [ngTemplateOutletContext]="{
+                      $implicit: 'pages.profile.blocks.user_info.online.title',
+                      value: user.lastActionDate | date: 'd MMMM y - hh:mm'
+                    }"
                     *ngIf="!user.online"></ng-container>
     </div>
   </app-card>
@@ -43,7 +64,7 @@
              let-label
              let-value="value">
   <div class="user-data">
-    <div class="user-data__label">{{label}}</div>
-    <div class="user-data__value">{{value}}</div>
+    <div class="user-data__label">{{label | translate}}</div>
+    <div class="user-data__value">{{value | translate}}</div>
   </div>
 </ng-template>

@@ -14,6 +14,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { TranslateModule } from "@ngx-translate/core";
 import { ActionBlockComponent } from "./action-block/action-block.component";
 import { AvatarBlockComponent } from "./avatar-block/avatar-block.component";
 import { GeneralInfoBlockComponent } from "./general-info-block/general-info-block.component";
@@ -49,7 +50,8 @@ import { StatusBlockComponent } from "./status-block/status-block.component";
     MatMenuModule,
     CoreModule,
     CardModule,
-    CommentBlockModule
+    CommentBlockModule,
+    TranslateModule
   ]
 })
 

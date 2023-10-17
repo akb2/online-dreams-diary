@@ -28,11 +28,11 @@
     "labels": {
       "please_wait": "Please wait",
       "online": "Online",
-      "last_visit": {
-        "male": "Seen: {{date}}",
-        "female": "Seen: {{date}}",
-        "undetected": "Seen: {{date}}"
-      }
+      "last_visit": [
+        "Seen: {{date}}",
+        "Seen: {{date}}",
+        "Seen: {{date}}"
+      ]
     }
   },
   "menus": {
@@ -89,6 +89,47 @@
         },
         "activation_email": {
           "title": "Sending a letter"
+        }
+      }
+    },
+    "profile": {
+      "blocks": {
+        "actions": {
+          "friend_state": {
+            "in_subscribe": "You sent a friend request to {{name}}",
+            "out_subscribe": [
+              "{{name}} sent a friend request to you",
+              "{{name}} sent a friend request to you",
+              "{{name}} sent a friend request to you"
+            ],
+            "are_friends": "{{name}} is in your friends list"
+          },
+          "buttons": {
+            "add_to_friends": "Add to friends",
+            "cancel_request": "Cancel request",
+            "accept": "Accept",
+            "decline": "Decline the request",
+            "unfriend": "Unfriend",
+            "message": "Message"
+          }
+        },
+        "user_info": {
+          "name": "First & last name",
+          "middle_name": "Middle name (Alias)",
+          "gender": {
+            "title": "Gender",
+            "values": [
+              "Male",
+              "Female",
+              "Other"
+            ]
+          },
+          "birth_date": "Birth Day",
+          "register": "Registration date",
+          "online": {
+            "title": "Last visit",
+            "value": "Currently online"
+          }
         }
       }
     }

@@ -28,7 +28,8 @@
   <a mat-flat-button
      color="primary"
      routerLink="/diary/{{user.id}}">
-    <mat-icon>book</mat-icon>Дневник снов
+    <mat-icon>book</mat-icon>
+    {{'menus.nav_menu.items.my_diary' | translate}}
   </a>
 </ng-template>
 
@@ -38,19 +39,22 @@
   <a mat-stroked-button
      color="primary"
      routerLink="/profile/settings/person">
-    <mat-icon>badge</mat-icon>Мои данные
+    <mat-icon>badge</mat-icon>
+    {{'menus.nav_menu.items.profile_info' | translate}}
   </a>
   <!-- Безопасность -->
   <a mat-stroked-button
      color="primary"
      routerLink="/profile/settings/security">
-    <mat-icon>lock</mat-icon>Безопасность
+    <mat-icon>lock</mat-icon>
+    {{'menus.nav_menu.items.profile_security' | translate}}
   </a>
   <!-- Приватность -->
   <a mat-stroked-button
      color="primary"
      routerLink="/profile/settings/private">
-    <mat-icon>admin_panel_settings</mat-icon>Приватность
+    <mat-icon>admin_panel_settings</mat-icon>
+    {{'menus.nav_menu.items.profile_private' | translate}}
   </a>
 </ng-template>
 
@@ -62,7 +66,8 @@
           [attr.button-loader]="friendLoader"
           (click)="onAddToFriend()"
           *ngIf="friendStatus === friendStatuses.NotExists">
-    <mat-icon>person_add</mat-icon>Добавить в друзья
+    <mat-icon>person_add</mat-icon>
+    {{'pages.profile.blocks.actions.buttons.add_to_friends' | translate}}
   </button>
   <!-- Исходящая заявка -->
   <button mat-stroked-button
@@ -71,7 +76,8 @@
           [attr.button-loader]="friendLoader"
           (click)="onRejectFriends()"
           *ngIf="friendStatus === friendStatuses.OutSubscribe">
-    <mat-icon>close</mat-icon>Отменить заявку
+    <mat-icon>close</mat-icon>
+    {{'pages.profile.blocks.actions.buttons.cancel_request' | translate}}
   </button>
   <!-- Входящая заявка -->
   <div class="overlay__group"
@@ -82,13 +88,14 @@
             class="overlay__group-grow"
             [attr.button-loader]="friendLoader"
             (click)="onConfirmFriends()">
-      <mat-icon>check</mat-icon>Принять
+      <mat-icon>check</mat-icon>
+      {{'pages.profile.blocks.actions.buttons.accept' | translate}}
     </button>
     <!-- Отменить заявку -->
     <button mat-mini-fab
             class="mat-elevation-z"
             color="basic"
-            matTooltip="Отклонить заявку"
+            [matTooltip]="'pages.profile.blocks.actions.buttons.decline' | translate"
             [attr.button-loader]="friendLoader"
             (click)="onRejectFriends()">
       <mat-icon>close</mat-icon>
@@ -101,7 +108,8 @@
           [attr.button-loader]="friendLoader"
           (click)="onCancelFromFriends()"
           *ngIf="friendStatus === friendStatuses.Friends">
-    <mat-icon>close</mat-icon>Удалить из друзей
+    <mat-icon>close</mat-icon>
+    {{'pages.profile.blocks.actions.buttons.unfriend' | translate}}
   </button>
 </ng-template>
 
@@ -111,13 +119,15 @@
   <button mat-stroked-button
           color="basic"
           *ngIf="!highLightMessageButton">
-    <mat-icon>forum</mat-icon>Написать
+    <mat-icon>forum</mat-icon>
+    {{'pages.profile.blocks.actions.buttons.message' | translate}}
   </button>
   <!-- Написать сообщение: друзья -->
   <button mat-flat-button
           color="primary"
           *ngIf="highLightMessageButton">
-    <mat-icon>forum</mat-icon>Написать
+    <mat-icon>forum</mat-icon>
+    {{'pages.profile.blocks.actions.buttons.message' | translate}}
   </button>
 </ng-template>
 
@@ -131,19 +141,19 @@
     <div class="overlay__message"
          [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.OutSubscribe">
-      Вы отправили {{user | petrovich: 3}} заявку в друзья
+      {{'pages.profile.blocks.actions.friend_state.in_subscribe' | translate: {name: needPetrovich? (user | petrovich: 3): user.name} }}
     </div>
     <!-- Входящая заявка -->
     <div class="overlay__message"
          [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.InSubscribe">
-      {{user.name}} отправил{{userIsMale? '': 'а'}} вам заявку в друзья
+      {{'pages.profile.blocks.actions.friend_state.out_subscribe.' + user.sex | translate: {name: user.name} }}
     </div>
     <!-- В друзьях -->
     <div class="overlay__message"
          [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.Friends">
-      {{user.name}} у вас в друзьях
+      {{'pages.profile.blocks.actions.friend_state.are_friends' | translate: {name: user.name} }}
     </div>
   </ng-container>
 </ng-template>

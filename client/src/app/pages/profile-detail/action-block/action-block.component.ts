@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { User, UserSex } from "@_models/account";
+import { User } from "@_models/account";
 import { FriendStatus } from "@_models/friend";
+import { Language } from "@_models/translate";
 import { FriendService } from "@_services/friend.service";
-import { concatMap, Observable, skipWhile, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { LanguageService } from "@_services/language.service";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Observable, Subject, concatMap, skipWhile, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 
@@ -25,6 +27,8 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
   isAutorized: boolean = false;
   friendLoader: boolean = false;
 
+  needPetrovich: boolean = false;
+
   friendStatus: FriendStatus = FriendStatus.NotAutorized;
 
   friendStatuses: typeof FriendStatus = FriendStatus;
@@ -34,11 +38,6 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
 
 
 
-
-  // Проверка пола
-  get userIsMale(): boolean {
-    return this.user.sex === UserSex.Male;
-  }
 
   // выделение кнопки личного сообщения
   get highLightMessageButton(): boolean {
@@ -51,11 +50,19 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
 
   constructor(
     private friendService: FriendService,
+    private languageService: LanguageService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.defineFriendStatus();
+    // Подписка на языки
+    this.languageService.onLanguageChange()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(language => {
+        this.needPetrovich = language === Language.ru;
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {

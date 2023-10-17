@@ -27,15 +27,10 @@
                               [keywords]="highlightWords"
                               *ngIf="!!highlightWords?.length"></app-highlight-keywords>
       <!-- Сведения -->
-      <div class="user__text-subtitle">
-        <!-- В сети -->
-        <ng-container *ngIf="user.online; else userlastVisitDate">Онлайн</ng-container>
-        <!-- Последний визит -->
-        <ng-template #userlastVisitDate>
-          {{userIsMale(user)? 'Был': 'Была'}}
-          {{user.lastActionDate | date: 'd.M.y - H:mm'}}
-        </ng-template>
-      </div>
+      <app-last-seen class="user__text-subtitle"
+                     [sex]="user.sex"
+                     [online]="user.online"
+                     [date]="user.lastActionDate"></app-last-seen>
     </a>
     <!-- Действия -->
     <ng-container [ngTemplateOutlet]="userAction"

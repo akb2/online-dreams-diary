@@ -41,6 +41,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   @Input() mainTitle: string = "";
   @Input() subTitle: string = "";
+  @Input() lastSeenUser: User;
   @Input() avatarImage: string = "";
   @Input() avatarIcon: string = "";
   @Input() avatarCustomIcon: string = "";

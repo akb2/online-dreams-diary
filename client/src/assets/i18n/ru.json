@@ -28,11 +28,11 @@
     "labels": {
       "please_wait": "Пожалуйста подождите",
       "online": "В сети",
-      "last_visit": {
-        "male": "Был {{date}}",
-        "female": "Была {{date}}",
-        "undetected": "Был: {{date}}"
-      }
+      "last_visit": [
+        "Был {{date}}",
+        "Была {{date}}",
+        "Был: {{date}}"
+      ]
     }
   },
   "menus": {
@@ -89,6 +89,47 @@
         },
         "activation_email": {
           "title": "Отправка письма"
+        }
+      }
+    },
+    "profile": {
+      "blocks": {
+        "actions": {
+          "friend_state": {
+            "in_subscribe": "Вы отправили {{name}} заявку в друзья",
+            "out_subscribe": [
+              "{{name}} отправил вам заявку в друзья",
+              "{{name}} отправила вам заявку в друзья",
+              "{{name}} отправил вам заявку в друзья"
+            ],
+            "are_friends": "{{name}} у вас в друзьях"
+          },
+          "buttons": {
+            "add_to_friends": "Добавить в друзья",
+            "cancel_request": "Отменить заявку",
+            "accept": "Принять",
+            "decline": "Отклонить заявку",
+            "unfriend": "Удалить из друзей",
+            "message": "Написать"
+          }
+        },
+        "user_info": {
+          "name": "Имя и фамилия",
+          "middle_name": "Отчество (второе имя, псевдоним)",
+          "gender": {
+            "title": "Пол",
+            "values": [
+              "Мужской",
+              "Женский",
+              "Не определено"
+            ]
+          },
+          "birth_date": "День рождения",
+          "register": "Дата регистрации",
+          "online": {
+            "title": "Последний визит",
+            "value": "Сейчас на сайте"
+          }
         }
       }
     }

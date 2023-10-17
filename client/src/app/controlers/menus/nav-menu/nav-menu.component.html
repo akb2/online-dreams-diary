@@ -82,7 +82,16 @@
         <!-- Подзаголовок -->
         <div class="main-menu__subtitle"
              [ngStyle]="css.subtitle"
-             *ngIf="!!subTitle">{{subTitle | translate}}</div>
+             *ngIf="!!subTitle || !!lastSeenUser">
+          <!-- Текстовый заголовок -->
+          <ng-container *ngIf="!!subTitle">{{subTitle | translate}}</ng-container>
+          <!-- Последний визит -->
+          <app-last-seen [online]="lastSeenUser.online"
+                         [date]="lastSeenUser.lastActionDate"
+                         [sex]="lastSeenUser.sex"
+                         dateMask="d MMMM y - H:mm"
+                         *ngIf="!!lastSeenUser && !subTitle"></app-last-seen>
+        </div>
       </div>
       <!-- Слой посередине -->
       <div class="main-menu__layer-container_center"
@@ -362,7 +371,7 @@
                      [positionX]="user.settings.profileBackground.positionX"
                      [positionY]="user.settings.profileBackground.positionY"
                      mainTitle="{{user.name}} {{user.lastName}}"
-                     [subTitle]="user.online? 'Онлайн': (userIsMale? 'Был ': 'Была ') + (user.lastActionDate | date: 'd.M.y - H:mm')"
+                     [lastSeenUser]="user"
                      [avatarImage]="user.avatars?.small"
                      avatarIcon="profile"
                      [avatarBlink]="user.online"
@@ -375,6 +384,7 @@
                      [positionY]="imagePositionY"
                      [mainTitle]="mainTitle"
                      [subTitle]="subTitle"
+                     [lastSeenUser]="lastSeenUser"
                      [avatarImage]="avatarImage"
                      [avatarIcon]="avatarIcon"
                      [avatarCustomIcon]="avatarCustomIcon"

@@ -1,5 +1,5 @@
+import { User } from "@_models/account";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
-import { User, UserSex } from "@_models/account";
 
 
 
@@ -13,16 +13,5 @@ import { User, UserSex } from "@_models/account";
 })
 
 export class GeneralInfoBlockComponent {
-
-
   @Input() user: User;
-
-
-
-
-
-  // Название поля
-  get getUserSexLabel(): string {
-    return this.user?.sex === UserSex.Male ? "Мужской" : "Женский";
-  }
 }

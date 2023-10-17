@@ -112,6 +112,7 @@
     &-subtitle {
       @include mixins.lineClamp(1, 18px, 12px);
       // Свойства
+      display: block;
       font-weight: 300;
       color: colors.$subtitle;
       transition: color #{screens.$animationTime};

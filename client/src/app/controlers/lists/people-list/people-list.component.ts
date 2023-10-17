@@ -41,11 +41,6 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-  // Проверка пола
-  userIsMale(user: User): boolean {
-    return user.sex === UserSex.Male;
-  }
-
   // Функция проверки пользователя для обновления списка
   listTrackBy(index: number, user: User): string {
     const dataStrings: string[] = [

@@ -1,12 +1,14 @@
+import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
+import { LastSeenModule } from "@_controlers/last-seen/last-seen.module";
+import { PeopleListComponent } from "@_controlers/people-list/people-list.component";
+import { CoreModule } from "@_modules/core.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
-import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
-import { PeopleListComponent } from "@_controlers/people-list/people-list.component";
-import { CoreModule } from "@_modules/core.module";
+import { TranslateModule } from "@ngx-translate/core";
 
 
 
@@ -26,7 +28,9 @@ import { CoreModule } from "@_modules/core.module";
     MatButtonModule,
     MatTooltipModule,
     HighlightKeywordsModule,
-    CoreModule
+    CoreModule,
+    TranslateModule,
+    LastSeenModule
   ]
 })
 

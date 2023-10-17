@@ -2,7 +2,7 @@ import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { WaitObservable } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { CheckInRange, ParseInt } from "@_helpers/math";
-import { User, UserSex } from "@_models/account";
+import { User } from "@_models/account";
 import { SearchResponce } from "@_models/api";
 import { RouteData } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
@@ -55,7 +55,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
   showDreamsList: boolean = false;
 
   title: string = "Страница пользователя";
-  subTitle: string = "";
   private pageTitle: string;
   backgroundImageData: BackgroundImageData = BackgroundImageDatas.find(d => d.id === 1);
   navMenuType: NavMenuType = NavMenuType.short;
@@ -188,9 +187,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     // Для обоих типов просмотра
     if (isMyProfile || isOtherProfile) {
       this.title = this.visitedUser.name + " " + this.visitedUser.lastName;
-      this.subTitle = this.visitedUser.online ?
-        "В сети" :
-        (this.visitedUser.sex === UserSex.Male ? "Был" : "Была") + " " + this.datePipe.transform(this.visitedUser.lastActionDate, "d MMMM y - H:mm");
       this.menuAvatarIcon = "person";
       this.menuAvatarImage = this.visitedUser.avatars.middle;
       this.backgroundImageData = this.visitedUser.settings.profileBackground;

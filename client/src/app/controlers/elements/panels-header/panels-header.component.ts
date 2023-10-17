@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { BackgroundHorizontalPosition, BackgroundImageData, BackgroundVerticalPosition } from "@_models/appearance";
 import { BackgroundImageDatas } from "@_datas/appearance";
+import { User } from "@_models/account";
+import { BackgroundHorizontalPosition, BackgroundImageData, BackgroundVerticalPosition } from "@_models/appearance";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 
 
 
@@ -28,6 +29,7 @@ export class PanelsHeaderComponent {
   @Input() avatarCustomIcon: string = "";
   @Input() mainTitle: string = "";
   @Input() subTitle: string = "";
+  @Input() lastSeenUser: User;
 
   @Output() closeClick: EventEmitter<void> = new EventEmitter<void>();
 
