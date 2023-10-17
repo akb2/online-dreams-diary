@@ -1,4 +1,4 @@
-import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
+import { PopupConfirmComponent, PopupConfirmData } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
 import { AvatarMaxSize, ConvertFileSize, FileTypesDefault } from "@_datas/app";
 import { ImageRightRotate } from "@_helpers/image";
@@ -8,8 +8,9 @@ import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild } from "@angular/core";
 import { FormBuilder, FormControl } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
-import { Subject, takeUntil } from "rxjs";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { TranslateService } from "@ngx-translate/core";
+import { Subject, concatMap, filter, takeUntil, tap } from "rxjs";
 
 @Component({
   selector: "app-avatar-block",
@@ -65,7 +66,8 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     private formBuilder: FormBuilder,
     private snackbarService: SnackbarService,
     private accountService: AccountService,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
+    private translateService: TranslateService
   ) {
     this.avatarForm = this.formBuilder.control(null);
   }
@@ -109,12 +111,13 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
       }
       // Сбросить форму
       else {
+        const units: string[] = this.translateService.instant("general.units.file_size");
+        const size: string = ConvertFileSize(this.fileSize, units);
+        const message: string = this.translateService.instant("pages.profile.blocks.avatar.notifications.file_limit", { size });
+        // Очистить поле
         this.clearInput();
         // Сообщение
-        this.snackbarService.open({
-          message: "Превышен допустимый размер файла в " + ConvertFileSize(this.fileSize),
-          mode: "error"
-        });
+        this.snackbarService.open({ message, mode: "error" });
       }
     }
   }
@@ -123,7 +126,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
   onOpenCrop(type: UserAvatarCropDataKeys): void {
     if (this.user) {
       const data: PopupCropImageData = {
-        title: "Обрезка аватарки",
+        title: "pages.profile.blocks.avatar.popups.avatar_title",
         image: this.user.avatars.full,
         coords: this.user.avatarCropData.crop,
         minimal: [400, 400],
@@ -132,7 +135,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
       };
       // Для обрезки основной фотки
       if (type === "middle") {
-        data.title = "Создание миниатюры";
+        data.title = "pages.profile.blocks.avatar.popups.thumbnail_title";
         data.image = this.user.avatars.crop;
         data.coords = this.user.avatarCropData.middle;
         data.aspectRatio = [1, 1];
@@ -152,40 +155,41 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
 
   // Удаление аватарки
   onDeleteAvatar(): void {
-    const dialog = PopupConfirmComponent.open(this.matDialog, {
-      title: "Удаление аватарки",
-      text: "Вы действительно хотите удалить свою аватарку с сайта?"
+    const dialog: MatDialogRef<PopupConfirmComponent, PopupConfirmData> = PopupConfirmComponent.open(this.matDialog, {
+      title: "popups.delete_avatar.title",
+      text: "popups.delete_avatar.description"
     });
+    // Открытие окна
     dialog.afterClosed()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(result => {
-        if (result) {
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(result => !!result),
+        tap(() => {
           this.loadingAvatar = true;
           this.changeDetectorRef.detectChanges();
-          // Запрос на сервер
-          this.accountService.deleteAvatar()
-            .pipe(takeUntil(this.destroyed$))
-            .subscribe(
-              code => {
-                this.loadingAvatar = false;
-                // Успешная обрезка аватарки
-                if (code == "0001") {
-                  this.clearInput();
-                  this.snackbarService.open({
-                    message: "Ваша аватарка успешно удалена",
-                    mode: "success"
-                  });
-                }
-                // Изменения
-                this.changeDetectorRef.detectChanges();
-              },
-              () => {
-                this.loadingAvatar = false;
-                this.changeDetectorRef.detectChanges();
-              }
-            );
+        }),
+        concatMap(() => this.accountService.deleteAvatar())
+      )
+      .subscribe(
+        code => {
+          this.loadingAvatar = false;
+          // Успешная обрезка аватарки
+          if (code == "0001") {
+            this.clearInput();
+            // Уведомление
+            this.snackbarService.open({
+              message: this.translateService.instant("pages.profile.blocks.avatar.notifications.success_delete"),
+              mode: "success"
+            });
+          }
+          // Изменения
+          this.changeDetectorRef.detectChanges();
+        },
+        () => {
+          this.loadingAvatar = false;
+          this.changeDetectorRef.detectChanges();
         }
-      });
+      );
   }
 
   // Загрузка аватарки
@@ -202,7 +206,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
             // Успешная загрузка аватарки
             if (code == "0001") {
               this.snackbarService.open({
-                message: "Аватарка успешно загружена",
+                message: this.translateService.instant("pages.profile.blocks.avatar.notifications.success_upload"),
                 mode: "success"
               });
               // Обрезать аватарку
@@ -225,7 +229,7 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     // Ошибка файла
     else {
       this.snackbarService.open({
-        message: "Ошибка файла, выберите подходящий файл",
+        message: this.translateService.instant("pages.profile.blocks.avatar.notifications.file_other"),
         mode: "error"
       });
     }
@@ -244,10 +248,12 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
             this.loadingAvatar = false;
             // Успешная обрезка аватарки
             if (code == "0001") {
-              this.snackbarService.open({
-                message: type === "crop" ? "Основная аватарка успешно обрезана" : "Миниатюра аватарки успешно обрезана",
-                mode: "success"
-              });
+              const message: string = this.translateService.instant(type === "crop"
+                ? "pages.profile.blocks.avatar.notifications.success_avatar_crop"
+                : "pages.profile.blocks.avatar.notifications.success_thumbnail_crop"
+              );
+              // Уведомление
+              this.snackbarService.open({ message, mode: "success" });
               // Открыть изменение миниатюры
               if (type === "crop") {
                 this.onOpenCrop("middle");

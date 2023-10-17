@@ -88,7 +88,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     private changeDetectorRef: ChangeDetectorRef,
     private matDialogRef: MatDialogRef<PopupCropImageComponent, UserAvatarCropDataElement>
   ) {
-    this.data.title = this.data.title ? this.data.title : "Обрезка фотографии";
+    this.data.title = !!this.data.title ? this.data.title : "popups.image_crop.title";
   }
 
   ngOnInit(): void {

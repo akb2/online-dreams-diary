@@ -2,16 +2,19 @@
 <div mat-dialog-title
      class="title"
      [ngClass]="{ hasSubTitle: !!data.subTitle }">
-  <div class="title__title">{{data.title}}</div>
+  <!-- Заголовок -->
+  <div class="title__title">{{data.title | translate}}</div>
+  <!-- Подзаголовок -->
   <div class="title__subTitle"
-       *ngIf="!!data.subTitle">{{data.subTitle}}</div>
+       *ngIf="!!data.subTitle">{{data.subTitle | translate}}</div>
+  <!-- Иконка -->
   <mat-icon class="title__button"
             mat-dialog-close>close</mat-icon>
 </div>
 
 <!-- Содержимое -->
 <div mat-dialog-content>
-  <div class="text">{{data.text}}</div>
+  <div class="text">{{data.text | translate}}</div>
 </div>
 
 <!-- Панель действия -->
@@ -20,10 +23,10 @@
     <!-- Да -->
     <a mat-flat-button
        color="primary"
-       (click)="onConfirm()">Да</a>
+       (click)="onConfirm()">{{'general.buttons.yes' | translate}}</a>
     <!-- Нет -->
     <a mat-stroked-button
        color="basic"
-       mat-dialog-close>Нет</a>
+       mat-dialog-close>{{'general.buttons.no' | translate}}</a>
   </div>
 </div>

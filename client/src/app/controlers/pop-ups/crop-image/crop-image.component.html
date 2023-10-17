@@ -2,9 +2,12 @@
 <div mat-dialog-title
      class="title"
      [ngClass]="{ hasSubTitle: !!data.subTitle }">
-  <div class="title__title">{{data.title}}</div>
+  <!-- Заголовок -->
+  <div class="title__title">{{data.title | translate}}</div>
+  <!-- Подзаголовок -->
   <div class="title__subTitle"
-       *ngIf="!!data.subTitle">{{data.subTitle}}</div>
+       *ngIf="!!data.subTitle">{{data.subTitle | translate}}</div>
+  <!-- Закрытие -->
   <mat-icon class="title__button"
             mat-dialog-close>close</mat-icon>
 </div>
@@ -68,17 +71,17 @@
 </div>
 
 <!-- Панель действия -->
-<div mat-dialog-actions>
+<div mat-dialog-actions
+     *ngIf="!loading && !!position">
   <div class="buttons">
     <!-- Закрыть окно -->
     <a mat-stroked-button
        color="basic"
-       mat-dialog-close>Отмена</a>
+       mat-dialog-close>{{'general.buttons.cancel' | translate}}</a>
     <!-- Сохранить изменения -->
     <a mat-flat-button
        color="primary"
-       (click)="onSaveCrop()"
-       *ngIf="!loading && !!position">Сохранить</a>
+       (click)="onSaveCrop()">{{'general.buttons.save' | translate}}</a>
   </div>
 </div>
 
@@ -86,6 +89,6 @@
 
 <!-- Загрузка -->
 <ng-template #loader>
-  <app-inform mainTitle="Загрузка аватарки"
-              subTitle="Пожалуйста подождите"></app-inform>
+  <app-inform [mainTitle]="'popups.image_crop.loader_title' | translate"
+              [subTitle]="'general.labels.please_wait' | translate"></app-inform>
 </ng-template>

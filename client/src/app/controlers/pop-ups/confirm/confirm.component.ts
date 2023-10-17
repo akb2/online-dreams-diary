@@ -25,8 +25,12 @@ export class PopupConfirmComponent {
     @Inject(MAT_DIALOG_DATA) public data: PopupConfirmData,
     private matDialogRef: MatDialogRef<PopupConfirmComponent, boolean>
   ) {
-    this.data.title = this.data.title ? this.data.title : "Подтвержение действия";
-    this.data.text = this.data.text ? this.data.text : "Вы подтверждаете действие на сайте?";
+    this.data.title = this.data.title
+      ? this.data.title
+      : "popups.confirmation.title";
+    this.data.text = this.data.text
+      ? this.data.text
+      : "popups.confirmation.text";
   }
 
 
@@ -44,9 +48,11 @@ export class PopupConfirmComponent {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data: PopupConfirmData): MatDialogRef<PopupConfirmComponent> {
-    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
-    matDialogConfig.width = PopupConfirmComponent.popUpWidth;
-    matDialogConfig.data = data;
+    const matDialogConfig: MatDialogConfig = {
+      ...AppMatDialogConfig,
+      data,
+      width: PopupConfirmComponent.popUpWidth
+    };
     // Вернуть диалог
     return matDialog.open(PopupConfirmComponent, matDialogConfig);
   }

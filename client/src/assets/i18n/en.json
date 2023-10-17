@@ -3,7 +3,10 @@
     "buttons": {
       "log_in": "Log In",
       "sign_up": "Sign Up",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "save": "Save",
+      "yes": "Yes",
+      "no": "No"
     },
     "forms": {
       "errors": {
@@ -32,6 +35,15 @@
         "Seen: {{date}}",
         "Seen: {{date}}",
         "Seen: {{date}}"
+      ]
+    },
+    "units": {
+      "file_size": [
+        "b",
+        "Kb",
+        "Mb",
+        "Gb",
+        "Tb"
       ]
     }
   },
@@ -120,11 +132,23 @@
           }
         },
         "avatar": {
+          "popups": {
+            "avatar_title": "Crop the avatar",
+            "thumbnail_title": "Crop the thumbnail"
+          },
           "buttons": {
             "upload": "Upload an avatar",
             "crop_avatar": "Crop the avatar",
-            "crop_miniature": "Crop the miniature",
+            "crop_thumbnail": "Crop the thumbnail",
             "delete": "Delete the avatar"
+          },
+          "notifications": {
+            "success_delete": "Your avatar has been successfully deleted",
+            "success_upload": "The new avatar has been successfully uploaded",
+            "file_limit": "The allowed file size of {{size}} has been exceeded",
+            "file_other": "File error, please select a correct file",
+            "success_avatar_crop": "The avatar has been successfully cropped",
+            "success_thumbnail_crop": "The thumbnail successfully cropped"
           }
         },
         "user_info": {
@@ -151,6 +175,18 @@
   "popups": {
     "language_list": {
       "title": "Language selection"
+    },
+    "confirmation": {
+      "title": "Action confirmation",
+      "text": "Are you sure you want to confirm the action on the site?"
+    },
+    "delete_avatar": {
+      "title": "Avatar removing",
+      "description": "Do you really want to remove your avatar from the site?"
+    },
+    "image_crop": {
+      "title": "Crop the photo",
+      "loader_title": "Loading the avatar"
     }
   }
 }
