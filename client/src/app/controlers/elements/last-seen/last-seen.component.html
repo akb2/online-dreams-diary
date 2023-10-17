@@ -1,0 +1,9 @@
+<!-- В сети -->
+<ng-container *ngIf="online; else userlastVisitDate">
+  {{'general.labels.online' | translate}}
+</ng-container>
+
+<!-- Последний визит -->
+<ng-template #userlastVisitDate>
+  {{'general.labels.last_visit.' + sexKey | translate: {date: date | date: dateMask} }}
+</ng-template>
