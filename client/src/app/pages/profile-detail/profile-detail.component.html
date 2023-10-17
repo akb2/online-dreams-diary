@@ -55,6 +55,12 @@
   <app-avatar-block class="avatar"
                     [user]="visitedUser"
                     [itsMyPage]="itsMyPage"></app-avatar-block>
+  <!-- Статус пользователя -->
+  <div class="status"
+       *ngIf="showMobileStatus">
+    <app-status-block [user]="visitedUser"
+                      [itsMyPage]="itsMyPage"></app-status-block>
+  </div>
   <!-- Друзья -->
   <ng-container *ngIf="!!friends">
     <ng-container *ngFor="let friend of friends">
@@ -74,7 +80,7 @@
 <ng-template #rightContent>
   <!-- Статус пользователя -->
   <div class="status"
-       *ngIf="!!visitedUser.pageStatus?.length || itsMyPage">
+       *ngIf="showDesktopStatus">
     <app-status-block [user]="visitedUser"
                       [itsMyPage]="itsMyPage"></app-status-block>
   </div>

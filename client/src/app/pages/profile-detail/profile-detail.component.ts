@@ -72,6 +72,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
   leftPanelHelperShift: number = 0;
 
   private breakpoint: ScreenKeys = "default";
+  private mobileBreakpoints: ScreenKeys[] = ["xsmall", "xxsmall"];
 
   user: User;
   visitedUser: User;
@@ -110,6 +111,21 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       "Напишите на своей стене что у вас нового" : !!this.user?.id ?
         "Будьте первым, напишите " + name + " что-нибудь интересное" :
         "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
+  }
+
+  // Показывать статус
+  private get showStatus(): boolean {
+    return !!this.visitedUser?.pageStatus?.length || this.itsMyPage;
+  }
+
+  // Показывать статус на телефоне
+  get showDesktopStatus(): boolean {
+    return this.showStatus && !this.mobileBreakpoints.includes(this.breakpoint);
+  }
+
+  // Показывать статус на телефоне
+  get showMobileStatus(): boolean {
+    return this.showStatus && this.mobileBreakpoints.includes(this.breakpoint);
   }
 
 

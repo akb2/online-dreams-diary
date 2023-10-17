@@ -73,7 +73,7 @@
       }
     }
     // Адаптив
-    @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates, containers.$cardPaddings) using($mainAvatarSize, $column, $cardPadding) {
+    @include screens.adaptiveFor($mainAvatarSizes, $columnTemplates, containers.$cardPaddings, vars.$userProfileBlocksGaps) using($mainAvatarSize, $column, $cardPadding, $gap) {
       // Сброс колонок
       @if ($column == false) {
         margin: 0 auto;
@@ -83,6 +83,10 @@
       &-helper {
         top: vars.$headerHeight + map.get($cardPadding, y);
         bottom: map.get($cardPadding, y);
+        // Статус
+        > .status {
+          margin-top: $gap;
+        }
       }
     }
   }
