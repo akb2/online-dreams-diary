@@ -119,6 +119,14 @@
             "message": "Message"
           }
         },
+        "avatar": {
+          "buttons": {
+            "upload": "Upload an avatar",
+            "crop_avatar": "Crop the avatar",
+            "crop_miniature": "Crop the miniature",
+            "delete": "Delete the avatar"
+          }
+        },
         "user_info": {
           "name": "First & last name",
           "middle_name": "Middle name (Alias)",
