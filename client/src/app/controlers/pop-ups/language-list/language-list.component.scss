@@ -1,4 +1,13 @@
+@use "sass:map";
+@use "sass:math";
 @use "material";
+@use "colors";
+@use "mixins";
+@use "screens";
+@use "containers";
+
+$itemSize: 128px;
+$itemIconSize: $itemSize * 0.45;
 
 // Базовый стиль окна
 @include material.matDialog;
@@ -10,9 +19,79 @@
 
 // Список
 .list {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, #{$itemSize});
+  justify-content: space-between;
+  gap: 16px;
+}
+
+// Элемент языка
+.item {
+  $__elm: &;
+  // Свойства
+  display: flex;
   flex-flow: column nowrap;
   justify-content: center;
-  align-items: stretch;
-  gap: 5px;
+  align-items: center;
+  gap: 12px;
+  width: $itemSize;
+  height: $itemSize;
+  border: 1px solid transparent;
+  border-radius: containers.$cardBorderRadius;
+  transition:
+    border-color #{screens.$animationTime},
+    background-color #{screens.$animationTime};
+  cursor: pointer;
+  // Иконка
+  &__icon {
+    width: $itemIconSize;
+    height: $itemIconSize;
+    display: inline-block;
+    text-align: center;
+    line-height: $itemIconSize;
+    font-size: $itemIconSize * 0.7;
+    filter: grayscale(0.3);
+    transition: filter #{screens.$animationTime};
+  }
+  // Название
+  &__title {
+    @include mixins.lineClamp(1, 1.3, 15px);
+    // Свойства
+    text-align: center;
+    display: block;
+    font-weight: 400;
+    color: colors.$title;
+    transition: color #{screens.$animationTime};
+  }
+  // Выделение
+  &:hover {
+    border-color: map.get(colors.$matPrimary, 500);
+    // Потомки
+    #{$__elm} {
+      // Иконка
+      &__icon {
+        filter: grayscale(0);
+      }
+      // Название
+      &__title {
+        color: map.get(colors.$matPrimary, 500);
+      }
+    }
+  }
+  // Выбранный
+  &.selected {
+    border-color: map.get(colors.$matPrimary, 500);
+    background-color: map.get(colors.$matPrimary, 500);
+    // Потомки
+    #{$__elm} {
+      // Иконка
+      &__icon {
+        filter: grayscale(0);
+      }
+      // Название
+      &__title {
+        color: map.get(colors.$matPrimary, contrast, 500);
+      }
+    }
+  }
 }

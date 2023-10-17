@@ -11,13 +11,15 @@
      class="content">
   <div class="list">
     <ng-container *ngFor="let languageData of languages">
-      <button mat-flat-button
-              [color]="currentLanguage? 'primary': 'basic'"
-              (click)="onChangeLanguage(languageData.language)"
-              *ngVar="languageData.language === language as currentLanguage">
-        <mat-icon [svgIcon]="'language-large-' + languageData.language"></mat-icon>
-        {{languageData.name}}
-      </button>
+      <div class="item"
+           [ngClass]="{ selected: currentLanguage }"
+           (click)="onChangeLanguage(languageData.language)"
+           *ngVar="languageData.language === language as currentLanguage">
+        <mat-icon class="item__icon"
+                  [svgIcon]="'language-large-' + languageData.language"></mat-icon>
+        <!-- Название языка -->
+        <span class="item__title">{{languageData.name}}</span>
+      </div>
     </ng-container>
   </div>
 </div>
