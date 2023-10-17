@@ -26,7 +26,13 @@
       }
     },
     "labels": {
-      "please_wait": "Пожалуйста подождите"
+      "please_wait": "Пожалуйста подождите",
+      "online": "В сети",
+      "last_visit": {
+        "male": "Был {{date}}",
+        "female": "Была {{date}}",
+        "undetected": "Последний визит: {{date}}"
+      }
     }
   },
   "menus": {

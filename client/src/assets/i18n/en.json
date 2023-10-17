@@ -26,7 +26,13 @@
       }
     },
     "labels": {
-      "please_wait": "Please wait"
+      "please_wait": "Please wait",
+      "online": "Online",
+      "last_visit": {
+        "male": "Last seen: {{date}}",
+        "female": "Last seen: {{date}}",
+        "undetected": "Last seen: {{date}}"
+      }
     }
   },
   "menus": {
