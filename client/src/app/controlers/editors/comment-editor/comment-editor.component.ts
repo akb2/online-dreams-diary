@@ -1,7 +1,6 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
 import { WaitObservable } from "@_datas/api";
-import { CompareElementByElement } from "@_datas/app";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
@@ -16,10 +15,11 @@ import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
 import { LanguageService } from "@_services/language.service";
 import { ScrollService } from "@_services/scroll.service";
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
+import { Subject, concatMap, filter, map, takeUntil } from "rxjs";
 
 
 
@@ -35,7 +35,7 @@ import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
@@ -65,8 +65,7 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
   graffityData: GraffityDrawData;
   photos: MediaFile[] = [];
 
-  showEmojiList: boolean = false;
-  i18nEmoji: MultiObject<string> = I18nEmoji;
+  i18nEmoji: MultiObject<string>;
   emojiClassName: string = "emoji-elm";
 
   needPetrovich: boolean = false;
@@ -83,8 +82,8 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
     const editor: HTMLElement = this.editor?.nativeElement;
     let start: number = 0;
     let end: number = 0;
-    let selection: Selection = new Selection();
-    let range: Range = new Range();
+    let selection: Selection;
+    let range: Range;
     // Поиск позиции
     if (!!editor) {
       if (editor !== document.activeElement && forceFocus) {
@@ -93,9 +92,11 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
       // Параметры
       selection = document.getSelection();
       // Запомнить значения
-      range = selection.getRangeAt(0);
-      start = range.startOffset;
-      end = range.endOffset;
+      if (!!selection && selection.rangeCount > 0) {
+        range = selection.getRangeAt(0);
+        start = range.startOffset;
+        end = range.endOffset;
+      }
     }
     // Вернуть позиции
     return { start, end, range, selection };
@@ -161,7 +162,8 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
     private scrollService: ScrollService,
     private commentService: CommentService,
     private matDialog: MatDialog,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private translateService: TranslateService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -202,24 +204,16 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
 
   ngOnInit(): void {
     this.languageService.onLanguageChange()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(language => {
+      .pipe(
+        takeUntil(this.destroyed$),
+        concatMap(() => this.translateService.get("components.emojies"), (language, i18nEmoji) => ({ language, i18nEmoji }))
+      )
+      .subscribe(({ language, i18nEmoji }) => {
         this.needPetrovich = language === Language.ru;
+        this.i18nEmoji = i18nEmoji;
         // Обновить
         this.changeDetectorRef.detectChanges();
       });
-  }
-
-  ngAfterViewInit(): void {
-    WaitObservable(() => !this.emojiListItem?.nativeElement || !this.emojiListToggleButton?.nativeElement)
-      .pipe(
-        takeUntil(this.destroyed$),
-        map(() => ({ listElm: this.emojiListItem.nativeElement, buttonElm: this.emojiListToggleButton.nativeElement })),
-        concatMap(() => fromEvent(document, "click"), (data, event) => ({ ...data, target: event.target as HTMLElement })),
-        filter(() => this.showEmojiList),
-        filter(({ listElm, buttonElm, target }) => !CompareElementByElement(target, listElm) && !CompareElementByElement(target, buttonElm))
-      )
-      .subscribe(() => this.onCloseEmojiList());
   }
 
   ngOnDestroy(): void {
@@ -316,29 +310,6 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
     // Вставка текста
     event.preventDefault();
     document.execCommand("insertHTML", false, text);
-  }
-
-  // Открыть список смайликов
-  onOpenEmojiList(): void {
-    this.showEmojiList = true;
-    this.changeDetectorRef.detectChanges();
-  }
-
-  // Закрыть список смайликов
-  onCloseEmojiList(): void {
-    this.showEmojiList = false;
-    this.changeDetectorRef.detectChanges();
-  }
-
-  // Открыть список смайликов
-  onToggleEmojilist(): void {
-    if (this.showEmojiList) {
-      this.onCloseEmojiList();
-    }
-    // Открыть
-    else {
-      this.onOpenEmojiList();
-    }
   }
 
   // Выбран смайлик
@@ -533,36 +504,3 @@ export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges,
     editor.innerHTML = editor.innerHTML.trim();
   }
 }
-
-
-
-
-
-// Переводы для списка смайликов
-const I18nEmoji: MultiObject<string> = {
-  search: "Поиск",
-  emojilist: "Список смайликов",
-  notfound: "Не найдено",
-  clear: "Очистить",
-  categories: {
-    search: "Результаты поиска",
-    recent: "Недавние",
-    people: "Люди",
-    nature: "Животные и природа",
-    foods: "Еда и напитки",
-    activity: "Активность",
-    places: "Места и путешествия",
-    objects: "Объекты",
-    symbols: "Символы",
-    flags: "Флаги",
-    custom: "Прочее",
-  },
-  skintones: {
-    1: "Цвет кожи по умолчанию",
-    2: "Белый цвет кожи",
-    3: "Светлый цвет кожи",
-    4: "Средний цвет кожи",
-    5: "Темный цвет кожи",
-    6: "Черный цвет кожи",
-  },
-};

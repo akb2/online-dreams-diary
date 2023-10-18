@@ -66,16 +66,21 @@
     <div class="event-helper"
          (click)="editor.focus()"></div>
     <!-- Смайлики -->
-    <div class="smiles">
+    <div class="smiles"
+         *ngIf="!!i18nEmoji">
       <button #emojiListToggleButton
               mat-icon-button
               color="primary"
               customToolTip
-              (click)="onToggleEmojilist()"
+              appPopover
+              [appPopoverTemplate]="emojiList"
+              originX="end"
+              originY="bottom"
+              overlayX="end"
+              overlayY="top"
               *ngIf="!sendLoader">
         <mat-icon>sentiment_very_satisfied</mat-icon>
       </button>
-      <ng-container [ngTemplateOutlet]="emojiList"></ng-container>
     </div>
     <!-- Прикрепить -->
     <button mat-icon-button
@@ -126,14 +131,12 @@
 <!-- Список смайликов -->
 <ng-template #emojiList>
   <emoji-mart #emojiListItem
-              class="smiles__list"
               [ngClass]="{ bottomSmiles }"
               [i18n]="i18nEmoji"
               [emojiSize]="32"
               [showPreview]="true"
               [useButton]="false"
-              (emojiSelect)="onEmojiSelect($event)"
-              *ngIf="showEmojiList"></emoji-mart>
+              (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
 </ng-template>
 
 <!-- Смайлик -->
