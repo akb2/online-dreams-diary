@@ -1,4 +1,5 @@
 import { CustomObject, RouteData } from "@_models/app";
+import { Language } from "@_models/translate";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
 import { LanguageService } from "@_services/language.service";
@@ -56,7 +57,9 @@ export class AppComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private translateService: TranslateService,
     private languageService: LanguageService
-  ) { }
+  ) {
+    this.translateService.addLangs(Object.values(Language));
+  }
 
   ngOnInit() {
     this.router.events
