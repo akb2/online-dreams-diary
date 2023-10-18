@@ -12,7 +12,8 @@
     "db_backup/": true,
     "media/images": true,
     "**/.DS_Store": true,
-    "**/Thumbs.db": true
+    "**/Thumbs.db": true,
+    "**/package-lock.json": true
   },
   "typescript.tsdk": "client\\node_modules\\typescript\\lib",
   "files.associations": {
