@@ -11,10 +11,12 @@ import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
 import { CaretPosition } from "@_models/text";
+import { Language } from "@_models/translate";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
+import { LanguageService } from "@_services/language.service";
 import { ScrollService } from "@_services/scroll.service";
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
@@ -33,7 +35,7 @@ import { Subject, concatMap, filter, fromEvent, map, takeUntil } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+export class CommentEditorComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
 
 
   @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
@@ -41,7 +43,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
   @Input() materialOwner: number;
-  @Input() placeholder: string = "Напишите, что вы об этом думаете . . .";
+  @Input() placeholder: string = "components.comment.editor.placeholder";
   @Input() wrapControls: boolean = false;
   @Input() bottomSmiles: boolean = false;
   @Input() replyUser: User;
@@ -67,6 +69,7 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
   i18nEmoji: MultiObject<string> = I18nEmoji;
   emojiClassName: string = "emoji-elm";
 
+  needPetrovich: boolean = false;
   sendLoader: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
@@ -157,7 +160,8 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
     private stringTemplatePipe: StringTemplatePipe,
     private scrollService: ScrollService,
     private commentService: CommentService,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
+    private languageService: LanguageService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -194,6 +198,16 @@ export class CommentEditorComponent implements AfterViewInit, OnChanges, OnDestr
           });
       }
     }
+  }
+
+  ngOnInit(): void {
+    this.languageService.onLanguageChange()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(language => {
+        this.needPetrovich = language === Language.ru;
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
   ngAfterViewInit(): void {
@@ -531,7 +545,7 @@ const I18nEmoji: MultiObject<string> = {
   notfound: "Не найдено",
   clear: "Очистить",
   categories: {
-    search: "Резуд=льтаты поиска",
+    search: "Результаты поиска",
     recent: "Недавние",
     people: "Люди",
     nature: "Животные и природа",

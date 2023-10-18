@@ -17,6 +17,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
 import { PickerModule } from "@ctrl/ngx-emoji-mart";
+import { TranslateModule } from "@ngx-translate/core";
 
 
 
@@ -47,7 +48,8 @@ import { PickerModule } from "@ctrl/ngx-emoji-mart";
     ScrollModule,
     MatMenuModule,
     PickerModule,
-    PopupGraffityModule
+    PopupGraffityModule,
+    TranslateModule
   ],
   providers: [
     StringTemplatePipe

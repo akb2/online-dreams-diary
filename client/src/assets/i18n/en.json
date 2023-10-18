@@ -188,5 +188,20 @@
       "title": "Crop the photo",
       "loader_title": "Loading the avatar"
     }
+  },
+  "components": {
+    "comment": {
+      "editor": {
+        "placeholder": "Write what you think about it . . .",
+        "reply_title": "Replying to",
+        "attach": "Attach",
+        "send": "Send",
+        "sending": "Sending",
+        "attach_menu_items": {
+          "photo": "Photo",
+          "graffity": "Graffity"
+        }
+      }
+    }
   }
 }

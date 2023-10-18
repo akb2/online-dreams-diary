@@ -188,5 +188,20 @@
       "title": "Обрезка фотографии",
       "loader_title": "Загрузка аватарки"
     }
+  },
+  "components": {
+    "comment": {
+      "editor": {
+        "placeholder": "Напишите, что вы об этом думаете . . .",
+        "reply_title": "Вы отвечаете",
+        "attach": "Прикрепить",
+        "send": "Отправить",
+        "sending": "Отправка",
+        "attach_menu_items": {
+          "photo": "Фото",
+          "graffity": "Граффити"
+        }
+      }
+    }
   }
 }

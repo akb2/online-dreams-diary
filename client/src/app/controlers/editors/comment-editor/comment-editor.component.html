@@ -19,10 +19,19 @@
       </div>
       <!-- Данные -->
       <div class="reply__content">
-        <div class="reply__content-mainTitle">Вы отвечаете</div>
+        <div class="reply__content-mainTitle">
+          {{'components.comment.editor.reply_title' | translate}}
+        </div>
+        <!-- Сведения о пользователе -->
         <div class="reply__content-subTitle">
-          {{replyUser | petrovich: [3, 'first'] }}
-          {{replyUser | petrovich: [3, 'last'] }}
+          <ng-container *ngIf="!needPetrovich; else replyUserNameNeedPetrovich">
+            {{replyUser.name}} {{replyUser.lastName}}
+          </ng-container>
+          <!-- В именительном падеже -->
+          <ng-template #replyUserNameNeedPetrovich>
+            {{replyUser | petrovich: [3, 'first'] }}
+            {{replyUser | petrovich: [3, 'last'] }}
+          </ng-template>
         </div>
       </div>
       <!-- Удалить -->
@@ -42,7 +51,7 @@
       <div #editor
            class="editor__area"
            [attr.contenteditable]="!sendLoader"
-           [attr.placeholder]="placeholder"
+           [attr.placeholder]="placeholder | translate"
            (blur)="onBlur()"
            (keyup)="onEdit($event)"
            (change)="onEdit($event)"
@@ -71,7 +80,7 @@
     <!-- Прикрепить -->
     <button mat-icon-button
             color="primary"
-            matTooltip="Прикрепить"
+            [matTooltip]="'components.comment.editor.attach' | translate"
             [matMenuTriggerFor]="attachMenuPanel"
             *ngIf="!sendLoader">
       <mat-icon>attach_file</mat-icon>
@@ -84,7 +93,7 @@
             [disabled]="!sendIsAvail"
             (click)="onSend($event)">
       <mat-icon iconPositionEnd>send</mat-icon>
-      {{sendLoader? 'Отправка': 'Отправить'}}
+      {{(sendLoader? 'components.comment.editor.sending': 'components.comment.editor.send') | translate}}
     </button>
   </div>
 
@@ -151,13 +160,13 @@
     <button mat-menu-item
             (click)="onPhotoPopupOpen()">
       <mat-icon>photo_library</mat-icon>
-      Фото
+      {{'components.comment.editor.attach_menu_items.photo' | translate}}
     </button>
     <!-- Граффити -->
     <button mat-menu-item
             (click)="onGraffityPopupOpen()">
       <mat-icon svgIcon="paint_spray"></mat-icon>
-      Граффити
+      {{'components.comment.editor.attach_menu_items.graffity' | translate}}
     </button>
   </ng-container>
 </mat-menu>
