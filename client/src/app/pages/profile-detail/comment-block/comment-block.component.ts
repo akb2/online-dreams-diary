@@ -27,7 +27,6 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @Input() emptyCommentsMainTitle: string = "Нет комментариев";
   @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
   @Input() wrapControls: boolean = false;
-  @Input() bottomSmiles: boolean = false;
 
   authState: boolean = false;
   writeAccess: boolean = false;

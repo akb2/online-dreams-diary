@@ -45,7 +45,6 @@ export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() materialOwner: number;
   @Input() placeholder: string = "components.comment.editor.placeholder";
   @Input() wrapControls: boolean = false;
-  @Input() bottomSmiles: boolean = false;
   @Input() replyUser: User;
   @Input() scrollSpacing: number = 15;
 
