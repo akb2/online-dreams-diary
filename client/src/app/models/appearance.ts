@@ -11,6 +11,7 @@ export interface BackgroundImageData {
 
 // Тип горизонтального позиционирования картинки
 export type BackgroundHorizontalPosition = "left" | "center" | "right";
+export type BackgroundHorizontalPositionV2 = "start" | "center" | "end";
 
 // Тип горизонтального вертикального картинки
 export type BackgroundVerticalPosition = "top" | "center" | "bottom";

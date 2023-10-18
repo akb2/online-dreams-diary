@@ -1,3 +1,4 @@
+import { PopoverDirective } from "@_directives/popover.directive";
 import { ScrollDetectorDirective } from "@_directives/scroll-detector.directive";
 import { SwipeDirective } from "@_directives/swipe.directive";
 import { VarDirective } from "@_directives/var.directive";
@@ -5,6 +6,7 @@ import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
 import { PetrovichPipe } from "@_pipes/petrovich.pipe";
 import { ShortCounterPipe } from "@_pipes/short-counter.pipe";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
+import { OverlayModule } from "@angular/cdk/overlay";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
 import "@angular/common/locales/global/ru";
 import { LOCALE_ID, NgModule } from "@angular/core";
@@ -24,7 +26,8 @@ const components = [
 const directives = [
   VarDirective,
   ScrollDetectorDirective,
-  SwipeDirective
+  SwipeDirective,
+  PopoverDirective
 ];
 
 // Пайпы
@@ -40,7 +43,8 @@ const modules = [
   CommonModule,
   FormsModule,
   ReactiveFormsModule,
-  MatIconModule
+  MatIconModule,
+  OverlayModule
 ];
 
 
