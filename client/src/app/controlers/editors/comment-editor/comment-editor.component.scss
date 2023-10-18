@@ -243,30 +243,6 @@ $adaptiveMax: large;
 .smiles {
   z-index: 2;
   height: vars.$buttonSize;
-  // Список
-  &__list {
-    position: absolute;
-    right: -#{containers.$cardPaddingX};
-    box-shadow: containers.$cardBoxShadow;
-    border-radius: containers.$cardBorderRadius;
-    max-width: calc(100% + #{containers.$cardPaddingX});
-    bottom: 100%;
-    // Вложенный элемент
-    ::ng-deep > .emoji-mart {
-      max-width: 100%;
-      border: none;
-    }
-    // Смайлики снизу
-    &.bottomSmiles {
-      bottom: auto;
-      top: 300%;
-      // Показать список
-      &.show {
-        bottom: auto;
-        top: 100%;
-      }
-    }
-  }
 }
 
 // Помощник в поле действий для переноса события
