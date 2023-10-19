@@ -1,4 +1,5 @@
 {
+  "language": "en",
   "general": {
     "buttons": {
       "log_in": "Log In",
@@ -201,6 +202,33 @@
           "photo": "Photo",
           "graffity": "Graffity"
         }
+      }
+    },
+    "emojies": {
+      "search": "Search",
+      "emojilist": "Emoji list",
+      "notfound": "Not found",
+      "clear": "Clear",
+      "categories": {
+        "search": "Search results",
+        "recent": "Frequently Used",
+        "people": "Smileys & People",
+        "nature": "Animals & Nature",
+        "foods": "Food & Drinks",
+        "activity": "Activity",
+        "places": "Travel & Places",
+        "objects": "Objects",
+        "symbols": "Symbols",
+        "flags": "Flags",
+        "custom": "Other"
+      },
+      "skintones": {
+        "1": "Default Skin Tone",
+        "2": "Light Skin Tone",
+        "3": "Medium-Light Skin Tone",
+        "4": "Medium Skin Tone",
+        "5": "Medium-Dark Skin Tone",
+        "6": "Dark Skin Tone"
       }
     }
   }

@@ -132,9 +132,20 @@
 <ng-template #emojiList>
   <emoji-mart #emojiListItem
               class="smiles__list"
+              [attr.language]="'language' | translate"
               [i18n]="i18nEmoji"
+              set="twitter"
+              [autoFocus]="true"
               [emojiSize]="32"
+              [sheetSize]="64"
+              [darkMode]="false"
+              [totalFrequentLines]="3"
+              [isNative]="false"
+              [hideObsolete]="false"
               [showPreview]="true"
+              [showSingleCategory]="false"
+              title="Pick your emoji…"
+              emoji="point_up"
               [useButton]="false"
               (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
 </ng-template>

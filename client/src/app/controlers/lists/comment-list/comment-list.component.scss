@@ -131,6 +131,7 @@ $spacing: containers.$cardPaddingY;
   // Тело
   &__body {
     $__elm: &;
+    $lineHeight: 26px;
     // Свойства
     background-color: colors.$card;
     padding: $spacing;
@@ -149,9 +150,13 @@ $spacing: containers.$cardPaddingY;
       display: block;
       padding-bottom: $spacing;
       word-wrap: break-word;
-      line-height: 26px;
+      line-height: $lineHeight;
       font-size: 15px;
       font-weight: 300;
+      // Все элементы
+      > ::ng-deep * {
+        vertical-align: top;
+      }
       // Абзацы
       > ::ng-deep p {
         margin: 0;
@@ -165,9 +170,11 @@ $spacing: containers.$cardPaddingY;
         // Смайлики
         > .smile {
           display: inline-block;
-          line-height: 24px;
+          width: auto !important;
+          height: #{$lineHeight} !important;
+          line-height: #{$lineHeight} !important;
           vertical-align: top;
-          margin: 1px;
+          margin: 0 1px;
         }
       }
     }

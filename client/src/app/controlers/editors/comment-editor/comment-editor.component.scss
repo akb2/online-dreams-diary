@@ -8,7 +8,7 @@
 
 $spacing: 3px;
 $fontSize: 15px;
-$lineHeight: 24px;
+$lineHeight: 26px;
 $maxLines: 10;
 $paddingX: containers.$cardPaddingX;
 $paddingY: 0;
@@ -167,6 +167,7 @@ $adaptiveMax: large;
       line-height: $lineHeight;
       font-size: $fontSize;
       color: colors.$title;
+      vertical-align: top;
     }
     // Подсказка
     &[placeholder]:empty {
@@ -182,9 +183,12 @@ $adaptiveMax: large;
     // Смайлики
     ::ng-deep .emoji-elm {
       display: inline-block;
-      vertical-align: middle;
-      margin: 0;
+      vertical-align: top;
+      margin: 0 1px !important;
       pointer-events: none;
+      width: auto !important;
+      height: #{$lineHeight} !important;
+      line-height: #{$lineHeight} !important;
     }
     // Редактирование разрешено
     &[contenteditable="true"] {
@@ -241,8 +245,77 @@ $adaptiveMax: large;
 
 // Смайлики
 .smiles {
+  $languages: (
+    en: "Pick your emoji . . .",
+    ru: "Выберите смайлик . . ."
+  );
+  // Свойства
   z-index: 2;
   height: vars.$buttonSize;
+  // Список
+  &__list {
+    box-shadow: containers.$cardBoxShadow;
+    border-radius: containers.$cardBorderRadius;
+    max-width: 100vw;
+    // Вложенный элемент
+    ::ng-deep .emoji-mart {
+      max-width: 100%;
+      border: none;
+      // Стиль скинов
+      &-skin {
+        display: block;
+      }
+      // Превью
+      &-preview {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0 10px;
+        gap: 10px;
+        // Скрыть
+        &[hidden] {
+          display: none;
+        }
+        // Данные
+        &-emoji,
+        &-data {
+          position: static;
+          top: auto;
+          transform: none;
+        }
+        // Название и алиасы
+        &-name,
+        &-emoticons {
+          @include mixins.lineClamp(1);
+          // Свойства
+          min-height: 0;
+        }
+        // Сокращенное название
+        &-shortname {
+          @include mixins.lineClamp(1, 1.2, 12px);
+          // Свойства
+          min-height: 0;
+        }
+      }
+      // Заголовок
+      &-title-label {
+        font-size: 0;
+        line-height: 1;
+        // Заголовок
+        &::before {
+          line-height: 1.2;
+          font-size: 26px;
+        }
+      }
+    }
+    // Языки
+    @each $language, $title in $languages {
+      &[language="#{$language}"] ::ng-deep .emoji-mart-title-label::before {
+        content: $title;
+      }
+    }
+  }
 }
 
 // Помощник в поле действий для переноса события
