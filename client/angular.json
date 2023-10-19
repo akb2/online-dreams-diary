@@ -28,6 +28,7 @@
               "src/.htaccess"
             ],
             "styles": [
+              "node_modules/@ctrl/ngx-emoji-mart/picker.css",
               "src/styles.scss"
             ],
             "scripts": [],
