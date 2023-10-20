@@ -30,6 +30,7 @@
     "@angular/router": "^15.1.1",
     "@ctrl/ngx-emoji-mart": "^7.1.0",
     "@iplab/ngx-color-picker": "^15.0.2",
+    "@ngrx/store": "^15.4.0",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
     "css-calc-transform": "^1.0.0",
@@ -37,7 +38,7 @@
     "ng-recaptcha": "^11.0.0",
     "ngx-fabric-wrapper": "^14.0.0",
     "petrovich": "^0.2.1",
-    "rxjs": "~7.4.0",
+    "rxjs": "^7.8.0",
     "snowball-stemmers": "^0.6.0",
     "tslib": "^2.3.0",
     "zone.js": "^0.13.0"

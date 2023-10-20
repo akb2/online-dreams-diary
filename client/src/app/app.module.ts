@@ -14,6 +14,8 @@ import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
+import { StoreModule } from '@ngrx/store';
+import { reducers, metaReducers } from './reducers';
 
 
 
@@ -80,6 +82,9 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
         useFactory: CreateTranslateLoader,
         deps: [HttpClient]
       }
+    }),
+    StoreModule.forRoot(reducers, {
+      metaReducers
     })
   ],
   bootstrap: [
