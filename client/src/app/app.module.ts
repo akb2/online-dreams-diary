@@ -10,6 +10,7 @@ import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from "@angular/common
 import localeRu from "@angular/common/locales/en";
 import localeEn from "@angular/common/locales/ru";
 import { LOCALE_ID, NgModule, isDevMode } from "@angular/core";
+import { MAT_DATE_LOCALE } from "@angular/material/core";
 import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
@@ -110,6 +111,11 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
     },
     {
       provide: LOCALE_ID,
+      useClass: LocaleId,
+      deps: [LocaleService],
+    },
+    {
+      provide: MAT_DATE_LOCALE,
       useClass: LocaleId,
       deps: [LocaleService],
     }

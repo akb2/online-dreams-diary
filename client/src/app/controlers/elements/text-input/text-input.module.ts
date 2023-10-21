@@ -1,6 +1,5 @@
 import { CustomDateAdapter } from "@_helpers/custom-date-adapter";
 import { CoreModule } from "@_modules/core.module";
-import { LocaleId, LocaleService } from "@_services/locale.service";
 import { TextFieldModule } from "@angular/cdk/text-field";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -20,11 +19,6 @@ import { TextInputComponent } from "./text-input.component";
 
 @NgModule({
   providers: [
-    {
-      provide: MAT_DATE_LOCALE,
-      useClass: LocaleId,
-      deps: [LocaleService],
-    },
     CustomDateAdapter,
     {
       provide: DateAdapter,
