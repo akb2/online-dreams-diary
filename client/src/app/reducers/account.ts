@@ -1,6 +1,3 @@
-import { CurrentUserIdLocalStorageKey } from "@_datas/account";
-import { LocalStorageGet } from "@_helpers/local-storage";
-import { ParseInt } from "@_helpers/math";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
 
 
@@ -19,6 +16,12 @@ export interface AccountState {
 
 
 
+// Инициализация идентификатора пользователя
+export const accountInitUserIdAction = createAction(
+  "[ACCOUNT] Init user ID",
+  props<{ userId: number }>()
+);
+
 // Сохранить идентификатор пользователя
 export const accountSaveUserIdAction = createAction(
   "[ACCOUNT] Save user ID",
@@ -32,12 +35,14 @@ export const accountDeleteUserIdAction = createAction(
 
 // Начальное состояние
 export const accountInitialState: AccountState = {
-  userId: ParseInt(LocalStorageGet(CurrentUserIdLocalStorageKey))
+  userId: 0
 };
 
 // Создание стейта
 export const accountReducer = createReducer(
   accountInitialState,
+  // Инициализация идентификатора пользователя
+  on(accountInitUserIdAction, (state, { userId }) => ({ ...state, userId })),
   // Сохранить идентификатор пользователя
   on(accountSaveUserIdAction, (state, { userId }) => ({ ...state, userId })),
   // Удалить идентификатор пользователя
