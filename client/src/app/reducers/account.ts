@@ -12,6 +12,11 @@ export interface AccountState {
   userId: number;
 }
 
+// Начальное состояние
+export const accountInitialState: AccountState = {
+  userId: 0
+};
+
 
 
 
@@ -33,11 +38,6 @@ export const accountDeleteUserIdAction = createAction(
   "[ACCOUNT] Delete user ID"
 );
 
-// Начальное состояние
-export const accountInitialState: AccountState = {
-  userId: 0
-};
-
 // Создание стейта
 export const accountReducer = createReducer(
   accountInitialState,
@@ -48,6 +48,10 @@ export const accountReducer = createReducer(
   // Удалить идентификатор пользователя
   on(accountDeleteUserIdAction, state => ({ ...state, userId: 0 }))
 );
+
+
+
+
 
 // Общее состояние
 export const accountFeatureSelector = createFeatureSelector<AccountState>(ACCOUNT_KEY);
