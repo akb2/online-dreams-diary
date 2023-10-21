@@ -89,7 +89,7 @@
           <app-last-seen [online]="lastSeenUser.online"
                          [date]="lastSeenUser.lastActionDate"
                          [sex]="lastSeenUser.sex"
-                         dateMask="d MMMM y - H:mm"
+                         dateMask="short"
                          *ngIf="!!lastSeenUser && !subTitle"></app-last-seen>
         </div>
       </div>

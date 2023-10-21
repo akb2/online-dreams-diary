@@ -8,8 +8,7 @@ import { ShortCounterPipe } from "@_pipes/short-counter.pipe";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { OverlayModule } from "@angular/cdk/overlay";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
-import "@angular/common/locales/global/ru";
-import { LOCALE_ID, NgModule } from "@angular/core";
+import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { RouterModule } from "@angular/router";
@@ -63,8 +62,7 @@ const modules = [
   ],
   providers: [
     DatePipe,
-    I18nPluralPipe,
-    { provide: LOCALE_ID, useValue: "ru" }
+    I18nPluralPipe
   ],
   exports: [
     ...modules,

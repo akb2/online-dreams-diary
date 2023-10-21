@@ -36,3 +36,15 @@ export const LanguageSettings: CustomObjectKey<SiteDomain, LanguageSetting> = {
     defaultLanguage: Language.ru
   }
 };
+
+// Массив локалей
+export const LanguageLocales: CustomObjectKey<Language, string> = {
+  [Language.en]: "en-US",
+  [Language.ru]: "ru-RU"
+};
+
+// Массив первых дней для локалей
+export const LanguageFirstDayOfWeek: CustomObjectKey<Language, number> = {
+  [Language.en]: 7,
+  [Language.ru]: 1
+};

@@ -1,5 +1,6 @@
 import { CustomDateAdapter } from "@_helpers/custom-date-adapter";
 import { CoreModule } from "@_modules/core.module";
+import { LocaleId, LocaleService } from "@_services/locale.service";
 import { TextFieldModule } from "@angular/cdk/text-field";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -9,6 +10,7 @@ import { DateAdapter, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/mate
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { Store } from "@ngrx/store";
 import { TranslateModule } from "@ngx-translate/core";
 import { TextInputComponent } from "./text-input.component";
 
@@ -20,12 +22,15 @@ import { TextInputComponent } from "./text-input.component";
   providers: [
     {
       provide: MAT_DATE_LOCALE,
-      useValue: 'ru-RU'
+      useClass: LocaleId,
+      deps: [LocaleService],
     },
+    CustomDateAdapter,
     {
       provide: DateAdapter,
+      deps: [CustomDateAdapter, Store, MAT_DATE_LOCALE],
       useClass: CustomDateAdapter
-    }
+    },
   ],
   exports: [
     TextInputComponent,

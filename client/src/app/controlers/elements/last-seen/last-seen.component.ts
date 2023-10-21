@@ -1,5 +1,4 @@
 import { UserSex } from "@_models/account";
-import { CustomObjectKey } from "@_models/app";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
 
@@ -16,6 +15,6 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 export class LastSeenComponent {
   @Input() online: boolean = false;
   @Input() date: Date = new Date();
-  @Input() dateMask: string = "d.M.y - H:mm";
+  @Input() dateMask: string = "short";
   @Input() sex: UserSex = UserSex.UnDetected;
 }

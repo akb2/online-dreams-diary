@@ -10,7 +10,7 @@
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [mainTitle]="dream.title || defaultTitle"
-                 subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                 subTitle="Приснилось {{(dream.date || today) | date: 'longDate'}}"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
                  [floatButtonIcon]="floatButtonData.icon"

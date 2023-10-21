@@ -9,7 +9,7 @@
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [mainTitle]="dream.title || defaultTitle"
-                 subTitle="Приснилось {{(dreamForm.get('date')?.value ?? today) | date: 'dd MMMM YYYY'}}"
+                 subTitle="Приснилось {{(dreamForm.get('date')?.value ?? today) | date: 'longDate'}}"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
                  floatButtonIcon="save"
@@ -159,7 +159,7 @@
                                        [navMenuType]="dream.headerType"
                                        [useAvatar]="false"
                                        [mainTitle]="dream.title || defaultTitle"
-                                       subTitle="Приснилось {{(dream.date || today) | date: 'dd MMMM YYYY'}}"
+                                       subTitle="Приснилось {{(dream.date || today) | date: 'longDate'}}"
                                        (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
               </div>
             </div>

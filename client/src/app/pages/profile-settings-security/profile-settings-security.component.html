@@ -79,7 +79,7 @@
               <mat-icon>history</mat-icon>
             </div>
             <div class="token__element-name">Дата авторизации</div>
-            <div class="token__element-value">{{tokenInfo.createDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+            <div class="token__element-value">{{tokenInfo.createDate | date: 'short'}}</div>
           </div>
           <!-- Последнее действие -->
           <div class="token__element">
@@ -87,7 +87,7 @@
               <mat-icon>touch_app</mat-icon>
             </div>
             <div class="token__element-name">Последняя активность</div>
-            <div class="token__element-value">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy - HH:mm'}}</div>
+            <div class="token__element-value">{{tokenInfo.lastActionDate | date: 'short'}}</div>
           </div>
           <!-- IP -->
           <div class="token__element">
@@ -204,13 +204,13 @@
     <div class="table__ceil title controls"></div>
     <!-- Дата авторизации -->
     <div class="table__ceil create-date">
-      {{tokenInfo.createDate | date: 'HH:mm'}}
-      <div class="light">{{tokenInfo.createDate | date: 'dd.MM.yyyy'}}</div>
+      {{tokenInfo.createDate | date: 'shortTime'}}
+      <div class="light">{{tokenInfo.createDate | date: 'shortDate'}}</div>
     </div>
     <!-- Последнее действие -->
     <div class="table__ceil last-action-date">
-      {{tokenInfo.lastActionDate | date: 'HH:mm'}}
-      <div class="light">{{tokenInfo.lastActionDate | date: 'dd.MM.yyyy'}}</div>
+      {{tokenInfo.lastActionDate | date: 'shortTime'}}
+      <div class="light">{{tokenInfo.lastActionDate | date: 'shortDate'}}</div>
     </div>
     <!-- IP -->
     <div class="table__ceil ip">{{tokenInfo.ip}}</div>

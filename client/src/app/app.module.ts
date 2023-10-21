@@ -4,8 +4,12 @@ import { CustomMaterialIcon } from "@_models/app";
 import { Language } from "@_models/translate";
 import { CoreModule } from "@_modules/core.module";
 import { ApiInterceptorService } from "@_services/api-interceptor.service";
+import { LocaleId, LocaleService } from "@_services/locale.service";
+import { registerLocaleData } from "@angular/common";
 import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from "@angular/common/http";
-import { NgModule, isDevMode } from "@angular/core";
+import localeRu from "@angular/common/locales/en";
+import localeEn from "@angular/common/locales/ru";
+import { LOCALE_ID, NgModule, isDevMode } from "@angular/core";
 import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
@@ -23,6 +27,10 @@ import { metaReducers, reducers } from './reducers';
 
 
 
+
+// Регистрация локалей
+registerLocaleData(localeEn);
+registerLocaleData(localeRu);
 
 // Кастомные иконки
 const materialIcons: CustomMaterialIcon[] = [
@@ -63,8 +71,6 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
 
 
 
-
-
 @NgModule({
   declarations: [
     AppComponent
@@ -102,6 +108,11 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
       useClass: ApiInterceptorService,
       multi: true,
     },
+    {
+      provide: LOCALE_ID,
+      useClass: LocaleId,
+      deps: [LocaleService],
+    }
   ]
 })
 

@@ -19,7 +19,7 @@
 <ng-template #notificationTemplate
              let-notification="notification"
              let-inUser="user">
-  <ng-container *ngIf="notification.createDate | date: 'd.M.y - H:mm' as date">
+  <ng-container *ngIf="notification.createDate | date: 'short' as date">
     <!-- Заявка в друзья -->
     <notification-add-to-friend #notificationElm
                                 class="notification__elm"

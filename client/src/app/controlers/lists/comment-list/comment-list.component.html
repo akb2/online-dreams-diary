@@ -45,7 +45,7 @@
                routerLink="/profile/{{comment.user.id}}">{{comment.user.name}} {{comment.user.lastName}}</a>
             <!-- Дата -->
             <div class="comment__header-state">
-              <time [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'd.M.y - H:mm'}}</time>
+              <time [attr.datetime]="comment.createDate.toISOString()">{{comment.createDate | date: 'short'}}</time>
               <!-- Ответ пользователю -->
               <ng-container *ngIf="!!comment.replyToUser && comment.user.id !== comment.replyToUser.id">
                 - Ответ
@@ -211,7 +211,7 @@
             <mat-icon class="dream__header-icon">nights_stay</mat-icon>
             <title class="dream__header-title">{{dream.title ?? defaultDreamTitle}}</title>
             <time class="dream__header-date"
-                  [attr.datetime]="(dream.date || today).toISOString()">{{(dream.date || today) | date: 'dd MMMM YYYY'}}</time>
+                  [attr.datetime]="(dream.date || today).toISOString()">{{(dream.date || today) | date: 'longDate'}}</time>
           </div>
           <!-- Отметки -->
           <div class="dream__icons">
