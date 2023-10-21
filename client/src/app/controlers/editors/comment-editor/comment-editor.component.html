@@ -24,7 +24,7 @@
         </div>
         <!-- Сведения о пользователе -->
         <div class="reply__content-subTitle">
-          <ng-container *ngIf="!needPetrovich; else replyUserNameNeedPetrovich">
+          <ng-container *ngIf="!(needPetrovich$ | async); else replyUserNameNeedPetrovich">
             {{replyUser.name}} {{replyUser.lastName}}
           </ng-container>
           <!-- В именительном падеже -->
@@ -67,7 +67,7 @@
          (click)="editor.focus()"></div>
     <!-- Смайлики -->
     <div class="smiles"
-         *ngIf="!!i18nEmoji">
+         *ngIf="!!(i18nEmoji$ | async)">
       <button #emojiListToggleButton
               mat-icon-button
               color="primary"
@@ -133,7 +133,7 @@
   <emoji-mart #emojiListItem
               class="smiles__list"
               [attr.language]="'language' | translate"
-              [i18n]="i18nEmoji"
+              [i18n]="i18nEmoji$ | async"
               set="twitter"
               [autoFocus]="true"
               [emojiSize]="32"

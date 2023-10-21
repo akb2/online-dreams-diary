@@ -71,6 +71,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   isShowNotifications: boolean = false;
 
   private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
+  mobileMenuStates: typeof MobileMenuState = MobileMenuState;
 
   user: User;
   isAutorizedUser: boolean = false;
@@ -423,6 +424,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     }
     // Язык
     if (menuItem?.id === "current-language-mobile") {
+      this.toggleMobileMenu(MobileMenuState.close);
+      // Открыть окно
       PopupLanguageListComponent.open(this.matDialog)
         .afterClosed()
         .pipe(takeUntil(this.destroyed$))
@@ -577,13 +580,13 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   // Переключить меню
-  toggleMobileMenu(action: -1 | 1): void {
+  toggleMobileMenu(action: MobileMenuState): void {
     // Открыть меню
-    if (action === 1) {
+    if (action === MobileMenuState.open) {
       this.showMobileMenu = true;
     }
     // Закрыть меню
-    if (action === -1) {
+    if (action === MobileMenuState.close) {
       this.showMobileMenu = false;
     }
   }
@@ -618,6 +621,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
 
 
+
+// Действия с мобильным меню
+enum MobileMenuState {
+  open,
+  close
+}
 
 // Состояние шапки
 enum HeaderStatus {

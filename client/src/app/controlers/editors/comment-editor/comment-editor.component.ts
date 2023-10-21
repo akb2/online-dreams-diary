@@ -5,21 +5,21 @@ import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/tex
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
-import { MultiObject, SimpleObject } from "@_models/app";
+import { SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
 import { CaretPosition } from "@_models/text";
-import { Language } from "@_models/translate";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
-import { LanguageService } from "@_services/language.service";
 import { ScrollService } from "@_services/scroll.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
+import { translateNeedPetrovichSelector } from "@app/reducers/translate";
 import { EmojiData, EmojiEvent, EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
+import { Store } from "@ngrx/store";
 import { TranslateService } from "@ngx-translate/core";
-import { Subject, concatMap, filter, map, takeUntil } from "rxjs";
+import { Subject, filter, map, takeUntil } from "rxjs";
 
 
 
@@ -35,7 +35,7 @@ import { Subject, concatMap, filter, map, takeUntil } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
+export class CommentEditorComponent implements OnChanges, OnDestroy {
 
 
   @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
@@ -64,12 +64,12 @@ export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
   graffityData: GraffityDrawData;
   photos: MediaFile[] = [];
 
-  i18nEmoji: MultiObject<string>;
   emojiClassName: string = "emoji-elm";
 
-  needPetrovich: boolean = false;
   sendLoader: boolean = false;
 
+  needPetrovich$ = this.store.select(translateNeedPetrovichSelector);
+  i18nEmoji$ = this.needPetrovich$.pipe(map(() => this.translateService.get("components.emojies")));
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -161,7 +161,7 @@ export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
     private scrollService: ScrollService,
     private commentService: CommentService,
     private matDialog: MatDialog,
-    private languageService: LanguageService,
+    private store: Store,
     private translateService: TranslateService
   ) { }
 
@@ -199,20 +199,6 @@ export class CommentEditorComponent implements OnInit, OnChanges, OnDestroy {
           });
       }
     }
-  }
-
-  ngOnInit(): void {
-    this.languageService.onLanguageChange()
-      .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.translateService.get("components.emojies"), (language, i18nEmoji) => ({ language, i18nEmoji }))
-      )
-      .subscribe(({ language, i18nEmoji }) => {
-        this.needPetrovich = language === Language.ru;
-        this.i18nEmoji = i18nEmoji;
-        // Обновить
-        this.changeDetectorRef.detectChanges();
-      });
   }
 
   ngOnDestroy(): void {

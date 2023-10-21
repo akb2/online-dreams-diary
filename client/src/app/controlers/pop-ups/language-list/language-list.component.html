@@ -14,7 +14,7 @@
       <div class="item"
            [ngClass]="{ selected: currentLanguage }"
            (click)="onChangeLanguage(languageData.language)"
-           *ngVar="languageData.language === language as currentLanguage">
+           *ngVar="languageData.language === (language$ | async) as currentLanguage">
         <mat-icon class="item__icon"
                   [svgIcon]="'language-large-' + languageData.language"></mat-icon>
         <!-- Название языка -->

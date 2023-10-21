@@ -33,25 +33,7 @@ export const MenuItems: MenuItemsListDevices = {
           {
             text: "menus.nav_menu.items.search_dreams",
             link: "/diary/all"
-          },
-          // // Разделитель
-          // {
-          //   isSeparate: true
-          // },
-          // // Блог
-          // {
-          //   text: "Блог",
-          //   link: "/blog"
-          // },
-          // // Разделитель
-          // {
-          //   isSeparate: true
-          // },
-          // // Форум
-          // {
-          //   text: "Форум",
-          //   link: "/forum"
-          // }
+          }
         ]
       },
       // Язык

@@ -141,7 +141,7 @@
     <div class="overlay__message"
          [ngClass]="{ shortenForm }"
          *ngIf="friendStatus === friendStatuses.OutSubscribe">
-      {{'pages.profile.blocks.actions.friend_state.in_subscribe' | translate: {name: needPetrovich? (user | petrovich: 3): user.name} }}
+      {{'pages.profile.blocks.actions.friend_state.in_subscribe' | translate: {name: (needPetrovich$ | async)? (user | petrovich: 3): user.name} }}
     </div>
     <!-- Входящая заявка -->
     <div class="overlay__message"

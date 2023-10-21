@@ -1,6 +1,7 @@
 import { MenuItems } from "@_datas/menu";
 import { IsInEnum } from "@_helpers/app";
 import { CompareArrays } from "@_helpers/objects";
+import { GetLanguageFromDomainSetting } from "@_helpers/translate";
 import { User } from "@_models/account";
 import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu";
 import { Language } from "@_models/translate";
@@ -10,8 +11,9 @@ import { NotificationService } from "@_services/notification.service";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
+import { translateLanguageSelector, translateSaveLanguageAction } from "@app/reducers/translate";
+import { Store } from "@ngrx/store";
 import { BehaviorSubject, Observable, Subject, filter, map, pairwise, startWith, takeUntil } from "rxjs";
-import { LanguageService } from "./language.service";
 
 
 
@@ -43,7 +45,7 @@ export class MenuService implements OnDestroy {
     private notificationService: NotificationService,
     private router: Router,
     private screenService: ScreenService,
-    private languageService: LanguageService
+    private store: Store
   ) {
     this.menuItems$ = this.menuItems.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -88,7 +90,7 @@ export class MenuService implements OnDestroy {
       )
       .subscribe(() => this.createMenuItems());
     // Смена языка
-    this.languageService.onLanguageChange()
+    this.store.select(translateLanguageSelector)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(language => {
         this.language = language;
@@ -116,13 +118,11 @@ export class MenuService implements OnDestroy {
 
   // Смена языки
   private onChangeLanguage(mixedLanguage: string): void {
-    const language: Language = IsInEnum(mixedLanguage, Language) ?
-      mixedLanguage as Language :
-      this.languageService.getFromDomainSetting();
+    const language: Language = IsInEnum(mixedLanguage, Language)
+      ? mixedLanguage as Language
+      : GetLanguageFromDomainSetting();
     // Смена языка
-    this.languageService.setLanguage(language)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe();
+    this.store.dispatch(translateSaveLanguageAction({ language }));
   }
 
 

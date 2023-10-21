@@ -1,10 +1,10 @@
 import { AppMatDialogConfig } from "@_datas/app";
-import { IsInEnum } from "@_helpers/app";
 import { Language } from "@_models/translate";
-import { LanguageService } from "@_services/language.service";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { Subject, takeUntil } from "rxjs";
+import { translateLanguageSelector, translateSaveLanguageAction } from "@app/reducers/translate";
+import { Store } from "@ngrx/store";
+import { Observable } from "rxjs";
 
 
 
@@ -17,14 +17,14 @@ import { Subject, takeUntil } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class PopupLanguageListComponent implements OnInit, OnDestroy {
+export class PopupLanguageListComponent {
 
   static popUpWidth: string = "500px";
 
   language: Language;
   languages: LanguageData[] = Languages;
 
-  private destroyed$: Subject<void> = new Subject();
+  language$: Observable<Language> = this.store.select(translateLanguageSelector);
 
 
 
@@ -32,24 +32,8 @@ export class PopupLanguageListComponent implements OnInit, OnDestroy {
 
   constructor(
     private matDialogRef: MatDialogRef<PopupLanguageListComponent, Language>,
-    private languageService: LanguageService,
-    private changeDetectorRef: ChangeDetectorRef
+    private store: Store
   ) { }
-
-  ngOnInit(): void {
-    this.languageService.language$.asObservable()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(language => {
-        this.language = language;
-        // Обновить
-        this.changeDetectorRef.detectChanges();
-      })
-  }
-
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
 
 
 
@@ -57,13 +41,11 @@ export class PopupLanguageListComponent implements OnInit, OnDestroy {
 
   // Смена языки
   onChangeLanguage(mixedLanguage: string): void {
-    const language: Language = IsInEnum(mixedLanguage, Language) ?
-      mixedLanguage as Language :
-      this.languageService.getFromDomainSetting();
+    const language: Language = mixedLanguage as Language;
     // Смена языка
-    this.languageService.setLanguage(language)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => this.matDialogRef.close());
+    this.store.dispatch(translateSaveLanguageAction({ language }));
+    // Закрытие окна
+    this.matDialogRef.close();
   }
 
 

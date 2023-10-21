@@ -5,6 +5,11 @@ import { Language, LanguageSetting, SiteDomain } from "@_models/translate";
 
 
 
+// Ключ в локал сторадже
+export const LanguageLocalStorageKey: string = "language";
+export const LocalStorageTtl: number = 0;
+
+
 // Язык по умолчанию
 export const DefaultLanguage: Language = Language.en;
 

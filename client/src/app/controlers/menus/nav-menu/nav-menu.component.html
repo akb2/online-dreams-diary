@@ -58,7 +58,7 @@
         <div class="menu-button"
              [ngStyle]="css.backButton"
              *ngIf="isMobile && !backButtonLink"
-             (click)="toggleMobileMenu(1)"
+             (click)="toggleMobileMenu(mobileMenuStates.open)"
              unselectable="on">
           <mat-icon>menu</mat-icon>
         </div>
@@ -288,7 +288,7 @@
 <ng-template #mobileMenu>
   <div class="mobile-menu {{showMobileMenu? 'show': ''}}">
     <div class="mobile-menu__overlay {{showMobileMenu? 'show': ''}}"
-         (click)="toggleMobileMenu(-1)"></div>
+         (click)="toggleMobileMenu(mobileMenuStates.close)"></div>
     <div class="mobile-menu__layout {{showMobileMenu? 'show': ''}}">
       <!-- Информация о странице -->
       <ng-container [ngTemplateOutlet]="mobileMenuInfo"></ng-container>
@@ -375,7 +375,7 @@
                      [avatarImage]="user.avatars?.small"
                      avatarIcon="profile"
                      [avatarBlink]="user.online"
-                     (closeClick)="toggleMobileMenu(-1)"
+                     (closeClick)="toggleMobileMenu(mobileMenuStates.close)"
                      *ngIf="!!user"></app-panels-header>
   <!-- Информация о странице -->
   <app-panels-header [imageSrc]="image"
@@ -389,7 +389,7 @@
                      [avatarIcon]="avatarIcon"
                      [avatarCustomIcon]="avatarCustomIcon"
                      [avatarBlink]="avatarBlink"
-                     (closeClick)="toggleMobileMenu(-1)"
+                     (closeClick)="toggleMobileMenu(mobileMenuStates.close)"
                      *ngIf="!user"></app-panels-header>
 </ng-template>
 
