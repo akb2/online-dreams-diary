@@ -1,8 +1,5 @@
-import { CurrentUserIdLocalStorageKey, CurrentUserIdLocalStorageTtl } from "@_datas/account";
 import { ObjectToFormData } from "@_datas/api";
 import { BrowserNames, OsNames, ToDate } from "@_datas/app";
-import { GetCurrentUserId } from "@_helpers/account";
-import { LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
@@ -12,8 +9,10 @@ import { ApiService } from "@_services/api.service";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
-import { BehaviorSubject, Observable } from "rxjs";
-import { map, switchMap, tap } from "rxjs/operators";
+import { accountDeleteUserIdAction, accountUserIdSelector } from "@app/reducers/account";
+import { Store } from "@ngrx/store";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
+import { concatMap, map, switchMap, take, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -25,23 +24,15 @@ import { map, switchMap, tap } from "rxjs/operators";
 
 export class TokenService {
 
+  userId: number = 0;
+  checkAuth: boolean = false;
 
-  private currentIdLocalStorageKey: string = CurrentUserIdLocalStorageKey;
-  private localStorageTtl: number = CurrentUserIdLocalStorageTtl;
-
-  id: number = 0;
+  private userId$ = this.store.select(accountUserIdSelector);
 
   private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   readonly user$: Observable<User> = this.user.asObservable();
 
-
-
-
-
-  // Проверить авторизацию
-  get checkAuth(): boolean {
-    return !!this.id;
-  }
+  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -50,18 +41,20 @@ export class TokenService {
   constructor(
     private httpClient: HttpClient,
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
-    this.updateState();
+    this.userId$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(userId => {
+        this.userId = userId;
+        this.checkAuth = userId > 0;
+      });
   }
 
-
-
-
-
-  // Получить данные из Local Storage
-  updateState(): void {
-    this.id = GetCurrentUserId();
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -70,24 +63,24 @@ export class TokenService {
 
   // Проверить токен
   checkToken(codes: string[] = []): Observable<string> {
-    return this.httpClient.get<ApiResponse>("token/checkToken").pipe(switchMap(
-      result => {
-        const code: ApiResponseCodes = result.result.code;
-        // Сохранить токен
-        if (code === "0001") {
-          if (this.id === result.result.data.tokenData.user_id) {
-            this.saveAuth(result.result.data.tokenData.user_id);
+    return this.httpClient.get<ApiResponse>("token/checkToken").pipe(
+      concatMap(() => this.userId$.pipe(take(1)), (result, userId) => ({ result, userId })),
+      switchMap(
+        ({ result, userId }) => {
+          const code: ApiResponseCodes = result.result.code;
+          const newUserId: number = ParseInt(result?.result?.data?.tokenData?.user_id);
+          // Сохранить токен
+          if (code === "0001") {
+            if (userId !== newUserId) {
+              this.store.dispatch(accountDeleteUserIdAction());
+              this.router.navigate([""]);
+            }
           }
-          // Неверный токен
-          else {
-            this.deleteCurrentUser();
-            this.router.navigate([""]);
-          }
+          // Вернуть данные
+          return this.apiService.checkResponse(result.result.code, codes);
         }
-        // Вернуть данные
-        return this.apiService.checkResponse(result.result.code, codes);
-      }
-    ));
+      )
+    );
   }
 
   // Информация о текущем токене
@@ -135,11 +128,9 @@ export class TokenService {
   // Сбросить авторизацию
   deleteAuth(): Observable<string> {
     return this.httpClient.post<ApiResponse>("token/deleteToken", null).pipe(
-      tap(() => this.deleteCurrentUser()),
       switchMap(result => this.apiService.checkResponse(result.result.code)),
       tap(() => {
-        this.id = 0;
-        this.deleteCurrentUser();
+        this.store.dispatch(accountDeleteUserIdAction());
         this.router.navigate([""]);
       })
     );
@@ -164,17 +155,5 @@ export class TokenService {
       ip: tokenData.ip.toString(),
       browser: { os, name, version }
     };
-  }
-
-  // Запомнить авторизацию
-  saveAuth(id: string | number): void {
-    this.id = ParseInt(id);
-    // Запомнить
-    LocalStorageSet(this.currentIdLocalStorageKey, this.id, this.localStorageTtl);
-  }
-
-  // Удалить сведения о текущем пользователе
-  private deleteCurrentUser(): void {
-    LocalStorageRemove(this.currentIdLocalStorageKey);
   }
 }

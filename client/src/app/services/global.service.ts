@@ -1,6 +1,3 @@
-import { Injectable, OnDestroy } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
 import { User } from "@_models/account";
 import { CustomObject, RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
@@ -9,7 +6,10 @@ import { FriendService } from "@_services/friend.service";
 import { NotificationService } from "@_services/notification.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
-import { Observable, of, Subject, switchMap, takeUntil, tap } from "rxjs";
+import { Injectable, OnDestroy } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
+import { Observable, Subject, of, switchMap, takeUntil, tap } from "rxjs";
 
 
 
@@ -65,7 +65,7 @@ export class GlobalService implements OnDestroy {
     private router: Router,
     private apiService: ApiService,
     private snackBar: SnackbarService,
-    private activatedRoute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute
   ) { }
 
   ngOnDestroy(): void {
@@ -80,14 +80,14 @@ export class GlobalService implements OnDestroy {
   init(): Observable<User> {
     const { checkToken }: ExtraDatas = this.getExtraDatas;
     let observable: Observable<User>;
-    // Обновить данные
-    this.tokenService.updateState();
     // Проверка токена
     if (this.accountService.checkAuth && checkToken) {
       observable = this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
         switchMap(code => {
           if (code === "0001") {
-            return this.accountService.getUser(this.tokenService.id).pipe(takeUntil(this.destroyed$));
+            return this.accountService.getUser(this.tokenService.userId).pipe(
+              takeUntil(this.destroyed$)
+            );
           }
           // Ошибка проверки токена
           else {

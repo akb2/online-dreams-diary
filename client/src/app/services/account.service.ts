@@ -15,6 +15,8 @@ import { TokenService } from "@_services/token.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
+import { accountSaveUserIdAction } from "@app/reducers/account";
+import { Store } from "@ngrx/store";
 import { BehaviorSubject, Observable, Subject, of, timer } from "rxjs";
 import { catchError, concatMap, filter, map, pairwise, share, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
 
@@ -60,7 +62,7 @@ export class AccountService implements OnDestroy {
 
   // Получить подписку на данные о пользователе
   user$(userId: number = 0, sync: boolean = false, codes: string[] = [], test?: any): Observable<User> {
-    userId = userId > 0 ? userId : ParseInt(this.tokenService.id);
+    userId = userId > 0 ? userId : ParseInt(this.tokenService.userId);
     codes.push("8100");
     // Обновить счетчик
     let firstCall: boolean = true;
@@ -120,7 +122,8 @@ export class AccountService implements OnDestroy {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private router: Router,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private store: Store
   ) {
     this.getUsersFromStore();
   }
@@ -144,11 +147,12 @@ export class AccountService implements OnDestroy {
         takeUntil(this.destroyed$),
         switchMap(result => {
           const code: ApiResponseCodes = result.result.code.toString();
+          const userId: number = ParseInt(result?.result?.data?.id);
           // Доступна ли активация
           activateIsAvail = !!result?.result?.data?.activateIsAvail;
           // Сохранить токен
           if (code === "0001") {
-            this.tokenService.saveAuth(result.result.data.id);
+            this.store.dispatch(accountSaveUserIdAction({ userId }))
             this.router.navigate([""]);
           }
           // Обработка ошибки
@@ -211,7 +215,7 @@ export class AccountService implements OnDestroy {
     // Параметры
     let connect: boolean = false;
     const observable = (id: number = 0, lastEditDate: Date = null) => {
-      const user: User = this.users$.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.id));
+      const user: User = this.users$.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.userId));
       // Параметры
       id = user?.id ?? id ?? 0;
       lastEditDate = user?.lastEditDate ?? lastEditDate ?? new Date(0);
@@ -317,7 +321,7 @@ export class AccountService implements OnDestroy {
   saveUserData(userSave: UserSave, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/saveUserData", ObjectToFormData(userSave)).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -325,7 +329,7 @@ export class AccountService implements OnDestroy {
   savePageStatus(pageStatus: string, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/savePageStatus", ObjectToFormData({ pageStatus })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -337,7 +341,7 @@ export class AccountService implements OnDestroy {
       notifications: JSON.stringify(settings.notifications)
     })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -345,7 +349,7 @@ export class AccountService implements OnDestroy {
   saveUserPrivateSettings(privateDatas: UserPrivate, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/saveUserPrivate", ObjectToFormData({ private: JSON.stringify(privateDatas) })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -357,7 +361,7 @@ export class AccountService implements OnDestroy {
   uploadAvatar(file: File, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/uploadAvatar", ObjectToFormData({ file })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -365,7 +369,7 @@ export class AccountService implements OnDestroy {
   cropAvatar(type: UserAvatarCropDataKeys, coords: UserAvatarCropDataElement, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/cropAvatar", ObjectToFormData({ type, ...coords })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 
@@ -373,7 +377,7 @@ export class AccountService implements OnDestroy {
   deleteAvatar(codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/deleteAvatar", null).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      concatMap(code => code === "0001" ? this.getUser(this.tokenService.id) : of(null), r => r)
+      concatMap(code => code === "0001" ? this.getUser(this.tokenService.userId) : of(null), r => r)
     );
   }
 

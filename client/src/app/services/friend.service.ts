@@ -46,7 +46,7 @@ export class FriendService implements OnDestroy {
 
   // Получить подписку на данные о статусах дружбы
   friends$(inUser: number, outUser: number = 0, sync: boolean = false): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
     // Обновить счетчик
     let counter: number = this.updateFriendsCounter(inUser, outUser, 1);
     // Подписки
@@ -90,7 +90,7 @@ export class FriendService implements OnDestroy {
 
   // Сравнение записи о пользователе
   private compareFriend(friend: Friend | number[], inUser: number, outUser: number = 0): boolean {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
     // Проверка данных
     if (!!friend && (inUser > 0 || outUser > 0)) {
       const fInUser: number = Array.isArray(friend) ? friend[0] : friend.inUserId;
@@ -129,7 +129,7 @@ export class FriendService implements OnDestroy {
 
   // Проверка статуса в друзьях
   getFriendStatus(inUser: number, outUser: number = 0, codes: string[] = []): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.id);
+    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
     // Только для авторизованных пользователей
     if (outUser > 0) {
       codes = Array.from(new Set([...codes, "0002"]));
@@ -218,7 +218,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
     );
   }
 
@@ -229,7 +229,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
     );
   }
 
@@ -240,7 +240,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
     );
   }
 
@@ -251,7 +251,7 @@ export class FriendService implements OnDestroy {
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.id), r => r)
+      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
     );
   }
 
@@ -267,7 +267,7 @@ export class FriendService implements OnDestroy {
   // Конвертация заявки в друзья
   private friendConverter(data: any, userId: number = 0): Friend {
     const inUserId: number = ParseInt(data?.inUserId) ?? userId;
-    const outUserId: number = ParseInt(data?.outUserId ?? this.tokenService.id);
+    const outUserId: number = ParseInt(data?.outUserId ?? this.tokenService.userId);
     const checkUserId: number = inUserId === userId ? outUserId : inUserId;
     const status: FriendStatus = this.friendStatusConverter(ParseInt(data?.status, -1), inUserId, outUserId, checkUserId);
     // Вернуть массив

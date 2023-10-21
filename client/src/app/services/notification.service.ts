@@ -10,8 +10,9 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, catchError, concatMap, filter, finalize, map, of, pairwise, share, startWith, switchMap, takeUntil, tap, timer } from "rxjs";
-import { TokenService } from "./token.service";
+import { accountUserIdSelector } from "@app/reducers/account";
+import { Store } from "@ngrx/store";
+import { BehaviorSubject, Observable, Subject, catchError, concatMap, filter, finalize, map, of, pairwise, share, startWith, switchMap, take, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -35,6 +36,7 @@ export class NotificationService implements OnDestroy {
   private notifications: BehaviorSubject<any[]> = new BehaviorSubject([]);
   private newNotificationsCount: BehaviorSubject<number> = new BehaviorSubject(-1);
 
+  private userId$ = this.store.select(accountUserIdSelector).pipe(take(1));
   newNotificationsCount$: Observable<number>;
   private destroyed$: Subject<void> = new Subject();
 
@@ -100,8 +102,8 @@ export class NotificationService implements OnDestroy {
   constructor(
     private httpClient: HttpClient,
     private accountService: AccountService,
-    private tokenService: TokenService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private store: Store
   ) {
     this.newNotificationsCount$ = this.newNotificationsCount.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -191,7 +193,8 @@ export class NotificationService implements OnDestroy {
       share(),
       takeUntil(this.destroyed$),
       filter(() => !connect),
-      concatMap(() => observable(this.tokenService.id)),
+      concatMap(() => this.userId$),
+      concatMap(userId => observable(userId)),
       catchError(() => of({ text: "" })),
       map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.notificationId)),
       concatMap(notificationId => notificationId > 0 ? this.getById(notificationId, codes).pipe(catchError(() => of(null))) : of(null)),
