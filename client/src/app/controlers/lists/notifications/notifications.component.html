@@ -1,16 +1,18 @@
 <ng-container *ngIf="isAutorizedUser">
-  <app-scroll [id]="listId"
-              class="list"
-              [ngClass]="{ show }"
-              [ngStyle]="listStyles"
-              (scrollChange)="onScrollChange($event)"
-              (scrolledToBottom)="onScrolledToBottom($event)"
-              *ngIf="!!notifications?.length; else noNotifications">
-    <ng-container *ngFor="let notification of notifications; trackBy: listTrackBy">
-      <ng-container [ngTemplateOutlet]="notificationTemplate"
-                    [ngTemplateOutletContext]="{ notification, user: notificationUser(notification) | async }"></ng-container>
-    </ng-container>
-  </app-scroll>
+  <ng-container *ngVar="(notifications$ | async) as notifications">
+    <app-scroll [id]="listId"
+                class="list"
+                [ngClass]="{ show }"
+                [ngStyle]="listStyles"
+                (scrollChange)="onScrollChange($event)"
+                (scrolledToBottom)="onScrolledToBottom($event)"
+                *ngIf="!!notifications?.length; else noNotifications">
+      <ng-container *ngFor="let notification of notifications; trackBy: listTrackBy">
+        <ng-container [ngTemplateOutlet]="notificationTemplate"
+                      [ngTemplateOutletContext]="{ notification, user: notificationUser(notification) }"></ng-container>
+      </ng-container>
+    </app-scroll>
+  </ng-container>
 </ng-container>
 
 

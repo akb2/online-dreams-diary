@@ -3,12 +3,13 @@ import { CustomObject, RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { FriendService } from "@_services/friend.service";
-import { NotificationService } from "@_services/notification.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
+import { notificationsClearAction } from "@app/reducers/notifications";
+import { Store } from "@ngrx/store";
 import { Observable, Subject, of, switchMap, takeUntil, tap } from "rxjs";
 
 
@@ -60,7 +61,7 @@ export class GlobalService implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private friendService: FriendService,
-    private notificationService: NotificationService,
+    private store: Store,
     private tokenService: TokenService,
     private router: Router,
     private apiService: ApiService,
@@ -94,7 +95,7 @@ export class GlobalService implements OnDestroy {
             this.router.navigate([""]);
             this.accountService.quit();
             this.friendService.quit();
-            this.notificationService.quit();
+            this.store.dispatch(notificationsClearAction());
             // Сообщение с ошибкой
             this.snackBar.open({
               "mode": "error",

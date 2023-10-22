@@ -1,4 +1,13 @@
+import { LocalStorageDefaultTtl } from "@_helpers/local-storage";
 import { NotificationActionType, NotificationTypeDescription } from "@_models/notification";
+
+
+
+
+
+// Ключ в локал сторадже
+export const NOTIFICATIONS_LOCAL_STORAGE_KEY = "notifications";
+export const NOTIFICATIONS_LOCAL_STORAGE_TTL: number = LocalStorageDefaultTtl;
 
 
 

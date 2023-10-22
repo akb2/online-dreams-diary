@@ -1,12 +1,16 @@
 import { CurrentUserIdLocalStorageKey, CurrentUserIdLocalStorageTtl } from "@_datas/account";
+import { ToArray } from "@_datas/app";
+import { NOTIFICATIONS_LOCAL_STORAGE_KEY, NOTIFICATIONS_LOCAL_STORAGE_TTL } from "@_datas/notification";
 import { LanguageLocalStorageKey, LocalStorageTtl } from "@_datas/translate";
 import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { ParseInt } from "@_helpers/math";
 import { GetDetectedLanguage } from "@_helpers/translate";
 import { Injectable } from '@angular/core';
 import { Actions, ROOT_EFFECTS_INIT, createEffect, ofType } from '@ngrx/effects';
-import { map, tap } from "rxjs/operators";
+import { Store } from "@ngrx/store";
+import { map, tap, withLatestFrom } from "rxjs/operators";
 import { accountDeleteUserIdAction, accountInitUserIdAction, accountSaveUserIdAction } from "./reducers/account";
+import { notificationsAddOneAction, notificationsAddSomeAction, notificationsClearAction, notificationsInitAction, notificationsReplaceAction, notificationsSelector } from "./reducers/notifications";
 import { translateInitLanguageAction, translateSaveLanguageAction } from "./reducers/translate";
 
 
@@ -18,7 +22,8 @@ import { translateInitLanguageAction, translateSaveLanguageAction } from "./redu
 export class AppEffects {
 
   constructor(
-    private actions$: Actions
+    private actions$: Actions,
+    private store: Store
   ) { }
 
 
@@ -68,6 +73,56 @@ export class AppEffects {
     () => this.actions$.pipe(
       ofType(translateSaveLanguageAction),
       tap(({ language }) => LocalStorageSet(LanguageLocalStorageKey, language, LocalStorageTtl))
+    ),
+    { dispatch: false }
+  );
+
+
+
+
+
+  // Инициализация списка уведомлений
+  notificationsInitAction$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      map(() => notificationsInitAction({ notifications: ToArray(LocalStorageGet(NOTIFICATIONS_LOCAL_STORAGE_KEY)) }))
+    )
+  );
+
+  // Добавить одно уведомление
+  notificationsAddOneAction$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(notificationsAddOneAction),
+      withLatestFrom(this.store.select(notificationsSelector)),
+      tap(([, notifications]) => LocalStorageSet(NOTIFICATIONS_LOCAL_STORAGE_KEY, notifications, NOTIFICATIONS_LOCAL_STORAGE_TTL))
+    ),
+    { dispatch: false }
+  );
+
+  // Добавить несколько уведомлений
+  notificationsAddSomeAction$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(notificationsAddSomeAction),
+      withLatestFrom(this.store.select(notificationsSelector)),
+      tap(([, notifications]) => LocalStorageSet(NOTIFICATIONS_LOCAL_STORAGE_KEY, notifications, NOTIFICATIONS_LOCAL_STORAGE_TTL))
+    ),
+    { dispatch: false }
+  );
+
+  // Заменить весь список
+  notificationsReplaceAction$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(notificationsReplaceAction),
+      tap(({ notifications }) => LocalStorageSet(NOTIFICATIONS_LOCAL_STORAGE_KEY, notifications, NOTIFICATIONS_LOCAL_STORAGE_TTL))
+    ),
+    { dispatch: false }
+  );
+
+  // Очистить список
+  notificationsClearAction$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(notificationsClearAction),
+      tap(() => LocalStorageRemove(NOTIFICATIONS_LOCAL_STORAGE_KEY))
     ),
     { dispatch: false }
   );

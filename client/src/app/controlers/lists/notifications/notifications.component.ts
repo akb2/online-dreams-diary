@@ -1,6 +1,5 @@
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
-import { WaitObservable } from "@_datas/api";
-import { CompareElementBySelector, CreateArray } from "@_datas/app";
+import { CompareElementBySelector, CreateArray, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -11,7 +10,7 @@ import { NotificationService } from "@_services/notification.service";
 import { ScrollService } from "@_services/scroll.service";
 import { TokenService } from "@_services/token.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
-import { Observable, Subject, filter, forkJoin, fromEvent, map, of, takeUntil, timer } from "rxjs";
+import { Observable, Subject, concatMap, filter, forkJoin, fromEvent, map, of, take, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -38,20 +37,21 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   notificationActionType: typeof NotificationActionType = NotificationActionType;
 
   user: User;
-  notifications: Notification[];
+  users: CustomObjectKey<number, User> = {};
   isAutorizedUser: boolean = false;
-  private usersSubscribe: CustomObjectKey<number, User> = {};
   private readIgnore: number[] = [];
 
   private availToMoreLoad: boolean = true;
-  private skip: number = 0;
-  private limit: number = 15;
+  private listSkip: number = 0;
+  private listLimit: number = 15;
   private previousScroll: ScrollChangeEvent;
 
   listId: string = "notification-component-list";
 
   private outCloseAvail: boolean = false;
-  private readWhaitTimer: number = 2500;
+  private readWaitTimer: number = 2500;
+
+  notifications$: Observable<Notification[]>;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -60,10 +60,10 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
   // Иконка уведомления
-  notificationUser(notification: Notification): Observable<User> {
-    return (!!notification?.data?.user ? this.accountService.user$(notification.data.user) : of(null)).pipe(
-      takeUntil(this.destroyed$)
-    );
+  notificationUser(notification: Notification): User {
+    const userId: number = ParseInt(notification?.data?.user);
+    // Информация о пользователе
+    return this.users?.[userId];
   }
 
   // Функция проверки уведомления для обновления списка
@@ -71,7 +71,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     const dataStrings: string[] = [
       notification.id.toString(),
       notification.status.toString(),
-      notification.createDate.toISOString(),
+      ToDate(notification.createDate).toISOString(),
       notification.actionType,
       notification.link,
       notification.text,
@@ -92,7 +92,35 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     private scrollService: ScrollService,
     private notificationService: NotificationService,
     private changeDetectorRef: ChangeDetectorRef
-  ) { }
+  ) {
+    this.notifications$ = this.notificationService.notifications$.pipe(
+      takeUntil(this.destroyed$),
+      map(notifications => notifications.filter((n, k) => k < this.listSkip + this.listLimit)),
+      concatMap(
+        notifications => {
+          const userIds: number[] = UniqueArray(notifications
+            .map(({ data }) => ParseInt(data.user))
+            .filter(userId => userId > 0 && !this.users[userId] && this.users[userId] !== null)
+          );
+          // Зарезервировать списки ID
+          userIds.forEach(userId => this.users[userId] = null);
+          // Подписчик
+          const observable: Observable<User[]> = forkJoin(userIds.map(userId => this.accountService.user$(userId).pipe(
+            take(1),
+            takeUntil(this.destroyed$),
+            tap(user => {
+              this.users[user.id] = user;
+              // Обновить
+              changeDetectorRef.detectChanges();
+            })
+          )));
+          // Подписчик
+          return !!userIds.length ? observable : of([]);
+        },
+        data => data
+      )
+    );
+  }
 
   ngOnInit(): void {
     this.accountService.user$()
@@ -102,20 +130,12 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         this.isAutorizedUser = this.tokenService.checkAuth;
         this.changeDetectorRef.detectChanges();
       });
-    // Загрузка уведомлений
+    // Загрузить список
     this.loadNotifications();
-    // Поиск новых уведомлений
-    this.notificationService.getNewNotifications()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(notification => {
-        this.updateNotificationsList(notification);
-        // Прочитать уведомление
-        if (this.show) {
-          this.onScrollChange(this.previousScroll);
-        }
-      });
-    // Прослушивание закрытия уведомлений
+    // Отслеживать закрытие списка
     this.closeEvents();
+    // Ожидание новых уведомлений
+    this.waitNotifications();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -135,7 +155,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
   // Закрыть уведомления
-  onClose(): void {
+  private onClose(): void {
     if (this.show) {
       this.show = false;
       this.outCloseAvail = false;
@@ -149,22 +169,29 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     this.previousScroll = event;
     // Список не пуст
     if (!!this.notificationElms?.length) {
-      const notifications: Notification[] = CreateArray(this.notificationElms.length)
-        .map(key => ({ elm: this.notificationElms.get(key)?.nativeElement as HTMLElement, key }))
-        .filter(({ elm }) => !!elm)
-        .map(({ elm, key }) => {
-          const styles: CSSStyleDeclaration = getComputedStyle(elm);
-          const top: number = elm.offsetTop;
-          const bottom: number = elm.offsetTop + elm.clientHeight + ParseInt(styles.borderTopWidth) + ParseInt(styles.borderBottomWidth);
-          // Вернуть данные
-          return { elm, top, bottom, key };
-        })
-        .filter(({ top, bottom }) => top < event.y + event.viewHeight && bottom > event.y)
-        .map(({ key }) => this.notifications[key])
-        .filter(({ id }) => !this.readIgnore.includes(id))
-        .filter(n => !!n && n.status === NotificationStatus.new);
-      // Пометить все как прочитанное
-      this.onReadNotifications(notifications);
+      this.notifications$
+        .pipe(
+          takeUntil(this.destroyed$),
+          take(1)
+        )
+        .subscribe(allNotifications => {
+          const notifications: Notification[] = CreateArray(this.notificationElms.length)
+            .map(key => ({ elm: this.notificationElms.get(key)?.nativeElement as HTMLElement, key }))
+            .filter(({ elm }) => !!elm)
+            .map(({ elm, key }) => {
+              const styles: CSSStyleDeclaration = getComputedStyle(elm);
+              const top: number = elm.offsetTop;
+              const bottom: number = elm.offsetTop + elm.clientHeight + ParseInt(styles.borderTopWidth) + ParseInt(styles.borderBottomWidth);
+              // Вернуть данные
+              return { elm, top, bottom, key };
+            })
+            .filter(({ top, bottom }) => top < event.y + event.viewHeight && bottom > event.y)
+            .map(({ key }) => allNotifications[key])
+            .filter(({ id }) => !this.readIgnore.includes(id))
+            .filter(n => !!n && n.status === NotificationStatus.new);
+          // Пометить все как прочитанное
+          this.onReadNotifications(notifications);
+        });
     }
   }
 
@@ -178,31 +205,25 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   // Отметить уведомление как прочитанное
   onReadNotifications(notifications: Notification | Notification[]): void {
     notifications = Array.isArray(notifications) ? notifications : [notifications];
+    // Параметры
     const ids: number[] = notifications.map(({ id }) => id);
+    const removeReadIgnore = () => ids.forEach(id => {
+      const index: number = this.readIgnore.findIndex(t => t === id);
+      // Удалить блокировку прочтения
+      this.readIgnore.splice(index, 1);
+    });
     // Если окно открыто
     if (this.show && !!notifications?.length) {
       this.readIgnore.push(...ids);
       // Подписка
       forkJoin({
-        timer: timer(this.readWhaitTimer),
+        timer: timer(this.readWaitTimer),
         responce: this.notificationService.readNotifications(ids)
       })
         .pipe(takeUntil(this.destroyed$))
         .subscribe(
-          ({ responce: { result } }) => {
-            this.updateNotificationsList(result);
-            // Убрать из списка игнора прочтения
-            ids.forEach(id => {
-              const index: number = this.readIgnore.findIndex(t => t === id);
-              // Удалить блокировку прочтения
-              this.readIgnore.splice(index, 1);
-            });
-          },
-          () => ids.forEach(id => {
-            const index: number = this.readIgnore.findIndex(t => t === id);
-            // Удалить блокировку прочтения
-            this.readIgnore.splice(index, 1);
-          })
+          () => removeReadIgnore(),
+          () => removeReadIgnore()
         );
     }
   }
@@ -211,39 +232,46 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-  // Загрузка уведомлений
+  // Загрузить уведомления
   private loadNotifications(): void {
-    const search: Partial<NotificationSearchRequest> = {
-      status: NotificationStatus.any,
-      skip: this.skip,
-      limit: this.limit
-    };
-    // Подписка
-    this.notificationService.getList(search, ["0002"])
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(({ count, result }) => {
-        const listCount: number = UniqueArray([...this.notifications ?? [], ...result ?? []]).length;
-        // Добавить уведомления в список
-        this.updateNotificationsList(result);
-        // Запретить дальнейшую загрузку истории
-        this.availToMoreLoad = listCount < count;
-      });
+    if (this.availToMoreLoad) {
+      const search: Partial<NotificationSearchRequest> = {
+        status: NotificationStatus.any,
+        skip: this.listSkip,
+        limit: this.listLimit
+      };
+      // Запрос
+      this.notificationService.getList(search, ["0002"])
+        .pipe(
+          takeUntil(this.destroyed$),
+          concatMap(
+            () => this.notifications$.pipe(take(1)),
+            ({ result, count }, notifications) => ({ count, result, notifications })
+          )
+        )
+        .subscribe(({ count, result, notifications }) => {
+          const listCount: number = notifications.length;
+          // Запретить дальнейшую загрузку истории
+          this.listSkip += result.length;
+          this.availToMoreLoad = listCount < count;
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        });
+    }
   }
 
-  // Добавить уведомления в общий список
-  private updateNotificationsList(notification: Notification | Notification[]): void {
-    const newNotifications: Notification[] = Array.isArray(notification) ? notification : [notification];
-    // Проверка массива
-    this.notifications = this.notifications ?? [];
-    // Добавление уведомлений в общий массив
-    newNotifications
-      .filter(n => !!n)
-      .forEach(newNotification => this.addNotificationToList(newNotification));
+  // Ожидание новых уведомлений
+  private waitNotifications(): void {
+    this.notificationService.getNewNotifications()
+      .pipe(
+        takeUntil(this.destroyed$),
+        filter(() => this.show)
+      )
+      .subscribe(() => this.onScrollChange(this.previousScroll));
   }
 
   // События закрытия уведомлений
   private closeEvents(): void {
-    // Закрытие уведомлений: мышка нажата
     fromEvent(document, "mousedown")
       .pipe(
         takeUntil(this.destroyed$),
@@ -269,57 +297,5 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     this.scrollService.onAlwaysScroll()
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.onClose());
-  }
-
-  // Добавить уведомление в общий массив
-  private addNotificationToList(notification: Notification): void {
-    const index: number = this.notifications.findIndex(({ id }) => notification.id === id);
-    // Заменить существующий
-    if (index >= 0) {
-      this.notifications[index] = notification;
-      this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
-      this.changeDetectorRef.detectChanges();
-    }
-    // Добавить новое
-    else {
-      this.defineNotificationData(notification).subscribe(n => {
-        this.skip += 1;
-        this.notifications.push(n);
-        this.notifications = this.notifications.sort((a, b) => b.createDate.getTime() - a.createDate.getTime());
-        this.changeDetectorRef.detectChanges();
-      });
-    }
-  }
-
-  // Преобразование данных
-  private defineNotificationData(notification: Notification): Observable<Notification> {
-    const waitUser = () => !!notification.data.user && !this.usersSubscribe.hasOwnProperty(notification.data.user);
-    // Загрузка данных о входящем пользователе
-    if (waitUser()) {
-      const userId: number = ParseInt(notification.data.user);
-      // Загрузка данных о пользователе
-      this.defineUser(userId);
-    }
-    // Вернуть подписку
-    return WaitObservable(() => waitUser()).pipe(
-      takeUntil(this.destroyed$),
-      map(() => notification)
-    );
-  }
-
-  // Загрузка данных о пользователе
-  private defineUser(userId: number): void {
-    if (userId > 0) {
-      this.accountService.user$(userId)
-        .pipe(
-          takeUntil(this.destroyed$),
-          filter(user => !!user)
-        )
-        .subscribe(user => {
-          this.usersSubscribe[userId] = user;
-          this.notifications = [...this.notifications];
-          this.changeDetectorRef.detectChanges();
-        });
-    }
   }
 }

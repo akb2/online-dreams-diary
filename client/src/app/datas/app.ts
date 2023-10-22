@@ -109,7 +109,7 @@ export const ArrayRandom: <T>(data: T[]) => T = function <T>(data: T[]) {
 
 // Преобразовать в массив
 export const ToArray: <T>(d: any, c?: (d: any) => T) => T[] = function <T>(data: any, mapCallback = d => d as T) {
-  return (Array.isArray(data) ? data : [data]).map(mapCallback);
+  return (Array.isArray(data) ? data : !!data ? [data] : []).map(mapCallback);
 };
 
 // Поиск ближайшего предыдущего элемента по селектору

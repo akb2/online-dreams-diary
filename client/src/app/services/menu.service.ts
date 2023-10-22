@@ -11,6 +11,7 @@ import { NotificationService } from "@_services/notification.service";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
+import { notificationsClearAction, notificationsNoReadCountSelector } from "@app/reducers/notifications";
 import { translateLanguageSelector, translateSaveLanguageAction } from "@app/reducers/translate";
 import { Store } from "@ngrx/store";
 import { BehaviorSubject, Observable, Subject, filter, map, pairwise, startWith, takeUntil } from "rxjs";
@@ -55,7 +56,7 @@ export class MenuService implements OnDestroy {
       map(([, next]) => next)
     );
     // Подписка на количество уведомлений
-    this.notificationService.newNotificationsCount$
+    this.store.select(notificationsNoReadCountSelector)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(count => {
         if (this.notificationsCount >= 0 && this.notificationsCount < count && count > 0) {
@@ -113,7 +114,7 @@ export class MenuService implements OnDestroy {
   private onLogOut(): void {
     this.accountService.quit();
     this.friendService.quit();
-    this.notificationService.quit();
+    this.store.dispatch(notificationsClearAction());
   }
 
   // Смена языки
