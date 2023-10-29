@@ -1,6 +1,6 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";

@@ -1,5 +1,5 @@
 import { MediaFileView, MediaFileViewType, PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";

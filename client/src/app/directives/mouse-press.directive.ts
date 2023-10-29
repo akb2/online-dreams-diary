@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { Subject, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
 

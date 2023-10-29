@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { NumberDirection } from "@_models/math";
 import { ScreenService } from "@_services/screen.service";

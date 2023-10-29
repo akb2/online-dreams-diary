@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CompareElementByElement } from "@_datas/app";
 import { GraffityDrawData } from "@_models/comment";
 import { ScreenService } from "@_services/screen.service";

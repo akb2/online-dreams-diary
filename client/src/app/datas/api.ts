@@ -143,10 +143,3 @@ export const ApiResponseMessages: SimpleObject = {
 
   "9999": "Неизвестная ошибка. Повторите позже"
 } as const;
-
-// Подписка ожидания условия
-export const WaitObservable = (callback: () => boolean, limit: number = Infinity): Observable<void> => timer(0, 50).pipe(
-  takeWhile(i => callback() && i < limit, true),
-  skipWhile(i => callback() && i < limit),
-  map(() => { })
-);

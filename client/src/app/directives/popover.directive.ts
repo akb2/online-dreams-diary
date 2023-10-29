@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { BackgroundHorizontalPositionV2, BackgroundVerticalPosition } from "@_models/appearance";
 import { FlexibleConnectedPositionStrategy, Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';

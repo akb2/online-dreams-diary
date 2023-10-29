@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { Friend, FriendStatus } from "@_models/friend";
 import { Notification } from "@_models/notification";

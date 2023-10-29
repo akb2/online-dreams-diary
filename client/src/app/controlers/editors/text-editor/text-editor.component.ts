@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CompareElementByElement, CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";

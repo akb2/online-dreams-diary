@@ -1,9 +1,9 @@
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
-import { WaitObservable } from "@_datas/api";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { CheckInRange, ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { User } from "@_models/account";
 import { IconBackground, IconColor, SimpleObject } from "@_models/app";

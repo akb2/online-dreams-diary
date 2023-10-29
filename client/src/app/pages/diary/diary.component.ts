@@ -1,7 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
-import { Title } from "@angular/platform-browser";
-import { ActivatedRoute, Router } from "@angular/router";
 import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { ObjectToUrlObject } from "@_datas/api";
@@ -9,6 +5,7 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamMoods, DreamPlural, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject, CustomObjectKey, RouteData, SimpleObject } from "@_models/app";
@@ -23,8 +20,12 @@ import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
-import { Observable, of, Subject, throwError, timer } from "rxjs";
-import { concatMap, map, skipWhile, switchMap, takeUntil, takeWhile } from "rxjs/operators";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, Router } from "@angular/router";
+import { Observable, Subject, of, throwError } from "rxjs";
+import { concatMap, switchMap, takeUntil } from "rxjs/operators";
 
 
 
@@ -105,11 +106,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Подписка на ожидание данных
   private waitObservable(callback: () => boolean): Observable<void> {
-    return timer(1, 50).pipe(
-      takeUntil(this.destroyed$),
-      takeWhile(callback, true),
-      skipWhile(callback),
-      map(() => { })
+    return WaitObservable(callback).pipe(
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -410,10 +408,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
           }
           // Подписка
           this.waitObservable(() => !visitedUserSync)
-            .pipe(
-              concatMap(() => this.accountService.user$(this.visitedUserId, false)),
-              takeUntil(this.destroyed$)
-            )
+            .pipe(concatMap(() => this.accountService.user$(this.visitedUserId, false)))
             .subscribe(
               user => {
                 this.visitedUser = user;
@@ -430,10 +425,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
   // Определение списка сновидений
   private defineDreamsList(): void {
     this.waitObservable(() => this.visitedUserId === -1 || (this.visitedUserId > 0 && !this.visitedUser))
-      .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.activatedRoute.queryParams)
-      )
+      .pipe(concatMap(() => this.activatedRoute.queryParams))
       .subscribe(() => this.search());
   }
 

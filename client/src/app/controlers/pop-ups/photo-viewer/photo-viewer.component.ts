@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { AppMatDialogConfig, CompareElementByElement, FirstPrevBySelector, FrontDialogClass } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";

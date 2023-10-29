@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMaxSize } from "@_datas/app";
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
 import { CheckInRange, LineFunc, ParseInt } from "@_helpers/math";

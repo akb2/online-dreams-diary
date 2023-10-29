@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { ScrollElement } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CreateRandomID } from "@_helpers/string";

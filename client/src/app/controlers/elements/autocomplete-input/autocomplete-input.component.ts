@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { ScrollElement } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { ParseInt } from "@_helpers/math";

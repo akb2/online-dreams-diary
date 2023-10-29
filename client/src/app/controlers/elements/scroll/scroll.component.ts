@@ -1,4 +1,4 @@
-import { WaitObservable } from "@_datas/api";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CustomObject, SimpleObject } from "@_models/app";

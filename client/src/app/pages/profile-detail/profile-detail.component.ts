@@ -1,7 +1,7 @@
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
-import { WaitObservable } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { CheckInRange, ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { SearchResponce } from "@_models/api";
 import { RouteData } from "@_models/app";
