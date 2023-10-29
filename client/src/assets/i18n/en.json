@@ -232,5 +232,16 @@
         "6": "Dark Skin Tone"
       }
     }
+  },
+  "3d": {
+    "viewer": {
+      "loader": {
+        "title": {
+          "0": "It's funny, but you shouldn't see it))",
+          "1": "Preparing to view",
+          "2": "Landscape creation"
+        }
+      }
+    }
   }
 }
