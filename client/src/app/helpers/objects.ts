@@ -1,3 +1,4 @@
+import { XYCoord } from "@_models/dream-map";
 import { IsSimpleObject } from "./app";
 import { ParseInt } from "./math";
 
@@ -174,7 +175,7 @@ export const XYForEach = <T>(width: number, height: number, getItem: (x: number,
 };
 
 // Двумерный цикл по координатам с возвращением результата
-export const XYMapEach = <T>(width: number, height: number, getItem: (x: number, y: number) => T) => {
+export const XYMapEach = <T = XYCoord>(width: number, height: number, getItem = (x: number, y: number) => <T>({ x, y })): T[] => {
   const list: T[] = [];
   // Цикл
   for (let y: number = height - 1; y >= 0; y--) {
@@ -185,3 +186,8 @@ export const XYMapEach = <T>(width: number, height: number, getItem: (x: number,
   // Вернуть массив
   return list;
 };
+
+// Получить координату по индексу
+export const GetCoordsByIndex = (width: number, height: number, index: number): XYCoord => index >= 0 && index < width * height
+  ? { x: index % width, y: Math.floor(index / width) }
+  : null;

@@ -1,0 +1,84 @@
+@use "sass:map";
+@use "mixins";
+@use "colors";
+@use "containers";
+
+// Родительский блок
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: inherit;
+}
+
+// Обертка
+.viewer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: inherit;
+  user-select: none;
+  // Область рендеринга
+  > canvas {
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Загрузка
+.loader {
+  $iconSize: 36px;
+  // Подклчюения
+  @include mixins.inset;
+  // Свойства
+  z-index: 1;
+  position: absolute;
+  background-color: inherit;
+  padding: containers.$paddingX;
+  gap: containers.$paddingX;
+  display: grid;
+  grid-template-columns: #{$iconSize} 1fr 320px 1fr #{$iconSize};
+  grid-template-rows: #{$iconSize} 1fr auto 1fr #{$iconSize};
+  grid-template-areas: "1 1 1 1 1" "2 2 2 2 2" "3-1 3-1 title 3-2 3-2" "4 4 4 4 4" "progressTitle progressBar progressBar progressBar icon";
+  align-items: center;
+  // Прогресс текстом
+  &__progress-title {
+    grid-area: progressTitle;
+    font-size: 13px;
+    line-height: 16px;
+    text-align: center;
+    font-weight: 400;
+  }
+  // Заголовок
+  &__title {
+    grid-area: title;
+    text-align: center;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  // Элементы внутри
+  > mat-progress-bar {
+    grid-area: progressBar;
+    // Убрать анимацию
+    ::ng-deep .mdc-linear-progress__bar {
+      transition: none;
+    }
+  }
+  // Икнока
+  > mat-icon {
+    grid-area: icon;
+    color: map.get(colors.$matPrimary, 500);
+    width: $iconSize;
+    height: $iconSize;
+    line-height: $iconSize;
+    font-size: $iconSize * 0.8;
+    text-align: center;
+  }
+}

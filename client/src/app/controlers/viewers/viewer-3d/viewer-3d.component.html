@@ -1,0 +1,25 @@
+<div class="viewer"
+     *ngVar="loadingStep !== loadingSteps.stopped as loading">
+  <canvas #canvas
+          [hidden]="loading"></canvas>
+  <!-- Загрузка -->
+  <ng-container [ngTemplateOutlet]="loader"
+                *ngIf="loading"></ng-container>
+</div>
+
+<!-- Загрузка -->
+<ng-template #loader>
+  <div class="loader"
+       *ngVar="progressBarState as state">
+    <!-- Прогресс текстом -->
+    <div class="loader__progress-title"
+         *ngIf="state.mode === 'determinate'">{{state.progress | number: '1.0-0'}}%</div>
+    <!-- Иконка -->
+    <mat-icon>{{state.icon}}</mat-icon>
+    <!-- Прогресс -->
+    <mat-progress-bar [value]="state.progress"
+                      [mode]="state.mode"></mat-progress-bar>
+    <!-- Заголовок -->
+    <div class="loader__title">{{('3d.viewer.loader.title.' + loadingStep) | translate}}</div>
+  </div>
+</ng-template>

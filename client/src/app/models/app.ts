@@ -54,6 +54,9 @@ export interface CustomMaterialIcon {
   path: string;
 }
 
+// Ключ по умолчанию
+export const DefaultKey = "default";
+
 // Цветовые схемы всплывающих сообщений
 type SnackbarPropMode = "success" | "error" | "info";
 
