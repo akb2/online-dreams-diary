@@ -54,6 +54,9 @@ export interface CustomMaterialIcon {
   path: string;
 }
 
+// Типы контекстов
+export type CanvasContextType = "2d" | "bitmaprenderer" | "webgl" | "webgl2";
+
 // Ключ по умолчанию
 export const DefaultKey = "default";
 

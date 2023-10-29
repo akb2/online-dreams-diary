@@ -1,6 +1,8 @@
 import { InformModule } from "@_controlers/inform/inform.module";
 import { CoreModule } from "@_modules/core.module";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
+import { Engine3DService } from "@_services/3d/engine-3d.service";
+import { Landscape3DService } from "@_services/3d/landscape-3d.service";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
@@ -20,7 +22,9 @@ import { Viewer3DComponent } from "./viewer-3d.component";
     Viewer3DComponent
   ],
   providers: [
-    Ceil3dService
+    Ceil3dService,
+    Engine3DService,
+    Landscape3DService
   ],
   imports: [
     CommonModule,

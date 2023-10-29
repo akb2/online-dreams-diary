@@ -20,6 +20,13 @@
   position: absolute;
   background-color: inherit;
   user-select: none;
+  // Помощник
+  &__helper {
+    @include mixins.inset;
+    // Свойства
+    z-index: -100;
+    position: absolute;
+  }
   // Область рендеринга
   > canvas {
     @include mixins.inset;

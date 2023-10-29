@@ -4,6 +4,7 @@ import { TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
+import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { Observable, Subject, catchError, concatMap, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
@@ -26,11 +27,13 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() showCompass: boolean = true;
 
   @ViewChild("canvas") private canvas: ElementRef;
+  @ViewChild("helper") private helper: ElementRef;
 
   loadingStep: LoadingStep = LoadingStep.prepared;
   loadingSteps: typeof LoadingStep = LoadingStep;
-  loadingCeilLimit: number = 0;
-  loadingCeilCurrent: number = 0;
+  private loadingCeilLimit: number = 0;
+  private loadingCeilCurrent: number = 0;
+  private loadCeilsByTime: number = 100;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -47,7 +50,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const maxOperations: number = this.loadingCeilLimit;
     const currentOperation: number = 1 + (this.loadingCeilCurrent);
     const progress: number = withProgress && maxOperations > 0
-      ? MathRound((currentOperation / maxOperations) * 100)
+      ? MathRound((currentOperation / maxOperations) * 100, 3)
       : 0;
     // Вернуть состояние
     return { mode, icon, progress };
@@ -56,6 +59,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
 
+
+  // Загрузка сцены
+  private loadScene(): void {
+    this.loadingStep = LoadingStep.prepared;
+    this.changeDetectorRef.detectChanges();
+    // Подписка
+    this.engine3DService.create(this.canvas.nativeElement, this.helper.nativeElement);
+  }
 
   // Загрузка ландшафта
   private loadLandScape(): Observable<any> {
@@ -67,7 +78,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.loadingStep = LoadingStep.landScape;
     this.changeDetectorRef.detectChanges();
     // Подписка
-    return TakeCycle(this.loadingCeilLimit + 1, 5).pipe(
+    return TakeCycle(this.loadingCeilLimit + 1, this.loadCeilsByTime).pipe(
       tap(i => {
         this.loadingCeilCurrent = CheckInRange(i, this.loadingCeilLimit);
         this.changeDetectorRef.detectChanges();
@@ -88,20 +99,23 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   constructor(
     private ceil3dService: Ceil3dService,
+    private engine3DService: Engine3DService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!!changes?.dreamMap) {
       this.ceil3dService.dreamMap = this.dreamMap;
+      this.engine3DService.dreamMap = this.dreamMap;
     }
   }
 
   ngAfterViewInit(): void {
     if (!!window.WebGLRenderingContext) {
-      WaitObservable(() => !this.canvas?.nativeElement || !this.dreamMap)
+      WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
           takeUntil(this.destroyed$),
+          tap(() => this.loadScene()),
           concatMap(() => this.loadLandScape())
         )
         .subscribe(() => this.onViewerLoad());
