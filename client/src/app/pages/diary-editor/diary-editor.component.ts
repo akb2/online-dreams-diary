@@ -45,8 +45,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   imagePrefix: string = "../../../../assets/images/backgrounds/";
   ready: boolean = false;
   loading: boolean = false;
-  tabAnimation: boolean = false;
-  selectedTab: number = 1;
+  selectedTab: number = 2;
   private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
@@ -292,12 +291,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   // Переключение вкладки
   onChangeTab(index: number): void {
     this.mainMenu.collapseMenu();
-    this.tabAnimation = true;
-  }
-
-  // Конец анимации
-  onTabAnimationDone(): void {
-    this.tabAnimation = false;
   }
 
 

@@ -2,6 +2,7 @@ import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocom
 import { CardModule } from '@_controlers/card/card.module';
 import { ChipsInputModule } from '@_controlers/chips-input/chips-input.module';
 import { DreamMapEditorModule } from '@_controlers/dream-map-editor/dream-map-editor.module';
+import { Editor3DModule } from "@_controlers/editor-3d/editor-3d.module";
 import { InformModule } from "@_controlers/inform/inform.module";
 import { NavMenuSettingsModule } from '@_controlers/nav-menu-settings/nav-menu-settings.module';
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
@@ -37,7 +38,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     DreamMapEditorModule,
     SliderInputModule,
     InformModule,
-    TextEditorModule
+    TextEditorModule,
+    Editor3DModule
   ]
 })
 

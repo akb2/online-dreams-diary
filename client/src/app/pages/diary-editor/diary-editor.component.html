@@ -24,7 +24,6 @@
                      color="primary"
                      [selectedIndex]="selectedTab"
                      (selectedIndexChange)="onChangeTab($event)"
-                     (animationDone)="onTabAnimationDone()"
                      *ngIf="!loading; else saveLoader">
         <!-- Общее -->
         <mat-tab label="Общее">
@@ -137,14 +136,8 @@
             <div class="overlay">
               <div class="section root-section tabs">
                 <div class="container all-height">
-                  <app-dream-map-editor [dreamMap]="dream.map"
-                                        [debugInfo]="true"
-                                        *ngIf="!tabAnimation"></app-dream-map-editor>
-                  <!-- Filler image -->
-                  <div class="filler-image"
-                       *ngIf="tabAnimation">
-                    <img src="/assets/dream-map/_filler.jpg" />
-                  </div>
+                  <editor-3d [dreamMap]="dream.map"
+                             [debugInfo]="true"></editor-3d>
                 </div>
               </div>
             </div>
