@@ -11,12 +11,12 @@ export const NOTIFICATIONS_KEY = "notifications";
 
 // Интерфейс состояния
 export interface NotificationsState {
-  notifications: Notification[];
+  list: Notification[];
 }
 
 // Начальное состояние
 export const notificationsInitialState: NotificationsState = {
-  notifications: []
+  list: []
 };
 
 
@@ -58,27 +58,27 @@ export const notificationsReducer = createReducer(
   // Инициализация уведомлений из стора
   on(notificationsInitAction, (state, { notifications }) => ({
     ...state,
-    notifications: sortNotifications([...notifications])
+    list: sortNotifications([...notifications])
   })),
   // Добавить одно уведомление
   on(notificationsAddOneAction, (state, { notification }) => ({
     ...state,
-    notifications: addOrUpdateNotification([...state.notifications], notification)
+    list: addOrUpdateNotification([...state.list], notification)
   })),
   // Добавить несколько уведомлений
   on(notificationsAddSomeAction, (state, { notifications: newNotifications }) => ({
     ...state,
-    notifications: newNotifications.reduce((o, notification) => addOrUpdateNotification(o, notification), [...state.notifications])
+    list: newNotifications.reduce((o, notification) => addOrUpdateNotification(o, notification), [...state.list])
   })),
   // Заменить весь список
   on(notificationsReplaceAction, (state, { notifications }) => ({
     ...state,
-    notifications: sortNotifications([...notifications])
+    list: sortNotifications([...notifications])
   })),
   // Очистить список
   on(notificationsClearAction, state => ({
     ...state,
-    notifications: []
+    list: []
   }))
 );
 
@@ -92,7 +92,7 @@ export const notificationsFeatureSelector = createFeatureSelector<NotificationsS
 // Список уведомлений
 export const notificationsSelector = createSelector(
   notificationsFeatureSelector,
-  ({ notifications }) => notifications
+  ({ list }) => list
 );
 
 // Количество непрочитанных уведомлений
