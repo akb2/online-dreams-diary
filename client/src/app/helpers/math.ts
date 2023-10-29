@@ -105,6 +105,16 @@ export const MathFloor = (value: number, afterDotNum: number = 0): number => {
   return Math.floor(value);
 };
 
+// Округление до большего
+export const MathCeil = (value: number, afterDotNum: number = 0): number => {
+  if (afterDotNum > 0) {
+    const sqrt: number = Math.pow(10, afterDotNum);
+    return Math.ceil((value * sqrt)) / sqrt;
+  }
+  // Округлить до целого
+  return Math.ceil(value);
+};
+
 // Случайное число
 export const Random = (min: number, max: number, noBorder: boolean = false, afterDotNum: number = 0) => {
   const border: number = noBorder ? 1 / Math.pow(10, afterDotNum) : 0;
