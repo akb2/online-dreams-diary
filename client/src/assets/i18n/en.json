@@ -7,7 +7,8 @@
       "cancel": "Cancel",
       "save": "Save",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "close": "Close"
     },
     "forms": {
       "errors": {
