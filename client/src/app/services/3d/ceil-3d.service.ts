@@ -64,7 +64,7 @@ export class Ceil3dService {
   }
 
   // Приграничная ячейка
-  private isBorderCeil(x: number, y: number): boolean {
+  isBorderCeil(x: number, y: number): boolean {
     const width: number = this.dreamMap?.size?.width ?? DreamMapSize;
     const height: number = this.dreamMap?.size?.height ?? DreamMapSize;
     // Проверка
