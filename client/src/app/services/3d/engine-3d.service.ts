@@ -1,5 +1,5 @@
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
-import { AngleToRad, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleToRad, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
@@ -9,7 +9,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
-import { DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
+import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
 import { CineonToneMapping, Clock, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -203,7 +203,7 @@ export class Engine3DService implements OnDestroy {
     });
     const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect);
     // Добавление эффектов
-    this.postProcessingEffects = { renderPass };
+    this.postProcessingEffects = { renderPass, depthOfFieldEffect };
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(renderPass);
     this.composer.addPass(effectPass);
@@ -287,31 +287,31 @@ export class Engine3DService implements OnDestroy {
   // Обновить параметры пост обработки
   private onUpdatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
-      // const chairPositionX: number = this.canvasWidth * 0.5;
-      // const chairPositionY: number = LineFunc(
-      //   this.canvasHeight * 0.9,
-      //   this.canvasHeight * 0.5,
-      //   this.control.getPolarAngle(),
-      //   this.control.minPolarAngle,
-      //   this.control.maxPolarAngle
-      // );
-      // const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
-      // const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
-      // const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
-      // const blendMode: BlendMode = depthOfFieldEffect.blendMode;
-      // const closestObject: Intersection = !!objects?.length ?
-      //   objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
-      //   null;
-      // const distance: number = this.control.getDistance();
-      // const focusDistance: number = LineFunc(0.5, 0.4, distance, 0, this.control.maxDistance);
+      const chairPositionX: number = this.canvasWidth * 0.5;
+      const chairPositionY: number = LineFunc(
+        this.canvasHeight * 0.9,
+        this.canvasHeight * 0.5,
+        this.control.getPolarAngle(),
+        this.control.minPolarAngle,
+        this.control.maxPolarAngle
+      );
+      const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
+      const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
+      const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+      const blendMode: BlendMode = depthOfFieldEffect.blendMode;
+      const closestObject: Intersection = !!objects?.length ?
+        objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
+        null;
+      const distance: number = this.control.getDistance();
+      const focusDistance: number = LineFunc(0.5, 0.4, distance, 0, this.control.maxDistance);
       // Обновить дальность
-      // blendMode.opacity.value = LineFunc(0.6, 1, distance, this.control.minDistance, this.control.maxDistance);
-      // depthOfFieldEffect.resolution.width = this.canvasWidth;
-      // depthOfFieldEffect.resolution.height = this.canvasHeight;
+      blendMode.opacity.value = LineFunc(0.6, 1, distance, this.control.minDistance, this.control.maxDistance);
+      depthOfFieldEffect.resolution.width = this.canvasWidth;
+      depthOfFieldEffect.resolution.height = this.canvasHeight;
       // Найдены объекты
-      // depthOfFieldEffect.target = !!closestObject ? closestObject.point : this.control.target;
-      // circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
-      // circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.5;
+      depthOfFieldEffect.target = !!closestObject ? closestObject.point : this.control.target;
+      circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
+      circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.5;
     }
   }
 }
@@ -323,7 +323,7 @@ export class Engine3DService implements OnDestroy {
 // Интерфейс эффектов постобработки
 interface PostProcessingEffects {
   renderPass: RenderPass;
-  // depthOfFieldEffect: DepthOfFieldEffect;
+  depthOfFieldEffect: DepthOfFieldEffect;
 }
 
 // Интерфейс данных анимации
