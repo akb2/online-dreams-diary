@@ -1,13 +1,14 @@
-import { CheckInRange, MathRound, ParseInt } from "@_helpers/math";
+import { CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
+import { Landscape3DService } from "@_services/3d/landscape-3d.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { Observable, Subject, catchError, concatMap, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Observable, Subject, catchError, concatMap, map, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
 
@@ -33,7 +34,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 100;
+  private loadCeilsByTime: number = 25;
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -70,26 +71,49 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Загрузка ландшафта
   private loadLandScape(): Observable<any> {
+    const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
     const width: number = ParseInt(this.dreamMap.size.width);
     const height: number = ParseInt(this.dreamMap.size.height);
+    const totalWidth: number = width * repeat;
+    const totalHeight: number = height * repeat;
+    const widthShift: number = this.landscape3DService.outSideRepeat * width;
+    const heightShift: number = this.landscape3DService.outSideRepeat * height;
+    const totalSize: number = totalWidth * totalHeight;
     // Состояния
-    this.loadingCeilLimit = width * height;
+    this.loadingCeilLimit = totalSize * 2;
     this.loadingCeilCurrent = 0;
     this.loadingStep = LoadingStep.landScape;
     this.changeDetectorRef.detectChanges();
+    // Создание объекта ландшафта
+    this.landscape3DService.create(width, height);
     // Подписка
     return TakeCycle(this.loadingCeilLimit + 1, this.loadCeilsByTime).pipe(
       tap(i => {
         this.loadingCeilCurrent = CheckInRange(i, this.loadingCeilLimit);
         this.changeDetectorRef.detectChanges();
       }),
-      switchMap(i => i < this.loadingCeilLimit
-        ? of(GetCoordsByIndex(width, height, i))
+      map(i => ({ i, circle: MathFloor(i / totalSize) })),
+      switchMap(({ i, circle }) => i < this.loadingCeilLimit
+        ? of({ coords: GetCoordsByIndex(totalWidth, totalHeight, i - (circle * totalSize)), circle })
         : throwError(() => null)
       ),
-      tap(({ x, y }) => { }),
+      map(data => ({
+        ...data,
+        coords: {
+          x: data.coords.x - widthShift,
+          y: data.coords.y - heightShift
+        }
+      })),
+      tap(({ coords: { x, y }, circle }) => circle === 0
+        ? this.landscape3DService.setHeightByCoords(this.ceil3dService.getCeil(x, y))
+        : this.landscape3DService.setVertexByCoords(this.ceil3dService.getCeil(x, y))
+      ),
       skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
-      catchError(() => of(null))
+      catchError(() => {
+        this.engine3DService.addToScene(this.landscape3DService.mesh);
+        // Перейти далее
+        return of(null);
+      })
     );
   }
 
@@ -100,6 +124,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   constructor(
     private ceil3dService: Ceil3dService,
     private engine3DService: Engine3DService,
+    private landscape3DService: Landscape3DService,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
