@@ -1,7 +1,6 @@
 import { ObjectToFormData } from "@_datas/api";
 import { BrowserNames, OsNames, ToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
-import { User } from "@_models/account";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
@@ -11,7 +10,7 @@ import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { accountDeleteUserIdAction, accountUserIdSelector } from "@app/reducers/account";
 import { Store } from "@ngrx/store";
-import { BehaviorSubject, Observable, Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { concatMap, map, switchMap, take, takeUntil, tap } from "rxjs/operators";
 
 
@@ -28,10 +27,6 @@ export class TokenService {
   checkAuth: boolean = false;
 
   private userId$ = this.store.select(accountUserIdSelector);
-
-  private user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
-  readonly user$: Observable<User> = this.user.asObservable();
-
   private destroyed$: Subject<void> = new Subject();
 
 
