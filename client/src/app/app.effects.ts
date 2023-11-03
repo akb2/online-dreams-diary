@@ -47,7 +47,7 @@ export class AppEffects {
     { dispatch: false }
   );
 
-  // Удалить ID пользователя в локал сторадж
+  // Удалить ID пользователя из локал сторадж
   accountDeleteUserId$ = createEffect(
     () => this.actions$.pipe(
       ofType(accountDeleteUserIdAction),
