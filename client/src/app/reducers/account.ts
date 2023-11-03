@@ -58,3 +58,6 @@ export const accountFeatureSelector = createFeatureSelector<AccountState>(ACCOUN
 
 // Текущий идентификатор пользователя
 export const accountUserIdSelector = createSelector(accountFeatureSelector, ({ userId }) => userId);
+
+// Проверка авторизации
+export const accountCheckAuthSelector = createSelector(accountUserIdSelector, userId => userId > 0);
