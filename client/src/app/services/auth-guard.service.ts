@@ -1,18 +1,18 @@
-import { Injectable, OnDestroy } from "@angular/core";
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from "@angular/router";
 import { AuthRules } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { map, Observable, Subject, takeUntil } from "rxjs";
+import { Injectable, OnDestroy } from "@angular/core";
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from "@angular/router";
+import { Observable, Subject, map, takeUntil } from "rxjs";
 
 
 
 
 
-@Injectable({ providedIn: "root" })
+@Injectable()
 
-export class AuthGuard implements CanActivate, OnDestroy {
+export class AuthGuardService implements CanActivate, OnDestroy {
 
 
   private destroyed$: Subject<void> = new Subject();
