@@ -24,7 +24,7 @@ export class PopupLanguageListComponent {
   language: Language;
   languages: LanguageData[] = Languages;
 
-  language$: Observable<Language> = this.store.select(translateLanguageSelector);
+  language$: Observable<Language> = this.store$.select(translateLanguageSelector);
 
 
 
@@ -32,7 +32,7 @@ export class PopupLanguageListComponent {
 
   constructor(
     private matDialogRef: MatDialogRef<PopupLanguageListComponent, Language>,
-    private store: Store
+    private store$: Store
   ) { }
 
 
@@ -43,7 +43,7 @@ export class PopupLanguageListComponent {
   onChangeLanguage(mixedLanguage: string): void {
     const language: Language = mixedLanguage as Language;
     // Смена языка
-    this.store.dispatch(translateChangeLanguageAction({ language }));
+    this.store$.dispatch(translateChangeLanguageAction({ language }));
     // Закрытие окна
     this.matDialogRef.close();
   }

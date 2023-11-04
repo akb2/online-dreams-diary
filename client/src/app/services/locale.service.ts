@@ -26,11 +26,11 @@ export class LocaleService implements OnDestroy {
 
   constructor(
     @Optional() @SkipSelf() otherInstance: LocaleService,
-    private store: Store,
+    private store$: Store,
     private router: Router
   ) {
     if (!otherInstance) {
-      this.store.select(translateLanguageSelector)
+      this.store$.select(translateLanguageSelector)
         .pipe(
           takeUntil(this.destroyed$),
           filter(language => LanguageLocales[language] !== this.currentLocale),

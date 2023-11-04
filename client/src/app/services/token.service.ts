@@ -26,7 +26,7 @@ export class TokenService {
   userId: number = 0;
   checkAuth: boolean = false;
 
-  private userId$ = this.store.select(accountUserIdSelector);
+  private userId$ = this.store$.select(accountUserIdSelector);
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -37,7 +37,7 @@ export class TokenService {
     private httpClient: HttpClient,
     private apiService: ApiService,
     private router: Router,
-    private store: Store
+    private store$: Store
   ) {
     this.userId$
       .pipe(takeUntil(this.destroyed$))
@@ -67,7 +67,7 @@ export class TokenService {
           // Сохранить токен
           if (code === "0001") {
             if (userId !== newUserId) {
-              this.store.dispatch(accountDeleteUserIdAction());
+              this.store$.dispatch(accountDeleteUserIdAction());
               this.router.navigate([""]);
             }
           }
@@ -125,7 +125,7 @@ export class TokenService {
     return this.httpClient.post<ApiResponse>("token/deleteToken", null).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code)),
       tap(() => {
-        this.store.dispatch(accountDeleteUserIdAction());
+        this.store$.dispatch(accountDeleteUserIdAction());
         this.router.navigate([""]);
       })
     );

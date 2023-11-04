@@ -5,12 +5,12 @@ import { ApiService } from "@_services/api.service";
 import { FriendService } from "@_services/friend.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
-import { Injectable, OnDestroy } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
 import { notificationsClearAction } from "@app/reducers/notifications";
 import { Store } from "@ngrx/store";
-import { Observable, Subject, of, switchMap, takeUntil, tap } from "rxjs";
+import { Observable, of, switchMap, tap } from "rxjs";
 
 
 
@@ -20,15 +20,13 @@ import { Observable, Subject, of, switchMap, takeUntil, tap } from "rxjs";
   providedIn: "root"
 })
 
-export class GlobalService implements OnDestroy {
+export class GlobalService {
 
 
   private mainTitle: string = "Online Dreams Diary";
   private titleSeparator: string = "|";
 
   user: User;
-
-  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -61,18 +59,13 @@ export class GlobalService implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private friendService: FriendService,
-    private store: Store,
+    private store$: Store,
     private tokenService: TokenService,
     private router: Router,
     private apiService: ApiService,
     private snackBar: SnackbarService,
     private activatedRoute: ActivatedRoute
   ) { }
-
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
 
 
 
@@ -86,16 +79,14 @@ export class GlobalService implements OnDestroy {
       observable = this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
         switchMap(code => {
           if (code === "0001") {
-            return this.accountService.getUser(this.tokenService.userId).pipe(
-              takeUntil(this.destroyed$)
-            );
+            return this.accountService.getUser(this.tokenService.userId);
           }
           // Ошибка проверки токена
           else {
             this.router.navigate([""]);
             this.accountService.quit();
             this.friendService.quit();
-            this.store.dispatch(notificationsClearAction());
+            this.store$.dispatch(notificationsClearAction());
             // Сообщение с ошибкой
             this.snackBar.open({
               "mode": "error",
@@ -113,7 +104,6 @@ export class GlobalService implements OnDestroy {
     }
     // Вернуть подписчик
     return observable.pipe(
-      takeUntil(this.destroyed$),
       tap(user => this.user = user)
     );
   }

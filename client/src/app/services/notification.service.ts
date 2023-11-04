@@ -25,8 +25,8 @@ export class NotificationService implements OnDestroy {
 
   private user: User;
 
-  notifications$ = this.store.select(notificationsSelector).pipe(map(notifications => notifications.map(n => this.notificationCoverter(n))));
-  private userId$ = this.store.select(accountUserIdSelector).pipe(take(1));
+  notifications$ = this.store$.select(notificationsSelector).pipe(map(notifications => notifications.map(n => this.notificationCoverter(n))));
+  private userId$ = this.store$.select(accountUserIdSelector).pipe(take(1));
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -37,7 +37,7 @@ export class NotificationService implements OnDestroy {
     private httpClient: HttpClient,
     private accountService: AccountService,
     private apiService: ApiService,
-    private store: Store
+    private store$: Store
   ) {
     this.accountService.user$()
       .pipe(takeUntil(this.destroyed$))
@@ -70,7 +70,7 @@ export class NotificationService implements OnDestroy {
       map(({ notifications, count, limit }) => {
         const result: Notification[] = ToArray(notifications, n => this.notificationCoverter(n)).filter(n => !!n);
         // Добавить в стор
-        this.store.dispatch(notificationsAddSomeAction({ notifications: result }));
+        this.store$.dispatch(notificationsAddSomeAction({ notifications: result }));
         // Вернуть статус
         return ({ result, count, limit });
       })
@@ -90,7 +90,7 @@ export class NotificationService implements OnDestroy {
       map(notification => {
         const result: Notification = this.notificationCoverter(notification);
         // Добавить в стор
-        this.store.dispatch(notificationsAddOneAction({ notification: result }));
+        this.store$.dispatch(notificationsAddOneAction({ notification: result }));
         // Вернуть статус
         return result;
       })

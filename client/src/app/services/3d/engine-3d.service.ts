@@ -74,7 +74,7 @@ export class Engine3DService implements OnDestroy {
 
   constructor(
     private screenService: ScreenService,
-    private store: Store
+    private store$: Store
   ) {
     this.onCanvasResize();
   }
@@ -276,7 +276,7 @@ export class Engine3DService implements OnDestroy {
     }
     // Угол для компаса
     event.object.getWorldDirection(vector);
-    this.store.dispatch(viewer3DSetCompassAction({
+    this.store$.dispatch(viewer3DSetCompassAction({
       radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
       azimuth: 0
     }))

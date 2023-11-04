@@ -1,9 +1,9 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
-import { WaitObservable } from "@_helpers/rxjs";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
@@ -68,7 +68,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   sendLoader: boolean = false;
 
-  needPetrovich$ = this.store.select(translateNeedPetrovichSelector);
+  needPetrovich$ = this.store$.select(translateNeedPetrovichSelector);
   i18nEmoji$ = this.needPetrovich$.pipe(map(() => this.translateService.get("components.emojies")));
   private destroyed$: Subject<void> = new Subject();
 
@@ -161,7 +161,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     private scrollService: ScrollService,
     private commentService: CommentService,
     private matDialog: MatDialog,
-    private store: Store,
+    private store$: Store,
     private translateService: TranslateService
   ) { }
 

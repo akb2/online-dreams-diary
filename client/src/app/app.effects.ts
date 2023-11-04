@@ -25,7 +25,7 @@ export class AppEffects {
   constructor(
     private actions$: Actions,
     private translateService: TranslateService,
-    private store: Store
+    private store$: Store
   ) { }
 
 
@@ -96,7 +96,7 @@ export class AppEffects {
   notificationsAddOneAction$ = createEffect(
     () => this.actions$.pipe(
       ofType(notificationsAddOneAction),
-      withLatestFrom(this.store.select(notificationsSelector)),
+      withLatestFrom(this.store$.select(notificationsSelector)),
       tap(([, notifications]) => LocalStorageSet(NOTIFICATIONS_LOCAL_STORAGE_KEY, notifications, NOTIFICATIONS_LOCAL_STORAGE_TTL))
     ),
     { dispatch: false }
@@ -106,7 +106,7 @@ export class AppEffects {
   notificationsAddSomeAction$ = createEffect(
     () => this.actions$.pipe(
       ofType(notificationsAddSomeAction),
-      withLatestFrom(this.store.select(notificationsSelector)),
+      withLatestFrom(this.store$.select(notificationsSelector)),
       tap(([, notifications]) => LocalStorageSet(NOTIFICATIONS_LOCAL_STORAGE_KEY, notifications, NOTIFICATIONS_LOCAL_STORAGE_TTL))
     ),
     { dispatch: false }

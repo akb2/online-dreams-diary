@@ -23,11 +23,11 @@ export class CustomDateAdapter extends NativeDateAdapter implements OnDestroy {
 
   constructor(
     @Inject(MAT_DATE_LOCALE) matDateLocale: string,
-    private store: Store
+    private store$: Store
   ) {
     super(matDateLocale);
     // Переключение первого дня недели
-    this.store.select(translateLanguageSelector)
+    this.store$.select(translateLanguageSelector)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(language => {
         this.firstDay = LanguageFirstDayOfWeek[language];

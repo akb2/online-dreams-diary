@@ -123,7 +123,7 @@ export class AccountService implements OnDestroy {
     private apiService: ApiService,
     private router: Router,
     private tokenService: TokenService,
-    private store: Store
+    private store$: Store
   ) {
     this.getUsersFromStore();
   }
@@ -152,7 +152,7 @@ export class AccountService implements OnDestroy {
           activateIsAvail = !!result?.result?.data?.activateIsAvail;
           // Сохранить токен
           if (code === "0001") {
-            this.store.dispatch(accountSaveUserIdAction({ userId }))
+            this.store$.dispatch(accountSaveUserIdAction({ userId }))
             this.router.navigate([""]);
           }
           // Обработка ошибки

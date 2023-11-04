@@ -44,7 +44,7 @@ export class MenuService implements OnDestroy {
     private friendService: FriendService,
     private router: Router,
     private screenService: ScreenService,
-    private store: Store
+    private store$: Store
   ) {
     this.menuItems$ = this.menuItems.asObservable().pipe(
       takeUntil(this.destroyed$),
@@ -54,7 +54,7 @@ export class MenuService implements OnDestroy {
       map(([, next]) => next)
     );
     // Подписка на количество уведомлений
-    this.store.select(notificationsNoReadCountSelector)
+    this.store$.select(notificationsNoReadCountSelector)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(count => {
         if (this.notificationsCount >= 0 && this.notificationsCount < count && count > 0) {
@@ -89,7 +89,7 @@ export class MenuService implements OnDestroy {
       )
       .subscribe(() => this.createMenuItems());
     // Смена языка
-    this.store.select(translateLanguageSelector)
+    this.store$.select(translateLanguageSelector)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(language => {
         this.language = language;
@@ -111,7 +111,7 @@ export class MenuService implements OnDestroy {
   private onLogOut(): void {
     this.accountService.quit();
     this.friendService.quit();
-    this.store.dispatch(notificationsClearAction());
+    this.store$.dispatch(notificationsClearAction());
   }
 
   // Смена языки
@@ -120,7 +120,7 @@ export class MenuService implements OnDestroy {
       ? mixedLanguage as Language
       : GetLanguageFromDomainSetting();
     // Смена языка
-    this.store.dispatch(translateChangeLanguageAction({ language }));
+    this.store$.dispatch(translateChangeLanguageAction({ language }));
   }
 
 

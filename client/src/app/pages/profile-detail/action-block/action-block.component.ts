@@ -31,7 +31,7 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
 
   friendStatuses: typeof FriendStatus = FriendStatus;
 
-  needPetrovich$ = this.store.select(translateNeedPetrovichSelector);
+  needPetrovich$ = this.store$.select(translateNeedPetrovichSelector);
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -49,7 +49,7 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
 
   constructor(
     private friendService: FriendService,
-    private store: Store,
+    private store$: Store,
     private changeDetectorRef: ChangeDetectorRef
   ) { }
 
