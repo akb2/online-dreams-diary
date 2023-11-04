@@ -8,11 +8,11 @@ import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable, OnDestroy, Optional, Self } from "@angular/core";
+import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, takeUntil, tap, timer } from "rxjs";
+import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, tap, timer } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 import { DreamService } from "./dream.service";
@@ -26,7 +26,7 @@ import { MediaService } from "./media.service";
   providedIn: "root"
 })
 
-export class CommentService extends TextMessage implements OnDestroy {
+export class CommentService extends TextMessage {
 
 
   private destroyed$: Subject<void> = new Subject();
@@ -54,7 +54,6 @@ export class CommentService extends TextMessage implements OnDestroy {
     catch (e: any) { }
     // Вернуть подписчика
     return of({ comment }).pipe(
-      takeUntil(this.destroyed$),
       concatMap(() => getUser(userId), (data, user) => ({ ...data, user })),
       concatMap(() => getUser(replyToUserId), (data, replyToUser) => ({ ...data, replyToUser })),
       concatMap(
@@ -112,11 +111,6 @@ export class CommentService extends TextMessage implements OnDestroy {
     super(controlDir, emojiService, domSanitizer);
   }
 
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
-
 
 
 
@@ -134,7 +128,6 @@ export class CommentService extends TextMessage implements OnDestroy {
         mediaPhotos: data?.uploadAttachment?.mediaPhotos ?? []
       })
     })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes))
     );
   }
@@ -144,7 +137,6 @@ export class CommentService extends TextMessage implements OnDestroy {
     const params: HttpParams = ObjectToParams(search, "search_");
     // Вернуть подписчик
     return this.httpClient.get<ApiResponse>("comment/getList", { params }).pipe(
-      takeUntil(this.destroyed$),
       switchMap(data => this.apiService.checkSwitchMap(data, codes)),
       concatMap(
         ({ result: { data } }) => !!data?.comments?.length ?
@@ -167,7 +159,6 @@ export class CommentService extends TextMessage implements OnDestroy {
     const params: HttpParams = ObjectToParams({ comment_id: id });
     // Вернуть подписчик
     return this.httpClient.get<ApiResponse>("comment/getById", { params }).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
         of(result.result.data) :
         this.apiService.checkResponse(result.result.code, codes)
@@ -182,7 +173,6 @@ export class CommentService extends TextMessage implements OnDestroy {
     // Вернуть подписку
     return timer(0, 1000).pipe(
       share(),
-      takeUntil(this.destroyed$),
       filter(() => !connect),
       concatMap(() => this.httpClient.get("longPolling/get/comment/" + materialType + "/" + materialId).pipe(catchError(e => of({ ...e, text: "" })))),
       catchError(() => of({ text: "" })),

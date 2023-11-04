@@ -47,7 +47,6 @@ export class MenuService implements OnDestroy {
     private store$: Store
   ) {
     this.menuItems$ = this.menuItems.asObservable().pipe(
-      takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
       filter(([prev, next]) => !CompareArrays(prev, next)),

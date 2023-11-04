@@ -41,17 +41,18 @@ export class ScreenService implements OnDestroy {
   constructor() {
     this.updateIsMobile();
     // Обновить метку о типе интерфейса
-    fromEvent(window, "resize").pipe(takeUntil(this.destroy$)).subscribe(() => this.updateIsMobile());
-    // Подписки
+    fromEvent(window, "resize")
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.updateIsMobile());
+    // Проверка на мобильный экран
     this.isMobile$ = this.isMobile.asObservable().pipe(
-      takeUntil(this.destroy$),
       startWith(undefined),
       pairwise(),
       filter(([prev, next]) => prev !== next),
       map(([, next]) => next)
     );
+    // Проверка брейкпоинтов
     this.breakpoint$ = this.breakpoint.asObservable().pipe(
-      takeUntil(this.destroy$),
       startWith(undefined),
       pairwise(),
       filter(([prev, next]) => prev !== next),
@@ -117,7 +118,7 @@ export class ScreenService implements OnDestroy {
       image.onerror = error => observer.error(error);
     });
     // Вернуть подписчик
-    return observable.pipe(takeUntil(this.destroy$));
+    return observable;
   }
 
   // Изменение размеров HTML элемента
@@ -133,13 +134,12 @@ export class ScreenService implements OnDestroy {
       return () => resizeObserver.disconnect();
     });
     // Вернуть подписчик
-    return observable.pipe(takeUntil(this.destroy$));
+    return observable;
   }
 
   // Ожидание значения
   waitWhileFalse<T>(data: T): Observable<T> {
     return timer(0, 100).pipe(
-      takeUntil(this.destroy$),
       takeWhile(() => !data, true),
       skipWhile(() => !data),
       map(() => data)

@@ -4,8 +4,8 @@ import { ParseInt } from "@_helpers/math";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { MediaFile, MediaFileDto, MediaFileExtension } from "@_models/media";
 import { HttpClient, HttpEventType } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
-import { Observable, Subject, concatMap, map, of, switchMap, take, takeUntil } from "rxjs";
+import { Injectable } from "@angular/core";
+import { Observable, concatMap, map, of, switchMap, take } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 
@@ -17,9 +17,7 @@ import { ApiService } from "./api.service";
   providedIn: "root"
 })
 
-export class MediaService implements OnDestroy {
-
-  private destroyed$: Subject<void> = new Subject();
+export class MediaService {
 
 
 
@@ -31,11 +29,6 @@ export class MediaService implements OnDestroy {
     private apiService: ApiService
   ) { }
 
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
-
 
 
 
@@ -43,7 +36,6 @@ export class MediaService implements OnDestroy {
   // Загрузить файл
   upload(file: File, codes: string[] = []): Observable<MediaFile | number> {
     return this.httpClient.post<ApiResponse>("media/upload", ObjectToFormData({ file }), { reportProgress: true, observe: "events" }).pipe(
-      takeUntil(this.destroyed$),
       switchMap(event => {
         if (event.type === HttpEventType.UploadProgress && !!event.total) {
           of(Math.round(100 * event.loaded / event.total));
@@ -71,7 +63,6 @@ export class MediaService implements OnDestroy {
   // Конвертировать медиаданные
   convertData(data: MediaFileDto | MediaFile): Observable<MediaFile> {
     return of(data).pipe(
-      takeUntil(this.destroyed$),
       map(data => ({ ...data, userId: data?.user?.id ?? data?.userId })),
       concatMap(
         ({ userId }) => userId ? this.accountService.user$(userId) : of(null),

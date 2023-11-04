@@ -2,9 +2,9 @@ import { AuthRules } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { Injectable, OnDestroy } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from "@angular/router";
-import { Observable, Subject, map, takeUntil } from "rxjs";
+import { Observable, map } from "rxjs";
 
 
 
@@ -12,11 +12,7 @@ import { Observable, Subject, map, takeUntil } from "rxjs";
 
 @Injectable()
 
-export class AuthGuardService implements CanActivate, OnDestroy {
-
-
-  private destroyed$: Subject<void> = new Subject();
-
+export class AuthGuardService implements CanActivate {
 
   constructor(
     private router: Router,
@@ -25,11 +21,6 @@ export class AuthGuardService implements CanActivate, OnDestroy {
     private globalService: GlobalService
   ) { }
 
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
-
 
 
 
@@ -37,7 +28,6 @@ export class AuthGuardService implements CanActivate, OnDestroy {
   // Активатор
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.globalService.init().pipe(
-      takeUntil(this.destroyed$),
       map(user => {
         const pageRule: AuthRules = parseFloat(route.data.authRule) as AuthRules || 0;
         const userAuth: boolean = this.accountService.checkAuth;

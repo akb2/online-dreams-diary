@@ -1,6 +1,6 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { ScrollElement } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
@@ -175,7 +175,6 @@ export class ScrollService implements OnDestroy {
   // Начало скролла
   onScrollStart(): Observable<ScrollData> {
     return this.scrollStartEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -183,7 +182,6 @@ export class ScrollService implements OnDestroy {
   // Прослушивание скролла
   onScroll(): Observable<ScrollData> {
     return this.scrollEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -191,7 +189,6 @@ export class ScrollService implements OnDestroy {
   // Конец скролла
   onScrollEnd(): Observable<ScrollData> {
     return this.scrollEndEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -199,7 +196,6 @@ export class ScrollService implements OnDestroy {
   // Прослушивание скролла
   onAlwaysStartScroll(): Observable<ScrollData> {
     return this.scrollAlwaysStartEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -207,7 +203,6 @@ export class ScrollService implements OnDestroy {
   // Прослушивание скролла
   onAlwaysScroll(): Observable<ScrollData> {
     return this.scrollAlwaysEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -215,7 +210,6 @@ export class ScrollService implements OnDestroy {
   // Прослушивание скролла
   onAlwaysEndScroll(): Observable<ScrollData> {
     return this.scrollAlwaysEndEvent$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       map(data => data ?? this.getCurrentScroll)
     );
   }
@@ -318,7 +312,6 @@ export class ScrollService implements OnDestroy {
     let scrollLastTime: number = (new Date()).getTime();
     // Вернуть подписчик
     return WaitObservable(() => !this.getCurrentScroll?.elm).pipe(
-      takeUntil(this.destroyed$),
       mergeMap(() => merge(timer(0, this.scrollSpeedByStep), this.onAlwaysScroll()).pipe(
         filter(() => startScrollData.scrollableHeight !== this.getCurrentScroll.scrollableHeight)
       )),

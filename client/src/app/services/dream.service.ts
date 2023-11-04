@@ -96,7 +96,6 @@ export class DreamService implements OnDestroy {
     // Текущий пользователь
     if (userIds.length === 1 && ((!!this.user && this.user.id === userIds[0]) || userId === userIds[0])) {
       return this.accountService.user$(userId).pipe(
-        takeUntil(this.destroyed$),
         take(1),
         map(user => ([user]))
       );
@@ -104,7 +103,6 @@ export class DreamService implements OnDestroy {
     // Список пользователей
     return this.accountService.search({ ids: userIds }, ["0002"])
       .pipe(
-        takeUntil(this.destroyed$),
         map(({ result }) => result)
       );
   }
@@ -195,7 +193,6 @@ export class DreamService implements OnDestroy {
     const formData: FormData = ObjectToFormData({ id: dreamId });
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("dream/delete", formData).pipe(
-      takeUntil(this.destroyed$),
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(!!result.result.data.isDelete) :
@@ -209,7 +206,6 @@ export class DreamService implements OnDestroy {
     const formData: FormData = ObjectToFormData({ id: dreamId });
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("dream/createInterpretation", formData).pipe(
-      takeUntil(this.destroyed$),
       switchMap(
         result => result.result.code === "0001" || codes.some(code => code === result.result.code) ?
           of(result.result.data) :

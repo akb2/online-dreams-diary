@@ -9,8 +9,8 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
 import { HttpClient } from "@angular/common/http";
-import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, catchError, filter, finalize, map, mergeMap, of, pairwise, startWith, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable, catchError, filter, finalize, map, mergeMap, of, pairwise, startWith, switchMap, tap, throwError } from "rxjs";
 
 
 
@@ -20,7 +20,7 @@ import { BehaviorSubject, Observable, Subject, catchError, filter, finalize, map
   providedIn: "root"
 })
 
-export class FriendService implements OnDestroy {
+export class FriendService {
 
 
   private localStorageTtl: number = LocalStorageDefaultTtl;
@@ -30,7 +30,6 @@ export class FriendService implements OnDestroy {
   private firensSubscritionCounter: [number, number, number][] = [];
 
   private friends: BehaviorSubject<Friend[]> = new BehaviorSubject([]);
-  private destroyed$: Subject<void> = new Subject();
 
 
 
@@ -51,7 +50,6 @@ export class FriendService implements OnDestroy {
     let counter: number = this.updateFriendsCounter(inUser, outUser, 1);
     // Подписки
     const observable: Observable<Friend> = this.friends.asObservable().pipe(
-      takeUntil(this.destroyed$),
       startWith(null),
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
@@ -68,7 +66,6 @@ export class FriendService implements OnDestroy {
     // Вернуть подписки
     return friendObservable
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(() => observable),
         tap(() => {
           if (this.compareFriend(this.syncFriend, inUser, outUser)) {
@@ -118,11 +115,6 @@ export class FriendService implements OnDestroy {
     this.getFriendsFromStore();
   }
 
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
-  }
-
 
 
 
@@ -141,7 +133,6 @@ export class FriendService implements OnDestroy {
         })
       })
         .pipe(
-          takeUntil(this.destroyed$),
           switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
             of(result) :
             this.apiService.checkResponse(result.result.code, codes)
@@ -214,7 +205,6 @@ export class FriendService implements OnDestroy {
   // Отправить заявку в друзья
   addToFriends(userId: number, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("friend/addToFriends", ObjectToFormData({ user_id: userId })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
@@ -225,7 +215,6 @@ export class FriendService implements OnDestroy {
   // Отменить заявку в друзья
   rejectFriends(userId: number, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("friend/rejectFriends", ObjectToFormData({ user_id: userId })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
@@ -236,7 +225,6 @@ export class FriendService implements OnDestroy {
   // Подтвердить заявку в друзья
   confirmFriends(userId: number, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("friend/confirmFriends", ObjectToFormData({ user_id: userId })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
@@ -247,7 +235,6 @@ export class FriendService implements OnDestroy {
   // Удалить из друзей
   cancelFromFriends(userId: number, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("friend/cancelFromFriends", ObjectToFormData({ user_id: userId })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),

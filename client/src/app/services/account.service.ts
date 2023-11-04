@@ -68,7 +68,6 @@ export class AccountService implements OnDestroy {
     let firstCall: boolean = true;
     // Подписки
     const observable: Observable<unknown> = this.users$.asObservable().pipe(
-      takeUntil(this.destroyed$),
       startWith(undefined),
       pairwise(),
       map(([prev, next]) => ([prev ?? [], next ?? []])),
@@ -90,7 +89,6 @@ export class AccountService implements OnDestroy {
     );
     const user: User = [...this.users$.getValue()].find(({ id }) => id === userId);
     const userObservable: Observable<User> = (!!user && !sync ? of(user) : (userId > 0 ? this.getUser(userId, codes) : of(null))).pipe(
-      takeUntil(this.destroyed$),
       concatMap(() => <Observable<User>>observable)
     );
     // Вернуть подписки
@@ -129,7 +127,6 @@ export class AccountService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.users$.complete();
     this.destroyed$.next();
     this.destroyed$.complete();
   }
@@ -144,7 +141,6 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return this.httpClient.post<ApiResponse>("account/auth", ObjectToFormData({ login, password }))
       .pipe(
-        takeUntil(this.destroyed$),
         switchMap(result => {
           const code: ApiResponseCodes = result.result.code.toString();
           const userId: number = ParseInt(result?.result?.data?.id);
@@ -166,7 +162,6 @@ export class AccountService implements OnDestroy {
   register(data: UserRegister, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/register", ObjectToFormData(data))
       .pipe(
-        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -175,7 +170,6 @@ export class AccountService implements OnDestroy {
   activateAccount(user: number, code: string, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/activate", ObjectToFormData({ user, code }))
       .pipe(
-        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -184,7 +178,6 @@ export class AccountService implements OnDestroy {
   createActivationCode(login: string, password: string, captcha: string, codes: string[] = []): Observable<string> {
     return this.httpClient.post<ApiResponse>("account/createActivationCode", ObjectToFormData({ login, password, captcha }))
       .pipe(
-        takeUntil(this.destroyed$),
         switchMap(r => this.apiService.checkResponse(r.result.code, codes))
       );
   }
@@ -230,7 +223,6 @@ export class AccountService implements OnDestroy {
     // Вернуть подписку
     return timer(0, 1000).pipe(
       share(),
-      takeUntil(this.destroyed$),
       filter(() => !connect),
       concatMap(() => observable(id, lastEditDate).pipe(catchError(e => of(e)))),
       catchError(() => of(null)),
@@ -256,7 +248,6 @@ export class AccountService implements OnDestroy {
   // Обновить подписчик анонимного пользователя
   syncAnonymousUser(): Observable<User> {
     return of(true).pipe(
-      takeUntil(this.destroyed$),
       tap(() => this.users$.next([...this.users$.getValue()])),
       map(() => null)
     );

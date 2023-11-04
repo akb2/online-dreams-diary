@@ -62,7 +62,6 @@ export class NotificationService implements OnDestroy {
         limit: search.limit ?? 0
       }, "search_")
     }).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
         of(result.result.data) :
         this.apiService.checkResponse(result.result.code, codes)
@@ -82,7 +81,6 @@ export class NotificationService implements OnDestroy {
     const params: HttpParams = ObjectToParams({ notice_id: id });
     // Вернуть подписчик
     return this.httpClient.get<ApiResponse>("notification/getById", { params }).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
         of(result.result.data) :
         this.apiService.checkResponse(result.result.code, codes)
@@ -112,7 +110,6 @@ export class NotificationService implements OnDestroy {
     // Вернуть подписку
     return timer(0, 1000).pipe(
       share(),
-      takeUntil(this.destroyed$),
       filter(() => !connect),
       concatMap(() => this.userId$),
       concatMap(userId => observable(userId)),
@@ -126,7 +123,6 @@ export class NotificationService implements OnDestroy {
   // Отметить уведомления как прочитанные
   readNotifications(ids: number[], codes: string[] = []): Observable<SearchResponce<Notification>> {
     return this.httpClient.post<ApiResponse>("notification/readByIds", ObjectToFormData({ ids })).pipe(
-      takeUntil(this.destroyed$),
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
         of(ParseInt(result.result.data)) :
         this.apiService.checkResponse(result.result.code, codes)
