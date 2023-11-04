@@ -247,6 +247,9 @@
           "1": "Preparing to view",
           "2": "Landscape creation"
         }
+      },
+      "compass": {
+        "label": "N"
       }
     }
   }

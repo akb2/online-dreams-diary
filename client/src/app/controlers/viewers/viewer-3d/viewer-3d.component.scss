@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 @use "mixins";
 @use "colors";
 @use "containers";
@@ -89,5 +90,59 @@
     line-height: $iconSize;
     font-size: $iconSize * 0.8;
     text-align: center;
+  }
+}
+
+// Компасс
+.compass {
+  $size: 76px;
+  $position: 18px;
+  $labelSize: 25px;
+  $borderSize: 6px;
+  $northBorderRadius: 6px;
+  // Свойства
+  position: absolute;
+  display: block;
+  bottom: $position;
+  right: $position;
+  width: $size;
+  height: $size;
+  transform-style: preserve-3d;
+  perspective: 170px;
+  // Круг
+  &__circle {
+    @include mixins.inset;
+    // Свойства
+    display: block;
+    border-style: solid solid dotted dotted;
+    border-radius: 50% #{$northBorderRadius} 50% 50%;
+    border-width: #{$borderSize} #{$borderSize} 1px 1px;
+    border-color: #{colors.$border} #{colors.$border} #{rgba(colors.$border, 0.5)} #{rgba(colors.$border, 0.5)};
+    position: absolute;
+    z-index: 0;
+  }
+  // Обозначение севера
+  &__label {
+    display: block;
+    width: $labelSize;
+    height: $labelSize;
+    text-align: center;
+    position: absolute;
+    right: -$borderSize;
+    top: -$borderSize;
+    background-color: colors.$border;
+    border-radius: 0 #{$northBorderRadius} 0 50%;
+    color: colors.$subtitle;
+    transform-origin: 50% #{$labelSize - math.div($labelSize + $borderSize, 2) + math.div($size, 2)};
+    z-index: 1;
+    transform-style: flat;
+    // Текст
+    &-text {
+      display: inline-block;
+      vertical-align: top;
+      line-height: $labelSize;
+      font-size: $labelSize * 0.6;
+      font-weight: 400;
+    }
   }
 }

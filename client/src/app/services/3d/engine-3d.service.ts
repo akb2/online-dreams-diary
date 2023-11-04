@@ -29,7 +29,7 @@ export class Engine3DService implements OnDestroy {
   private moveSpeed: number = DreamCeilSize * 14;
   private zoomSpeed: number = DreamCeilSize;
   private minAngle: number = 0;
-  private maxAngle: number = 85;
+  private maxAngle: number = 75;
 
   dreamMap: DreamMap;
 
@@ -278,7 +278,7 @@ export class Engine3DService implements OnDestroy {
     event.object.getWorldDirection(vector);
     this.store$.dispatch(viewer3DSetCompassAction({
       radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
-      azimuth: 0
+      azimuth: RadToAngle(vector.y * (Math.PI / 2))
     }))
     // обновить пост отрисовку
     this.onUpdatePostProcessors();

@@ -1,4 +1,4 @@
-import { CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
+import { CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
@@ -8,6 +8,8 @@ import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
+import { viewer3DCompassSelector } from "@app/reducers/viewer-3d";
+import { Store } from "@ngrx/store";
 import { Observable, Subject, catchError, concatMap, map, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
@@ -34,7 +36,31 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 25;
+  private loadCeilsByTime: number = 250;
+
+  private compassAzimuthShift: number = -90;
+  compassRadialShift: number = 45;
+
+  compassStyles$ = this.store$.select(viewer3DCompassSelector).pipe(map(({ radial, azimuth }) => ({
+    transform: (
+      " rotateX(" + (azimuth - this.compassAzimuthShift) + "deg) " +
+      " rotateZ(" + (radial - this.compassRadialShift) + "deg) "
+    )
+  })));
+
+  compassLabelStyles$ = this.store$.select(viewer3DCompassSelector).pipe(map(({ radial, azimuth }) => {
+    const koof: number = -Sin(azimuth);
+    const depth: number = 0.5 - ((Cos(radial) / 2) * koof);
+    // Объект стилей
+    return {
+      top: (depth * 100) + "%",
+      left: ((Sin(radial) + 1) * 50) + "%",
+      transform: (
+        " translateX(-50%) " +
+        " translateY(-50%) "
+      )
+    };
+  }));
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -125,7 +151,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     private ceil3dService: Ceil3dService,
     private engine3DService: Engine3DService,
     private landscape3DService: Landscape3DService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private store$: Store
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {

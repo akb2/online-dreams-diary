@@ -4,11 +4,25 @@
           [hidden]="loading"></canvas>
   <!-- Загрузка -->
   <ng-container [ngTemplateOutlet]="loader"
-                *ngIf="loading"></ng-container>
+                *ngIf="loading; else widgets"></ng-container>
   <!-- Вспомогательный блок -->
   <div #helper
        class="viewer__helper"></div>
 </div>
+
+<!-- Инструменты редактора -->
+<ng-template #widgets>
+  <!-- Компас -->
+  <span class="compass">
+    <span class="compass__circle"
+          [ngStyle]="compassStyles$ | async">
+      <span class="compass__label">
+        <span class="compass__label-text"
+              [ngStyle]="{ transform: 'rotate(' + compassRadialShift + 'deg)' }">{{'3d.viewer.compass.label' | translate}}</span>
+      </span>
+    </span>
+  </span>
+</ng-template>
 
 <!-- Загрузка -->
 <ng-template #loader>
