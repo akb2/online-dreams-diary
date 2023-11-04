@@ -8,10 +8,11 @@ import { GetDetectedLanguage } from "@_helpers/translate";
 import { Injectable } from '@angular/core';
 import { Actions, ROOT_EFFECTS_INIT, createEffect, ofType } from '@ngrx/effects';
 import { Store } from "@ngrx/store";
-import { map, tap, withLatestFrom } from "rxjs/operators";
+import { TranslateService } from "@ngx-translate/core";
+import { concatMap, map, tap, withLatestFrom } from "rxjs/operators";
 import { accountDeleteUserIdAction, accountInitUserIdAction, accountSaveUserIdAction } from "./reducers/account";
 import { notificationsAddOneAction, notificationsAddSomeAction, notificationsClearAction, notificationsInitAction, notificationsReplaceAction, notificationsSelector } from "./reducers/notifications";
-import { translateInitLanguageAction, translateSaveLanguageAction } from "./reducers/translate";
+import { translateChangeLanguageAction, translateInitLanguageAction, translateSaveLanguageAction } from "./reducers/translate";
 
 
 
@@ -23,6 +24,7 @@ export class AppEffects {
 
   constructor(
     private actions$: Actions,
+    private translateService: TranslateService,
     private store: Store
   ) { }
 
@@ -71,10 +73,11 @@ export class AppEffects {
   // Сменить язык
   translateSaveLanguage$ = createEffect(
     () => this.actions$.pipe(
-      ofType(translateSaveLanguageAction),
-      tap(({ language }) => LocalStorageSet(LanguageLocalStorageKey, language, LocalStorageTtl))
-    ),
-    { dispatch: false }
+      ofType(translateInitLanguageAction, translateChangeLanguageAction),
+      tap(({ language }) => LocalStorageSet(LanguageLocalStorageKey, language, LocalStorageTtl)),
+      concatMap(({ language }) => this.translateService.use(language), ({ language }) => language),
+      map(language => translateSaveLanguageAction({ language }))
+    )
   );
 
 

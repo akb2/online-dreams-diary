@@ -7,12 +7,11 @@ import { MenuItem, MenuItemsListAuth, MenuItemsListDevices } from "@_models/menu
 import { Language } from "@_models/translate";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
-import { NotificationService } from "@_services/notification.service";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { notificationsClearAction, notificationsNoReadCountSelector } from "@app/reducers/notifications";
-import { translateLanguageSelector, translateSaveLanguageAction } from "@app/reducers/translate";
+import { translateChangeLanguageAction, translateLanguageSelector } from "@app/reducers/translate";
 import { Store } from "@ngrx/store";
 import { BehaviorSubject, Observable, Subject, filter, map, pairwise, startWith, takeUntil } from "rxjs";
 
@@ -43,7 +42,6 @@ export class MenuService implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private friendService: FriendService,
-    private notificationService: NotificationService,
     private router: Router,
     private screenService: ScreenService,
     private store: Store
@@ -103,7 +101,6 @@ export class MenuService implements OnDestroy {
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
-    this.menuItems.complete();
   }
 
 
@@ -123,7 +120,7 @@ export class MenuService implements OnDestroy {
       ? mixedLanguage as Language
       : GetLanguageFromDomainSetting();
     // Смена языка
-    this.store.dispatch(translateSaveLanguageAction({ language }));
+    this.store.dispatch(translateChangeLanguageAction({ language }));
   }
 
 

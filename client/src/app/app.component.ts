@@ -5,11 +5,9 @@ import { GlobalService } from "@_services/global.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
-import { Store } from "@ngrx/store";
 import { TranslateService } from "@ngx-translate/core";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { translateLanguageSelector } from "./reducers/translate";
 
 
 
@@ -56,8 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private titleService: Title,
     private changeDetectorRef: ChangeDetectorRef,
     private accountService: AccountService,
-    private translateService: TranslateService,
-    private store: Store
+    private translateService: TranslateService
   ) {
     this.translateService.addLangs(Object.values(Language));
   }
@@ -76,10 +73,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this.afterLoadPage(event);
         }
       });
-    // Изменения языка
-    this.store.select(translateLanguageSelector)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(language => this.translateService.use(language));
   }
 
   ngOnDestroy() {

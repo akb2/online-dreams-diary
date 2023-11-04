@@ -2,7 +2,7 @@ import { AppMatDialogConfig } from "@_datas/app";
 import { Language } from "@_models/translate";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { translateLanguageSelector, translateSaveLanguageAction } from "@app/reducers/translate";
+import { translateChangeLanguageAction, translateLanguageSelector } from "@app/reducers/translate";
 import { Store } from "@ngrx/store";
 import { Observable } from "rxjs";
 
@@ -43,7 +43,7 @@ export class PopupLanguageListComponent {
   onChangeLanguage(mixedLanguage: string): void {
     const language: Language = mixedLanguage as Language;
     // Смена языка
-    this.store.dispatch(translateSaveLanguageAction({ language }));
+    this.store.dispatch(translateChangeLanguageAction({ language }));
     // Закрытие окна
     this.matDialogRef.close();
   }

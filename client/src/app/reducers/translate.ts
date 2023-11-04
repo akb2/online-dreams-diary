@@ -29,18 +29,31 @@ export const translateInitLanguageAction = createAction(
 );
 
 // Сменить язык
-export const translateSaveLanguageAction = createAction(
+export const translateChangeLanguageAction = createAction(
   "[TRANSLATE] Change language",
+  props<{ language: Language }>()
+);
+
+// Сохранить язык
+export const translateSaveLanguageAction = createAction(
+  "[TRANSLATE] Save language",
   props<{ language: Language }>()
 );
 
 // Создание стейта
 export const translateReducer = createReducer(
   translateInitialState,
-  // Инициализация текущего языка
-  on(translateInitLanguageAction, (state, { language }) => ({ ...state, language })),
-  // Сменить язык
-  on(translateSaveLanguageAction, (state, { language }) => ({ ...state, language }))
+  // Инициализация/смена текущего языка
+  on(
+    translateInitLanguageAction,
+    translateChangeLanguageAction,
+    state => state
+  ),
+  // Применить язык
+  on(
+    translateSaveLanguageAction,
+    (state, { language }) => ({ ...state, language })
+  )
 );
 
 
