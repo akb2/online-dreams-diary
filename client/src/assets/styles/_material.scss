@@ -42,6 +42,10 @@
         box-shadow: none !important;
       }
       // Базовые настройки
+      &[mat-mini-fab].mat-basic {
+        background-color: colors.$card;
+      }
+      // Базовые настройки
       &[mat-stroked-button],
       &[mat-flat-button],
       &[mat-icon-button] {
