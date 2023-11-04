@@ -36,7 +36,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 250;
+  private loadCeilsByTime: number = 50;
 
   private compassAzimuthShift: number = -90;
   compassRadialShift: number = 45;
