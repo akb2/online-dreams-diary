@@ -1,3 +1,4 @@
+import { ParseInt } from "@_helpers/math";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
 
 
@@ -57,7 +58,7 @@ export const accountReducer = createReducer(
 export const accountFeatureSelector = createFeatureSelector<AccountState>(ACCOUNT_KEY);
 
 // Текущий идентификатор пользователя
-export const accountUserIdSelector = createSelector(accountFeatureSelector, ({ userId }) => userId);
+export const accountUserIdSelector = createSelector(accountFeatureSelector, ({ userId }) => ParseInt(userId));
 
 // Проверка авторизации
 export const accountCheckAuthSelector = createSelector(accountUserIdSelector, userId => userId > 0);
