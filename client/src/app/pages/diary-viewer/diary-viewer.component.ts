@@ -257,7 +257,6 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
     // Прокрутка левой колонки
     WaitObservable(() => !this.contentPanel?.nativeElement || !this.leftPanel?.nativeElement || !this.rightPanel?.nativeElement || !this.keywordsPanel?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => ({
           contentPanel: this.contentPanel.nativeElement,
           keywordsPanel: this.keywordsPanel.nativeElement,
@@ -265,16 +264,17 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
           rightPanel: this.rightPanel.nativeElement
         })),
         mergeMap(({ contentPanel, leftPanel, rightPanel, keywordsPanel }) => merge(
-          this.scrollService.onAlwaysScroll().pipe(takeUntil(this.destroyed$)),
-          this.screenService.elmResize([contentPanel, leftPanel, rightPanel, keywordsPanel]).pipe(takeUntil(this.destroyed$))
-        ))
+          this.scrollService.onAlwaysScroll(),
+          this.screenService.elmResize([contentPanel, leftPanel, rightPanel, keywordsPanel])
+        )),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onPanelsPosition());
     // Изменение размеров панели
     WaitObservable(() => !this.interpretationPanel?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize(this.interpretationPanel.nativeElement))
+        concatMap(() => this.screenService.elmResize(this.interpretationPanel.nativeElement)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onPanelsPosition());
     // Мобильный интерфейс
@@ -287,8 +287,8 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
     // Изменение размеров блока ключевых слов
     WaitObservable(() => !this.keywordsPanelHelper?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize(this.keywordsPanelHelper.nativeElement))
+        concatMap(() => this.screenService.elmResize(this.keywordsPanelHelper.nativeElement)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.changeDetectorRef.detectChanges());
   }
@@ -407,7 +407,6 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
   private defineData(): void {
     this.accountService.user$(0, false, [], "dream-viewer")
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(
           () => this.activatedRoute.queryParams,
           (user, params) => ({ user, params })
@@ -430,7 +429,8 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
             this.dreamService.search({ user: userId, excludeIds: [id], sortField: "random", checkPrivate: false }, ["0002", "8100"]) :
             of({ result: [] }),
           (data, { result: otherDreams }) => ({ ...data, otherDreams })
-        )
+        ),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         ({ user, params, dream, writeAccess, readAccess, otherDreams }) => {

@@ -1,7 +1,7 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMaxSize } from "@_datas/app";
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
 import { CheckInRange, LineFunc, ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, FileTypes } from "@_models/app";
 import { MediaFile, MediaFileExtension } from "@_models/media";
 import { MediaService } from "@_services/media.service";
@@ -125,7 +125,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
   ngAfterViewInit(): void {
     WaitObservable(() => !this.dragInputElm?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(() => merge(
           // Файл перемещается по окну
           fromEvent<DragEvent>(window, "dragover").pipe(tap(event => this.onFileInWindow(event))),
@@ -135,7 +134,8 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
           fromEvent<DragEvent>(this.dragInputElm.nativeElement, "dragleave").pipe(tap(event => this.onFileOutField(event))),
           // Файл перемещен и мышка отпущена
           fromEvent<DragEvent>(window, "drop").pipe(tap(event => this.onFileDrop(event)))
-        ))
+        )),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.changeDetectorRef.detectChanges());
   }
@@ -209,7 +209,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
       const files: File[] = this.multiUpload ? Array.from(mixedFiles) : [mixedFiles[0]];
       // Проверить размер
       merge(...files.map(file => ImageRightRotate(file).pipe(
-        takeUntil(this.destroyed$),
         concatMap(file => this.addFile(file)),
         takeWhile(result => !!result)
       )))
@@ -258,7 +257,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
           this.changeDetectorRef.detectChanges();
           // Начать загрузку
           return this.mediaService.upload(file.file).pipe(
-            takeUntil(this.destroyed$),
             map(result => {
               if (typeof result === "number") {
                 const progress: number = CheckInRange(result, 100, 0);
@@ -280,7 +278,8 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
               uploadedFile.loadError = LoadError.uploadError;
               // Вернуть объект
               return of(uploadedFile);
-            })
+            }),
+            takeUntil(this.destroyed$)
           );
         }
       }

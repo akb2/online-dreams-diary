@@ -1,6 +1,6 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { AppMatDialogConfig, CompareElementByElement, FirstPrevBySelector, FrontDialogClass } from "@_datas/app";
 import { CheckInRange, ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObjectKey } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
@@ -199,8 +199,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   private viewerTemplateResizeEvent(): void {
     WaitObservable(() => !this.viewerTemplate?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize([this.viewerTemplate.nativeElement]))
+        concatMap(() => this.screenService.elmResize([this.viewerTemplate.nativeElement])),
+        takeUntil(this.destroyed$)
       )
       .subscribe(([{ width }]) => {
         this.togglerSpacing = width / 2;
@@ -213,7 +213,6 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   private viewerTemplateContainerResizeEvent(): void {
     WaitObservable(() => !this.viewerTemplateContainer?.nativeElement || !this.imageElm?.nativeElement || this.loading)
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(() => merge(
           this.screenService.elmResize([this.viewerTemplateContainer.nativeElement, this.imageElm.nativeElement]),
           this.writeAccess$.pipe(
@@ -224,7 +223,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
             switchMap(writeAccess => writeAccess ? this.screenService.elmResize([this.commentEditor.nativeElement]) : of(null))
           )
         )),
-        filter(() => !!this.commentBlock?.nativeElement)
+        filter(() => !!this.commentBlock?.nativeElement),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => {
         const element: HTMLElement = this.viewerTemplateContainer.nativeElement;
@@ -243,10 +243,10 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   private keyboardEvents(): void {
     fromEvent<KeyboardEvent>(window, "keyup")
       .pipe(
-        takeUntil(this.destroyed$),
         filter(() => this.getTotalCount > 1),
         filter(({ code }) => this.prevControlKeys.includes(code) || this.nextControlKeys.includes(code)),
-        filter(({ target }) => !this.commentBlock?.nativeElement || (!!this.commentBlock?.nativeElement && CompareElementByElement(this.commentBlock.nativeElement, target)))
+        filter(({ target }) => !this.commentBlock?.nativeElement || (!!this.commentBlock?.nativeElement && CompareElementByElement(this.commentBlock.nativeElement, target))),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ code, target }) => {
         if (this.prevControlKeys.includes(code)) {

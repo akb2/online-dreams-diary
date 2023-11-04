@@ -13,7 +13,7 @@ import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/ap
 import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister, UserSex } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
-import { Subject } from "rxjs";
+import { Subject, merge } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
@@ -135,7 +135,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       }
     });
     // Изменение формы
-    this.form.map(group => group.valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(data => this.onChange(data)));
+    merge(...this.form.map(group => group.valueChanges))
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(data => this.onChange(data))
   }
 
   ngOnDestroy(): void {

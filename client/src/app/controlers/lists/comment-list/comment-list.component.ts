@@ -1,11 +1,11 @@
 import { MediaFileView, MediaFileViewType, PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
-import { WaitObservable } from "@_helpers/rxjs";
 import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
@@ -194,9 +194,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.activatedRoute.queryParams
       .pipe(
-        takeUntil(this.destroyed$),
         take(1),
-        map(params => ParseInt(params?.[this.goToCommentUrlParam]))
+        map(params => ParseInt(params?.[this.goToCommentUrlParam])),
+        takeUntil(this.destroyed$)
       )
       .subscribe(startWithId => this.loadComments(true, startWithId));
     // Загрузка данных о текущем пользователе
@@ -209,15 +209,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
     // Скольжение аватарок видимых комментариев
     WaitObservable(() => !this.listElm?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(() => merge(
           this.scrollService.onAlwaysScroll(),
           this.screenService.breakpoint$.pipe(
-            takeUntil(this.destroyed$),
             map(() => this.scrollService.getCurrentScroll)
           )
         )),
-        filter(() => !!this.inScreenComments.length)
+        filter(() => !!this.inScreenComments.length),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ y }) => {
         const listElm: HTMLElement = this.listElm.nativeElement;
@@ -279,9 +278,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .pipe(
         map(() => this.getCommentElm(commentId)),
         mergeMap(commentElm => this.screenService.elmResize(commentElm)),
-        takeUntil(this.destroyed$),
         timeout(1000),
-        take(5)
+        take(5),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         data => {

@@ -38,8 +38,8 @@ export class PopoverDirective implements OnDestroy {
   ) {
     WaitObservable(() => !elementRef?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => fromEvent<MouseEvent>(elementRef.nativeElement, "click"))
+        concatMap(() => fromEvent<MouseEvent>(elementRef.nativeElement, "click")),
+        takeUntil(this.destroyed$)
       )
       .subscribe(event => this.onClick(event));
   }

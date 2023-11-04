@@ -1,6 +1,6 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { IconColor } from "@_models/app";
-import { filter, Subject, takeUntil, timer } from "rxjs";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Subject, filter, takeUntil, timer } from "rxjs";
 
 
 
@@ -47,8 +47,8 @@ export class InformComponent implements OnInit, AfterViewInit, OnDestroy {
     // Анимация точек
     timer(0, this.pointersTimer)
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(() => this.waitPointers)
+        filter(() => this.waitPointers),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => {
         this.currentPointers = this.currentPointers < this.maxPointers ? this.currentPointers + 1 : 0;

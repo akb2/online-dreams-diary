@@ -1,5 +1,5 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { DrawDatas } from "@_helpers/draw-datas";
+import { WaitObservable } from "@_helpers/rxjs";
 import { NumberDirection } from "@_models/math";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
@@ -41,9 +41,9 @@ export class ScrollDetectorDirective implements OnInit, OnDestroy {
     // Прослушивание событий
     WaitObservable(() => !this.scrollService.getCurrentScroll?.elm)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => this.scrollService.getCurrentScroll.elm),
-        mergeMap(elm => merge(this.scrollService.onAlwaysScroll(), this.screenService.elmResize(elm)))
+        mergeMap(elm => merge(this.scrollService.onAlwaysScroll(), this.screenService.elmResize(elm))),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.checkVisibility());
   }

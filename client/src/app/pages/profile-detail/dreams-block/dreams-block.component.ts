@@ -1,13 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { DreamPlural } from "@_datas/dream";
 import { User, UserSex } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
-import { ScreenKeys } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
 import { ScreenService } from "@_services/screen.service";
-import { catchError, concatMap, of, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Subject, catchError, concatMap, of, skipWhile, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -86,7 +85,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
     // Поиск сновидений
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroyed$),
         takeWhile(() => !this.user, true),
         skipWhile(() => !this.user),
         concatMap(() => this.itsMyPage || !this.isAutorizedUser ? of(true) : this.friendService.friends$(this.user.id, 0), r => r),
@@ -94,7 +92,8 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
           () => this.dreamService.search({ user: this.user.id, limit: this.dreamLimit }, ["0002", "8100"]),
           (friend, { count, result: dreams, limit, hasAccess }) => ({ count, dreams, limit, friend, hasAccess })
         ),
-        catchError(() => of({ hasAccess: false, dreams: [], count: 0 }))
+        catchError(() => of({ hasAccess: false, dreams: [], count: 0 })),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ dreams, count, hasAccess }: any) => {
         this.userHasDiaryAccess = hasAccess;

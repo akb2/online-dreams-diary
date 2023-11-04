@@ -82,13 +82,13 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
     // События
     of({ scrollElement: ScrollElement(), pageComponentElement: PageComponentElement() })
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(({ scrollElement, pageComponentElement }) => forkJoin([
           this.screenService.elmResize([document.body, scrollElement, pageComponentElement]).pipe(tap(() => this.onWindowScroll())),
           this.scrollService.onAlwaysScroll().pipe(tap(() => this.onWindowScroll())),
           fromEvent(window, "mouseup").pipe(tap(e => this.onMouseUp(e as MouseEvent))),
           fromEvent(window, "mousemove").pipe(tap(e => this.onMouseMove(e as MouseEvent)))
         ])),
+        takeUntil(this.destroyed$)
       )
       .subscribe();
     // Подписка на тип устройства
@@ -101,8 +101,8 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
     // Мотание скролла по циклу
     timer(0, this.scrollAddSpeed)
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(() => !!this.scrollAddDimension)
+        filter(() => !!this.scrollAddDimension),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onAddScroll());
   }

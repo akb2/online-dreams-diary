@@ -236,8 +236,8 @@ export class Engine3DService implements OnDestroy {
   private onCanvasResize(): void {
     WaitObservable(() => !this.helper)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize(this.helper))
+        concatMap(() => this.screenService.elmResize(this.helper)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => {
         this.createCanvas();

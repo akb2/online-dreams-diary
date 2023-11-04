@@ -35,7 +35,6 @@ export class MousePressDirective implements OnInit, OnDestroy {
   ngOnInit(): void {
     WaitObservable(() => !this.elementRef?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(() => merge(
           fromEvent<MouseEvent>(this.elementRef.nativeElement, "mousedown").pipe(tap(event => this.onMouseDown(event))),
           fromEvent<TouchEvent>(this.elementRef.nativeElement, "touchstart").pipe(tap(event => this.onMouseDown(event))),
@@ -43,7 +42,8 @@ export class MousePressDirective implements OnInit, OnDestroy {
           fromEvent<TouchEvent>(document, "touchend").pipe(tap(event => this.onMouseUp(event))),
           fromEvent<MouseEvent>(document, "mousemove").pipe(tap(event => this.onMouseMove(event))),
           fromEvent<TouchEvent>(document, "touchmove").pipe(tap(event => this.onMouseMove(event)))
-        ))
+        )),
+        takeUntil(this.destroyed$)
       )
       .subscribe();
     // Постоянное событие мышки

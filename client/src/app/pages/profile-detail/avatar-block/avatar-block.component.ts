@@ -162,13 +162,13 @@ export class AvatarBlockComponent implements OnChanges, OnDestroy {
     // Открытие окна
     dialog.afterClosed()
       .pipe(
-        takeUntil(this.destroyed$),
         filter(result => !!result),
         tap(() => {
           this.loadingAvatar = true;
           this.changeDetectorRef.detectChanges();
         }),
-        concatMap(() => this.accountService.deleteAvatar())
+        concatMap(() => this.accountService.deleteAvatar()),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         code => {

@@ -79,17 +79,16 @@ export class ScrollService implements OnDestroy {
   constructor() {
     WaitObservable(() => !ScrollElement())
       .pipe(
-        takeUntil(this.destroyed$),
         tap(() => this.scrollElement = ScrollElement()),
         mergeMap(
           () => fromEvent(this.scrollElement, "scroll").pipe(
-            takeUntil(this.destroyed$),
             observeOn(animationFrameScheduler)
           ),
           () => this.getCurrentScroll
         ),
         switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY ? of(scrollData) : throwError(scrollData)),
-        retry()
+        retry(),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         scrollData => {
@@ -107,11 +106,11 @@ export class ScrollService implements OnDestroy {
           // Неконтролируемый конец скрола
           timer(this.scrollInterruptTime)
             .pipe(
-              takeUntil(this.destroyed$),
               take(1),
               map(() => (new Date()).getTime()),
               switchMap(currentDate => this.scrollLastTime + this.scrollInterruptTime <= currentDate ? of(true) : throwError(false)),
-              switchMap(() => this.emitEvent ? of(true) : throwError(true))
+              switchMap(() => this.emitEvent ? of(true) : throwError(true)),
+              takeUntil(this.destroyed$)
             )
             .subscribe(
               () => {
@@ -139,8 +138,8 @@ export class ScrollService implements OnDestroy {
       fromEvent<WheelEvent>(window, "wheel", { passive: false })
     )
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(() => !this.emitEvent)
+        filter(() => !this.emitEvent),
+        takeUntil(this.destroyed$)
       )
       .subscribe(event => event.preventDefault());
   }
@@ -272,11 +271,11 @@ export class ScrollService implements OnDestroy {
           // Скролл
           timer(0, this.scrollSpeedByStep)
             .pipe(
-              takeUntil(this.destroyed$),
               takeWhile(() => this.scrollEventLastId === scrollEventId),
               take(maxStep),
               map(i => i + 1),
-              map(i => ({ step: i, stepX: CheckInRange(i, scrollSteps.x), stepY: CheckInRange(i, scrollSteps.y) }))
+              map(i => ({ step: i, stepX: CheckInRange(i, scrollSteps.x), stepY: CheckInRange(i, scrollSteps.y) })),
+              takeUntil(this.destroyed$)
             )
             .subscribe(({ step, stepX, stepY }) => {
               const shiftX: number = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;

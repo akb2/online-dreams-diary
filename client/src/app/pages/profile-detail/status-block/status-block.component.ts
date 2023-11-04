@@ -1,12 +1,12 @@
-import { AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
+import { AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { transform as cssCalc } from "css-calc-transform";
-import { concatMap, delay, filter, fromEvent, map, merge, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { Subject, concatMap, delay, filter, fromEvent, map, merge, skipWhile, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -119,7 +119,6 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
   ngAfterContentInit(): void {
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroyed$),
         takeWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status"), true),
         skipWhile(() => !this.inputHelperText || !this.statusOverlay || !this.statusForm?.get("status")),
         concatMap(() => merge(
@@ -128,7 +127,8 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
           this.screenService.elmResize([this.statusOverlay.nativeElement])
         )),
         map(() => ([this.inputHelperText?.nativeElement])),
-        filter(elms => elms.every(e => !!e))
+        filter(elms => elms.every(e => !!e)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(([helperText]) => {
         this.editInputStyles = {
@@ -163,9 +163,9 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterContentInit
       // Фокус на элементе
       timer(0, 1)
         .pipe(
-          takeUntil(this.destroyed$),
           takeWhile(() => !this.inputField?.nativeElement, true),
-          skipWhile(() => !this.inputField?.nativeElement)
+          skipWhile(() => !this.inputField?.nativeElement),
+          takeUntil(this.destroyed$)
         )
         .subscribe(() => this.inputField?.nativeElement.focus());
     }

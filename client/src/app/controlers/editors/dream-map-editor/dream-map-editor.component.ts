@@ -259,7 +259,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     const enterEvent = this.isTouchDevice ? "touchend" : "mouseup";
     // События
-    fromEvent(document, enterEvent, this.onMouseUp.bind(this)).pipe(takeUntil(this.destroyed$)).subscribe();
+    fromEvent(document, enterEvent, this.onMouseUp.bind(this))
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
     // Создать список управления рельефом
     this.createReliefData();
     this.onObjectsCategoriesChange(-1);
@@ -305,8 +307,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         timer(0, this.toolActionTimer)
           .pipe(
             takeWhile(() => this.toolActive),
-            takeUntil(this.destroyed$),
-            tap(i => this.onToolActionCycle(i))
+            tap(i => this.onToolActionCycle(i)),
+            takeUntil(this.destroyed$)
           )
           .subscribe();
       }
@@ -478,9 +480,9 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     if (type === "center") {
       timer(10)
         .pipe(
-          takeUntil(this.destroyed$),
           tap(() => this.viewer.setReliefRewrite()),
-          delay(500)
+          delay(500),
+          takeUntil(this.destroyed$)
         )
         .subscribe(() => {
           this.loading = false;
@@ -541,8 +543,8 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   private onOpenConfigModal(): void {
     PopupDreamMapSettingsComponent.open(this.matDialog, { settings: this.dreamMapSettings }).afterClosed()
       .pipe(
-        takeUntil(this.destroyed$),
-        takeWhile(settings => !!settings)
+        takeWhile(settings => !!settings),
+        takeUntil(this.destroyed$)
       )
       .subscribe(settings => {
         this.dreamMapSettings = settings;

@@ -162,10 +162,10 @@ export class DreamListComponent implements OnInit, OnChanges {
     // Открыть окно
     PopupConfirmComponent.open(this.matDialog, { title, subTitle, text }).afterClosed()
       .pipe(
-        takeUntil(this.destroyed$),
         filter(r => !!r),
         concatMap(() => this.dreamService.delete(dream.id)),
-        filter(del => !!del)
+        filter(del => !!del),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => {
         this.dreamDelete.emit();

@@ -139,9 +139,9 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     if (!!window.WebGLRenderingContext) {
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
-          takeUntil(this.destroyed$),
           tap(() => this.loadScene()),
-          concatMap(() => this.loadLandScape())
+          concatMap(() => this.loadLandScape()),
+          takeUntil(this.destroyed$)
         )
         .subscribe(() => this.onViewerLoad());
     }

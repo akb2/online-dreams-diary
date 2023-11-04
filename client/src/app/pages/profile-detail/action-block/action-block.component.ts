@@ -119,14 +119,14 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
       // Запрос обновления статуса
       timer(0, 50)
         .pipe(
-          takeUntil(this.destroyed$),
           takeWhile(() => this.user === undefined, true),
           skipWhile(() => this.user === undefined),
           concatMap(() => this.friendService.friends$(this.user.id, 0, false)),
           tap(() => {
             this.friendLoader = true;
             this.changeDetectorRef.detectChanges();
-          })
+          }),
+          takeUntil(this.destroyed$)
         )
         .subscribe(friend => {
           this.friendStatus = !!friend ? friend.status : FriendStatus.NotAutorized;

@@ -1,4 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { NavMenuSettingData } from '@_controlers/nav-menu-settings/nav-menu-settings.component';
 import { BackgroundImageDatas } from '@_datas/appearance';
 import { User, UserSettings } from '@_models/account';
@@ -6,7 +5,8 @@ import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
 import { SnackbarService } from '@_services/snackbar.service';
-import { forkJoin, of, Subject } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject, forkJoin, of } from 'rxjs';
 import { delay, mergeMap, takeUntil } from 'rxjs/operators';
 
 
@@ -31,7 +31,7 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
 
   user: User;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -46,7 +46,7 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.accountService.user$()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe(user => {
         this.user = user;
         this.changeDetectorRef.detectChanges();
@@ -54,8 +54,8 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
@@ -95,11 +95,11 @@ export class ProfileSettingsAppearanceComponent implements OnInit, OnDestroy {
     // Запрос
     forkJoin([this.accountService.saveUserSettings(userSettings), of(true).pipe(delay(this.saveSettingDelay))])
       .pipe(
-        takeUntil(this.destroy$),
         mergeMap(
           () => this.screenService.loadImage(this.imagePrefix + userSettings.profileBackground.imageName),
           data => data
-        )
+        ),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         ([code]) => {

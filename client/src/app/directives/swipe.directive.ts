@@ -1,5 +1,5 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Observable, Subject, fromEvent, throwError } from 'rxjs';
 import { catchError, concatMap, filter, last, map, skipWhile, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
@@ -33,11 +33,11 @@ export class SwipeDirective implements OnInit, OnDestroy {
     return WaitObservable(() => !this.el?.nativeElement).pipe(
       skipWhile(() => !this.el?.nativeElement),
       concatMap(() => fromEvent<TouchEvent>(this.el.nativeElement, event).pipe(
-        takeUntil(this.destroyed$),
         map(event => ({
           clientX: ParseInt(event?.touches?.[0]?.clientX),
           clientY: ParseInt(event?.touches?.[0]?.clientY)
-        }))
+        })),
+        takeUntil(this.destroyed$)
       ))
     );
   }
@@ -58,14 +58,14 @@ export class SwipeDirective implements OnInit, OnDestroy {
     touchStart$
       .pipe(
         switchMap(({ clientX: startX, clientY: startY }) => touchMove$.pipe(
-          takeUntil(touchEnd$),
           last(),
           catchError(() => {
             this.swipeDestroyed.emit();
             return throwError("");
           }),
           map(({ clientX: moveX, clientY: moveY }) => ({ startX, startY, moveX, moveY })),
-          filter(({ startX, startY, moveX, moveY }) => Math.abs(moveX - startX) > this.swipeDistance || Math.abs(moveY - startY) > this.swipeDistance)
+          filter(({ startX, startY, moveX, moveY }) => Math.abs(moveX - startX) > this.swipeDistance || Math.abs(moveY - startY) > this.swipeDistance),
+          takeUntil(touchEnd$)
         )),
         takeWhile(() => !!this.el?.nativeElement)
       )

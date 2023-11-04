@@ -96,9 +96,9 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
       // Список статусов в друзья
       WaitObservable(() => !this.user)
         .pipe(
+          mergeMap(() => merge(...this.people.filter(user => !this.itsMe(user)).map(({ id }) => this.friendService.friends$(this.user.id, id)))),
           takeUntil(this.friendStatusesDestroyed$),
-          takeUntil(this.destroyed$),
-          mergeMap(() => merge(...this.people.filter(user => !this.itsMe(user)).map(({ id }) => this.friendService.friends$(this.user.id, id))))
+          takeUntil(this.destroyed$)
         )
         .subscribe(friend => {
           this.addFriendToList(friend);

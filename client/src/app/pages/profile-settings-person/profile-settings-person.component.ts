@@ -1,7 +1,3 @@
-import { formatDate } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { PopupCropImageComponent, PopupCropImageData } from "@_controlers/crop-image/crop-image.component";
 import { ImageUploadComponent } from "@_controlers/image-upload/image-upload.component";
@@ -12,6 +8,10 @@ import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
+import { formatDate } from "@angular/common";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { MatDialog } from "@angular/material/dialog";
 import { Observable, Subject } from "rxjs";
 import { map, takeUntil } from "rxjs/operators";
 
@@ -50,7 +50,7 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   ];
   fileLoaderKey: number = 0;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -64,7 +64,6 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   // Подписка на пользователя
   private get subscribeUser(): Observable<User> {
     return this.accountService.user$().pipe(
-      takeUntil(this.destroy$),
       map(user => {
         if (user) {
           this.form.get("name").setValue(user.name);
@@ -81,7 +80,8 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
         }
         // Вернуть юзера
         return user;
-      })
+      }),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -123,8 +123,8 @@ export class ProfileSettingsPersonComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 

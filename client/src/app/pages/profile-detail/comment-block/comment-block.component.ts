@@ -52,7 +52,6 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.accountService.user$()
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(
           () => !!this.materialOwner ? this.accountService.user$(this.materialOwner) : of(null),
           (user, visitedUser) => ({ user, visitedUser })
@@ -64,7 +63,8 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
         concatMap(
           ({ visitedUser }) => !!visitedUser ? this.accountService.checkPrivate("myCommentsRead", visitedUser?.id, ["8100"]) : of(false),
           (data, readAccess) => ({ ...data, readAccess })
-        )
+        ),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ user, writeAccess, readAccess }) => {
         this.authState = !!user?.id;
@@ -75,8 +75,8 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
     // Изменение отступов
     this.screenService.breakpoint$
       .pipe(
-        takeUntil(this.destroyed$),
-        map(() => this.hostElement?.nativeElement)
+        map(() => this.hostElement?.nativeElement),
+        takeUntil(this.destroyed$)
       )
       .subscribe(hostElement => {
         this.scrollSpacing = !!hostElement ? ParseInt(getComputedStyle(hostElement).rowGap) : 0;

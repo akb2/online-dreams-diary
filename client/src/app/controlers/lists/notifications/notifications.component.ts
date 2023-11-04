@@ -94,7 +94,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.notifications$ = this.notificationService.notifications$.pipe(
-      takeUntil(this.destroyed$),
       map(notifications => notifications.filter((n, k) => k < this.listSkip + this.listLimit)),
       concatMap(
         notifications => {
@@ -107,7 +106,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
           // Подписчик
           const observable: Observable<User[]> = forkJoin(userIds.map(userId => this.accountService.user$(userId).pipe(
             take(1),
-            takeUntil(this.destroyed$),
             tap(user => {
               this.users[user.id] = user;
               // Обновить
@@ -118,7 +116,8 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
           return !!userIds.length ? observable : of([]);
         },
         data => data
-      )
+      ),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -171,8 +170,8 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     if (!!this.notificationElms?.length) {
       this.notifications$
         .pipe(
-          takeUntil(this.destroyed$),
-          take(1)
+          take(1),
+          takeUntil(this.destroyed$)
         )
         .subscribe(allNotifications => {
           const notifications: Notification[] = CreateArray(this.notificationElms.length)
@@ -243,11 +242,11 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
       // Запрос
       this.notificationService.getList(search, ["0002"])
         .pipe(
-          takeUntil(this.destroyed$),
           concatMap(
             () => this.notifications$.pipe(take(1)),
             ({ result, count }, notifications) => ({ count, result, notifications })
-          )
+          ),
+          takeUntil(this.destroyed$)
         )
         .subscribe(({ count, result, notifications }) => {
           const listCount: number = notifications.length;
@@ -264,8 +263,8 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   private waitNotifications(): void {
     this.notificationService.getNewNotifications()
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(() => this.show)
+        filter(() => this.show),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onScrollChange(this.previousScroll));
   }
@@ -274,23 +273,23 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
   private closeEvents(): void {
     fromEvent(document, "mousedown")
       .pipe(
-        takeUntil(this.destroyed$),
-        map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications"))
+        map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications")),
+        takeUntil(this.destroyed$)
       )
       .subscribe(avail => this.outCloseAvail = avail);
     // Закрытие уведомлений: мышка отпущена
     fromEvent(document, "mouseup")
       .pipe(
-        takeUntil(this.destroyed$),
         map(({ target }: Event) => !CompareElementBySelector(target, "#" + this.listId + ", .menu-list__item-link#notifications")),
-        filter(avail => this.outCloseAvail && avail && this.outerClickClose)
+        filter(avail => this.outCloseAvail && avail && this.outerClickClose),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onClose());
     // Закрытие уведомлений: при нажатии на ссылки
     fromEvent(document, "click")
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a") && this.outerClickClose)
+        filter(({ target }: Event) => CompareElementBySelector(target, "#" + this.listId + " a") && this.outerClickClose),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onClose());
     // Закрытие при скролле документа

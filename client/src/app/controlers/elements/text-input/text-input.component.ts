@@ -1,9 +1,9 @@
+import { BaseInputDirective } from "@_directives/base-input.directive";
+import { WaitObservable } from "@_helpers/rxjs";
 import { DatePipe } from "@angular/common";
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
-import { WaitObservable } from "@_helpers/rxjs";
-import { BaseInputDirective } from "@_directives/base-input.directive";
-import { concatMap, filter, map, Subject, takeUntil, timer } from "rxjs";
+import { Subject, concatMap, filter, map, takeUntil, timer } from "rxjs";
 
 
 
@@ -55,11 +55,11 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
     // Таймер проверки активности
     timer(this.activityInterval, this.activityInterval)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => +new Date()),
         filter(t => t - this.lastActivity > this.activityTimer && this.submitAfterActivity),
         map(() => this.input.nativeElement.value),
         filter(value => value !== this.oldValue),
+        takeUntil(this.destroyed$)
       )
       .subscribe(value => {
         this.lastActivity = +new Date();
@@ -113,13 +113,13 @@ export class TextInputComponent extends BaseInputDirective implements OnInit, On
   // Фокус на поле
   onFocus(): void {
     WaitObservable(() => !this.input?.nativeElement).pipe(
-      takeUntil(this.destroyed$),
       map(() => this.input?.nativeElement as HTMLInputElement),
       concatMap(elm => WaitObservable(() => {
         elm.focus();
         // Вернуть проверку
         return elm !== document.activeElement;
-      }), elm => elm)
+      }), elm => elm),
+      takeUntil(this.destroyed$)
     )
       .subscribe(elm => elm.focus());
   }

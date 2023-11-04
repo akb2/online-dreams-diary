@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
-import { NgControl } from "@angular/forms";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { environment } from "@_environments/environment";
 import { ScreenService } from "@_services/screen.service";
-import { mergeMap, skipWhile, Subject, takeUntil, takeWhile, timer } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
+import { NgControl } from "@angular/forms";
+import { Subject, mergeMap, skipWhile, takeUntil, takeWhile, timer } from "rxjs";
 
 
 
@@ -46,10 +46,10 @@ export class AppRecaptchaComponent extends BaseInputDirective implements OnInit,
   ngOnInit(): void {
     timer(0, 100)
       .pipe(
-        takeUntil(this.destroyed$),
         takeWhile(() => !this.layout.nativeElement, true),
         skipWhile(() => !this.layout.nativeElement),
-        mergeMap(() => this.screenService.elmResize(this.layout.nativeElement))
+        mergeMap(() => this.screenService.elmResize(this.layout.nativeElement)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onResize());
   }

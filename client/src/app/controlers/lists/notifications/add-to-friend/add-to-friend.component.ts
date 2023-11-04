@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { Friend, FriendStatus } from "@_models/friend";
 import { Notification } from "@_models/notification";
 import { FriendService } from "@_services/friend.service";
-import { concatMap, Observable, Subject, takeUntil } from "rxjs";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Observable, Subject, concatMap, takeUntil } from "rxjs";
 
 
 
@@ -42,8 +42,8 @@ export class NotificationAddToFriendComponent implements OnInit, OnDestroy {
     // Подписка на статус дружбы
     WaitObservable(() => !this.user)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.friendService.friends$(this.user.id))
+        concatMap(() => this.friendService.friends$(this.user.id)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(friend => {
         this.friend = friend;

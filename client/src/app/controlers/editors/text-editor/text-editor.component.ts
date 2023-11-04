@@ -1,8 +1,8 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { CompareElementByElement, CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
 import { ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { SimpleObject } from "@_models/app";
 import { CaretPosition } from "@_models/text";
@@ -336,7 +336,6 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
     // Прослушивание изменений
     WaitObservable(() => !this.control)
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(() => this.control.valueChanges.pipe(
           startWith(null)
         )),
@@ -347,7 +346,8 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           // Обновить
           this.changeDetectorRef.detectChanges();
         }),
-        delay(1)
+        delay(1),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onEdit(null));
   }
@@ -355,7 +355,6 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
   ngOnInit(): void {
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => this.getRangePosition()),
         pairwise(),
         filter(([prev, next]) => (
@@ -365,19 +364,20 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
             prev?.range?.startContainer !== next?.range?.startContainer ||
             prev?.range?.endContainer !== next?.range?.endContainer
           )
-        ))
+        )),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.updateStates());
     // Закрыть выбор цвета
     WaitObservable(() => !this.colorPickerButton?.nativeElement || !this.backgroundPickerButton?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
         map(event => ({
           isColorButton: CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement),
           isBackgroundButton: CompareElementByElement(event?.target, this.backgroundPickerButton?.nativeElement)
         })),
-        filter(({ isColorButton, isBackgroundButton }) => !isColorButton || !isBackgroundButton)
+        filter(({ isColorButton, isBackgroundButton }) => !isColorButton || !isBackgroundButton),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ isColorButton, isBackgroundButton }) => {
         this.showColorPicker = !isColorButton ? false : this.showColorPicker;

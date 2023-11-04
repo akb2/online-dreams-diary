@@ -1,7 +1,7 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { ScrollElement } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { ParseInt } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { CustomObject, IconBackground, IconColor } from "@_models/app";
 import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
@@ -154,9 +154,9 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     // Проверка положения выпадающего списка
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => document.getElementsByClassName(this.autoCompleteID)[0] as HTMLElement),
-        filter(elm => !!elm)
+        filter(elm => !!elm),
+        takeUntil(this.destroyed$)
       )
       .subscribe(elm => this.onAutoCompleteListOpened(elm));
   }

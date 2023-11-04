@@ -175,12 +175,12 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
       if ((!prevUser && !!nextUser) || (!!prevUser && !!nextUser)) {
         WaitObservable(() => !this.editorContainer?.nativeElement || !this.replyElement?.nativeElement || !this.editor?.nativeElement, 10)
           .pipe(
-            takeUntil(this.destroyed$),
             map(() => ({
               editorContainer: <HTMLElement>this.editorContainer.nativeElement,
               editor: <HTMLElement>this.editor.nativeElement,
               replyElement: <HTMLElement>this.replyElement.nativeElement
-            }))
+            })),
+            takeUntil(this.destroyed$)
           )
           .subscribe(({ replyElement, editor }) => {
             const { y: currentScroll }: ScrollData = this.scrollService.getCurrentScroll;
@@ -381,8 +381,8 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   onPhotoPopupOpen(): void {
     PopupPhotoUploaderComponent.open(this.matDialog, { multiUpload: true }).afterClosed()
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(data => !!data?.mediaFiles?.length)
+        filter(data => !!data?.mediaFiles?.length),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ mediaFiles: photos }) => {
         photos

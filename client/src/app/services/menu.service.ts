@@ -83,8 +83,8 @@ export class MenuService implements OnDestroy {
     // Подписка на изменение роута
     this.router.events
       .pipe(
-        takeUntil(this.destroyed$),
-        filter(event => event instanceof NavigationEnd)
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.createMenuItems());
     // Смена языка

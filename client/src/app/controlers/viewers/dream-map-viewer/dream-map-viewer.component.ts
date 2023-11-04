@@ -99,7 +99,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   loading: boolean = false;
   ready: boolean = false;
 
-  private destroy$: Subject<void> = new Subject<void>();
+  private destroyed$: Subject<void> = new Subject<void>();
 
 
 
@@ -344,7 +344,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       fromEvent(document, moveEvent, this.onMouseMove.bind(this)),
       fromEvent(document, enterEvent, this.onMouseClick.bind(this)),
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroyed$))
       .subscribe();
   }
 
@@ -369,7 +369,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           tap(() => this.canvas ? this.createCanvas() : null),
           skipWhile(testWhile),
           takeWhile(testWhile, true),
-          takeUntil(this.destroy$),
+          takeUntil(this.destroyed$)
         )
         .subscribe(
           () => !testWhile() ? this.create3DViewer() : null,
@@ -387,8 +387,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroyed$.next();
+    this.destroyed$.complete();
     // Очистить сцену
     this.clearScene();
   }
@@ -534,7 +534,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.updatePostProcessors();
       // Изменение камеры
       fromEvent(this.control, "change", (event) => this.onCameraChange(event.target))
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntil(this.destroyed$))
         .subscribe();
       // Обновить
       this.loading = false;
@@ -719,7 +719,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
   // Отрисовать объекты
   private createTerrains(): Observable<void> {
     return this.terrainService.getObject(this.dreamMap).pipe(
-      takeUntil(this.destroy$),
       map(terrain => {
         this.scene.add(terrain);
         this.terrainMesh = terrain;
@@ -727,7 +726,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         // Рендер
         this.render();
         this.octree.update();
-      })
+      }),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -1430,7 +1430,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.terrainService.updateDreamMap(this.dreamMap);
     // Вернуть подписку
     return this.terrainService.updateRelief(type).pipe(
-      takeUntil(this.destroy$),
       tap(() => {
         const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
         const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
@@ -1449,7 +1448,8 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
             this.dreamMapSettings
           ), true);
         });
-      })
+      }),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -1482,14 +1482,14 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.dreamMapSettings = settings;
     // Подписка на изменения
     return timer(5).pipe(
-      takeUntil(this.destroy$),
       take(1),
       map(() => {
         this.clearObjects();
         this.createObjects();
         this.setSkyTime(this.dreamMap.sky.time);
         this.render();
-      })
+      }),
+      takeUntil(this.destroyed$)
     );
   }
 

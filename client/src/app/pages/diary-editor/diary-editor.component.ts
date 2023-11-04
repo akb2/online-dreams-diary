@@ -194,9 +194,14 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       headerType: [null],
       headerBackground: [null]
     });
-    // Изменения формы
-    this.dreamForm.get("title").valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(value => this.onChangeTitle(value ?? ""));
-    this.dreamForm.get("date").valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(value => this.onChangeDate(value ?? new Date()));
+    // Изменения названия
+    this.dreamForm.get("title").valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(value => this.onChangeTitle(value ?? ""));
+    // Изменение даты
+    this.dreamForm.get("date").valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(value => this.onChangeDate(value ?? new Date()));
   }
 
   ngOnInit() {
@@ -301,7 +306,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   private defineData(): void {
     this.accountService.user$()
       .pipe(
-        takeUntil(this.destroyed$),
         switchMap(user => !!user ? of(user) : throwError(null)),
         mergeMap(
           () => this.activatedRoute.queryParams,
@@ -311,7 +315,8 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
           () => this.dreamId > 0 ? this.dreamService.getById(this.dreamId, true) : of(this.dreamService.newDream),
           (o, dream) => ({ ...o, dream })
         ),
-        switchMap(r => !!r.dream ? of(r) : throwError(null))
+        switchMap(r => !!r.dream ? of(r) : throwError(null)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(
         ({ user, params, dream }) => {

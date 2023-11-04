@@ -24,7 +24,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Observable, Subject, of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 import { concatMap, switchMap, takeUntil } from "rxjs/operators";
 
 
@@ -102,13 +102,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
     }
     // Вернуть данные
     return data;
-  }
-
-  // Подписка на ожидание данных
-  private waitObservable(callback: () => boolean): Observable<void> {
-    return WaitObservable(callback).pipe(
-      takeUntil(this.destroyed$)
-    );
   }
 
   // Данные поиска
@@ -335,7 +328,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка
-    this.waitObservable(() => !this.userReady)
+    WaitObservable(() => !this.userReady)
       .pipe(
         concatMap(() => this.activatedRoute.params),
         concatMap(() => this.activatedRoute.queryParams, (params, queryParams) => ({ params, queryParams })),
@@ -355,7 +348,8 @@ export class DiaryComponent implements OnInit, OnDestroy {
           }
           // Вернуть данные
           return of({ params, visitedUserId, queryParams });
-        })
+        }),
+        takeUntil(this.destroyed$)
       )
       .subscribe(({ visitedUserId, queryParams }) => {
         this.queryParams = queryParams;
@@ -375,7 +369,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
     this.pageLoading = true;
     this.changeDetectorRef.detectChanges();
     // Подписка на данные пользователя
-    this.waitObservable(() => this.visitedUserId === -1 || !this.userReady)
+    WaitObservable(() => this.visitedUserId === -1 || !this.userReady)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         if (this.itsAllPage) {
@@ -395,11 +389,11 @@ export class DiaryComponent implements OnInit, OnDestroy {
           else {
             this.accountService.getUser(this.visitedUserId, ["8100"])
               .pipe(
-                takeUntil(this.destroyed$),
                 concatMap(
                   visitedUser => !!this.user ? this.friendService.friends$(this.user.id, visitedUser.id) : of(null),
                   (visitedUser, friend) => ({ visitedUser, friend })
-                )
+                ),
+                takeUntil(this.destroyed$)
               )
               .subscribe(({ friend }) => {
                 visitedUserSync = true;
@@ -407,8 +401,11 @@ export class DiaryComponent implements OnInit, OnDestroy {
               });
           }
           // Подписка
-          this.waitObservable(() => !visitedUserSync)
-            .pipe(concatMap(() => this.accountService.user$(this.visitedUserId, false)))
+          WaitObservable(() => !visitedUserSync)
+            .pipe(
+              concatMap(() => this.accountService.user$(this.visitedUserId, false)),
+              takeUntil(this.destroyed$)
+            )
             .subscribe(
               user => {
                 this.visitedUser = user;
@@ -424,8 +421,11 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Определение списка сновидений
   private defineDreamsList(): void {
-    this.waitObservable(() => this.visitedUserId === -1 || (this.visitedUserId > 0 && !this.visitedUser))
-      .pipe(concatMap(() => this.activatedRoute.queryParams))
+    WaitObservable(() => this.visitedUserId === -1 || (this.visitedUserId > 0 && !this.visitedUser))
+      .pipe(
+        concatMap(() => this.activatedRoute.queryParams),
+        takeUntil(this.destroyed$)
+      )
       .subscribe(() => this.search());
   }
 

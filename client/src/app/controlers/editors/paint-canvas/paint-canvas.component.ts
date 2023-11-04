@@ -1,12 +1,12 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { CompareElementByElement } from "@_datas/app";
+import { WaitObservable } from "@_helpers/rxjs";
 import { GraffityDrawData } from "@_models/comment";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 import { ColorPickerControl } from "@iplab/ngx-color-picker";
 import { fabric } from "fabric";
-import { Observable, Subject, concatMap, delay, filter, fromEvent, map, merge, mergeMap, of, takeUntil, tap } from "rxjs";
+import { Observable, Subject, concatMap, filter, fromEvent, map, merge, mergeMap, of, takeUntil, tap } from "rxjs";
 
 
 
@@ -98,8 +98,8 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     WaitObservable(() => !this.canvasOverlay?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        map(() => <HTMLElement>this.canvasOverlay.nativeElement)
+        map(() => <HTMLElement>this.canvasOverlay.nativeElement),
+        takeUntil(this.destroyed$)
       )
       .subscribe(canvasOverlay => {
         this.canvas = new fabric.Canvas(this.canvasElement.nativeElement, {
@@ -145,9 +145,9 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
         // Закрыть выбор цвета
         WaitObservable(() => !this.colorPickerButton?.nativeElement)
           .pipe(
-            takeUntil(this.destroyed$),
             mergeMap(() => merge(fromEvent<MouseEvent>(document, "mousedown"), fromEvent<TouchEvent>(document, "touchstart"))),
-            filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement))
+            filter(event => !CompareElementByElement(event?.target, this.colorPickerButton?.nativeElement)),
+            takeUntil(this.destroyed$)
           )
           .subscribe(() => {
             this.showColorPicker = false;
@@ -168,7 +168,6 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
   // Сохранить данные
   onSave(): Observable<GraffityDrawData> {
     return of(this.canvas.toJSON()).pipe(
-      takeUntil(this.destroyed$),
       concatMap(
         () => new Observable<Blob>(observer => this.canvas.toCanvasElement().toBlob((blob: Blob) => observer.next(blob))),
         (data, blob) => ({ ...data, blob })
@@ -182,7 +181,8 @@ export class PaintCanvasComponent implements AfterViewInit, OnDestroy {
         color: this.currentColor,
         size: this.sizesKit[this.currentSizeIndex]
       })),
-      tap(data => this.changeCanvas.emit(data))
+      tap(data => this.changeCanvas.emit(data)),
+      takeUntil(this.destroyed$)
     );
   }
 

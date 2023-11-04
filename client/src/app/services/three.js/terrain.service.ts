@@ -115,9 +115,9 @@ export class DreamMapTerrainService implements OnDestroy {
     mesh.name = DreamMapTerrainName;
     // Отдать объект
     return this.createRelief().pipe(
-      takeUntil(this.destroyed$),
       tap(() => this.setDisplacementMap()),
-      map(() => mesh)
+      map(() => mesh),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -213,7 +213,6 @@ export class DreamMapTerrainService implements OnDestroy {
     const context: CanvasRenderingContext2D = canvas.getContext("2d");
     // Запрос картинки
     return this.screenService.loadImage("/assets/dream-map/relief/" + type + ".png").pipe(
-      takeUntil(this.destroyed$),
       tap(({ image }) => context.drawImage(image, 0, 0)),
       map(({ width, height }) => {
         const top: number = Math.floor((height - DreamMapSize) / 2);
@@ -226,6 +225,7 @@ export class DreamMapTerrainService implements OnDestroy {
         return { correctSize, type, data, size: { width, height } };
       }),
       tap(datas => !this.reliefDatas.some(({ type: t }) => type === t) ? this.reliefDatas.push(datas) : null),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -308,7 +308,6 @@ export class DreamMapTerrainService implements OnDestroy {
     }
     // Запрос к данным
     return forkJoin(filterTypes.map(type => this.getRelief(type))).pipe(
-      takeUntil(this.destroyed$),
       tap(() => ReliefSideNames.forEach(yNames => yNames.forEach(name => this.setReliefSection(
         name,
         this.displacementTexture.image.data
@@ -332,7 +331,8 @@ export class DreamMapTerrainService implements OnDestroy {
           .reduce((o, { x, y }) => ([...o, this.getCeil(x, y)]), []),
         !!this.dreamMap?.isNew
       )),
-      tap(() => this.dreamMap.isNew = false)
+      tap(() => this.dreamMap.isNew = false),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -641,9 +641,9 @@ export class DreamMapTerrainService implements OnDestroy {
         this.getRelief(type));
     // Обновить вершины
     return forkJoin(types).pipe(
-      takeUntil(this.destroyed$),
       mergeMap(() => this.createRelief(false)),
-      tap(() => this.setDisplacementMap())
+      tap(() => this.setDisplacementMap()),
+      takeUntil(this.destroyed$)
     );
   }
 

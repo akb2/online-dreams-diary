@@ -151,15 +151,14 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     // Прокрутка левой колонки
     WaitObservable(() => !this.leftPanel?.nativeElement || !this.leftPanelHelper?.nativeElement || !this.informationElm?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         map(() => ({ elm: this.leftPanel.nativeElement, elmHelper: this.leftPanelHelper.nativeElement })),
         mergeMap(({ elm, elmHelper }) => merge(
-          this.scrollService.onAlwaysScroll().pipe(takeUntil(this.destroyed$)),
+          this.scrollService.onAlwaysScroll(),
           this.screenService.elmResize([elm, elmHelper]).pipe(
-            takeUntil(this.destroyed$),
             map(() => this.scrollService.getCurrentScroll)
           )
-        ))
+        )),
+        takeUntil(this.destroyed$)
       )
       .subscribe(scrollData => this.onLeftPanelPosition(scrollData));
     // Изменения брейкпоинта
@@ -285,7 +284,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     // Подписка
     WaitObservable(() => !this.userReady)
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(() => this.activatedRoute.params),
         switchMap(params => {
           if (params?.user_id === "0") {
@@ -296,7 +294,8 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
           else {
             return of(ParseInt(params?.user_id, !!this.user ? this.user.id : 0));
           }
-        })
+        }),
+        takeUntil(this.destroyed$)
       )
       .subscribe(visitedUserId => {
         this.visitedUserId = visitedUserId;
@@ -322,15 +321,14 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
         else {
           this.accountService.getUser(this.visitedUserId, ["8100"])
             .pipe(
-              takeUntil(this.destroyed$),
-              concatMap(() => !!this.user ? this.friendService.getFriendStatus(this.visitedUserId) : of(null))
+              concatMap(() => !!this.user ? this.friendService.getFriendStatus(this.visitedUserId) : of(null)),
+              takeUntil(this.destroyed$)
             )
             .subscribe(() => visitedUserSync = true);
         }
         // Подписка
         WaitObservable(() => !visitedUserSync)
           .pipe(
-            takeUntil(this.destroyed$),
             concatMap(() => this.accountService.user$(this.visitedUserId, false)),
             takeUntil(this.destroyed$)
           )
@@ -353,7 +351,6 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     // Подписка
     timer(0, 50)
       .pipe(
-        takeUntil(this.destroyed$),
         takeWhile(() => !this.visitedUser, true),
         skipWhile(() => !this.visitedUser),
         concatMap(() => this.itsMyPage || !this.isAutorizedUser ? of(true) : this.friendService.friends$(this.visitedUser.id, 0)),
@@ -365,7 +362,8 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
           } as Partial<FriendSearch>
         })),
         concatMap(({ search }) => this.friendService.getMixedList(search, ["0002", "8100"])),
-        catchError(() => of(emptyLists))
+        catchError(() => of(emptyLists)),
+        takeUntil(this.destroyed$)
       )
       .subscribe((data: any) => {
         this.friends = Object.entries(data as FriendListMixedResopnse).map(([type, { result, count }]) => ({

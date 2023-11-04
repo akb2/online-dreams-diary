@@ -1,6 +1,6 @@
-import { WaitObservable } from "@_helpers/rxjs";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
+import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
@@ -82,9 +82,9 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
   // Подписчик ожидания загрузки элемента
   private getWaitObservable(callback: () => Observable<any> = () => of(null)): Observable<void> {
     return WaitObservable(() => !this.hostElement?.nativeElement || !this.listElm?.nativeElement).pipe(
-      takeUntil(this.destroyed$),
       concatMap(callback),
-      map(() => { })
+      map(() => { }),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -156,14 +156,13 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     // Изменение размеров списка
     WaitObservable(() => !this.listElm?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
-        concatMap(() => this.screenService.elmResize(this.listElm.nativeElement))
+        concatMap(() => this.screenService.elmResize(this.listElm.nativeElement)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onScrollRender());
     // Анализ дочерних элементов
     WaitObservable(() => !this.listElm?.nativeElement)
       .pipe(
-        takeUntil(this.destroyed$),
         concatMap(() => timer(0, this.scrollAddSpeed)),
         map(() => Array.from(this.listElm.nativeElement.childNodes).map(node => ({
           node,
@@ -174,15 +173,16 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
         startWith(null),
         pairwise(),
         filter(([prev, next]) => CompareObjects(prev, next)),
-        map(([, next]) => next)
+        map(([, next]) => next),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onScrollRender());
     // Передвижение мышки по странице
     fromEvent(window, "mousemove")
       .pipe(
         observeOn(animationFrameScheduler),
-        takeUntil(this.destroyed$),
-        filter(() => !!this.scrollMoveDimension)
+        filter(() => !!this.scrollMoveDimension),
+        takeUntil(this.destroyed$)
       )
       .subscribe(e => this.onScrollMouseMove(e as MouseEvent));
     // Отпускание нажатия кнопок
@@ -193,8 +193,8 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     timer(0, this.scrollAddSpeed)
       .pipe(
         observeOn(animationFrameScheduler),
-        takeUntil(this.destroyed$),
-        filter(() => !!this.scrollAddDimension)
+        filter(() => !!this.scrollAddDimension),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onAddScroll());
   }

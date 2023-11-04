@@ -300,9 +300,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     // Изменения размера контейнера текста
     forkJoin([this.screenService.waitWhileFalse(this.contentLayerContainer), this.screenService.waitWhileFalse(this.contentLayerContainerLeft)])
       .pipe(
-        takeUntil(this.destroyed$),
         mergeMap(() => this.screenService.elmResize(this.contentLayerContainer.nativeElement)),
-        mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement))
+        mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement)),
+        takeUntil(this.destroyed$)
       )
       .subscribe(() => this.onResize());
   }
