@@ -202,44 +202,34 @@ export class FriendService {
     );
   }
 
-  // Отправить заявку в друзья
-  addToFriends(userId: number, codes: string[] = []): Observable<string> {
-    return this.httpClient.post<ApiResponse>("friend/addToFriends", ObjectToFormData({ user_id: userId })).pipe(
+  // Действия с записью о статусе в друзьях
+  private sendFriendAction(endPoint: FriendActionType, userId: number, codes: string[] = []): Observable<string> {
+    return this.httpClient.post<ApiResponse>("friend/" + endPoint, ObjectToFormData({ user_id: userId })).pipe(
       switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
       mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
       catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
       mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
     );
+  }
+
+  // Отправить заявку в друзья
+  addToFriends(userId: number, codes: string[] = []): Observable<string> {
+    return this.sendFriendAction("addToFriends", userId, codes);
   }
 
   // Отменить заявку в друзья
   rejectFriends(userId: number, codes: string[] = []): Observable<string> {
-    return this.httpClient.post<ApiResponse>("friend/rejectFriends", ObjectToFormData({ user_id: userId })).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
-      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
-    );
+    return this.sendFriendAction("rejectFriends", userId, codes);
   }
 
   // Подтвердить заявку в друзья
   confirmFriends(userId: number, codes: string[] = []): Observable<string> {
-    return this.httpClient.post<ApiResponse>("friend/confirmFriends", ObjectToFormData({ user_id: userId })).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
-      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
-    );
+    return this.sendFriendAction("confirmFriends", userId, codes);
   }
 
   // Удалить из друзей
   cancelFromFriends(userId: number, codes: string[] = []): Observable<string> {
-    return this.httpClient.post<ApiResponse>("friend/cancelFromFriends", ObjectToFormData({ user_id: userId })).pipe(
-      switchMap(result => this.apiService.checkResponse(result.result.code, codes)),
-      mergeMap(() => this.getFriendStatus(userId, 0, codes), r => r),
-      catchError(e => this.getFriendStatus(userId, 0, codes).pipe(map(() => throwError(e)))),
-      mergeMap(() => this.accountService.getUser(this.tokenService.userId), r => r)
-    );
+    return this.sendFriendAction("cancelFromFriends", userId, codes);
   }
 
   // Выйти из аккаунта
@@ -371,6 +361,13 @@ export class FriendService {
     this.friends.next([]);
   }
 }
+
+
+
+
+
+// Типы действий с заявками в друзьях
+type FriendActionType = "addToFriends" | "rejectFriends" | "confirmFriends" | "cancelFromFriends";
 
 
 
