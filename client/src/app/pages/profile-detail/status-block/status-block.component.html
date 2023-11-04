@@ -25,7 +25,7 @@
                 class="status__editor"
                 [ngClass]="{ noPaddingRight }"
                 maxlength="128"
-                [placeholder]="placeholderText"
+                [placeholder]="'pages.profile.blocks.status.placeholder' | translate"
                 [ngStyle]="editInputStyles"
                 (keydown)="onKeyDown($event)"></textarea>
     </ng-container>
@@ -33,7 +33,7 @@
     <ng-template #statusTextViewer>
       <div class="status__content"
            [ngClass]="{ default: !user.pageStatus }"
-           (click)="onOpenEdit()">{{!!user.pageStatus? user.pageStatus: placeholderText}}</div>
+           (click)="onOpenEdit()">{{!!user.pageStatus? user.pageStatus: ('pages.profile.blocks.status.placeholder' | translate)}}</div>
     </ng-template>
   </form>
   <!-- Помощник для автоматического размера -->
@@ -41,7 +41,7 @@
        class="status__editor-helper"
        *ngIf="!loader && (editStatus$ | async)">
     <div #inputHelperText
-         class="status__editor-helper-text">{{getEditorText}}</div>
+         class="status__editor-helper-text">{{!!getEditorText? getEditorText: ('pages.profile.blocks.status.placeholder' | translate)}}</div>
   </div>
 </ng-template>
 
@@ -56,13 +56,13 @@
       <button #saveButton
               mat-mini-fab
               color="primary"
-              matTooltip="Сохранить"
+              [matTooltip]="'general.buttons.save' | translate"
               (click)="onSaveStatus()"><mat-icon>save</mat-icon></button>
       <!-- Отменить -->
       <button #cancelButton
               mat-mini-fab
               color="basic"
-              matTooltip="Отмена"
+              [matTooltip]="'general.buttons.cancel' | translate"
               (click)="onCloseEdit(null)"><mat-icon>close</mat-icon></button>
     </ng-container>
   </ng-template>
@@ -72,7 +72,7 @@
     <button #editButton
             mat-mini-fab
             color="primary"
-            matTooltip="Изменить статус"
+            [matTooltip]="'pages.profile.blocks.status.buttons.change_status' | translate"
             (click)="onOpenEdit()"><mat-icon>stylus</mat-icon></button>
   </ng-template>
 </ng-template>

@@ -170,6 +170,12 @@
             "title": "Last visit",
             "value": "Currently online"
           }
+        },
+        "status": {
+          "placeholder": "Write what's new with you...",
+          "buttons": {
+            "change_status": "Change status"
+          }
         }
       }
     }
