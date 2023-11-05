@@ -36,7 +36,10 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 50;
+  private loadCeilsByTime: number = 35;
+
+  private calcOperations: CalcFunction[] = [];
+  private calcOperationLoadingSize: number = 500;
 
   private compassAzimuthShift: number = -90;
   compassRadialShift: number = 45;
@@ -73,14 +76,25 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const withProgress: boolean = LoaderProgressSteps.includes(this.loadingStep);
     const mode: ProgressBarMode = withProgress ? "determinate" : "indeterminate";
     const icon: string = LoaderIcons?.[this.loadingStep] ?? LoaderIcons[DefaultKey];
+    // Функции просчета сцены
+    const allSize: number = this.calcOperations.length * this.calcOperationLoadingSize;
+    const completedSize: number = this.calcOperations.filter(({ called }) => called).length * this.calcOperationLoadingSize;
     // Прогресс
-    const maxOperations: number = this.loadingCeilLimit;
-    const currentOperation: number = 1 + (this.loadingCeilCurrent);
+    const maxOperations: number = this.loadingCeilLimit + allSize;
+    const currentOperation: number = 1 + (this.loadingCeilCurrent + completedSize);
     const progress: number = withProgress && maxOperations > 0
       ? MathRound((currentOperation / maxOperations) * 100, 3)
       : 0;
     // Вернуть состояние
     return { mode, icon, progress };
+  }
+
+  // Проверка выполнения всех функций вычисления сцены
+  private get isCalcOperationsCompleted(): boolean {
+    const allSize: number = this.calcOperations.length;
+    const completedSize: number = this.calcOperations.filter(({ called }) => called).length;
+    // Проверка
+    return completedSize === allSize;
   }
 
 
@@ -89,13 +103,31 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Загрузка сцены
   private loadScene(): void {
+    const width: number = ParseInt(this.dreamMap.size.width);
+    const height: number = ParseInt(this.dreamMap.size.height);
+    // Обновить загрузчик
     this.loadingStep = LoadingStep.prepared;
     this.changeDetectorRef.detectChanges();
     // Подписка
     this.engine3DService.create(this.canvas.nativeElement, this.helper.nativeElement);
+    this.landscape3DService.create(width, height);
+    // Обновить геометрию
+    this.calcOperations.push({
+      callable: this.landscape3DService.updateGeometry,
+      context: this.landscape3DService,
+      args: [],
+      called: false
+    });
+    // Добавить объект на сцену
+    this.calcOperations.push({
+      callable: this.engine3DService.addToScene,
+      context: this.engine3DService,
+      args: [this.landscape3DService.mesh],
+      called: false
+    });
   }
 
-  // Загрузка ландшафта
+  // Загрузка ячеек ландшафта
   private loadLandScape(): Observable<any> {
     const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
     const width: number = ParseInt(this.dreamMap.size.width);
@@ -108,10 +140,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Состояния
     this.loadingCeilLimit = totalSize * 2;
     this.loadingCeilCurrent = 0;
-    this.loadingStep = LoadingStep.landScape;
+    this.loadingStep = LoadingStep.landScapeCeils;
     this.changeDetectorRef.detectChanges();
-    // Создание объекта ландшафта
-    this.landscape3DService.create(width, height);
     // Подписка
     return TakeCycle(this.loadingCeilLimit + 1, this.loadCeilsByTime).pipe(
       tap(i => {
@@ -135,12 +165,25 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         : this.landscape3DService.setVertexByCoords(this.ceil3dService.getCeil(x, y))
       ),
       skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
-      catchError(() => {
-        this.landscape3DService.updateGeometry();
-        this.engine3DService.addToScene(this.landscape3DService.mesh);
-        // Перейти далее
-        return of(null);
-      })
+      catchError(() => of(null))
+    );
+  }
+
+  // Запуск функций вычислений
+  private callCalcMethods(): Observable<any> {
+    const size: number = this.calcOperations.length;
+    // Обновить загрузчик
+    this.loadingStep = LoadingStep.calcMethods;
+    this.changeDetectorRef.detectChanges();
+    // Цикл по функциям
+    return TakeCycle(size, 1).pipe(
+      tap(index => {
+        this.calcOperations[index].callable.bind(this.calcOperations[index].context)(...this.calcOperations[index].args);
+        this.calcOperations[index].called = true;
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      }),
+      skipWhile(() => !this.isCalcOperationsCompleted)
     );
   }
 
@@ -170,6 +213,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         .pipe(
           tap(() => this.loadScene()),
           concatMap(() => this.loadLandScape()),
+          concatMap(() => this.callCalcMethods()),
           takeUntil(this.destroyed$)
         )
         .subscribe(() => this.onViewerLoad());
@@ -200,7 +244,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 enum LoadingStep {
   stopped,
   prepared,
-  landScape
+  landScapeCeils,
+  calcMethods
 }
 
 // Состояние лоадера
@@ -210,13 +255,23 @@ interface ProgressState {
   mode: ProgressBarMode;
 }
 
+// Интерфейс функций высчитывания геометрий
+interface CalcFunction {
+  callable: Function;
+  called: boolean;
+  context: any;
+  args: any[];
+}
+
 // Список состояний с прогрессом
 const LoaderProgressSteps: LoadingStep[] = [
-  LoadingStep.landScape
+  LoadingStep.landScapeCeils,
+  LoadingStep.calcMethods
 ];
 
 // Иконки лоадера
 const LoaderIcons: CustomObjectKey<LoadingStep | typeof DefaultKey, string> = {
   [DefaultKey]: "settings",
-  [LoadingStep.landScape]: "filter_hdr"
+  [LoadingStep.landScapeCeils]: "filter_hdr",
+  [LoadingStep.calcMethods]: "function"
 };

@@ -14,7 +14,7 @@ export const WaitObservable = (callback: () => boolean, limit: number = Infinity
 );
 
 // RXJS цикл
-export const TakeCycle = (limit: number, grouping: number = 1): Observable<number> => timer(0, 1).pipe(
+export const TakeCycle = (limit: number, grouping: number = 1, delayTime: number = 1): Observable<number> => timer(delayTime, delayTime).pipe(
   take(MathCeil(limit / grouping)),
   mergeMap(n => {
     const before: number = n * grouping;
