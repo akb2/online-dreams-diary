@@ -44,6 +44,9 @@
     <div class="loader__title">{{('3d.viewer.loader.title.' + loadingStep) | translate}}</div>
     <!-- Подзаголовок -->
     <div class="loader__sub-title"
-         *ngIf="state.subSteps > 0"></div>
+         *ngIf="state.subSteps > 0">
+      {{'general.labels.of' | translate: { from: state.completedSubSteps | number: '0.0-0', to: state.subSteps | number: '0.0-0' } }}
+      {{state.subSteps | i18nPlural: ('3d.viewer.loader.sub_title.' + loadingStep | translate)}}
+    </div>
   </div>
 </ng-template>

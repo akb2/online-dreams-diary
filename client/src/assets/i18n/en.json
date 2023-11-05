@@ -37,7 +37,8 @@
         "Seen: {{date}}",
         "Seen: {{date}}",
         "Seen: {{date}}"
-      ]
+      ],
+      "of": "{{from}} out of {{to}}"
     },
     "units": {
       "file_size": [
@@ -248,6 +249,17 @@
           "2": "Landscape creation",
           "3": "Building the scene",
           "4": "Loading textures"
+        },
+        "sub_title": {
+          "2": {
+            "other": "cells processed"
+          },
+          "3": {
+            "other": "operations completed"
+          },
+          "4": {
+            "other": "textures loaded"
+          }
         }
       },
       "compass": {

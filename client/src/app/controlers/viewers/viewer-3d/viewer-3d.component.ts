@@ -39,7 +39,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 500;
+  private loadCeilsByTime: number = 900;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 0.003;
 
@@ -97,8 +97,18 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       : 0;
     // Подшаги для ячеек
     if (this.loadingStep === LoadingStep.landScapeCeils) {
-      subSteps = this.loadingCeilLimit;
-      completedSubSteps = this.loadingCeilCurrent;
+      subSteps = MathRound(this.loadingCeilLimit / 2);
+      completedSubSteps = MathRound(this.loadingCeilCurrent / 2);
+    }
+    // Подшаги для текстур
+    else if (this.loadingStep === LoadingStep.loadTextures) {
+      subSteps = this.textures.length;
+      completedSubSteps = this.textures.filter(({ loaded }) => loaded).length;
+    }
+    // Подшаги для функций
+    else if (this.loadingStep === LoadingStep.calcMethods) {
+      subSteps = this.calcOperations.length;
+      completedSubSteps = this.calcOperations.filter(({ called }) => called).length;
     }
     // Вернуть состояние
     return { mode, icon, progress, subSteps, completedSubSteps };
@@ -267,8 +277,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Запуск функций вычислений
   private callCalcMethods(): Observable<any> {
-    const size: number = this.calcOperations.length;
-    // Обновить загрузчик
     this.loadingStep = LoadingStep.calcMethods;
     this.changeDetectorRef.detectChanges();
     // Цикл по функциям
