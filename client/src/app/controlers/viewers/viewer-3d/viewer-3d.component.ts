@@ -136,6 +136,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       ),
       skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
       catchError(() => {
+        this.landscape3DService.updateGeometry();
         this.engine3DService.addToScene(this.landscape3DService.mesh);
         // Перейти далее
         return of(null);
@@ -159,6 +160,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     if (!!changes?.dreamMap) {
       this.ceil3dService.dreamMap = this.dreamMap;
       this.engine3DService.dreamMap = this.dreamMap;
+      this.landscape3DService.dreamMap = this.dreamMap;
     }
   }
 
