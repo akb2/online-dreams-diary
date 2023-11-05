@@ -42,5 +42,8 @@
                       [mode]="state.mode"></mat-progress-bar>
     <!-- Заголовок -->
     <div class="loader__title">{{('3d.viewer.loader.title.' + loadingStep) | translate}}</div>
+    <!-- Подзаголовок -->
+    <div class="loader__sub-title"
+         *ngIf="state.subSteps > 0"></div>
   </div>
 </ng-template>
