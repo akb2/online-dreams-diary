@@ -1,7 +1,7 @@
 import { DreamCeilParts, DreamCeilSize, DreamMapSize, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, CheckInRange, MathRound, ParseInt } from "@_helpers/math";
 import { ForCycle, XYMapEach } from "@_helpers/objects";
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, ReliefType } from "@_models/dream-map";
 import { Injectable } from "@angular/core";
 import { DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Material, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -22,11 +22,15 @@ export class Landscape3DService {
   geometry: PlaneGeometry;
   material: Material;
 
-  private geometryWidth: number;
-  private geometryHeight: number;
-  private geometryVertex: Float32BufferAttribute;
   private displacementTexture: DataTexture;
-  private vertexes: Float32BufferAttribute;
+  private geometryVertex: Float32BufferAttribute;
+
+  // Список текстур ландшафта
+  textures: string[] = [
+    ...Object.values(ReliefType).map(type => "/assets/dream-map/relief/" + type + ".png"),
+    "/assets/dream-map/terrain/face.png",
+    "/assets/dream-map/terrain/normal.png"
+  ];
 
 
 
@@ -49,12 +53,10 @@ export class Landscape3DService {
     // Создание свойств
     this.displacementTexture = new DataTexture(new Uint8Array(4 * totalSize), totalWidth, totalHeight);
     this.geometry = new PlaneGeometry(totalWidth, totalHeight, totalWidth, totalHeight);
-    this.vertexes = this.geometry.getAttribute("position") as Float32BufferAttribute;
+    this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
     this.material = new MeshBasicMaterial({ side: FrontSide, color: 0x000000, wireframe: true });
     this.mesh = new Mesh(this.geometry, this.material);
     // Свойства класса
-    this.geometryWidth = this.geometry.parameters.widthSegments + 1;
-    this.geometryHeight = this.geometry.parameters.heightSegments + 1;
     this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
     this.displacementTexture.magFilter = LinearFilter;
     this.displacementTexture.minFilter = LinearFilter;
@@ -120,29 +122,16 @@ export class Landscape3DService {
         .map(index => (this.displacementTexture.image.data[index] / 255) * scale)
         .reduce((o, z) => o + z, 0) / indexes.length;
       // Установить высоту
-      this.vertexes.setZ(indexV, z);
+      this.geometryVertex.setZ(indexV, z);
     }
   }
 
   // Обновить геометрю
   updateGeometry(): void {
-    this.geometry.setAttribute("position", this.vertexes);
+    this.geometry.setAttribute("position", this.geometryVertex);
     this.geometry.computeVertexNormals();
     this.geometry.computeTangents();
     this.geometry.attributes.position.needsUpdate = true;
     this.geometry.attributes.normal.needsUpdate = true;
   }
-}
-
-
-
-
-
-// Тип рельефов
-export enum ReliefType {
-  flat = "flat",
-  hill = "hill",
-  mountain = "mountain",
-  canyon = "canyon",
-  pit = "pit",
 }

@@ -4,6 +4,8 @@
 @use "colors";
 @use "containers";
 
+$controlOffset: 5px;
+
 // Родительский блок
 :host {
   display: block;
@@ -144,5 +146,16 @@
       font-size: $labelSize * 0.6;
       font-weight: 400;
     }
+  }
+}
+
+// Статистика
+.stats {
+  z-index: 1;
+  // Данные
+  ::ng-deep > div {
+    position: absolute !important;
+    left: #{$controlOffset} !important;
+    top: #{$controlOffset} !important;
   }
 }

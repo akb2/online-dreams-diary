@@ -13,6 +13,7 @@ import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectCompose
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
 import { CineonToneMapping, Clock, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 
 
@@ -46,6 +47,8 @@ export class Engine3DService implements OnDestroy {
   private clock: Clock;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
+
+  stats: Stats;
 
   renderEvent$: Observable<AnimationFramesEvent> = animationFrames();
   private destroyed$: Subject<void> = new Subject();
@@ -100,6 +103,7 @@ export class Engine3DService implements OnDestroy {
     this.createOctree();
     this.createControl();
     this.createPostProcessors();
+    this.createStats();
     this.createAnimation();
     // Первые события
     this.onUpdatePostProcessors();
@@ -216,7 +220,13 @@ export class Engine3DService implements OnDestroy {
       .subscribe(() => {
         this.control.update();
         this.composer.render();
+        this.stats.update();
       });
+  }
+
+  // Создание статистики
+  private createStats(): void {
+    this.stats = Stats();
   }
 
 
