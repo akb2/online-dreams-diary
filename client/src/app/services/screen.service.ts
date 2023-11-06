@@ -1,7 +1,9 @@
+import { ParseInt } from "@_helpers/math";
 import { ElmSize, LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
+import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, Subscriber, fromEvent, timer } from "rxjs";
-import { filter, map, pairwise, skipWhile, startWith, takeUntil, takeWhile } from "rxjs/operators";
+import { BehaviorSubject, Observable, Subject, Subscriber, fromEvent, of, throwError, timer } from "rxjs";
+import { filter, map, pairwise, skipWhile, startWith, switchMap, takeUntil, takeWhile } from "rxjs/operators";
 
 
 
@@ -38,7 +40,9 @@ export class ScreenService implements OnDestroy {
 
 
 
-  constructor() {
+  constructor(
+    private httpClient: HttpClient
+  ) {
     this.updateIsMobile();
     // Обновить метку о типе интерфейса
     fromEvent(window, "resize")
@@ -103,7 +107,9 @@ export class ScreenService implements OnDestroy {
 
   // Подписчик на загрузку картинки
   loadImage(url: string | Blob): Observable<LoadingImageData> {
-    const stringUrl: string = typeof url === "string" ? url : URL.createObjectURL(url);
+    const stringUrl: string = typeof url === "string"
+      ? url
+      : URL.createObjectURL(url);
     // Подписчик
     const observable: Observable<LoadingImageData> = new Observable(observer => {
       const image: HTMLImageElement = new Image();
@@ -113,9 +119,13 @@ export class ScreenService implements OnDestroy {
       image.onload = () => {
         observer.next(new LoadingImageData(image, stringUrl, image.width, image.height));
         observer.complete();
+        image.remove();
       };
       // Ошибка
-      image.onerror = error => observer.error(error);
+      image.onerror = error => {
+        image.remove();
+        observer.error(error);
+      };
     });
     // Вернуть подписчик
     return observable;
@@ -138,11 +148,25 @@ export class ScreenService implements OnDestroy {
   }
 
   // Ожидание значения
+  /** @deprecated используйте WaitObservable из \@_helpers/rxjs */
   waitWhileFalse<T>(data: T): Observable<T> {
     return timer(0, 100).pipe(
       takeWhile(() => !data, true),
       skipWhile(() => !data),
       map(() => data)
+    );
+  }
+
+  // Размер картинки
+  getImageSize(url: string): Observable<number> {
+    return this.httpClient.head(url, { observe: "response" }).pipe(
+      switchMap(response => {
+        const size: number = ParseInt(response?.headers?.get("Content-Length"));
+        // Вернуть размер
+        return size > 0
+          ? of(size)
+          : throwError(() => "Неудалось определить размер содержимого: " + url)
+      })
     );
   }
 

@@ -4,11 +4,29 @@
           [hidden]="loading"></canvas>
   <!-- Загрузка -->
   <ng-container [ngTemplateOutlet]="loader"
-                *ngIf="loading"></ng-container>
+                *ngIf="loading; else widgets"></ng-container>
   <!-- Вспомогательный блок -->
   <div #helper
        class="viewer__helper"></div>
 </div>
+
+<!-- Инструменты редактора -->
+<ng-template #widgets>
+  <!-- Компас -->
+  <span class="compass">
+    <span class="compass__circle"
+          [ngStyle]="compassStyles$ | async">
+      <span class="compass__label">
+        <span class="compass__label-text"
+              [ngStyle]="{ transform: 'rotate(' + compassRadialShift + 'deg)' }">{{'3d.viewer.compass.label' | translate}}</span>
+      </span>
+    </span>
+  </span>
+  <!-- Статистика -->
+  <div #statsBlock
+       class="stats"
+       *ngIf="debugInfo"></div>
+</ng-template>
 
 <!-- Загрузка -->
 <ng-template #loader>
@@ -24,5 +42,11 @@
                       [mode]="state.mode"></mat-progress-bar>
     <!-- Заголовок -->
     <div class="loader__title">{{('3d.viewer.loader.title.' + loadingStep) | translate}}</div>
+    <!-- Подзаголовок -->
+    <div class="loader__sub-title"
+         *ngIf="state.subSteps > 0">
+      {{'general.labels.of' | translate: { from: state.completedSubSteps | number: '0.0-0', to: state.subSteps | number: '0.0-0' } }}
+      {{state.subSteps | i18nPlural: ('3d.viewer.loader.sub_title.' + loadingStep | translate)}}
+    </div>
   </div>
 </ng-template>

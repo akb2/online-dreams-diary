@@ -5,7 +5,7 @@ import { DreamMapSettings } from "@_models/dream-map";
 
 
 // Размер карты по умолчанию
-export const DreamMapSize: number = 50;
+export const DreamMapSize: number = 100;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize: number = 1;

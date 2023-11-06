@@ -1,3 +1,4 @@
+import { ParseFloat } from "@_helpers/math";
 import { AuthRules } from "@_models/menu";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
@@ -29,43 +30,37 @@ export class AuthGuardService implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.globalService.init().pipe(
       map(user => {
-        const pageRule: AuthRules = parseFloat(route.data.authRule) as AuthRules || 0;
+        const redirectAuth: string = route.data?.redirectAuth;
+        const redirectNotAuth: string = route.data?.redirectNotAuth;
+        const pageRule: AuthRules = ParseFloat(route.data.authRule, AuthRules.anyWay) as AuthRules;
         const userAuth: boolean = this.accountService.checkAuth;
         // Редирект пользователей
-        if ((route.data?.redirectAuth?.length > 0 && userAuth) || (route.data?.redirectNotAuth?.length > 0 && !userAuth)) {
-          // Редирект авторизованного пользователя
-          if (route.data?.redirectAuth?.length > 0 && userAuth) {
-            this.router.navigate([route.data?.redirectAuth.replace(":userId", user.id)], { state: { checkToken: false } });
-          }
-          // Редирект неавторизованного пользователя
-          else {
-            this.router.navigate([route.data?.redirectNotAuth], { state: { checkToken: false } });
-          }
+        if ((!!redirectAuth && userAuth) || (!!redirectNotAuth && !userAuth)) {
+          const redirectUrl: string = !!redirectAuth && userAuth
+            ? redirectAuth.replace(":userId", user.id?.toString())
+            : redirectNotAuth;
+          // Редирект
+          this.router.navigate([redirectUrl], { state: { checkToken: false } });
         }
         // Проверка авторизации
-        else if ((pageRule == AuthRules.notAuth && !userAuth) || (pageRule == AuthRules.auth && userAuth) || pageRule == AuthRules.anyWay) {
-          // Вернуть результат
+        else if ((pageRule === AuthRules.notAuth && !userAuth) || (pageRule === AuthRules.auth && userAuth) || pageRule === AuthRules.anyWay) {
           return true;
         }
-        // Обработка запрета роута
+        // Для авторизованного пользователя
+        else if (userAuth) {
+          this.router.navigate(["/"]);
+        }
+        // Для неавторизованного пользователя
         else {
-          // Для авторизованного пользователя
-          if (userAuth) {
-            this.router.navigate(["/"]);
-          }
-          // Для неавторизованного пользователя
-          else {
-            // Открыть сообщение
-            this.snackBar.open({
-              message: "Для просмотра раздела требуется авторизация",
-              mode: "error"
-            });
-            // Перенаправить
-            this.router.navigate(["/"]);
-          }
+          this.snackBar.open({
+            message: "Для просмотра раздела требуется авторизация",
+            mode: "error"
+          });
+          // Перенаправить
+          this.router.navigate(["/"]);
         }
         // Роут запрещен
-        return false;
+        return true;
       })
     );
   }

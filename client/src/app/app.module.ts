@@ -15,8 +15,9 @@ import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { Router } from "@angular/router";
 import { EffectsModule } from '@ngrx/effects';
-import { StoreModule } from '@ngrx/store';
+import { Store, StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
@@ -84,7 +85,6 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
     PageLoaderModule,
     MatSnackBarModule,
     CoreModule,
-    PageLoaderModule,
     MatIconModule,
     TranslateModule.forRoot({
       loader: {
@@ -112,12 +112,12 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
     {
       provide: LOCALE_ID,
       useClass: LocaleId,
-      deps: [LocaleService],
+      deps: [LocaleService, Router, Store],
     },
     {
       provide: MAT_DATE_LOCALE,
       useClass: LocaleId,
-      deps: [LocaleService],
+      deps: [LocaleService, Router, Store],
     }
   ]
 })

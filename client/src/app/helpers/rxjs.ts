@@ -1,5 +1,5 @@
 import { CreateArray } from "@_datas/app";
-import { Observable, map, mergeMap, of, skipWhile, take, takeWhile, timer } from "rxjs";
+import { Observable, concatMap, map, mergeMap, of, skipWhile, take, takeWhile, timer } from "rxjs";
 import { CheckInRange, MathCeil } from "./math";
 
 
@@ -14,7 +14,7 @@ export const WaitObservable = (callback: () => boolean, limit: number = Infinity
 );
 
 // RXJS цикл
-export const TakeCycle = (limit: number, grouping: number = 1): Observable<number> => timer(0, 1).pipe(
+export const TakeCycle = (limit: number, grouping: number = 1, delayTime: number = 1): Observable<number> => timer(delayTime, delayTime).pipe(
   take(MathCeil(limit / grouping)),
   mergeMap(n => {
     const before: number = n * grouping;
@@ -23,4 +23,14 @@ export const TakeCycle = (limit: number, grouping: number = 1): Observable<numbe
     // Вернуть группу
     return of(...group);
   })
+);
+
+// Последовательные запросы из массива
+export const ConsistentResponses = <T>(requests: Observable<T>[]): Observable<T[]> => requests.reduce(
+  (accObservable, currentObservable) => accObservable.pipe(
+    concatMap((results) => currentObservable.pipe(
+      concatMap((result) => of([...results, result]))
+    )),
+  ),
+  of([] as T[])
 );

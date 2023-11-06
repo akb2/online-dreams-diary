@@ -4,7 +4,7 @@ import { Injectable, OnDestroy, Optional, SkipSelf } from "@angular/core";
 import { ActivatedRouteSnapshot, Router } from "@angular/router";
 import { translateLanguageSelector } from "@app/reducers/translate";
 import { Store } from "@ngrx/store";
-import { Subject, concatMap, filter, from, map, noop, takeUntil, tap } from "rxjs";
+import { Subject, concatMap, filter, from, map, noop, pairwise, takeUntil, tap } from "rxjs";
 
 
 
@@ -32,21 +32,23 @@ export class LocaleService implements OnDestroy {
     if (!otherInstance) {
       this.store$.select(translateLanguageSelector)
         .pipe(
-          takeUntil(this.destroyed$),
+          pairwise(),
+          filter(([prev, next]) => prev !== next),
+          map(([, next]) => next),
           filter(language => LanguageLocales[language] !== this.currentLocale),
           map(language => ({
             language,
             shouldReuseRoute: this.router.routeReuseStrategy.shouldReuseRoute
           })),
-          tap(() => {
+          tap(({ language }) => {
+            this.currentLocale = LanguageLocales[language];
             this.setRouteReuse(() => false);
             this.router.navigated = false;
           }),
-          concatMap(() => from(this.router.navigateByUrl(this.router.url).catch(noop)), d => d)
+          concatMap(() => from(this.router.navigateByUrl(this.router.url).catch(noop)), d => d),
+          takeUntil(this.destroyed$)
         )
-        .subscribe(({ language, shouldReuseRoute }) => {
-          this.currentLocale = LanguageLocales[language];
-          this.setRouteReuse(shouldReuseRoute);
+        .subscribe(() => {
         });
     }
   }

@@ -37,7 +37,8 @@
         "Seen: {{date}}",
         "Seen: {{date}}",
         "Seen: {{date}}"
-      ]
+      ],
+      "of": "{{from}} out of {{to}}"
     },
     "units": {
       "file_size": [
@@ -248,8 +249,24 @@
         "title": {
           "0": "It's funny, but you shouldn't see it))",
           "1": "Preparing to view",
-          "2": "Landscape creation"
+          "2": "Landscape creation",
+          "3": "Building the scene",
+          "4": "Loading textures"
+        },
+        "sub_title": {
+          "2": {
+            "other": "cells processed"
+          },
+          "3": {
+            "other": "operations completed"
+          },
+          "4": {
+            "other": "textures loaded"
+          }
         }
+      },
+      "compass": {
+        "label": "N"
       }
     }
   }

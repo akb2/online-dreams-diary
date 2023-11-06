@@ -1,5 +1,6 @@
 import { CustomObject } from "@_models/app";
-import { IUniform, Shader, WebGLRenderer } from "three";
+import { Observable } from "rxjs";
+import { IUniform, Shader, Texture, WebGLRenderer } from "three";
 
 
 
@@ -10,3 +11,19 @@ export type Uniforms = CustomObject<IUniform<any>>;
 
 // Тип функции компиляции шейдера
 export type OnBeforeCompileCallback = (shader: Shader, renderer?: WebGLRenderer) => void;
+
+// Интерфейс кеша текстур
+export interface TextureCache {
+  url: string;
+  texture?: Texture;
+  loader?: Observable<Texture>
+}
+
+// Интерфейс процесса загрузки
+interface ProgressEvent {
+  readonly loaded: number;
+  readonly total: number;
+}
+
+// Функция прогресса загрузки текстуры
+export type OnTexture3DProgress = (event: ProgressEvent) => void;
