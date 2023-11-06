@@ -47,6 +47,9 @@
         "Gb",
         "Tb"
       ]
+    },
+    "page_loader": {
+      "title": "Loading the page"
     }
   },
   "menus": {
