@@ -22,6 +22,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
+import { TranslateService } from "@ngx-translate/core";
 import { Subject, of, throwError } from "rxjs";
 import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
@@ -46,7 +47,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   ready: boolean = false;
   loading: boolean = false;
   selectedTab: number = 2;
-  private pageTitle: string[] = ["Новое сновидение", "Редактор сновидений"];
+  private pageTitle: string[] = [
+    "pages.diary_editor.page_titles.new",
+    "pages.diary_editor.page_titles.edit"
+  ];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
   defaultTitle: string = DreamTitle;
@@ -163,6 +167,11 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Дата сновидения
+  get dreamDate(): Date {
+    return ToDate(this.dreamForm?.get('date')?.value ?? this.today);
+  }
+
 
 
 
@@ -176,7 +185,8 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     private snackbarService: SnackbarService,
     private router: Router,
     private titleService: Title,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private translateService: TranslateService
   ) {
     this.dreamId = ParseInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
@@ -228,7 +238,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       // Нет изменений
       else if (!this.formHasChanges) {
         this.snackbarService.open({
-          message: "Изменений не обнаружено",
+          message: this.translateService.instant("pages.diary_editor.notifications.no_changes_for_save"),
           mode: "error"
         });
       }
@@ -260,7 +270,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
               this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
               // Уведомление о сохранении
               this.snackbarService.open({
-                message: "Сновидение успешно сохранено",
+                message: this.translateService.instant("pages.diary_editor.notifications.save_success"),
                 mode: "success"
               });
             },
@@ -355,7 +365,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   private setTitle(): void {
     this.titleService.setTitle(this.globalService.createTitle([
       this.dream.title,
-      this.pageTitle[!!this.dream.id ? 1 : 0]
-    ]));
+      this.translateService.instant(this.pageTitle[!!this.dream.id ? 1 : 0])
+    ]))
   }
 }

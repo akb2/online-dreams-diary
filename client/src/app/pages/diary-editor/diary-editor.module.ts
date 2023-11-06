@@ -15,6 +15,7 @@ import { DiaryEditorRoutingModule } from '@_pages/diary-editor/diary-editor-rout
 import { DiaryEditorComponent } from '@_pages/diary-editor/diary-editor.component';
 import { NgModule } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
+import { TranslateModule } from "@ngx-translate/core";
 
 
 
@@ -39,7 +40,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     SliderInputModule,
     InformModule,
     TextEditorModule,
-    Editor3DModule
+    Editor3DModule,
+    TranslateModule
   ]
 })
 

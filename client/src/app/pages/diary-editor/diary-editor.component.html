@@ -9,7 +9,7 @@
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
                  [mainTitle]="dream.title || defaultTitle"
-                 subTitle="Приснилось {{(dreamForm.get('date')?.value ?? today) | date: 'longDate'}}"
+                 [subTitle]="'pages.diary_editor.header.sub_title' | translate: { date: dreamDate | date: 'longDate' }"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
                  floatButtonIcon="save"
@@ -26,14 +26,14 @@
                      (selectedIndexChange)="onChangeTab($event)"
                      *ngIf="!loading; else saveLoader">
         <!-- Общее -->
-        <mat-tab label="Общее">
+        <mat-tab [label]="'pages.diary_editor.tabs.titles.general' | translate">
           <ng-template matTabContent>
             <div class="overlay">
               <div class="section root-section tabs">
                 <div class="container">
                   <div class="cards-list">
                     <!-- Общие данные -->
-                    <app-card mainTitle="Общие данные"
+                    <app-card [mainTitle]="'pages.diary_editor.form.titles.general' | translate"
                               avatarIcon="edit_calendar"
                               avatarColor="primary"
                               avatarBackground="fill"
@@ -41,12 +41,12 @@
                       <form content
                             [formGroup]="dreamForm">
                         <!-- Название -->
-                        <app-text-input label="Название"
+                        <app-text-input [label]="'pages.diary_editor.form.labels.title' | translate"
                                         formControlName="title"
                                         [errors]="errors.title"
                                         [maxLength]="titleMaxLength"></app-text-input>
                         <!-- Описание -->
-                        <app-text-input label="Краткое описание"
+                        <app-text-input [label]="'pages.diary_editor.form.labels.description' | translate"
                                         formControlName="description"
                                         [errors]="errors.description"
                                         [multiLine]="true"
@@ -55,15 +55,14 @@
                                         [maxLength]="descriptionMaxLength"></app-text-input>
                         <!-- Когда приснился сон -->
                         <app-text-input type="date"
-                                        label="Дата сновидения"
+                                        [label]="'pages.diary_editor.form.labels.date' | translate"
                                         formControlName="date"
                                         [minDate]="dateMin"
                                         [maxDate]="dateMax"></app-text-input>
                       </form>
                     </app-card>
                     <!-- Настройки -->
-                    <app-card mainTitle="Настройки"
-                              subTitle="Упоминания и поиск"
+                    <app-card [mainTitle]="'pages.diary_editor.form.titles.search' | translate"
                               avatarIcon="settings"
                               avatarColor="primary"
                               avatarBackground="fill"
@@ -71,27 +70,26 @@
                       <form content
                             [formGroup]="dreamForm">
                         <!-- Ключевые слова -->
-                        <app-chips-input label="Ключевые слова для поиска"
-                                         placeholder="Введите ключевую фразу"
-                                         placeholderLimit="Достигнута максимальное количество ключевых фраз"
+                        <app-chips-input [label]="'pages.diary_editor.form.labels.keywords.label' | translate"
+                                         [placeholder]="'pages.diary_editor.form.labels.keywords.placeholder' | translate"
+                                         [placeholderLimit]="'pages.diary_editor.form.labels.keywords.placeholderLimit' | translate"
                                          formControlName="keywords"
                                          color="primary"
                                          [maxLength]="keywordsMaxLength"></app-chips-input>
                         <!-- Тип данных -->
                         <app-autocomplete-input required
-                                                label="Тип описания сновидения"
+                                                [label]="'pages.diary_editor.form.labels.mode' | translate"
                                                 formControlName="mode"
                                                 [optionData]="dreamModes"></app-autocomplete-input>
                         <!-- Статус сновидения -->
                         <app-autocomplete-input required
-                                                label="Кому достпно сновидение"
+                                                [label]="'pages.diary_editor.form.labels.status' | translate"
                                                 formControlName="status"
                                                 [optionData]="dreamStatuses"></app-autocomplete-input>
                       </form>
                     </app-card>
                     <!-- Параметры сновидения -->
-                    <app-card mainTitle="Параметры"
-                              subTitle="Дополнительные сведения"
+                    <app-card [mainTitle]="'pages.diary_editor.form.titles.moods' | translate"
                               avatarIcon="widgets"
                               avatarColor="primary"
                               avatarBackground="fill"
@@ -100,12 +98,12 @@
                             [formGroup]="dreamForm">
                         <!-- Тип сновидения -->
                         <app-autocomplete-input required
-                                                label="Тип сновидения"
+                                                [label]="'pages.diary_editor.form.labels.type' | translate"
                                                 formControlName="type"
                                                 [optionData]="dreamTypes"></app-autocomplete-input>
                         <!-- Атмосфера сновидения -->
                         <app-slider-input formControlName="mood"
-                                          label="Атмосфера сновидения"
+                                          [label]="'pages.diary_editor.form.labels.mood' | translate"
                                           [optionData]="dreamMoods"></app-slider-input>
                       </form>
                     </app-card>
@@ -116,7 +114,7 @@
           </ng-template>
         </mat-tab>
         <!-- Описание -->
-        <mat-tab label="Текст"
+        <mat-tab [label]="'pages.diary_editor.tabs.titles.text' | translate"
                  *ngIf="getCurrentMode === _dreamMode.text || getCurrentMode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
@@ -130,7 +128,7 @@
           </ng-template>
         </mat-tab>
         <!-- Карта -->
-        <mat-tab label="Карта"
+        <mat-tab [label]="'pages.diary_editor.tabs.titles.map' | translate"
                  *ngIf="getCurrentMode === _dreamMode.map || getCurrentMode === _dreamMode.mixed">
           <ng-template matTabContent>
             <div class="overlay">
@@ -144,7 +142,7 @@
           </ng-template>
         </mat-tab>
         <!-- Оформление -->
-        <mat-tab label="Дизайн">
+        <mat-tab [label]="'pages.diary_editor.tabs.titles.header' | translate">
           <ng-template matTabContent>
             <div class="overlay">
               <div class="section root-section tabs">
@@ -152,7 +150,7 @@
                                        [navMenuType]="dream.headerType"
                                        [useAvatar]="false"
                                        [mainTitle]="dream.title || defaultTitle"
-                                       subTitle="Приснилось {{(dream.date || today) | date: 'longDate'}}"
+                                       [subTitle]="'pages.diary_editor.header.sub_title' | translate: { date: dreamDate | date: 'longDate' }"
                                        (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
               </div>
             </div>

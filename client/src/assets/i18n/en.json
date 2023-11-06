@@ -182,6 +182,48 @@
           }
         }
       }
+    },
+    "diary_editor": {
+      "page_titles": {
+        "new": "New dream",
+        "edit": "Dream editor"
+      },
+      "notifications": {
+        "save_success": "The dream was successfully saved",
+        "no_changes_for_save": "No changes found"
+      },
+      "form": {
+        "labels": {
+          "title": "Title",
+          "date": "Dream date",
+          "description": "Description",
+          "mode": "Dream tools",
+          "mood": "Mood",
+          "status": "Who has access",
+          "type": "Dream type",
+          "keywords": {
+            "label": "Search keywords",
+            "placeholder": "Enter keywords here",
+            "placeholderLimit": "Maximum number of keywords reached"
+          }
+        },
+        "titles": {
+          "general": "About the dream",
+          "moods": "Impression",
+          "search": "Search"
+        }
+      },
+      "tabs": {
+        "titles": {
+          "general": "General",
+          "text": "Text",
+          "map": "Map",
+          "header": "Header"
+        }
+      },
+      "header": {
+        "sub_title": "Dreamed {{date}}"
+      }
     }
   },
   "popups": {

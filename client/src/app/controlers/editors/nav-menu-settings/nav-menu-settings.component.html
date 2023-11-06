@@ -99,10 +99,10 @@
         <mat-icon *ngIf="!avatar">person</mat-icon>
       </div>
       <!-- Заголовок -->
-      <div class="main-block__data-title">{{mainTitle}}</div>
+      <div class="main-block__data-title">{{mainTitle | translate}}</div>
       <!-- Подзаголовок -->
       <div class="main-block__data-subtitle"
-           *ngIf="!!status">{{status}}</div>
+           *ngIf="!!status">{{status | translate}}</div>
       <ng-container [ngTemplateOutlet]="mainMenuItems"
                     [ngTemplateOutletContext]="{ type }"
                     *ngIf="type === _navMenuType.collapse"></ng-container>
@@ -120,6 +120,6 @@
              let-type="type">
   <div class="main-block__menu type-{{type}}">
     <div class="main-block__menu-item"
-         *ngFor="let item of menuItems">{{item.text}}</div>
+         *ngFor="let item of menuItems">{{item.text | translate}}</div>
   </div>
 </ng-template>

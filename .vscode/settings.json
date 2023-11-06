@@ -28,5 +28,6 @@
     "client/src/assets/i18n",
     "client/src/assets/images/icons/languages"
   ],
-  "i18n-ally.keystyle": "nested"
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.sourceLanguage": "ru"
 }
