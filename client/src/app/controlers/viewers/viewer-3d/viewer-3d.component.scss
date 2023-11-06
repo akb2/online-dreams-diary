@@ -3,6 +3,7 @@
 @use "mixins";
 @use "colors";
 @use "containers";
+@use "screens";
 
 $controlOffset: 5px;
 
@@ -100,6 +101,11 @@ $controlOffset: 5px;
     line-height: $iconSize;
     font-size: $iconSize * 0.8;
     text-align: center;
+  }
+  // Адаптив
+  @include screens.adaptive(xxsmall, small) {
+    grid-template-columns: #{$iconSize} 1fr #{$iconSize};
+    grid-template-areas: "1 1 1" "2 2 2" "title title title" "sub-title sub-title sub-title" "5 5 5" "progressTitle progressBar icon";
   }
 }
 
