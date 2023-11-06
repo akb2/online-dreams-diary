@@ -238,6 +238,13 @@ export class Engine3DService implements OnDestroy {
     this.scene.add(...objects);
   }
 
+  // Добавить в пересечения курсора
+  addToCursorIntersection(...objects: Mesh[]): void {
+    objects.forEach(object => this.octree.add(object));
+    // Обновить
+    this.octree.update();
+  }
+
 
 
 
@@ -254,6 +261,8 @@ export class Engine3DService implements OnDestroy {
         // Настройки
         if (this.renderer) {
           this.renderer.setSize(this.canvasWidth, this.canvasHeight);
+          this.renderer.setPixelRatio(window.devicePixelRatio);
+          this.composer.setSize(this.canvasWidth, this.canvasHeight);
           this.camera.aspect = this.canvasWidth / this.canvasHeight;
           // обновить пост отрисовку
           this.onUpdatePostProcessors();
@@ -319,7 +328,9 @@ export class Engine3DService implements OnDestroy {
       depthOfFieldEffect.resolution.width = this.canvasWidth;
       depthOfFieldEffect.resolution.height = this.canvasHeight;
       // Найдены объекты
-      depthOfFieldEffect.target = !!closestObject ? closestObject.point : this.control.target;
+      depthOfFieldEffect.target = !!closestObject
+        ? closestObject.point
+        : this.control.target;
       circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
       circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.5;
     }

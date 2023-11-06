@@ -231,6 +231,13 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       args: [this.landscape3DService.mesh],
       called: false
     });
+    // Добавить объект в пересечения курсора
+    this.calcOperations.push({
+      callable: this.engine3DService.addToCursorIntersection,
+      context: this.engine3DService,
+      args: [this.landscape3DService.mesh],
+      called: false
+    });
   }
 
   // Загрузка ячеек ландшафта
