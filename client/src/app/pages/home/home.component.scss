@@ -1,7 +1,9 @@
+@use "vars";
+
 $header-height: 60px;
 $tabs-height: 0;
 
 // Занять все пространство
 .all-height {
-  height: calc(100vh - #{$header-height + $tabs-height});
+  height: calc(#{vars.$screenHeight} - #{$header-height + $tabs-height});
 }

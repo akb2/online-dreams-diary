@@ -128,20 +128,20 @@ $tabsHeight: 49px;
   }
   // Секция внутри таба
   &.tabs {
-    min-height: calc(100vh - #{$headerHeight + $tabsHeight});
+    min-height: calc(#{vars.$screenHeight} - #{$headerHeight + $tabsHeight});
     // Для телефонов
     @include screens.adaptive(xxsmall, small) {
-      min-height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
+      min-height: calc(#{vars.$screenHeight} - #{($headerHeight * 2) + $tabsHeight});
     }
   }
 }
 
 // Занять все пространство
 .all-height {
-  height: calc(100vh - #{$headerHeight + $tabsHeight});
+  height: calc(#{vars.$screenHeight} - #{$headerHeight + $tabsHeight});
   // Для телефонов
   @include screens.adaptive(xxsmall, small) {
-    height: calc(100vh - #{($headerHeight * 2) + $tabsHeight});
+    height: calc(#{vars.$screenHeight} - #{($headerHeight * 2) + $tabsHeight});
   }
   // Растянуть потомков
   &.grow-child {

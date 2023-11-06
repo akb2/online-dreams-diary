@@ -19,7 +19,7 @@ $breakpointMobile: small;
   top: 0;
   // Полноразмерное меню
   &.type-full {
-    height: 100vh;
+    height: vars.$screenHeight;
   }
   // Вспомогательный блок
   &.helper {

@@ -24,7 +24,7 @@
     width: 100%;
     // Адаптив
     @include screens.adaptiveFor(containers.$paddingsY, $footerSizes) using($paddingY, $footerSize) {
-      height: calc(100vh - #{vars.$headerHeight + $footerSize + ($paddingY * 2)});
+      height: calc(#{vars.$screenHeight} - #{vars.$headerHeight + $footerSize + ($paddingY * 2)});
     }
   }
   // Текст

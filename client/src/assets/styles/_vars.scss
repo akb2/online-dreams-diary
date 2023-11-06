@@ -1,9 +1,11 @@
+$screenHeight: calc(100vh - env(safe-area-inset-top));
+
 $userStatusPaddingX: 30px;
 
 $dialogTitleFontSize: 18px;
 $dialogPadding: 24px;
 $dialogTitleSize: 46px;
-$dialogContentMaxHeight: calc(100vh - #{($dialogPadding * 2) + ($dialogPadding + 20px) + (52px + (16px * 2) - $dialogPadding)});
+$dialogContentMaxHeight: calc(#{$screenHeight} - #{($dialogPadding * 2) + ($dialogPadding + 20px) + (52px + (16px * 2) - $dialogPadding)});
 
 $buttonSize: 40px;
 $buttonIconSize: 24px;

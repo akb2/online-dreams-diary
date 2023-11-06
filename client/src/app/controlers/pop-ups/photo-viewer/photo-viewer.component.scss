@@ -6,10 +6,10 @@
 @use "material";
 
 $maxHeights: (
-  default: calc(100vh - #{vars.$headerHeight + (containers.$paddingX * 2)}),
-  small: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
-  xsmall: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
-  xxsmall: calc(100vh - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)})
+  default: calc(#{vars.$screenHeight} - #{vars.$headerHeight + (containers.$paddingX * 2)}),
+  small: calc(#{vars.$screenHeight} - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
+  xsmall: calc(#{vars.$screenHeight} - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)}),
+  xxsmall: calc(#{vars.$screenHeight} - #{(vars.$headerHeight * 2) + (containers.$paddingX * 2)})
 );
 
 $commentWidths: (
@@ -34,8 +34,8 @@ $commentWidths: (
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
-  max-height: 100vh;
+  height: #{vars.$screenHeight};
+  max-height: #{vars.$screenHeight};
   overflow: initial;
   z-index: 1;
   display: flex;

@@ -3,6 +3,7 @@
 @use "material";
 @use "containers";
 @use "mixins";
+@use "vars";
 
 $properties: (
   xxsmall: (
@@ -33,7 +34,7 @@ $properties: (
 
 // Контейнер
 .container {
-  min-height: calc(100vh - 60px);
+  min-height: calc(#{vars.$screenHeight} - 60px);
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-between;
