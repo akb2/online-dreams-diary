@@ -51,6 +51,15 @@
     },
     "page_loader": {
       "title": "Loading the page"
+    },
+    "option_data": {
+      "dream": {
+        "mode": {
+          "map": "As a map",
+          "mixed": "As a map & text",
+          "text": "Text only"
+        }
+      }
     }
   },
   "menus": {

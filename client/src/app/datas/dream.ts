@@ -17,7 +17,7 @@ export const DreamModes: OptionData[] = [
   // В виде текста
   {
     key: DreamMode.text.toString(),
-    title: "В виде текста",
+    title: "general.option_data.dream.mode.text",
     icon: "notes",
     iconColor: "primary",
     iconBackground: "fill"
@@ -25,7 +25,7 @@ export const DreamModes: OptionData[] = [
   // В виде карты
   {
     key: DreamMode.map.toString(),
-    title: "В виде карты",
+    title: "general.option_data.dream.mode.map",
     icon: "explore",
     iconColor: "primary",
     iconBackground: "fill"
@@ -33,7 +33,7 @@ export const DreamModes: OptionData[] = [
   // В виде карты и описания
   {
     key: DreamMode.mixed.toString(),
-    title: "В виде карты и описания",
+    title: "general.option_data.dream.mode.mixed",
     icon: "library_books",
     iconColor: "primary",
     iconBackground: "fill"
