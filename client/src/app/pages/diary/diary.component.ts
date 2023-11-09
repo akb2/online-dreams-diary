@@ -2,7 +2,7 @@ import { PaginateEvent } from "@_controlers/pagination/pagination.component";
 import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.component";
 import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { DreamMoods, DreamPlural, DreamStatuses, DreamTypes } from "@_datas/dream";
+import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { CheckInRange, ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
@@ -77,8 +77,6 @@ export class DiaryComponent implements OnInit, OnDestroy {
   userHasAccess: boolean = false;
   private queryParams: SimpleObject = {};
   navMenuType: typeof NavMenuType = NavMenuType;
-
-  dreamPlural: SimpleObject = DreamPlural;
 
   searchForm: FormGroup;
   dreamStatuses: OptionData[] = [];

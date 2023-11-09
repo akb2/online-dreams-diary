@@ -205,11 +205,3 @@ export const DreamMoods: OptionData[] = OptionDataFill(DreamMoodImagePreffix, [
     iconColor: "primary"
   },
 ]);
-
-// Склонение количества сновидений
-export const DreamPlural: SimpleObject = {
-  "=0": "",
-  "=1": "# сновидение",
-  "few": "# сновидения",
-  "other": "# сновидений"
-};

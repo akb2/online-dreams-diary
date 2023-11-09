@@ -1,6 +1,4 @@
-import { DreamPlural } from "@_datas/dream";
 import { User, UserSex } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { Dream } from "@_models/dream";
 import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
@@ -32,8 +30,6 @@ export class DreamsBlockComponent implements OnInit, OnDestroy {
   dreams: Dream[];
   dreamsCount: number = 0;
   dreamLimit: number = 3;
-
-  dreamPlural: SimpleObject = DreamPlural;
 
   isMobile: boolean = false;
 

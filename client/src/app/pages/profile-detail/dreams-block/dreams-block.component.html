@@ -12,7 +12,7 @@
                  [noMargin]="true"
                  [oneLine]="true"
                  [mainTitle]="itsMyPage? 'Мои сновидения': 'Сновидения ' + (user | petrovich)"
-                 [subTitle]="dreamsCount | i18nPlural: dreamPlural">
+                 [subTitle]="dreamsCount | i18nPlural: ('general.labels.dream' | translate)">
         <!-- Десктоп -->
         <ng-container *ngIf="!isMobile">
           <!-- Все сновидения -->

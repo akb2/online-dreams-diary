@@ -168,7 +168,7 @@
 <!-- Пагинатор -->
 <ng-template #pagination>
   <app-pagination mainTitle="Поиск по сновидениям"
-                  [subTitle]="dreamsCount > 0? (dreamsCount | i18nPlural: dreamPlural): ''"
+                  [subTitle]="dreamsCount | i18nPlural: ('general.labels.dream' | translate)"
                   [pageCurrent]="pageCurrent"
                   [pageLimit]="pageLimit"
                   [count]="dreamsCount"
