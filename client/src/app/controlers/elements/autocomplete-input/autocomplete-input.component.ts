@@ -11,6 +11,7 @@ import { FormControl, NgControl } from "@angular/forms";
 import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatOption } from "@angular/material/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
+import { TranslateService } from "@ngx-translate/core";
 import { Subject, timer } from "rxjs";
 import { filter, map, takeUntil } from "rxjs/operators";
 
@@ -130,7 +131,8 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   constructor(
     @Optional() @Self() override controlDir: NgControl,
     private changeDetectorRef: ChangeDetectorRef,
-    private scrollService: ScrollService
+    private scrollService: ScrollService,
+    private translateService: TranslateService
   ) {
     super(controlDir);
   }
@@ -179,7 +181,6 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     value = value.toLowerCase();
     // Очистить временное значение фокуса
     this.focusTempValue = "";
-
     // Поиск значения через Enter
     if (this.optionDataFiltered.length > 0 && (event.key === "Enter" || event.key === "NumpadEnter")) {
       const optionDataFiltered: OptionData[] = this.optionDataFiltered.filter(o => this.getOptionText(o).toLowerCase().includes(value));
@@ -222,14 +223,15 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   // Поле теряет фокус
   onBlur(): void {
-    // Если временное значение не пусто
-    if (this.focusTempValue.length) {
-      this.inputElement.nativeElement.value = this.focusTempValue;
+    if (!!this.focusTempValue.length) {
+      this.inputElement.nativeElement.value = this.translateService.instant(this.focusTempValue);
       this.focusTempValue = "";
     }
     // Выбранное значение
     else if (this.optionData.some(option => option.key === this.control.value)) {
-      this.inputElement.nativeElement.value = this.getOptionText(this.optionData.find(option => option.key === this.control.value) as OptionData);
+      const textKey: string = this.getOptionText(this.optionData.find(option => option.key === this.control.value) as OptionData);
+      // Устиановить значение
+      this.inputElement.nativeElement.value = this.translateService.instant(textKey);
     }
   }
 

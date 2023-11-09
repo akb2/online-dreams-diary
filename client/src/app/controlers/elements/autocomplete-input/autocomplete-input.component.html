@@ -12,7 +12,7 @@
     <input matInput
            #inputElement
            type="text"
-           [value]="getOptionText(optionDataSelected)"
+           [value]="getOptionText(optionDataSelected) | translate"
            [matAutocomplete]="autocompleteElement"
            [readonly]="type == 'select'"
            (keyup)="onKeyUp($event,inputElement.value)"
@@ -87,9 +87,9 @@
       <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
     </div>
     <div class="option__name">
-      <div class="option__name-title">{{item.title}}</div>
+      <div class="option__name-title">{{item.title | translate}}</div>
       <div class="option__name-subTitle"
-           *ngIf="item.subTitle">{{item.subTitle}}</div>
+           *ngIf="item.subTitle">{{item.subTitle | translate}}</div>
     </div>
   </div>
 </ng-template>
