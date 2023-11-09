@@ -1,6 +1,18 @@
-import { OptionData } from "@_models/form";
 import { SimpleObject } from "@_models/app";
 import { DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
+import { OptionData } from "@_models/form";
+
+
+
+
+
+// Функция для заполнения массива пунктов меню
+const OptionDataFill = (imagePreffix: string, optionData: OptionData[]): OptionData[] => optionData.map(option => ({
+  ...option,
+  image: imagePreffix + option.image + ".png",
+  imagePosition: "contain",
+  iconBackground: "fill"
+}));
 
 
 
@@ -99,112 +111,100 @@ export const DreamStatuses: OptionData[] = [
 ];
 
 // Информация о типах сновидений
-export const DreamTypes: OptionData[] = [
+export const DreamTypes: OptionData[] = OptionDataFill(DreamTypeImagePreffix, [
   // Обычное сновидение
   {
     key: DreamType.Simple.toString(),
-    title: "Обычное сновидение",
-    subTitle: "В этом сновидении не произошло ничего, что можно было отнести к другим категориям.",
+    title: "general.option_data.dream.type.simple.title",
+    subTitle: "general.option_data.dream.type.simple.subTitle",
     image: "simple",
     iconColor: "disabled"
   },
   // Сплошная болтовня
   {
     key: DreamType.Chatter.toString(),
-    title: "Сплошная болтовня",
-    subTitle: "В этом типе мало активных действий, мало сведений о ландшафте, но много диалогов.",
+    title: "general.option_data.dream.type.chatter.title",
+    subTitle: "general.option_data.dream.type.chatter.subTitle",
     image: "chatter",
     iconColor: "accent"
   },
   // Полнейший бред
   {
     key: DreamType.Drivel.toString(),
-    title: "Полнейший бред",
-    subTitle: "Данным типом помечайте даже те сновидения, которые являются бредом для сновидения.",
+    title: "general.option_data.dream.type.drivel.title",
+    subTitle: "general.option_data.dream.type.drivel.subTitle",
     image: "drivel",
     iconColor: "accent"
   },
   // Эпичное
   {
     key: DreamType.Epic.toString(),
-    title: "Эпичное",
-    subTitle: "В данный тип входят сновидения о космических битвах или других грандиозных событиях снов.",
+    title: "general.option_data.dream.type.epic.title",
+    subTitle: "general.option_data.dream.type.epic.subTitle",
     image: "epic",
     iconColor: "warn"
   },
   // Осознанное сновидение
   {
     key: DreamType.Lucid.toString(),
-    title: "Осознанное сновидение",
-    subTitle: "В данный тип входят ОС'ы или так называемые \"ВТО\".",
+    title: "general.option_data.dream.type.lucid.title",
+    subTitle: "general.option_data.dream.type.lucid.subTitle",
     image: "lucid",
     iconColor: "primary"
   },
-]
-  .map(option => ({
-    ...option,
-    image: DreamTypeImagePreffix + option.image + ".png",
-    imagePosition: "contain",
-    iconBackground: "fill"
-  } as OptionData));
+]);
 
 // Информация о настроении сновидений
-export const DreamMoods: OptionData[] = [
+export const DreamMoods: OptionData[] = OptionDataFill(DreamMoodImagePreffix, [
   // Ночной кошмар
   {
     key: DreamMood.Nightmare.toString(),
-    title: "Ночной кошмар",
-    subTitle: "В это настроение входят: погони от монстров, сонные параличи и т.д.",
+    title: "general.option_data.dream.mood.nightmare.title",
+    subTitle: "general.option_data.dream.mood.nightmare.subTitle",
     image: "nightmare",
     iconColor: "warn"
   },
   // Мрачный сон
   {
     key: DreamMood.Gloomy.toString(),
-    title: "Мрачный сон",
-    subTitle: "Отличается тем, что явной угрозы нет, но чувствуется присутствие чего-то угрожающего. Обычно картинка темная/черно-белая или не включается свет.",
+    title: "general.option_data.dream.mood.gloomy.title",
+    subTitle: "general.option_data.dream.mood.gloomy.subTitle",
     image: "gloomy",
     iconColor: "accent"
   },
   // Грустный сон
   {
     key: DreamMood.Sad.toString(),
-    title: "Грустный сон",
-    subTitle: "Тут может обычная повседневность, но события показывают потерю близких или другие сильные негативные эмоции.",
+    title: "general.option_data.dream.mood.sad.title",
+    subTitle: "general.option_data.dream.mood.sad.subTitle",
     image: "sad",
     iconColor: "accent"
   },
   // Непримечательный сон
   {
     key: DreamMood.Nothing.toString(),
-    title: "Непримечательный сон",
-    subTitle: "Сюжет сна не вызвал в вас сильной эмоцианальной отдачи.",
+    title: "general.option_data.dream.mood.nothing.title",
+    subTitle: "general.option_data.dream.mood.nothing.subTitle",
     image: "nothing",
     iconColor: "disabled"
   },
   // Веселый сон
   {
     key: DreamMood.Joy.toString(),
-    title: "Веселый сон",
-    subTitle: "Такие сюжеты могут вызвать либо смех, либо эмоцианальной подъем и вдохновение.",
+    title: "general.option_data.dream.mood.joy.title",
+    subTitle: "general.option_data.dream.mood.joy.subTitle",
     image: "joy",
     iconColor: "primary"
   },
   // Филосовский сон
   {
     key: DreamMood.Philosophy.toString(),
-    title: "Филосовский сон",
-    subTitle: "После таких сновидений мы можете годами обдумывать смысл жизни/мироустройство/ваше место в мире.",
+    title: "general.option_data.dream.mood.philosophy.title",
+    subTitle: "general.option_data.dream.mood.philosophy.subTitle",
     image: "philosophy",
     iconColor: "primary"
   },
-]
-  .map(option => ({
-    ...option,
-    image: DreamMoodImagePreffix + option.image + ".png",
-    imagePosition: "contain",
-    iconBackground: "fill"
-  } as OptionData))
+]);
 
 // Склонение количества сновидений
 export const DreamPlural: SimpleObject = {

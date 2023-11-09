@@ -84,6 +84,54 @@
             "title": "For the community",
             "subTitle": "Available to all service users"
           }
+        },
+        "type": {
+          "chatter": {
+            "subTitle": "This type has little action, little information about the landscape, but a lot of dialogue.",
+            "title": "Chatter"
+          },
+          "drivel": {
+            "title": "Drivel",
+            "subTitle": "With this type, mark even those dreams that are delirium for a dream."
+          },
+          "epic": {
+            "title": "Epic",
+            "subTitle": "This type includes dreams of space battles or other grandiose dream events."
+          },
+          "lucid": {
+            "title": "Lucid",
+            "subTitle": "This type includes lucid's dream's or so-called \"OBE\"."
+          },
+          "simple": {
+            "title": "Common dream",
+            "subTitle": "Nothing happened in this dream that could be classified into other categories."
+          }
+        },
+        "mood": {
+          "gloomy": {
+            "subTitle": "It differs in that there is no obvious threat, but the presence of something threatening is felt. \nUsually the picture is dark/black and white or the light does not turn on.",
+            "title": "Gloomy"
+          },
+          "joy": {
+            "subTitle": "Such stories can cause either laughter or emotional uplift and inspiration.",
+            "title": "Funny"
+          },
+          "nightmare": {
+            "subTitle": "This mood includes: being chased by monsters, sleep paralysis, etc.",
+            "title": "Nightmare"
+          },
+          "nothing": {
+            "subTitle": "The plot of the dream did not evoke a strong emotional response in you.",
+            "title": "Unremarkable"
+          },
+          "philosophy": {
+            "subTitle": "After such dreams, we can spend years pondering the meaning of life/world order/your place in the world.",
+            "title": "Philosophy"
+          },
+          "sad": {
+            "subTitle": "It may be normal everyday life, but events show the loss of loved ones or other strong negative emotions.",
+            "title": "Sad"
+          }
         }
       }
     }
@@ -233,7 +281,7 @@
           "date": "Dream date",
           "description": "Description",
           "mode": "Dream tools",
-          "mood": "Mood",
+          "mood": "Dream mood is",
           "status": "Who has access",
           "type": "Dream type",
           "keywords": {
