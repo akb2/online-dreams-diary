@@ -40,7 +40,10 @@
         <time class="dream__text-subtitle"
               routerLink="/diary/viewer/{{dream.id}}"
               [queryParams]="viewerQueryParams(dream)"
-              [attr.datetime]="(dream.date || today).toISOString()">Приснилось {{(dream.date || today) | date: 'longDate'}}</time>
+              [attr.datetime]="date.toISOString()"
+              *ngVar="(dream.date ?? today) as date">
+          {{'pages.diary_editor.header.sub_title' | translate: { date: (date | date: 'longDate')} }}
+        </time>
         <!-- Меню -->
         <app-card-menu class="dream__text-menu"
                        menuIcon="menu"
@@ -143,7 +146,7 @@
          [attr.color]="status.iconColor"
          [attr.background]="status.iconBackground"
          [attr.position]="status.imagePosition"
-         [matTooltip]="status.subTitle"
+         [matTooltip]="status.subTitle | translate"
          *ngIf="getDreamPrivate(dream) as status">
       <mat-icon>{{status.icon}}</mat-icon>
     </div>
@@ -153,7 +156,7 @@
          [attr.color]="item.iconColor"
          [attr.background]="item.iconBackground"
          [attr.position]="item.imagePosition"
-         [matTooltip]="item.title"
+         [matTooltip]="item.title | translate"
          *ngIf="getDreamType(dream) as item">
       <img [src]="item.image" />
     </div>
@@ -163,7 +166,7 @@
          [attr.color]="item.iconColor"
          [attr.background]="item.iconBackground"
          [attr.position]="item.imagePosition"
-         [matTooltip]="item.title"
+         [matTooltip]="item.title | translate"
          *ngIf="getDreamMood(dream) as item">
       <img [src]="item.image" />
     </div>
