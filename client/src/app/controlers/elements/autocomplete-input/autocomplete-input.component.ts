@@ -105,9 +105,16 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
 
   // Текстовое представление
   getOptionText(optionData: OptionData): string {
-    return !!optionData ?
-      optionData.title + (optionData.subTitle?.length ? this.textDelimiter + optionData.subTitle : "") :
-      "";
+    if (!!optionData) {
+      const title: string = this.translateService.instant(optionData.title);
+      const subTitle: string = !!optionData?.subTitle?.length
+        ? this.textDelimiter + this.translateService.instant(optionData.subTitle)
+        : "";
+      // Заголовок
+      return title + subTitle;
+    }
+    // No text
+    return ""
   }
 
   // Список классов выпадающего списка
@@ -224,14 +231,12 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
   // Поле теряет фокус
   onBlur(): void {
     if (!!this.focusTempValue.length) {
-      this.inputElement.nativeElement.value = this.translateService.instant(this.focusTempValue);
+      this.inputElement.nativeElement.value = this.focusTempValue;
       this.focusTempValue = "";
     }
     // Выбранное значение
     else if (this.optionData.some(option => option.key === this.control.value)) {
-      const textKey: string = this.getOptionText(this.optionData.find(option => option.key === this.control.value) as OptionData);
-      // Устиановить значение
-      this.inputElement.nativeElement.value = this.translateService.instant(textKey);
+      this.inputElement.nativeElement.value = this.getOptionText(this.optionData.find(option => option.key === this.control.value) as OptionData);
     }
   }
 
