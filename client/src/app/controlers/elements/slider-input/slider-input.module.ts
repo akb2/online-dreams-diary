@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSliderModule } from "@angular/material/slider";
-import { CoreModule } from "@_modules/core.module";
+import { TranslateModule } from "@ngx-translate/core";
 import { SliderInputComponent } from "./slider-input.component";
 
 
@@ -20,6 +20,7 @@ import { SliderInputComponent } from "./slider-input.component";
     CommonModule,
     MatIconModule,
     MatSliderModule,
+    TranslateModule
   ]
 })
 

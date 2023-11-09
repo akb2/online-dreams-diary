@@ -28,6 +28,9 @@
   </mat-slider>
   <!-- Обозначение -->
   <div class="label">
-    <div class="label__title">{{label}}: <b>{{getDisplayValue}}</b></div>
+    <div class="label__title">
+      {{label | translate}}:
+      <b>{{getDisplayValue | translate}}</b>
+    </div>
   </div>
 </div>
