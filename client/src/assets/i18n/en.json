@@ -58,6 +58,32 @@
           "map": "As a map",
           "mixed": "As a map & text",
           "text": "Text only"
+        },
+        "status": {
+          "draft": {
+            "title": "Draft",
+            "subTitle": "Available only for you"
+          },
+          "friends": {
+            "title": "For friends",
+            "subTitle": "Available for friend's & subscription's list's"
+          },
+          "hash": {
+            "title": "A special link",
+            "subTitle": "Available via special link"
+          },
+          "private": {
+            "title": "Personal",
+            "subTitle": "Available only for you"
+          },
+          "public": {
+            "title": "Public",
+            "subTitle": "Available for everyone"
+          },
+          "users": {
+            "title": "For the community",
+            "subTitle": "Available to all service users"
+          }
         }
       }
     }

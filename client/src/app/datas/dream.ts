@@ -45,8 +45,8 @@ export const DreamStatuses: OptionData[] = [
   // Черновик
   {
     key: DreamStatus.draft.toString(),
-    title: "Черновик",
-    subTitle: "Доступно только для вас",
+    title: "general.option_data.dream.status.draft.title",
+    subTitle: "general.option_data.dream.status.draft.subTitle",
     icon: "drive_file_rename_outline",
     iconColor: "disabled",
     iconBackground: "fill"
@@ -54,8 +54,8 @@ export const DreamStatuses: OptionData[] = [
   // Личное сновидение
   {
     key: DreamStatus.private.toString(),
-    title: "Личное",
-    subTitle: "Доступно только для вас",
+    title: "general.option_data.dream.status.private.title",
+    subTitle: "general.option_data.dream.status.private.subTitle",
     icon: "lock",
     iconColor: "warn",
     iconBackground: "fill"
@@ -63,8 +63,8 @@ export const DreamStatuses: OptionData[] = [
   // Для друзей
   {
     key: DreamStatus.friends.toString(),
-    title: "Для друзей",
-    subTitle: "Доступно для списка друзей и подписок",
+    title: "general.option_data.dream.status.friends.title",
+    subTitle: "general.option_data.dream.status.friends.subTitle",
     icon: "group",
     iconColor: "accent",
     iconBackground: "fill"
@@ -72,8 +72,8 @@ export const DreamStatuses: OptionData[] = [
   // Для сообщества
   {
     key: DreamStatus.users.toString(),
-    title: "Для сообщества",
-    subTitle: "Доступно всем пользователям сервиса",
+    title: "general.option_data.dream.status.users.title",
+    subTitle: "general.option_data.dream.status.users.subTitle",
     icon: "vpn_lock",
     iconColor: "accent",
     iconBackground: "fill"
@@ -81,8 +81,8 @@ export const DreamStatuses: OptionData[] = [
   // По ссылке
   {
     key: DreamStatus.hash.toString(),
-    title: "По ссылке",
-    subTitle: "Доступно по специальной ссылке",
+    title: "general.option_data.dream.status.hash.title",
+    subTitle: "general.option_data.dream.status.hash.subTitle",
     icon: "link",
     iconColor: "primary",
     iconBackground: "fill"
@@ -90,8 +90,8 @@ export const DreamStatuses: OptionData[] = [
   // Публичное сновидение
   {
     key: DreamStatus.public.toString(),
-    title: "Публичное",
-    subTitle: "Доступно всем в интернете",
+    title: "general.option_data.dream.status.public.title",
+    subTitle: "general.option_data.dream.status.public.subTitle",
     icon: "travel_explore",
     iconColor: "primary",
     iconBackground: "fill"
