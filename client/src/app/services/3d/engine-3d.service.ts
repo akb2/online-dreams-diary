@@ -307,13 +307,7 @@ export class Engine3DService implements OnDestroy {
   private onUpdatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
       const chairPositionX: number = this.canvasWidth * 0.5;
-      const chairPositionY: number = LineFunc(
-        this.canvasHeight * 0.9,
-        this.canvasHeight * 0.5,
-        this.control.getPolarAngle(),
-        this.control.minPolarAngle,
-        this.control.maxPolarAngle
-      );
+      const chairPositionY: number = this.canvasHeight * 0.5;
       const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
       const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
       const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
