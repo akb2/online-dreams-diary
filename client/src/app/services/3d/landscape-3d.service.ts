@@ -131,16 +131,7 @@ export class Landscape3DService {
     const textureX: number = x + mapBorderSizeX;
     const textureY: number = y + mapBorderSizeY;
     const index: number = ((textureY * width) + textureX) * 4;
-    const smooth = this.ceil3dService.sectorBorders;
-    const color: number = this.ceil3dService.isBorderCeil(x, y) && this.ceil3dService.isBorderSectorCeil(x, y)
-      ? Average(XYMapEach(smooth, smooth, (cX, cY) => {
-        const tX = x + cX - smooth;
-        const tY = y + cY - smooth;
-        const tZ = this.ceil3dService.getCeil(tX, tY).coord.originalZ;
-        // Вернуть цвет
-        return this.getColorByCoords(tX, tY, tZ);
-      }))
-      : this.getColorByCoords(x, y, z);
+    const color: number = this.getColorByCoords(x, y, z);
     // Записать данные в картинку
     ForCycle(3, k => this.displacementTexture.image.data[index + k] = color, true);
     // Обновить картинку
@@ -177,6 +168,7 @@ export class Landscape3DService {
       .map(index => (this.displacementTexture.image.data[index] / 255) * scale)
       .reduce((o, z) => o + z, 0) / indexes.length;
     // Установить высоту
+    this.ceil3dService.getCeil(x, y).coord.z = z;
     this.geometryVertex.setZ(indexV, z);
   }
 

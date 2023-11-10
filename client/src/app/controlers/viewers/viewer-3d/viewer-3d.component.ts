@@ -44,6 +44,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private loadCeilsByTime: number = 500;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 0.003;
+  private loadCeilCircles: number = 3;
 
   private textures: LoadTexture[] = [];
   private calcOperations: CalcFunction[] = [];
@@ -99,8 +100,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       : 0;
     // Подшаги для ячеек
     if (this.loadingStep === LoadingStep.landScapeCeils) {
-      subSteps = MathRound(this.loadingCeilLimit / 2);
-      completedSubSteps = MathRound(this.loadingCeilCurrent / 2);
+      subSteps = MathRound(this.loadingCeilLimit / this.loadCeilCircles);
+      completedSubSteps = MathRound(this.loadingCeilCurrent / this.loadCeilCircles);
     }
     // Подшаги для текстур
     else if (this.loadingStep === LoadingStep.loadTextures) {
@@ -258,7 +259,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const heightShift: number = this.landscape3DService.outSideRepeat * height;
     const totalSize: number = totalWidth * totalHeight;
     // Состояния
-    this.loadingCeilLimit = totalSize * 2;
+    this.loadingCeilLimit = totalSize * this.loadCeilCircles;
     this.loadingCeilCurrent = 0;
     this.loadingStep = LoadingStep.landScapeCeils;
     this.changeDetectorRef.detectChanges();
@@ -280,10 +281,19 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           y: data.coords.y - heightShift
         }
       })),
-      tap(({ coords: { x, y }, circle }) => circle === 0
-        ? this.landscape3DService.setHeightByCoords(this.ceil3dService.getCeil(x, y))
-        : this.landscape3DService.setVertexByCoords(this.ceil3dService.getCeil(x, y))
-      ),
+      tap(({ coords: { x, y }, circle }) => {
+        // Рассчет высот
+        if (circle === 0) {
+          this.landscape3DService.setHeightByCoords(this.ceil3dService.getCeil(x, y));
+        }
+        // Сглаживание
+        else if (circle === 1) {
+        }
+        // Выставление высот
+        else {
+          this.landscape3DService.setVertexByCoords(this.ceil3dService.getCeil(x, y));
+        }
+      }),
       skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
       catchError(() => of(null))
     );
