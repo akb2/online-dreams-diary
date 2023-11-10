@@ -1,4 +1,5 @@
 import { CreateArray } from "@_datas/app";
+import { ClosestHeightNames } from "@_datas/dream-map";
 import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
@@ -203,7 +204,6 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
     );
     const defaultCamera: DreamMapCameraPosition = this.dreamService.getDefaultCamera(this.dreamMap.size.width, this.dreamMap.size.height);
-    const reliefNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
     // Вернуть карту
     return {
       ceils,
@@ -233,7 +233,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
         time: this.dreamMap?.sky?.time ?? DreamSkyTime
       },
       relief: {
-        types: reliefNames.reduce((o, name) => ({
+        types: ClosestHeightNames.reduce((o, name) => ({
           ...o,
           [name as ClosestHeightName]: this.dreamMap?.relief?.types?.hasOwnProperty(name) ? this.dreamMap.relief.types[name] : ReliefType.flat
         }), {})

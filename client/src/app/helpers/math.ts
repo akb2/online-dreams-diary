@@ -125,6 +125,20 @@ export const Random = (min: number, max: number, noBorder: boolean = false, afte
   return MathRound(Math.random() * (max - min) + min, afterDotNum);
 };
 
+// Среднее арифметическое
+export const Average = (...mixedValues: number[] | number[][]): number => {
+  const values: number[] = typeof mixedValues?.[0] === "number"
+    ? mixedValues as number[]
+    : mixedValues[0] as number[];
+  const size = ParseInt(values?.length);
+  // Получены параметры
+  if (size > 0) {
+    return values.reduce((o, v) => o + v, 0) / size;
+  }
+  // Неудалось найти общее число
+  return NaN;
+};
+
 // Площадь треугольника
 export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) => number = (a: XYCoord | XYCoord[], b: XYCoord = null, c: XYCoord = null) => {
   if (Array.isArray(a)) {

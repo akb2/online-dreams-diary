@@ -1,4 +1,4 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize } from "@_datas/dream-map-settings";
 import { AngleToRad, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -275,8 +275,8 @@ export class Engine3DService implements OnDestroy {
 
   // Изменение позиции камеры
   private onCameraChange(event: OrbitControls): void {
-    const width: number = this.dreamMap?.size?.width || DreamMapSize;
-    const height: number = this.dreamMap?.size?.height || DreamMapSize;
+    const width: number = this.dreamMap.size.width;
+    const height: number = this.dreamMap.size.height;
     const vector: Vector3 = new Vector3();
     // Настройка позиции камеры
     this.control.panSpeed = this.moveSpeed / event.getDistance();
@@ -295,6 +295,7 @@ export class Engine3DService implements OnDestroy {
     }
     // Угол для компаса
     event.object.getWorldDirection(vector);
+    // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
       radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
       azimuth: RadToAngle(vector.y * (Math.PI / 2))

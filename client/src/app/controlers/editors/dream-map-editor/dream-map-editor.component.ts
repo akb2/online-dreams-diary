@@ -6,7 +6,7 @@ import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objec
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
 import { CustomObjectKey, IconType, SimpleObject } from "@_models/app";
-import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
+import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSector, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
 import { SliderSettings } from "@_models/form";
 import { ImageExtension } from "@_models/screen";
@@ -473,7 +473,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // Изменение типа рельефа
-  onReliefTypeChange(type: ClosestHeightName | "center"): void {
+  onReliefTypeChange(type: DreamMapSector): void {
     this.loading = true;
     this.changeDetectorRef.detectChanges();
     // Для центральной ячейки
@@ -792,7 +792,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       bottom: "Нижний",
       bottomRight: "Нижний правый",
     };
-    const clickEvent: (type: ClosestHeightName | "center") => void = this.onReliefTypeChange.bind(this);
+    const clickEvent: (type: DreamMapSector) => void = this.onReliefTypeChange.bind(this);
     // Управление за пределами карты
     this.reliefElmDatas = ClosestHeightNames.map(type => ({
       type,
@@ -871,11 +871,11 @@ interface WaterTypeToolListItem extends ToolListItemBase {
 
 // Интерфейс настроек окружающего ландшафта
 interface ReliefElmData {
-  type: ClosestHeightName | "center";
+  type: DreamMapSector;
   active: boolean;
   icon: string;
   description: string;
-  clickEvent: (type: ClosestHeightName | "center") => void;
+  clickEvent: (type: DreamMapSector) => void;
 }
 
 

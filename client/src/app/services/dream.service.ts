@@ -1,6 +1,7 @@
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
+import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
 import { CheckInRange, ParseInt } from "@_helpers/math";
@@ -291,27 +292,25 @@ export class DreamService implements OnDestroy {
 
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
-    const reliefNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
-    // Преобразование карты
     if (dreamMapDto) {
-      const width: number = dreamMapDto.size.width ?? DreamMapSize;
-      const height: number = dreamMapDto.size.height ?? DreamMapSize;
+      const width: number = ParseInt(dreamMapDto?.size?.width, DreamMapSize);
+      const height: number = ParseInt(dreamMapDto?.size?.height, DreamMapSize);
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
-        z: dreamMapDto?.ocean?.z ?? DreamWaterDefHeight,
-        material: dreamMapDto?.ocean?.material ?? 1
+        z: ParseInt(dreamMapDto?.ocean?.z, DreamWaterDefHeight),
+        material: ParseInt(dreamMapDto?.ocean?.material, 1)
       };
       // Вернуть объект
       return {
         size: {
-          width: dreamMapDto.size.width ?? DreamMapSize,
-          height: dreamMapDto.size.height ?? DreamMapSize,
-          zHeight: dreamMapDto.size.zHeight ?? DreamDefHeight
+          width: ParseInt(dreamMapDto?.size?.width, DreamMapSize),
+          height: ParseInt(dreamMapDto?.size?.height, DreamMapSize),
+          zHeight: ParseInt(dreamMapDto?.size?.zHeight, DreamDefHeight)
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: c.terrain ?? DreamTerrain,
-          object: c.object ?? 0,
+          terrain: ParseInt(c?.terrain, DreamTerrain),
+          object: ParseInt(c?.object, 0),
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -319,25 +318,25 @@ export class DreamService implements OnDestroy {
         })),
         camera: {
           target: {
-            x: dreamMapDto?.camera?.target?.x ?? defaultCamera.target.x,
-            y: dreamMapDto?.camera?.target?.y ?? defaultCamera.target.y,
-            z: dreamMapDto?.camera?.target?.z ?? defaultCamera.target.z,
+            x: ParseInt(dreamMapDto?.camera?.target?.x, defaultCamera.target.x),
+            y: ParseInt(dreamMapDto?.camera?.target?.y, defaultCamera.target.y),
+            z: ParseInt(dreamMapDto?.camera?.target?.z, defaultCamera.target.z),
           },
           position: {
-            x: dreamMapDto?.camera?.position?.x ?? defaultCamera.position.x,
-            y: dreamMapDto?.camera?.position?.y ?? defaultCamera.position.y,
-            z: dreamMapDto?.camera?.position?.z ?? defaultCamera.position.z,
+            x: ParseInt(dreamMapDto?.camera?.position?.x, defaultCamera.position.x),
+            y: ParseInt(dreamMapDto?.camera?.position?.y, defaultCamera.position.y),
+            z: ParseInt(dreamMapDto?.camera?.position?.z, defaultCamera.position.z),
           }
         },
         sky: {
-          time: dreamMapDto?.sky?.time ?? DreamSkyTime
+          time: ParseInt(dreamMapDto?.sky?.time, DreamSkyTime)
         },
         dreamerWay: dreamMapDto.dreamerWay,
         ocean,
         relief: {
-          types: reliefNames.reduce((o, name) => ({
+          types: ClosestHeightNames.reduce((o, name) => ({
             ...o,
-            [name as ClosestHeightName]: !!dreamMapDto?.relief?.types?.hasOwnProperty(name) ? dreamMapDto.relief.types[name] : ReliefType.flat
+            [name as ClosestHeightName]: dreamMapDto?.relief?.types?.[name] ?? ReliefType.flat
           }), {})
         },
         isNew: false
@@ -366,7 +365,7 @@ export class DreamService implements OnDestroy {
           time: DreamSkyTime
         },
         relief: {
-          types: reliefNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
+          types: ClosestHeightNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
         },
         isNew: true
       };

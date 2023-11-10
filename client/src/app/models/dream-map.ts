@@ -107,6 +107,9 @@ export interface ClosestHeight {
 // Имена соседних ячеек
 export type ClosestHeightName = "topLeft" | "top" | "topRight" | "left" | "right" | "bottomLeft" | "bottom" | "bottomRight";
 
+// Имена всех секторов карты
+export type DreamMapSector = ClosestHeightName | "center";
+
 
 
 

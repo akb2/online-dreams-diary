@@ -25,5 +25,14 @@ interface ProgressEvent {
   readonly total: number;
 }
 
+// Интерфейс загрузки текстур
+export interface LoadTexture {
+  url: string;
+  loaded: boolean;
+  size: number;
+  loadedSize: number;
+  afterLoadEvent?: (texture: Texture) => void;
+}
+
 // Функция прогресса загрузки текстуры
 export type OnTexture3DProgress = (event: ProgressEvent) => void;

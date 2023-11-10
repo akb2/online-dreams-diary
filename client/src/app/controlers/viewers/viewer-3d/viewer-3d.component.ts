@@ -1,9 +1,11 @@
+import { VoidFunctionVar } from "@_datas/app";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
+import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
@@ -39,7 +41,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
-  private loadCeilsByTime: number = 900;
+  private loadCeilsByTime: number = 500;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 0.003;
 
@@ -143,9 +145,9 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           delay(1),
           concatMap(() => this.getTexturesData()),
           delay(1),
-          concatMap(() => this.loadLandScape()),
-          delay(1),
           concatMap(() => this.loadTextures()),
+          delay(1),
+          concatMap(() => this.loadLandScape()),
           delay(1),
           concatMap(() => this.callCalcMethods()),
           delay(1),
@@ -167,41 +169,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
 
-  // Загрузка сведений о текстурах
-  private getTexturesData(): Observable<any> {
-    return ConsistentResponses(
-      this.textures.map(data => this.screenService.getImageSize(data.url).pipe(
-        tap(size => {
-          data.size = size;
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        })
-      ))
-    );
-  }
-
-  // Загрузка текстур
-  private loadTextures(): Observable<any> {
-    this.loadingStep = LoadingStep.loadTextures;
-    this.changeDetectorRef.detectChanges();
-    // Загрузка
-    return ConsistentResponses(
-      this.textures.map(data => Load3DTexture(data.url).pipe(
-        tap(() => {
-          data.loaded = true;
-          data.loadedSize = data.size;
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        })
-      ))
-    );
-  }
-
   // Загрузка сцены
   private loadScene(): void {
     const width: number = ParseInt(this.dreamMap.size.width);
     const height: number = ParseInt(this.dreamMap.size.height);
-    const textures: string[] = [
+    const textures: Partial<LoadTexture>[] = [
       ...this.landscape3DService.textures
     ];
     // Обновить загрузчик
@@ -211,11 +183,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.engine3DService.create(this.canvas.nativeElement, this.helper.nativeElement);
     this.landscape3DService.create(width, height);
     // Получение текстур
-    textures.map(url => this.textures.push({
-      url,
+    textures.map(loadTexture => this.textures.push({
+      url: loadTexture.url,
       loaded: false,
       size: 0,
-      loadedSize: 0
+      loadedSize: 0,
+      afterLoadEvent: loadTexture?.afterLoadEvent ?? VoidFunctionVar
     }));
     // Обновить геометрию
     this.calcOperations.push({
@@ -240,13 +213,47 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     });
   }
 
+  // Загрузка сведений о текстурах
+  private getTexturesData(): Observable<any> {
+    return ConsistentResponses(
+      this.textures.map(data => this.screenService.getImageSize(data.url).pipe(
+        tap(size => {
+          data.size = size;
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        })
+      ))
+    );
+  }
+
+  // Загрузка текстур
+  private loadTextures(): Observable<any> {
+    this.loadingStep = LoadingStep.loadTextures;
+    this.changeDetectorRef.detectChanges();
+    // Загрузка
+    return ConsistentResponses(
+      this.textures.map(data => Load3DTexture(data.url).pipe(
+        tap(texture => {
+          data.loaded = true;
+          data.loadedSize = data.size;
+          // Вызвать событие
+          if (!!data?.afterLoadEvent) {
+            data.afterLoadEvent(texture);
+          }
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        })
+      ))
+    );
+  }
+
   // Загрузка ячеек ландшафта
   private loadLandScape(): Observable<any> {
     const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
     const width: number = ParseInt(this.dreamMap.size.width);
     const height: number = ParseInt(this.dreamMap.size.height);
-    const totalWidth: number = width * repeat;
-    const totalHeight: number = height * repeat;
+    const totalWidth: number = (width * repeat) + 1;
+    const totalHeight: number = (height * repeat) + 1;
     const widthShift: number = this.landscape3DService.outSideRepeat * width;
     const heightShift: number = this.landscape3DService.outSideRepeat * height;
     const totalSize: number = totalWidth * totalHeight;
@@ -344,14 +351,6 @@ interface CalcFunction {
   called: boolean;
   context: any;
   args: any[];
-}
-
-// Интерфейс загрузки текстур
-interface LoadTexture {
-  url: string;
-  loaded: boolean;
-  size: number;
-  loadedSize: number;
 }
 
 // Список состояний с прогрессом

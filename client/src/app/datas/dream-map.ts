@@ -1,5 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeightName, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType } from "@_models/dream-map";
+import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType } from "@_models/dream-map";
+import { NumberDirection } from "@_models/math";
 
 
 
@@ -115,3 +116,22 @@ export const MapTerrains: MapTerrain[] = [
 
 // Список имен соседних ячеек
 export const ClosestHeightNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
+
+// Сектора карты
+export const DreamMapSectors: CustomObjectKey<NumberDirection, CustomObjectKey<NumberDirection, DreamMapSector>> = {
+  [-1]: {
+    [-1]: "topLeft",
+    [0]: "top",
+    [1]: "topRight"
+  },
+  [0]: {
+    [-1]: "left",
+    [0]: "center",
+    [1]: "right"
+  },
+  [1]: {
+    [-1]: "bottomLeft",
+    [0]: "bottom",
+    [1]: "bottomRight"
+  },
+};

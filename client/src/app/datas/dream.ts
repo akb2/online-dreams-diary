@@ -1,4 +1,3 @@
-import { SimpleObject } from "@_models/app";
 import { DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
 

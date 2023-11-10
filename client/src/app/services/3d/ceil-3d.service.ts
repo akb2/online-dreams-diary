@@ -1,5 +1,7 @@
-import { DreamDefHeight, DreamMapSize, DreamTerrain } from "@_datas/dream-map-settings";
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { DreamMapSectors } from "@_datas/dream-map";
+import { DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
+import { DreamMap, DreamMapCeil, DreamMapSector } from "@_models/dream-map";
+import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
 
 
@@ -11,10 +13,20 @@ import { Injectable } from "@angular/core";
 export class Ceil3dService {
 
   dreamMap: DreamMap;
+  sectorBorders: number = 1;
 
 
 
 
+
+  // Расположение внутри сектора
+  private sectorDimension(value: number, size: number): NumberDirection {
+    return value < 0
+      ? -1
+      : value >= size
+        ? 1
+        : 0;
+  }
 
   // Получить ячейку
   getCeil(x: number, y: number): DreamMapCeil {
@@ -65,9 +77,30 @@ export class Ceil3dService {
 
   // Приграничная ячейка
   isBorderCeil(x: number, y: number): boolean {
-    const width: number = this.dreamMap?.size?.width ?? DreamMapSize;
-    const height: number = this.dreamMap?.size?.height ?? DreamMapSize;
+    const width: number = this.dreamMap.size.width;
+    const height: number = this.dreamMap.size.height;
     // Проверка
     return x < 0 || y < 0 || x >= width || y >= height;
+  }
+
+  // Граница между секторами
+  isBorderSectorCeil(x: number, y: number): boolean {
+    const width: number = this.dreamMap.size.width;
+    const height: number = this.dreamMap.size.height;
+    // Проверка
+    return (
+      (x >= -this.sectorBorders && x < this.sectorBorders)
+      || (x >= width - this.sectorBorders && x < width + this.sectorBorders)
+      || (y >= -this.sectorBorders && y < this.sectorBorders)
+      || (y >= height - this.sectorBorders && y < height + this.sectorBorders)
+    );
+  }
+
+  // Сектор ячейки на карте
+  getSectorByCoords(x: number, y: number): DreamMapSector {
+    const xDimension: NumberDirection = this.sectorDimension(x, this.dreamMap.size.width);
+    const yDimension: NumberDirection = this.sectorDimension(y, this.dreamMap.size.height);
+    // Вернуть сектор
+    return DreamMapSectors[yDimension][xDimension];
   }
 }
