@@ -134,6 +134,12 @@ export interface XYCoord<T = number> {
   y: T;
 }
 
+// Интерфейс 2D координат на окружности
+export interface UVCoord<T = number> {
+  u: T;
+  v: T;
+}
+
 // Интерфейс координат
 export interface Coord extends CoordDto {
   originalZ: number;

@@ -3,7 +3,7 @@ import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
-import { CustomObjectKey, DefaultKey } from "@_models/app";
+import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
@@ -37,12 +37,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  private loadCeilsByTime: number = 500;
+  private loadCeilsByTime: number = 250;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 0.003;
   private loadCeilCircles: number = 3;
   private compassAzimuthShift: number = -90;
-  compassRadialShift: number = 45;
+  private compassRadialShift: number = 45;
 
   loadingStep: LoadingStep = LoadingStep.prepared;
   loadingSteps: typeof LoadingStep = LoadingStep;
@@ -52,14 +52,16 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private textures: LoadTexture[] = [];
   private calcOperations: CalcFunction[] = [];
 
-  compassStyles$ = this.store$.select(viewer3DCompassSelector).pipe(map(({ radial, azimuth }) => ({
+  private compass$ = this.store$.select(viewer3DCompassSelector);
+
+  compassStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => ({
     transform: (
       " rotateX(" + (azimuth - this.compassAzimuthShift) + "deg) " +
       " rotateZ(" + (radial - this.compassRadialShift) + "deg) "
     )
   })));
 
-  compassLabelStyles$ = this.store$.select(viewer3DCompassSelector).pipe(map(({ radial, azimuth }) => {
+  compassLabelStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => {
     const koof: number = -Sin(azimuth);
     const depth: number = 0.5 - ((Cos(radial) / 2) * koof);
     // Объект стилей
@@ -72,6 +74,30 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       )
     };
   }));
+
+  compassMarkAreaStyles$ = this.compass$.pipe(map(({ cos, sin }) => {
+    const value: number = 50;
+    const top: number = (value * cos) + value;
+    const left: number = (value * sin) + value;
+    // Объект стилей
+    return {
+      marginTop: top + "%",
+      marginLeft: left + "%"
+    };
+  }));
+
+  compassMarkColumnStyles$ = this.compass$.pipe(map(({ radial }) => ({
+    transform: (
+      " rotateX(-90deg) " +
+      " rotateY(" + radial + "deg) "
+    )
+  })));
+
+  compassMarkHeadStyles$ = this.compass$.pipe(map(({ azimuth }) => ({
+    transform: (
+      "rotateX(" + (-azimuth) + "deg)"
+    )
+  })));
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -115,6 +141,13 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
     // Вернуть состояние
     return { mode, icon, progress, subSteps, completedSubSteps };
+  }
+
+  // Корректировка поворота компаса
+  get compassCorrectStyles(): SimpleObject {
+    return {
+      transform: "rotate(" + this.compassRadialShift + "deg)"
+    };
   }
 
 

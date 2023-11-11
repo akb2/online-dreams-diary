@@ -1,6 +1,6 @@
 import { DreamMapSectors } from "@_datas/dream-map";
 import { DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
-import { DreamMap, DreamMapCeil, DreamMapSector } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, DreamMapSector, UVCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
 
@@ -102,5 +102,17 @@ export class Ceil3dService {
     const yDimension: NumberDirection = this.sectorDimension(y, this.dreamMap.size.height);
     // Вернуть сектор
     return DreamMapSectors[yDimension][xDimension];
+  }
+
+  // Перевести координаты в круговые координаты
+  coordsToUV(x: number, y: number): UVCoord {
+    const width: number = this.dreamMap.size.width / 2;
+    const height: number = this.dreamMap.size.height / 2;
+    const nX: number = x / width;
+    const nY: number = y / height;
+    const u: number = nX * Math.sqrt(1 - ((nY * nY) / 2));
+    const v: number = nY * Math.sqrt(1 - ((nX * nX) / 2));
+    // Вернуть объект
+    return { u, v };
   }
 }

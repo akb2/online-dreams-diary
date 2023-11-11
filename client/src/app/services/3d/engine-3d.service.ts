@@ -14,6 +14,7 @@ import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil }
 import { CineonToneMapping, Clock, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { Ceil3dService } from "./ceil-3d.service";
 
 
 
@@ -48,7 +49,7 @@ export class Engine3DService implements OnDestroy {
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
 
-  private lastCameraPosition: Vector3;
+  private lastCamera: PerspectiveCamera;
 
   stats: Stats;
 
@@ -79,6 +80,7 @@ export class Engine3DService implements OnDestroy {
 
   constructor(
     private screenService: ScreenService,
+    private ceil3dService: Ceil3dService,
     private store$: Store
   ) {
     this.onCanvasResize();
@@ -293,10 +295,10 @@ export class Engine3DService implements OnDestroy {
     // Ограничить положение камеры X
     if (xLimited || zLimited) {
       const cameraX: number = xLimited
-        ? this.lastCameraPosition.x
+        ? this.lastCamera.position.x
         : event.object.position.x;
       const cameraZ: number = zLimited
-        ? this.lastCameraPosition.z
+        ? this.lastCamera.position.z
         : event.object.position.z;
       // Новые позмции
       x = CheckInRange(x, mapX, -mapX);
@@ -306,15 +308,19 @@ export class Engine3DService implements OnDestroy {
       event.target.setZ(z);
       event.object.position.setZ(cameraZ);
       event.object.position.setX(cameraX);
+      event.object.position.setY(this.lastCamera.position.y);
+      event.object.rotation.copy(this.lastCamera.rotation);
     }
     // Запомнить положение камеры
-    this.lastCameraPosition = event.object.position.clone();
+    this.lastCamera = event.object.clone() as PerspectiveCamera;
     // Угол для компаса
     event.object.getWorldDirection(vector);
     // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
       radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
-      azimuth: RadToAngle(vector.y * (Math.PI / 2))
+      azimuth: RadToAngle(vector.y * (Math.PI / 2)),
+      sin: this.ceil3dService.coordsToUV(x, z).u,
+      cos: this.ceil3dService.coordsToUV(x, z).v
     }))
     // обновить пост отрисовку
     this.onUpdatePostProcessors();

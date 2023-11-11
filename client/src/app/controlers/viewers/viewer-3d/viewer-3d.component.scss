@@ -111,11 +111,12 @@ $controlOffset: 5px;
 
 // Компасс
 .compass {
-  $size: 76px;
+  $size: 96px;
   $position: 18px;
-  $labelSize: 25px;
+  $labelSize: 22px;
   $borderSize: 6px;
   $northBorderRadius: 6px;
+  $markSize: 6px;
   // Свойства
   position: absolute;
   display: block;
@@ -125,17 +126,31 @@ $controlOffset: 5px;
   height: $size;
   transform-style: preserve-3d;
   perspective: 170px;
+  user-select: none;
+  pointer-events: none;
   // Круг
   &__circle {
     @include mixins.inset;
     // Свойства
     display: block;
-    border-style: solid solid dotted dotted;
     border-radius: 50% #{$northBorderRadius} 50% 50%;
-    border-width: #{$borderSize} #{$borderSize} 1px 1px;
-    border-color: #{colors.$border} #{colors.$border} #{rgba(colors.$border, 0.5)} #{rgba(colors.$border, 0.5)};
     position: absolute;
+    padding: 5px;
+    background-color: colors.$text;
     z-index: 0;
+    transform-style: preserve-3d;
+    // Видимые границы
+    &-border {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-style: solid solid dotted dotted;
+      border-radius: 50% #{$northBorderRadius} 50% 50%;
+      border-width: #{$borderSize} #{$borderSize} 2px 2px;
+      border-color: #{colors.$border} #{colors.$border} #{rgba(colors.$border, 0.5)} #{rgba(colors.$border, 0.5)};
+      transform-style: preserve-3d;
+    }
   }
   // Обозначение севера
   &__label {
@@ -157,8 +172,56 @@ $controlOffset: 5px;
       display: inline-block;
       vertical-align: top;
       line-height: $labelSize;
-      font-size: $labelSize * 0.6;
+      font-size: $labelSize * 0.7;
       font-weight: 400;
+    }
+  }
+  // Обозначение
+  &__mark {
+    @include mixins.inset($borderSize);
+    // Свойства
+    position: absolute;
+    background-color: colors.$text;
+    border-radius: 50%;
+    z-index: 1;
+    transform-style: preserve-3d;
+    // Элемент положения
+    &-area {
+      position: relative;
+      display: block;
+      width: $markSize;
+      height: $markSize;
+      transform: translateX(-#{math.div($markSize, 2)}) translateY(-#{math.div($markSize, 2)});
+      transform-style: preserve-3d;
+    }
+    // Обертка
+    &-overlay {
+      position: absolute;
+      bottom: 0;
+      display: block;
+      height: 400%;
+      transform-origin: 50% 100%;
+      transform-style: preserve-3d;
+    }
+    // Колонка
+    &-column {
+      display: block;
+      width: 1px;
+      height: calc(100% - #{math.div($markSize, 2)});
+      border-radius: 0.5px;
+      margin-left: math.div($markSize - 1px, 2);
+      background-color: colors.$border;
+      opacity: 0.5;
+    }
+    // Наконечник
+    &-head {
+      display: block;
+      width: $markSize;
+      min-height: $markSize;
+      border-radius: 50%;
+      background-color: colors.$border;
+      margin-bottom: -$markSize;
+      box-shadow: 0 0 5px 1px rgba(0 0 0 / 0.8);
     }
   }
 }
@@ -166,6 +229,7 @@ $controlOffset: 5px;
 // Статистика
 .stats {
   z-index: 1;
+  user-select: none;
   // Данные
   ::ng-deep > div {
     position: absolute !important;

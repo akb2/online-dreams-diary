@@ -11,6 +11,8 @@ export const VIEWER_3D_KEY = "3d_viewer";
 export interface Viewer3DStateCompass {
   radial: number;
   azimuth: number;
+  sin: number;
+  cos: number;
 }
 
 // Интерфейс состояния
@@ -22,7 +24,9 @@ export interface Viewer3DState {
 const viewer3DInitialState: Viewer3DState = {
   compass: {
     radial: 0,
-    azimuth: 0
+    azimuth: 0,
+    sin: 0,
+    cos: 0
   }
 };
 
