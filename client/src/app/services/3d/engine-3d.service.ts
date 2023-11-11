@@ -1,5 +1,5 @@
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize } from "@_datas/dream-map-settings";
-import { AngleToRad, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
@@ -47,6 +47,8 @@ export class Engine3DService implements OnDestroy {
   private clock: Clock;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
+
+  private lastCameraPosition: Vector3;
 
   stats: Stats;
 
@@ -178,6 +180,7 @@ export class Engine3DService implements OnDestroy {
   private createControl(): void {
     this.control = new OrbitControls(this.camera, this.canvas);
     this.control.screenSpacePanning = false;
+    this.control.enablePan = true;
     this.control.rotateSpeed = this.rotateSpeed;
     this.control.panSpeed = this.moveSpeed;
     this.control.zoomSpeed = this.zoomSpeed;
@@ -285,14 +288,27 @@ export class Engine3DService implements OnDestroy {
     let z: number = event.target.z;
     const mapX: number = width / 2 * DreamCeilSize;
     const mapZ: number = height / 2 * DreamCeilSize;
-    // Ограничить положение камеры
-    if (x > mapX || x < -mapX || z > mapZ || z < -mapZ) {
-      x = x > mapX ? mapX : x < -mapX ? -mapX : x;
-      z = z > mapZ ? mapZ : z < -mapZ ? -mapZ : z;
+    const xLimited = x > mapX || x < -mapX;
+    const zLimited = z > mapZ || z < -mapZ;
+    // Ограничить положение камеры X
+    if (xLimited || zLimited) {
+      const cameraX: number = xLimited
+        ? this.lastCameraPosition.x
+        : event.object.position.x;
+      const cameraZ: number = zLimited
+        ? this.lastCameraPosition.z
+        : event.object.position.z;
+      // Новые позмции
+      x = CheckInRange(x, mapX, -mapX);
+      z = CheckInRange(z, mapZ, -mapZ);
       // Установить позицию
       event.target.setX(x);
       event.target.setZ(z);
+      event.object.position.setZ(cameraZ);
+      event.object.position.setX(cameraX);
     }
+    // Запомнить положение камеры
+    this.lastCameraPosition = event.object.position.clone();
     // Угол для компаса
     event.object.getWorldDirection(vector);
     // Запомнить угол для компаса
