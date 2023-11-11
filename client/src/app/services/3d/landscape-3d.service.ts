@@ -139,6 +139,10 @@ export class Landscape3DService {
     this.material.needsUpdate = true;
   }
 
+  // Сглаживание
+  smoothByCoords(ceil: DreamMapCeil): void {
+  }
+
   // Установка вершины
   setVertexByCoords(ceil: DreamMapCeil): void {
     const mapWidth: number = this.dreamMap.size.width;

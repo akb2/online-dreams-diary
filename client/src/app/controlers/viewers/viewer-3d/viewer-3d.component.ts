@@ -37,20 +37,20 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  loadingStep: LoadingStep = LoadingStep.prepared;
-  loadingSteps: typeof LoadingStep = LoadingStep;
-  private loadingCeilLimit: number = 0;
-  private loadingCeilCurrent: number = 0;
   private loadCeilsByTime: number = 500;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 0.003;
   private loadCeilCircles: number = 3;
+  private compassAzimuthShift: number = -90;
+  compassRadialShift: number = 45;
+
+  loadingStep: LoadingStep = LoadingStep.prepared;
+  loadingSteps: typeof LoadingStep = LoadingStep;
+  private loadingCeilLimit: number = 0;
+  private loadingCeilCurrent: number = 0;
 
   private textures: LoadTexture[] = [];
   private calcOperations: CalcFunction[] = [];
-
-  private compassAzimuthShift: number = -90;
-  compassRadialShift: number = 45;
 
   compassStyles$ = this.store$.select(viewer3DCompassSelector).pipe(map(({ radial, azimuth }) => ({
     transform: (
@@ -282,17 +282,17 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         }
       })),
       tap(({ coords: { x, y }, circle }) => {
+        const ceil = this.ceil3dService.getCeil(x, y);
         // Рассчет высот
         if (circle === 0) {
-          this.landscape3DService.setHeightByCoords(this.ceil3dService.getCeil(x, y));
+          return this.landscape3DService.setHeightByCoords(ceil);
         }
         // Сглаживание
         else if (circle === 1) {
+          return this.landscape3DService.smoothByCoords(ceil);
         }
         // Выставление высот
-        else {
-          this.landscape3DService.setVertexByCoords(this.ceil3dService.getCeil(x, y));
-        }
+        return this.landscape3DService.setVertexByCoords(ceil);
       }),
       skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
       catchError(() => of(null))
