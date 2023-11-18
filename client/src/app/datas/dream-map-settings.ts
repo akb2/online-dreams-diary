@@ -5,7 +5,7 @@ import { DreamMapSettings } from "@_models/dream-map";
 
 
 // Размер карты по умолчанию
-export const DreamMapSize: number = 30;
+export const DreamMapSize: number = 96;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize: number = 1;
@@ -29,8 +29,8 @@ export const DreamWaterDefHeight: number = DreamCeilParts * 9;
 // Параметры по умолчанию
 export const DreamSkyType: number = 1;
 export const DreamTerrain: number = 1;
-export const DreamFogNear: number = 25;
-export const DreamFogFar: number = 50;
+export const DreamFogFar: number = 60;
+export const DreamFogNear: number = DreamFogFar / 2;
 export const DreamHorizont: number = DreamFogFar * 3;
 export const DreamOutsideSize: number = 1;
 export const LODMaxDistance: number = (DreamFogFar + DreamFogNear) / 2;
