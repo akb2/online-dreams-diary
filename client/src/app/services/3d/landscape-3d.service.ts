@@ -140,7 +140,7 @@ export class Landscape3DService {
   }
 
   // Сглаживание
-  smoothByCoords(ceil: DreamMapCeil): void {
+  setSmoothByCoords(ceil: DreamMapCeil): void {
   }
 
   // Установка вершины

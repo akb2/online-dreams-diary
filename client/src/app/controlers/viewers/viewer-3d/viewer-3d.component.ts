@@ -318,7 +318,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         }
         // Сглаживание
         else if (circle === 1) {
-          return this.landscape3DService.smoothByCoords(ceil);
+          return this.landscape3DService.setSmoothByCoords(ceil);
         }
         // Выставление высот
         return this.landscape3DService.setVertexByCoords(ceil);
