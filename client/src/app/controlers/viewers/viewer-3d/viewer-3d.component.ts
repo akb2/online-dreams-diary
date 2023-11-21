@@ -114,7 +114,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     let completedSubSteps: number = 0;
     // Функции просчета сцены
     const allCalcSize: number = this.calcOperations.length * this.calcOperationLoadingSize;
-    const completedCalcSize: number = this.calcOperations.filter(({ called }) => called).length * this.calcOperationLoadingSize;
+    const completedCalcSize: number = this.calcOperations.filter(d => !!d?.called).length * this.calcOperationLoadingSize;
     // Текстуры
     const allTexturesSize: number = this.textures.reduce((o, { size }) => o + size, 0) * this.texturesLoadingSize;
     const loadedTexturesSize: number = this.textures.reduce((o, { loadedSize }) => o + loadedSize, 0) * this.texturesLoadingSize;
@@ -137,7 +137,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Подшаги для функций
     else if (this.loadingStep === LoadingStep.calcMethods) {
       subSteps = this.calcOperations.length;
-      completedSubSteps = this.calcOperations.filter(({ called }) => called).length;
+      completedSubSteps = this.calcOperations.filter(d => !!d?.called).length;
     }
     // Вернуть состояние
     return { mode, icon, progress, subSteps, completedSubSteps };
@@ -227,23 +227,19 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Обновить геометрию
     this.calcOperations.push({
       callable: this.landscape3DService.updateGeometry,
-      context: this.landscape3DService,
-      args: [],
-      called: false
+      context: this.landscape3DService
     });
     // Добавить объект на сцену
     this.calcOperations.push({
       callable: this.engine3DService.addToScene,
       context: this.engine3DService,
-      args: [this.landscape3DService.mesh],
-      called: false
+      args: [this.landscape3DService.mesh]
     });
     // Добавить объект в пересечения курсора
     this.calcOperations.push({
       callable: this.engine3DService.addToCursorIntersection,
       context: this.engine3DService,
-      args: [this.landscape3DService.mesh],
-      called: false
+      args: [this.landscape3DService.mesh]
     });
   }
 
@@ -339,7 +335,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Цикл по функциям
     return ConsistentResponses(this.calcOperations.map(operation => of(true).pipe(
       tap(() => {
-        operation.callable.bind(operation.context)(...operation.args);
+        operation.callable.bind(operation.context)(...(operation.args ?? []));
         operation.called = true;
         // Обновить
         this.changeDetectorRef.detectChanges();
@@ -391,9 +387,9 @@ interface ProgressState {
 // Интерфейс функций высчитывания геометрий
 interface CalcFunction {
   callable: Function;
-  called: boolean;
+  called?: boolean;
   context: any;
-  args: any[];
+  args?: any[];
 }
 
 // Список состояний с прогрессом
