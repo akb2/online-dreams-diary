@@ -28,7 +28,7 @@ export const DreamWaterDefHeight = DreamCeilParts * 9;
 
 // Допустимый перепад высот без сглаживания
 // ? В процентах 0-100
-export const DreamAvailHeightDiff = 0.05;
+export const DreamAvailHeightDiff = 0.15;
 
 // Параметры по умолчанию
 export const DreamSkyType = 1;
