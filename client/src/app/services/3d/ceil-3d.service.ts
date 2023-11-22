@@ -13,7 +13,8 @@ import { Injectable } from "@angular/core";
 export class Ceil3dService {
 
   dreamMap: DreamMap;
-  sectorBorders: number = 1;
+
+  private sectorBorders: number = 5;
 
 
 
@@ -34,15 +35,19 @@ export class Ceil3dService {
       return this.getBorderCeil(x, y);
     }
     // Обычная ячейка
-    else if (!!this.dreamMap?.ceils?.filter(c => c.coord.x === x && c.coord.y === y)?.length) {
-      return this.dreamMap.ceils.find(c => c.coord.x === x && c.coord.y === y);
+    else {
+      let index = this.dreamMap.ceils.findIndex(c => c.coord.x === x && c.coord.y === y);
+      // Яейки не существует
+      if (index < 0) {
+        const ceil: DreamMapCeil = this.getDefaultCeil(x, y);
+        // Новый индекс
+        index = this.dreamMap.ceils.length;
+        // Сохранить ячейку
+        this.dreamMap.ceils.push(ceil);
+      }
+      // Вернуть ячейку
+      return this.dreamMap.ceils[index];
     }
-    // Новая ячейка
-    const ceil: DreamMapCeil = this.getDefaultCeil(x, y);
-    // Сохранить ячейку
-    this.dreamMap.ceils.push(ceil);
-    // Вернуть ячейку
-    return ceil;
   }
 
   // Ячейка по умолчанию

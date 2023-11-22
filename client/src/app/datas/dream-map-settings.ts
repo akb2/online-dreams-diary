@@ -5,43 +5,47 @@ import { DreamMapSettings } from "@_models/dream-map";
 
 
 // Размер карты по умолчанию
-export const DreamMapSize: number = 96;
+export const DreamMapSize = 96;
 
 // Размер ячейки по умолчанию
-export const DreamCeilSize: number = 1;
+export const DreamCeilSize = 1;
 
 // Количество секций по высоте в одной ячейке
-export const DreamCeilParts: number = 64;
+export const DreamCeilParts = 64;
 
 // Количество секций по высоте воды в одной ячейке
-export const DreamCeilWaterParts: number = 1;
+export const DreamCeilWaterParts = 1;
 
 // Время для положения небесных тел по умолчанию
-// * 0-360 соответствует времени 00:00 - 23:59
-export const DreamSkyTime: number = 180;
+// ? 0-360 соответствует времени 00:00 - 23:59
+export const DreamSkyTime = 180;
 
 // Пределы высот
-export const DreamMinHeight: number = 1;
-export const DreamDefHeight: number = -1;
-export const DreamMaxHeight: number = DreamCeilParts * 20;
-export const DreamWaterDefHeight: number = DreamCeilParts * 9;
+export const DreamMinHeight = 1;
+export const DreamDefHeight = -1;
+export const DreamMaxHeight = DreamCeilParts * 20;
+export const DreamWaterDefHeight = DreamCeilParts * 9;
+
+// Допустимый перепад высот без сглаживания
+// ? В процентах 0-100
+export const DreamAvailHeightDiff = 0.05;
 
 // Параметры по умолчанию
-export const DreamSkyType: number = 1;
-export const DreamTerrain: number = 1;
-export const DreamFogFar: number = 60;
-export const DreamFogNear: number = DreamFogFar / 2;
-export const DreamHorizont: number = DreamFogFar * 3;
-export const DreamOutsideSize: number = 1;
-export const LODMaxDistance: number = (DreamFogFar + DreamFogNear) / 2;
+export const DreamSkyType = 1;
+export const DreamTerrain = 1;
+export const DreamFogFar = 60;
+export const DreamFogNear = DreamFogFar / 2;
+export const DreamHorizont = DreamFogFar * 3;
+export const DreamOutsideSize = 1;
+export const LODMaxDistance = (DreamFogFar + DreamFogNear) / 2;
 
 // Заголовок по умолчанию
-export const DreamTitle: string = "*** Новое сновидение ***";
-export const DreamDescription: string = "*** Без описания ***";
+export const DreamTitle = "*** Новое сновидение ***";
+export const DreamDescription = "*** Без описания ***";
 
 // Настройки камеры
-export const DreamCameraMinZoom: number = DreamCeilSize;
-export const DreamCameraMaxZoom: number = DreamCeilSize * DreamMaxHeight / DreamCeilParts;
+export const DreamCameraMinZoom = DreamCeilSize;
+export const DreamCameraMaxZoom = DreamCeilSize * DreamMaxHeight / DreamCeilParts;
 
 // Максимальное число элементов в ячейке
 export enum DreamObjectElmsValues {
@@ -53,12 +57,12 @@ export enum DreamObjectElmsValues {
   Ultra,
   Awesome
 };
-export const DreamBaseElmsCount: number = 128;
-export const DreamShadowQualitySize: number = 1024;
-export const DreamMaxElmsCount: (d: DreamObjectElmsValues) => number = (d: DreamObjectElmsValues) => DreamBaseElmsCount * (d + 1);
-export const DreamMapMinShadowQuality: number = 1;
-export const DreamMapMaxShadowQuality: number = 7;
-export const DreamMapDefaultShadowQuality: number = 2;
+export const DreamBaseElmsCount = 128;
+export const DreamShadowQualitySize = 1024;
+export const DreamMaxElmsCount = (d: DreamObjectElmsValues) => DreamBaseElmsCount * (d + 1);
+export const DreamMapMinShadowQuality = 1;
+export const DreamMapMaxShadowQuality = 7;
+export const DreamMapDefaultShadowQuality = 2;
 
 export const DefaultDreamMapSettings: DreamMapSettings = {
   detalization: DreamObjectElmsValues.Middle,
