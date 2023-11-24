@@ -313,6 +313,20 @@
       "header": {
         "sub_title": "Приснилось {{date}}"
       }
+    },
+    "dev_tools": {
+      "noise_generator": {
+        "page_title": "Генератор шума",
+        "buttons": {
+          "generating": "Генерация",
+          "generate": "Сгенерировать"
+        },
+        "labels": {
+          "large_scale": "Размер крупных зерен",
+          "middle_scale": "Размер средних зерен",
+          "small_scale": "Размер маленьких зерен"
+        }
+      }
     }
   },
   "popups": {

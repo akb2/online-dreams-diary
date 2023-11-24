@@ -312,6 +312,20 @@
       "header": {
         "sub_title": "Dreamed {{date}}"
       }
+    },
+    "dev_tools": {
+      "noise_generator": {
+        "page_title": "Noise generator",
+        "buttons": {
+          "generating": "In progress",
+          "generate": "Generate"
+        },
+        "labels": {
+          "large_scale": "Large seed's size",
+          "middle_scale": "Middle seed's size",
+          "small_scale": "Small seed's size"
+        }
+      }
     }
   },
   "popups": {
