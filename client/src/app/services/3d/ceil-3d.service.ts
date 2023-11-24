@@ -31,11 +31,7 @@ export class Ceil3dService {
 
   // Получить ячейку
   getCeil(x: number, y: number): DreamMapCeil {
-    if (this.isBorderCeil(x, y)) {
-      return this.getBorderCeil(x, y);
-    }
-    // Обычная ячейка
-    else {
+    if (!this.isBorderCeil(x, y)) {
       let index = this.dreamMap.ceils.findIndex(c => c.coord.x === x && c.coord.y === y);
       // Яейки не существует
       if (index < 0) {
@@ -48,6 +44,8 @@ export class Ceil3dService {
       // Вернуть ячейку
       return this.dreamMap.ceils[index];
     }
+    // Ячейка за пределами редактируемой области
+    return this.getBorderCeil(x, y);
   }
 
   // Ячейка по умолчанию
