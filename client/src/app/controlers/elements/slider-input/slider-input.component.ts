@@ -1,8 +1,9 @@
 import { BaseInputDirective } from "@_directives/base-input.directive";
 import { CheckInRange, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
 import { OptionData } from "@_models/form";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, Optional, Self } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
+import { Subject, takeUntil } from "rxjs";
 
 
 
@@ -15,7 +16,7 @@ import { NgControl } from "@angular/forms";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SliderInputComponent extends BaseInputDirective {
+export class SliderInputComponent extends BaseInputDirective implements OnInit, OnDestroy {
 
 
   @Input() min: number = 0;
@@ -23,6 +24,8 @@ export class SliderInputComponent extends BaseInputDirective {
   @Input() step: number = 1;
   @Input() iconColorized: boolean = true;
   @Input() optionData: OptionData[] = [];
+
+  private destroyed$ = new Subject<void>();
 
 
 
@@ -88,6 +91,17 @@ export class SliderInputComponent extends BaseInputDirective {
     private changeDetectorRef: ChangeDetectorRef
   ) {
     super(controlDir);
+  }
+
+  ngOnInit(): void {
+    this.control.valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.changeDetectorRef.detectChanges())
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
   }
 
 
