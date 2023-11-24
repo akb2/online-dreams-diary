@@ -73,6 +73,8 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
 
 
 
+
+
 @NgModule({
   declarations: [
     AppComponent
@@ -123,7 +125,6 @@ const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http
 })
 
 export class AppModule {
-  // Регистрация иконок
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer

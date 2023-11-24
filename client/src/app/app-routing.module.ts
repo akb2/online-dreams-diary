@@ -1,7 +1,21 @@
+import { environment } from "@_environments/environment";
 import { AuthRules } from "@_models/menu";
 import { AuthGuardService } from "@_services/auth-guard.service";
 import { NgModule } from "@angular/core";
-import { PreloadAllModules, RouterModule } from "@angular/router";
+import { PreloadAllModules, RouterModule, Routes } from "@angular/router";
+
+
+
+
+
+const devToolsRoutes: Routes = [];
+// Заполнить страницы для разработчиков
+if (!environment.production) {
+  devToolsRoutes.push({
+    path: "dev_tools/noise_generator",
+    loadChildren: () => import("@_modules/dev-tools.module").then(m => m.DevToolsModule),
+  });
+}
 
 
 
@@ -171,6 +185,8 @@ import { PreloadAllModules, RouterModule } from "@angular/router";
         data: { authRule: AuthRules.anyWay },
         canActivate: [AuthGuardService]
       },
+      // Страницы для разработчиков
+      ...devToolsRoutes,
       // Ошибка 404
       {
         path: "**",
