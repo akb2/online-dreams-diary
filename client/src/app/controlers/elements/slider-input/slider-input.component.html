@@ -21,7 +21,8 @@
               [ngClass]="{ 'option-data': isAnOptionDataList }"
               [min]="getMinValue"
               [max]="getMaxValue"
-              [step]="getStep">
+              [step]="getStep"
+              (input)="onValueChange($event)">
     <input matSliderThumb
            [value]="getValue"
            (valueChange)="onValueChange($event)">
