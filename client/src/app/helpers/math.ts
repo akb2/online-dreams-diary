@@ -162,7 +162,7 @@ export const GetHypotinuze = (a: number, b: number = Infinity) => {
 }
 
 // Линейная функция расчета
-export const LineFunc = (min: number, max: number, value: number, valueMin: number, valueMax: number) => (((min - max) / valueMax) * (value - valueMin)) + max;
+export const LineFunc = (min: number, max: number, v: number, vMin: number, vMax: number) => (((v - vMin) / (vMax - vMin)) * (max - min)) + min;
 
 // Получить расстояние от центра квадрата к одной из его граней по углу
 export const GetLengthFromSquareCenter = (size: number, angle: number) => {
