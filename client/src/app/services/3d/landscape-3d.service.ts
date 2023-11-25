@@ -189,6 +189,8 @@ export class Landscape3DService {
     // Свойства текстуры
     canvas.width = texture.image.width;
     canvas.height = texture.image.height;
+    texture.minFilter = LinearFilter;
+    texture.magFilter = LinearFilter;
     texture.flipY = false;
     context.drawImage(texture.image, 0, 0);
     // Запомнить текстуру
