@@ -1,4 +1,6 @@
+import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
+import { ArrayForEach } from "./objects";
 
 
 
@@ -125,19 +127,90 @@ export const Random = (min: number, max: number, noBorder: boolean = false, afte
   return MathRound(Math.random() * (max - min) + min, afterDotNum);
 };
 
-// Среднее арифметическое
-export const Average = (...mixedValues: number[] | number[][]): number => {
-  const values: number[] = typeof mixedValues?.[0] === "number"
-    ? mixedValues as number[]
-    : mixedValues[0] as number[];
+// Подготовка массива для среднего арифметического
+const AverageArrayPrepare = (mixedValues: number[] | number[][]): number[] => typeof mixedValues?.[0] === "number"
+  ? mixedValues as number[]
+  : mixedValues[0] as number[];
+
+// Подготовка усредненного значения
+const AverageFunc = (
+  callback: (current: number, value: number) => number,
+  resultCallback: (result: number, count: number) => number,
+  startValue: number,
+  mixedValues: number[] | number[][]
+): number => {
+  const values: number[] = AverageArrayPrepare(mixedValues);
   const size = ParseInt(values?.length);
   // Получены параметры
   if (size > 0) {
-    return values.reduce((o, v) => o + v, 0) / size;
+    return MathRound(resultCallback(values.reduce((o, v) => MathRound(callback(o, v), 10), startValue), size), 10);
   }
   // Неудалось найти общее число
   return NaN;
 };
+
+// Среднее арифметическое
+export const Average = (...values: number[] | number[][]) => AverageFunc((o, v) => o + v, (r, c) => r / c, 0, values);
+
+// Среднее геометрическое
+export const AverageGeometric = (...values: number[] | number[][]) => AverageFunc((o, v) => o * v, (r, c) => Math.pow(r, 1 / c), 1, values);
+
+// Среднее гармоническое
+export const AverageHarmonic = (...values: number[] | number[][]) => AverageFunc((o, v) => o + (1 / v), (r, c) => c / r, 0, values);
+
+// Минимальное из массива
+export const AverageMin = (...values: number[] | number[][]): number => AverageFunc((o, v) => Math.min(o, v), r => r, Infinity, values);
+
+// Максимальное из массива
+export const AverageMax = (...values: number[] | number[][]): number => AverageFunc((o, v) => Math.max(o, v), r => r, -Infinity, values);
+
+// Медиана
+export const AverageMedian = (...mixedValues: number[] | number[][]) => {
+  const values = AverageArrayPrepare(mixedValues).sort((a, b) => a - b);
+  const mid = values.length / 2;
+  // Расчет медианы
+  return values.length % 2 !== 0
+    ? values[Math.floor(mid)]
+    : (values[mid - 1] + values[mid]) / 2;
+};
+
+// Мода
+export const AverageMode = (...mixedValues: number[] | number[][]) => {
+  const values = AverageArrayPrepare(mixedValues).sort((a, b) => a - b);
+  const frequency: CustomObjectKey<number, number> = {};
+  let mode: number;
+  let maxFreq = 0;
+  // Цикл по значениям
+  ArrayForEach(values, value => {
+    frequency[value] = ParseInt(frequency?.[value]) + 1;
+    // Вычисление
+    if (frequency[value] > maxFreq) {
+      maxFreq = frequency[value];
+      mode = value;
+    }
+  }, true);
+  // Вернуть моду
+  return mode;
+};
+
+// Среднее степенное
+export const AveragePower = (power: number, ...values: number[] | number[][]) => AverageFunc(
+  (c, v) => c + Math.pow(v, power),
+  (r, c) => Math.pow(r / c, 1 / power),
+  0,
+  values
+);
+
+// Среднее квадратичное
+export const AverageQuadratic = (...values: number[] | number[][]) => AveragePower(2, ...values);
+
+// Умножение
+export const AverageMultiply = (min: number, max: number, ...values: number[] | number[][]) => AverageFunc(
+  (c, v) => c * ((v - min) / (max - min)),
+  r => (r * (max - min)) + min,
+  1,
+  values
+);
 
 // Площадь треугольника
 export const TriangleSquare: (a: XYCoord | XYCoord[], b?: XYCoord, c?: XYCoord) => number = (a: XYCoord | XYCoord[], b: XYCoord = null, c: XYCoord = null) => {
