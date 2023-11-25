@@ -8,7 +8,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatIconModule } from "@angular/material/icon";
 import { RouterModule, Routes } from "@angular/router";
-import { LindenmayerFractalsComponent } from "@app/controlers/dev-tools/lindenmayer-fractals/lindenmayer-fractals.component";
+import { PerlinNoiseComponent } from "@app/controlers/dev-tools/perlin-noise/perlin-noise.component";
 import { TranslateModule } from "@ngx-translate/core";
 
 
@@ -17,7 +17,7 @@ import { TranslateModule } from "@ngx-translate/core";
 
 const routes: Routes = [{
   path: "",
-  component: LindenmayerFractalsComponent,
+  component: PerlinNoiseComponent,
   data: { title: "Генерация шума" }
 }];
 
@@ -37,10 +37,10 @@ export class DevToolsRoutingModule { }
 
 @NgModule({
   declarations: [
-    LindenmayerFractalsComponent
+    PerlinNoiseComponent
   ],
   exports: [
-    LindenmayerFractalsComponent
+    PerlinNoiseComponent
   ],
   imports: [
     DevToolsRoutingModule,

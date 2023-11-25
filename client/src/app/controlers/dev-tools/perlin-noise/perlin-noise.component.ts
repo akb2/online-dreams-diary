@@ -14,13 +14,13 @@ import { Subject, map, takeUntil, tap } from "rxjs";
 
 
 @Component({
-  selector: "dev-lindenmayer-fractals",
-  templateUrl: "./lindenmayer-fractals.component.html",
-  styleUrls: ["lindenmayer-fractals.component.scss"],
+  selector: "dev-perlin-noise",
+  templateUrl: "./perlin-noise.component.html",
+  styleUrls: ["perlin-noise.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class LindenmayerFractalsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PerlinNoiseComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild("canvas", { read: ElementRef }) canvas: ElementRef<HTMLCanvasElement>;
 
   navMenuType: NavMenuType.short;
