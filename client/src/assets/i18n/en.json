@@ -323,7 +323,24 @@
         "labels": {
           "large_scale": "Large seed's size",
           "middle_scale": "Middle seed's size",
-          "small_scale": "Small seed's size"
+          "small_scale": "Small seed's size",
+          "color_range": {
+            "max": "Highest point color",
+            "min": "Lowest point color"
+          },
+          "mix_types": {
+            "max": "Maximum value",
+            "average": "Average",
+            "min": "Minimum value",
+            "geometricAverage": "Geometric average",
+            "harmonicAverage": "Harmonic mean",
+            "median": "Median",
+            "mode": "Mode",
+            "quadraticMean": "Quadratic mean",
+            "multiply": "Multiplication",
+            "power": "Power average"
+          },
+          "mix_type": "Mixing type"
         }
       }
     }
