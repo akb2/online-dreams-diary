@@ -180,7 +180,6 @@ export class Landscape3DService {
     this.smoothedDisplacementTexture = this.displacementTexture.clone();
     // Настройки
     this.mesh.rotateX(AngleToRad(-90));
-    this.mesh.position.setY(-(DreamMaxHeight / DreamCeilParts * DreamCeilSize));
   }
 
   // Загрузка картинок рельефа

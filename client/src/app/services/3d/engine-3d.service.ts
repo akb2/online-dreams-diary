@@ -1,4 +1,4 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar } from "@_datas/dream-map-settings";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamFogFar, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -185,7 +185,7 @@ export class Engine3DService implements OnDestroy {
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
     this.control.target.setX(this.dreamMap.camera.target.x);
-    this.control.target.setY(0);
+    this.control.target.setY(DreamMaxHeight / DreamCeilParts * DreamCeilSize);
     this.control.target.setZ(this.dreamMap.camera.target.z);
     this.camera.far = DreamFogFar;
     // Изменение камеры
