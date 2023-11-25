@@ -1,3 +1,4 @@
+import { Average } from "@_helpers/math";
 import { DreamMapSettings } from "@_models/dream-map";
 
 
@@ -5,7 +6,7 @@ import { DreamMapSettings } from "@_models/dream-map";
 
 
 // Размер карты по умолчанию
-export const DreamMapSize = 96;
+export const DreamMapSize = 50;
 
 // Размер ячейки по умолчанию
 export const DreamCeilSize = 1;
@@ -23,8 +24,8 @@ export const DreamSkyTime = 180;
 // Пределы высот
 export const DreamMinHeight = 1;
 export const DreamDefHeight = -1;
-export const DreamMaxHeight = DreamCeilParts * 20;
-export const DreamWaterDefHeight = DreamCeilParts * 9;
+export const DreamMaxHeight = DreamCeilParts * 24;
+export const DreamWaterDefHeight = (DreamMaxHeight / 2) - (DreamCeilSize / DreamCeilParts);
 
 // Допустимый перепад высот без сглаживания
 // ? В процентах 0-100
@@ -33,11 +34,11 @@ export const DreamAvailHeightDiff = 0.15;
 // Параметры по умолчанию
 export const DreamSkyType = 1;
 export const DreamTerrain = 1;
-export const DreamFogFar = 60;
+export const DreamFogFar = DreamMapSize * DreamCeilSize;
 export const DreamFogNear = DreamFogFar / 2;
 export const DreamHorizont = DreamFogFar * 3;
 export const DreamOutsideSize = 1;
-export const LODMaxDistance = (DreamFogFar + DreamFogNear) / 2;
+export const LODMaxDistance = Average([DreamFogFar, DreamFogNear]);
 
 // Заголовок по умолчанию
 export const DreamTitle = "*** Новое сновидение ***";
@@ -45,7 +46,7 @@ export const DreamDescription = "*** Без описания ***";
 
 // Настройки камеры
 export const DreamCameraMinZoom = DreamCeilSize;
-export const DreamCameraMaxZoom = DreamCeilSize * DreamMaxHeight / DreamCeilParts;
+export const DreamCameraMaxZoom = DreamCeilSize * (DreamMaxHeight / DreamCeilParts);
 
 // Максимальное число элементов в ячейке
 export enum DreamObjectElmsValues {
