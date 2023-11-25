@@ -1,9 +1,12 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { PerlinNoiseGenerator } from "@_datas/three.js/helpers/perlin-noise-generator";
-import { Average, CheckInRange, LineFunc, MathRound } from "@_helpers/math";
+import { Average, AverageGeometric, AverageHarmonic, AverageMax, AverageMedian, AverageMin, AverageMode, AverageMultiply, AveragePower, AverageQuadratic, CheckInRange, LineFunc, MathRound, ParseInt } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { TakeCycle } from "@_helpers/rxjs";
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from "@angular/core";
+import { OptionData } from "@_models/form";
+import { NavMenuType } from "@_models/nav-menu";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { Subject, map, takeUntil, tap } from "rxjs";
 
 
@@ -17,17 +20,27 @@ import { Subject, map, takeUntil, tap } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class LindenmayerFractalsComponent implements AfterViewInit, OnDestroy {
+export class LindenmayerFractalsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild("canvas", { read: ElementRef }) canvas: ElementRef<HTMLCanvasElement>;
+
+  navMenuType: NavMenuType.short;
 
   size = 300;
   inProgress = false;
 
-  private noiseLargeScale = 70;
-  private noiseMiddleScale = 35;
-  private noiseSmallScale = 6;
-  private fillColor = 80;
-  private drawColor = 255;
+  form: FormGroup;
+
+  noiseLargeScale: MinMaxStepDefault = [40, 100, 1, 50];
+  noiseMiddleScale: MinMaxStepDefault = [20, 39, 1, 25];
+  noiseSmallScale: MinMaxStepDefault = [1.1, 19.9, 0.1, 6];
+  colorRange: MinMaxStepRangeDefault = [0, 255, 0.1, 0, 255];
+  mixTypes: OptionData[] = MixTypes;
+
+  private updateColorMax = true;
+  private updateColorMin = true;
+
+  private maxNoise = 1;
+  private minNoise = -1;
 
   private destroyed$ = new Subject<void>();
 
@@ -35,31 +48,145 @@ export class LindenmayerFractalsComponent implements AfterViewInit, OnDestroy {
 
 
 
+  // Получить HEX цвет
+  private getHexColor(value: number): string {
+    const preColor = CheckInRange(MathRound(value, 0), this.colorRange[1], this.colorRange[0]).toString(16).padStart(2, "0");
+    // Вернуть цвет
+    return "#" + preColor + preColor + preColor;
+  }
+
+  // Цвет минимальной высоты
+  get getMinColor(): string {
+    return this.getHexColor(ParseInt(this.form?.get("colorMinRange")?.value));
+  }
+
+  // Цвет максимальной высоты
+  get getMaxColor(): string {
+    return this.getHexColor(ParseInt(this.form?.get("colorMaxRange")?.value));
+  }
+
+  // Смешение
+  private getMixedValue(values: number[]): number {
+    const mixType: MixType = (this.form.get("mixType")?.value ?? "") as MixType;
+    // Наименьшее
+    if (mixType === MixType.min) {
+      return AverageMin(values);
+    }
+    // Наибольшее
+    else if (mixType === MixType.max) {
+      return AverageMax(values);
+    }
+    // Среднее геометрическое
+    else if (mixType === MixType.geometricAverage) {
+      return AverageGeometric(values);
+    }
+    // Среднее гармоническое
+    else if (mixType === MixType.harmonicAverage) {
+      return AverageHarmonic(values);
+    }
+    // Медиана
+    else if (mixType === MixType.median) {
+      return AverageMedian(values);
+    }
+    // Мода
+    else if (mixType === MixType.mode) {
+      return AverageMode(values);
+    }
+    // Среднее квадратичное
+    else if (mixType === MixType.quadraticMean) {
+      return AverageQuadratic(values);
+    }
+    //Умножение
+    else if (mixType === MixType.multiply) {
+      return AverageMultiply(this.minNoise, this.maxNoise, values);
+    }
+    //Умножение
+    else if (mixType === MixType.power) {
+      return AveragePower(12, values);
+    }
+    // Среднее арифметическое
+    return Average(values);
+  }
+
+
+
+
+
   constructor(
-    private changeDetectorRef: ChangeDetectorRef
-  ) { }
+    private changeDetectorRef: ChangeDetectorRef,
+    private formBuilder: FormBuilder
+  ) {
+    this.form = this.formBuilder.group({
+      mixType: [MixType.power],
+      useLargeNoise: [true],
+      useMiddleNoise: [true],
+      useSmallNoise: [true],
+      largeScale: [this.noiseLargeScale[3]],
+      middleScale: [this.noiseMiddleScale[3]],
+      smallScale: [this.noiseSmallScale[3]],
+      colorMinRange: [this.colorRange[3]],
+      colorMaxRange: [this.colorRange[4]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.colorMinRangeListener();
+    this.colorMaxRangeListener();
+  }
 
   ngAfterViewInit() {
     if (!!this.canvas?.nativeElement) {
+      this.onGenerate();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
+
+
+
+
+
+  // Генерация
+  onGenerate(): void {
+    if (!this.inProgress) {
       const canvas = this.canvas.nativeElement;
       const context = canvas.getContext("2d");
       const perlinNoise = new PerlinNoiseGenerator(this.size);
+      const noiseLargeScale = ParseInt(this.form?.get("largeScale")?.value, this.noiseLargeScale[3]);
+      const noiseMiddleScale = ParseInt(this.form?.get("middleScale")?.value, this.noiseMiddleScale[3]);
+      const noiseSmallScale = ParseInt(this.form?.get("smallScale")?.value, this.noiseSmallScale[3]);
       // Отметка о начале
       this.inProgress = true;
       this.changeDetectorRef.detectChanges();
+      // Очистка поля
+      context.clearRect(0, 0, this.size, this.size);
       // Отрисовка
       TakeCycle(this.size * this.size, 10000)
         .pipe(
           takeUntil(this.destroyed$),
           map(i => GetCoordsByIndex(this.size, this.size, i)),
           tap(({ x, y }) => {
-            const noise = Average([
-              perlinNoise.noise(x / this.noiseLargeScale, y / this.noiseLargeScale),
-              perlinNoise.noise(x / this.noiseMiddleScale, y / this.noiseMiddleScale),
-              perlinNoise.noise(x / this.noiseSmallScale, y / this.noiseSmallScale)
-            ]);
-            const preColor = CheckInRange(MathRound(LineFunc(this.fillColor, this.drawColor, noise * 2, -1, 1), 0), this.drawColor).toString(16).padStart(2, "0");
-            const color = "#" + preColor + preColor + preColor;
+            const noises: number[] = [];
+            const maxColor = ParseInt(this.form.get("colorMaxRange").value, this.colorRange[1]);
+            const minColor = ParseInt(this.form.get("colorMinRange").value, this.colorRange[0]);
+            // Большой шум
+            if (!!this.form?.get("useLargeNoise")?.value) {
+              noises.push(perlinNoise.noise(x / noiseLargeScale, y / noiseLargeScale));
+            }
+            // Средний шум
+            if (!!this.form?.get("useMiddleNoise")?.value) {
+              noises.push(perlinNoise.noise(x / noiseMiddleScale, y / noiseMiddleScale));
+            }
+            // Маленький шум
+            if (!!this.form?.get("useSmallNoise")?.value) {
+              noises.push(perlinNoise.noise(x / noiseSmallScale, y / noiseSmallScale));
+            }
+            // Данные
+            const noise = this.getMixedValue(noises);
+            const color = this.getHexColor(CheckInRange(LineFunc(minColor, maxColor, noise, this.minNoise, this.maxNoise), maxColor, minColor));
             // Отрисовка
             context.fillStyle = color;
             context.fillRect(x, y, x + 1, y + 1);
@@ -76,8 +203,76 @@ export class LindenmayerFractalsComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
+
+
+
+
+  // Прослушивание минимального цвета
+  private colorMinRangeListener(): void {
+    this.form?.get("colorMinRange")?.valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(minValue => {
+        if (this.updateColorMax) {
+          const maxControl = this.form.get("colorMaxRange");
+          const maxValue = maxControl.value;
+          // Блокировать бесконечный цикл
+          this.updateColorMax = false;
+          // Изменить максимальное значение
+          maxControl.setValue(CheckInRange(maxValue, this.colorRange[1], minValue));
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        }
+        // Сброс
+        this.updateColorMin = true;
+      });
+  }
+
+  // Прослушивание максимального цвета
+  private colorMaxRangeListener(): void {
+    this.form?.get("colorMaxRange")?.valueChanges
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(maxValue => {
+        if (this.updateColorMin) {
+          const minControl = this.form.get("colorMinRange");
+          const minValue = minControl.value;
+          // Блокировать бесконечный цикл
+          this.updateColorMin = false;
+          // Изменить максимальное значение
+          minControl.setValue(CheckInRange(minValue, maxValue, this.colorRange[0]));
+          // Обновить
+          this.changeDetectorRef.detectChanges();
+        }
+        // Сброс
+        this.updateColorMax = true;
+      });
   }
 }
+
+
+
+
+
+type MinMaxStepDefault = [number, number, number, number];
+type MinMaxStepRangeDefault = [...MinMaxStepDefault, number];
+
+enum MixType {
+  average = "average",
+  geometricAverage = "geometricAverage",
+  harmonicAverage = "harmonicAverage",
+  quadraticMean = "quadraticMean",
+  power = "power",
+  multiply = "multiply",
+  median = "median",
+  mode = "mode",
+  min = "min",
+  max = "max"
+}
+
+
+
+
+
+const MixTypes: OptionData[] = Object.values(MixType).map(key => ({
+  key,
+  title: "pages.dev_tools.noise_generator.labels.mix_types." + key
+}));

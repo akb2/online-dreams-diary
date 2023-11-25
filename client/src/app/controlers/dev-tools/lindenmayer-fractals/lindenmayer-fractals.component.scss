@@ -1,0 +1,73 @@
+@use "sass:map";
+@use "material";
+@use "vars";
+@use "colors";
+@use "screens";
+
+// Глобальные стили
+@include material.matFormField;
+
+// Управление
+.area {
+  $columns: (
+    default: 1,
+    xlarge: 4,
+    large: 3,
+    middle: 2,
+    small: 1
+  );
+  // Свойства
+  display: grid;
+  // Общие правила
+  &__canvas,
+  &__control {
+    // По центру: по вертикали
+    &.v-center {
+      justify-content: center;
+    }
+    // По центру: по горизонтали
+    &.h-center {
+      align-items: center;
+    }
+  }
+  // Картинка
+  &__canvas > canvas {
+    width: 100%;
+  }
+  // Блоки формы
+  &__control {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  // Адаптив
+  @include screens.adaptiveFor($columns, vars.$userProfileBlocksGaps) using($column, $gap) {
+    grid-template-columns: repeat(#{$column}, 1fr);
+    gap: $gap;
+  }
+}
+
+// Поле
+.field {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  // Цвет
+  &__color {
+    $size: vars.$iconsMediumSize;
+    // Свойства
+    display: block;
+    width: $size;
+    min-width: $size;
+    height: $size;
+    border-radius: vars.$iconsMediumBorderRadius;
+    border: 1px solid #{map.get(colors.$matPrimary, 500)};
+  }
+  // Поле
+  &__input {
+    flex-grow: 1;
+  }
+}

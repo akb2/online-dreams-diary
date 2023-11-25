@@ -1,5 +1,95 @@
-{{inProgress? 'Отрисовка': 'Отрисовка окончена'}}
-<br>
-<canvas #canvas
-        [width]="size"
-        [height]="size"></canvas>
+<app-main-menu [autoCollapse]="true"
+               [type]="navMenuType"
+               mainTitle="pages.dev_tools.noise_generator.page_title"></app-main-menu>
+<!-- Содержимое страницы -->
+<div class="root-section">
+  <div class="container">
+    <form [formGroup]="form"
+          class="area">
+      <div class="area__canvas h-center">
+        <canvas #canvas
+                [width]="size"
+                [height]="size"></canvas>
+      </div>
+      <!-- Размеры -->
+      <div class="area__control h-center">
+        <!-- Большой шум -->
+        <div class="field mat-mdc-form-field">
+          <mat-checkbox formControlName="useLargeNoise"
+                        color="primary"></mat-checkbox>
+          <!-- Выбор значения -->
+          <app-slider-input formControlName="largeScale"
+                            [min]="noiseLargeScale[0]"
+                            [max]="noiseLargeScale[1]"
+                            [step]="noiseLargeScale[2]"
+                            [label]="'pages.dev_tools.noise_generator.labels.large_scale' | translate"></app-slider-input>
+        </div>
+        <!-- Средний шум -->
+        <div class="field mat-mdc-form-field">
+          <mat-checkbox formControlName="useMiddleNoise"
+                        color="primary"></mat-checkbox>
+          <!-- Выбор значения -->
+          <app-slider-input formControlName="middleScale"
+                            [min]="noiseMiddleScale[0]"
+                            [max]="noiseMiddleScale[1]"
+                            [step]="noiseMiddleScale[2]"
+                            [label]="'pages.dev_tools.noise_generator.labels.middle_scale' | translate"></app-slider-input>
+        </div>
+        <!-- Малый шум -->
+        <div class="field mat-mdc-form-field">
+          <mat-checkbox formControlName="useSmallNoise"
+                        color="primary"></mat-checkbox>
+          <!-- Выбор значения -->
+          <app-slider-input formControlName="smallScale"
+                            [min]="noiseSmallScale[0]"
+                            [max]="noiseSmallScale[1]"
+                            [step]="noiseSmallScale[2]"
+                            [label]="'pages.dev_tools.noise_generator.labels.small_scale' | translate"></app-slider-input>
+        </div>
+      </div>
+      <!-- Цвета -->
+      <div class="area__control h-center">
+        <!-- Тип смешивания -->
+        <div class="field mat-mdc-form-field">
+          <app-autocomplete-input class="field__input"
+                                  [label]="'pages.dev_tools.noise_generator.labels.mix_type' | translate"
+                                  formControlName="mixType"
+                                  [optionData]="mixTypes"></app-autocomplete-input>
+        </div>
+        <!-- Цвет низшей точки -->
+        <div class="field mat-mdc-form-field">
+          <div class="field__color"
+               [ngStyle]="{ backgroundColor: getMinColor }"></div>
+          <!-- Поле ввода -->
+          <app-slider-input formControlName="colorMinRange"
+                            [min]="colorRange[0]"
+                            [max]="colorRange[1]"
+                            [step]="colorRange[2]"
+                            [label]="'pages.dev_tools.noise_generator.labels.color_range.min' | translate"></app-slider-input>
+        </div>
+        <!-- Цвет высочайшей точки -->
+        <div class="field mat-mdc-form-field">
+          <div class="field__color"
+               [ngStyle]="{ backgroundColor: getMaxColor }"></div>
+          <!-- Поле ввода -->
+          <app-slider-input formControlName="colorMaxRange"
+                            [min]="colorRange[0]"
+                            [max]="colorRange[1]"
+                            [step]="colorRange[2]"
+                            [label]="'pages.dev_tools.noise_generator.labels.color_range.max' | translate"></app-slider-input>
+        </div>
+      </div>
+      <!-- Генерация -->
+      <form class="area__control h-center">
+        <!-- Генерация -->
+        <button mat-flat-button
+                color="primary"
+                [attr.button-loader]="inProgress"
+                (click)="onGenerate()">
+          <mat-icon>refresh</mat-icon>
+          {{('pages.dev_tools.noise_generator.buttons.' + (inProgress? 'generating': 'generate')) | translate}}
+        </button>
+      </form>
+    </form>
+  </div>
+</div>
