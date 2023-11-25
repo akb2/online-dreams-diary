@@ -2,6 +2,7 @@ import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { MeshStandardMaterial, Side, Texture } from "three";
+import { ScrollAddDimension } from "./screen";
 
 
 
@@ -105,7 +106,7 @@ export interface ClosestHeight {
 }
 
 // Имена соседних ячеек
-export type ClosestHeightName = "topLeft" | "top" | "topRight" | "left" | "right" | "bottomLeft" | "bottom" | "bottomRight";
+export type ClosestHeightName = ScrollAddDimension | "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
 
 // Имена всех секторов карты
 export type DreamMapSector = ClosestHeightName | "center";

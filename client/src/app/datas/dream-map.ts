@@ -1,6 +1,7 @@
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
+import { ScrollAddDimension } from "@_models/screen";
 
 
 
@@ -134,4 +135,59 @@ export const DreamMapSectors: CustomObjectKey<NumberDirection, CustomObjectKey<N
     [0]: "bottom",
     [1]: "bottomRight"
   },
+};
+
+// Соседние ячейки
+export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey<ScrollAddDimension, ClosestHeightName>> = {
+  // Верх - лево
+  topLeft: {
+    right: "top",
+    bottom: "left"
+  },
+  // Верх
+  top: {
+    left: "topLeft",
+    bottom: "top",
+    right: "bottomRight"
+  },
+  // Верх - право
+  topRight: {
+    left: "top",
+    bottom: "right"
+  },
+  // Лево
+  left: {
+    top: "topLeft",
+    right: "left",
+    bottom: "bottomLeft"
+  },
+  // Центр
+  center: {
+    top: "top",
+    left: "left",
+    right: "right",
+    bottom: "bottom"
+  },
+  // Право
+  right: {
+    top: "topRight",
+    left: "right",
+    bottom: "bottomRight"
+  },
+  // Низ - лево
+  bottomLeft: {
+    top: "left",
+    right: "bottom"
+  },
+  // Низ
+  bottom: {
+    left: "bottomLeft",
+    top: "bottom",
+    right: "bottomRight"
+  },
+  // Низ - право
+  bottomRight: {
+    left: "bottom",
+    top: "right"
+  }
 };

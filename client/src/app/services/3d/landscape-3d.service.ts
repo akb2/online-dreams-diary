@@ -1,8 +1,9 @@
-import { DreamAvailHeightDiff, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
-import { AngleToRad, Average, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
+import { NeighBoringSectors } from "@_datas/dream-map";
+import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
+import { AngleToRad, Average, AverageSumm, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { XYMapEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapCeil, ReliefType } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil, DreamMapSector, ReliefType } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Injectable } from "@angular/core";
 import { DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Material, Mesh, MeshBasicMaterial, PlaneGeometry, Texture } from "three";
@@ -50,35 +51,46 @@ export class Landscape3DService {
 
 
 
-  // Получение предварительной высоты вершины в виде цвета
-  private getColorByCoords(x: number, z: number, y: number): number {
+  // Получить тип рельефа по сектору
+  private getReliefTypeBySector(sector: DreamMapSector): ReliefType {
+    return sector === "center"
+      ? ReliefType.flat
+      : this.dreamMap.relief.types?.[sector] as ReliefType;
+  }
+
+  // Получение цвета высоты из определенной карты рельефов
+  private getColorByReliefTypeAndCoords(reliefType: ReliefType, x: number, z: number): number {
     const mapWidth = this.dreamMap.size.width;
     const mapHeight = this.dreamMap.size.height;
     const mapBorderSizeX = mapWidth * this.outSideRepeat;
     const mapBorderSizeZ = mapHeight * this.outSideRepeat;
-    const width: number = (mapBorderSizeX * 2) + mapWidth;
-    const height: number = (mapBorderSizeZ * 2) + mapHeight;
     const textureX: number = x + mapBorderSizeX;
     const textureZ: number = z + mapBorderSizeZ;
-    let color: number = MathRound((y / DreamMaxHeight) * this.maxColorValue);
-    // Наружняя ячейка
-    if (this.ceil3dService.isBorderCeil(x, z) || y === DreamDefHeight) {
-      const canvasSize = 4;
-      const sector = this.ceil3dService.getSectorByCoords(x, z);
-      const reliefType = sector === "center"
-        ? ReliefType.flat
-        : this.dreamMap.relief.types?.[sector] as ReliefType;
-      const canvas = this.reliefCanvases[reliefType];
-      const context = canvas.getContext("2d");
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      const scaledTextureX = MathFloor((textureX / width) * canvas.width);
-      const scaledTextureZ = MathFloor((textureZ / height) * canvas.height);
-      const position = ((scaledTextureZ * imageData.width) + scaledTextureX) * canvasSize;
-      // Обновить цвет
-      color = imageData.data[position];
-    }
+    const width: number = (mapBorderSizeX * 2) + mapWidth;
+    const height: number = (mapBorderSizeZ * 2) + mapHeight;
+    const canvasSize = 4;
+    const canvas = this.reliefCanvases[reliefType];
+    const context = canvas.getContext("2d");
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const scaledTextureX = MathFloor((textureX / width) * (canvas.width - 1));
+    const scaledTextureZ = MathFloor((textureZ / height) * (canvas.height - 1));
+    const imageWidth = imageData.width;
+    const imageHeight = imageData.height;
     // Вернуть цвет
-    return color;
+    return Average(XYMapEach(2, 2, (z, x) => {
+      const iZ: number = CheckInRange(scaledTextureZ + z, imageHeight - 1, 0);
+      const iX: number = CheckInRange(scaledTextureX + x, imageWidth - 1, 0);
+      const position = ((iX * imageData.width) + iZ) * canvasSize;
+      //
+      return imageData.data[position];
+    }));
+  }
+
+  // Получение предварительной высоты вершины в виде цвета
+  private getColorByCoords(x: number, z: number, y: number): number {
+    return this.ceil3dService.isBorderCeil(x, z) || y === DreamDefHeight
+      ? this.getColorByReliefTypeAndCoords(this.getReliefTypeBySector(this.ceil3dService.getSectorByCoords(x, z)), x, z)
+      : MathRound((y / DreamMaxHeight) * this.maxColorValue);
   }
 
   // Данные для высоты
@@ -109,19 +121,8 @@ export class Landscape3DService {
     const { vertexStartX, vertexStartY, imageHeight, imageWidth } = this.getDisplacementData(ceil);
     // Координаты
     return XYMapEach(2, 2, (x2, y2) => {
-      x2 = vertexStartX + x2 - 1;
-      y2 = vertexStartY + y2 - 1;
-      // Координаты
-      const iY: number = y2 < 0
-        ? 0
-        : y2 >= imageHeight - 1
-          ? imageHeight - 1
-          : y2;
-      const iX: number = x2 < 0
-        ? 0
-        : x2 >= imageWidth - 1
-          ? imageWidth - 1
-          : x2;
+      const iY: number = CheckInRange(vertexStartY + y2 - 1, imageHeight - 1, 0);
+      const iX: number = CheckInRange(vertexStartX + x2 - 1, imageWidth - 1, 0);
       // Индекс
       return ((iY * imageWidth) + iX) * 4;
     });
@@ -129,10 +130,11 @@ export class Landscape3DService {
 
   // Среднее значение высоты в виде цвета в изображении высот
   private getDisplacementMiddleZColor(ceil: DreamMapCeil, getOriginal: boolean = false): number {
-    return Average(this.getDisplacementIndexes(ceil).map(index => getOriginal
-      ? this.displacementTexture.image.data[index]
-      : this.smoothedDisplacementTexture.image.data[index]
-    ));
+    const data = getOriginal
+      ? this.displacementTexture.image.data
+      : this.smoothedDisplacementTexture.image.data;
+    // Вернуть цвет
+    return Average(this.getDisplacementIndexes(ceil).map(index => data[index]));
   }
 
   // Среднее значение высоты в изображении высот
@@ -209,22 +211,39 @@ export class Landscape3DService {
   // Сглаживание
   setSmoothByCoords(ceil: DreamMapCeil): void {
     const { coord: { x, y } } = ceil;
-    // Сглаживать только граничные ячейки
-    if (this.ceil3dService.isBorderSectorCeil(x, y)) {
+    const getColor = (neighBoringSector: DreamMapSector): number => !!neighBoringSector
+      ? this.getColorByReliefTypeAndCoords(this.getReliefTypeBySector(neighBoringSector), x, y)
+      : 0;
+    const mapWidth = this.dreamMap.size.width;
+    const mapHeight = this.dreamMap.size.height;
+    const sector = this.ceil3dService.getSectorByCoords(x, y);
+    const neighBoringSectors = NeighBoringSectors?.[sector] ?? {};
+    const shiftX = this.ceil3dService.sectorDimension(x, mapWidth) * mapWidth;
+    const shiftY = this.ceil3dService.sectorDimension(y, mapHeight) * mapHeight;
+    const mapHalfWidth = mapWidth / 2;
+    const mapHalfHeight = mapHeight / 2;
+    const centeredX = x - shiftX - mapHalfWidth;
+    const centeredY = y - shiftY - mapHalfHeight;
+    const xKoof = Math.abs(centeredX / mapWidth / 2);
+    const yKoof = Math.abs(centeredY / mapHeight / 2);
+    const leftKoof = !!neighBoringSectors?.left && centeredX < 0 ? xKoof : 0;
+    const rightKoof = !!neighBoringSectors?.right && centeredX >= 0 ? xKoof : 0;
+    const topKoof = !!neighBoringSectors?.top && centeredY < 0 ? yKoof : 0;
+    const bottomKoof = !!neighBoringSectors?.bottom && centeredY >= 0 ? yKoof : 0;
+    const selfKoof = 1 - leftKoof - rightKoof - topKoof - bottomKoof;
+    const currentColor = this.getDisplacementMiddleZColor(ceil, true);
+    let color = AverageSumm([
+      currentColor * selfKoof,
+      getColor(neighBoringSectors.left) * leftKoof,
+      getColor(neighBoringSectors.right) * rightKoof,
+      getColor(neighBoringSectors.top) * topKoof,
+      getColor(neighBoringSectors.bottom) * bottomKoof,
+    ]);
+    // Замена высоты
+    if (color !== currentColor) {
       const { indexI } = this.getDisplacementData(ceil);
-      const smoothDiameter = (this.smoothRadius * 2) + 1;
-      const currentColor = this.getDisplacementMiddleZColor(ceil, true);
-      const colors = XYMapEach(smoothDiameter, smoothDiameter, (tX, tY) => this.getDisplacementMiddleZColor(this.ceil3dService.getCeil(
-        x + tX - this.smoothRadius,
-        y + tY - this.smoothRadius
-      ), true));
-      const color = Average(colors);
-      const availDiff = (this.maxColorValue / 100) * DreamAvailHeightDiff;
-      const colorDiff = Math.abs(currentColor - color);
-      // Сглаживать при значительном перепаде
-      if (colorDiff > availDiff) {
-        this.smoothedDisplacementTexture.image.data[indexI] = color;
-      }
+      // Запись
+      this.smoothedDisplacementTexture.image.data[indexI] = color;
     }
   }
 

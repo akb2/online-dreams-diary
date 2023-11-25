@@ -1,5 +1,5 @@
 import { DreamMapSectors } from "@_datas/dream-map";
-import { DreamCeilSize, DreamDefHeight, DreamMapSize, DreamTerrain } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
 import { DreamMap, DreamMapCeil, DreamMapSector, UVCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
@@ -14,14 +14,12 @@ export class Ceil3dService {
 
   dreamMap: DreamMap;
 
-  private sectorBorders: number = 3;
-
 
 
 
 
   // Расположение внутри сектора
-  private sectorDimension(value: number, size: number): NumberDirection {
+  sectorDimension(value: number, size: number): NumberDirection {
     return value < 0
       ? -1
       : value >= size
@@ -49,7 +47,7 @@ export class Ceil3dService {
   }
 
   // Ячейка по умолчанию
-  getDefaultCeil(x: number, y: number): DreamMapCeil {
+  private getDefaultCeil(x: number, y: number): DreamMapCeil {
     return {
       place: null,
       terrain: DreamTerrain,
@@ -84,19 +82,6 @@ export class Ceil3dService {
     const height: number = this.dreamMap.size.height;
     // Проверка
     return x < 0 || y < 0 || x >= width || y >= height;
-  }
-
-  // Граница между секторами
-  isBorderSectorCeil(x: number, y: number): boolean {
-    const width: number = this.dreamMap.size.width;
-    const height: number = this.dreamMap.size.height;
-    // Проверка
-    return (
-      (x >= -this.sectorBorders && x < this.sectorBorders)
-      || (x >= width - this.sectorBorders && x < width + this.sectorBorders)
-      || (y >= -this.sectorBorders && y < this.sectorBorders)
-      || (y >= height - this.sectorBorders && y < height + this.sectorBorders)
-    );
   }
 
   // Сектор ячейки на карте

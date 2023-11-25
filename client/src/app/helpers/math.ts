@@ -152,6 +152,9 @@ const AverageFunc = (
 // Среднее арифметическое
 export const Average = (...values: number[] | number[][]) => AverageFunc((o, v) => o + v, (r, c) => r / c, 0, values);
 
+// Сложить все элементы массива
+export const AverageSumm = (...values: number[] | number[][]) => AverageFunc((o, v) => o + v, r => r, 0, values);
+
 // Среднее геометрическое
 export const AverageGeometric = (...values: number[] | number[][]) => AverageFunc((o, v) => o * v, (r, c) => Math.pow(r, 1 / c), 1, values);
 

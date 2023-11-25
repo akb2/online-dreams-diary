@@ -2,7 +2,7 @@ import { AppMatDialogConfig } from "@_datas/app";
 import { CheckInRange, MathRound } from "@_helpers/math";
 import { UserAvatarCropDataElement } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { ScreenKeys } from "@_models/screen";
+import { ScreenKeys, ScrollAddDimension } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
@@ -505,7 +505,7 @@ export interface PopupCropImageData {
 }
 
 // Тип направления передвижения
-type MoveDirection = "top" | "right" | "bottom" | "left" | "move";
+type MoveDirection = ScrollAddDimension | "move";
 
 // Интерфейс свойств превью
 interface PreviewCoords {
