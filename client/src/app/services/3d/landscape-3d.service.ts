@@ -1,7 +1,6 @@
-import { CreateArray } from "@_datas/app";
 import { DreamAvailHeightDiff, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
-import { AngleToRad, Average, CheckInRange, MathRound } from "@_helpers/math";
-import { ForCycle, XYMapEach } from "@_helpers/objects";
+import { AngleToRad, Average, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
+import { XYMapEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapCeil, ReliefType } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
@@ -26,7 +25,7 @@ export class Landscape3DService {
   material: Material;
 
   private maxColorValue = 255;
-  private smoothRadius = 2;
+  private smoothRadius = 3;
 
   private displacementTexture: DataTexture;
   private smoothedDisplacementTexture: DataTexture;
@@ -47,7 +46,11 @@ export class Landscape3DService {
     ...this.terrainTextures.map(url => ({ url }))
   ];
 
-  // Получение предварительной высоты вершины в виде увета
+
+
+
+
+  // Получение предварительной высоты вершины в виде цвета
   private getColorByCoords(x: number, z: number, y: number): number {
     const mapWidth = this.dreamMap.size.width;
     const mapHeight = this.dreamMap.size.height;
@@ -57,7 +60,7 @@ export class Landscape3DService {
     const height: number = (mapBorderSizeZ * 2) + mapHeight;
     const textureX: number = x + mapBorderSizeX;
     const textureZ: number = z + mapBorderSizeZ;
-    let color: number = MathRound(CheckInRange((y * this.maxColorValue) / DreamMaxHeight, this.maxColorValue, 0), 5);
+    let color: number = MathRound((y / DreamMaxHeight) * this.maxColorValue);
     // Наружняя ячейка
     if (this.ceil3dService.isBorderCeil(x, z) || y === DreamDefHeight) {
       const canvasSize = 4;
@@ -68,11 +71,11 @@ export class Landscape3DService {
       const canvas = this.reliefCanvases[reliefType];
       const context = canvas.getContext("2d");
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      const scaledTextureX = Math.floor((textureX / width) * canvas.width);
-      const scaledTextureZ = Math.floor((textureZ / height) * canvas.height);
+      const scaledTextureX = MathFloor((textureX / width) * canvas.width);
+      const scaledTextureZ = MathFloor((textureZ / height) * canvas.height);
       const position = ((scaledTextureZ * imageData.width) + scaledTextureX) * canvasSize;
       // Обновить цвет
-      color = MathRound(CheckInRange(Average(CreateArray(canvasSize).map(i => imageData.data[position + i])), this.maxColorValue, 0), 5);
+      color = imageData.data[position];
     }
     // Вернуть цвет
     return color;
@@ -109,8 +112,16 @@ export class Landscape3DService {
       x2 = vertexStartX + x2 - 1;
       y2 = vertexStartY + y2 - 1;
       // Координаты
-      const iY: number = y2 < 0 ? 0 : (y2 >= imageHeight - 1 ? imageHeight - 1 : y2);
-      const iX: number = x2 < 0 ? 0 : (x2 >= imageWidth - 1 ? imageWidth - 1 : x2);
+      const iY: number = y2 < 0
+        ? 0
+        : y2 >= imageHeight - 1
+          ? imageHeight - 1
+          : y2;
+      const iX: number = x2 < 0
+        ? 0
+        : x2 >= imageWidth - 1
+          ? imageWidth - 1
+          : x2;
       // Индекс
       return ((iY * imageWidth) + iX) * 4;
     });
@@ -126,11 +137,9 @@ export class Landscape3DService {
 
   // Среднее значение высоты в изображении высот
   private getDisplacementMiddleZ(ceil: DreamMapCeil, getOriginal: boolean = false): number {
-    return CheckInRange(
-      this.getDisplacementMiddleZColor(ceil, getOriginal) / this.maxColorValue * this.getDisplacementData(ceil).scale,
-      this.maxColorValue,
-      0
-    );
+    const maxHeight = this.getDisplacementData(ceil).scale;
+    // Расчет
+    return CheckInRange((this.getDisplacementMiddleZColor(ceil, getOriginal) / this.maxColorValue) * maxHeight, maxHeight, 0);
   }
 
 
@@ -146,16 +155,22 @@ export class Landscape3DService {
 
 
   // Создание объекта
-  create(width: number, height: number): void {
+  create(): void {
+    const width = ParseInt(this.dreamMap.size.width);
+    const height = ParseInt(this.dreamMap.size.height);
     const repeat: number = 1 + (this.outSideRepeat * 2)
     const totalWidth: number = width * repeat;
     const totalHeight: number = height * repeat;
     const totalSize: number = totalWidth * totalHeight;
     // Создание свойств
     this.displacementTexture = new DataTexture(new Uint8Array(4 * totalSize), totalWidth, totalHeight);
-    this.geometry = new PlaneGeometry(totalWidth, totalHeight, totalWidth, totalHeight);
+    this.geometry = new PlaneGeometry(totalWidth * DreamCeilSize, totalHeight * DreamCeilSize, totalWidth, totalHeight);
     this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
-    this.material = new MeshBasicMaterial({ side: FrontSide, color: 0x000000, wireframe: true });
+    this.material = new MeshBasicMaterial({
+      side: FrontSide,
+      wireframe: true,
+      color: 0x000000
+    });
     this.mesh = new Mesh(this.geometry, this.material);
     // Свойства класса
     this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
@@ -165,6 +180,7 @@ export class Landscape3DService {
     this.smoothedDisplacementTexture = this.displacementTexture.clone();
     // Настройки
     this.mesh.rotateX(AngleToRad(-90));
+    this.mesh.position.setY(-(DreamMaxHeight / DreamCeilParts * DreamCeilSize));
   }
 
   // Загрузка картинок рельефа
@@ -185,10 +201,8 @@ export class Landscape3DService {
     const { x, y, originalZ, indexI } = this.getDisplacementData(ceil);
     const color: number = this.getColorByCoords(x, y, originalZ);
     // Записать данные в картинку
-    ForCycle(3, k => {
-      this.displacementTexture.image.data[indexI + k] = color;
-      this.smoothedDisplacementTexture.image.data[indexI + k] = color;
-    }, true);
+    this.displacementTexture.image.data[indexI] = color;
+    this.smoothedDisplacementTexture.image.data[indexI] = color;
   }
 
   // Сглаживание
@@ -199,15 +213,16 @@ export class Landscape3DService {
       const { indexI } = this.getDisplacementData(ceil);
       const smoothDiameter = (this.smoothRadius * 2) + 1;
       const currentColor = this.getDisplacementMiddleZColor(ceil, true);
-      const color = Average(XYMapEach(smoothDiameter, smoothDiameter, (tX, tY) => this.getDisplacementMiddleZColor(this.ceil3dService.getCeil(
+      const colors = XYMapEach(smoothDiameter, smoothDiameter, (tX, tY) => this.getDisplacementMiddleZColor(this.ceil3dService.getCeil(
         x + tX - this.smoothRadius,
         y + tY - this.smoothRadius
-      ), true)));
+      ), true));
+      const color = Average(colors);
       const availDiff = (this.maxColorValue / 100) * DreamAvailHeightDiff;
       const colorDiff = Math.abs(currentColor - color);
       // Сглаживать при значительном перепаде
       if (colorDiff > availDiff) {
-        ForCycle(3, k => this.smoothedDisplacementTexture.image.data[indexI + k] = color, true);
+        this.smoothedDisplacementTexture.image.data[indexI] = color;
       }
     }
   }

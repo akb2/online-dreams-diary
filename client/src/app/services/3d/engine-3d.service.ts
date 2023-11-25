@@ -1,10 +1,9 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize } from "@_datas/dream-map-settings";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar } from "@_datas/dream-map-settings";
 import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { ScreenService } from "@_services/screen.service";
-import { FogFar } from "@_services/three.js/skybox.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
@@ -29,7 +28,7 @@ export class Engine3DService implements OnDestroy {
   private drawShadows: boolean = true;
   private rotateSpeed: number = 1.4;
   private moveSpeed: number = DreamCeilSize * 14;
-  private zoomSpeed: number = DreamCeilSize;
+  private zoomSpeed: number = 1;
   private minAngle: number = 0;
   private maxAngle: number = 75;
 
@@ -64,7 +63,7 @@ export class Engine3DService implements OnDestroy {
   private getIntercectionObject(x: number, y: number): Intersection[] {
     x = (x / this.canvasWidth) * 2 - 1;
     y = -((y / this.canvasHeight) * 2 - 1);
-    const far: number = FogFar * DreamCeilSize;
+    const far: number = DreamFogFar;
     const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
     // Настройки
     raycaster.setFromCamera({ x, y }, this.camera);
@@ -146,24 +145,18 @@ export class Engine3DService implements OnDestroy {
 
   // Создание камеры
   private createCamera(): void {
-    this.camera = new PerspectiveCamera(
-      30,
-      this.canvasWidth / this.canvasHeight,
-      DreamCeilSize / 10,
-      FogFar * DreamCeilSize
-    );
+    this.camera = new PerspectiveCamera(30, this.canvasWidth / this.canvasHeight, DreamCeilSize / 10, DreamFogFar);
     this.camera.position.setX(this.dreamMap.camera.position.x);
     this.camera.position.setY(this.dreamMap.camera.position.y);
     this.camera.position.setZ(this.dreamMap.camera.position.z);
-    this.camera.far = FogFar * DreamCeilSize;
     // Добавить камеру
     this.scene.add(this.camera);
   }
 
   // Создание пересечений
   private createOctree(): void {
-    const mapWidth: number = this.dreamMap.size.width;
-    const mapHeight: number = this.dreamMap.size.height;
+    const mapWidth: number = this.dreamMap.size.width * DreamCeilSize;
+    const mapHeight: number = this.dreamMap.size.height * DreamCeilSize;
     const raycastSize: number = (mapWidth * mapHeight) + 3;
     const depthMax: number = 1;
     const preferredObjectsPerNode: number = 8;
@@ -192,8 +185,9 @@ export class Engine3DService implements OnDestroy {
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
     this.control.target.setX(this.dreamMap.camera.target.x);
-    this.control.target.setY(this.dreamMap.camera.target.y);
+    this.control.target.setY(0);
     this.control.target.setZ(this.dreamMap.camera.target.z);
+    this.camera.far = DreamFogFar;
     // Изменение камеры
     fromEvent(this.control, "change")
       .pipe(takeUntil(this.destroyed$))
@@ -280,16 +274,16 @@ export class Engine3DService implements OnDestroy {
 
   // Изменение позиции камеры
   private onCameraChange(event: OrbitControls): void {
-    const width: number = this.dreamMap.size.width;
-    const height: number = this.dreamMap.size.height;
+    const width: number = this.dreamMap.size.width * DreamCeilSize;
+    const height: number = this.dreamMap.size.height * DreamCeilSize;
     const vector: Vector3 = new Vector3();
     // Настройка позиции камеры
     this.control.panSpeed = this.moveSpeed / event.getDistance();
     // Параметры
     let x: number = event.target.x;
     let z: number = event.target.z;
-    const mapX: number = width / 2 * DreamCeilSize;
-    const mapZ: number = height / 2 * DreamCeilSize;
+    const mapX: number = width / 2;
+    const mapZ: number = height / 2;
     const xLimited = x > mapX || x < -mapX;
     const zLimited = z > mapZ || z < -mapZ;
     // Ограничить положение камеры X
@@ -313,6 +307,7 @@ export class Engine3DService implements OnDestroy {
     }
     // Запомнить положение камеры
     this.lastCamera = event.object.clone() as PerspectiveCamera;
+    this.camera.far = DreamFogFar;
     // Угол для компаса
     event.object.getWorldDirection(vector);
     // Запомнить угол для компаса

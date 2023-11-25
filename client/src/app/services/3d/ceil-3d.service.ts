@@ -1,5 +1,5 @@
 import { DreamMapSectors } from "@_datas/dream-map";
-import { DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamDefHeight, DreamMapSize, DreamTerrain } from "@_datas/dream-map-settings";
 import { DreamMap, DreamMapCeil, DreamMapSector, UVCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
@@ -14,7 +14,7 @@ export class Ceil3dService {
 
   dreamMap: DreamMap;
 
-  private sectorBorders: number = 5;
+  private sectorBorders: number = 3;
 
 
 
@@ -109,8 +109,8 @@ export class Ceil3dService {
 
   // Перевести координаты в круговые координаты
   coordsToUV(x: number, y: number): UVCoord {
-    const width: number = this.dreamMap.size.width / 2;
-    const height: number = this.dreamMap.size.height / 2;
+    const width: number = this.dreamMap.size.width / 2 * DreamCeilSize;
+    const height: number = this.dreamMap.size.height / 2 * DreamCeilSize;
     const nX: number = x / width;
     const nY: number = y / height;
     const u: number = nX * Math.sqrt(1 - ((nY * nY) / 2));

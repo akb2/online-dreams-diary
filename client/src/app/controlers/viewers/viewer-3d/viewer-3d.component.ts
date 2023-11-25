@@ -205,8 +205,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Загрузка сцены
   private loadScene(): void {
-    const width: number = ParseInt(this.dreamMap.size.width);
-    const height: number = ParseInt(this.dreamMap.size.height);
     const textures: Partial<LoadTexture>[] = [
       ...this.landscape3DService.textures
     ];
@@ -215,7 +213,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Подписка
     this.engine3DService.create(this.canvas.nativeElement, this.helper.nativeElement);
-    this.landscape3DService.create(width, height);
+    this.landscape3DService.create();
     // Получение текстур
     textures.map(loadTexture => this.textures.push({
       url: loadTexture.url,
