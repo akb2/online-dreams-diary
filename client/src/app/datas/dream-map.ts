@@ -1,7 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
-import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType } from "@_models/dream-map";
+import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType, XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
-import { ScrollAddDimension } from "@_models/screen";
 
 
 
@@ -138,7 +137,7 @@ export const DreamMapSectors: CustomObjectKey<NumberDirection, CustomObjectKey<N
 };
 
 // Соседние ячейки
-export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey<ScrollAddDimension, ClosestHeightName>> = {
+export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey<ClosestHeightName, ClosestHeightName>> = {
   // Верх - лево
   topLeft: {
     right: "top",
@@ -147,8 +146,9 @@ export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey
   // Верх
   top: {
     left: "topLeft",
-    bottom: "top",
-    right: "bottomRight"
+    right: "topRight",
+    bottomLeft: "left",
+    bottomRight: "right"
   },
   // Верх - право
   topRight: {
@@ -158,21 +158,27 @@ export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey
   // Лево
   left: {
     top: "topLeft",
-    right: "left",
-    bottom: "bottomLeft"
+    bottom: "bottomLeft",
+    topRight: "top",
+    bottomRight: "bottom"
   },
   // Центр
   center: {
+    topLeft: "topLeft",
     top: "top",
+    topRight: "topRight",
     left: "left",
     right: "right",
-    bottom: "bottom"
+    bottomLeft: "bottomLeft",
+    bottom: "bottom",
+    bottomRight: "bottomRight"
   },
   // Право
   right: {
     top: "topRight",
-    left: "right",
-    bottom: "bottomRight"
+    bottom: "bottomRight",
+    topLeft: "top",
+    bottomLeft: "bottom"
   },
   // Низ - лево
   bottomLeft: {
@@ -182,12 +188,26 @@ export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey
   // Низ
   bottom: {
     left: "bottomLeft",
-    top: "bottom",
-    right: "bottomRight"
+    right: "bottomRight",
+    topLeft: "left",
+    topRight: "right"
   },
   // Низ - право
   bottomRight: {
     left: "bottom",
     top: "right"
   }
+};
+
+// Координаты смещений по типу соседнего блока
+export const NeighBoringShifts: CustomObjectKey<DreamMapSector, XYCoord<NumberDirection>> = {
+  topLeft: { x: -1, y: -1 },
+  top: { x: 0, y: -1 },
+  topRight: { x: 1, y: -1 },
+  left: { x: -1, y: 0 },
+  center: { x: 0, y: 0 },
+  right: { x: 1, y: 0 },
+  bottomLeft: { x: -1, y: 1 },
+  bottom: { x: 0, y: 1 },
+  bottomRight: { x: 1, y: 1 },
 };

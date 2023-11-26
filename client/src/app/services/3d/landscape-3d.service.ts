@@ -1,7 +1,7 @@
-import { NeighBoringSectors } from "@_datas/dream-map";
+import { NeighBoringSectors, NeighBoringShifts } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
-import { AngleToRad, Average, AverageSumm, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
-import { XYMapEach } from "@_helpers/objects";
+import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
+import { ArrayMap, XYMapEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapCeil, DreamMapSector, ReliefType } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
@@ -26,7 +26,6 @@ export class Landscape3DService {
   material: Material;
 
   private maxColorValue = 255;
-  private smoothRadius = 3;
 
   private displacementTexture: DataTexture;
   private smoothedDisplacementTexture: DataTexture;
@@ -216,29 +215,36 @@ export class Landscape3DService {
       : 0;
     const mapWidth = this.dreamMap.size.width;
     const mapHeight = this.dreamMap.size.height;
-    const sector = this.ceil3dService.getSectorByCoords(x, y);
-    const neighBoringSectors = NeighBoringSectors?.[sector] ?? {};
-    const shiftX = this.ceil3dService.sectorDimension(x, mapWidth) * mapWidth;
-    const shiftY = this.ceil3dService.sectorDimension(y, mapHeight) * mapHeight;
+    const radius = Math.max(mapWidth, mapHeight);
     const mapHalfWidth = mapWidth / 2;
     const mapHalfHeight = mapHeight / 2;
-    const centeredX = x - shiftX - mapHalfWidth;
-    const centeredY = y - shiftY - mapHalfHeight;
-    const xKoof = Math.abs(centeredX / mapWidth / 2);
-    const yKoof = Math.abs(centeredY / mapHeight / 2);
-    const leftKoof = !!neighBoringSectors?.left && centeredX < 0 ? xKoof : 0;
-    const rightKoof = !!neighBoringSectors?.right && centeredX >= 0 ? xKoof : 0;
-    const topKoof = !!neighBoringSectors?.top && centeredY < 0 ? yKoof : 0;
-    const bottomKoof = !!neighBoringSectors?.bottom && centeredY >= 0 ? yKoof : 0;
-    const selfKoof = 1 - leftKoof - rightKoof - topKoof - bottomKoof;
+    const sector = this.ceil3dService.getSectorByCoords(x, y);
+    const neighBoringSectors = NeighBoringSectors?.[sector] ?? {};
     const currentColor = this.getDisplacementMiddleZColor(ceil, true);
-    let color = AverageSumm([
-      currentColor * selfKoof,
-      getColor(neighBoringSectors.left) * leftKoof,
-      getColor(neighBoringSectors.right) * rightKoof,
-      getColor(neighBoringSectors.top) * topKoof,
-      getColor(neighBoringSectors.bottom) * bottomKoof,
-    ]);
+    const colors: number[] = [];
+    let selfKoof: number = 1;
+    // Цикл по соседним сторонам
+    ArrayMap(
+      Object.entries(neighBoringSectors),
+      ([, sector]) => {
+        const centerX = (ParseInt(NeighBoringShifts?.[sector]?.x) * mapWidth) + mapHalfWidth;
+        const centerY = (ParseInt(NeighBoringShifts?.[sector]?.y) * mapHeight) + mapHalfHeight;
+        const distance = Math.abs(LengthByCoords({ x, y }, { x: centerX, y: centerY }));
+        const koof = LineFunc(0.5, 0, distance, 0, radius);
+        // Коэффициент в допустимом пределе
+        if (koof > 0 && koof < 0.25) {
+          const tempColor = getColor(sector);
+          // Добавить в массив
+          selfKoof -= koof;
+          colors.push(tempColor * koof);
+        }
+      },
+      true
+    );
+    // Добавить собственную высоту
+    colors.push(currentColor * selfKoof);
+    // Новая высота
+    const color = AverageSumm(colors);
     // Замена высоты
     if (color !== currentColor) {
       const { indexI } = this.getDisplacementData(ceil);

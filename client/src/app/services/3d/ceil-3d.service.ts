@@ -19,7 +19,7 @@ export class Ceil3dService {
 
 
   // Расположение внутри сектора
-  sectorDimension(value: number, size: number): NumberDirection {
+  private sectorDimension(value: number, size: number): NumberDirection {
     return value < 0
       ? -1
       : value >= size
