@@ -1,6 +1,6 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
+import { AverageSumm, CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
@@ -37,9 +37,9 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  private loadCeilsByTime: number = 250;
+  private loadCeilsByTime: number = 400;
   private calcOperationLoadingSize: number = 500;
-  private texturesLoadingSize: number = 0.003;
+  private texturesLoadingSize: number = 1000;
   private loadCeilCircles: number = 3;
   private compassAzimuthShift: number = -90;
   private compassRadialShift: number = 45;
@@ -116,11 +116,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const allCalcSize: number = this.calcOperations.length * this.calcOperationLoadingSize;
     const completedCalcSize: number = this.calcOperations.filter(d => !!d?.called).length * this.calcOperationLoadingSize;
     // Текстуры
-    const allTexturesSize: number = this.textures.reduce((o, { size }) => o + size, 0) * this.texturesLoadingSize;
-    const loadedTexturesSize: number = this.textures.reduce((o, { loadedSize }) => o + loadedSize, 0) * this.texturesLoadingSize;
+    const allTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ size }) => size)) / this.texturesLoadingSize);
+    const loadedTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ loadedSize }) => loadedSize)) / this.texturesLoadingSize);
     // Прогресс
     const maxOperations: number = this.loadingCeilLimit + allCalcSize + allTexturesSize;
-    const currentOperation: number = 1 + (this.loadingCeilCurrent + completedCalcSize) + loadedTexturesSize;
+    const currentOperation: number = 1 + this.loadingCeilCurrent + completedCalcSize + loadedTexturesSize;
     const progress: number = withProgress && maxOperations > 0
       ? MathRound((currentOperation / maxOperations) * 100, 3)
       : 0;
@@ -260,18 +260,20 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Загрузка
     return ConsistentResponses(
-      this.textures.map(data => Load3DTexture(data.url).pipe(
-        tap(texture => {
-          data.loaded = true;
-          data.loadedSize = data.size;
-          // Вызвать событие
-          if (!!data?.afterLoadEvent) {
-            data.afterLoadEvent(texture);
-          }
-          // Обновить
-          this.changeDetectorRef.detectChanges();
-        })
-      ))
+      this.textures
+        .sort(({ size: a }, { size: b }) => b - a)
+        .map(data => Load3DTexture(data.url).pipe(
+          tap(texture => {
+            data.loaded = true;
+            data.loadedSize = data.size;
+            // Вызвать событие
+            if (!!data?.afterLoadEvent) {
+              data.afterLoadEvent(texture);
+            }
+            // Обновить
+            this.changeDetectorRef.detectChanges();
+          })
+        ))
     );
   }
 
