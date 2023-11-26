@@ -37,7 +37,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  private loadCeilsByTime: number = 400;
+  private loadCeilsByTime: number = 250;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 1000;
   private loadCeilCircles: number = 3;
