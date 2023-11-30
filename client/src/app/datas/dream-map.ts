@@ -7,22 +7,24 @@ import { NumberDirection } from "@_models/math";
 
 
 // Базовый путь к файлам текстур местости
-export const BaseTexturePath: string = "assets/dream-map/terrain/";
+export const BaseTexturePath: string = "assets/dream-map/";
+export const TerrainTexturePath: string = BaseTexturePath + "terrain/";
+export const ReliefTexturePath: string = BaseTexturePath + "relief/";
 
 // Путь к файлам текстур местности
 export const TexturePaths: CustomObjectKey<TextureType, string> = {
-  icons: BaseTexturePath + "icons/",
-  face: BaseTexturePath + "face",
-  normal: BaseTexturePath + "normal",
-  ao: BaseTexturePath + "ao/",
-  light: BaseTexturePath + "light/",
+  icons: TerrainTexturePath + "icons/",
+  face: TerrainTexturePath + "face",
+  normal: TerrainTexturePath + "normal",
+  ao: TerrainTexturePath + "ao/",
+  light: TerrainTexturePath + "light/",
 };
 
-const BaseobjectTexturePath: string = "assets/dream-map/object/";
+const BaseObjectTexturePath: string = "assets/dream-map/object/";
 export const ObjectTexturePaths: (name: string, type: TextureType) => string = (name: string, type: TextureType) => {
   const paths: CustomObjectKey<TextureType, string> = {
-    face: BaseobjectTexturePath + name + "/face/",
-    normal: BaseobjectTexturePath + name + "/normal/",
+    face: BaseObjectTexturePath + name + "/face/",
+    normal: BaseObjectTexturePath + name + "/normal/",
   };
   // Вернуть путь
   return paths[type];

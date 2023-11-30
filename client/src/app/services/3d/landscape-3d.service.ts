@@ -1,12 +1,15 @@
-import { NeighBoringSectors, NeighBoringShifts } from "@_datas/dream-map";
+import { NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
+import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
+import { MapTextureName, MaskNames, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
-import { ArrayMap, XYMapEach } from "@_helpers/objects";
-import { CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapCeil, DreamMapSector, ReliefType } from "@_models/dream-map";
-import { LoadTexture } from "@_models/three.js/base";
+import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
+import { CustomObject, CustomObjectKey } from "@_models/app";
+import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, ReliefType } from "@_models/dream-map";
+import { ImageExtension } from "@_models/screen";
+import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { Injectable } from "@angular/core";
-import { DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, Material, Mesh, MeshBasicMaterial, PlaneGeometry, Texture } from "three";
+import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBFormat, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
 
 
@@ -23,7 +26,7 @@ export class Landscape3DService {
 
   mesh: Mesh;
   geometry: PlaneGeometry;
-  material: Material;
+  material: ShaderMaterial;
 
   private maxColorValue = 255;
 
@@ -32,18 +35,23 @@ export class Landscape3DService {
   private reliefCanvases: CustomObjectKey<ReliefType, HTMLCanvasElement> = {};
   private geometryVertex: Float32BufferAttribute;
 
-  private terrainTextures: string[] = [
-    "/assets/dream-map/terrain/face.png",
-    "/assets/dream-map/terrain/normal.png"
-  ];
+  private terrainTextureKeys: CustomObjectKey<BaseTextureType, string> = {
+    face: MapTextureName,
+    normal: NormalMapTextureName
+  };
+  private maskTextures: DataTexture[] = [];
+  private mapTextures: CustomObjectKey<BaseTextureType, Texture> = {};
 
   textures: Partial<LoadTexture>[] = [
     ...Object.values(ReliefType).map(type => ({
-      url: "/assets/dream-map/relief/" + type + ".png",
+      url: ReliefTexturePath + type + "." + ImageExtension.png,
       afterLoadEvent: this.reliefLoaded.bind(this, type)
     })),
     // Текстуры ландшафта
-    ...this.terrainTextures.map(url => ({ url }))
+    ...Object.keys(this.terrainTextureKeys).map(type => ({
+      url: TexturePaths[type] + "." + ImageExtension.png,
+      afterLoadEvent: this.mapTextureLoaded.bind(this, type as BaseTextureType)
+    }))
   ];
 
 
@@ -93,14 +101,16 @@ export class Landscape3DService {
   }
 
   // Данные для высоты
-  private getDisplacementData(ceil: DreamMapCeil): HeightsImageData {
+  private getDisplacementData(ceil?: DreamMapCeil): HeightsImageData {
     const imageWidth: number = this.displacementTexture.image.width;
     const imageHeight: number = this.displacementTexture.image.height;
     const mapWidth: number = this.dreamMap.size.width;
     const mapHeight: number = this.dreamMap.size.height;
     const mapBorderSizeX: number = mapWidth * this.outSideRepeat;
     const mapBorderSizeY: number = mapHeight * this.outSideRepeat;
-    const { coord: { x, y, originalZ } } = ceil;
+    const x = ParseInt(ceil?.coord?.x);
+    const y = ParseInt(ceil?.coord?.y);
+    const originalZ = ParseInt(ceil?.coord?.originalZ);
     const vertexStartX: number = x + mapBorderSizeX;
     const vertexStartY: number = y + mapBorderSizeY;
     const vertexWidth: number = (mapWidth * ((this.outSideRepeat * 2) + 1)) + 1;
@@ -108,11 +118,12 @@ export class Landscape3DService {
     const heightPart: number = DreamCeilSize / DreamCeilParts;
     const scale: number = heightPart * DreamMaxHeight;
     const width: number = (mapBorderSizeX * 2) + mapWidth;
+    const height: number = (mapBorderSizeY * 2) + mapHeight;
     const textureX: number = x + mapBorderSizeX;
     const textureY: number = y + mapBorderSizeY;
     const indexI: number = ((textureY * width) + textureX) * 4;
     // Вернуть массив данных
-    return { x, y, originalZ, vertexStartX, vertexStartY, indexV, indexI, imageWidth, imageHeight, scale };
+    return { x, y, originalZ, vertexStartX, vertexStartY, indexV, indexI, imageWidth, imageHeight, scale, width, height, mapBorderSizeX, mapBorderSizeY };
   }
 
   // Список индексов в изображении высот по ячейке
@@ -143,60 +154,16 @@ export class Landscape3DService {
     return CheckInRange((this.getDisplacementMiddleZColor(ceil, getOriginal) / this.maxColorValue) * maxHeight, maxHeight, 0);
   }
 
-
-
-
-
-  constructor(
-    private ceil3dService: Ceil3dService
-  ) { }
-
-
-
-
-
-  // Создание объекта
-  create(): void {
-    const width = ParseInt(this.dreamMap.size.width);
-    const height = ParseInt(this.dreamMap.size.height);
-    const repeat: number = 1 + (this.outSideRepeat * 2)
-    const totalWidth: number = width * repeat;
-    const totalHeight: number = height * repeat;
-    const totalSize: number = totalWidth * totalHeight;
-    // Создание свойств
-    this.displacementTexture = new DataTexture(new Uint8Array(4 * totalSize), totalWidth, totalHeight);
-    this.geometry = new PlaneGeometry(totalWidth * DreamCeilSize, totalHeight * DreamCeilSize, totalWidth, totalHeight);
-    this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
-    this.material = new MeshBasicMaterial({
-      side: FrontSide,
-      wireframe: true,
-      color: 0x000000
-    });
-    this.mesh = new Mesh(this.geometry, this.material);
-    // Свойства класса
-    this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
-    this.displacementTexture.magFilter = LinearFilter;
-    this.displacementTexture.minFilter = LinearFilter;
-    this.displacementTexture.flipY = true;
-    this.smoothedDisplacementTexture = this.displacementTexture.clone();
-    // Настройки
-    this.mesh.rotateX(AngleToRad(-90));
+  // Получить сведения о цвете
+  private getColor(layout: number, color: number, terrain: MapTerrain): number {
+    return terrain.splatMap.layout === layout && terrain.splatMap.color === color
+      ? this.maxColorValue
+      : 0;
   }
 
-  // Загрузка картинок рельефа
-  private reliefLoaded(type: ReliefType, texture: Texture): void {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    // Свойства текстуры
-    canvas.width = texture.image.width;
-    canvas.height = texture.image.height;
-    texture.minFilter = LinearFilter;
-    texture.magFilter = LinearFilter;
-    texture.flipY = false;
-    context.drawImage(texture.image, 0, 0);
-    // Запомнить текстуру
-    this.reliefCanvases[type] = canvas;
-  }
+
+
+
 
   // Установка высоты
   setHeightByCoords(ceil: DreamMapCeil): void {
@@ -262,6 +229,140 @@ export class Landscape3DService {
     this.geometryVertex.setZ(indexV, z);
   }
 
+
+
+
+
+  constructor(
+    private ceil3dService: Ceil3dService
+  ) { }
+
+
+
+
+
+  // Создание объекта
+  create(): void {
+    this.createGeometry();
+    this.createTextures();
+    this.createMaterial();
+    // Свойства объекта
+    this.mesh = new Mesh(this.geometry, this.material);
+    this.mesh.rotateX(AngleToRad(-90));
+    this.mesh.matrixAutoUpdate = false;
+    this.mesh.receiveShadow = true;
+    this.mesh.castShadow = true;
+    this.mesh.name = DreamMapTerrainName;
+    this.mesh.updateMatrix();
+  }
+
+  // Создание материала
+  private createGeometry(): void {
+    const width = ParseInt(this.dreamMap.size.width);
+    const height = ParseInt(this.dreamMap.size.height);
+    const repeat: number = 1 + (this.outSideRepeat * 2)
+    const totalWidth: number = width * repeat;
+    const totalHeight: number = height * repeat;
+    const totalSize: number = totalWidth * totalHeight;
+    // Создание геометрии
+    this.geometry = new PlaneGeometry(totalWidth * DreamCeilSize, totalHeight * DreamCeilSize, totalWidth, totalHeight);
+    this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
+    this.displacementTexture = new DataTexture(new Uint8Array(4 * totalSize), totalWidth, totalHeight);
+    // Свойства геоиетрии
+    this.displacementTexture.magFilter = LinearFilter;
+    this.displacementTexture.minFilter = LinearFilter;
+    this.displacementTexture.flipY = true;
+    this.smoothedDisplacementTexture = this.displacementTexture.clone();
+  }
+
+  // Создание карты текстур
+  private createTextures(): void {
+    const { width, height, mapBorderSizeX, mapBorderSizeY } = this.getDisplacementData();
+    const size: number = width * height;
+    // Цикл по количеству масок
+    this.maskTextures = MapCycle(TerrainColorDepth, d => {
+      const data: Uint8Array = new Uint8Array(4 * size);
+      const texture: DataTexture = new DataTexture(data, width, height);
+      // Цикл по размеру
+      ForCycle(size, s => {
+        const stride: number = s * 4;
+        const realX: number = MathRound((s - (Math.floor(s / width) * width)), 2);
+        const realY: number = MathRound(height - 1 - Math.floor(s / width), 2);
+        const x: number = Math.floor(realX) - mapBorderSizeX;
+        const y: number = Math.ceil(realY) - mapBorderSizeY;
+        const terrain: MapTerrain = this.ceil3dService.getTerrain(x, y);
+        // Цвета
+        ForCycle(4, k => data[stride + k] = k < 3
+          ? this.getColor(d, k, terrain)
+          : this.maxColorValue
+        );
+      });
+      // Настройки
+      texture.magFilter = LinearFilter;
+      texture.minFilter = LinearFilter;
+      texture.needsUpdate = true;
+      // Вернуть текстуру
+      return texture;
+    });
+  }
+
+  // Создание материала
+  private createMaterial(): void {
+    this.material = new ShaderMaterial({
+      vertexShader: TerrainVertexShader,
+      fragmentShader: TerrainFragmentShader,
+      lights: true,
+      transparent: true,
+      defines: TerrainDefines,
+      side: FrontSide,
+      wireframe: false,
+      extensions: {
+        derivatives: true,
+        fragDepth: false,
+        drawBuffers: false,
+        shaderTextureLOD: false,
+      }
+    });
+    // Свойства материала
+    this.material.clipShadows = true;
+    this.material.dithering = true;
+    this.material.shadowSide = BackSide;
+    this.material.alphaTest = 0;
+    this.material.depthTest = true;
+    this.material.depthWrite = true;
+    this.material.needsUpdate = true;
+  }
+
+  // Загрузка картинок рельефа
+  private reliefLoaded(type: ReliefType, texture: Texture): void {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    // Свойства текстуры
+    canvas.width = texture.image.width;
+    canvas.height = texture.image.height;
+    texture.minFilter = LinearFilter;
+    texture.magFilter = LinearFilter;
+    texture.flipY = false;
+    context.drawImage(texture.image, 0, 0);
+    // Запомнить текстуру
+    this.reliefCanvases[type] = canvas;
+  }
+
+  // Загрузка текстур типа ландшафта
+  private mapTextureLoaded(type: BaseTextureType, texture: Texture): void {
+    texture.format = RGBFormat;
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.encoding = LinearEncoding;
+    texture.wrapS = MirroredRepeatWrapping;
+    texture.wrapT = MirroredRepeatWrapping;
+    texture.anisotropy = 0;
+    texture.generateMipmaps = true;
+    texture.needsUpdate = true;
+    // Запомнить текстуру
+    this.mapTextures[type] = texture;
+  }
+
   // Обновить геометрю
   updateGeometry(): void {
     this.geometry.setAttribute("position", this.geometryVertex);
@@ -270,6 +371,24 @@ export class Landscape3DService {
     this.geometry.attributes.position.needsUpdate = true;
     this.geometry.attributes.normal.needsUpdate = true;
   }
+
+  // Заполнение материала
+  updateMaterial(): void {
+    const { width, height } = this.getDisplacementData();
+    const repeatX: number = MathRound(TerrainRepeat * width);
+    const repeatY: number = MathRound(TerrainRepeat * height);
+    const textures: CustomObject<Texture | DataTexture> = {
+      ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: this.maskTextures[k] }), {}),
+      ...Object.entries(this.terrainTextureKeys).reduce((o, [type, name]) => ({ ...o, [name]: this.mapTextures[type] }), {})
+    };
+    const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
+      ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: { type: "t", value } }), {}),
+      mapRepeat: { type: "v2", value: { x: repeatX, y: repeatY } }
+    }]);
+    // Обновление материала
+    this.material.uniforms = uniforms;
+    this.material.uniformsNeedUpdate = true;
+  }
 }
 
 
@@ -277,6 +396,10 @@ export class Landscape3DService {
 
 
 interface HeightsImageData {
+  width: number;
+  height: number;
+  mapBorderSizeX: number;
+  mapBorderSizeY: number;
   imageWidth: number;
   imageHeight: number;
   x: number;

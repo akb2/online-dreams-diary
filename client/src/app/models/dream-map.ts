@@ -183,7 +183,10 @@ export interface WayLineType {
 export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 
 // Типы текстур
-export type TextureType = "face" | "ao" | "normal" | "disp" | "icons";
+export type BaseTextureType = "face" | "ao" | "normal" | "disp";
+
+// Типы текстур + иконка
+export type TextureType = BaseTextureType | "icons";
 
 // Настройки карты за пределами
 export interface DreamMapReliefSettings {

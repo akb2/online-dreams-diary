@@ -222,23 +222,31 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       loadedSize: 0,
       afterLoadEvent: loadTexture?.afterLoadEvent ?? VoidFunctionVar
     }));
-    // Обновить геометрию
-    this.calcOperations.push({
-      callable: this.landscape3DService.updateGeometry,
-      context: this.landscape3DService
-    });
-    // Добавить объект на сцену
-    this.calcOperations.push({
-      callable: this.engine3DService.addToScene,
-      context: this.engine3DService,
-      args: [this.landscape3DService.mesh]
-    });
-    // Добавить объект в пересечения курсора
-    this.calcOperations.push({
-      callable: this.engine3DService.addToCursorIntersection,
-      context: this.engine3DService,
-      args: [this.landscape3DService.mesh]
-    });
+    // Функции после просчета ячеек
+    this.calcOperations.push(
+      // Обновить геометрию ландшафта
+      {
+        callable: this.landscape3DService.updateGeometry,
+        context: this.landscape3DService
+      },
+      // Обновить материал ландшафта
+      {
+        callable: this.landscape3DService.updateMaterial,
+        context: this.landscape3DService
+      },
+      // Добавить объекты на сцену
+      {
+        callable: this.engine3DService.addToScene,
+        context: this.engine3DService,
+        args: [this.landscape3DService.mesh]
+      },
+      // Добавить объекты в пересечения курсора
+      {
+        callable: this.engine3DService.addToCursorIntersection,
+        context: this.engine3DService,
+        args: [this.landscape3DService.mesh]
+      }
+    );
   }
 
   // Загрузка сведений о текстурах

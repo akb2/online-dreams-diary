@@ -1,6 +1,7 @@
-import { DreamMapSectors } from "@_datas/dream-map";
+import { DreamMapSectors, MapTerrains } from "@_datas/dream-map";
 import { DreamCeilSize, DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
-import { DreamMap, DreamMapCeil, DreamMapSector, UVCoord } from "@_models/dream-map";
+import { ArrayFind } from "@_helpers/objects";
+import { DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, UVCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
 
@@ -102,5 +103,12 @@ export class Ceil3dService {
     const v: number = nY * Math.sqrt(1 - ((nX * nX) / 2));
     // Вернуть объект
     return { u, v };
+  }
+
+  // Получить данные о местности
+  getTerrain(x: number, y: number): MapTerrain {
+    const ceil: DreamMapCeil = this.getCeil(x, y);
+    // Вернуть данные
+    return ArrayFind(MapTerrains, ({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
   }
 }
