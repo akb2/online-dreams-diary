@@ -315,12 +315,14 @@ export class Engine3DService implements OnDestroy {
     this.camera.far = DreamFogFar;
     // Угол для компаса
     event.object.getWorldDirection(vector);
+    // Положение на компасе
+    const circlePos = this.ceil3dService.coordsToUV(x, z);
     // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
       radial: RadToAngle(Math.atan2(-vector.x, -vector.z)) - 90,
       azimuth: RadToAngle(vector.y * (Math.PI / 2)),
-      sin: this.ceil3dService.coordsToUV(x, z).u,
-      cos: this.ceil3dService.coordsToUV(x, z).v
+      sin: -circlePos.v,
+      cos: circlePos.u
     }))
     // обновить пост отрисовку
     this.onUpdatePostProcessors();
