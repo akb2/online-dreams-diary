@@ -24,7 +24,7 @@ export const DreamSkyTime = 180;
 // Пределы высот
 export const DreamMinHeight = 1;
 export const DreamDefHeight = -1;
-export const DreamMaxHeight = DreamCeilParts * 20;
+export const DreamMaxHeight = DreamCeilParts * 25;
 export const DreamWaterDefHeight = (DreamMaxHeight / 2) - (DreamCeilSize / DreamCeilParts);
 
 // Параметры по умолчанию
