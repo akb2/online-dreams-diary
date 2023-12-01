@@ -3,6 +3,7 @@ import { CoreModule } from "@_modules/core.module";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
+import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
@@ -24,7 +25,8 @@ import { Viewer3DComponent } from "./viewer-3d.component";
   providers: [
     Ceil3dService,
     Engine3DService,
-    Landscape3DService
+    Landscape3DService,
+    Sky3DService
   ],
   imports: [
     CommonModule,

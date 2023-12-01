@@ -10,7 +10,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { CineonToneMapping, Clock, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { CineonToneMapping, Clock, Fog, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -33,14 +33,14 @@ export class Engine3DService implements OnDestroy {
   private maxAngle: number = 75;
 
   dreamMap: DreamMap;
+  scene: Scene;
+  renderer: WebGLRenderer;
 
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
 
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
-  private renderer: WebGLRenderer;
-  private scene: Scene;
   private camera: PerspectiveCamera;
   private control: OrbitControls;
   private octree: Octree;
@@ -244,6 +244,11 @@ export class Engine3DService implements OnDestroy {
     this.octree.update();
   }
 
+  // Установить туман
+  setFog(fog: Fog): void {
+    this.scene.fog = fog;
+  }
+
 
 
 
@@ -312,7 +317,7 @@ export class Engine3DService implements OnDestroy {
     event.object.getWorldDirection(vector);
     // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
-      radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
+      radial: RadToAngle(Math.atan2(-vector.x, -vector.z)) - 90,
       azimuth: RadToAngle(vector.y * (Math.PI / 2)),
       sin: this.ceil3dService.coordsToUV(x, z).u,
       cos: this.ceil3dService.coordsToUV(x, z).v

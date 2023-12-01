@@ -1,7 +1,7 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { AverageSumm, CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
-import { GetCoordsByIndex } from "@_helpers/objects";
+import { ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
@@ -9,6 +9,7 @@ import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
+import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
@@ -160,6 +161,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     private landscape3DService: Landscape3DService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
+    private sky3DService: Sky3DService,
     private store$: Store
   ) { }
 
@@ -168,6 +170,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       this.ceil3dService.dreamMap = this.dreamMap;
       this.engine3DService.dreamMap = this.dreamMap;
       this.landscape3DService.dreamMap = this.dreamMap;
+      this.sky3DService.dreamMap = this.dreamMap;
     }
   }
 
@@ -224,6 +227,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     }));
     // Функции после просчета ячеек
     this.calcOperations.push(
+      // Создание неба
+      {
+        callable: () => {
+          this.sky3DService.renderer = this.engine3DService.renderer;
+          this.sky3DService.create();
+        },
+        context: this
+      },
       // Обновить геометрию ландшафта
       {
         callable: this.landscape3DService.updateGeometry,
@@ -234,17 +245,33 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.landscape3DService.updateMaterial,
         context: this.landscape3DService
       },
+      // Создать туман
+      {
+        callable: this.engine3DService.setFog,
+        context: this.engine3DService,
+        args: [
+          () => this.sky3DService.fog
+        ]
+      },
       // Добавить объекты на сцену
       {
         callable: this.engine3DService.addToScene,
         context: this.engine3DService,
-        args: [this.landscape3DService.mesh]
+        args: [
+          this.landscape3DService.mesh,
+          () => this.sky3DService.sky,
+          () => this.sky3DService.sun,
+          () => this.sky3DService.atmosphere
+        ]
       },
       // Добавить объекты в пересечения курсора
       {
         callable: this.engine3DService.addToCursorIntersection,
         context: this.engine3DService,
-        args: [this.landscape3DService.mesh]
+        args: [
+          this.landscape3DService.mesh,
+          () => this.sky3DService.sky
+        ]
       }
     );
   }
@@ -343,7 +370,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Цикл по функциям
     return ConsistentResponses(this.calcOperations.map(operation => of(true).pipe(
       tap(() => {
-        operation.callable.bind(operation.context)(...(operation.args ?? []));
+        const args = ArrayMap(operation.args ?? [], arg => typeof arg === "function"
+          ? arg()
+          : arg
+        );
+        // Вызов функции
+        operation.callable.bind(operation.context)(...args);
         operation.called = true;
         // Обновить
         this.changeDetectorRef.detectChanges();
