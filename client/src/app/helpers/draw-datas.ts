@@ -1,6 +1,7 @@
 import { ParseInt } from "@_helpers/math";
 import { CustomObject } from "@_models/app";
-import { DrawData, DrawDataArray, DrawDataKeys, DrawDataPeriod, DrawInterface } from "@_models/nav-menu";
+import { MinMax } from "@_models/math";
+import { CssProperty, DrawData, DrawDataArray, DrawDataKeys, DrawDataPeriod, DrawInterface } from "@_models/nav-menu";
 
 
 
@@ -148,15 +149,16 @@ export class DrawDatas {
   }
 
   // Получить список свойств
-  private static getProperties(key: string, properties: string[]): DrawInterface[] {
+  private static getProperties(key: string, properties: CssProperty[]): DrawInterface[] {
     const allProperties: DrawInterface[] = this.hasOwnProperty(key) ? DrawDatas[key] : null;
     // Свойство найдено
     if (!!allProperties && Array.isArray(allProperties)) {
       return allProperties
         .filter(({ property }) => Array.isArray(property) ? property.some(p => properties.includes(p)) : properties.includes(property))
         .map(data => {
-          let property: string | string[] = Array.isArray(data.property) ? data.property.filter(p => properties.includes(p)) : data.property;
-          property = property?.length > 1 ? property : property[0];
+          const property: CssProperty | CssProperty[] = Array.isArray(data.property)
+            ? data.property.filter(p => properties.includes(p))
+            : data.property;
           // Вернуть данные
           return { ...data, property };
         });
@@ -168,7 +170,7 @@ export class DrawDatas {
   // Получить значение свойства
   private static getScreenProperty(
     key: string,
-    property: string,
+    property: CssProperty,
     screen: keyof DrawData,
     callback?: (data: DrawDataPeriod, screen: keyof DrawData) => DrawDataPeriod
   ): DrawDataPeriod {
@@ -185,8 +187,8 @@ export class DrawDatas {
 
   // Смешать свойства
   private static mixProperties(
-    keys: CustomObject<string[]>,
-    property: string | string[],
+    keys: CustomObject<CssProperty[]>,
+    property: CssProperty | CssProperty[],
     callback: (datas: CustomObject<CustomObject<DrawDataPeriod>>, screen: keyof DrawData) => DrawDataPeriod
   ): DrawInterface {
     const data: DrawData = DrawDataKeys
@@ -203,8 +205,8 @@ export class DrawDatas {
   }
 
   // Получить значение из массива
-  private static getValueFromArray(sizes: DrawDataArray, screen: keyof DrawData, type: "min" | "max" | "unit"): number | string {
-    const index: number = ["min", "max", "unit"].findIndex(t => t === type);
+  private static getValueFromArray(sizes: DrawDataArray, screen: keyof DrawData, type: MinMax | "unit"): number | string {
+    const index: number = [MinMax.min, MinMax.max, "unit"].findIndex(t => t === type);
     return (sizes.hasOwnProperty(screen) ? sizes[screen] : sizes.default)[index];
   }
 
@@ -218,8 +220,8 @@ export class DrawDatas {
       .filter(screen => sizes.hasOwnProperty(screen))
       .reduce((o, screen) => {
         const unit: string = this.getValueFromArray(sizes, screen, "unit") as string;
-        let min: number = ParseInt(this.getValueFromArray(sizes, screen, "min"));
-        let max: number = ParseInt(this.getValueFromArray(sizes, screen, "max"));
+        let min: number = ParseInt(this.getValueFromArray(sizes, screen, MinMax.min));
+        let max: number = ParseInt(this.getValueFromArray(sizes, screen, MinMax.max));
         // Преобразовать данные
         min = !!minF ? minF(min, screen) : min;
         max = !!maxF ? maxF(max, screen) : max;
@@ -271,7 +273,7 @@ export class DrawDatas {
       ...this.helper,
       // Отступ снизу
       {
-        property: "margin-bottom",
+        property: "marginBottom",
         data: this.valueArrayToDrawData(this.floatButtonSizes, () => 0, v => this.type == "short" ? v / 2 : 0)
       }
     ];
@@ -289,14 +291,14 @@ export class DrawDatas {
       },
       //
       {
-        property: "margin-left",
+        property: "marginLeft",
         data: {
           default: { min: 0, max: 0, unit: "px" },
         }
       },
       //
       {
-        property: "font-size",
+        property: "fontSize",
         data: {
           default: { min: 32, max: 48, unit: "px" },
           small: { min: 24, max: 24, unit: "px" },
@@ -333,17 +335,17 @@ export class DrawDatas {
     this.toContentButton = [
       // Размер
       {
-        property: ["width", "height", "line-height"],
+        property: ["width", "height", "lineHeight"],
         data: this.valueArrayToDrawData(this.floatButtonSizes, () => 0)
       },
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.floatButtonSizes, () => 0, v => v * 0.8)
       },
       // Отступ снизу
       {
-        property: "margin-bottom",
+        property: "marginBottom",
         data: {
           default: { min: 0, max: 15, unit: "px" },
           small: { min: 0, max: 10, unit: "px" },
@@ -367,29 +369,29 @@ export class DrawDatas {
     this.floatingButton = [
       // Тень
       {
-        property: "box-shadow",
+        property: "boxShadow",
         data: {
           default: { min: 0, max: 0.15, prefixUnit: "1px 1px 10px 1px rgba(0,0,0,", unit: ")" }
         }
       },
       // Размер
       {
-        property: ["width", "min-width", "height", "line-height"],
+        property: ["width", "minWidth", "height", "lineHeight"],
         data: this.valueArrayToDrawData(this.floatButtonSizes)
       },
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.floatButtonSizes, v => v * 0.5, v => v * 0.5)
       },
       // Отступ снизу
       {
-        property: "margin-bottom",
+        property: "marginBottom",
         data: this.valueArrayToDrawData(this.floatButtonSizes, () => 0, v => this.type == "short" ? -v / 2 : this.defaultSpacing)
       },
       // Отступ справа
       {
-        property: "margin-right",
+        property: "marginRight",
         data: {
           default: { min: 0, max: 0, unit: "px" },
           small: { min: 0, max: this.defaultSpacing, unit: "px" },
@@ -439,7 +441,7 @@ export class DrawDatas {
     this.menuContainer = [
       // Макет колонок сетки
       {
-        property: "grid-template-columns",
+        property: "gridTemplateColumns",
         data: {
           default: { value: { default: "minmax(1px, 1fr) auto auto" } },
           small: { value: { default: "minmax(1px, 1fr) auto" } },
@@ -449,7 +451,7 @@ export class DrawDatas {
       },
       // Макет блоков в сетке
       {
-        property: "grid-template-areas",
+        property: "gridTemplateAreas",
         data: {
           default: { value: { default: "'left center right' 'full full full'" } },
           small: { value: { default: "'left right' 'full full'" } },
@@ -459,7 +461,7 @@ export class DrawDatas {
       },
       // Макет внутренних отступов сетки
       {
-        property: "grid-gap",
+        property: "gridGap",
         data: {
           default: { min: [0, this.defaultSpacing], max: [0, this.defaultSpacing], unit: "px", separatorUnit: " " },
           small: { min: 0, max: 0, unit: "px" },
@@ -491,7 +493,7 @@ export class DrawDatas {
     this.menuItem = [
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: {
           default: { min: 13, max: 18, unit: "px" },
           middle: { min: 13, max: 16, unit: "px" },
@@ -500,17 +502,17 @@ export class DrawDatas {
       },
       // Высота
       {
-        property: ["line-height", "height"],
+        property: ["lineHeight", "height"],
         data: this.valueArrayToDrawData(this.menuItemSizes)
       },
       // Отступ сверху
       {
-        property: "margin-top",
+        property: "marginTop",
         data: this.valueArrayToDrawData(this.menuItemSizes, v => (this.minHeight - v) / 2, () => this.defaultSpacing)
       },
       // Внутренние отступы по горизонтали
       {
-        property: ["padding-left", "padding-right"],
+        property: ["paddingLeft", "paddingRight"],
         data: {
           default: { min: 20, max: 30, unit: "px" },
           middle: { min: 16, max: 10, unit: "px" },
@@ -522,39 +524,39 @@ export class DrawDatas {
     this.menuItemIconAndText = [
       // Размер
       {
-        property: ["width", "height", "line-height"],
+        property: ["width", "height", "lineHeight"],
         data: this.valueArrayToDrawData(this.menuItemSizes)
       },
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.menuItemSizes, () => this.minHeight * 0.5, v => v * 0.6)
       },
       // Внешний отступ слева
-      this.mixProperties({ menuItem: ["padding-left"] }, "margin-left", d => {
+      this.mixProperties({ menuItem: ["paddingLeft"] }, "marginLeft", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = -ParseInt(data["padding-left"].min);
-        const max: number = -ParseInt(data["padding-left"].max);
+        const min: number = -ParseInt(data["paddingLeft"].min);
+        const max: number = -ParseInt(data["paddingLeft"].max);
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
       // Внешний отступ справа
-      this.mixProperties({ menuItem: ["padding-right"] }, "margin-right", d => {
+      this.mixProperties({ menuItem: ["paddingRight"] }, "marginRight", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = ParseInt(data["padding-right"].min) / 2;
-        const max: number = ParseInt(data["padding-right"].max) / 2;
+        const min: number = ParseInt(data["paddingRight"].min) / 2;
+        const max: number = ParseInt(data["paddingRight"].max) / 2;
         // Вернуть данные
         return { min, max, unit: "px" };
       })
     ];
     // Кнопка меню: иконка без текста
     this.menuItemIcon = [
-      ...this.getProperties("menuItemIconAndText", ["width", "height", "line-height", "font-size", "margin-left"]),
+      ...this.getProperties("menuItemIconAndText", ["width", "height", "lineHeight", "fontSize", "marginLeft"]),
       // Внешний отступ справа
-      this.mixProperties({ menuItem: ["padding-right", "padding-left", "height"] }, "margin-right", d => {
+      this.mixProperties({ menuItem: ["paddingRight", "paddingLeft", "height"] }, "marginRight", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = -Math.min(ParseInt(data["padding-right"].min), ParseInt(data.height.min) - ParseInt(data["padding-left"].min));
-        const max: number = -Math.min(ParseInt(data["padding-right"].max), ParseInt(data.height.max) - ParseInt(data["padding-left"].max));
+        const min: number = -Math.min(ParseInt(data["paddingRight"].min), ParseInt(data.height.min) - ParseInt(data["paddingLeft"].min));
+        const max: number = -Math.min(ParseInt(data["paddingRight"].max), ParseInt(data.height.max) - ParseInt(data["paddingLeft"].max));
         // Вернуть данные
         return { min, max, unit: "px" };
       })
@@ -591,7 +593,7 @@ export class DrawDatas {
     this.menuItemCounterElm = [
       ...this.getProperties("menuItemCounter", ["width"]),
       // Высота строки
-      this.mixProperties({ menuItemCounter: ["height"] }, "line-height", d => d.menuItemCounter["height"]),
+      this.mixProperties({ menuItemCounter: ["height"] }, "lineHeight", d => d.menuItemCounter["height"]),
       // Высота
       {
         property: "height",
@@ -608,7 +610,7 @@ export class DrawDatas {
       },
       // Шрифт
       {
-        property: ["font-size"],
+        property: ["fontSize"],
         data: {
           default: { min: 12, max: 14, unit: "px" },
           large: { min: 12, max: 13, unit: "px" },
@@ -629,28 +631,28 @@ export class DrawDatas {
     this.menuSubList = [
       // Фоновый цвет
       {
-        property: "background-color",
+        property: "backgroundColor",
         data: {
           default: { min: [49, 65, 165, 1], max: [0, 0, 0, 0.8], prefixUnit: "rgba(", sufixUnit: ")", separatorUnit: ", " }
         }
       },
       // Ширина границ
       {
-        property: "border-width",
+        property: "borderWidth",
         data: {
           default: { min: [1, 0, 0, 0], max: [0, 1, 1, 1], separatorUnit: " ", unit: "px" }
         }
       },
       // Цвет границ
       {
-        property: "border-color",
+        property: "borderColor",
         data: {
           default: { min: [92, 108, 192, 1], max: [255, 255, 255, 1], separatorUnit: ", ", prefixUnit: "rgba(", sufixUnit: ")" }
         }
       },
       // Округление углов
       {
-        property: "border-radius",
+        property: "borderRadius",
         data: {
           default: { min: [0, 0, 0, 0], max: [0, 0, 5, 5], unit: "px", separatorUnit: " " }
         }
@@ -685,21 +687,21 @@ export class DrawDatas {
     this.menuSubItem = [
       // Отступы по горизонтали
       {
-        property: ["padding-left", "padding-right"],
+        property: ["paddingLeft", "paddingRight"],
         data: {
           default: { min: 26, max: 38, unit: "px" }
         }
       },
       // Высота текста
       {
-        property: "line-height",
+        property: "lineHeight",
         data: {
           default: { min: 44, max: 56, unit: "px" }
         }
       },
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: {
           default: { min: 14, max: 17, unit: "px" }
         }
@@ -710,7 +712,7 @@ export class DrawDatas {
       ...this.menuSubItem,
       // Закругление углов
       {
-        property: "border-radius",
+        property: "borderRadius",
         data: {
           default: { min: [0, 0, 0, 0], max: [0, 0, 5, 5], unit: "px", separatorUnit: " " }
         }
@@ -730,7 +732,7 @@ export class DrawDatas {
     this.menuSubItemSeparator = [
       // Фоновый цвет
       {
-        property: "background-color",
+        property: "backgroundColor",
         data: {
           default: { min: [92, 108, 192, 1], max: [255, 255, 255, 0.5], prefixUnit: "rgba(", sufixUnit: ")", separatorUnit: ", " }
         }
@@ -740,12 +742,12 @@ export class DrawDatas {
     // Уведомления
     this.notificationsList = [
       // Позиция сверху
-      this.mixProperties({ menuItem: ["height", "margin-top"] }, "top", (d, s) => {
+      this.mixProperties({ menuItem: ["height", "marginTop"] }, "top", (d, s) => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
         const height: DrawDataPeriod = data.height;
-        const marginTop: DrawDataPeriod = data["margin-top"];
-        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
-        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
+        const marginTop: DrawDataPeriod = data["marginTop"];
+        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
+        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
         let min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
         let max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
         // Для мобильного меню
@@ -757,12 +759,12 @@ export class DrawDatas {
         return { min, max, unit: "px" };
       }),
       // Максимальная высота
-      this.mixProperties({ menuItem: ["height", "margin-top"] }, "max-height", (d, s) => {
+      this.mixProperties({ menuItem: ["height", "marginTop"] }, "maxHeight", (d, s) => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
         const height: DrawDataPeriod = data.height;
-        const marginTop: DrawDataPeriod = data["margin-top"];
-        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "min"));
-        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, "max"));
+        const marginTop: DrawDataPeriod = data["marginTop"];
+        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
+        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
         let min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
         let max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
         // Для мобильного меню
@@ -782,12 +784,12 @@ export class DrawDatas {
     this.avatar = [
       // Размеры
       {
-        property: ["width", "height", "line-height"],
+        property: ["width", "height", "lineHeight"],
         data: this.valueArrayToDrawData(this.avatarSizes)
       },
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.avatarSizes, v => v * 0.6, v => v * 0.6)
       },
       // Позиция слева
@@ -800,7 +802,7 @@ export class DrawDatas {
     ];
     // Аватарка: С кнопкой назад или меню
     this.avatarWithBackButton = [
-      ...this.getProperties("avatar", ["width", "height", "line-height", "font-size"]),
+      ...this.getProperties("avatar", ["width", "height", "lineHeight", "fontSize"]),
       //
       {
         property: "left",
@@ -820,17 +822,17 @@ export class DrawDatas {
     this.title = [
       //
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.titleSizes, () => 15, v => v * 0.73)
       },
       //
       {
-        property: "line-height",
+        property: "lineHeight",
         data: this.valueArrayToDrawData(this.titleSizes)
       },
       //
       {
-        property: "margin-left",
+        property: "marginLeft",
         data: {
           default: { min: 0, max: 0, unit: "px" }
         }
@@ -845,10 +847,10 @@ export class DrawDatas {
     ];
     // Заголовок: с кнопкой меню или назад
     this.titleWithBackButton = [
-      ...this.getProperties("title", ["font-size", "line-height"]),
+      ...this.getProperties("title", ["fontSize", "lineHeight"]),
       // Отступ слева
       {
-        property: "margin-left",
+        property: "marginLeft",
         data: {
           default: { min: this.defaultIconSize, max: 0, unit: "px" },
           small: { min: this.defaultIconSize, max: 15, unit: "px" },
@@ -869,14 +871,14 @@ export class DrawDatas {
     ];
     // Заголовок: с аватаркой
     this.titleWithAvatar = [
-      ...this.getProperties("title", ["font-size", "line-height"]),
+      ...this.getProperties("title", ["fontSize", "lineHeight"]),
       // Отступ слева
       {
-        property: "margin-left",
+        property: "marginLeft",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "min")),
-          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "max"))
+          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min)),
+          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max))
         )
       },
       // Ширина
@@ -884,29 +886,29 @@ export class DrawDatas {
         property: "width",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => this.containerLeftWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "min"))),
-          (v, s) => this.containerWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, "max")))
+          (v, s) => this.containerLeftWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min))),
+          (v, s) => this.containerWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max)))
         )
       }
     ];
     // Заголовок: с аватаркой и кнопкой
     this.titleWithBackButtonAndAvatar = [
-      ...this.getProperties("title", ["font-size", "line-height"]),
+      ...this.getProperties("title", ["fontSize", "lineHeight"]),
       // Отступ слева
-      this.mixProperties({ avatarWithBackButton: ["width", "left"] }, "margin-left", (d, s) => {
+      this.mixProperties({ avatarWithBackButton: ["width", "left"] }, "marginLeft", (d, s) => {
         const data: CustomObject<DrawDataPeriod> = d.avatarWithBackButton;
-        const min: number = ParseInt(data.width.min) + ParseInt(data.left.min) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, "min"));
-        const max: number = ParseInt(data.width.max) + ParseInt(data.left.max) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, "max"));
+        const min: number = ParseInt(data.width.min) + ParseInt(data.left.min) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.min));
+        const max: number = ParseInt(data.width.max) + ParseInt(data.left.max) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.max));
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
     ];
     // Заголовок: с аватаркой и кнопкой: ширина
     this.titleWithBackButtonAndAvatar = [
-      ...this.getProperties("titleWithBackButtonAndAvatar", ["font-size", "line-height", "margin-left"]),
+      ...this.getProperties("titleWithBackButtonAndAvatar", ["fontSize", "lineHeight", "marginLeft"]),
       // Ширина
-      this.mixProperties({ titleWithBackButtonAndAvatar: ["margin-left"] }, "width", (d, s) => {
-        const data: DrawDataPeriod = d.titleWithBackButtonAndAvatar["margin-left"];
+      this.mixProperties({ titleWithBackButtonAndAvatar: ["marginLeft"] }, "width", (d, s) => {
+        const data: DrawDataPeriod = d.titleWithBackButtonAndAvatar["marginLeft"];
         const min: number = this.containerLeftWidth - ParseInt(data.min);
         const max: number = this.containerWidth - ParseInt(data.max);
         // Вернуть данные
@@ -919,20 +921,20 @@ export class DrawDatas {
   private static dataRenderSubTitle(): void {
     // Подзаголовок:
     this.subtitle = [
-      ...this.getProperties("title", ["width", "margin-left"]),
+      ...this.getProperties("title", ["width", "marginLeft"]),
       // Размер шрифта
       {
-        property: "font-size",
+        property: "fontSize",
         data: this.valueArrayToDrawData(this.subTitlesLineHeights, v => v * 0.77, v => v * 0.77)
       },
       // Высота строки
       {
-        property: "line-height",
+        property: "lineHeight",
         data: this.valueArrayToDrawData(this.subTitlesLineHeights)
       },
       // Высота
       {
-        property: "max-height",
+        property: "maxHeight",
         data: this.valueArrayToDrawData(this.subTitlesLineHeights, v => v, v => v * this.getSubTitleLines)
       },
       // Количество линий
@@ -943,18 +945,18 @@ export class DrawDatas {
     ];
     // Подзаголовок: с кнопкой меню или назад
     this.subtitleWithBackButton = [
-      ...this.getProperties("subtitle", ["font-size", "line-height", "max-height", "-webkit-line-clamp"]),
-      ...this.getProperties("titleWithBackButton", ["width", "margin-left"])
+      ...this.getProperties("subtitle", ["fontSize", "lineHeight", "maxHeight", "-webkit-line-clamp"]),
+      ...this.getProperties("titleWithBackButton", ["width", "marginLeft"])
     ];
     // Подзаголовок: с аватаркой
     this.subtitleWithAvatar = [
-      ...this.getProperties("subtitle", ["font-size", "line-height", "max-height", "-webkit-line-clamp"]),
-      ...this.getProperties("titleWithAvatar", ["width", "margin-left"])
+      ...this.getProperties("subtitle", ["fontSize", "lineHeight", "maxHeight", "-webkit-line-clamp"]),
+      ...this.getProperties("titleWithAvatar", ["width", "marginLeft"])
     ];
     // Подзаголовок: с аватаркой и кнопкой
     this.subtitleWithBackButtonAndAvatar = [
-      ...this.getProperties("subtitle", ["font-size", "line-height", "max-height", "-webkit-line-clamp"]),
-      ...this.getProperties("titleWithBackButtonAndAvatar", ["width", "margin-left"])
+      ...this.getProperties("subtitle", ["fontSize", "lineHeight", "maxHeight", "-webkit-line-clamp"]),
+      ...this.getProperties("titleWithBackButtonAndAvatar", ["width", "marginLeft"])
     ];
   }
 

@@ -1,8 +1,12 @@
 import { CustomObjectKey } from "@_models/app";
 
+// CSS свойства
+export type CssProperty = keyof CSSStyleDeclaration
+  | "-webkit-line-clamp";
+
 // Данные для параметров
 export interface DrawInterface {
-  property: string | string[];
+  property: CssProperty | CssProperty[];
   data: DrawData;
 }
 

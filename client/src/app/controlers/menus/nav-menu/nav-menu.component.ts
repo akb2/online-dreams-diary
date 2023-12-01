@@ -478,9 +478,9 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
             this.css[titleKey][datas.property] = value;
           }
           // Для массива свойств
-          else {
+          else if (Array.isArray(datas.property)) {
             for (let property of datas.property) {
-              this.css[titleKey][property] = value;
+              this.css[titleKey][property?.toString()] = value;
             }
           }
         }

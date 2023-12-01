@@ -3,6 +3,7 @@ import { DefaultDreamMapSettings, DreamCeilSize, DreamFogFar, DreamFogNear, Drea
 import { AngleToRad, CheckInRange, Cos, LineFunc, ParseInt } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapSettings } from "@_models/dream-map";
+import { MinMax } from "@_models/math";
 import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -96,7 +97,9 @@ export class Sky3DService {
     const value: number = (time + 90) - (valueIndex * 180);
     const cosValue: number = Math.abs(Cos(value));
     const isDay: boolean = valueIndex === 1;
-    const settingsKey: "day" | "night" = isDay ? "day" : "night";
+    const settingsKey: DayType = isDay
+      ? "day"
+      : "night";
     const shadowQuality = ParseInt(this.dreamMapSettings?.shadowQuality);
     // Настраиваемые параметры
     const azimuth: number = calc((Cos(value) + 1) / 2, SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max);
@@ -143,10 +146,26 @@ export class Sky3DService {
 
 
 // Настройки
-type SettingsVars = "azimuth" | "elevation" | "sunLight" | "atmosphereLight" | "turbidity" | "rayleigh" | "exposure" | "mieCoefficient" | "mieDirectionalG" | "atmSkyColorR" | "atmSkyColorB" | "atmSkyColorB" | "atmGroundColorR" | "atmGroundColorB" | "atmGroundColorB";
+type SettingsVars = "azimuth"
+  | "elevation"
+  | "sunLight"
+  | "atmosphereLight"
+  | "turbidity"
+  | "rayleigh"
+  | "exposure"
+  | "mieCoefficient"
+  | "mieDirectionalG"
+  | "atmSkyColorR"
+  | "atmSkyColorB"
+  | "atmSkyColorB"
+  | "atmGroundColorR"
+  | "atmGroundColorB"
+  | "atmGroundColorB";
+
+type DayType = "day" | "night";
 
 // Настройки
-const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night", CustomObjectKey<"min" | "max", number>>> = {
+const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, CustomObjectKey<MinMax, number>>> = {
   azimuth: {
     day: { min: 110, max: -110 },
     night: { min: 110, max: -110 }

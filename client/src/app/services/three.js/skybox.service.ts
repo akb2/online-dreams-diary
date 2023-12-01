@@ -3,6 +3,7 @@ import { DefaultDreamMapSettings, DreamCeilSize, DreamFogFar, DreamFogNear, Drea
 import { AngleToRad, CheckInRange, Cos, LineFunc, ParseInt } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMapSettings } from "@_models/dream-map";
+import { MinMax } from "@_models/math";
 import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -140,7 +141,7 @@ export interface SkyBoxOutput {
 
 // Настройки
 type SettingsVars = "azimuth" | "elevation" | "sunLight" | "atmosphereLight" | "turbidity" | "rayleigh" | "exposure" | "mieCoefficient" | "mieDirectionalG" | "atmSkyColorR" | "atmSkyColorB" | "atmSkyColorB" | "atmGroundColorR" | "atmGroundColorB" | "atmGroundColorB";
-const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night", CustomObjectKey<"min" | "max", number>>> = {
+const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<"day" | "night", CustomObjectKey<MinMax, number>>> = {
   azimuth: {
     day: { min: 110, max: -110 },
     night: { min: 110, max: -110 }
