@@ -121,7 +121,7 @@ $controlOffset: 5px;
   position: absolute;
   display: block;
   bottom: $position;
-  right: $position;
+  left: $position;
   width: $size;
   height: $size;
   transform-style: preserve-3d;
@@ -235,5 +235,7 @@ $controlOffset: 5px;
     position: absolute !important;
     left: #{$controlOffset} !important;
     top: #{$controlOffset} !important;
+    overflow: hidden;
+    border-radius: 3px;
   }
 }
