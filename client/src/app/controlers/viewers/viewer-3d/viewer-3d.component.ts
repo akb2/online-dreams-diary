@@ -13,7 +13,7 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { viewer3DCompassSelector } from "@app/reducers/viewer-3d";
+import { viewer3DCompassSelector, viewer3DInitialLoaderDisable, viewer3DInitialLoaderEnable, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 import { Observable, Subject, catchError, concatMap, delay, map, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
 
@@ -38,20 +38,22 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("helper") private helper: ElementRef;
   @ViewChild("statsBlock") private statsBlock: ElementRef;
 
-  private loadCeilsByTime: number = 250;
+  loadingStep: LoadingStep = LoadingStep.prepared;
+
+  private loadCeilsByTime: number = 200;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 1000;
   private loadCeilCircles: number = 3;
   private compassAzimuthShift: number = -90;
   private compassRadialShift: number = 45;
 
-  loadingStep: LoadingStep = LoadingStep.prepared;
-  loadingSteps: typeof LoadingStep = LoadingStep;
   private loadingCeilLimit: number = 0;
   private loadingCeilCurrent: number = 0;
 
   private textures: LoadTexture[] = [];
   private calcOperations: CalcFunction[] = [];
+
+  loading$ = this.store$.select(viewer3DInitialLoaderSelector);
 
   private compass$ = this.store$.select(viewer3DCompassSelector);
 
@@ -176,6 +178,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!!window.WebGLRenderingContext) {
+      this.store$.dispatch(viewer3DInitialLoaderEnable());
+      // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
           tap(() => this.loadScene()),
@@ -190,7 +194,9 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           delay(1),
           tap(() => this.onViewerLoad()),
           delay(1),
-          tap(() => this.createStats()),
+          tap(() => this.store$.dispatch(viewer3DInitialLoaderDisable())),
+          delay(1),
+          concatMap(() => this.createStats()),
           takeUntil(this.destroyed$)
         )
         .subscribe();
@@ -384,10 +390,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   // Создание статистики
-  private createStats(): void {
-    if (!!this.statsBlock?.nativeElement) {
-      this.statsBlock.nativeElement.appendChild(this.engine3DService.stats.dom);
+  private createStats(): Observable<any> {
+    if (this.debugInfo) {
+      return WaitObservable(() => !this.statsBlock?.nativeElement).pipe(
+        tap(() => this.statsBlock.nativeElement.appendChild(this.engine3DService.stats.dom))
+      );
     }
+    // No info laoding
+    return of(null);
   }
 
 

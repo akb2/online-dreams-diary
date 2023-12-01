@@ -18,6 +18,9 @@ export interface Viewer3DStateCompass {
 // Интерфейс состояния
 export interface Viewer3DState {
   compass: Viewer3DStateCompass;
+  loaders: {
+    initial: boolean;
+  };
 }
 
 // Начальное состояние
@@ -27,6 +30,9 @@ const viewer3DInitialState: Viewer3DState = {
     azimuth: 0,
     sin: 0,
     cos: 0
+  },
+  loaders: {
+    initial: false
   }
 };
 
@@ -34,17 +40,27 @@ const viewer3DInitialState: Viewer3DState = {
 
 
 
-// Сохранить идентификатор пользователя
+// Изменить положение компаса
 export const viewer3DSetCompassAction = createAction(
   "[3D VIEWER] Save compass rotation",
   props<Viewer3DStateCompass>()
 );
 
+// Начать глобальную загрузку
+export const viewer3DInitialLoaderEnable = createAction("[3D VIEWER] Enabled an initial loader");
+
+// Остановить глобальную загрузку
+export const viewer3DInitialLoaderDisable = createAction("[3D VIEWER] Disabled an initial loader");
+
 // Создание стейта
 export const viewer3DReducer = createReducer(
   viewer3DInitialState,
-  // Инициализация идентификатора пользователя
-  on(viewer3DSetCompassAction, (state, compass) => ({ ...state, compass }))
+  // Изменить положение компаса
+  on(viewer3DSetCompassAction, (state, compass) => ({ ...state, compass })),
+  // Начать глобальную загрузку
+  on(viewer3DInitialLoaderEnable, state => ({ ...state, loaders: { ...state.loaders, initial: true } })),
+  // Начать глобальную загрузку
+  on(viewer3DInitialLoaderDisable, state => ({ ...state, loaders: { ...state.loaders, initial: false } }))
 );
 
 
@@ -62,3 +78,9 @@ export const viewer3DCompassRadialSelector = createSelector(viewer3DCompassSelec
 
 // Наклон по высоте
 export const viewer3DCompassAzimuthSelector = createSelector(viewer3DCompassSelector, ({ azimuth }) => azimuth);
+
+// Лоадер инициализации редактора
+export const viewer3DInitialLoaderSelector = createSelector(viewer3DFeatureSelector, ({ loaders: { initial } }) => initial);
+
+// Показ элементов управления
+export const editor3DInitialLoaderSelector = createSelector(viewer3DInitialLoaderSelector, initial => initial);
