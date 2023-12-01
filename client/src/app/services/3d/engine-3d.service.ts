@@ -10,7 +10,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { CineonToneMapping, Clock, Fog, Intersection, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -134,8 +134,8 @@ export class Engine3DService implements OnDestroy {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.outputEncoding = sRGBEncoding;
-    this.renderer.toneMapping = CineonToneMapping;
+    this.renderer.outputEncoding = LinearEncoding;
+    this.renderer.toneMapping = NoToneMapping;
   }
 
   // Создание сцены
@@ -334,7 +334,7 @@ export class Engine3DService implements OnDestroy {
       const chairPositionX: number = this.canvasWidth * 0.5;
       const chairPositionY: number = this.canvasHeight * 0.5;
       const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
-      const depthOfFieldEffect: DepthOfFieldEffect = this.postProcessingEffects.depthOfFieldEffect;
+      const { depthOfFieldEffect } = this.postProcessingEffects;
       const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
       const blendMode: BlendMode = depthOfFieldEffect.blendMode;
       const closestObject: Intersection = !!objects?.length ?
