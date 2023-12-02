@@ -1,11 +1,24 @@
 <div class="area">
   <!-- Просмотр -->
-  <div class="viewer">
-    <viewer-3d [dreamMap]="dreamMap"
-               [debugInfo]="debugInfo"
-               [showCompass]="showCompass"></viewer-3d>
-  </div>
-  <!-- Управление -->
-  <div class="control">
-  </div>
+  <viewer-3d class="viewer"
+             [dreamMap]="dreamMap"
+             [debugInfo]="debugInfo"
+             [showCompass]="showCompass"></viewer-3d>
+  <!-- Управление: настройки -->
+  <ng-container [ngTemplateOutlet]="controlsSettings"
+                *ngIf="showControls$ | async"></ng-container>
 </div>
+
+
+
+<!-- Настройки -->
+<ng-template #controlsSettings>
+  <div class="controls controls--settings">
+    <ul class="buttons">
+      <!-- Время суток -->
+      <li class="buttons__item">
+        <mat-icon>wb_twilight</mat-icon>
+      </li>
+    </ul>
+  </div>
+</ng-template>

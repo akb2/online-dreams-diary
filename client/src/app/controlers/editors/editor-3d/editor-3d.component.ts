@@ -1,5 +1,7 @@
 import { DreamMap } from "@_models/dream-map";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { editor3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { Store } from "@ngrx/store";
 
 @Component({
   selector: "editor-3d",
@@ -12,4 +14,14 @@ export class Editor3DComponent {
   @Input() dreamMap: DreamMap;
   @Input() debugInfo: boolean = true;
   @Input() showCompass: boolean = true;
+
+  showControls$ = this.store$.select(editor3DInitialLoaderSelector);
+
+
+
+
+
+  constructor(
+    private store$: Store
+  ) { }
 }

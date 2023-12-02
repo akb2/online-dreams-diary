@@ -1,6 +1,7 @@
 import { Viewer3DModule } from "@_controlers/viewer-3d/viewer-3d.module";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
 import { Editor3DComponent } from "./editor-3d.component";
 
 
@@ -16,7 +17,8 @@ import { Editor3DComponent } from "./editor-3d.component";
   ],
   imports: [
     CommonModule,
-    Viewer3DModule
+    Viewer3DModule,
+    MatIconModule
   ]
 })
 
