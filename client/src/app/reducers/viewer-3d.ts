@@ -25,6 +25,7 @@ export interface Viewer3DStateCompass {
 export interface Viewer3DState {
   compass: Viewer3DStateCompass;
   overlaySettings: Editor3DOverlaySettings;
+  skyTime: number;
   loaders: {
     initial: boolean;
   };
@@ -39,6 +40,7 @@ const viewer3DInitialState: Viewer3DState = {
     cos: 0
   },
   overlaySettings: Editor3DOverlaySettings.none,
+  skyTime: 0,
   loaders: {
     initial: false
   }
@@ -55,19 +57,25 @@ export const viewer3DSetCompassAction = createAction(
 );
 
 // Начать глобальную загрузку
-export const viewer3DInitialLoaderEnable = createAction("[3D VIEWER] Enabled an initial loader");
+export const viewer3DInitialLoaderEnableAction = createAction("[3D VIEWER] Enabled an initial loader");
 
 // Остановить глобальную загрузку
-export const viewer3DInitialLoaderDisable = createAction("[3D VIEWER] Disabled an initial loader");
+export const viewer3DInitialLoaderDisableAction = createAction("[3D VIEWER] Disabled an initial loader");
 
 // Обновить глобальные настройки
-export const editor3DUpdateOverlaySettingsState = createAction(
-  "[3D VIEWER] Updated an viewer overlay settings state",
+export const editor3DUpdateOverlaySettingsStateAction = createAction(
+  "[3D EDITOR] Updated an viewer overlay settings state",
   props<{ overlaySettings: Editor3DOverlaySettings }>()
 );
 
 // Обновить глобальные настройки: скрыть
-export const editor3DSetNoneOverlaySettingsState = createAction("[3D VIEWER] Set an viewer overlay settings state as none");
+export const editor3DSetNoneOverlaySettingsStateAction = createAction("[3D EDITOR] Set an viewer overlay settings state as none");
+
+// Обновить текущее время
+export const editor3DSetSkyTimeAction = createAction(
+  "[3D EDITOR] Set sky time",
+  props<{ skyTime: number }>()
+);
 
 // Создание стейта
 export const viewer3DReducer = createReducer(
@@ -75,13 +83,15 @@ export const viewer3DReducer = createReducer(
   // Изменить положение компаса
   on(viewer3DSetCompassAction, (state, compass) => ({ ...state, compass })),
   // Начать глобальную загрузку
-  on(viewer3DInitialLoaderEnable, state => ({ ...state, loaders: { ...state.loaders, initial: true } })),
+  on(viewer3DInitialLoaderEnableAction, state => ({ ...state, loaders: { ...state.loaders, initial: true } })),
   // Начать глобальную загрузку
-  on(viewer3DInitialLoaderDisable, state => ({ ...state, loaders: { ...state.loaders, initial: false } })),
+  on(viewer3DInitialLoaderDisableAction, state => ({ ...state, loaders: { ...state.loaders, initial: false } })),
   // Обновить глобальные настройки
-  on(editor3DUpdateOverlaySettingsState, (state, { overlaySettings }) => ({ ...state, overlaySettings })),
+  on(editor3DUpdateOverlaySettingsStateAction, (state, { overlaySettings }) => ({ ...state, overlaySettings })),
   // Обновить глобальные настройки: скрыть
-  on(editor3DSetNoneOverlaySettingsState, state => ({ ...state, overlaySettings: Editor3DOverlaySettings.none })),
+  on(editor3DSetNoneOverlaySettingsStateAction, state => ({ ...state, overlaySettings: Editor3DOverlaySettings.none })),
+  // Обновить текущее время
+  on(editor3DSetSkyTimeAction, (state, { skyTime }) => ({ ...state, skyTime })),
 );
 
 
@@ -115,3 +125,6 @@ export const editor3DShowControlsSelector = createSelector(
   editor3DShowOverlaySettingsSelector,
   (initial, showSettings) => !initial && !showSettings
 );
+
+// Текущее время суток
+export const editor3DSkyTimeSelector = createSelector(viewer3DFeatureSelector, ({ skyTime }) => skyTime);

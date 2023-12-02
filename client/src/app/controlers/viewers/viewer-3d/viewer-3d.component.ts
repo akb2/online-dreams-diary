@@ -13,9 +13,9 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { editor3DShowControlsSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisable, viewer3DInitialLoaderEnable, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
-import { Observable, Subject, catchError, concatMap, delay, map, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Observable, Subject, catchError, concatMap, delay, map, merge, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
 
 
 
@@ -57,6 +57,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   showControls$ = this.store$.select(editor3DShowControlsSelector);
 
   private compass$ = this.store$.select(viewer3DCompassSelector);
+  private skyTime$ = this.store$.select(editor3DSkyTimeSelector);
 
   compassStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => ({
     transform: (
@@ -179,7 +180,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!!window.WebGLRenderingContext) {
-      this.store$.dispatch(viewer3DInitialLoaderEnable());
+      this.store$.dispatch(viewer3DInitialLoaderEnableAction());
       // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
@@ -195,9 +196,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           delay(1),
           tap(() => this.onViewerLoad()),
           delay(1),
-          tap(() => this.store$.dispatch(viewer3DInitialLoaderDisable())),
+          tap(() => this.store$.dispatch(viewer3DInitialLoaderDisableAction())),
           delay(1),
           concatMap(() => this.createStats()),
+          delay(1),
+          concatMap(() => this.dreamMapChangesListeners()),
           takeUntil(this.destroyed$)
         )
         .subscribe();
@@ -399,6 +402,17 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
     // No info laoding
     return of(null);
+  }
+
+  // Прослушивание событий
+  private dreamMapChangesListeners(): Observable<any> {
+    return merge(
+      // Изменение времени
+      this.skyTime$.pipe(map(skyTime => {
+        this.dreamMap.sky.time = skyTime;
+        this.sky3DService.updateSky();
+      }))
+    );
   }
 
 

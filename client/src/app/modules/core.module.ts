@@ -1,3 +1,4 @@
+import { MousePressDirective } from "@_directives/mouse-press.directive";
 import { PopoverDirective } from "@_directives/popover.directive";
 import { ScrollDetectorDirective } from "@_directives/scroll-detector.directive";
 import { SwipeDirective } from "@_directives/swipe.directive";
@@ -26,7 +27,8 @@ const directives = [
   VarDirective,
   ScrollDetectorDirective,
   SwipeDirective,
-  PopoverDirective
+  PopoverDirective,
+  MousePressDirective
 ];
 
 // Пайпы

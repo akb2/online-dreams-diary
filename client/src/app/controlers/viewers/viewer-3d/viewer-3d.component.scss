@@ -230,6 +230,9 @@ $controlOffset: 5px;
 .stats {
   z-index: 1;
   user-select: none;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
   // Данные
   ::ng-deep > div {
     position: absolute !important;
@@ -237,5 +240,11 @@ $controlOffset: 5px;
     top: #{$controlOffset} !important;
     overflow: hidden;
     border-radius: 3px;
+  }
+  // Видимый блок
+  &.show {
+    opacity: 1;
+    pointer-events: all;
+    visibility: visible;
   }
 }

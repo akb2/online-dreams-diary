@@ -1,6 +1,6 @@
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
 import { DefaultDreamMapSettings, DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize } from "@_datas/dream-map-settings";
-import { AngleToRad, CheckInRange, Cos, LineFunc, ParseInt } from "@_helpers/math";
+import { AngleInRange, AngleToRad, CheckInRange, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapSettings } from "@_models/dream-map";
 import { MinMax } from "@_models/math";
@@ -89,31 +89,28 @@ export class Sky3DService {
 
   // Обновить время
   updateSky(): void {
-    const calc: (num: number, min: number, max: number) => number = (num: number, min: number, max: number) => ((min - max) * num) + max;
-    // Общие параметры
-    const time = this.dreamMap.sky.time;
+    const time = AngleInRange(this.dreamMap.sky.time);
     const uniforms = this.sky.material.uniforms;
-    const valueIndex: number = Math.floor((90 + time) / 180);
-    const value: number = (time + 90) - (valueIndex * 180);
-    const cosValue: number = Math.abs(Cos(value));
-    const isDay: boolean = valueIndex === 1;
-    const settingsKey: DayType = isDay
-      ? "day"
-      : "night";
+    const sin = Sin(time);
+    const cos = Cos(time);
+    const absCos: number = Math.abs(cos);
+    const isDay = cos < 0 || (sin < 0 && cos === 0);
+    const settingsKey: DayType = isDay ? "day" : "night";
+    const absSin: number = isDay ? sin : sin * -1;
     const shadowQuality = ParseInt(this.dreamMapSettings?.shadowQuality);
     // Настраиваемые параметры
-    const azimuth: number = calc((Cos(value) + 1) / 2, SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max);
-    const elevation: number = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, cosValue, 0, 1);
-    const turbidity: number = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, cosValue, 0, 1);
-    const rayleigh: number = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, cosValue, 0, 1);
-    const exposure: number = LineFunc(SkySettings.exposure[settingsKey].min, SkySettings.exposure[settingsKey].max, cosValue, 0, 1);
-    const sunLight: number = LineFunc(SkySettings.sunLight[settingsKey].min, SkySettings.sunLight[settingsKey].max, cosValue, 0, 1);
-    const atmosphereLight: number = LineFunc(SkySettings.atmosphereLight[settingsKey].min, SkySettings.atmosphereLight[settingsKey].max, cosValue, 0, 1);
-    const atmSkyColorR: number = LineFunc(SkySettings.atmSkyColorR[settingsKey].min, SkySettings.atmSkyColorR[settingsKey].max, cosValue, 0, 1);
-    const atmSkyColorG: number = LineFunc(SkySettings.atmSkyColorG[settingsKey].min, SkySettings.atmSkyColorG[settingsKey].max, cosValue, 0, 1);
-    const atmSkyColorB: number = LineFunc(SkySettings.atmSkyColorB[settingsKey].min, SkySettings.atmSkyColorB[settingsKey].max, cosValue, 0, 1);
-    const mieCoefficient: number = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, cosValue, 0, 1);
-    const mieDirectionalG: number = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, cosValue, 0, 1);
+    const azimuth: number = LineFunc(SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max, absSin, -1, 1);
+    const elevation: number = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, absCos, 0, 1);
+    const sunLight: number = LineFunc(SkySettings.sunLight[settingsKey].min, SkySettings.sunLight[settingsKey].max, absCos, 0, 1);
+    const atmosphereLight: number = LineFunc(SkySettings.atmosphereLight[settingsKey].min, SkySettings.atmosphereLight[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorR: number = LineFunc(SkySettings.atmSkyColorR[settingsKey].min, SkySettings.atmSkyColorR[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorG: number = LineFunc(SkySettings.atmSkyColorG[settingsKey].min, SkySettings.atmSkyColorG[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorB: number = LineFunc(SkySettings.atmSkyColorB[settingsKey].min, SkySettings.atmSkyColorB[settingsKey].max, absCos, 0, 1);
+    const turbidity: number = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, absCos, 0, 1);
+    const rayleigh: number = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, absCos, 0, 1);
+    const exposure: number = LineFunc(SkySettings.exposure[settingsKey].min, SkySettings.exposure[settingsKey].max, absCos, 0, 1);
+    const mieCoefficient: number = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, absCos, 0, 1);
+    const mieDirectionalG: number = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, absCos, 0, 1);
     // Прочие параметры
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
@@ -167,8 +164,8 @@ type DayType = "day" | "night";
 // Настройки
 const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, CustomObjectKey<MinMax, number>>> = {
   azimuth: {
-    day: { min: 110, max: -110 },
-    night: { min: 110, max: -110 }
+    day: { min: -15, max: 195 },
+    night: { min: -15, max: 195 }
   },
   elevation: {
     day: { min: 0, max: 60 },
@@ -204,7 +201,7 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, Custom
   },
   exposure: {
     day: { min: 0.2, max: 0.4 },
-    night: { min: 0.1, max: 0.15 }
+    night: { min: 0.1, max: 0.2 }
   },
   mieCoefficient: {
     day: { min: 0.005, max: 0 },

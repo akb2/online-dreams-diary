@@ -10,7 +10,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -30,7 +30,7 @@ export class Engine3DService implements OnDestroy {
   private moveSpeed: number = DreamCeilSize * 14;
   private zoomSpeed: number = 1;
   private minAngle: number = 0;
-  private maxAngle: number = 75;
+  private maxAngle: number = 82;
 
   dreamMap: DreamMap;
   scene: Scene;
@@ -135,7 +135,7 @@ export class Engine3DService implements OnDestroy {
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputEncoding = LinearEncoding;
-    this.renderer.toneMapping = NoToneMapping;
+    this.renderer.toneMapping = ACESFilmicToneMapping;
   }
 
   // Создание сцены

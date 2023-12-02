@@ -75,11 +75,38 @@ export const SinCosToAngle = (sin: number, cos: number) => RadToAngle(SinCosToRa
 // Синус и косинус в радианы
 export const SinCosToRad = (sin: number, cos: number) => Math.atan2(sin, cos);
 
-// Синус угла
-export const Sin: (angle: number) => number = (angle: number) => MathRound(Math.sin(AngleToRad(angle)), 10);
+/**
+ * Перевести произвольные координаты в угол на окружности
+ * @param {number} x Координата по оси X в диапазоне [-1; 1]
+ * @param {number} y Координата по оси Y в диапазоне [-1; 1]
+ * */
+export const AngleByCoordsAndRadius = (x: number, y: number): number => AngleInRange(Math.atan2(y, x) * (180 / Math.PI));
 
-// Косинус угла
-export const Cos: (angle: number) => number = (angle: number) => MathRound(Math.cos(AngleToRad(angle)), 10);
+/**
+ * Преобразует произвольный угол в диапазон [0; 360], вычитанием 360 пока угол остается положительным
+ * @param {number} angle Угол который требуется преобразовать
+ * */
+export const AngleInRange = (angle: number): number => {
+  const maxAngle = 360;
+  const circles = MathFloor(angle / maxAngle);
+  const newAngle = angle - (circles * maxAngle);
+  // Рассчет
+  return newAngle < 0
+    ? newAngle + maxAngle
+    : newAngle;
+};
+
+/**
+ * Получить синус угла
+ * @param {number} angle Угол в диапазоне [0; 360]
+ * */
+export const Sin = (angle: number): number => MathRound(Math.sin(AngleToRad(angle)), 10);
+
+/**
+ * Получить косинус угла
+ * @param {number} angle Угол в диапазоне [0; 360]
+ * */
+export const Cos = (angle: number): number => MathRound(Math.cos(AngleToRad(angle)), 10);
 
 // Тангенс угла
 export const Tan: (angle: number) => number = (angle: number) => MathRound(Math.tan(AngleToRad(angle)), 10);

@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:math";
 @use "colors";
 @use "mixins";
 @use "screens";
@@ -83,6 +84,7 @@ $controlOffset: 5px;
 // Настройки
 .settings {
   $closeSize: containers.$avatarSize;
+  $mainControlSize: 90px;
   // Настройки
   @include mixins.inset;
   // Свойства
@@ -98,6 +100,11 @@ $controlOffset: 5px;
   align-items: center;
   padding: $controlOffset;
   gap: $controlOffset;
+  transition: background-color #{screens.$animationTime};
+  // Скрыть затенение
+  &.noOverlay {
+    background-color: transparent;
+  }
   // Кнопка закрытия
   &__close {
     display: block;
@@ -133,5 +140,75 @@ $controlOffset: 5px;
     flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
+  }
+  // Настройки времени
+  &-time {
+    $controlSize: $mainControlSize * 4;
+    $lineSize: 2px;
+    $subControlSize: containers.$avatarSize;
+    $lineSpacing: math.div($subControlSize, 2) + 6px;
+    $subControlHeight: 1px;
+    // Свойства
+    display: block;
+    position: relative;
+    width: $controlSize;
+    height: $controlSize;
+    // Общие стили
+    &__line,
+    &__cicrle,
+    &__sun,
+    &__moon {
+      position: absolute;
+      display: block;
+    }
+    // Горизонт
+    &__line {
+      height: $lineSize;
+      background-color: colors.$titleDark;
+      top: calc(50% - #{math.div($lineSize, 2)});
+      left: 0;
+      right: 0;
+      z-index: 1;
+    }
+    // Опорный путь
+    &__cicrle {
+      @include mixins.inset($lineSpacing);
+      // Свойства
+      border: #{$lineSize} dotted transparent;
+      border-top-color: colors.$text;
+      border-left-color: colors.$text;
+      border-radius: 50%;
+      transform: rotate(45deg);
+      z-index: 0;
+    }
+    // Солнце и Луна
+    &__sun,
+    &__moon {
+      width: $subControlSize;
+      height: $subControlSize;
+      line-height: $subControlSize;
+      margin-top: math.div(-$subControlSize, 2);
+      margin-left: math.div(-$subControlSize, 2);
+      cursor: pointer;
+      z-index: 2;
+      background-color: colors.$titleDark;
+      color: colors.$title;
+      border-radius: 50%;
+      font-size: $subControlSize * 0.7;
+      text-align: center;
+      transition:
+        background-color #{screens.$animationTime},
+        color #{screens.$animationTime};
+      user-select: none;
+      // Иконка
+      > mat-icon {
+        pointer-events: none;
+      }
+      // Выделение
+      &:hover {
+        background-color: map.get(colors.$matPrimary, 500);
+        color: map.get(colors.$matPrimary, contrast, 500);
+      }
+    }
   }
 }

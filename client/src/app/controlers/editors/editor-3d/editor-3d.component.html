@@ -32,13 +32,44 @@
 <!-- Управление: текущая настройка -->
 <ng-template #controlsSettingsCurrent>
   <div class="settings"
+       [ngClass]="{ noOverlay: !showingOverlay }"
        *ngVar="(currentSetting$ | async) as currentSetting">
     <!-- Закрыть настройки -->
     <mat-icon class="settings__close"
-              (click)="onCloseSettings()">close</mat-icon>
+              (click)="onCloseSettings()"
+              *ngIf="showingOverlay">close</mat-icon>
     <!-- Название настройки -->
-    <h5 class="settings__title">{{('3d.editor.controls.settings.' + currentSetting) | translate}}</h5>
+    <h5 class="settings__title"
+        *ngIf="showingOverlay">{{('3d.editor.controls.settings.' + currentSetting) | translate}}</h5>
     <!-- Содержимое -->
-    <div class="settings__content"></div>
+    <div class="settings__content">
+      <ng-container [ngTemplateOutlet]="settingsTime"
+                    *ngIf="currentSetting === settingsTypes.time"></ng-container>
+    </div>
   </div>
+</ng-template>
+
+
+
+<!-- Настройки: время суток -->
+<ng-template #settingsTime>
+  <span #settingsTimeContainer
+        class="settings-time">
+    <span class="settings-time__line"></span>
+    <span class="settings-time__cicrle"></span>
+    <!-- Солнце -->
+    <mat-icon class="settings-time__sun"
+              [ngStyle]="settingsSunStyles$ | async"
+              mousePress
+              (mouseUp)="showOverlay()"
+              (mouseDown)="hideOverlay()"
+              (mouseMovePress)="onSkyTimeChange($event)">wb_sunny</mat-icon>
+    <!-- Луна -->
+    <mat-icon class="settings-time__moon"
+              [ngStyle]="settingsMoonStyles$ | async"
+              mousePress
+              (mouseUp)="showOverlay()"
+              (mouseDown)="hideOverlay()"
+              (mouseMovePress)="onSkyTimeChange($event, 1)">brightness_2</mat-icon>
+  </span>
 </ng-template>

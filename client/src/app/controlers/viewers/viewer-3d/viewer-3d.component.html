@@ -12,9 +12,10 @@
 
 <!-- Инструменты редактора -->
 <ng-template #widgets>
-  <ng-container *ngIf="showControls$ | async">
+  <ng-container *ngVar="(showControls$ | async) as showControls">
     <!-- Компас -->
-    <span class="compass">
+    <span class="compass"
+          *ngIf="showControls">
       <span class="compass__circle"
             [ngStyle]="compassStyles$ | async">
         <span class="compass__circle-border">
@@ -41,7 +42,7 @@
     <!-- Статистика -->
     <div #statsBlock
          class="stats"
-         *ngIf="debugInfo"></div>
+         [ngClass]="{ show: debugInfo && showControls }"></div>
   </ng-container>
 </ng-template>
 
