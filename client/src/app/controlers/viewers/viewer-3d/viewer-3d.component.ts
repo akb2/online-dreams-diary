@@ -40,7 +40,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   loadingStep: LoadingStep = LoadingStep.prepared;
 
-  private loadCeilsByTime: number = 200;
+  private loadCeilsByTime: number = 250;
   private calcOperationLoadingSize: number = 500;
   private texturesLoadingSize: number = 1000;
   private loadCeilCircles: number = 3;
