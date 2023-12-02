@@ -8,7 +8,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
-import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
+import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
 import { ACESFilmicToneMapping, Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -197,6 +197,18 @@ export class Engine3DService implements OnDestroy {
   // Создание постпроцессоров
   private createPostProcessors(): void {
     const renderPass: RenderPass = new RenderPass(this.scene, this.camera);
+    const bloomEffect = new BloomEffect({
+      blendFunction: BlendFunction.SCREEN,
+      luminanceThreshold: 0.9,
+      luminanceSmoothing: 0.05,
+      mipmapBlur: true,
+      intensity: 0.9,
+      radius: 0.8,
+      levels: 5,
+      kernelSize: KernelSize.LARGE,
+      resolutionX: this.canvasWidth,
+      resolutionY: this.canvasHeight
+    });
     const depthOfFieldEffect: DepthOfFieldEffect = new DepthOfFieldEffect(this.camera, {
       focalLength: 0.1,
       focusRange: 0.3,
@@ -204,9 +216,9 @@ export class Engine3DService implements OnDestroy {
       resolutionX: this.canvasWidth,
       resolutionY: this.canvasHeight
     });
-    const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect);
+    const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect, bloomEffect);
     // Добавление эффектов
-    this.postProcessingEffects = { renderPass, depthOfFieldEffect };
+    this.postProcessingEffects = { renderPass, depthOfFieldEffect, bloomEffect };
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(renderPass);
     this.composer.addPass(effectPass);
@@ -334,7 +346,7 @@ export class Engine3DService implements OnDestroy {
       const chairPositionX: number = this.canvasWidth * 0.5;
       const chairPositionY: number = this.canvasHeight * 0.5;
       const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
-      const { depthOfFieldEffect } = this.postProcessingEffects;
+      const { depthOfFieldEffect, bloomEffect } = this.postProcessingEffects;
       const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
       const blendMode: BlendMode = depthOfFieldEffect.blendMode;
       const closestObject: Intersection = !!objects?.length ?
@@ -346,6 +358,9 @@ export class Engine3DService implements OnDestroy {
       blendMode.opacity.value = LineFunc(1, 0.6, distance, this.control.minDistance, this.control.maxDistance);
       depthOfFieldEffect.resolution.width = this.canvasWidth;
       depthOfFieldEffect.resolution.height = this.canvasHeight;
+      // Обновить свечение
+      bloomEffect.resolution.width = this.canvasWidth;
+      bloomEffect.resolution.height = this.canvasHeight;
       // Найдены объекты
       depthOfFieldEffect.target = !!closestObject
         ? closestObject.point
@@ -363,6 +378,7 @@ export class Engine3DService implements OnDestroy {
 // Интерфейс эффектов постобработки
 interface PostProcessingEffects {
   renderPass: RenderPass;
+  bloomEffect: BloomEffect;
   depthOfFieldEffect: DepthOfFieldEffect;
 }
 
