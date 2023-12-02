@@ -83,4 +83,4 @@ export const viewer3DCompassAzimuthSelector = createSelector(viewer3DCompassSele
 export const viewer3DInitialLoaderSelector = createSelector(viewer3DFeatureSelector, ({ loaders: { initial } }) => initial);
 
 // Показ элементов управления
-export const editor3DInitialLoaderSelector = createSelector(viewer3DInitialLoaderSelector, initial => initial);
+export const editor3DInitialLoaderSelector = createSelector(viewer3DInitialLoaderSelector, initial => !initial);
