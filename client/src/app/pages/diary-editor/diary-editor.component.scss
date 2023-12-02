@@ -151,3 +151,14 @@ $tabsHeight: 49px;
     flex-flow: column nowrap;
   }
 }
+
+// Малый отступ контейнера
+.container--small {
+  padding-top: map.get(containers.$paddingsY, small);
+  padding-bottom: map.get(containers.$paddingsY, small);
+  // Для телефонов
+  @include screens.adaptive(xxsmall, small) {
+    padding-top: containers.$paddingX;
+    padding-bottom: containers.$paddingX;
+  }
+}
