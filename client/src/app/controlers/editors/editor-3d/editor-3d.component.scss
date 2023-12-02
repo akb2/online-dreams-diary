@@ -79,3 +79,59 @@ $controlOffset: 5px;
     }
   }
 }
+
+// Настройки
+.settings {
+  $closeSize: containers.$avatarSize;
+  // Настройки
+  @include mixins.inset;
+  // Свойства
+  position: absolute;
+  background-color: colors.$overlayColor;
+  display: grid;
+  grid-template-areas:
+    "1 title close"
+    "content content content"
+    "3 3 3";
+  grid-template-columns: #{$closeSize} 1fr #{$closeSize};
+  grid-template-rows: #{$closeSize} 1fr #{$closeSize};
+  align-items: center;
+  padding: $controlOffset;
+  gap: $controlOffset;
+  // Кнопка закрытия
+  &__close {
+    display: block;
+    width: $closeSize;
+    height: $closeSize;
+    line-height: $closeSize;
+    font-size: $closeSize;
+    color: colors.$tabBorder;
+    text-align: center;
+    transition: color #{screens.$animationTime};
+    cursor: pointer;
+    grid-area: close;
+    // Наведение
+    &:hover {
+      color: colors.$titleDark;
+    }
+  }
+  // Заголовок настройки
+  &__title {
+    @include mixins.lineClamp(1, 1.2, 22px);
+    // Свойства
+    display: block;
+    margin: 0;
+    grid-area: title;
+    text-align: center;
+    font-weight: 400;
+    color: colors.$titleDark;
+  }
+  // Содержимое настроек
+  &__content {
+    grid-area: content;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+  }
+}

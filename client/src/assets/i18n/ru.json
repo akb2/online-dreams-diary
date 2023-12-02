@@ -430,6 +430,13 @@
       "compass": {
         "label": "С"
       }
+    },
+    "editor": {
+      "controls": {
+        "settings": {
+          "time": "Время суток"
+        }
+      }
     }
   }
 }

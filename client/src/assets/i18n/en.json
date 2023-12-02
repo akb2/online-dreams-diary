@@ -429,6 +429,13 @@
       "compass": {
         "label": "N"
       }
+    },
+    "editor": {
+      "controls": {
+        "settings": {
+          "time": "Times of day"
+        }
+      }
     }
   }
 }

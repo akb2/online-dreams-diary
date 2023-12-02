@@ -13,7 +13,7 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { viewer3DCompassSelector, viewer3DInitialLoaderDisable, viewer3DInitialLoaderEnable, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { editor3DShowControlsSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisable, viewer3DInitialLoaderEnable, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 import { Observable, Subject, catchError, concatMap, delay, map, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
 
@@ -54,6 +54,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private calcOperations: CalcFunction[] = [];
 
   loading$ = this.store$.select(viewer3DInitialLoaderSelector);
+  showControls$ = this.store$.select(editor3DShowControlsSelector);
 
   private compass$ = this.store$.select(viewer3DCompassSelector);
 

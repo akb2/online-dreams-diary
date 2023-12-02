@@ -7,18 +7,38 @@
   <!-- Управление: настройки -->
   <ng-container [ngTemplateOutlet]="controlsSettings"
                 *ngIf="showControls$ | async"></ng-container>
+  <!-- Управление: текущая настройка -->
+  <ng-container [ngTemplateOutlet]="controlsSettingsCurrent"
+                *ngIf="showSettings$ | async"></ng-container>
 </div>
 
 
 
-<!-- Настройки -->
+<!-- Управление: настройки -->
 <ng-template #controlsSettings>
   <div class="controls controls--settings">
     <ul class="buttons">
       <!-- Время суток -->
-      <li class="buttons__item">
+      <li class="buttons__item"
+          [matTooltip]="'3d.editor.controls.settings.time' | translate"
+          matTooltipPosition="below"
+          (click)="onTimeSettingsOpen()">
         <mat-icon>wb_twilight</mat-icon>
       </li>
     </ul>
+  </div>
+</ng-template>
+
+<!-- Управление: текущая настройка -->
+<ng-template #controlsSettingsCurrent>
+  <div class="settings"
+       *ngVar="(currentSetting$ | async) as currentSetting">
+    <!-- Закрыть настройки -->
+    <mat-icon class="settings__close"
+              (click)="onCloseSettings()">close</mat-icon>
+    <!-- Название настройки -->
+    <h5 class="settings__title">{{('3d.editor.controls.settings.' + currentSetting) | translate}}</h5>
+    <!-- Содержимое -->
+    <div class="settings__content"></div>
   </div>
 </ng-template>

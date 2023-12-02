@@ -7,6 +7,12 @@ import { createAction, createFeatureSelector, createReducer, createSelector, on,
 // Название ключа в сторе
 export const VIEWER_3D_KEY = "3d_viewer";
 
+// Перечисление настроек перекрывающих вид
+export enum Editor3DOverlaySettings {
+  none = "none",
+  time = "time"
+}
+
 // Позиция компаса
 export interface Viewer3DStateCompass {
   radial: number;
@@ -18,6 +24,7 @@ export interface Viewer3DStateCompass {
 // Интерфейс состояния
 export interface Viewer3DState {
   compass: Viewer3DStateCompass;
+  overlaySettings: Editor3DOverlaySettings;
   loaders: {
     initial: boolean;
   };
@@ -31,6 +38,7 @@ const viewer3DInitialState: Viewer3DState = {
     sin: 0,
     cos: 0
   },
+  overlaySettings: Editor3DOverlaySettings.none,
   loaders: {
     initial: false
   }
@@ -52,6 +60,15 @@ export const viewer3DInitialLoaderEnable = createAction("[3D VIEWER] Enabled an 
 // Остановить глобальную загрузку
 export const viewer3DInitialLoaderDisable = createAction("[3D VIEWER] Disabled an initial loader");
 
+// Обновить глобальные настройки
+export const editor3DUpdateOverlaySettingsState = createAction(
+  "[3D VIEWER] Updated an viewer overlay settings state",
+  props<{ overlaySettings: Editor3DOverlaySettings }>()
+);
+
+// Обновить глобальные настройки: скрыть
+export const editor3DSetNoneOverlaySettingsState = createAction("[3D VIEWER] Set an viewer overlay settings state as none");
+
 // Создание стейта
 export const viewer3DReducer = createReducer(
   viewer3DInitialState,
@@ -60,7 +77,11 @@ export const viewer3DReducer = createReducer(
   // Начать глобальную загрузку
   on(viewer3DInitialLoaderEnable, state => ({ ...state, loaders: { ...state.loaders, initial: true } })),
   // Начать глобальную загрузку
-  on(viewer3DInitialLoaderDisable, state => ({ ...state, loaders: { ...state.loaders, initial: false } }))
+  on(viewer3DInitialLoaderDisable, state => ({ ...state, loaders: { ...state.loaders, initial: false } })),
+  // Обновить глобальные настройки
+  on(editor3DUpdateOverlaySettingsState, (state, { overlaySettings }) => ({ ...state, overlaySettings })),
+  // Обновить глобальные настройки: скрыть
+  on(editor3DSetNoneOverlaySettingsState, state => ({ ...state, overlaySettings: Editor3DOverlaySettings.none })),
 );
 
 
@@ -82,5 +103,15 @@ export const viewer3DCompassAzimuthSelector = createSelector(viewer3DCompassSele
 // Лоадер инициализации редактора
 export const viewer3DInitialLoaderSelector = createSelector(viewer3DFeatureSelector, ({ loaders: { initial } }) => initial);
 
+// Текущая настройка, перекрывающая 3D просмотр
+export const editor3DOverlaySettingsSelector = createSelector(viewer3DFeatureSelector, ({ overlaySettings }) => overlaySettings);
+
+// Текущая настройка, перекрывающая 3D просмотр: статус
+export const editor3DShowOverlaySettingsSelector = createSelector(editor3DOverlaySettingsSelector, overlaySettings => overlaySettings !== Editor3DOverlaySettings.none);
+
 // Показ элементов управления
-export const editor3DInitialLoaderSelector = createSelector(viewer3DInitialLoaderSelector, initial => !initial);
+export const editor3DShowControlsSelector = createSelector(
+  viewer3DInitialLoaderSelector,
+  editor3DShowOverlaySettingsSelector,
+  (initial, showSettings) => !initial && !showSettings
+);
