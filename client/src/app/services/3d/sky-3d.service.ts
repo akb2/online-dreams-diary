@@ -172,7 +172,7 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, Custom
     night: { min: 0, max: 60 }
   },
   sunLight: {
-    day: { min: 0.6, max: 1.1 },
+    day: { min: 0.6, max: 1 },
     night: { min: 0.4, max: 0.6 }
   },
   atmosphereLight: {
@@ -200,8 +200,8 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, Custom
     night: { min: 0, max: 0 }
   },
   exposure: {
-    day: { min: 0.2, max: 0.5 },
-    night: { min: 0.2, max: 0.3 }
+    day: { min: 0.3, max: 0.6 },
+    night: { min: 0.3, max: 0.4 }
   },
   mieCoefficient: {
     day: { min: 0.005, max: 0 },
