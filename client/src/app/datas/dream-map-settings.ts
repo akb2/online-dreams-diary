@@ -1,4 +1,4 @@
-import { Average } from "@_helpers/math";
+import { Average, CheckInRange } from "@_helpers/math";
 import { DreamMapSettings } from "@_models/dream-map";
 
 
@@ -24,14 +24,14 @@ export const DreamSkyTime = 180;
 // Пределы высот
 export const DreamMinHeight = 1;
 export const DreamDefHeight = -1;
-export const DreamMaxHeight = DreamCeilParts * 25;
+export const DreamMaxHeight = DreamCeilParts * 30;
 export const DreamWaterDefHeight = (DreamMaxHeight / 2) - (DreamCeilSize / DreamCeilParts);
 
 // Параметры по умолчанию
 export const DreamSkyType = 1;
 export const DreamTerrain = 1;
 export const DreamFogFar = DreamMapSize * DreamCeilSize;
-export const DreamFogNear = DreamFogFar / 2;
+export const DreamFogNear = CheckInRange(DreamMaxHeight, 0.8 * DreamFogFar, 0.5 * DreamFogFar);
 export const DreamHorizont = DreamFogFar * 3;
 export const DreamOutsideSize = 1;
 export const LODMaxDistance = Average([DreamFogFar, DreamFogNear]);
