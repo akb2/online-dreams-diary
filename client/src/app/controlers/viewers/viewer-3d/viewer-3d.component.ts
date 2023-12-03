@@ -282,6 +282,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           this.landscape3DService.mesh,
           () => this.sky3DService.sky
         ]
+      },
+      // Анимация ландшафта
+      {
+        callable: this.engine3DService.addToAnimation,
+        context: this.engine3DService,
+        args: [
+          () => this.landscape3DService.updateCameraPosition.bind(this.landscape3DService)
+        ]
       }
     );
   }

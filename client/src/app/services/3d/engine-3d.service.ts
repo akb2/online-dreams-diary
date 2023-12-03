@@ -1,5 +1,6 @@
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamFogFar, DreamMaxHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
@@ -35,6 +36,7 @@ export class Engine3DService implements OnDestroy {
   dreamMap: DreamMap;
   scene: Scene;
   renderer: WebGLRenderer;
+  stats: Stats;
 
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
@@ -47,10 +49,9 @@ export class Engine3DService implements OnDestroy {
   private clock: Clock;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
+  private animationList: Function[] = [];
 
   private lastCamera: PerspectiveCamera;
-
-  stats: Stats;
 
   renderEvent$: Observable<AnimationFramesEvent> = animationFrames();
   private destroyed$: Subject<void> = new Subject();
@@ -229,6 +230,8 @@ export class Engine3DService implements OnDestroy {
     this.renderEvent$
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
+        this.onAnimate();
+        // Обновление
         this.control.update();
         this.composer.render();
         this.stats.update();
@@ -247,6 +250,11 @@ export class Engine3DService implements OnDestroy {
   // Добавить объект на сцену
   addToScene(...objects: Mesh[]): void {
     this.scene.add(...objects);
+  }
+
+  // Добавить объект на сцену
+  addToAnimation(...animations: Function[]): void {
+    this.animationList.push(...animations);
   }
 
   // Добавить в пересечения курсора
@@ -368,6 +376,11 @@ export class Engine3DService implements OnDestroy {
       circleOfConfusionMaterial.uniforms.focalLength.value = focusDistance;
       circleOfConfusionMaterial.uniforms.focusRange.value = focusDistance * 0.5;
     }
+  }
+
+  // Анимация
+  private onAnimate(): void {
+    ArrayForEach(ArrayFilter(this.animationList, animation => !!animation), animation => animation());
   }
 }
 
