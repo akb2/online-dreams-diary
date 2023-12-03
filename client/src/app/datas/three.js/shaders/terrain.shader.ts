@@ -74,7 +74,7 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   tileSize: { type: "v2", value: { x: TerrainTileSize, y: TerrainTileSize } },
   tileSpacing: { type: "v2", value: { x: TerrainTileSpacing, y: TerrainTileSpacing } },
   tileSetSize: { type: "v2", value: { x: TerrainTileSetSize, y: TerrainTileSetSize } },
-  normalScale: { type: "v2", value: { x: -1, y: 1 } },
+  normalScale: { type: "v2", value: { x: 1.5, y: 1.5 } },
   normalMapType: { type: "f", value: ObjectSpaceNormalMap },
   aoMapIntensity: { type: "f", value: 0.5 },
   roughness: { type: "f", value: 1 },
@@ -117,6 +117,10 @@ export const TerrainFragmentShader: string = `
 
   vec4 lightMapTexelToLinear(vec4 texel) {
     return vec4(pow(texel.rgb, vec3(2.2)), texel.a);
+  }
+
+  vec4 invertColor(vec4 texel) {
+    return vec4(1.0 - texel.r, 1.0 - texel.g, 1.0 - texel.b, texel.a);
   }
 
   ${BaseShader.fragmentShader
