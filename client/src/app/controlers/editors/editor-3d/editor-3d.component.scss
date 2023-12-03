@@ -184,9 +184,6 @@ $controlOffset: 5px;
     // Солнце и Луна
     &__sun,
     &__moon {
-      width: $subControlSize;
-      height: $subControlSize;
-      line-height: $subControlSize;
       margin-top: math.div(-$subControlSize, 2);
       margin-left: math.div(-$subControlSize, 2);
       cursor: pointer;
@@ -194,15 +191,22 @@ $controlOffset: 5px;
       background-color: colors.$titleDark;
       color: colors.$title;
       border-radius: 50%;
-      font-size: $subControlSize * 0.7;
       text-align: center;
       transition:
         background-color #{screens.$animationTime},
         color #{screens.$animationTime};
-      user-select: none;
+      // Общий стиль
+      &,
+      > mat-icon {
+        user-select: none;
+        width: $subControlSize;
+        height: $subControlSize;
+        line-height: $subControlSize;
+      }
       // Иконка
       > mat-icon {
         pointer-events: none;
+        font-size: $subControlSize * 0.7;
       }
       // Выделение
       &:hover {
