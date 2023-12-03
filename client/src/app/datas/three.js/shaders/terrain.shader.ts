@@ -5,7 +5,7 @@ import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { MapTerrain, MapTerrainSplatMapColor } from "@_models/dream-map";
 import { Uniforms } from "@_models/three.js/base";
-import { ShaderLib, UniformsUtils } from "three";
+import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 
 
@@ -13,7 +13,7 @@ import { ShaderLib, UniformsUtils } from "three";
 
 // Основные значения
 const TerrainColorCount: number = 4;
-const MaterialType: keyof typeof ShaderLib = "phong";
+const MaterialType: keyof typeof ShaderLib = "standard";
 const BaseShader = ShaderLib[MaterialType];
 const TerrainTileSize: number = 1536;
 const TerrainTileSpacing: number = 512;
@@ -32,7 +32,9 @@ export const MaskTextureNamePreffix: string = "maskTex";
 export const MapTextureName: string = "mapTexture";
 export const NormalMapTextureName: string = "normalMapTexture";
 export const AoMapTextureName: string = "aoMapTexture";
-export const LightMapTextureName: string = "lightMap";
+export const LightMapTextureName: string = "lightMapTexture";
+export const RoughnessMapTextureName: string = "roughnessMapTexture";
+export const MetalnessMapTextureName: string = "metalMapTexture";
 
 // Массивы тайлов
 const MapRepeats: string[] = CreateNamedArray(TerrainRepeatName);
@@ -40,6 +42,8 @@ const MapTexture: string[] = CreateNamedArray(MapTextureName);
 const NormalMapTexture: string[] = CreateNamedArray(NormalMapTextureName);
 const AoMapTexture: string[] = CreateNamedArray(AoMapTextureName);
 const LightMap: string[] = CreateNamedArray(LightMapTextureName);
+const RoughnessMapTexture: string[] = CreateNamedArray(RoughnessMapTextureName);
+const MetalnessMapTexture: string[] = CreateNamedArray(MetalnessMapTextureName);
 const MaskMapNames: string[] = MapCycle(TerrainColorDepth, k => MaskMapNamePreffix + k, true);
 export const MapTileCoords: string[] = CreateNamedArray(MapTileCoordsName);
 export const MaskNames: string[] = MapCycle(TerrainColorDepth, k => MaskTextureNamePreffix + k, true);
@@ -71,7 +75,10 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   tileSpacing: { type: "v2", value: { x: TerrainTileSpacing, y: TerrainTileSpacing } },
   tileSetSize: { type: "v2", value: { x: TerrainTileSetSize, y: TerrainTileSetSize } },
   normalScale: { type: "v2", value: { x: -1, y: 1 } },
+  normalMapType: { type: "f", value: ObjectSpaceNormalMap },
   aoMapIntensity: { type: "f", value: 0.5 },
+  roughness: { type: "f", value: 1 },
+  metalness: { type: "f", value: 1 },
   lightMapIntensity: { type: "f", value: 0.05 },
   fogNear: { type: "f", value: DreamFogNear },
   fogFar: { type: "f", value: DreamFogFar }
@@ -112,14 +119,6 @@ export const TerrainFragmentShader: string = `
     return vec4(pow(texel.rgb, vec3(2.2)), texel.a);
   }
 
-  #if defined( USE_NORMALMAP )
-    uniform sampler2D ${NormalMapTextureName};
-  #endif
-
-  #if defined( USE_AOMAP )
-    uniform sampler2D ${AoMapTextureName};
-  #endif
-
   ${BaseShader.fragmentShader
     // Общие переменные
     .replace("void main() {", `
@@ -134,13 +133,59 @@ export const TerrainFragmentShader: string = `
         vec4 diffuseColor = LinearToLinear(texelColor);
       #endif
     `)
-    // Заполнение карт атмосферного свечения: фрагмент 1
+    // Туман
+    .replace("#include <fog_fragment>", `
+      #ifdef USE_FOG
+        #ifdef FOG_EXP2
+          float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+        #else
+          float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+        #endif
+
+        gl_FragColor.a = saturate(gl_FragColor.a - fogFactor);
+      #endif
+    `)
+    // Удаление лишней закраски
+    .replace("vec4 diffuseColor = vec4( diffuse, opacity );", "")
+    // ! Карта металичности
+    // Фрагмент 1
+    .replace("#include <metalnessmap_pars_fragment>", `
+      #ifdef USE_METALNESSMAP
+        uniform sampler2D ${MetalnessMapTextureName};
+      #endif
+    `)
+    // Фрагмент 2
+    .replace("#include <metalnessmap_fragment>", `
+      float metalnessFactor = metalness;
+      #ifdef USE_METALNESSMAP
+        ${MetalnessMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${MetalnessMapTextureName}, ${MapTileCoords[k]}, vUv);`).join("\n")}
+        metalnessFactor *= ${MapTerrains.map((t, k) => "(" + MetalnessMapTexture[k] + ".g * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")};
+      #endif
+    `)
+    // ! Карта шероховатости
+    // Фрагмент 1
+    .replace("#include <roughnessmap_pars_fragment>", `
+      #if defined( USE_ROUGHNESSMAP )
+        uniform sampler2D ${RoughnessMapTextureName};
+      #endif
+    `)
+    // Фрагмент 2
+    .replace("#include <roughnessmap_fragment>", `
+      float roughnessFactor = roughness;
+      #ifdef USE_ROUGHNESSMAP
+        ${RoughnessMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${RoughnessMapTextureName}, ${MapTileCoords[k]}, vUv);`).join("\n")}
+        roughnessFactor *= ${MapTerrains.map((t, k) => "(" + RoughnessMapTexture[k] + ".g * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")};
+      #endif
+    `)
+    // ! Карта атмосферного свечения
+    // Фрагмент 1
     .replace("#include <aomap_pars_fragment>", `
       #ifdef USE_AOMAP
         uniform float aoMapIntensity;
+        uniform sampler2D ${AoMapTextureName};
       #endif
     `)
-    // Заполнение карт атмосферного свечения: фрагмент 2
+    // Фрагмент 2
     .replace("#include <aomap_fragment>", `
       #ifdef USE_AOMAP
         ${AoMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${AoMapTextureName}, ${MapTileCoords[k]}, vUv);`).join("\n")}
@@ -155,12 +200,12 @@ export const TerrainFragmentShader: string = `
         #endif
       #endif
     `)
-    // Удаление лишней закраски
-    .replace("vec4 diffuseColor = vec4( diffuse, opacity );", "")
-    // Карта нормалей: фрагмент 1
+    // ! Карта нормалей
+    // Фрагмент 1
     .replace("#include <normalmap_pars_fragment>", `
       #ifdef USE_NORMALMAP
         uniform vec2 normalScale;
+        uniform sampler2D ${NormalMapTextureName};
 
         vec3 perturbNormal2Arb (vec3 eye_pos, vec3 surf_norm) {
           vec3 q0 = vec3(dFdx(eye_pos.x), dFdx(eye_pos.y), dFdx(eye_pos.z));
@@ -186,7 +231,7 @@ export const TerrainFragmentShader: string = `
         }
       #endif
     `)
-    // Карта нормалей: фрагмент 2
+    // Фрагмент 2
     .replace("#include <normal_fragment_maps>", `
       #ifdef USE_CLEARCOAT
         vec3 clearcoatNormal = geometryNormal;
@@ -196,30 +241,19 @@ export const TerrainFragmentShader: string = `
         normal = perturbNormal2Arb(-vViewPosition, normal);
       #endif
     `)
-    // Карта освещения: фрагмент 1
+    // ! Карта освещения
+    // Фрагмент 1
     .replace("#include <lightmap_pars_fragment>", `
       uniform float lightMapIntensity;
       uniform sampler2D ${LightMapTextureName};
     `)
-    // Карта освещения: фрагмент 2
+    // Фрагмент 2
     .replace("#include <lights_fragment_maps>", `
       #ifdef USE_LIGHTMAP
         ${LightMap.map((n, k) => `vec4 ${n} = getTileTexture(${LightMapTextureName}, ${MapTileCoords[k]}, vUv);`).join("\n")}
         vec4 lightMapTexel = (${MapTerrains.map((t, k) => "(" + LightMap[k] + " * " + getMapVarColor(t) + " * " + getMapVar(t) + ".a)").join(" + ")});
         vec3 lightMapIrradiance = lightMapTexel.rgb * lightMapIntensity;
         reflectedLight.indirectDiffuse += lightMapIrradiance;
-      #endif
-    `)
-    // Туман
-    .replace("#include <fog_fragment>", `
-      #ifdef USE_FOG
-        #ifdef FOG_EXP2
-          float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
-        #else
-          float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
-        #endif
-
-        gl_FragColor.a = saturate(gl_FragColor.a - fogFactor);
       #endif
     `)
   }
@@ -232,9 +266,11 @@ export const TerrainVertexShader: string = BaseShader.vertexShader;
 export const TerrainDefines: CustomObject<boolean> = {
   USE_UV: true,
   USE_MAP: true,
-  USE_AOMAP: false,
+  USE_AOMAP: true,
   USE_NORMALMAP: true,
   USE_LIGHTMAP: false,
+  USE_ROUGHNESSMAP: true,
+  USE_METALNESSMAP: true,
   USE_BUMPMAP: false,
   USE_DISPLACEMENTMAP: false,
   PHYSICALLY_CORRECT_LIGHTS: false,

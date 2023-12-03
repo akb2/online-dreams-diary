@@ -16,8 +16,10 @@ export const TexturePaths: CustomObjectKey<TextureType, string> = {
   icons: TerrainTexturePath + "icons/",
   face: TerrainTexturePath + "face",
   normal: TerrainTexturePath + "normal",
-  ao: TerrainTexturePath + "ao/",
-  light: TerrainTexturePath + "light/",
+  ao: TerrainTexturePath + "ao",
+  roughness: TerrainTexturePath + "roughness",
+  metalness: TerrainTexturePath + "metalness",
+  light: TerrainTexturePath + "light",
 };
 
 const BaseObjectTexturePath: string = "assets/dream-map/object/";

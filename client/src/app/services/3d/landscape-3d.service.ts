@@ -1,7 +1,7 @@
 import { NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
-import { MapTextureName, MaskNames, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -37,7 +37,10 @@ export class Landscape3DService {
 
   private terrainTextureKeys: CustomObjectKey<BaseTextureType, string> = {
     face: MapTextureName,
-    normal: NormalMapTextureName
+    normal: NormalMapTextureName,
+    ao: AoMapTextureName,
+    roughness: RoughnessMapTextureName,
+    metalness: MetalnessMapTextureName
   };
   private maskTextures: DataTexture[] = [];
   private mapTextures: CustomObjectKey<BaseTextureType, Texture> = {};
