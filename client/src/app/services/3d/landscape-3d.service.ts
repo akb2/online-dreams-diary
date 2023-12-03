@@ -398,7 +398,8 @@ export class Landscape3DService {
 
   // Обновить положение камеры
   updateCameraPosition(): void {
-    console.log(123);
+    if (this.material?.uniforms?.cameraPosition) {
+    }
   }
 }
 

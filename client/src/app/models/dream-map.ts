@@ -184,7 +184,7 @@ export interface WayLineType {
 export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
 
 // Типы текстур
-export type BaseTextureType = "face" | "ao" | "normal" | "disp" | "roughness" | "metalness";
+export type BaseTextureType = "face" | "ao" | "normal" | "disp" | "roughness" | "metalness" | "parallax";
 
 // Типы текстур + иконка
 export type TextureType = BaseTextureType | "icons";

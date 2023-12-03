@@ -19,6 +19,7 @@ export const TexturePaths: CustomObjectKey<TextureType, string> = {
   ao: TerrainTexturePath + "ao",
   roughness: TerrainTexturePath + "roughness",
   metalness: TerrainTexturePath + "metalness",
+  parallax: TerrainTexturePath + "parallax",
   light: TerrainTexturePath + "light",
 };
 

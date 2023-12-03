@@ -37,13 +37,13 @@ export class Engine3DService implements OnDestroy {
   scene: Scene;
   renderer: WebGLRenderer;
   stats: Stats;
+  camera: PerspectiveCamera;
 
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
 
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
-  private camera: PerspectiveCamera;
   private control: OrbitControls;
   private octree: Octree;
   private clock: Clock;

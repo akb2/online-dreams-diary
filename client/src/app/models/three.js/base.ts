@@ -8,7 +8,11 @@ import { IUniform, Shader, Texture, WebGLRenderer } from "three";
 
 // Тип данных униформы
 export enum ThreeUniformType {
-  float = "f"
+  float = "f",
+  int = "i",
+  vector2 = "v2",
+  vector3 = "v3",
+  texture = "t"
 }
 
 // Униформа
