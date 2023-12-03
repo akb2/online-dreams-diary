@@ -14,7 +14,7 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 // Основные значения
 const TerrainColorCount = 4;
-const ParallaxSteps = 50;
+const ParallaxSteps = 8;
 const ParallaxSize = 0.25;
 const MaterialType: keyof typeof ShaderLib = "standard";
 const BaseShader = ShaderLib[MaterialType];
