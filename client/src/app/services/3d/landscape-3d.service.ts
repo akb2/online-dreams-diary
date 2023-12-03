@@ -9,7 +9,7 @@ import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, Re
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { Injectable } from "@angular/core";
-import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBFormat, ShaderMaterial, Texture, UniformsUtils } from "three";
+import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, PlaneGeometry, RGBFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
 
 
@@ -91,7 +91,7 @@ export class Landscape3DService {
       const iZ: number = CheckInRange(scaledTextureZ + z, imageHeight - 1, 0);
       const iX: number = CheckInRange(scaledTextureX + x, imageWidth - 1, 0);
       const position = ((iX * imageData.width) + iZ) * canvasSize;
-      //
+      // Вернуть цвет
       return imageData.data[position];
     }));
   }
@@ -282,27 +282,28 @@ export class Landscape3DService {
   private createTextures(): void {
     const { width, height, mapBorderSizeX, mapBorderSizeY } = this.getDisplacementData();
     const size: number = width * height;
+    const ceilSize = 4;
     // Цикл по количеству масок
     this.maskTextures = MapCycle(TerrainColorDepth, d => {
-      const data: Uint8Array = new Uint8Array(4 * size);
+      const data: Uint8Array = new Uint8Array(ceilSize * size);
       const texture: DataTexture = new DataTexture(data, width, height);
       // Цикл по размеру
       ForCycle(size, s => {
-        const stride: number = s * 4;
+        const stride: number = s * ceilSize;
         const realX: number = MathRound((s - (Math.floor(s / width) * width)), 2);
         const realY: number = MathRound(height - 1 - Math.floor(s / width), 2);
         const x: number = Math.floor(realX) - mapBorderSizeX;
         const y: number = Math.ceil(realY) - mapBorderSizeY;
         const terrain: MapTerrain = this.ceil3dService.getTerrain(x, y);
         // Цвета
-        ForCycle(4, k => data[stride + k] = k < 3
-          ? this.getColor(d, k, terrain)
-          : this.maxColorValue
-        );
+        ForCycle(ceilSize, k => data[stride + k] = this.getColor(d, k, terrain));
       });
       // Настройки
       texture.magFilter = LinearFilter;
       texture.minFilter = LinearFilter;
+      texture.anisotropy = 1;
+      texture.encoding = LinearEncoding;
+      texture.format = RGBFormat;
       texture.needsUpdate = true;
       // Вернуть текстуру
       return texture;
@@ -357,9 +358,9 @@ export class Landscape3DService {
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearMipmapLinearFilter;
     texture.encoding = LinearEncoding;
-    texture.wrapS = MirroredRepeatWrapping;
-    texture.wrapT = MirroredRepeatWrapping;
-    texture.anisotropy = 0;
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.anisotropy = 1;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
     // Запомнить текстуру

@@ -72,6 +72,7 @@ export enum MapTerrainSplatMapColor {
   Red,
   Green,
   Blue,
+  Alpha,
   Empty
 }
 

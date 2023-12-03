@@ -61,7 +61,7 @@ export const WayLineTypes: WayLineType[] = [
 ];
 
 // Список цветов для
-const Colors: MapTerrainSplatMapColor[] = [MapTerrainSplatMapColor.Red, MapTerrainSplatMapColor.Green, MapTerrainSplatMapColor.Blue];
+const Colors: MapTerrainSplatMapColor[] = [MapTerrainSplatMapColor.Red, MapTerrainSplatMapColor.Green, MapTerrainSplatMapColor.Blue, MapTerrainSplatMapColor.Alpha];
 
 // Список типов местности
 export const MapTerrains: MapTerrain[] = [
