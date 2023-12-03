@@ -5,6 +5,7 @@ import { MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { BufferGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
@@ -340,7 +341,7 @@ export class DreamMapBirchTreeObject extends DreamMapObjectTemplate implements D
 
   // Анимация
   animate(): void {
-    AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+    AnimateNoizeShader(this.params?.shader?.uniforms as Uniforms, this.clock);
   }
 
   // Создание шейдера

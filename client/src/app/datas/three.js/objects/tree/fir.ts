@@ -5,6 +5,7 @@ import { MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
@@ -452,8 +453,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
 
   // Анимация
   animate(): void {
-    AnimateNoizeShader(this.params?.shaderA?.uniforms, this.clock);
-    AnimateNoizeShader(this.params?.shaderB?.uniforms, this.clock);
+    AnimateNoizeShader(this.params?.shaderA?.uniforms as Uniforms, this.clock);
+    AnimateNoizeShader(this.params?.shaderB?.uniforms as Uniforms, this.clock);
   }
 
   // Создание шейдера

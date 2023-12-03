@@ -12,6 +12,7 @@ import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
 import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "./_models";
+import { Uniforms } from "@_models/three.js/base";
 
 
 
@@ -298,7 +299,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
 
   // Анимация
   animate(): void {
-    AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+    AnimateNoizeShader(this.params?.shader?.uniforms as Uniforms, this.clock);
   }
 
   // Создание шейдера

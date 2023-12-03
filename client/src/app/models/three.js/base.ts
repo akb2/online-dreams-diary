@@ -6,8 +6,18 @@ import { IUniform, Shader, Texture, WebGLRenderer } from "three";
 
 
 
+// Тип данных униформы
+export enum ThreeUniformType {
+  float = "f"
+}
+
+// Униформа
+export interface ThreeUniform<T = any> extends IUniform<T> {
+  type: ThreeUniformType;
+}
+
 // Тип для униформ
-export type Uniforms = CustomObject<IUniform<any>>;
+export type Uniforms = CustomObject<ThreeUniform<any>>;
 
 // Тип функции компиляции шейдера
 export type OnBeforeCompileCallback = (shader: Shader, renderer?: WebGLRenderer) => void;

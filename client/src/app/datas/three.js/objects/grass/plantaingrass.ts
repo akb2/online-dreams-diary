@@ -12,6 +12,7 @@ import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextu
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
 import { CheckCeilForm, GetGrassSubType } from "./_functions";
 import { GrassColorRange } from "./_models";
+import { Uniforms } from "@_models/three.js/base";
 
 
 
@@ -217,7 +218,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
 
   // Анимация
   animate(): void {
-    AnimateNoizeShader(this.params?.shader?.uniforms, this.clock);
+    AnimateNoizeShader(this.params?.shader?.uniforms as Uniforms, this.clock);
   }
 
   // Создание шейдера
