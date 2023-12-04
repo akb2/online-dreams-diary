@@ -3,7 +3,7 @@ import { DreamCeilParts, DreamCeilSize, DreamFogFar, DreamFogNear } from "@_data
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
-import { MapTerrain, MapTerrainSplatMapColor } from "@_models/dream-map";
+import { MapTerrain, MapTerrainColorChannelsKeys, MapTerrainSplatMapColor } from "@_models/dream-map";
 import { Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
@@ -14,8 +14,8 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 // Основные значения
 const TerrainColorCount = 4;
-const ParallaxSteps = 8;
-const ParallaxSize = 0.25;
+const ParallaxSteps = 30;
+const ParallaxSize = 2;
 const MaterialType: keyof typeof ShaderLib = "standard";
 const BaseShader = ShaderLib[MaterialType];
 const TerrainTileSize = 1536;
@@ -42,26 +42,29 @@ export const ParallaxMapTextureName = "parallaxMapTexture";
 
 // Массивы тайлов
 const MapRepeats = CreateNamedArray(TerrainRepeatName);
-const MapTexture = CreateNamedArray(MapTextureName);
-const NormalMapTexture = CreateNamedArray(NormalMapTextureName);
-const AoMapTexture = CreateNamedArray(AoMapTextureName);
-const LightMap = CreateNamedArray(LightMapTextureName);
-const RoughnessMapTexture = CreateNamedArray(RoughnessMapTextureName);
-const MetalnessMapTexture = CreateNamedArray(MetalnessMapTextureName);
-const ParallaxMapTexture = CreateNamedArray(ParallaxMapTextureName);
 const MaskMapNames = MapCycle(TerrainColorDepth, k => MaskMapNamePreffix + k, true);
 export const MapTileCoords = CreateNamedArray(MapTileCoordsName);
 export const MaskNames = MapCycle(TerrainColorDepth, k => MaskTextureNamePreffix + k, true);
 
 // Имена цветов
-const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, string> = {
+const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, MapTerrainColorChannelsKeys> = {
   [MapTerrainSplatMapColor.Red]: "r",
   [MapTerrainSplatMapColor.Green]: "g",
   [MapTerrainSplatMapColor.Blue]: "b",
   [MapTerrainSplatMapColor.Alpha]: "a"
 };
-const getMapVar: Function = (t: MapTerrain) => MaskMapNames[t.splatMap.layout];
-const getMapVarColor: Function = (t: MapTerrain) => getMapVar(t) + "." + ColorsNames[t.splatMap.color];
+const getMapVarColor: Function = (t: MapTerrain) => MaskMapNames[t.splatMap.layout] + "." + ColorsNames[t.splatMap.color];
+
+// Получение пикселя из тайл текстуры
+const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsKeys, uvName = "finalUv"): string => MapTerrains
+  .map((t, k) => {
+    const channelString = !!channel
+      ? "." + channel
+      : "";
+    // Вернуть выражение
+    return "(getTileTexture(" + textureName + ", " + MapTileCoords[k] + ", " + uvName + ")" + channelString + " * " + getMapVarColor(t) + ")";
+  })
+  .join(" + ");
 
 // Униформы
 export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniforms, {
@@ -171,14 +174,13 @@ export const TerrainFragmentShader = `
 
           float currentHeight = 0.0;
           float stepSize = parallaxScale / float(parallaxSteps);
-          vec3 viewDir = normalize(cameraPosition - vWorldPosition);
+          vec3 viewDir = normalize(vViewPosition - vWorldPosition);
 
           for(int i = 0; i < parallaxSteps; i++) {
             currentHeight += stepSize;
 
             vec2 newUv = vUv - (vec2(viewDir.x, -viewDir.z) * currentHeight);
-            ${ParallaxMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${ParallaxMapTextureName}, ${MapTileCoords[k]}, newUv);`).join("\n")}
-            float textureHeight = (${MapTerrains.map((t, k) => "(" + ParallaxMapTexture[k] + ".r * " + getMapVarColor(t) + ")").join(" + ")});
+            float textureHeight = ${getTextureTexel(ParallaxMapTextureName, "r", "newUv")};
 
             if (textureHeight < currentHeight) {
               break;
@@ -191,8 +193,7 @@ export const TerrainFragmentShader = `
     // ! Текстурная карта
     .replace("#include <map_fragment>", `
       #ifdef USE_MAP
-        ${MapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${MapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-        vec4 texelColor = (${MapTerrains.map((t, k) => "(" + MapTexture[k] + " * " + getMapVarColor(t) + ")").join(" + ")});
+        vec4 texelColor = ${getTextureTexel(MapTextureName)};
         vec4 diffuseColor = LinearToLinear(texelColor);
       #endif
     `)
@@ -207,8 +208,7 @@ export const TerrainFragmentShader = `
     .replace("#include <metalnessmap_fragment>", `
       float metalnessFactor = metalness;
       #ifdef USE_METALNESSMAP
-        ${MetalnessMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${MetalnessMapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-        metalnessFactor *= ${MapTerrains.map((t, k) => "(" + MetalnessMapTexture[k] + ".g * " + getMapVarColor(t) + ")").join(" + ")};
+        metalnessFactor *= ${getTextureTexel(MetalnessMapTextureName, "b")};
       #endif
     `)
     // ! Карта шероховатости
@@ -222,8 +222,7 @@ export const TerrainFragmentShader = `
     .replace("#include <roughnessmap_fragment>", `
       float roughnessFactor = roughness;
       #ifdef USE_ROUGHNESSMAP
-        ${RoughnessMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${RoughnessMapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-        roughnessFactor *= ${MapTerrains.map((t, k) => "(" + RoughnessMapTexture[k] + ".g * " + getMapVarColor(t) + ")").join(" + ")};
+        roughnessFactor *= ${getTextureTexel(RoughnessMapTextureName, "g")};
       #endif
     `)
     // ! Карта атмосферного свечения
@@ -237,10 +236,7 @@ export const TerrainFragmentShader = `
     // Фрагмент 2
     .replace("#include <aomap_fragment>", `
       #ifdef USE_AOMAP
-        ${AoMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${AoMapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-        float ambientOcclusion = (
-          ${MapTerrains.map((t, k) => "(" + AoMapTexture[k] + ".r * " + getMapVarColor(t) + ")").join(" + ")}
-        ) * aoMapIntensity;
+        float ambientOcclusion = (${getTextureTexel(AoMapTextureName, "r")}) * aoMapIntensity;
         reflectedLight.indirectDiffuse *= ambientOcclusion;
 
         #if defined( USE_ENVMAP ) && defined( STANDARD )
@@ -257,6 +253,8 @@ export const TerrainFragmentShader = `
         uniform sampler2D ${NormalMapTextureName};
 
         vec3 perturbNormal2Arb (vec3 eye_pos, vec3 surf_norm) {
+          ${MaskMapNames.map((n, k) => `vec4 ${n} = texture2D(${MaskNames[k]}, finalUv);`).join("\n")}
+
           vec3 q0 = vec3(dFdx(eye_pos.x), dFdx(eye_pos.y), dFdx(eye_pos.z));
           vec3 q1 = vec3(dFdy(eye_pos.x), dFdy(eye_pos.y), dFdy(eye_pos.z));
           vec2 st0 = dFdx(finalUv.st);
@@ -264,17 +262,11 @@ export const TerrainFragmentShader = `
           vec3 S = normalize(q0 * st1.t - q1 * st0.t);
           vec3 T = normalize(-q0 * st1.s + q1 * st0.s);
           vec3 N = normalize(surf_norm);
-
-          ${MaskMapNames.map((n, k) => `vec4 ${n} = texture2D(${MaskNames[k]}, finalUv);`).join("\n")}
-          ${NormalMapTexture.map((n, k) => `vec4 ${n} = getTileTexture(${NormalMapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-
-          vec4 full_normal = (
-            ${MapTerrains.map((t, k) => "(" + NormalMapTexture[k] + " * " + getMapVarColor(t) + ")").join(" + ")}
-          );
-
+          vec4 full_normal = ${getTextureTexel(NormalMapTextureName)};
           vec3 mapN = full_normal.xyz * 2.0 - 1.0;
-          mapN.xy = normalScale * mapN.xy;
           mat3 tsn = mat3(S, T, N);
+
+          mapN.xy = normalScale * mapN.xy;
 
           return normalize(tsn * mapN);
         }
@@ -299,8 +291,7 @@ export const TerrainFragmentShader = `
     // Фрагмент 2
     .replace("#include <lights_fragment_maps>", `
       #ifdef USE_LIGHTMAP
-        ${LightMap.map((n, k) => `vec4 ${n} = getTileTexture(${LightMapTextureName}, ${MapTileCoords[k]}, finalUv);`).join("\n")}
-        vec4 lightMapTexel = (${MapTerrains.map((t, k) => "(" + LightMap[k] + " * " + getMapVarColor(t) + ")").join(" + ")});
+        vec4 lightMapTexel = ${getTextureTexel(LightMapTextureName)};
         vec3 lightMapIrradiance = lightMapTexel.rgb * lightMapIntensity;
         reflectedLight.indirectDiffuse += lightMapIrradiance;
       #endif
@@ -309,7 +300,14 @@ export const TerrainFragmentShader = `
 `;
 
 // Фрагментный шейдер
-export const TerrainVertexShader = BaseShader.vertexShader;
+export const TerrainVertexShader = `
+  ${BaseShader.vertexShader
+    // ! Карта паралакса
+    .replace("void main() {", `
+      void main() {
+    `)
+  }
+`;
 
 // Настройки шейдера материала
 export const TerrainDefines: CustomObject<boolean> = {

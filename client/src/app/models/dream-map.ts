@@ -76,6 +76,9 @@ export enum MapTerrainSplatMapColor {
   Empty
 }
 
+// Перечисление ключей цвета
+export type MapTerrainColorChannelsKeys = "r" | "g" | "b" | "a";
+
 // Интерфейс карты для сервера
 export interface DreamMapDto {
   ceils: (DreamMapCeilDto)[];
