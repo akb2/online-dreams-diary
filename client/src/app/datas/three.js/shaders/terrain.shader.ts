@@ -26,7 +26,7 @@ const BaseShader = ShaderLib[MaterialType];
 const TerrainTileSize = 1536;
 const TerrainTileSpacing = 512;
 const TerrainTileSetSize = TerrainTileSize * 4;
-export const TerrainRepeat = 0.5;
+export const TerrainRepeat = 0.32;
 export const TerrainColorDepth = MapTerrains.filter((t, k) => k / TerrainColorCount === Math.round(k / TerrainColorCount)).length;
 
 // Именованный массив
