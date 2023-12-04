@@ -310,7 +310,6 @@ export const TerrainFragmentShader = `
 
 // Фрагментный шейдер
 export const TerrainVertexShader = BaseShader.vertexShader;
-console.log(BaseShader.vertexShader);
 
 // Настройки шейдера материала
 export const TerrainDefines: CustomObject<boolean> = {
