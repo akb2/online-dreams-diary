@@ -1,11 +1,11 @@
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
-import { DefaultDreamMapSettings, DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize } from "@_datas/dream-map-settings";
+import { DefaultDreamMapSettings, DreamCeilSize, DreamCloudsDefaultHeight, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize, DreamStartHeight } from "@_datas/dream-map-settings";
 import { AngleInRange, AngleToRad, CheckInRange, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMap, DreamMapSettings } from "@_models/dream-map";
 import { MinMax } from "@_models/math";
 import { Injectable } from "@angular/core";
-import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Mesh, MeshBasicMaterial, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Landscape3DService } from "./landscape-3d.service";
 
@@ -23,6 +23,7 @@ export class Sky3DService {
 
   sky: Sky;
   fog: Fog;
+  clouds: Mesh<BoxGeometry, MeshBasicMaterial>;
   sun: DirectionalLight;
   atmosphere: AmbientLight;
 
@@ -45,6 +46,7 @@ export class Sky3DService {
     this.createSky();
     this.createFog();
     this.createSun();
+    this.createClouds();
     this.createAtmosphere();
     // Обновить
     this.updateSky();
@@ -73,13 +75,13 @@ export class Sky3DService {
 
   // Создать солнце
   private createSun(): void {
-    const oWidth: number = this.dreamMap.size.width;
-    const oHeight: number = this.dreamMap.size.height;
-    const borderOSize: number = Math.max(oWidth, oHeight) * this.landscape3DService.outSideRepeat;
-    const borderSize: number = borderOSize * DreamCeilSize;
-    const width: number = (oWidth * DreamCeilSize) + (borderSize * 2);
-    const height: number = (oHeight * DreamCeilSize) + (borderSize * 2);
-    const size: number = Math.min(width, height);
+    const mapWidth: number = this.dreamMap.size.width;
+    const mapHeight: number = this.dreamMap.size.height;
+    const mapBorderSizeX: number = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const mapBorderSizeY: number = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const width: number = (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2);
+    const height: number = (mapHeight * DreamCeilSize) + (mapBorderSizeY * 2);
+    const size: number = Math.max(width, height);
     // Создание объекта
     this.sun = new DirectionalLight(this.colorWhite, 1.2);
     this.sun.castShadow = true;
@@ -102,6 +104,22 @@ export class Sky3DService {
   // Создать атмосферное свечение
   private createAtmosphere(): void {
     this.atmosphere = new AmbientLight(0xFFFFFF, 0.5);
+  }
+
+  // Создать облака
+  private createClouds(): void {
+    const mapWidth: number = this.dreamMap.size.width;
+    const mapHeight: number = this.dreamMap.size.height;
+    const mapBorderSizeX: number = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const mapBorderSizeY: number = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const sizeX: number = (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2);
+    const sizeZ: number = (mapHeight * DreamCeilSize) + (mapBorderSizeY * 2);
+    const sizeY: number = DreamCeilSize * 0.3;
+    const geometry = new BoxGeometry(sizeX, sizeY, sizeZ, 1, 1, 1);
+    const material = new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    // Настройки
+    this.clouds = new Mesh(geometry, material);
+    this.clouds.position.setY(DreamStartHeight + DreamCloudsDefaultHeight);
   }
 
   // Обновить время

@@ -1,6 +1,6 @@
 import { NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMaxHeight } from "@_datas/dream-map-settings";
+import { DreamCeilSize, DreamDefHeight, DreamMaxHeight, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
@@ -120,8 +120,7 @@ export class Landscape3DService {
     const vertexStartY: number = y + mapBorderSizeY;
     const vertexWidth: number = (mapWidth * ((this.outSideRepeat * 2) + 1)) + 1;
     const indexV: number = (vertexStartY * vertexWidth) + vertexStartX;
-    const heightPart: number = DreamCeilSize / DreamCeilParts;
-    const scale: number = heightPart * DreamMaxHeight;
+    const scale: number = DreamRealMaxHeight;
     const width: number = (mapBorderSizeX * 2) + mapWidth;
     const height: number = (mapBorderSizeY * 2) + mapHeight;
     const textureX: number = x + mapBorderSizeX;
@@ -154,7 +153,7 @@ export class Landscape3DService {
 
   // Среднее значение высоты в изображении высот
   private getDisplacementMiddleZ(ceil: DreamMapCeil, getOriginal: boolean = false): number {
-    const maxHeight = this.getDisplacementData(ceil).scale;
+    const { scale: maxHeight } = this.getDisplacementData(ceil);
     // Расчет
     return CheckInRange((this.getDisplacementMiddleZColor(ceil, getOriginal) / this.maxColorValue) * maxHeight, maxHeight, 0);
   }
@@ -258,6 +257,7 @@ export class Landscape3DService {
     this.mesh.receiveShadow = true;
     this.mesh.castShadow = true;
     this.mesh.name = DreamMapTerrainName;
+    this.mesh.position.setY(DreamStartHeight);
     this.mesh.updateMatrix();
   }
 
