@@ -1,4 +1,4 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamFogFar, DreamMaxHeight } from "@_datas/dream-map-settings";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
 import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
@@ -31,7 +31,7 @@ export class Engine3DService implements OnDestroy {
   private moveSpeed: number = DreamCeilSize * 14;
   private zoomSpeed: number = 1;
   private minAngle: number = 0;
-  private maxAngle: number = 82;
+  private maxAngle: number = 80;
 
   dreamMap: DreamMap;
   scene: Scene;
@@ -186,7 +186,7 @@ export class Engine3DService implements OnDestroy {
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
     this.control.target.setX(this.dreamMap.camera.target.x);
-    this.control.target.setY(DreamMaxHeight / DreamCeilParts * DreamCeilSize);
+    this.control.target.setY(DreamStartHeight + DreamRealMaxHeight + DreamCeilSize);
     this.control.target.setZ(this.dreamMap.camera.target.z);
     this.camera.far = DreamFogFar;
     // Изменение камеры
@@ -249,17 +249,26 @@ export class Engine3DService implements OnDestroy {
 
   // Добавить объект на сцену
   addToScene(...objects: Mesh[]): void {
-    this.scene.add(...objects);
+    ArrayForEach(
+      ArrayFilter(objects, object => !!object),
+      object => this.scene.add(object)
+    );
   }
 
   // Добавить объект на сцену
   addToAnimation(...animations: Function[]): void {
-    this.animationList.push(...animations);
+    ArrayForEach(
+      ArrayFilter(animations, animation => !!animation && !this.animationList.includes(animation)),
+      animation => this.animationList.push(animation)
+    );
   }
 
   // Добавить в пересечения курсора
   addToCursorIntersection(...objects: Mesh[]): void {
-    objects.forEach(object => this.octree.add(object));
+    ArrayForEach(
+      ArrayFilter(objects, object => !!object),
+      object => this.octree.add(object)
+    );
     // Обновить
     this.octree.update();
   }
