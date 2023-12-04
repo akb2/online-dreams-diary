@@ -1,5 +1,6 @@
 import { MapTerrains } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamFogFar, DreamFogNear } from "@_datas/dream-map-settings";
+import { Average } from "@_helpers/math";
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -12,10 +13,14 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 
 
+// Настройки паралакса
+// ? Рекомендуемо: 3 единицы размера на 1 шаг
+const ParallaxDistance = DreamFogNear + ((DreamFogFar - DreamFogNear) * 0.8);
+const ParallaxScale = 15;
+const ParallaxSteps = 15;
+
 // Основные значения
 const TerrainColorCount = 4;
-const ParallaxSteps = 30;
-const ParallaxSize = 2;
 const MaterialType: keyof typeof ShaderLib = "standard";
 const BaseShader = ShaderLib[MaterialType];
 const TerrainTileSize = 1536;
@@ -89,7 +94,9 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   lightMapIntensity: ThreeFloatUniform(0.05),
   fogNear: ThreeFloatUniform(DreamFogNear),
   fogFar: ThreeFloatUniform(DreamFogFar),
-  parallaxScale: ThreeFloatUniform(ParallaxSize * (DreamCeilSize / DreamCeilParts))
+  parallaxScale: ThreeFloatUniform(ParallaxScale * (DreamCeilSize / DreamCeilParts)),
+  parallaxSteps: ThreeFloatUniform(ParallaxSteps),
+  parallaxDistance: ThreeFloatUniform(ParallaxDistance)
 }]);
 
 // Вершинный шейдер
@@ -103,6 +110,8 @@ export const TerrainFragmentShader = `
 
   uniform sampler2D ${MaskNames.join(", ")};
   uniform sampler2D ${MapTextureName};
+
+  varying float vDistanceToCamera;
 
   vec2 vec2LineFunc (vec2 min, vec2 max, vec2 v, vec2 vMin, vec2 vMax) {
     return (((v - vMin) / (vMax - vMin)) * (max - min)) + min;
@@ -158,32 +167,61 @@ export const TerrainFragmentShader = `
       #if defined( USE_PARALLAXMAP )
         uniform sampler2D ${ParallaxMapTextureName};
         uniform float parallaxScale;
+        uniform float parallaxSteps;
+        uniform float parallaxDistance;
+
+        vec2 parallaxMap(vec3 V) {
+          float layerHeight = 1.0 / parallaxSteps;
+          float currentLayerHeight = 0.0;
+          vec2 dtex = parallaxScale * V.xy / V.z / parallaxSteps;
+          vec2 currentTextureCoords = vUv;
+          float heightFromTexture = ${getTextureTexel(ParallaxMapTextureName, "r", "currentTextureCoords")};
+
+          for ( int i = 0; i == 0; i += 0 ) {
+            if ( heightFromTexture <= currentLayerHeight ) {
+              break;
+            }
+
+            currentLayerHeight += layerHeight;
+            currentTextureCoords -= dtex;
+            heightFromTexture = ${getTextureTexel(ParallaxMapTextureName, "r", "currentTextureCoords")};
+          }
+
+          vec2 prevTCoords = currentTextureCoords + dtex;
+          float nextH = heightFromTexture - currentLayerHeight;
+          float prevH = ${getTextureTexel(ParallaxMapTextureName, "r", "prevTCoords")} - currentLayerHeight + layerHeight;
+          float weight = nextH / ( nextH - prevH );
+
+          return prevTCoords * weight + currentTextureCoords * ( 1.0 - weight );
+        }
+
+				vec2 perturbUv( vec3 surfPosition, vec3 surfNormal, vec3 viewPosition ) {
+					vec2 texDx = dFdx( vUv );
+					vec2 texDy = dFdy( vUv );
+
+					vec3 vSigmaX = dFdx( surfPosition );
+					vec3 vSigmaY = dFdy( surfPosition );
+					vec3 vR1 = cross( vSigmaY, surfNormal );
+					vec3 vR2 = cross( surfNormal, vSigmaX );
+					float fDet = dot( vSigmaX, vR1 );
+
+					vec2 vProjVscr = ( 1.0 / fDet ) * vec2( dot( vR1, viewPosition ), dot( vR2, viewPosition ) );
+					vec3 vProjVtex;
+					vProjVtex.xy = texDx * vProjVscr.x + texDy * vProjVscr.y;
+					vProjVtex.z = dot( surfNormal, viewPosition );
+
+					return parallaxMap( vProjVtex );
+				}
       #endif
 
       void main() {
-        float ior = 1.0;
-
+        float ior = 1.;
         finalUv = vUv;
 
         #ifdef USE_PARALLAXMAP
-          const int parallaxSteps = ${ParallaxSteps};
-
-          float currentHeight = 0.0;
-          float stepSize = parallaxScale / float(parallaxSteps);
-          vec3 viewDir = normalize(vViewPosition - vWorldPosition);
-
-          for(int i = 0; i < parallaxSteps; i++) {
-            currentHeight += stepSize;
-
-            vec2 newUv = vUv - (vec2(viewDir.x, -viewDir.z) * currentHeight);
-            float textureHeight = ${getTextureTexel(ParallaxMapTextureName, "r", "newUv")};
-
-            if (textureHeight < currentHeight) {
-              break;
-            }
+          if (vDistanceToCamera < parallaxDistance) {
+            finalUv = perturbUv(-vViewPosition, normalize(vNormal), normalize(vViewPosition));
           }
-
-          finalUv = vUv - (viewDir.xy * currentHeight);
         #endif
     `)
     // ! Текстурная карта
@@ -295,10 +333,13 @@ export const TerrainFragmentShader = `
 
 // Фрагментный шейдер
 export const TerrainVertexShader = `
+  varying float vDistanceToCamera;
+
   ${BaseShader.vertexShader
     // ! Карта паралакса
-    .replace("void main() {", `
-      void main() {
+    .replace("#include <displacementmap_vertex>", `
+      #include <displacementmap_vertex>
+      vDistanceToCamera = length((modelViewMatrix * vec4( transformed, 1.0 )).xyz);
     `)
   }
 `;
