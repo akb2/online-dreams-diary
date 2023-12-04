@@ -28,7 +28,6 @@ export const TerrainColorDepth = MapTerrains.filter((t, k) => k / TerrainColorCo
 const CreateNamedArray = (key: string): string[] => MapTerrains.map(t => key + CapitalizeFirstLetter(t.name));
 
 // Имена параметров
-const MaskMapNamePreffix = "maskMap";
 const MapTileCoordsName = "mapTileCoords";
 const TerrainRepeatName = "terrainRepeat";
 export const MaskTextureNamePreffix = "maskTex";
@@ -42,7 +41,6 @@ export const ParallaxMapTextureName = "parallaxMapTexture";
 
 // Массивы тайлов
 const MapRepeats = CreateNamedArray(TerrainRepeatName);
-const MaskMapNames = MapCycle(TerrainColorDepth, k => MaskMapNamePreffix + k, true);
 export const MapTileCoords = CreateNamedArray(MapTileCoordsName);
 export const MaskNames = MapCycle(TerrainColorDepth, k => MaskTextureNamePreffix + k, true);
 
@@ -53,7 +51,6 @@ const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, MapTerrainColorChann
   [MapTerrainSplatMapColor.Blue]: "b",
   [MapTerrainSplatMapColor.Alpha]: "a"
 };
-const getMapVarColor: Function = (t: MapTerrain) => MaskMapNames[t.splatMap.layout] + "." + ColorsNames[t.splatMap.color];
 
 // Получение пикселя из тайл текстуры
 const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsKeys, uvName = "finalUv"): string => "(" + MapTerrains
@@ -61,8 +58,9 @@ const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsK
     const channelString = !!channel
       ? "." + channel
       : "";
+    const splatTexture = "texture2D(" + MaskNames[t.splatMap.layout] + ", vUv)." + ColorsNames[t.splatMap.color];
     // Вернуть выражение
-    return "(getTileTexture(" + textureName + ", " + MapTileCoords[k] + ", " + uvName + ")" + channelString + " * " + getMapVarColor(t) + ")";
+    return "(getTileTexture(" + textureName + ", " + MapTileCoords[k] + ", " + uvName + ")" + channelString + " * " + splatTexture + ")";
   })
   .join(" + ") + ")";
 
@@ -163,8 +161,6 @@ export const TerrainFragmentShader = `
       #endif
 
       void main() {
-        ${MaskMapNames.map((n, k) => `vec4 ${n} = texture2D(${MaskNames[k]}, vUv);`).join("\n")}
-
         float ior = 1.0;
 
         finalUv = vUv;
@@ -253,8 +249,6 @@ export const TerrainFragmentShader = `
         uniform sampler2D ${NormalMapTextureName};
 
         vec3 perturbNormal2Arb (vec3 eye_pos, vec3 surf_norm) {
-          ${MaskMapNames.map((n, k) => `vec4 ${n} = texture2D(${MaskNames[k]}, finalUv);`).join("\n")}
-
           vec3 q0 = vec3(dFdx(eye_pos.x), dFdx(eye_pos.y), dFdx(eye_pos.z));
           vec3 q1 = vec3(dFdy(eye_pos.x), dFdy(eye_pos.y), dFdy(eye_pos.z));
           vec2 st0 = dFdx(finalUv.st);
