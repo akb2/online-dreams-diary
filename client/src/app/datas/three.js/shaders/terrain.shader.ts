@@ -56,7 +56,7 @@ const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, MapTerrainColorChann
 const getMapVarColor: Function = (t: MapTerrain) => MaskMapNames[t.splatMap.layout] + "." + ColorsNames[t.splatMap.color];
 
 // Получение пикселя из тайл текстуры
-const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsKeys, uvName = "finalUv"): string => MapTerrains
+const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsKeys, uvName = "finalUv"): string => "(" + MapTerrains
   .map((t, k) => {
     const channelString = !!channel
       ? "." + channel
@@ -64,7 +64,7 @@ const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsK
     // Вернуть выражение
     return "(getTileTexture(" + textureName + ", " + MapTileCoords[k] + ", " + uvName + ")" + channelString + " * " + getMapVarColor(t) + ")";
   })
-  .join(" + ");
+  .join(" + ") + ")";
 
 // Униформы
 export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniforms, {
@@ -236,7 +236,7 @@ export const TerrainFragmentShader = `
     // Фрагмент 2
     .replace("#include <aomap_fragment>", `
       #ifdef USE_AOMAP
-        float ambientOcclusion = (${getTextureTexel(AoMapTextureName, "r")}) * aoMapIntensity;
+        float ambientOcclusion = ${getTextureTexel(AoMapTextureName, "r")} * aoMapIntensity;
         reflectedLight.indirectDiffuse *= ambientOcclusion;
 
         #if defined( USE_ENVMAP ) && defined( STANDARD )
