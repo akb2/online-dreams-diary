@@ -54,7 +54,7 @@ export class ShearableInstancedMesh extends InstancedMesh {
     const shearAttribute: InstancedBufferAttribute = this.geometry.getAttribute(InstancedShearShaderKey) as InstancedBufferAttribute;
     const target: Vector3 = new Vector3();
     // Добавить матрицу
-    target.fromArray(shearAttribute.array as number[], index * 3);
+    target.fromArray(shearAttribute.array, index * 3);
     // Вернуть матрицу
     shear.copy(target);
   }
