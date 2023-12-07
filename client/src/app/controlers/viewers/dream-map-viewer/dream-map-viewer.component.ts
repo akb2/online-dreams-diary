@@ -21,7 +21,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, CineonToneMapping, Clock, Color, CylinderGeometry, DirectionalLight, DoubleSide, FrontSide, Group, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshPhongMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, Scene, TextureLoader, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, CylinderGeometry, DirectionalLight, DoubleSide, FrontSide, Group, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshPhongMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, Scene, TextureLoader, Vector2, Vector3, WebGLRenderer, sRGBEncoding } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -174,7 +174,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const far: number = FogFar * DreamCeilSize;
     const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
     // Настройки
-    raycaster.setFromCamera({ x, y }, this.camera);
+    raycaster.setFromCamera(new Vector2(x, y), this.camera);
     // Объекты в фокусе
     const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
     // Обработка объектов
@@ -607,7 +607,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.control.target.setZ(this.dreamMap.camera.target.z);
     this.onCameraChange(this.control);
     // Статистика
-    this.stats = Stats();
+    this.stats = new Stats();
     this.statsBlock.nativeElement.appendChild(this.stats.dom);
     // Таймер
     this.clock = new Clock();

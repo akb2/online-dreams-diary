@@ -11,7 +11,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { ACESFilmicToneMapping, Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -67,7 +67,7 @@ export class Engine3DService implements OnDestroy {
     const far: number = DreamFogFar;
     const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
     // Настройки
-    raycaster.setFromCamera({ x, y }, this.camera);
+    raycaster.setFromCamera(new Vector2(x, y), this.camera);
     // Объекты в фокусе
     const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
     // Обработка объектов
@@ -240,7 +240,7 @@ export class Engine3DService implements OnDestroy {
 
   // Создание статистики
   private createStats(): void {
-    this.stats = Stats();
+    this.stats = new Stats();
   }
 
 
