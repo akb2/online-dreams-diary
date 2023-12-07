@@ -1,6 +1,5 @@
 import { MapTerrains } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamFogFar, DreamFogNear } from "@_datas/dream-map-settings";
-import { Average } from "@_helpers/math";
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -215,7 +214,6 @@ export const TerrainFragmentShader = `
       #endif
 
       void main() {
-        float ior = 1.;
         finalUv = vUv;
 
         #ifdef USE_PARALLAXMAP
@@ -330,6 +328,8 @@ export const TerrainFragmentShader = `
     `)
   }
 `;
+console.log(TerrainFragmentShader);
+console.log(BaseShader.fragmentShader);
 
 // Фрагментный шейдер
 export const TerrainVertexShader = `
@@ -358,6 +358,7 @@ export const TerrainDefines: CustomObject<boolean> = {
   USE_BUMPMAP: false,
   USE_DISPLACEMENTMAP: false,
   PHYSICALLY_CORRECT_LIGHTS: false,
+  PHYSICAL: true,
   FLAT_SHADED: false,
   USE_TANGENT: true,
   DOUBLE_SIDED: false,
