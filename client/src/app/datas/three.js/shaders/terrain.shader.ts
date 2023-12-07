@@ -38,7 +38,6 @@ export const MaskTextureNamePreffix = "maskTex";
 export const MapTextureName = "mapTexture";
 export const NormalMapTextureName = "normalMapTexture";
 export const AoMapTextureName = "aoMapTexture";
-export const LightMapTextureName = "lightMapTexture";
 export const RoughnessMapTextureName = "roughnessMapTexture";
 export const MetalnessMapTextureName = "metalnessMapTexture";
 export const ParallaxMapTextureName = "parallaxMapTexture";
@@ -116,7 +115,7 @@ export const TerrainFragmentShader = `
     return (((v - vMin) / (vMax - vMin)) * (max - min)) + min;
   }
 
-  vec4 getTileTexture (sampler2D texture, vec2 tileCoords, vec2 uv) {
+  vec4 getTileTexture(sampler2D textureData, vec2 tileCoords, vec2 uv) {
     vec2 uvMin = vec2(0., 0.);
     vec2 uvMax = vec2(1., 1.);
     vec2 halfVec2 = vec2(.5, .5);
@@ -128,7 +127,7 @@ export const TerrainFragmentShader = `
     vec2 offset = ((tileSize * coords) + tileSpacing) + (tileMaxSize * tilingUV);
     vec2 textureUV = fract(vec2LineFunc(uvMin, uvMax, offset, uvMin, tileSetSize));
 
-    return texture2D(texture, textureUV);
+    return texture2D(textureData, textureUV);
   }
 
   vec4 lightMapTexelToLinear(vec4 texel) {
@@ -138,6 +137,18 @@ export const TerrainFragmentShader = `
   vec4 invertColor(vec4 texel) {
     return vec4(1.0 - texel.r, 1.0 - texel.g, 1.0 - texel.b, texel.a);
   }
+
+  #ifdef USE_AOMAP
+    uniform sampler2D ${AoMapTextureName};
+  #endif
+
+  #ifdef USE_ROUGHNESSMAP
+    uniform sampler2D ${RoughnessMapTextureName};
+  #endif
+
+  #ifdef USE_METALNESSMAP
+    uniform sampler2D ${MetalnessMapTextureName};
+  #endif
 
   ${BaseShader.fragmentShader
     // Координаты
@@ -159,8 +170,6 @@ export const TerrainFragmentShader = `
         gl_FragColor.a = saturate(gl_FragColor.a - fogFactor);
       #endif
     `)
-    // Удаление лишней закраски
-    .replace("vec4 diffuseColor = vec4( diffuse, opacity );", "")
     // ! Карта параллакса
     .replace("void main() {", `
       #if defined( USE_PARALLAXMAP )
@@ -225,18 +234,14 @@ export const TerrainFragmentShader = `
     // ! Текстурная карта
     .replace("#include <map_fragment>", `
       #ifdef USE_MAP
-        vec4 texelColor = ${getTextureTexel(MapTextureName)};
-        vec4 diffuseColor = LinearToLinear(texelColor);
+        vec4 sampledDiffuseColor = ${getTextureTexel(MapTextureName)};
+        #ifdef DECODE_VIDEO_TEXTURE
+          sampledDiffuseColor = vec4( mix( pow( sampledDiffuseColor.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), sampledDiffuseColor.rgb * 0.0773993808, vec3( lessThanEqual( sampledDiffuseColor.rgb, vec3( 0.04045 ) ) ) ), sampledDiffuseColor.w );
+        #endif
+        diffuseColor *= sampledDiffuseColor;
       #endif
     `)
     // ! Карта металичности
-    // Фрагмент 1
-    .replace("#include <metalnessmap_pars_fragment>", `
-      #ifdef USE_METALNESSMAP
-        uniform sampler2D ${MetalnessMapTextureName};
-      #endif
-    `)
-    // Фрагмент 2
     .replace("#include <metalnessmap_fragment>", `
       float metalnessFactor = metalness;
       #ifdef USE_METALNESSMAP
@@ -244,13 +249,6 @@ export const TerrainFragmentShader = `
       #endif
     `)
     // ! Карта шероховатости
-    // Фрагмент 1
-    .replace("#include <roughnessmap_pars_fragment>", `
-      #if defined( USE_ROUGHNESSMAP )
-        uniform sampler2D ${RoughnessMapTextureName};
-      #endif
-    `)
-    // Фрагмент 2
     .replace("#include <roughnessmap_fragment>", `
       float roughnessFactor = roughness;
       #ifdef USE_ROUGHNESSMAP
@@ -258,17 +256,9 @@ export const TerrainFragmentShader = `
       #endif
     `)
     // ! Карта атмосферного свечения
-    // Фрагмент 1
-    .replace("#include <aomap_pars_fragment>", `
-      #ifdef USE_AOMAP
-        uniform float aoMapIntensity;
-        uniform sampler2D ${AoMapTextureName};
-      #endif
-    `)
-    // Фрагмент 2
     .replace("#include <aomap_fragment>", `
       #ifdef USE_AOMAP
-        float ambientOcclusion = ${getTextureTexel(AoMapTextureName, "r")} * aoMapIntensity;
+        float ambientOcclusion = (${getTextureTexel(AoMapTextureName, "r")} - 1.) * aoMapIntensity + 1.;
         reflectedLight.indirectDiffuse *= ambientOcclusion;
 
         #if defined( USE_ENVMAP ) && defined( STANDARD )
@@ -312,20 +302,6 @@ export const TerrainFragmentShader = `
         normal = perturbNormal2Arb(-vViewPosition, normal);
       #endif
     `)
-    // ! Карта освещения
-    // Фрагмент 1
-    .replace("#include <lightmap_pars_fragment>", `
-      uniform float lightMapIntensity;
-      uniform sampler2D ${LightMapTextureName};
-    `)
-    // Фрагмент 2
-    .replace("#include <lights_fragment_maps>", `
-      #ifdef USE_LIGHTMAP
-        vec4 lightMapTexel = ${getTextureTexel(LightMapTextureName)};
-        vec3 lightMapIrradiance = lightMapTexel.rgb * lightMapIntensity;
-        reflectedLight.indirectDiffuse += lightMapIrradiance;
-      #endif
-    `)
   }
 `;
 
@@ -345,7 +321,7 @@ export const TerrainVertexShader = `
 // Настройки шейдера материала
 export const TerrainDefines: CustomObject<boolean> = {
   USE_UV: true,
-  USE_TRANSMISSION: true,
+  USE_TRANSMISSION: false,
   USE_MAP: true,
   USE_AOMAP: true,
   USE_NORMALMAP: true,

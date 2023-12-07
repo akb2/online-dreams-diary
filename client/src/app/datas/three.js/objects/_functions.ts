@@ -216,6 +216,6 @@ export const GetRotateFromNormal = (vector: Vector3, angleX: number = 0, angleY:
     SinCosToRad(sinX, cosX) + AngleToRad(angleX),
     SinCosToRad(sinY, cosY) + AngleToRad(angleY),
     SinCosToRad(sinZ, cosZ) + AngleToRad(angleZ),
-    "xyz"
+    "XYZ"
   );
 };

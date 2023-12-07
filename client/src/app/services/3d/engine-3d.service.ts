@@ -24,7 +24,7 @@ import { Ceil3dService } from "./ceil-3d.service";
 
 export class Engine3DService implements OnDestroy {
 
-  private contextType: CanvasContextType = "webgl";
+  private contextType: CanvasContextType = "webgl2";
   private sceneColor: number = 0x000000;
   private drawShadows: boolean = true;
   private rotateSpeed: number = 1.4;
