@@ -328,8 +328,6 @@ export const TerrainFragmentShader = `
     `)
   }
 `;
-console.log(TerrainFragmentShader);
-console.log(BaseShader.fragmentShader);
 
 // Фрагментный шейдер
 export const TerrainVertexShader = `
