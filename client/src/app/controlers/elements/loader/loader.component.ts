@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } f
 export class LoaderComponent implements OnChanges {
 
   @Input() size: string | number = "120px";
-  @Input() color: IconColor | "white" = "primary";
+  @Input() color: IconColor | "whiteColor" = "primary";
 
   leafCount: number[] = CreateArray(14);
 
