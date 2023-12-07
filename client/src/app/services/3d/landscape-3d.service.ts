@@ -10,7 +10,7 @@ import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
-import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, PlaneGeometry, RGBFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
+import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
 
 
@@ -305,7 +305,7 @@ export class Landscape3DService {
       texture.minFilter = LinearFilter;
       texture.anisotropy = 1;
       texture.encoding = LinearEncoding;
-      texture.format = RGBFormat;
+      texture.format = RGBAFormat;
       texture.needsUpdate = true;
       // Вернуть текстуру
       return texture;
@@ -356,7 +356,7 @@ export class Landscape3DService {
 
   // Загрузка текстур типа ландшафта
   private mapTextureLoaded(type: BaseTextureType, texture: Texture): void {
-    texture.format = RGBFormat;
+    texture.format = RGBAFormat;
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearMipmapLinearFilter;
     texture.encoding = LinearEncoding;

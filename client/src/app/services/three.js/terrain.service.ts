@@ -12,7 +12,7 @@ import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
-import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
+import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
 
 
 
@@ -124,7 +124,7 @@ export class DreamMapTerrainService implements OnDestroy {
   // Загрузить текстуру
   private loadTexture(src: string, ext: ImageExtension, name: string): Texture {
     return this.textureLoader.load(src + "." + ext, texture => {
-      texture.format = RGBFormat;
+      texture.format = RGBAFormat;
       texture.magFilter = LinearFilter;
       texture.minFilter = LinearMipmapLinearFilter;
       texture.encoding = LinearEncoding;

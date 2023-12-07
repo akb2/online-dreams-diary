@@ -7,9 +7,12 @@ import { ForCycle } from "./objects";
 
 
 
+// Получить массив вершин из геометрии
+const GetVerticesByGeometry = (geometry: BufferGeometry): ArrayLike<number> => (geometry.getAttribute("position") as BufferAttribute).array;
+
 // Максимальное значение по оси X
-export const GetGeometryMaxX = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMaxX = (geometry: BufferGeometry): number => {
+  const vertices = GetVerticesByGeometry(geometry);
   let maxX: number = -Infinity;
   // Найдите максимальное значение X
   ForCycle(MathRound(vertices.length / 3), index => maxX = vertices[index * 3] > maxX ? vertices[index * 3] : maxX, true);
@@ -18,8 +21,8 @@ export const GetGeometryMaxX = (geometry: BufferGeometry) => {
 };
 
 // Минимальное значение по оси X
-export const GetGeometryMinX = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMinX = (geometry: BufferGeometry): number => {
+  const vertices = GetVerticesByGeometry(geometry);
   let minX: number = Infinity;
   // Найдите максимальное значение X
   ForCycle(MathRound(vertices.length / 3), index => minX = vertices[index * 3] < minX ? vertices[index * 3] : minX, true);
@@ -28,8 +31,8 @@ export const GetGeometryMinX = (geometry: BufferGeometry) => {
 };
 
 // Максимальное значение по оси Y
-export const GetGeometryMaxY = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMaxY = (geometry: BufferGeometry): number => {
+  const vertices = GetVerticesByGeometry(geometry);
   let maxY: number = -Infinity;
   // Найдите максимальное значение Y
   ForCycle(MathRound(vertices.length / 3), index => maxY = vertices[(index * 3) + 1] > maxY ? vertices[(index * 3) + 1] : maxY, true);
@@ -38,8 +41,8 @@ export const GetGeometryMaxY = (geometry: BufferGeometry) => {
 };
 
 // Минимальное значение по оси Y
-export const GetGeometryMinY = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMinY = (geometry: BufferGeometry): number => {
+  const vertices = GetVerticesByGeometry(geometry);
   let minY: number = Infinity;
   // Найдите максимальное значение Y
   ForCycle(MathRound(vertices.length / 3), index => minY = vertices[(index * 3) + 1] < minY ? vertices[(index * 3) + 1] : minY, true);
@@ -48,8 +51,8 @@ export const GetGeometryMinY = (geometry: BufferGeometry) => {
 };
 
 // Максимальное значение по оси Z
-export const GetGeometryMaxZ = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMaxZ = (geometry: BufferGeometry): number => {
+  const vertices: ArrayLike<number> = (geometry.getAttribute("position") as BufferAttribute).array;
   let maxZ: number = -Infinity;
   // Найдите максимальное значение Z
   ForCycle(MathRound(vertices.length / 3), index => maxZ = vertices[(index * 3) + 2] > maxZ ? vertices[(index * 3) + 2] : maxZ, true);
@@ -58,8 +61,8 @@ export const GetGeometryMaxZ = (geometry: BufferGeometry) => {
 };
 
 // Минимальное значение по оси Z
-export const GetGeometryMinZ = (geometry: BufferGeometry) => {
-  const vertices: ArrayLike<number> = geometry.getAttribute("position").array;
+export const GetGeometryMinZ = (geometry: BufferGeometry): number => {
+  const vertices = GetVerticesByGeometry(geometry);
   let minZ: number = Infinity;
   // Найдите максимальное значение Z
   ForCycle(MathRound(vertices.length / 3), index => minZ = vertices[(index * 3) + 2] < minZ ? vertices[(index * 3) + 2] : minZ, true);
