@@ -21,7 +21,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { Observable, Subject, forkJoin, fromEvent, of, throwError, timer } from "rxjs";
 import { map, skipWhile, switchMap, take, takeUntil, takeWhile, tap } from "rxjs/operators";
-import { BoxGeometry, CineonToneMapping, Clock, Color, CylinderGeometry, DirectionalLight, DoubleSide, FrontSide, Group, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshPhongMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, Scene, TextureLoader, Vector2, Vector3, WebGLRenderer, sRGBEncoding } from "three";
+import { BoxGeometry, CineonToneMapping, Clock, Color, CylinderGeometry, DirectionalLight, DoubleSide, FrontSide, Group, Intersection, LineBasicMaterial, MOUSE, Material, Matrix4, Mesh, MeshPhongMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, RepeatWrapping, SRGBColorSpace, Scene, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -567,7 +567,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.outputEncoding = sRGBEncoding;
+    this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = CineonToneMapping;
     // Сцена
     this.scene = new Scene();

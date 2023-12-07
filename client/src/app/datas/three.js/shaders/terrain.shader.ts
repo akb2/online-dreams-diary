@@ -310,6 +310,15 @@ export const TerrainVertexShader = `
   varying float vDistanceToCamera;
 
   ${BaseShader.vertexShader
+    // UV координаты
+    .replace("void main() {", `
+      void main() {
+        vec2 MAP_UV = vUv;
+        vec2 AOMAP_UV = vUv;
+        vec2 NORMALMAP_UV = vUv;
+        vec2 METALNESSMAP_UV = vUv;
+        vec2 ROUGHNESSMAP_UV = vUv;
+    `)
     // ! Карта паралакса
     .replace("#include <displacementmap_vertex>", `
       #include <displacementmap_vertex>
