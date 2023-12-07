@@ -42,6 +42,7 @@
       "dream": {
         "=0": "No dream's",
         "=1": "# dream",
+        "few": "# dream's",
         "other": "# dream's"
       }
     },
@@ -410,18 +411,26 @@
         "title": {
           "0": "It's funny, but you shouldn't see it))",
           "1": "Preparing to view",
-          "2": "Landscape creation",
-          "3": "Building the scene",
-          "4": "Loading textures"
+          "2": "Loading a height map",
+          "3": "Heightmap smoothing",
+          "4": "Applying heights",
+          "5": "Building the scene",
+          "6": "Loading textures"
         },
         "sub_title": {
           "2": {
             "other": "cells processed"
           },
           "3": {
-            "other": "operations completed"
+            "other": "cells processed"
           },
           "4": {
+            "other": "cells processed"
+          },
+          "5": {
+            "other": "operations completed"
+          },
+          "6": {
             "other": "textures loaded"
           }
         }

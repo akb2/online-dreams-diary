@@ -1,10 +1,10 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
+import { AverageSumm, CheckInRange, Cos, MathRound, ParseInt, Sin } from "@_helpers/math";
 import { ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
-import { DreamMap } from "@_models/dream-map";
+import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
@@ -15,7 +15,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
-import { Observable, Subject, catchError, concatMap, delay, map, merge, of, skipWhile, switchMap, takeUntil, tap, throwError } from "rxjs";
+import { Observable, Subject, catchError, concatMap, delay, map, merge, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
 
 
@@ -31,8 +31,8 @@ import { Observable, Subject, catchError, concatMap, delay, map, merge, of, skip
 export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   @Input() dreamMap: DreamMap;
-  @Input() debugInfo: boolean = true;
-  @Input() showCompass: boolean = true;
+  @Input() debugInfo = true;
+  @Input() showCompass = true;
 
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
@@ -40,17 +40,18 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   loadingStep: LoadingStep = LoadingStep.prepared;
 
-  private loadCeilsByTime: number = 250;
-  private calcOperationLoadingSize: number = 500;
-  private texturesLoadingSize: number = 1000;
-  private loadCeilCircles: number = 3;
-  private compassAzimuthShift: number = -90;
-  private compassRadialShift: number = 45;
+  private loadCeilsByTime = 250;
+  private calcOperationLoadingSize = 500;
+  private calcOperationLoadingDelay = 250;
+  private texturesLoadingSize = 1000;
+  private compassAzimuthShift = -90;
+  private compassRadialShift = 45;
 
-  private loadingCeilLimit: number = 0;
-  private loadingCeilCurrent: number = 0;
+  private loadingCeilLimit = 0;
+  private loadingCeilCurrent: CustomObjectKey<LoadingStep, number> = {};
 
   private textures: LoadTexture[] = [];
+  private ceilsOperations: CalcFunction<DreamMapCeil>[] = [];
   private calcOperations: CalcFunction[] = [];
 
   loading$ = this.store$.select(viewer3DInitialLoaderSelector);
@@ -112,9 +113,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Состояние лоадера
   get progressBarState(): ProgressState {
-    const withProgress: boolean = LoaderProgressSteps.includes(this.loadingStep);
+    const withProgress = LoaderProgressSteps.includes(this.loadingStep);
     const mode: ProgressBarMode = withProgress ? "determinate" : "indeterminate";
-    const icon: string = LoaderIcons?.[this.loadingStep] ?? LoaderIcons[DefaultKey];
+    const icon = LoaderIcons?.[this.loadingStep] ?? LoaderIcons[DefaultKey];
+    const ceilsCycles = ParseInt(this.ceilsOperations?.length);
+    const ceilsProgress = ParseInt(AverageSumm(Object.values(this.loadingCeilCurrent)));
     let subSteps: number = 0;
     let completedSubSteps: number = 0;
     // Функции просчета сцены
@@ -124,15 +127,15 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const allTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ size }) => size)) / this.texturesLoadingSize);
     const loadedTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ loadedSize }) => loadedSize)) / this.texturesLoadingSize);
     // Прогресс
-    const maxOperations: number = this.loadingCeilLimit + allCalcSize + allTexturesSize;
-    const currentOperation: number = 1 + this.loadingCeilCurrent + completedCalcSize + loadedTexturesSize;
+    const maxOperations: number = (this.loadingCeilLimit * ceilsCycles) + allCalcSize + allTexturesSize;
+    const currentOperation: number = 1 + ceilsProgress + completedCalcSize + loadedTexturesSize;
     const progress: number = withProgress && maxOperations > 0
       ? MathRound((currentOperation / maxOperations) * 100, 3)
       : 0;
     // Подшаги для ячеек
-    if (this.loadingStep === LoadingStep.landScapeCeils) {
-      subSteps = MathRound(this.loadingCeilLimit / this.loadCeilCircles);
-      completedSubSteps = MathRound(this.loadingCeilCurrent / this.loadCeilCircles);
+    if (LoaderCeilsSteps.includes(this.loadingStep)) {
+      subSteps = this.loadingCeilLimit;
+      completedSubSteps = this.loadingCeilCurrent[this.loadingStep];
     }
     // Подшаги для текстур
     else if (this.loadingStep === LoadingStep.loadTextures) {
@@ -184,22 +187,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
-          tap(() => this.loadScene()),
-          delay(1),
+          concatMap(() => this.loadScene()),
           concatMap(() => this.getTexturesData()),
-          delay(1),
           concatMap(() => this.loadTextures()),
-          delay(1),
-          concatMap(() => this.loadLandScape()),
-          delay(1),
+          concatMap(() => this.createLandScapeCycle()),
           concatMap(() => this.callCalcMethods()),
-          delay(1),
-          tap(() => this.onViewerLoad()),
-          delay(1),
+          concatMap(() => this.onViewerLoad()),
           tap(() => this.store$.dispatch(viewer3DInitialLoaderDisableAction())),
-          delay(1),
           concatMap(() => this.createStats()),
-          delay(1),
           concatMap(() => this.dreamMapChangesListeners()),
           takeUntil(this.destroyed$)
         )
@@ -217,7 +212,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
   // Загрузка сцены
-  private loadScene(): void {
+  private loadScene(): Observable<number> {
     const textures: Partial<LoadTexture>[] = [
       ...this.landscape3DService.textures
     ];
@@ -235,6 +230,27 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       loadedSize: 0,
       afterLoadEvent: loadTexture?.afterLoadEvent ?? VoidFunctionVar
     }));
+    // Функции просчета ячеек
+    this.ceilsOperations.push(
+      // Запись высот в общий массив
+      {
+        callable: this.landscape3DService.setHeightByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsLoad
+      },
+      // Сглаживание высот
+      {
+        callable: this.landscape3DService.setSmoothByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsSmooth
+      },
+      // Установка высот в гуометрию
+      {
+        callable: this.landscape3DService.setVertexByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsSet
+      }
+    );
     // Функции после просчета ячеек
     this.calcOperations.push(
       // Создание неба
@@ -272,7 +288,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           () => this.sky3DService.sky,
           () => this.sky3DService.sun,
           () => this.sky3DService.atmosphere,
-          () => this.sky3DService.clouds
+          // () => this.sky3DService.clouds
         ]
       },
       // Добавить объекты в пересечения курсора
@@ -293,6 +309,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         ]
       }
     );
+    // Задержка
+    return timer(1);
   }
 
   // Загрузка сведений о текстурах
@@ -303,7 +321,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           data.size = size;
           // Обновить
           this.changeDetectorRef.detectChanges();
-        })
+        }),
+        delay(1)
       ))
     );
   }
@@ -331,53 +350,57 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     );
   }
 
-  // Загрузка ячеек ландшафта
-  private loadLandScape(): Observable<any> {
+  // Создать цикл ячеек
+  private createLandScapeCycle(): Observable<any> {
     const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
-    const width: number = ParseInt(this.dreamMap.size.width);
-    const height: number = ParseInt(this.dreamMap.size.height);
+    const width: number = this.dreamMap.size.width;
+    const height: number = this.dreamMap.size.height;
+    const totalWidth: number = (width * repeat) + 1;
+    const totalHeight: number = (height * repeat) + 1;
+    // Состояния
+    this.loadingCeilLimit = totalWidth * totalHeight;
+    // Цикл по функциям
+    return ConsistentResponses(this.ceilsOperations.map(operation => timer(1).pipe(
+      concatMap(() => {
+        const step = operation?.setStep ?? LoadingStep.ceilsLoad;
+        const args = ArrayMap(operation.args ?? [], arg => typeof arg === "function"
+          ? arg()
+          : arg
+        );
+        // Вызов функции
+        return this.loadLandScape(operation.callable.bind(operation.context, ...args), step);
+      })
+    )));
+  }
+
+  // Загрузка ячеек ландшафта
+  private loadLandScape(callback: CeilCallBack, step: LoadingStep): Observable<any> {
+    const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
+    const width: number = this.dreamMap.size.width;
+    const height: number = this.dreamMap.size.height;
     const totalWidth: number = (width * repeat) + 1;
     const totalHeight: number = (height * repeat) + 1;
     const widthShift: number = this.landscape3DService.outSideRepeat * width;
     const heightShift: number = this.landscape3DService.outSideRepeat * height;
-    const totalSize: number = totalWidth * totalHeight;
     // Состояния
-    this.loadingCeilLimit = totalSize * this.loadCeilCircles;
-    this.loadingCeilCurrent = 0;
-    this.loadingStep = LoadingStep.landScapeCeils;
+    this.loadingCeilCurrent[step] = 0;
+    this.loadingStep = step;
+    // Обновить
     this.changeDetectorRef.detectChanges();
     // Подписка
-    return TakeCycle(this.loadingCeilLimit + 1, this.loadCeilsByTime).pipe(
+    return TakeCycle(this.loadingCeilLimit, this.loadCeilsByTime).pipe(
       tap(i => {
-        this.loadingCeilCurrent = CheckInRange(i, this.loadingCeilLimit);
+        this.loadingCeilCurrent[step] = CheckInRange(i + 1, this.loadingCeilLimit);
+        // Обновить
         this.changeDetectorRef.detectChanges();
       }),
-      map(i => ({ i, circle: MathFloor(i / totalSize) })),
-      switchMap(({ i, circle }) => i < this.loadingCeilLimit
-        ? of({ coords: GetCoordsByIndex(totalWidth, totalHeight, i - (circle * totalSize)), circle })
+      switchMap(i => i < this.loadingCeilLimit
+        ? of(GetCoordsByIndex(totalWidth, totalHeight, i))
         : throwError(() => null)
       ),
-      map(data => ({
-        ...data,
-        coords: {
-          x: data.coords.x - widthShift,
-          y: data.coords.y - heightShift
-        }
-      })),
-      tap(({ coords: { x, y }, circle }) => {
-        const ceil = this.ceil3dService.getCeil(x, y);
-        // Рассчет высот
-        if (circle === 0) {
-          return this.landscape3DService.setHeightByCoords(ceil);
-        }
-        // Сглаживание
-        else if (circle === 1) {
-          return this.landscape3DService.setSmoothByCoords(ceil);
-        }
-        // Выставление высот
-        return this.landscape3DService.setVertexByCoords(ceil);
-      }),
-      skipWhile(() => this.loadingCeilCurrent < this.loadingCeilLimit),
+      map(({ x, y }) => ({ x: x - widthShift, y: y - heightShift })),
+      tap(({ x, y }) => callback(this.ceil3dService.getCeil(x, y))),
+      skipWhile(() => this.loadingCeilCurrent[step] < this.loadingCeilLimit),
       catchError(() => of(null))
     );
   }
@@ -387,8 +410,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.loadingStep = LoadingStep.calcMethods;
     this.changeDetectorRef.detectChanges();
     // Цикл по функциям
-    return ConsistentResponses(this.calcOperations.map(operation => of(true).pipe(
-      tap(() => {
+    return ConsistentResponses(this.calcOperations.map(operation => of(operation).pipe(
+      tap(operation => {
         const args = ArrayMap(operation.args ?? [], arg => typeof arg === "function"
           ? arg()
           : arg
@@ -398,7 +421,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         operation.called = true;
         // Обновить
         this.changeDetectorRef.detectChanges();
-      })
+      }),
+      delay(this.calcOperationLoadingDelay)
     )));
   }
 
@@ -406,11 +430,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private createStats(): Observable<any> {
     if (this.debugInfo) {
       return WaitObservable(() => !this.statsBlock?.nativeElement).pipe(
-        tap(() => this.statsBlock.nativeElement.appendChild(this.engine3DService.stats.dom))
+        tap(() => this.statsBlock.nativeElement.appendChild(this.engine3DService.stats.dom)),
+        delay(1),
       );
     }
-    // No info laoding
-    return of(null);
+    // Нет информации
+    return timer(1);
   }
 
   // Прослушивание событий
@@ -421,6 +446,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         this.dreamMap.sky.time = skyTime;
         this.sky3DService.updateSky();
       }))
+    ).pipe(
+      delay(1)
     );
   }
 
@@ -429,10 +456,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
   // Все загружено
-  private onViewerLoad(): void {
+  private onViewerLoad(): Observable<number> {
     this.loadingStep = LoadingStep.stopped;
     // Обновить
     this.changeDetectorRef.detectChanges();
+    // Таймер
+    return timer(1);
   }
 }
 
@@ -440,11 +469,16 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
 
+// Тип функции для ячейки
+type CeilCallBack = (ceil: DreamMapCeil) => void;
+
 // Стадии загрузки
 enum LoadingStep {
   stopped,
   prepared,
-  landScapeCeils,
+  ceilsLoad,
+  ceilsSmooth,
+  ceilsSet,
   calcMethods,
   loadTextures
 }
@@ -459,16 +493,24 @@ interface ProgressState {
 }
 
 // Интерфейс функций высчитывания геометрий
-interface CalcFunction {
-  callable: Function;
+interface CalcFunction<I = undefined, O = void> {
+  callable: (...data: I[]) => O;
   called?: boolean;
   context: any;
   args?: any[];
+  setStep?: LoadingStep;
 }
 
 // Список состояний с прогрессом
+const LoaderCeilsSteps: LoadingStep[] = [
+  LoadingStep.ceilsLoad,
+  LoadingStep.ceilsSmooth,
+  LoadingStep.ceilsSet
+];
+
+// Список состояний с прогрессом
 const LoaderProgressSteps: LoadingStep[] = [
-  LoadingStep.landScapeCeils,
+  ...LoaderCeilsSteps,
   LoadingStep.calcMethods,
   LoadingStep.loadTextures
 ];
@@ -476,7 +518,9 @@ const LoaderProgressSteps: LoadingStep[] = [
 // Иконки лоадера
 const LoaderIcons: CustomObjectKey<LoadingStep | typeof DefaultKey, string> = {
   [DefaultKey]: "settings",
-  [LoadingStep.landScapeCeils]: "filter_hdr",
+  [LoadingStep.ceilsLoad]: "filter_hdr",
+  [LoadingStep.ceilsSmooth]: "filter_hdr",
+  [LoadingStep.ceilsSet]: "filter_hdr",
   [LoadingStep.calcMethods]: "function",
   [LoadingStep.loadTextures]: "photo_library"
 };
