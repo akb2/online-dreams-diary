@@ -144,9 +144,12 @@ $controlOffset: 5px;
   // Настройки времени
   &-time {
     $controlSize: $mainControlSize * 4;
-    $lineSize: 2px;
+    $lineSize: 1px;
     $subControlSize: containers.$avatarSize;
-    $lineSpacing: math.div($subControlSize, 2) + 6px;
+    $spacing: 2px;
+    $largeSerifWidth: 13px;
+    $serifWidth: 6px;
+    $lineSpacing: math.div($subControlSize, 2) + $spacing + math.max($largeSerifWidth, $serifWidth);
     $subControlHeight: 1px;
     // Свойства
     display: block;
@@ -163,9 +166,9 @@ $controlOffset: 5px;
     }
     // Горизонт
     &__line {
-      height: $lineSize;
+      height: $lineSize * 2;
       background-color: colors.$titleDark;
-      top: calc(50% - #{math.div($lineSize, 2)});
+      top: 50%;
       left: 0;
       right: 0;
       z-index: 1;
@@ -175,11 +178,33 @@ $controlOffset: 5px;
       @include mixins.inset($lineSpacing);
       // Свойства
       border: #{$lineSize} dotted transparent;
-      border-top-color: colors.$text;
-      border-left-color: colors.$text;
+      border-top-color: colors.$titleDark;
+      border-left-color: colors.$titleDark;
       border-radius: 50%;
       transform: rotate(45deg);
       z-index: 0;
+      // Засечки
+      &-serif {
+        $height: 1px;
+        // Свойства
+        height: 1px;
+        position: absolute;
+        width: $serifWidth;
+        left: -$serifWidth;
+        top: calc(50% - #{math.div($height, 2)});
+        background-color: colors.$titleDark;
+        transform-origin: #{$serifWidth + math.div($controlSize, 2) - $lineSpacing} 50%;
+        z-index: 0;
+        opacity: 0.8;
+        // Большие засечки
+        &.large {
+          opacity: 1;
+          z-index: 1;
+          width: $largeSerifWidth;
+          left: -$largeSerifWidth;
+          transform-origin: #{$largeSerifWidth + math.div($controlSize, 2) - $lineSpacing} 50%;
+        }
+      }
     }
     // Солнце и Луна
     &__sun,

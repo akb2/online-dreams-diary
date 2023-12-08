@@ -56,7 +56,20 @@
   <span #settingsTimeContainer
         class="settings-time">
     <span class="settings-time__line"></span>
-    <span class="settings-time__cicrle"></span>
+    <span class="settings-time__cicrle">
+      <!-- Основные засечки -->
+      <ng-container *ngIf="skyTimeControl.showLargeSerifs">
+        <span class="settings-time__cicrle-serif large"
+              [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.largeStep) + 'deg)' }"
+              *ngFor="let i of skyTimeControl.largeSerifItterator"></span>
+      </ng-container>
+      <!-- Вспомогательные засечки -->
+      <ng-container *ngIf="skyTimeControl.showSerifs">
+        <span class="settings-time__cicrle-serif"
+              [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.step) + 'deg)' }"
+              *ngFor="let i of skyTimeControl.serifItterator"></span>
+      </ng-container>
+    </span>
     <!-- Солнце -->
     <span class="settings-time__sun"
           [ngStyle]="settingsSunStyles$ | async"

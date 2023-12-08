@@ -1,4 +1,6 @@
+import { CreateArray } from "@_datas/app";
 import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRound, Sin } from "@_helpers/math";
+import { CustomObjectKey } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { CssProperties } from "@_models/nav-menu";
@@ -24,6 +26,10 @@ export class Editor3DComponent implements OnInit {
   settingsTypes = Editor3DOverlaySettings;
   showingOverlay = true;
 
+  skyTimeControl = CircleParamSettings.time;
+
+  private serigRotateCorrect = -45;
+
   skyTime$ = this.store$.select(editor3DSkyTimeSelector);
   showControls$ = this.store$.select(editor3DShowControlsSelector);
   showSettings$ = this.store$.select(editor3DShowOverlaySettingsSelector);
@@ -34,6 +40,11 @@ export class Editor3DComponent implements OnInit {
 
 
 
+
+  // Настройки засечки
+  angleRotate(i: number, angle: number): number {
+    return this.serigRotateCorrect + (angle * i);
+  }
 
   // Базовые параметры настроек
   private getSettingsTimeStyles(skyTime: number, multiplier: NumberDirection = 1): CssProperties {
@@ -90,11 +101,11 @@ export class Editor3DComponent implements OnInit {
       const positionY = CheckInRange(mouseY - containerTop - containerHeight, containerHeight, -containerHeight);
       const sin = MathRound(positionX / containerWidth, 5);
       const cos = MathRound(positionY / containerHeight, 5);
-      const skyTime = AngleInRange(
+      const skyTime = MathRound(AngleInRange(
         AngleByCoordsAndRadius(sin, -cos)
         + (180 * multiplier)
         + 90
-      );
+      ) / this.skyTimeControl.step) * this.skyTimeControl.step;
       // Обновить время
       this.store$.dispatch(editor3DSetSkyTimeAction({ skyTime }));
     }
@@ -116,3 +127,37 @@ export class Editor3DComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 }
+
+
+
+
+
+// Ключ параметра
+type CircleParamKey = "time";
+
+// Настройки кругового слайдера
+class CircleParamSetting {
+  private angles: [number, number] = [180, 360];
+
+  serifItterator: number[];
+  largeSerifItterator: number[];
+
+  constructor(
+    public step: number,
+    public largeStep: number = 90,
+    public fullCircle: boolean = false,
+    public showSerifs = true,
+    public showLargeSerifs = true
+  ) {
+    const angle = this.angles[fullCircle ? 1 : 0];
+    const koof = fullCircle ? 0 : 1;
+    // Обновить данные
+    this.serifItterator = CreateArray((angle / this.step) + koof);
+    this.largeSerifItterator = CreateArray((angle / this.largeStep) + koof);
+  }
+}
+
+// Все настройки круговых слайдеров
+const CircleParamSettings: CustomObjectKey<CircleParamKey, CircleParamSetting> = {
+  time: new CircleParamSetting(15)
+};
