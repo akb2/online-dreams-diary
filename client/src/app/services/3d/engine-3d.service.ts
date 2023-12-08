@@ -9,9 +9,9 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
-import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass } from "postprocessing";
+import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { ACESFilmicToneMapping, Clock, Fog, Intersection, LinearEncoding, MOUSE, Mesh, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { Clock, Fog, Intersection, MOUSE, Mesh, NoColorSpace, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -135,8 +135,8 @@ export class Engine3DService implements OnDestroy {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.outputEncoding = LinearEncoding;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.outputColorSpace = NoColorSpace;
+    this.renderer.toneMapping = NoToneMapping;
   }
 
   // Создание сцены
@@ -197,7 +197,6 @@ export class Engine3DService implements OnDestroy {
 
   // Создание постпроцессоров
   private createPostProcessors(): void {
-    const renderPass: RenderPass = new RenderPass(this.scene, this.camera);
     const bloomEffect = new BloomEffect({
       blendFunction: BlendFunction.SCREEN,
       luminanceThreshold: 0.9,
@@ -217,9 +216,22 @@ export class Engine3DService implements OnDestroy {
       resolutionX: this.canvasWidth,
       resolutionY: this.canvasHeight
     });
-    const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect, bloomEffect);
+    const toneMappingEffect: ToneMappingEffect = new ToneMappingEffect({
+      blendFunction: BlendFunction.SRC,
+      mode: ToneMappingMode.ACES_FILMIC,
+      resolution: 256,
+      maxLuminance: 4.0,
+      whitePoint: 4.0,
+      middleGrey: 0.6,
+      minLuminance: 0.01,
+      averageLuminance: 1.0,
+      adaptationRate: 1.0
+    });
+    // Проводники
+    const renderPass: RenderPass = new RenderPass(this.scene, this.camera);
+    const effectPass: EffectPass = new EffectPass(this.camera, depthOfFieldEffect, bloomEffect, toneMappingEffect);
     // Добавление эффектов
-    this.postProcessingEffects = { renderPass, depthOfFieldEffect, bloomEffect };
+    this.postProcessingEffects = { depthOfFieldEffect, bloomEffect, toneMappingEffect };
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(renderPass);
     this.composer.addPass(effectPass);
@@ -399,8 +411,8 @@ export class Engine3DService implements OnDestroy {
 
 // Интерфейс эффектов постобработки
 interface PostProcessingEffects {
-  renderPass: RenderPass;
   bloomEffect: BloomEffect;
+  toneMappingEffect: ToneMappingEffect;
   depthOfFieldEffect: DepthOfFieldEffect;
 }
 

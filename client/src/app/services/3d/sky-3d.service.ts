@@ -143,7 +143,6 @@ export class Sky3DService {
     const atmSkyColorB: number = LineFunc(SkySettings.atmSkyColorB[settingsKey].min, SkySettings.atmSkyColorB[settingsKey].max, absCos, 0, 1);
     const turbidity: number = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, absCos, 0, 1);
     const rayleigh: number = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, absCos, 0, 1);
-    const exposure: number = LineFunc(SkySettings.exposure[settingsKey].min, SkySettings.exposure[settingsKey].max, absCos, 0, 1);
     const mieCoefficient: number = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, absCos, 0, 1);
     const mieDirectionalG: number = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, absCos, 0, 1);
     // Прочие параметры
@@ -164,7 +163,6 @@ export class Sky3DService {
     this.sun.shadow.mapSize.height = shadowSize;
     this.atmosphere.intensity = atmosphereLight;
     this.atmosphere.color = new Color(atmSkyColorR, atmSkyColorG, atmSkyColorB);
-    this.renderer.toneMappingExposure = exposure;
     // Обновить карту теней
     if (!!this.sun.shadow?.map) {
       this.sun.shadow.map.dispose();
@@ -207,12 +205,12 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, Custom
     night: { min: 0, max: 60 }
   },
   sunLight: {
-    day: { min: 0.6, max: 1 },
-    night: { min: 0.4, max: 0.6 }
+    day: { min: 1.8, max: 1.8 },
+    night: { min: 0.7, max: 0.7 }
   },
   atmosphereLight: {
-    day: { min: 0.6, max: 1 },
-    night: { min: 0.4, max: 0.6 }
+    day: { min: 1.4, max: 1.4 },
+    night: { min: 0.7, max: 0.7 }
   },
   atmSkyColorR: {
     day: { min: 0.6, max: 0.7 },
@@ -227,23 +225,19 @@ const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, Custom
     night: { min: 0.1, max: 0.1 }
   },
   turbidity: {
-    day: { min: 5, max: 0 },
+    day: { min: 0, max: 0 },
     night: { min: 0.05, max: 0.1 }
   },
   rayleigh: {
-    day: { min: 3, max: 0.2 },
+    day: { min: 2.4, max: 0.08 },
     night: { min: 0, max: 0 }
   },
-  exposure: {
-    day: { min: 0.3, max: 0.6 },
-    night: { min: 0.3, max: 0.4 }
-  },
   mieCoefficient: {
-    day: { min: 0.005, max: 0 },
+    day: { min: 1, max: 1 },
     night: { min: 0.005, max: 0.005 }
   },
   mieDirectionalG: {
-    day: { min: 0.8, max: 0.99 },
+    day: { min: 0, max: 0 },
     night: { min: 0.7, max: 0.7 }
   },
 };
