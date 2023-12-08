@@ -42,7 +42,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private loadCeilsByTime = 250;
   private calcOperationLoadingSize = 500;
-  private calcOperationLoadingDelay = 250;
+  private calcOperationLoadingDelay = 80;
   private texturesLoadingSize = 1000;
   private compassAzimuthShift = -90;
   private compassRadialShift = 45;
