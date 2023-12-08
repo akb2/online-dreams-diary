@@ -42,7 +42,7 @@ const viewer3DInitialState: Viewer3DState = {
   overlaySettings: Editor3DOverlaySettings.none,
   skyTime: 0,
   loaders: {
-    initial: false
+    initial: true
   }
 };
 
