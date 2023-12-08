@@ -146,10 +146,11 @@ $controlOffset: 5px;
     $controlSize: $mainControlSize * 4;
     $lineSize: 1px;
     $subControlSize: containers.$avatarSize;
-    $spacing: 2px;
-    $largeSerifWidth: 13px;
-    $serifWidth: 6px;
-    $lineSpacing: math.div($subControlSize, 2) + $spacing + math.max($largeSerifWidth, $serifWidth);
+    $spacing: 6px;
+    $largeSerifWidth: 16px;
+    $serifWidth: 8px;
+    $lineSpacing: math.div($subControlSize, 2) + $spacing;
+    $circleSpacing: $lineSpacing + math.max($largeSerifWidth, $serifWidth);
     $subControlHeight: 1px;
     // Свойства
     display: block;
@@ -166,16 +167,17 @@ $controlOffset: 5px;
     }
     // Горизонт
     &__line {
+      // Свойства
       height: $lineSize * 2;
       background-color: colors.$titleDark;
       top: 50%;
-      left: 0;
-      right: 0;
       z-index: 1;
+      left: $lineSpacing;
+      right: $lineSpacing;
     }
     // Опорный путь
     &__cicrle {
-      @include mixins.inset($lineSpacing);
+      @include mixins.inset($circleSpacing);
       // Свойства
       border: #{$lineSize} dotted transparent;
       border-top-color: colors.$titleDark;
@@ -193,7 +195,7 @@ $controlOffset: 5px;
         left: -$serifWidth;
         top: calc(50% - #{math.div($height, 2)});
         background-color: colors.$titleDark;
-        transform-origin: #{$serifWidth + math.div($controlSize, 2) - $lineSpacing} 50%;
+        transform-origin: #{$serifWidth + math.div($controlSize, 2) - $circleSpacing} 50%;
         z-index: 0;
         opacity: 0.8;
         // Большие засечки
@@ -202,7 +204,7 @@ $controlOffset: 5px;
           z-index: 1;
           width: $largeSerifWidth;
           left: -$largeSerifWidth;
-          transform-origin: #{$largeSerifWidth + math.div($controlSize, 2) - $lineSpacing} 50%;
+          transform-origin: #{$largeSerifWidth + math.div($controlSize, 2) - $circleSpacing} 50%;
         }
       }
     }
