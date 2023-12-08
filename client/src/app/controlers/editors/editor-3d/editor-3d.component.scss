@@ -197,7 +197,7 @@ $controlOffset: 5px;
         background-color: colors.$titleDark;
         transform-origin: #{$serifWidth + math.div($controlSize, 2) - $circleSpacing} 50%;
         z-index: 0;
-        opacity: 0.8;
+        opacity: 0.6;
         // Большие засечки
         &.large {
           opacity: 1;
