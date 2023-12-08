@@ -11,7 +11,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
 import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { Clock, Fog, Intersection, MOUSE, Mesh, NoColorSpace, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { Clock, Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -135,7 +135,7 @@ export class Engine3DService implements OnDestroy {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = this.drawShadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.outputColorSpace = NoColorSpace;
+    this.renderer.outputColorSpace = LinearSRGBColorSpace;
     this.renderer.toneMapping = NoToneMapping;
   }
 
