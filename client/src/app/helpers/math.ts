@@ -114,6 +114,12 @@ export const Tan: (angle: number) => number = (angle: number) => MathRound(Math.
 // Катангенс угла
 export const Ctg: (angle: number) => number = (angle: number) => MathRound(1 / Math.tan(AngleToRad(angle)), 10);
 
+// Округление по шагу
+export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: number = 0): number => MathRound(
+  MathRound((value / step), afterDotNum) * step,
+  afterDotNum
+);
+
 // Округление после запятой
 export const MathRound = (value: number, afterDotNum: number = 0): number => {
   if (afterDotNum > 0) {
