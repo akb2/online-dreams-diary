@@ -1,5 +1,5 @@
 import { CreateArray } from "@_datas/app";
-import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRound, Sin } from "@_helpers/math";
+import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRound, MathRoundByStep, Sin } from "@_helpers/math";
 import { CustomObjectKey } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
@@ -101,11 +101,7 @@ export class Editor3DComponent implements OnInit {
       const positionY = CheckInRange(mouseY - containerTop - containerHeight, containerHeight, -containerHeight);
       const sin = MathRound(positionX / containerWidth, 5);
       const cos = MathRound(positionY / containerHeight, 5);
-      const skyTime = MathRound(AngleInRange(
-        AngleByCoordsAndRadius(sin, -cos)
-        + (180 * multiplier)
-        + 90
-      ) / this.skyTimeControl.step) * this.skyTimeControl.step;
+      const skyTime = MathRoundByStep(AngleInRange(AngleByCoordsAndRadius(sin, -cos) + (180 * multiplier) + 90), this.skyTimeControl.step);
       // Обновить время
       this.store$.dispatch(editor3DSetSkyTimeAction({ skyTime }));
     }
@@ -159,5 +155,5 @@ class CircleParamSetting {
 
 // Все настройки круговых слайдеров
 const CircleParamSettings: CustomObjectKey<CircleParamKey, CircleParamSetting> = {
-  time: new CircleParamSetting(15)
+  time: new CircleParamSetting(10, 60)
 };
