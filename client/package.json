@@ -67,7 +67,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "~1.7.0",
     "npm": "^9.6.5",
-    "postprocessing": "^6.31.0",
+    "postprocessing": "^6.33.4",
     "three": "^0.159.0",
     "typescript": "^4.9.3"
   }
