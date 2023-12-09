@@ -30,7 +30,7 @@ export class Editor3DComponent implements OnInit {
 
   private serigRotateCorrect = -45;
 
-  skyTime$ = this.store$.select(editor3DSkyTimeSelector);
+  private skyTime$ = this.store$.select(editor3DSkyTimeSelector);
   showControls$ = this.store$.select(editor3DShowControlsSelector);
   showSettings$ = this.store$.select(editor3DShowOverlaySettingsSelector);
   currentSetting$ = this.store$.select(editor3DOverlaySettingsSelector);
