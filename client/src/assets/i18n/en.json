@@ -442,7 +442,8 @@
     "editor": {
       "controls": {
         "settings": {
-          "time": "Times of day"
+          "time": "Times of day",
+          "clouds": "Clouds"
         }
       }
     }
