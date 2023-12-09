@@ -4,6 +4,26 @@ import { environment } from "@_environments/environment";
 
 
 
+/**
+ * Преобразовать строку в JSON
+ * @param {string} value - Исходные данные в виде строки
+ * @param {T} [defaultValue=null] - Значение, которое будет присвоено объекту в случае ошибки
+ * @return {T} - Полученный из строки JSON объект
+ * @template T - Тип, который будет использоваться для возвращаемого значения
+ */
+export const JsonDecode = <T>(value: string, defaultValue: T = null): T => {
+  let data: T;
+  // Попытаться расшифровать
+  try {
+    data = JSON.parse(value);
+  }
+  catch (error: any) {
+    data = defaultValue;
+  }
+  // Вернуть данные
+  return data;
+}
+
 // Проверить значение внутри Enum
 export const IsInEnum = <T>(value: string | number, enumType: T): boolean => Object.values(enumType).includes(value);
 

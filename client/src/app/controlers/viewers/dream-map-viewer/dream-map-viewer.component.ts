@@ -238,7 +238,9 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
           [name as ClosestHeightName]: this.dreamMap?.relief?.types?.hasOwnProperty(name) ? this.dreamMap.relief.types[name] : ReliefType.flat
         }), {})
       },
-      isNew: false
+      isNew: false,
+      noiseSeed: 0,
+      noise: null
     };
   }
 

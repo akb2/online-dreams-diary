@@ -3,6 +3,7 @@ import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
 import { MeshStandardMaterial, Side, Texture } from "three";
 import { ScrollAddDimension } from "./screen";
+import { Noise } from "noisejs";
 
 
 
@@ -19,6 +20,8 @@ export interface DreamMap {
   sky: MapSkyData;
   relief: DreamMapReliefSettings;
   isNew: boolean;
+  noise: Noise;
+  noiseSeed: number;
 }
 
 // Интерфейс настроек неба
@@ -88,6 +91,7 @@ export interface DreamMapDto {
   ocean: WaterDto;
   sky: MapSkyData;
   relief?: DreamMapReliefSettings;
+  noiseSeed: number;
 }
 
 // Интерфейс ячейки сновидения

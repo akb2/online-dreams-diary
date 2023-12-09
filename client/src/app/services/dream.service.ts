@@ -3,8 +3,9 @@ import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt, Random } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -15,6 +16,7 @@ import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
+import { Noise } from "noisejs";
 import { Observable, Subject, of } from "rxjs";
 import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/operators";
 
@@ -106,6 +108,13 @@ export class DreamService implements OnDestroy {
       .pipe(
         map(({ result }) => result)
       );
+  }
+
+  // Генерация сида
+  private get newSeed(): number {
+    const maxSeed = Math.pow(2, 16);
+    // Новый сид
+    return Random(1, maxSeed);
   }
 
 
@@ -226,7 +235,7 @@ export class DreamService implements OnDestroy {
 
   // Конвертер сновидений
   private dreamConverter(dreamDto: DreamDto): Dream {
-    let dreamMap: DreamMapDto;
+    const dreamMap = JsonDecode<DreamMapDto>(dreamDto?.map);
     const keywords: string[] = Array.from(new Set((dreamDto.keywords ?? "").split(",")
       .map(k => k.trim())
       .map(k => k.replace(/[\?\.=:;]/gmi, ""))
@@ -238,9 +247,6 @@ export class DreamService implements OnDestroy {
     dreamDto.mode = DreamMode[dreamDto.mode] ? dreamDto.mode : DreamMode.mixed;
     dreamDto.status = DreamStatus[dreamDto.status] ? dreamDto.status : DreamStatus.draft;
     dreamDto.keywords = dreamDto.keywords.trim()?.length > 0 ? dreamDto.keywords.trim() : "";
-    // Попытка прочитать карту
-    try { dreamMap = JSON.parse(dreamDto.map) as DreamMapDto; }
-    catch (e) { }
     // Итоговый массив
     const dream: Dream = {
       id: ParseInt(dreamDto.id),
@@ -292,7 +298,7 @@ export class DreamService implements OnDestroy {
 
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
-    if (dreamMapDto) {
+    if (!!dreamMapDto) {
       const width: number = ParseInt(dreamMapDto?.size?.width, DreamMapSize);
       const height: number = ParseInt(dreamMapDto?.size?.height, DreamMapSize);
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
@@ -300,6 +306,7 @@ export class DreamService implements OnDestroy {
         z: ParseInt(dreamMapDto?.ocean?.z, DreamWaterDefHeight),
         material: ParseInt(dreamMapDto?.ocean?.material, 1)
       };
+      const noiseSeed = ParseInt(dreamMapDto?.noiseSeed, this.newSeed);
       // Вернуть объект
       return {
         size: {
@@ -339,11 +346,16 @@ export class DreamService implements OnDestroy {
             [name as ClosestHeightName]: dreamMapDto?.relief?.types?.[name] ?? ReliefType.flat
           }), {})
         },
-        isNew: false
-      } as DreamMap;
+        isNew: false,
+        noiseSeed,
+        noise: new Noise(),
+        land: null
+      };
     }
     // Карта по умолчанию
     else {
+      const noiseSeed = this.newSeed;
+      // Карта
       return {
         size: {
           width: DreamMapSize,
@@ -367,7 +379,9 @@ export class DreamService implements OnDestroy {
         relief: {
           types: ClosestHeightNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
         },
-        isNew: true
+        isNew: true,
+        noiseSeed,
+        noise: new Noise(noiseSeed)
       };
     }
   }
@@ -403,7 +417,8 @@ export class DreamService implements OnDestroy {
       dreamerWay: dreamMap.dreamerWay,
       ocean: dreamMap.ocean,
       sky: dreamMap.sky,
-      relief: dreamMap.relief
+      relief: dreamMap.relief,
+      noiseSeed: ParseInt(dreamMap?.noiseSeed, this.newSeed)
     };
   }
 }
