@@ -1,5 +1,5 @@
 import { CreateArray, VoidFunctionVar } from "@_datas/app";
-import { MapTerrains, TexturePaths } from "@_datas/dream-map";
+import { MapTerrains, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
 import { MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
@@ -212,7 +212,7 @@ export class DreamMapTerrainService implements OnDestroy {
     const canvas: HTMLCanvasElement = document.createElement("canvas");
     const context: CanvasRenderingContext2D = canvas.getContext("2d");
     // Запрос картинки
-    return this.screenService.loadImage("/assets/dream-map/relief/" + type + ".png").pipe(
+    return this.screenService.loadImage(ReliefTexturePath + type + "." + ImageExtension.png).pipe(
       tap(({ image }) => context.drawImage(image, 0, 0)),
       map(({ width, height }) => {
         const top: number = Math.floor((height - DreamMapSize) / 2);
