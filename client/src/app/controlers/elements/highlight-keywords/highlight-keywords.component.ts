@@ -2,7 +2,7 @@ import { CompareArrays } from "@_helpers/objects";
 import { IconColor } from "@_models/app";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import * as snowballFactory from "snowball-stemmers";
+import { Stemmer, newStemmer } from "snowball-stemmers";
 
 
 
@@ -25,7 +25,7 @@ export class HighlightKeywordsComponent implements OnChanges {
 
   @Output() foundCount: EventEmitter<number> = new EventEmitter();
 
-  private stemmer: Stemmer = snowballFactory.newStemmer("russian");
+  private stemmer: Stemmer = newStemmer("russian");
 
   highlightingText: SafeHtml;
 
@@ -88,7 +88,9 @@ export class HighlightKeywordsComponent implements OnChanges {
 
   private getAllWordForms(word: string, searchExcludes: boolean = true): string[] {
     const verbEnds: string[] = ["ать", "ить", "еть"];
-    const baseForm: string = verbEnds.some(e => word.endsWith(e)) ? word : this.stemmer.stem(word);
+    const baseForm: string = verbEnds.some(e => word.endsWith(e))
+      ? word
+      : this.stemmer.stem(word);
     // Создаем все возможные варианты окончаний слова для каждого типа слова
     const nounEndings: string[] = [
       "", "а", "у", "ом", "е", "ы", "ов", "ам", "ами", "ах", "ия", "ья", "ии", "ье", "ьи", "и", "ев", "ева", "ов", "ова", "ий", "ым", "иного", "инного",
@@ -175,13 +177,4 @@ export class HighlightKeywordsComponent implements OnChanges {
     // Возвращаем результат
     return Array.from(new Set(result));
   }
-}
-
-
-
-
-
-// Интерфейс стеммера
-interface Stemmer {
-  stem: (word: string) => string;
 }
