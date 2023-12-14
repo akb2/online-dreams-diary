@@ -1,5 +1,5 @@
 declare module "noisejs" {
-  export abstract class Noise {
+  export class Noise {
     /**
     * Передача начального значения засеет этот экземпляр Noise
     * @param {number} seed

@@ -24,7 +24,7 @@ declare module "petrovich" {
   /**
    * Функция определения пола для имени
    * @param {string} word Имя для которого требуется определить пол
-   * @return {NameSex} Название пола
+   * @returns {NameSex} Название пола
    */
   export type GetDeclinedName = (word: string) => string;
   /**
@@ -61,7 +61,7 @@ declare module "petrovich" {
   /**
    * Функция определения пола для имени
    * @param {string} word Имя для которого требуется определить пол
-   * @return {NameSex} Название пола
+   * @returns {NameSex} Название пола
    */
   export const detect_gender: (word: string) => NameSex;
   /**
