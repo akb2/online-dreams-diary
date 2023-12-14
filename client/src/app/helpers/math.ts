@@ -120,7 +120,12 @@ export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: nu
   afterDotNum
 );
 
-// Округление после запятой
+/**
+ * Округление после запятой
+ * @param {number} value Число требуещее округления
+ * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.26
+ * @returns {number} Округленное значение
+ */
 export const MathRound = (value: number, afterDotNum: number = 0): number => {
   if (afterDotNum > 0) {
     const sqrt: number = Math.pow(10, afterDotNum);
@@ -130,7 +135,12 @@ export const MathRound = (value: number, afterDotNum: number = 0): number => {
   return Math.round(value);
 };
 
-// Округление до меньшего
+/**
+ * Округление до меньшего
+ * @param {number} value Число требуещее округления
+ * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.25
+ * @returns {number} Округленное значение
+ */
 export const MathFloor = (value: number, afterDotNum: number = 0): number => {
   if (afterDotNum > 0) {
     const sqrt: number = Math.pow(10, afterDotNum);
@@ -140,7 +150,12 @@ export const MathFloor = (value: number, afterDotNum: number = 0): number => {
   return Math.floor(value);
 };
 
-// Округление до большего
+/**
+ * Округление до большего
+ * @param {number} value Число требуещее округления
+ * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.26
+ * @returns {number} Округленное значение
+ */
 export const MathCeil = (value: number, afterDotNum: number = 0): number => {
   if (afterDotNum > 0) {
     const sqrt: number = Math.pow(10, afterDotNum);
@@ -150,7 +165,14 @@ export const MathCeil = (value: number, afterDotNum: number = 0): number => {
   return Math.ceil(value);
 };
 
-// Случайное число
+/**
+ * Случайное число
+ * @param {number} min Минимальное число
+ * @param {number} max Максимальное число
+ * @param {number} [noBorder=false] TRUE, чтобы не включать значения min и max в результат
+ * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [afterDotNum:2] => 10.26
+ * @returns Новое случайное число
+ */
 export const Random = (min: number, max: number, noBorder: boolean = false, afterDotNum: number = 0) => {
   const border: number = noBorder ? 1 / Math.pow(10, afterDotNum) : 0;
   // Параметры
@@ -187,6 +209,13 @@ export const Average = (...values: number[] | number[][]) => AverageFunc((o, v) 
 
 // Сложить все элементы массива
 export const AverageSumm = (...values: number[] | number[][]) => AverageFunc((o, v) => o + v, r => r, 0, values);
+
+/**
+ * Последовательное умножение всех чисел
+ * @param {...number | number[]} values Список чисел
+ * @returns Общее произведение всех чисел
+ */
+export const AverageMultiplySumm = (...values: number[] | number[][]) => AverageFunc((o, v) => o * v, r => r, 0, values);
 
 // Среднее геометрическое
 export const AverageGeometric = (...values: number[] | number[][]) => AverageFunc((o, v) => o * v, (r, c) => Math.pow(r, 1 / c), 1, values);

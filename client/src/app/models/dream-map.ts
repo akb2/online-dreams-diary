@@ -1,9 +1,9 @@
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
+import { Noise } from "noisejs";
 import { MeshStandardMaterial, Side, Texture } from "three";
 import { ScrollAddDimension } from "./screen";
-import { Noise } from "noisejs";
 
 
 
@@ -158,6 +158,9 @@ export interface Coord extends CoordDto {
 export interface CoordDto extends XYCoord {
   z: number;
 }
+
+// Универсальный тип для вектора
+export type UniversalVector3 = CoordDto | CustomObjectKey<MapTerrainColorChannelsKeys, number>;
 
 // Интерфейс воды
 export interface Water {

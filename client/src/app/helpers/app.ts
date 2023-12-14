@@ -8,7 +8,7 @@ import { environment } from "@_environments/environment";
  * Преобразовать строку в JSON
  * @param {string} value - Исходные данные в виде строки
  * @param {T} [defaultValue=null] - Значение, которое будет присвоено объекту в случае ошибки
- * @return {T} - Полученный из строки JSON объект
+ * @returns {T} - Полученный из строки JSON объект
  * @template T - Тип, который будет использоваться для возвращаемого значения
  */
 export const JsonDecode = <T>(value: string, defaultValue: T = null): T => {

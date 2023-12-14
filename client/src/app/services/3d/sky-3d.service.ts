@@ -1,11 +1,17 @@
+import { CreateArray } from "@_datas/app";
+import { MaxColorValue } from "@_datas/dream-map";
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
 import { DefaultDreamMapSettings, DreamCeilSize, DreamCloudsDefaultHeight, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize, DreamStartHeight } from "@_datas/dream-map-settings";
+import { FragmentShader, VertexShader } from "@_datas/three.js/shaders/clouds.shader";
 import { AngleInRange, AngleToRad, CheckInRange, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
+import { XYZForEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
-import { DreamMap, DreamMapSettings } from "@_models/dream-map";
-import { MinMax } from "@_models/math";
+import { CoordDto, DreamMap, DreamMapSettings } from "@_models/dream-map";
+import { CoordsXYZToIndex, MinMax } from "@_models/math";
+import { AnimationData } from "@_models/three.js/base";
+import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector3Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
-import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Mesh, MeshBasicMaterial, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, BackSide, BoxGeometry, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, RepeatWrapping, Vector2, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Landscape3DService } from "./landscape-3d.service";
 
@@ -23,11 +29,74 @@ export class Sky3DService {
 
   sky: Sky;
   fog: Fog;
-  clouds: Mesh<BoxGeometry, MeshBasicMaterial>;
+  clouds: Mesh<BoxGeometry, RawShaderMaterial>;
   sun: DirectionalLight;
   atmosphere: AmbientLight;
 
+  private cloudsMaterial: RawShaderMaterial;
+
+  private cloudsSize = 100;
+  private cloudsScale = 0.05;
+
   private colorWhite = new Color(1, 1, 1);
+  private colorClouds = new Color(0x798aa0);
+
+
+
+
+
+  /**
+   * Размеры объекта облака
+   * @returns {CoordDto} параметры размера объекта по осям [X;Y;Z]
+   */
+  private get getCloudsMeshSize(): CoordDto {
+    const mapWidth = this.dreamMap.size.width;
+    const mapHeight = this.dreamMap.size.height;
+    const mapBorderSizeX = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const mapBorderSizeZ = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    // Размеры
+    return {
+      x: (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2),
+      z: (mapHeight * DreamCeilSize) + (mapBorderSizeZ * 2),
+      y: DreamCeilSize * 3
+    };
+  }
+
+  /**
+   * Создание новой текстуры облаков на основе шума перлина
+   * @returns {Data3DTexture} новый экземпляр текстуры
+   */
+  private getCloudsTexture(): Data3DTexture {
+    const size = this.cloudsSize;
+    const sizes = CreateArray(3, () => size) as [number, number, number];
+    const perlin = this.dreamMap.noise;
+    const vector = new Vector3();
+    const texture = new Data3DTexture(new Uint8Array(Math.pow(size, 3)), ...sizes);
+    // Цикл по координатам
+    XYZForEach(
+      ...sizes,
+      (x, y, z) => ([
+        Math.pow(1 - vector.set(x, y, z).subScalar(size / 2).divideScalar(size).length(), 2),
+        CoordsXYZToIndex(x, y, z, ...sizes),
+        x * this.cloudsScale,
+        y * this.cloudsScale,
+        z * this.cloudsScale
+      ]),
+      ([d, i, x, y, z]) => texture.image.data[i] = LineFunc(0, MaxColorValue, perlin.perlin3(x, y, z), -1, 1) * d
+    );
+    // Свойства текстуры
+    texture.format = RedFormat;
+    texture.minFilter = LinearMipMapLinearFilter;
+    texture.magFilter = LinearFilter;
+    texture.unpackAlignment = 1;
+    texture.needsUpdate = true;
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.wrapR = RepeatWrapping;
+    texture.repeat = new Vector2(1, 1);
+    // Новая текстура
+    return texture;
+  }
 
 
 
@@ -108,18 +177,35 @@ export class Sky3DService {
 
   // Создать облака
   private createClouds(): void {
-    const mapWidth: number = this.dreamMap.size.width;
-    const mapHeight: number = this.dreamMap.size.height;
-    const mapBorderSizeX: number = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
-    const mapBorderSizeY: number = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
-    const sizeX: number = (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2);
-    const sizeZ: number = (mapHeight * DreamCeilSize) + (mapBorderSizeY * 2);
-    const sizeY: number = DreamCeilSize * 0.3;
+    const { x: sizeX, y: sizeY, z: sizeZ } = this.getCloudsMeshSize;
     const geometry = new BoxGeometry(sizeX, sizeY, sizeZ, 1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    // Материал облаков
+    this.cloudsMaterial = new RawShaderMaterial({
+      glslVersion: GLSL3,
+      fragmentShader: FragmentShader,
+      vertexShader: VertexShader,
+      side: BackSide,
+      transparent: true,
+      uniforms: {
+        base: ThreeVector3Uniform(this.colorClouds),
+        map: ThreeTextureUniform(this.getCloudsTexture()),
+        cameraPosition: ThreeVector3Uniform(),
+        threshold: ThreeFloatUniform(0.5),
+        opacity: ThreeFloatUniform(1),
+        range: ThreeFloatUniform(0.1),
+        steps: ThreeFloatUniform(50),
+        frame: ThreeFloatUniform(0),
+        boxSize: ThreeVector3Uniform(sizeX, sizeY, sizeZ),
+        fogNear: ThreeFloatUniform(DreamFogNear),
+        fogFar: ThreeFloatUniform(DreamFogFar),
+        discardOpacity: ThreeFloatUniform(0)
+      }
+    });
     // Настройки
-    this.clouds = new Mesh(geometry, material);
+    this.clouds = new Mesh(geometry, this.cloudsMaterial);
     this.clouds.position.setY(DreamStartHeight + DreamCloudsDefaultHeight);
+    this.clouds.receiveShadow = true;
+    this.clouds.castShadow = true;
   }
 
   // Обновить время
@@ -167,6 +253,21 @@ export class Sky3DService {
     if (!!this.sun.shadow?.map) {
       this.sun.shadow.map.dispose();
       this.sun.shadow.map = null;
+    }
+  }
+
+
+
+
+
+  /**
+   * Анимация
+   */
+  onAnimate({ camera }: AnimationData): void {
+    const uniforms = this.cloudsMaterial?.uniforms;
+    if (!!uniforms && !!uniforms.cameraPosition) {
+      uniforms.cameraPosition = ThreeVector3Uniform(camera.position);
+      uniforms.frame = { value: ParseInt(uniforms?.frame?.value) + 1 };
     }
   }
 }

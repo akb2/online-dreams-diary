@@ -284,11 +284,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.engine3DService.addToScene,
         context: this.engine3DService,
         args: [
-          this.landscape3DService.mesh,
+          () => this.landscape3DService.mesh,
           () => this.sky3DService.sky,
           () => this.sky3DService.sun,
           () => this.sky3DService.atmosphere,
-          // () => this.sky3DService.clouds
+          () => this.sky3DService.clouds
         ]
       },
       // Добавить объекты в пересечения курсора
@@ -296,8 +296,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.engine3DService.addToCursorIntersection,
         context: this.engine3DService,
         args: [
-          this.landscape3DService.mesh,
-          () => this.sky3DService.sky
+          () => this.landscape3DService.mesh
         ]
       },
       // Анимация ландшафта
@@ -305,7 +304,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.engine3DService.addToAnimation,
         context: this.engine3DService,
         args: [
-          () => this.landscape3DService.updateCameraPosition.bind(this.landscape3DService)
+          () => this.sky3DService.onAnimate.bind(this.sky3DService)
         ]
       }
     );

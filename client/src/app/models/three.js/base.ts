@@ -1,6 +1,7 @@
 import { CustomObject } from "@_models/app";
 import { Observable } from "rxjs";
-import { IUniform, Shader, Texture, WebGLRenderer } from "three";
+import { IUniform, PerspectiveCamera, Scene, Shader, Texture, WebGLRenderer } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 
 
@@ -50,3 +51,11 @@ export interface LoadTexture {
 
 // Функция прогресса загрузки текстуры
 export type OnTexture3DProgress = (event: ProgressEvent) => void;
+
+// Данные для функций анимации
+export interface AnimationData {
+  scene: Scene;
+  renderer: WebGLRenderer;
+  camera: PerspectiveCamera;
+  control: OrbitControls;
+}

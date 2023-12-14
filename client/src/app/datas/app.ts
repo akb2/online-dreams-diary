@@ -62,8 +62,21 @@ export const BrowserNames: SimpleObject = {
   "Default Browser": "Неопределен",
 };
 
-// Цикл из числа
-export const CreateArray: (length: number) => number[] = (length: number) => Array.from(Array(length).keys());
+/**
+ * Создаёт массив заданной длины. Если функция getItem предоставлена, заполняет массив
+ * значениями, возвращаемыми этой функцией.
+ * @param {number} length - Длина создаваемого массива.
+ * @param {(index: number) => T} [getItem] - Функция, которая принимает индекс
+ * и возвращает элемент массива типа T. Необязательный параметр.
+ * @returns {T[]} Массив типа T заданной длины.
+ */
+export const CreateArray = <T = number>(length: number, getItem?: (index: number) => T): Array<T> => {
+  const newArray = Array.from(Array(length).keys());
+  // Созданный массив
+  return !!getItem
+    ? newArray.map(i => getItem(i))
+    : newArray as T[];
+};
 
 // Типы изображений по умолчанию
 export const FileTypesDefault: FileTypes[] = [

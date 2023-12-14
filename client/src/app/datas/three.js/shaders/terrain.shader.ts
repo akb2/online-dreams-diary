@@ -48,7 +48,7 @@ export const MapTileCoords = CreateNamedArray(MapTileCoordsName);
 export const MaskNames = MapCycle(TerrainColorDepth, k => MaskTextureNamePreffix + k, true);
 
 // Имена цветов
-const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, MapTerrainColorChannelsKeys> = {
+export const ColorsNames: CustomObjectKey<MapTerrainSplatMapColor, MapTerrainColorChannelsKeys> = {
   [MapTerrainSplatMapColor.Red]: "r",
   [MapTerrainSplatMapColor.Green]: "g",
   [MapTerrainSplatMapColor.Blue]: "b",

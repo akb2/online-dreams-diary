@@ -4,6 +4,7 @@ import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap } from "@_models/dream-map";
+import { AnimationData } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
@@ -49,7 +50,7 @@ export class Engine3DService implements OnDestroy {
   private clock: Clock;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
-  private animationList: Function[] = [];
+  private animationList: AnimationCallback[] = [];
 
   private lastCamera: PerspectiveCamera;
 
@@ -268,7 +269,7 @@ export class Engine3DService implements OnDestroy {
   }
 
   // Добавить объект на сцену
-  addToAnimation(...animations: Function[]): void {
+  addToAnimation(...animations: AnimationCallback[]): void {
     ArrayForEach(
       ArrayFilter(animations, animation => !!animation && !this.animationList.includes(animation)),
       animation => this.animationList.push(animation)
@@ -401,13 +402,21 @@ export class Engine3DService implements OnDestroy {
 
   // Анимация
   private onAnimate(): void {
-    ArrayForEach(ArrayFilter(this.animationList, animation => !!animation), animation => animation());
+    ArrayForEach(ArrayFilter(this.animationList, animation => !!animation), animation => animation({
+      renderer: this.renderer,
+      scene: this.scene,
+      camera: this.camera,
+      control: this.control
+    }));
   }
 }
 
 
 
 
+
+// Тип функции для анимации
+type AnimationCallback = (data: AnimationData) => void;
 
 // Интерфейс эффектов постобработки
 interface PostProcessingEffects {

@@ -1,4 +1,4 @@
-import { XYCoord } from "@_models/dream-map";
+import { CoordDto, XYCoord } from "@_models/dream-map";
 import { IsSimpleObject } from "./app";
 import { ParseInt } from "./math";
 
@@ -165,14 +165,24 @@ export const ArrayFind = <T>(array: T[], searchCallback: (item: T, index?: numbe
 // Оптимизированный поиск вхождения в массиве
 export const ArraySome = <T>(array: T[], searchCallback: (item: T, index?: number) => boolean) => !!ArrayFind(array, searchCallback);
 
-// Двумерный цикл по координатам
-export const XYForEach = <T>(width: number, height: number, getItem: (x: number, y: number) => T, callback: (item: T, x?: number, y?: number) => void) => {
-  ForCycle(height, y => ForCycle(width, x => {
-    const item: T = getItem(x, y);
-    // Обратный вызов
-    callback(item, x, y);
-  }, true), true);
-};
+/**
+ * Двумерный цикл по координатам
+ * @param {number} width Ширина (количество повторов для X)
+ * @param {number} height Высота (количество повторов для Y)
+ * @param {(x: number, y: number) => T} getItem Функция для преобразования координат в объект
+ * @param {(item: T, x?: number, y?: number) => void} callback Функция выполняемая для каждой иттерации
+ * @returns
+ */
+export const XYForEach = <T>(
+  width: number,
+  height: number,
+  getItem: (x: number, y: number) => T,
+  callback: (item: T, x?: number, y?: number) => void
+) => ForCycle(height, y => ForCycle(width, x => {
+  const item: T = getItem(x, y);
+  // Обратный вызов
+  callback(item, x, y);
+}, true), true);
 
 // Двумерный цикл по координатам с возвращением результата
 export const XYMapEach = <T = XYCoord>(width: number, height: number, getItem = (x: number, y: number) => <T>({ x, y })): T[] => {
@@ -187,7 +197,53 @@ export const XYMapEach = <T = XYCoord>(width: number, height: number, getItem = 
   return list;
 };
 
-// Получить координату по индексу
+/**
+ * Трехмерный цикл по координатам
+ * @param {number} width Ширина (количество повторов для X)
+ * @param {number} height Высота (количество повторов для Y)
+ * @param {number} depth Глубина (количество повторов для Z)
+ * @param {(x: number, y: number, z: number) => T} getItem Функция для преобразования координат в объект
+ * @param {(item: T, x?: number, y?: number, z?: number) => void} callback Функция выполняемая для каждой иттерации
+ */
+export const XYZForEach = <T = CoordDto>(
+  width: number,
+  height: number,
+  depth: number,
+  getItem: (x: number, y: number, z: number) => T,
+  callback: (item: T, x?: number, y?: number, z?: number) => void
+): void => ForCycle(depth, z => XYForEach(
+  width,
+  height,
+  (x, y) => getItem(x, y, z),
+  (item, x, y) => callback(item, x, y, z)
+));
+
+/**
+ * Получить 2D координату по индексу, где:
+ * Y является округлением частного индекса на ширину до меньшего целого
+ * X является целочисленным остатком от частного индекса на ширину
+ * @param {number} width Ширина
+ * @param {number} height Высота
+ * @param {number} index Индекс координаты
+ * @returns {XYCoord} [X;Y] - координаты
+ */
 export const GetCoordsByIndex = (width: number, height: number, index: number): XYCoord => index >= 0 && index < width * height
   ? { x: index % width, y: Math.floor(index / width) }
   : null;
+
+/**
+ * Преобразование размеров объекта в относительные размеры. Минимальный размер становиться
+ * @param {number} x Ширина
+ * @param {number} y Высота
+ * @param {number} z Глубина
+ * @returns {CoordDto} Масштабированные размеры объекта
+ */
+export const Scalize3D = (x: number, y: number, z: number): CoordDto => {
+  const minimal = Math.min(x, y, z);
+  // Преобразование
+  return {
+    x: x / minimal,
+    y: y / minimal,
+    z: z / minimal
+  };
+}

@@ -1,7 +1,7 @@
 import { MathRound } from "@_helpers/math";
-import { CoordDto, XYCoord } from "@_models/dream-map";
+import { UniversalVector3, XYCoord } from "@_models/dream-map";
 import { OnBeforeCompileCallback, ThreeUniform, ThreeUniformType } from "@_models/three.js/base";
-import { Material, Shader, Texture, WebGLRenderer } from "three";
+import { Color, Material, Shader, Texture, Vector3, WebGLRenderer } from "three";
 
 
 
@@ -36,13 +36,47 @@ export const ThreeVector2Uniform = (...[x, y]: number[]): ThreeUniform<XYCoord> 
   return { value: { x, y }, type: ThreeUniformType.vector2 };
 };
 
-// Создание векторной (3) униформы
-export const ThreeVector3Uniform = (...[x, y, z]: number[]): ThreeUniform<CoordDto> => {
-  x = x ?? 0;
-  y = y ?? x;
-  z = z ?? y;
+/**
+ * Создание векторной (3) униформы
+ * @param {number | number[] | Vector3 | Color} data - Основное значение для униформы.
+ * @param {number} dataY - Значение для компонента 'y' вектора, если первый аргумент - число.
+ * @param {number} dataZ - Значение для компонента 'z' вектора, если первый аргумент - число.
+ * @returns {ThreeUniform<UniversalVector3>} Объект униформы, содержащий значение и тип.
+ */
+export const ThreeVector3Uniform = (data?: number | number[] | Vector3 | Color, dataY?: number, dataZ?: number): ThreeUniform<UniversalVector3> => {
+  let value: UniversalVector3 = {};
+  // Проверка входных данных
+  if (!!data) {
+    if (typeof data === "number") {
+      value.x = data ?? 0;
+      value.y = dataY ?? value.x;
+      value.z = dataZ ?? value.y;
+    }
+    // Получен массив чисел
+    else if (Array.isArray(data)) {
+      value.x = data[0] ?? 0;
+      value.y = data[1] ?? value.x;
+      value.z = data[2] ?? value.y;
+    }
+    // Вектор
+    else if (data instanceof Vector3) {
+      value.x = data.x ?? 0;
+      value.y = data.y ?? value.x;
+      value.z = data.z ?? value.y;
+    }
+    // Цвет
+    else if (data instanceof Color) {
+      value.r = data.r ?? 0;
+      value.g = data.g ?? value.r;
+      value.b = data.b ?? value.g;
+    }
+  }
+  // Значения по умолчанию
+  if (!value.hasOwnProperty("x") && !value.hasOwnProperty("r")) {
+    value = { x: 0, y: 0, z: 0 };
+  }
   // Униформа
-  return { value: { x, y, z }, type: ThreeUniformType.vector3 };
+  return { value, type: ThreeUniformType.vector3 };
 };
 
 // Создание текстурной униформы

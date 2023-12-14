@@ -216,3 +216,7 @@ export const NeighBoringShifts: CustomObjectKey<DreamMapSector, XYCoord<NumberDi
   bottom: { x: 0, y: 1 },
   bottomRight: { x: 1, y: 1 },
 };
+
+// Настройки цветов
+export const MaxColorValue = 255;
+export const ColorsChannelsCount = 4;
