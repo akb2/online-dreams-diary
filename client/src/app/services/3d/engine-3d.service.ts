@@ -63,7 +63,12 @@ export class Engine3DService implements OnDestroy {
 
 
 
-  // Получить объекты пересечения
+  /**
+   * Получить объекты пересечения
+   * @param {number} screenX координата по оси X на экране канваса
+   * @param {number} screenY координата по оси Y на экране канваса
+   * @returns {Intersection[]} список объектов с которыми произошло пересечение в порядке возрастания дистанции
+   */
   getIntercectionObject(screenX: number, screenY: number): Intersection[] {
     const x = ((screenX / this.canvasWidth) * 2) - 1;
     const y = -(((screenY / this.canvasHeight) * 2) - 1);
