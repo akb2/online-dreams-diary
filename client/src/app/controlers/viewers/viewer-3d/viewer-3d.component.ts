@@ -1,7 +1,8 @@
 import { VoidFunctionVar } from "@_datas/app";
+import { DreamCeilSize } from "@_datas/dream-map-settings";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, Cos, MathRound, ParseInt, Sin } from "@_helpers/math";
-import { ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
+import { AverageSumm, CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
+import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
@@ -16,7 +17,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
-import { Observable, Subject, catchError, concatMap, delay, map, merge, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
+import { Observable, Subject, animationFrameScheduler, catchError, concatMap, delay, fromEvent, map, merge, observeOn, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
 
 
@@ -158,6 +159,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     return {
       transform: "rotate(" + this.compassRadialShift + "deg)"
     };
+  }
+
+  // Проверка сенсорного экрана
+  private get isTouchDevice(): boolean {
+    return "ontouchstart" in window || !!navigator?.maxTouchPoints;
   }
 
 
@@ -442,14 +448,17 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Прослушивание событий
   private dreamMapChangesListeners(): Observable<any> {
+    const moveEvent = this.isTouchDevice
+      ? "touchmove"
+      : "mousemove";
+    // Подписчик
     return merge(
       // Изменение времени
-      this.skyTime$.pipe(map(skyTime => {
-        this.dreamMap.sky.time = skyTime;
-        this.sky3DService.updateSky();
-      }))
+      this.skyTime$.pipe(tap(skyTime => this.onSkyUpdate(skyTime))),
+      // Движение мышкой
+      fromEvent<MouseEvent | TouchEvent>(this.canvas.nativeElement, moveEvent).pipe(tap(event => this.onMouseIntersectionUpdate(event)))
     ).pipe(
-      delay(1)
+      observeOn(animationFrameScheduler)
     );
   }
 
@@ -464,6 +473,40 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
     // Таймер
     return timer(1);
+  }
+
+  // Обновление времени
+  private onSkyUpdate(skyTime: number): void {
+    this.dreamMap.sky.time = skyTime;
+    this.sky3DService.updateSky();
+  }
+
+  // Обновление пересечения с мышкой
+  private onMouseIntersectionUpdate(event: MouseEvent | TouchEvent): void {
+    let x: number = -1;
+    let y: number = -1;
+    const canvasRect = this.canvas.nativeElement.getBoundingClientRect();
+    const eventData = event instanceof MouseEvent
+      ? event
+      : event.touches.item(0);
+    const screenX = eventData.clientX - canvasRect.left;
+    const screenY = eventData.clientY - canvasRect.top;
+    const objects = this.engine3DService.getIntercectionObject(screenX, screenY) ?? [];
+    const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[0];
+    // Изменить координаты определения
+    if (!!object) {
+      const mapWidth = this.dreamMap.size.width;
+      const mapHeight = this.dreamMap.size.height;
+      const tempX = MathFloor(object.point.x / DreamCeilSize) + (mapWidth * DreamCeilSize / 2);
+      const tempY = MathFloor(object.point.z / DreamCeilSize) + (mapHeight * DreamCeilSize / 2);
+      // Координаты в рабочей области
+      if (!this.ceil3dService.isBorderCeil(tempX, tempY)) {
+        x = tempX;
+        y = tempY;
+      }
+    }
+    // Запомнить новые координаты
+    console.log(x, y);
   }
 }
 
