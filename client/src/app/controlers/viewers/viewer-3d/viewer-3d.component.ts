@@ -288,7 +288,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           () => this.sky3DService.sky,
           () => this.sky3DService.sun,
           () => this.sky3DService.atmosphere,
-          () => this.sky3DService.clouds
+          // () => this.sky3DService.clouds
         ]
       },
       // Добавить объекты в пересечения курсора
