@@ -7,6 +7,7 @@ import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
 import { DreamMap, DreamMapCeil } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
+import { Cursor3DService } from "@_services/3d/cursor-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
 import { Sky3DService } from "@_services/3d/sky-3d.service";
@@ -33,6 +34,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() dreamMap: DreamMap;
   @Input() debugInfo = true;
   @Input() showCompass = true;
+  @Input() showCursor = false;
 
   @ViewChild("canvas") private canvas: ElementRef;
   @ViewChild("helper") private helper: ElementRef;
@@ -166,9 +168,10 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     private ceil3dService: Ceil3dService,
     private engine3DService: Engine3DService,
     private landscape3DService: Landscape3DService,
+    private sky3DService: Sky3DService,
+    private cursor3DService: Cursor3DService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
-    private sky3DService: Sky3DService,
     private store$: Store
   ) { }
 

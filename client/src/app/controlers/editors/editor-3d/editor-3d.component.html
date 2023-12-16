@@ -3,7 +3,8 @@
   <viewer-3d class="viewer"
              [dreamMap]="dreamMap"
              [debugInfo]="debugInfo"
-             [showCompass]="showCompass"></viewer-3d>
+             [showCompass]="showCompass"
+             [showCursor]="true"></viewer-3d>
   <!-- Управление: настройки -->
   <ng-container [ngTemplateOutlet]="controlsSettings"
                 *ngIf="showControls$ | async"></ng-container>
