@@ -309,12 +309,12 @@ type DayType = "day" | "night";
 // Настройки
 const SkySettings: CustomObjectKey<SettingsVars, CustomObjectKey<DayType, CustomObjectKey<MinMax, number>>> = {
   azimuth: {
-    day: { min: -15, max: 195 },
-    night: { min: -15, max: 195 }
+    day: { min: -105, max: 105 },
+    night: { min: -105, max: 105 }
   },
   elevation: {
-    day: { min: 0, max: 60 },
-    night: { min: 0, max: 60 }
+    day: { min: 0, max: 75 },
+    night: { min: 0, max: 75 }
   },
   sunLight: {
     day: { min: 1.8, max: 1.8 },
