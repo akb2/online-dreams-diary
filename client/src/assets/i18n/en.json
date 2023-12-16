@@ -437,6 +437,9 @@
       },
       "compass": {
         "label": "N"
+      },
+      "stats": {
+        "out_of_map": "Out of map"
       }
     },
     "editor": {

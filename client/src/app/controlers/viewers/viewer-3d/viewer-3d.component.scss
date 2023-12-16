@@ -231,20 +231,69 @@ $controlOffset: 5px;
   z-index: 1;
   user-select: none;
   opacity: 0;
-  pointer-events: none;
   visibility: hidden;
+  position: absolute;
+  left: $controlOffset;
+  top: $controlOffset;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
   // Данные
   ::ng-deep > div {
-    position: absolute !important;
-    left: #{$controlOffset} !important;
-    top: #{$controlOffset} !important;
+    position: static !important;
     overflow: hidden;
     border-radius: 3px;
+    pointer-events: none;
+    // Последующие элементы
+    & + div {
+      margin-top: $controlOffset;
+    }
+  }
+  // Элемент
+  &__item {
+    border-radius: 3px;
+    background-color: #111130;
+    padding: 3px 6px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3px;
+    // Базовый
+    &-simple {
+      text-align: left;
+      width: calc((100% - 3px) / 2);
+    }
+    // По середине
+    &-center {
+      width: 100%;
+      text-align: center;
+    }
+    // Свойства шрифта
+    &-simple,
+    &-center {
+      font-weight: 400;
+      color: #7cc9d0;
+      // Свойства шрифта
+      &,
+      b {
+        @include mixins.lineClamp(1, 1.2, 10px);
+      }
+      // Заголовок
+      b {
+        font-weight: 500;
+        color: #98f6f7;
+      }
+    }
   }
   // Видимый блок
   &.show {
     opacity: 1;
-    pointer-events: all;
     visibility: visible;
+    // Данные
+    ::ng-deep > div {
+      pointer-events: all;
+    }
   }
 }

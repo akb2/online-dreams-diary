@@ -437,6 +437,9 @@
       },
       "compass": {
         "label": "С"
+      },
+      "stats": {
+        "out_of_map": "Вне карты"
       }
     },
     "editor": {

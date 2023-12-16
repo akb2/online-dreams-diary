@@ -42,7 +42,26 @@
     <!-- Статистика -->
     <div #statsBlock
          class="stats"
-         [ngClass]="{ show: debugInfo && showControls }"></div>
+         [ngClass]="{ show: debugInfo && showControls }"
+         *ngVar="cursorInWorkArea$ | async as cursorInWorkArea">
+      <!-- Текущая координата -->
+      <div class="stats__item">
+        <!-- За пределами рабочей области -->
+        <div class="stats__item-center"
+             *ngIf="!cursorInWorkArea">{{'3d.viewer.stats.out_of_map' | translate}}</div>
+        <!-- Внутри рабочей области -->
+        <ng-container *ngIf="cursorInWorkArea">
+          <div class="stats__item-simple">
+            <b>X:</b>
+            {{(cursorCoords$ | async).x}}
+          </div>
+          <div class="stats__item-simple">
+            <b>Y:</b>
+            {{(cursorCoords$ | async).y}}
+          </div>
+        </ng-container>
+      </div>
+    </div>
   </ng-container>
 </ng-template>
 
