@@ -1,4 +1,4 @@
-import { DreamCloudsDefaultHeight } from "@_datas/dream-map-settings";
+import { XYCoord } from "@_models/dream-map";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
 
 
@@ -30,6 +30,7 @@ export interface Viewer3DState {
   loaders: {
     initial: boolean;
   };
+  hoverCeil: XYCoord;
 }
 
 // Начальное состояние
@@ -44,7 +45,8 @@ const viewer3DInitialState: Viewer3DState = {
   skyTime: 0,
   loaders: {
     initial: true
-  }
+  },
+  hoverCeil: { x: -1, y: -1 }
 };
 
 
@@ -78,6 +80,12 @@ export const editor3DSetSkyTimeAction = createAction(
   props<{ skyTime: number }>()
 );
 
+// Обновить текущую ячейку, выделенную мышкой
+export const editor3DHoveringCeil = createAction(
+  "[3D EDITOR] Hovered a ceil",
+  props<{ hoverCeil: XYCoord }>()
+);
+
 // Создание стейта
 export const viewer3DReducer = createReducer(
   viewer3DInitialState,
@@ -93,6 +101,8 @@ export const viewer3DReducer = createReducer(
   on(editor3DSetNoneOverlaySettingsStateAction, state => ({ ...state, overlaySettings: Editor3DOverlaySettings.none })),
   // Обновить текущее время
   on(editor3DSetSkyTimeAction, (state, { skyTime }) => ({ ...state, skyTime })),
+  // Обновить текущую ячейку, выделенную мышкой
+  on(editor3DHoveringCeil, (state, { hoverCeil }) => ({ ...state, hoverCeil }))
 );
 
 
@@ -129,3 +139,9 @@ export const editor3DShowControlsSelector = createSelector(
 
 // Текущее время суток
 export const editor3DSkyTimeSelector = createSelector(viewer3DFeatureSelector, ({ skyTime }) => skyTime);
+
+// Координаты текущей ячейки, в фокусе мышки
+export const editor3DHoverCeilCoords = createSelector(viewer3DFeatureSelector, ({ hoverCeil }) => hoverCeil);
+
+// Выделение за пределами карты
+export const editor3DHoverInWorkArea = createSelector(editor3DHoverCeilCoords, ({ x, y }) => x >= 0 && y >= 0);
