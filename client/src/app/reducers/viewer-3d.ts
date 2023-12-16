@@ -22,14 +22,6 @@ export interface Viewer3DStateCompass {
   cos: number;
 }
 
-// Настройки облаков
-export interface Viewer3DStateClouds {
-  height: number;
-  direction: number;
-  speed: number;
-  count: number;
-}
-
 // Интерфейс состояния
 export interface Viewer3DState {
   compass: Viewer3DStateCompass;
@@ -38,7 +30,6 @@ export interface Viewer3DState {
   loaders: {
     initial: boolean;
   };
-  clouds: Viewer3DStateClouds;
 }
 
 // Начальное состояние
@@ -53,12 +44,6 @@ const viewer3DInitialState: Viewer3DState = {
   skyTime: 0,
   loaders: {
     initial: true
-  },
-  clouds: {
-    height: DreamCloudsDefaultHeight,
-    direction: 0,
-    speed: 1,
-    count: 0.3
   }
 };
 
