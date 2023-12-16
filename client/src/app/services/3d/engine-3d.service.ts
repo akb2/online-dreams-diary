@@ -51,6 +51,8 @@ export class Engine3DService implements OnDestroy {
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
   private animationList: AnimationCallback[] = [];
+  private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamFogFar)
+  private rayCasterCoords: Vector2 = new Vector2();
 
   private lastCamera: PerspectiveCamera;
 
@@ -62,17 +64,23 @@ export class Engine3DService implements OnDestroy {
 
 
   // Получить объекты пересечения
-  private getIntercectionObject(x: number, y: number): Intersection[] {
-    x = (x / this.canvasWidth) * 2 - 1;
-    y = -((y / this.canvasHeight) * 2 - 1);
-    const far: number = DreamFogFar;
-    const raycaster: OctreeRaycaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, far);
+  getIntercectionObject(screenX: number, screenY: number): Intersection[] {
+    const x = ((screenX / this.canvasWidth) * 2) - 1;
+    const y = -(((screenY / this.canvasHeight) * 2) - 1);
     // Настройки
-    raycaster.setFromCamera(new Vector2(x, y), this.camera);
+    this.rayCasterCoords.set(x, y);
+    this.rayCaster.setFromCamera(this.rayCasterCoords, this.camera);
     // Объекты в фокусе
-    const intersect: Intersection[] = raycaster.intersectOctreeObjects(this.octree.search(raycaster.ray.origin, far, true, raycaster.ray.direction));
+    const intersect: Intersection[] = this.rayCaster.intersectOctreeObjects(this.octree.search(
+      this.rayCaster.ray.origin,
+      DreamFogFar,
+      true,
+      this.rayCaster.ray.direction
+    ));
     // Обработка объектов
-    return intersect?.length ? intersect : null;
+    return intersect?.length
+      ? intersect.sort(({ distance: a }, { distance: b }) => a - b)
+      : null;
   }
 
 
