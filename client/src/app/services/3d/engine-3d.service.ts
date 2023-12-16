@@ -374,7 +374,7 @@ export class Engine3DService implements OnDestroy {
     const circlePos = this.ceil3dService.coordsToUV(x, z);
     // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
-      radial: RadToAngle(Math.atan2(-vector.x, -vector.z)) - 90,
+      radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
       azimuth: RadToAngle(vector.y * (Math.PI / 2)),
       sin: -circlePos.v,
       cos: circlePos.u
