@@ -443,6 +443,7 @@
       "controls": {
         "settings": {
           "time": "Times of day",
+          "landscape": "Landscape",
           "clouds": "Clouds"
         }
       }

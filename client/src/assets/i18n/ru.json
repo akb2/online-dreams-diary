@@ -443,6 +443,7 @@
       "controls": {
         "settings": {
           "time": "Время суток",
+          "landscape": "Ландшафт",
           "clouds": "Облака"
         }
       }
