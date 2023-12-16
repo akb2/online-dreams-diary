@@ -15,7 +15,7 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 import { Observable, Subject, animationFrameScheduler, catchError, concatMap, delay, fromEvent, map, merge, observeOn, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
@@ -506,7 +506,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       }
     }
     // Запомнить новые координаты
-    console.log(x, y);
+    this.store$.dispatch(editor3DHoveringCeil({ hoverCeil: { x, y } }));
   }
 }
 
