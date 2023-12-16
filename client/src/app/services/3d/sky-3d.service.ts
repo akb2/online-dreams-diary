@@ -11,7 +11,7 @@ import { CoordsXYZToIndex, MinMax } from "@_models/math";
 import { AnimationData } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector3Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
-import { AmbientLight, BackSide, BoxGeometry, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, RepeatWrapping, Vector2, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, BackSide, BoxGeometry, ClampToEdgeWrapping, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, Vector2, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Landscape3DService } from "./landscape-3d.service";
 
@@ -35,11 +35,22 @@ export class Sky3DService {
 
   private cloudsMaterial: RawShaderMaterial;
 
-  private cloudsSize = 100;
-  private cloudsScale = 0.05;
+  private noiseSize = 0;
+  private noiseScale = 0.06;
+
+  private cloudsMultiplierX = 2;
+  private cloudsMultiplierZ = 2;
+  private cloudsMultiplierY = 6;
+
+  private shaderThresHold = 0.5;
+  private shaderOpacity = 1.0;
+  private shaderRange = 0.1;
+  private shaderSteps = 30;
+  private shaderStartFrame = 0;
+  private shaderDiscardOpacity = 0.1;
 
   private colorWhite = new Color(1, 1, 1);
-  private colorClouds = new Color(0x798aa0);
+  private colorClouds = new Color(0.47, 0.54, 0.63);
 
 
 
@@ -56,9 +67,9 @@ export class Sky3DService {
     const mapBorderSizeZ = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
     // Размеры
     return {
-      x: (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2),
-      z: (mapHeight * DreamCeilSize) + (mapBorderSizeZ * 2),
-      y: DreamCeilSize * 3
+      x: this.cloudsMultiplierX * ((mapWidth * DreamCeilSize) + (mapBorderSizeX * 2)),
+      z: this.cloudsMultiplierZ * ((mapHeight * DreamCeilSize) + (mapBorderSizeZ * 2)),
+      y: this.cloudsMultiplierY * DreamCeilSize
     };
   }
 
@@ -67,9 +78,9 @@ export class Sky3DService {
    * @returns {Data3DTexture} новый экземпляр текстуры
    */
   private getCloudsTexture(): Data3DTexture {
-    const size = this.cloudsSize;
+    const size = this.noiseSize;
     const sizes = CreateArray(3, () => size) as [number, number, number];
-    const perlin = this.dreamMap.noise;
+    const noise = this.dreamMap.noise;
     const vector = new Vector3();
     const texture = new Data3DTexture(new Uint8Array(Math.pow(size, 3)), ...sizes);
     // Цикл по координатам
@@ -78,11 +89,11 @@ export class Sky3DService {
       (x, y, z) => ([
         Math.pow(1 - vector.set(x, y, z).subScalar(size / 2).divideScalar(size).length(), 2),
         CoordsXYZToIndex(x, y, z, ...sizes),
-        x * this.cloudsScale,
-        y * this.cloudsScale,
-        z * this.cloudsScale
+        x * this.noiseScale,
+        y * this.noiseScale,
+        z * this.noiseScale
       ]),
-      ([d, i, x, y, z]) => texture.image.data[i] = LineFunc(0, MaxColorValue, perlin.perlin3(x, y, z), -1, 1) * d
+      ([d, i, x, y, z]) => texture.image.data[i] = LineFunc(0, MaxColorValue, noise.simplex3(x, y, z), -1, 1) * d
     );
     // Свойства текстуры
     texture.format = RedFormat;
@@ -90,9 +101,8 @@ export class Sky3DService {
     texture.magFilter = LinearFilter;
     texture.unpackAlignment = 1;
     texture.needsUpdate = true;
-    texture.wrapS = RepeatWrapping;
-    texture.wrapT = RepeatWrapping;
-    texture.wrapR = RepeatWrapping;
+    texture.wrapS = ClampToEdgeWrapping;
+    texture.wrapT = ClampToEdgeWrapping;
     texture.repeat = new Vector2(1, 1);
     // Новая текстура
     return texture;
@@ -186,19 +196,20 @@ export class Sky3DService {
       vertexShader: VertexShader,
       side: BackSide,
       transparent: true,
+      depthWrite: false,
       uniforms: {
         base: ThreeVector3Uniform(this.colorClouds),
         map: ThreeTextureUniform(this.getCloudsTexture()),
         cameraPosition: ThreeVector3Uniform(),
-        threshold: ThreeFloatUniform(0.5),
-        opacity: ThreeFloatUniform(1),
-        range: ThreeFloatUniform(0.1),
-        steps: ThreeFloatUniform(50),
-        frame: ThreeFloatUniform(0),
+        threshold: ThreeFloatUniform(this.shaderThresHold),
+        opacity: ThreeFloatUniform(this.shaderOpacity),
+        range: ThreeFloatUniform(this.shaderRange),
+        steps: ThreeFloatUniform(this.shaderSteps),
+        frame: ThreeFloatUniform(this.shaderStartFrame),
         boxSize: ThreeVector3Uniform(sizeX, sizeY, sizeZ),
         fogNear: ThreeFloatUniform(DreamFogNear),
         fogFar: ThreeFloatUniform(DreamFogFar),
-        discardOpacity: ThreeFloatUniform(0)
+        discardOpacity: ThreeFloatUniform(this.shaderDiscardOpacity)
       }
     });
     // Настройки
