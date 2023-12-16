@@ -49,6 +49,14 @@ $controlOffset: 5px;
   overflow: hidden;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  // Последующие элементы
+  & + & {
+    margin-left: 5px;
+  }
   // Кнопка
   &__item {
     pointer-events: all;
@@ -57,6 +65,10 @@ $controlOffset: 5px;
     cursor: pointer;
     background-color: colors.$card;
     transition: background-color #{screens.$animationTime};
+    // Последующие элементы
+    & + & {
+      border-left: 1px solid #{colors.$border};
+    }
     // Общее
     &,
     > mat-icon {

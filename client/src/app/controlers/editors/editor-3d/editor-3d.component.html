@@ -18,6 +18,7 @@
 <!-- Управление: настройки -->
 <ng-template #controlsSettings>
   <div class="controls controls--settings">
+    <!-- Управление окружением -->
     <ul class="buttons">
       <!-- Время суток -->
       <li class="buttons__item"
@@ -26,6 +27,9 @@
           (click)="onTimeSettingsOpen()">
         <mat-icon>wb_sunny</mat-icon>
       </li>
+    </ul>
+    <!-- Управление местностью -->
+    <ul class="buttons">
       <!-- Ландшафт -->
       <li class="buttons__item"
           [matTooltip]="'3d.editor.controls.settings.landscape' | translate"
