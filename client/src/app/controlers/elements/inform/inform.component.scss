@@ -126,7 +126,7 @@ $figureColor: map.get(colors.$matPrimary, 500);
 }
 
 // Контейнер для кнопок
-::ng-deep .buttons {
+:host ::ng-deep .buttons {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
