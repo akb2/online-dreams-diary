@@ -139,7 +139,7 @@ export const FragmentShader = `
     }
 
     color = linearToSRGB(ac);
-    color.a = saturate(color.a - fogFactor);
+    color.a = max(0., saturate(color.a - fogFactor));
 
     if ( color.a <= discardOpacity ) {
       discard;
