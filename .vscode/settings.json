@@ -29,5 +29,20 @@
     "client/src/assets/images/icons/languages"
   ],
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.sourceLanguage": "ru"
+  "i18n-ally.sourceLanguage": "ru",
+  "editor.codeLens": true,
+  "typescript.referencesCodeLens.enabled": true,
+  "typescript.referencesCodeLens.showOnAllFunctions": true,
+  "typescript.implementationsCodeLens.enabled": true,
+  "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
+  "typelens.decorateunused": true,
+  "typelens.unusedcolor": "#FF4516",
+  "typelens.singular": "Ссылок: {0}",
+  "typelens.plural": "Ссылок: {0}",
+  "typelens.noreferences": "Нет ссылок для {0}",
+  "typelens.showReferencesForClasses": true,
+  "typelens.showReferencesForFunctions": true,
+  "typelens.showReferencesForInterfaces": true,
+  "typelens.showReferencesForMethods": true,
+  "typelens.showReferencesForProperties": true
 }
