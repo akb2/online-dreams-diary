@@ -36,7 +36,7 @@
   "typescript.implementationsCodeLens.enabled": true,
   "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
   "typelens.decorateunused": true,
-  "typelens.unusedcolor": "#FF4516",
+  "typelens.unusedcolor": "#444",
   "typelens.singular": "Ссылок: {0}",
   "typelens.plural": "Ссылок: {0}",
   "typelens.noreferences": "Нет ссылок для {0}",
