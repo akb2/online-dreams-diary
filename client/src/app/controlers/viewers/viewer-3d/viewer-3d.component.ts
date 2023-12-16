@@ -1,7 +1,7 @@
-import { VoidFunctionVar } from "@_datas/app";
+import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { DreamCeilSize } from "@_datas/dream-map-settings";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, Cos, MathFloor, MathRound, ParseInt, Sin } from "@_helpers/math";
+import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
@@ -71,20 +71,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       " rotateZ(" + (radial - this.compassRadialShift) + "deg) "
     )
   })));
-
-  compassLabelStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => {
-    const koof: number = -Sin(azimuth);
-    const depth: number = 0.5 - ((Cos(radial) / 2) * koof);
-    // Объект стилей
-    return {
-      top: (depth * 100) + "%",
-      left: ((Sin(radial) + 1) * 50) + "%",
-      transform: (
-        " translateX(-50%) " +
-        " translateY(-50%) "
-      )
-    };
-  }));
 
   compassMarkAreaStyles$ = this.compass$.pipe(map(({ cos, sin }) => {
     const value: number = 50;
@@ -458,7 +444,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       // Изменение времени
       this.skyTime$.pipe(tap(skyTime => this.onSkyUpdate(skyTime))),
       // Движение мышкой
-      fromEvent<MouseEvent | TouchEvent>(this.canvas.nativeElement, moveEvent).pipe(tap(event => this.onMouseIntersectionUpdate(event)))
+      fromEvent<MouseEvent | TouchEvent>(document, moveEvent).pipe(tap(event => this.onMouseIntersectionUpdate(event)))
     ).pipe(
       observeOn(animationFrameScheduler)
     );
@@ -485,30 +471,38 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Обновление пересечения с мышкой
   private onMouseIntersectionUpdate(event: MouseEvent | TouchEvent): void {
-    let x: number = -1;
-    let y: number = -1;
-    const canvasRect = this.canvas.nativeElement.getBoundingClientRect();
-    const eventData = event instanceof MouseEvent
-      ? event
-      : event.touches.item(0);
-    const screenX = eventData.clientX - canvasRect.left;
-    const screenY = eventData.clientY - canvasRect.top;
-    const objects = this.engine3DService.getIntercectionObject(screenX, screenY) ?? [];
-    const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[0];
-    // Изменить координаты определения
-    if (!!object) {
-      const mapWidth = this.dreamMap.size.width;
-      const mapHeight = this.dreamMap.size.height;
-      const tempX = MathFloor(object.point.x / DreamCeilSize) + (mapWidth * DreamCeilSize / 2);
-      const tempY = MathFloor(object.point.z / DreamCeilSize) + (mapHeight * DreamCeilSize / 2);
-      // Координаты в рабочей области
-      if (!this.ceil3dService.isBorderCeil(tempX, tempY)) {
-        x = tempX;
-        y = tempY;
+    if (this.showCursor) {
+      if (CompareElementByElement(event.target, this.canvas.nativeElement)) {
+        let x: number = -1;
+        let y: number = -1;
+        const canvasRect = this.canvas.nativeElement.getBoundingClientRect();
+        const eventData = event instanceof MouseEvent
+          ? event
+          : event.touches.item(0);
+        const screenX = eventData.clientX - canvasRect.left;
+        const screenY = eventData.clientY - canvasRect.top;
+        const objects = this.engine3DService.getIntercectionObject(screenX, screenY) ?? [];
+        const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[0];
+        // Изменить координаты определения
+        if (!!object) {
+          const mapWidth = this.dreamMap.size.width;
+          const mapHeight = this.dreamMap.size.height;
+          const tempX = MathFloor(object.point.x / DreamCeilSize) + (mapWidth * DreamCeilSize / 2);
+          const tempY = MathFloor(object.point.z / DreamCeilSize) + (mapHeight * DreamCeilSize / 2);
+          // Координаты в рабочей области
+          if (!this.ceil3dService.isBorderCeil(tempX, tempY)) {
+            x = tempX;
+            y = tempY;
+          }
+        }
+        // Запомнить новые координаты
+        this.store$.dispatch(editor3DHoveringCeil({ hoverCeil: { x, y } }));
+      }
+      // Потеря фокуса
+      else {
+        this.store$.dispatch(editor3DHoveringCeil({ hoverCeil: { x: -1, y: -1 } }));
       }
     }
-    // Запомнить новые координаты
-    this.store$.dispatch(editor3DHoveringCeil({ hoverCeil: { x, y } }));
   }
 }
 
