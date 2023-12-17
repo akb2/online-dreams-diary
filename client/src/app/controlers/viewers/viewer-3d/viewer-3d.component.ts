@@ -227,84 +227,9 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       loadedSize: 0,
       afterLoadEvent: loadTexture?.afterLoadEvent ?? VoidFunctionVar
     }));
-    // Функции просчета ячеек
-    this.ceilsOperations.push(
-      // Запись высот в общий массив
-      {
-        callable: this.landscape3DService.setHeightByCoords,
-        context: this.landscape3DService,
-        setStep: LoadingStep.ceilsLoad
-      },
-      // Сглаживание высот
-      {
-        callable: this.landscape3DService.setSmoothByCoords,
-        context: this.landscape3DService,
-        setStep: LoadingStep.ceilsSmooth
-      },
-      // Установка высот в гуометрию
-      {
-        callable: this.landscape3DService.setVertexByCoords,
-        context: this.landscape3DService,
-        setStep: LoadingStep.ceilsSet
-      }
-    );
-    // Функции после просчета ячеек
-    this.calcOperations.push(
-      // Создание неба
-      {
-        callable: () => {
-          this.sky3DService.renderer = this.engine3DService.renderer;
-          this.sky3DService.create();
-        },
-        context: this
-      },
-      // Обновить геометрию ландшафта
-      {
-        callable: this.landscape3DService.updateGeometry,
-        context: this.landscape3DService
-      },
-      // Обновить материал ландшафта
-      {
-        callable: this.landscape3DService.updateMaterial,
-        context: this.landscape3DService
-      },
-      // Создать туман
-      {
-        callable: this.engine3DService.setFog,
-        context: this.engine3DService,
-        args: [
-          () => this.sky3DService.fog
-        ]
-      },
-      // Добавить объекты на сцену
-      {
-        callable: this.engine3DService.addToScene,
-        context: this.engine3DService,
-        args: [
-          () => this.landscape3DService.mesh,
-          () => this.sky3DService.sky,
-          () => this.sky3DService.sun,
-          () => this.sky3DService.atmosphere,
-          // () => this.sky3DService.clouds
-        ]
-      },
-      // Добавить объекты в пересечения курсора
-      {
-        callable: this.engine3DService.addToCursorIntersection,
-        context: this.engine3DService,
-        args: [
-          () => this.landscape3DService.mesh
-        ]
-      },
-      // Анимация ландшафта
-      {
-        callable: this.engine3DService.addToAnimation,
-        context: this.engine3DService,
-        args: [
-          () => this.sky3DService.onAnimate.bind(this.sky3DService)
-        ]
-      }
-    );
+    // Заполнение действий
+    this.fillCellsActions();
+    this.fillCalcActions();
     // Задержка
     return timer(1);
   }
@@ -447,6 +372,99 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       fromEvent<MouseEvent | TouchEvent>(document, moveEvent).pipe(tap(event => this.onMouseIntersectionUpdate(event)))
     ).pipe(
       observeOn(animationFrameScheduler)
+    );
+  }
+
+
+
+
+
+  // Заполнить список действий над ячейками
+  private fillCellsActions(): void {
+    this.ceilsOperations.push(
+      // Запись высот в общий массив
+      {
+        callable: this.landscape3DService.setHeightByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsLoad
+      },
+      // Сглаживание высот
+      {
+        callable: this.landscape3DService.setSmoothByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsSmooth
+      },
+      // Установка высот в гуометрию
+      {
+        callable: this.landscape3DService.setVertexByCoords,
+        context: this.landscape3DService,
+        setStep: LoadingStep.ceilsSet
+      }
+    );
+  }
+
+  // Заполнить список действий над сценой
+  private fillCalcActions(): void {
+    this.calcOperations.push(
+      // Создание неба
+      {
+        callable: () => {
+          this.sky3DService.renderer = this.engine3DService.renderer;
+          this.sky3DService.create();
+        },
+        context: this
+      },
+      // Обновить геометрию ландшафта
+      {
+        callable: this.landscape3DService.updateGeometry,
+        context: this.landscape3DService
+      },
+      // Обновить материал ландшафта
+      {
+        callable: this.landscape3DService.updateMaterial,
+        context: this.landscape3DService
+      },
+      // Создать туман
+      {
+        callable: this.engine3DService.setFog,
+        context: this.engine3DService,
+        args: [
+          () => this.sky3DService.fog
+        ]
+      },
+      // Создание курсора
+      {
+        callable: this.cursor3DService.create,
+        context: this.cursor3DService
+      },
+      // Добавить объекты на сцену
+      {
+        callable: this.engine3DService.addToScene,
+        context: this.engine3DService,
+        args: [
+          () => this.landscape3DService.mesh,
+          () => this.sky3DService.sky,
+          () => this.sky3DService.sun,
+          () => this.sky3DService.atmosphere,
+          // () => this.sky3DService.clouds
+        ]
+      },
+      // Добавить объекты в пересечения курсора
+      {
+        callable: this.engine3DService.addToCursorIntersection,
+        context: this.engine3DService,
+        args: [
+          () => this.landscape3DService.mesh
+        ]
+      },
+      // Анимация ландшафта
+      {
+        callable: this.engine3DService.addToAnimation,
+        context: this.engine3DService,
+        args: [
+          () => this.sky3DService.onAnimate.bind(this.sky3DService)
+        ]
+      }
     );
   }
 
