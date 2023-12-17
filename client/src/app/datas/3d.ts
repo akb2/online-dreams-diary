@@ -6,6 +6,8 @@ export enum Editor3DTool {
 }
 
 // Параметры инструмента
-export interface Editor3DToolSettings<T> {
+export interface Editor3DToolSettings {
+  type: Editor3DTool;
   collapseSize: boolean;
+  size: number;
 }

@@ -1,3 +1,4 @@
+import { Editor3DTool, Editor3DToolSettings } from "@_datas/3d";
 import { XYCoord } from "@_models/dream-map";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
 
@@ -31,6 +32,7 @@ export interface Viewer3DState {
     initial: boolean;
   };
   hoverCeil: XYCoord;
+  currentTool: Editor3DToolSettings;
 }
 
 // Начальное состояние
@@ -46,7 +48,12 @@ const viewer3DInitialState: Viewer3DState = {
   loaders: {
     initial: true
   },
-  hoverCeil: { x: -1, y: -1 }
+  hoverCeil: { x: -1, y: -1 },
+  currentTool: {
+    type: Editor3DTool.landscape,
+    collapseSize: false,
+    size: 1
+  }
 };
 
 
@@ -145,3 +152,9 @@ export const editor3DHoverCeilCoords = createSelector(viewer3DFeatureSelector, (
 
 // Выделение за пределами карты
 export const editor3DHoverInWorkArea = createSelector(editor3DHoverCeilCoords, ({ x, y }) => x >= 0 && y >= 0);
+
+// Текущий размер курсора
+export const editor3DCursorSelector = createSelector(viewer3DFeatureSelector, ({ currentTool }) => currentTool);
+
+// Текущий размер курсора
+export const editor3DCursorSizeSelector = createSelector(editor3DCursorSelector, ({ size }) => size);
