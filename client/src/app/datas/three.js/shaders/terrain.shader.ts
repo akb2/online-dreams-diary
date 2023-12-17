@@ -97,7 +97,7 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   parallaxDistance: ThreeFloatUniform(ParallaxDistance)
 }]);
 
-// Вершинный шейдер
+// Фрагментный шейдер
 export const TerrainFragmentShader = `
   uniform vec2 tileSize;
   uniform vec2 tileSpacing;
@@ -305,7 +305,7 @@ export const TerrainFragmentShader = `
   }
 `;
 
-// Фрагментный шейдер
+// Вершинный шейдер
 export const TerrainVertexShader = `
   varying float vDistanceToCamera;
 
