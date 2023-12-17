@@ -141,6 +141,8 @@ export class Cursor3DService implements OnDestroy {
   // Создание объекта
   private createMesh(): void {
     this.mesh = new Mesh(this.geometry, this.material);
+    // Свойства объекта
+    this.mesh.renderOrder = 2;
   }
 
 

@@ -255,6 +255,7 @@ export class Landscape3DService {
     this.mesh.castShadow = true;
     this.mesh.name = DreamMapTerrainName;
     this.mesh.position.setY(DreamStartHeight);
+    this.mesh.renderOrder = 1;
     this.mesh.updateMatrix();
   }
 
