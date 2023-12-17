@@ -148,10 +148,10 @@ export const editor3DShowControlsSelector = createSelector(
 export const editor3DSkyTimeSelector = createSelector(viewer3DFeatureSelector, ({ skyTime }) => skyTime);
 
 // Координаты текущей ячейки, в фокусе мышки
-export const editor3DHoverCeilCoords = createSelector(viewer3DFeatureSelector, ({ hoverCeil }) => hoverCeil);
+export const editor3DHoverCeilCoordsSelector = createSelector(viewer3DFeatureSelector, ({ hoverCeil }) => hoverCeil);
 
 // Выделение за пределами карты
-export const editor3DHoverInWorkArea = createSelector(editor3DHoverCeilCoords, ({ x, y }) => x >= 0 && y >= 0);
+export const editor3DHoverInWorkAreaSelector = createSelector(editor3DHoverCeilCoordsSelector, ({ x, y }) => x >= 0 && y >= 0);
 
 // Текущий размер курсора
 export const editor3DCursorSelector = createSelector(viewer3DFeatureSelector, ({ currentTool }) => currentTool);
