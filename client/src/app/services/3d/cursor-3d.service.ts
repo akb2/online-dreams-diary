@@ -1,7 +1,7 @@
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMaxHeight, DreamMinHeight } from "@_datas/dream-map-settings";
 import { CheckInRange, Cos, MathFloor, Sin } from "@_helpers/math";
-import { ArrayFind, ForCycle } from "@_helpers/objects";
+import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CoordDto, DreamMap } from "@_models/dream-map";
 import { Injectable, OnDestroy } from "@angular/core";
@@ -9,8 +9,8 @@ import { editor3DCursorSizeSelector, editor3DHoverCeilCoordsSelector } from "@ap
 import { OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { Subject, combineLatest, concatMap, distinctUntilChanged, merge, takeUntil, tap } from "rxjs";
-import { CylinderGeometry, DoubleSide, Intersection, Mesh, MeshStandardMaterial, Vector3 } from "three";
-import { Engine3DService } from "./engine-3d.service";
+import { CylinderGeometry, DoubleSide, Mesh, MeshBasicMaterial, Vector3 } from "three";
+import { Landscape3DService } from "./landscape-3d.service";
 
 
 
@@ -26,10 +26,10 @@ export class Cursor3DService implements OnDestroy {
   // ? Ширина сигмента для цилиндра будет примерно равнятся этому числу
   private radialSigmentsDelimiter = 0.2;
   // ? Количество точек для поиска пересечений с ландшафтом
-  private intersectionPoints = 8;
+  private intersectionPoints = 5;
 
   mesh: Mesh;
-  material: MeshStandardMaterial;
+  material: MeshBasicMaterial;
   geometry: CylinderGeometry;
 
   hoverItems = [
@@ -38,6 +38,7 @@ export class Cursor3DService implements OnDestroy {
 
   private lastSize: number;
   private lastHeight: number;
+  private intersectionCache: [number, number, number][] = [];
 
   private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamMaxHeight - DreamMinHeight);
   private rayCasterOrigin = new Vector3();
@@ -45,7 +46,7 @@ export class Cursor3DService implements OnDestroy {
 
   // Текущий размер
   private cursorSize$ = this.store$.select(editor3DCursorSizeSelector).pipe(
-    distinctUntilChanged()
+    distinctUntilChanged((prev, next) => prev === next)
   );
 
   // Текущая ячейка
@@ -66,19 +67,25 @@ export class Cursor3DService implements OnDestroy {
 
   // Получение точки пересечения
   private getIntersectedPoint(landX: number, landZ: number): CoordDto {
-    const far = DreamMaxHeight - DreamMinHeight;
-    // Обновить параметры
-    this.rayCasterOrigin.set(landX, DreamMaxHeight + DreamCeilSize, landZ);
-    this.rayCaster.set(this.rayCasterOrigin, this.rayCasterDirection);
-    // Объекты в фокусе
-    const object = ArrayFind(
-      this.engine3DService.octree.search(this.rayCaster.ray.origin, far, true, this.rayCaster.ray.direction),
-      ({ object: { name } }) => name === DreamMapTerrainName
-    );
-    const intersect: Intersection = this.rayCaster.intersectOctreeObject(object, false)?.[0];
-    const { x, y, z } = intersect?.point ?? { x: 0, y: 0, z: 0 };
-    // Пересечение
-    return { x, y, z };
+    const cacheIndex = this.intersectionCache.findIndex(([x, , z]) => x === landX && z === landZ);
+    // Результат из кеша
+    if (cacheIndex >= 0) {
+      const [x, y, z] = this.intersectionCache[cacheIndex];
+      // Пересечение
+      return { x, y, z };
+    }
+    // Расчет пересечения
+    else {
+      this.rayCasterOrigin.set(landX, DreamMaxHeight + DreamCeilSize, landZ);
+      this.rayCaster.set(this.rayCasterOrigin, this.rayCasterDirection);
+      // Объекты в фокусе
+      const intersects = this.rayCaster.intersectObject(this.landscape3DService.mesh, false);
+      const { x, y, z } = intersects?.[0]?.point ?? { x: 0, y: 0, z: 0 };
+      // Добавить в кеш
+      this.intersectionCache.push([x, y, z]);
+      // Пересечение
+      return { x, y, z };
+    }
   }
 
 
@@ -86,7 +93,7 @@ export class Cursor3DService implements OnDestroy {
 
 
   constructor(
-    private engine3DService: Engine3DService,
+    private landscape3DService: Landscape3DService,
     private store$: Store
   ) {
     WaitObservable(() => !this.dreamMap)
@@ -130,11 +137,12 @@ export class Cursor3DService implements OnDestroy {
 
   // Создание материала
   private createMaterial(): void {
-    this.material = new MeshStandardMaterial({
+    this.material = new MeshBasicMaterial({
       color: 0x2265ff,
       opacity: 0.5,
       transparent: true,
-      side: DoubleSide
+      side: DoubleSide,
+      fog: false
     });
   }
 

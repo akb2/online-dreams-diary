@@ -10,7 +10,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
-import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
+import { BlendFunction, BloomEffect, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
 import { Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
 import { Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -50,6 +50,7 @@ export class Engine3DService implements OnDestroy {
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
   private animationList: AnimationCallback[] = [];
+  private intersectionList: Mesh[] = [];
   private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamFogFar)
   private rayCasterCoords = new Vector2();
 
@@ -74,16 +75,11 @@ export class Engine3DService implements OnDestroy {
     this.rayCasterCoords.set(x, y);
     this.rayCaster.setFromCamera(this.rayCasterCoords, this.camera);
     // Объекты в фокусе
-    const intersect: Intersection[] = this.rayCaster.intersectOctreeObjects(this.octree.search(
-      this.rayCaster.ray.origin,
-      DreamFogFar,
-      true,
-      this.rayCaster.ray.direction
-    ));
+    const intersect: Intersection[] = this.rayCaster.intersectObjects(this.intersectionList, false);
     // Обработка объектов
-    return intersect?.length
+    return !!intersect?.length
       ? intersect.sort(({ distance: a }, { distance: b }) => a - b)
-      : null;
+      : [];
   }
 
 
@@ -288,10 +284,13 @@ export class Engine3DService implements OnDestroy {
   }
 
   // Добавить в пересечения курсора
-  addToCursorIntersection(...objects: Mesh[]): void {
+  addToIntersection(...objects: Mesh[]): void {
     ArrayForEach(
-      ArrayFilter(objects, object => !!object),
-      object => this.octree.add(object)
+      ArrayFilter(objects, object => !!object && !this.intersectionList.includes(object)),
+      object => {
+        this.octree.add(object);
+        this.intersectionList.push(object);
+      }
     );
     // Обновить
     this.octree.update();
@@ -384,17 +383,14 @@ export class Engine3DService implements OnDestroy {
   // Обновить параметры пост обработки
   private onUpdatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
-      const chairPositionX: number = this.canvasWidth * 0.5;
-      const chairPositionY: number = this.canvasHeight * 0.5;
-      const objects: Intersection[] = this.getIntercectionObject(chairPositionX, chairPositionY);
+      const chairPositionX = this.canvasWidth * 0.5;
+      const chairPositionY = this.canvasHeight * 0.5;
+      const closestObject = this.getIntercectionObject(chairPositionX, chairPositionY)?.[0];
       const { depthOfFieldEffect, bloomEffect } = this.postProcessingEffects;
-      const circleOfConfusionMaterial: CircleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
-      const blendMode: BlendMode = depthOfFieldEffect.blendMode;
-      const closestObject: Intersection = !!objects?.length ?
-        objects.reduce((o, object) => !o || (!!o && object.distance < o.distance) ? object : o, null) :
-        null;
-      const distance: number = this.control.getDistance();
-      const focusDistance: number = LineFunc(0.4, 0.5, distance, 0, this.control.maxDistance);
+      const circleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+      const blendMode = depthOfFieldEffect.blendMode;
+      const distance = this.control.getDistance();
+      const focusDistance = LineFunc(0.4, 0.5, distance, 0, this.control.maxDistance);
       // Обновить дальность
       blendMode.opacity.value = LineFunc(1, 0.6, distance, this.control.minDistance, this.control.maxDistance);
       depthOfFieldEffect.resolution.width = this.canvasWidth;

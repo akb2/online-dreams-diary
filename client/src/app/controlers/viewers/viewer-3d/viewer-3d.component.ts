@@ -453,7 +453,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       },
       // Добавить объекты в пересечения курсора
       {
-        callable: this.engine3DService.addToCursorIntersection,
+        callable: this.engine3DService.addToIntersection,
         context: this.engine3DService,
         args: [
           () => this.landscape3DService.mesh
