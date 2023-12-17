@@ -11,8 +11,8 @@ import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendFunction, BlendMode, BloomEffect, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
-import { Observable, Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
-import { Clock, Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
+import { Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -39,6 +39,7 @@ export class Engine3DService implements OnDestroy {
   renderer: WebGLRenderer;
   stats: Stats;
   camera: PerspectiveCamera;
+  octree: Octree;
 
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
@@ -46,17 +47,14 @@ export class Engine3DService implements OnDestroy {
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
   private control: OrbitControls;
-  private octree: Octree;
-  private clock: Clock;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
   private animationList: AnimationCallback[] = [];
   private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamFogFar)
-  private rayCasterCoords: Vector2 = new Vector2();
+  private rayCasterCoords = new Vector2();
 
   private lastCamera: PerspectiveCamera;
 
-  renderEvent$: Observable<AnimationFramesEvent> = animationFrames();
   private destroyed$: Subject<void> = new Subject();
 
 
@@ -170,16 +168,16 @@ export class Engine3DService implements OnDestroy {
 
   // Создание пересечений
   private createOctree(): void {
-    const mapWidth: number = this.dreamMap.size.width * DreamCeilSize;
-    const mapHeight: number = this.dreamMap.size.height * DreamCeilSize;
+    const mapWidth: number = this.dreamMap.size.width * DreamCeilSize; // 50
+    const mapHeight: number = this.dreamMap.size.height * DreamCeilSize; // 50
     const raycastSize: number = (mapWidth * mapHeight) + 3;
-    const depthMax: number = 1;
+    const depthMax: number = 10;
     const preferredObjectsPerNode: number = 8;
     const objectsThreshold: number = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Настройка пересечений
     this.octree = new Octree({
       // scene: this.scene,
-      undeferred: false,
+      undeferred: true,
       depthMax: 1,
       objectsThreshold,
       overlapPct: 0.15
@@ -253,7 +251,7 @@ export class Engine3DService implements OnDestroy {
 
   // Запуск анимации
   private createAnimation(): void {
-    this.renderEvent$
+    animationFrames()
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         this.onAnimate();
