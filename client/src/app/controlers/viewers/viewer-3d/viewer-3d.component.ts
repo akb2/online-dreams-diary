@@ -175,6 +175,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       this.engine3DService.dreamMap = this.dreamMap;
       this.landscape3DService.dreamMap = this.dreamMap;
       this.sky3DService.dreamMap = this.dreamMap;
+      this.cursor3DService.dreamMap = this.dreamMap;
     }
   }
 
@@ -446,6 +447,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           () => this.sky3DService.sky,
           () => this.sky3DService.sun,
           () => this.sky3DService.atmosphere,
+          () => this.cursor3DService.mesh,
           // () => this.sky3DService.clouds
         ]
       },
