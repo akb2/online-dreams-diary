@@ -1,6 +1,6 @@
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMaxHeight, DreamMinHeight } from "@_datas/dream-map-settings";
-import { CheckInRange, Cos, MathFloor, Sin } from "@_helpers/math";
+import { CheckInRange, Cos, MathFloor, Sin, SinCosToRad } from "@_helpers/math";
 import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CoordDto, DreamMap } from "@_models/dream-map";
@@ -9,7 +9,7 @@ import { editor3DCursorSizeSelector, editor3DHoverCeilCoordsSelector } from "@ap
 import { OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { Subject, combineLatest, concatMap, distinctUntilChanged, merge, takeUntil, tap } from "rxjs";
-import { CylinderGeometry, DoubleSide, Mesh, MeshBasicMaterial, Vector3 } from "three";
+import { Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, SpotLight, SpotLightHelper, Vector3 } from "three";
 import { Landscape3DService } from "./landscape-3d.service";
 
 
@@ -27,10 +27,18 @@ export class Cursor3DService implements OnDestroy {
   private radialSigmentsDelimiter = 0.2;
   // ? Количество точек для поиска пересечений с ландшафтом
   private intersectionPoints = 5;
+  private lightMaxDistance = DreamCeilSize * 7;
+  private lightColor = new Color("white");
+  private lightSizeMultiplier = 0.5;
+  private lightIntensity = 30;
 
-  mesh: Mesh;
-  material: MeshBasicMaterial;
-  geometry: CylinderGeometry;
+  group: Group;
+
+  private mesh: Mesh;
+  private material: MeshBasicMaterial;
+  private geometry: CylinderGeometry;
+  private light: SpotLight;
+  private lightHelper: SpotLightHelper;
 
   hoverItems = [
     DreamMapTerrainName
@@ -120,6 +128,8 @@ export class Cursor3DService implements OnDestroy {
     this.createGeometry(1, 0);
     this.createMaterial();
     this.createMesh();
+    this.createLight();
+    this.createGroup();
   }
 
   // Создание геометрии
@@ -153,6 +163,31 @@ export class Cursor3DService implements OnDestroy {
     this.mesh.renderOrder = 2;
   }
 
+  // Создание освещения
+  private createLight(): void {
+    const minDistance = DreamCeilSize * 0.1;
+    const maxDistance = this.lightMaxDistance;
+    // Создание объектов
+    this.light = new SpotLight(this.lightColor);
+    this.lightHelper = new SpotLightHelper(this.light);
+    // Свойства света
+    this.light.castShadow = true;
+    this.light.penumbra = 1;
+    this.light.distance = maxDistance * 2;
+    this.light.shadow.mapSize.width = 1024;
+    this.light.shadow.mapSize.height = 1024;
+    this.light.shadow.camera.near = minDistance;
+    this.light.shadow.camera.far = maxDistance * 2;
+    this.light.target = this.mesh;
+  }
+
+  // Создание группы
+  private createGroup(): void {
+    this.group = new Group();
+    // Добавить объекты в группу
+    this.group.add(this.mesh, this.light);
+  }
+
 
 
 
@@ -184,18 +219,21 @@ export class Cursor3DService implements OnDestroy {
         // Свойства
         const height = (maxPositionY - minPositionY) + underHeight;
         const positionY = minPositionY + (height / 2);
+        const angle = SinCosToRad(radius, this.lightMaxDistance) * (1 + this.lightSizeMultiplier);
         // Новая геометрия
         this.createGeometry(size, height);
         // Обновить свойства
+        this.light.angle = angle;
+        this.light.intensity = this.lightIntensity * this.lightMaxDistance * radius;
         this.mesh.geometry = this.geometry;
-        this.mesh.visible = true;
-        this.mesh.position.setX(positionX);
-        this.mesh.position.setY(positionY);
-        this.mesh.position.setZ(positionZ);
+        this.mesh.position.set(positionX, positionY, positionZ);
+        this.light.position.set(positionX, positionY + this.lightMaxDistance, positionZ);
+        this.lightHelper.update();
+        this.group.visible = true;
       }
       // Скрыть курсор
       else {
-        this.mesh.visible = false;
+        this.group.visible = false;
       }
     }
   }
