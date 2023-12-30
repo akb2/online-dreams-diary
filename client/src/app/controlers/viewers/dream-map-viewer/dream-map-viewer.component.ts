@@ -4,7 +4,7 @@ import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, D
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleToRad, Cos, LineFunc, ParseFloat, ParseInt, RadToAngle, Sin } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, Cos, LineFunc, ParseFloat, ParseInt, Sin } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach, ArraySome, MapCycle, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -420,7 +420,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // Угол для компаса
     event.object.getWorldDirection(vector);
-    this.compassAngle = RadToAngle(Math.atan2(-vector.x, -vector.z));
+    this.compassAngle = AngleByLegs(-vector.x, -vector.z);
     this.changeDetectorRef.detectChanges();
     // обновить пост отрисовку
     this.updatePostProcessors();

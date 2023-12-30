@@ -66,6 +66,14 @@ export const AngleCollapse = (angle: number) => {
   return angle;
 };
 
+/**
+ * Получить угол прямоугольного треугольника по длинам катетов
+ * @param {number} legA - Катет A
+ * @param {number} legB - Катет B
+ * @returns {number} Угол прилежащий к катету B
+ */
+export const AngleByLegs = (legA: number, legB: number): number => RadToAngle(Math.atan2(legA, legB));
+
 // Колапсировать радианы
 export const RadCollapse = (rad: number) => AngleToRad(AngleCollapse(RadToAngle(rad)));
 
@@ -80,7 +88,7 @@ export const SinCosToRad = (sin: number, cos: number) => Math.atan2(sin, cos);
  * @param {number} x Координата по оси X в диапазоне [-1; 1]
  * @param {number} y Координата по оси Y в диапазоне [-1; 1]
  * */
-export const AngleByCoordsAndRadius = (x: number, y: number): number => AngleInRange(Math.atan2(y, x) * (180 / Math.PI));
+export const AngleByCoordsAndRadius = (x: number, y: number): number => AngleInRange(AngleByLegs(y, x));
 
 /**
  * Преобразует произвольный угол в диапазон [0; 360], вычитанием 360 пока угол остается положительным

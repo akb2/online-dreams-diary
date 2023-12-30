@@ -1,5 +1,5 @@
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
-import { AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -371,7 +371,7 @@ export class Engine3DService implements OnDestroy {
     const circlePos = this.ceil3dService.coordsToUV(x, z);
     // Запомнить угол для компаса
     this.store$.dispatch(viewer3DSetCompassAction({
-      radial: RadToAngle(Math.atan2(-vector.x, -vector.z)),
+      radial: AngleByLegs(-vector.x, -vector.z),
       azimuth: RadToAngle(vector.y * (Math.PI / 2)),
       sin: -circlePos.v,
       cos: circlePos.u
