@@ -3,12 +3,12 @@
     <!-- Активности -->
     <dimen name="activity_padding">15dp</dimen>
     <!-- Шапка -->
-    <dimen name="toolbar_height">68dp</dimen>
+    <dimen name="toolbar_height">60dp</dimen>
     <dimen name="toolbar_icon_size">@dimen/toolbar_height</dimen>
-    <dimen name="toolbar_icon_padding">13dp</dimen>
+    <dimen name="toolbar_icon_padding">12dp</dimen>
     <dimen name="toolbar_icon_spacing">15dp</dimen>
     <dimen name="toolbar_title_font_size">16sp</dimen>
-    <dimen name="toolbar_subtitle_font_size">14sp</dimen>
+    <dimen name="toolbar_subtitle_font_size">13sp</dimen>
     <!-- Поля ввода -->
     <dimen name="fields_between_spacing">15dp</dimen>
 </resources>
