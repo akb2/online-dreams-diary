@@ -1,4 +1,4 @@
-package ru.akb2.dreams_diary.activities
+package ru.akb2.dreams_diary
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
