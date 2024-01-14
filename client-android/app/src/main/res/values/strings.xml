@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Dreams Diary</string>
+    <string name="app_name">Online Dreams Diary</string>
     <string name="activity_auth_login_label">Login or e-mail</string>
     <string name="activity_auth_label">Log in</string>
     <string name="activity_auth_password_label">Password</string>
