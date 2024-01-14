@@ -1,7 +1,8 @@
-package ru.akb2.dreams_diary
+package ru.akb2.dreams_diary.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import ru.akb2.dreams_diary.R
 
 class AuthActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
