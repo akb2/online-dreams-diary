@@ -44,5 +44,6 @@
   "typelens.showReferencesForFunctions": true,
   "typelens.showReferencesForInterfaces": true,
   "typelens.showReferencesForMethods": true,
-  "typelens.showReferencesForProperties": true
+  "typelens.showReferencesForProperties": true,
+  "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
