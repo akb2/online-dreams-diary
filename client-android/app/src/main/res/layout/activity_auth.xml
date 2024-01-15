@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AuthActivity">
@@ -24,52 +25,95 @@
             android:id="@+id/contentLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/background"
             android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/activity_padding"
-            android:paddingRight="@dimen/activity_padding">
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/loginGroup"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/authCardLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_margin="@dimen/activity_padding"
+                android:padding="@dimen/card_padding"
+                app:cardElevation="@dimen/card_shadow_size">
 
-                <TextView
-                    android:id="@+id/loginLabel"
+                <LinearLayout
+                    android:id="@+id/authLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/activity_auth_login_label" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
 
-                <EditText
-                    android:id="@+id/loginInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:inputType="textEmailAddress" />
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/authCardTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/activity_auth_form_title"
+                        android:textAppearance="?attr/textAppearanceHeadline6" />
 
-            <LinearLayout
-                android:id="@+id/passwordGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/fields_between_spacing"
-                android:orientation="vertical">
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/loginGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/card_padding">
 
-                <TextView
-                    android:id="@+id/passwordLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/activity_auth_password_label" />
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/loginInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/activity_auth_login_label"
+                            android:inputType="textEmailAddress" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/passwordInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:inputType="textPassword" />
-            </LinearLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/passwordGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/card_padding"
+                        app:endIconMode="password_toggle">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/passwordInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/activity_auth_password_label"
+                            android:inputType="textPassword" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/restoreLink"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/fields_between_spacing"
+                        android:gravity="right"
+                        android:text="@string/activity_auth_link_restore"
+                        android:textColor="@color/link" />
+
+                    <LinearLayout
+                        android:id="@+id/authButtonsLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="@dimen/card_padding"
+                        android:gravity="center_horizontal"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/registerButton"
+                            style="@style/Material.OutlinedButton"
+                            android:text="@string/activity_auth_button_register" />
+
+                        <Button
+                            android:id="@+id/authButton"
+                            style="@style/Material.FlatButton"
+                            android:layout_marginLeft="@dimen/card_buttons_spacing"
+                            android:text="@string/activity_auth_button_login" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

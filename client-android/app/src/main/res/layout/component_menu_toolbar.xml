@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height"
     android:background="@color/primary_500"
+    android:elevation="20dp"
     android:theme="@style/Theme.DreamsDiary"
     app:collapseIcon="@drawable/round_key_48"
     app:contentInsetLeft="0dp"

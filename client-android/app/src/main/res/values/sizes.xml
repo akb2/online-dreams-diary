@@ -9,6 +9,10 @@
     <dimen name="toolbar_icon_spacing">15dp</dimen>
     <dimen name="toolbar_title_font_size">16sp</dimen>
     <dimen name="toolbar_subtitle_font_size">13sp</dimen>
+    <!-- Карточка -->
+    <dimen name="card_padding">20dp</dimen>
+    <dimen name="card_shadow_size">6dp</dimen>
+    <dimen name="card_buttons_spacing">10dp</dimen>
     <!-- Поля ввода -->
     <dimen name="fields_between_spacing">15dp</dimen>
 </resources>

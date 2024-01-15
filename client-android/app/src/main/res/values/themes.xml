@@ -16,4 +16,29 @@
         <item name="android:contentInsetStart">0dp</item>
         <item name="android:insetLeft">0dp</item>
     </style>
+    <!-- Стиль кнопок: текст -->
+    <style name="Material.TextButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingLeft">25dp</item>
+        <item name="android:paddingRight">25dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <!-- Стиль кнопок: границы -->
+    <style name="Material.OutlinedButton" parent="Material.TextButton">
+        <item name="strokeColor">@color/mtrl_btn_stroke_color_selector</item>
+        <item name="strokeWidth">@dimen/mtrl_btn_stroke_size</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="rippleColor">@color/mtrl_btn_text_btn_ripple_outlined_color</item>
+    </style>
+    <!-- Стиль кнопок: закрашенная -->
+    <style name="Material.FlatButton" parent="Material.TextButton">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:backgroundTint">@color/primary_500</item>
+        <item name="rippleColor">@color/mtrl_btn_text_btn_ripple_flat_color</item>
+    </style>
 </resources>

@@ -3,4 +3,8 @@
     <string name="activity_auth_login_label">Login or e-mail</string>
     <string name="activity_auth_label">Log in</string>
     <string name="activity_auth_password_label">Password</string>
+    <string name="activity_auth_form_title">The log in form</string>
+    <string name="activity_auth_link_restore"><u>Forgot your password?</u></string>
+    <string name="activity_auth_button_register">Sign Up</string>
+    <string name="activity_auth_button_login">Log In</string>
 </resources>

@@ -8,7 +8,11 @@
     <!-- Второстепенный цвет темы -->
     <color name="secondary_200">#c19ad8</color>
     <color name="secondary_700">#7027a1</color>
+    <!-- Фоны -->
+    <color name="background">#f3f3f3</color>
     <!-- Текст -->
     <color name="primary_500_contrast">@color/white</color>
+    <color name="subtitle">#333</color>
     <color name="subtitle_dark">#ececec</color>
+    <color name="link">@color/primary_500</color>
 </resources>

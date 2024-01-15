@@ -4,4 +4,8 @@
     <string name="activity_auth_login_label">Логин или e-mail</string>
     <string name="activity_auth_label">Вход</string>
     <string name="activity_auth_password_label">Пароль</string>
+    <string name="activity_auth_form_title">Авторизация в приложении</string>
+    <string name="activity_auth_link_restore"><u>Забыли пароль?</u></string>
+    <string name="activity_auth_button_register">Регистрация</string>
+    <string name="activity_auth_button_login">Вход</string>
 </resources>
