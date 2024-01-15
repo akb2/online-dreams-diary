@@ -322,7 +322,9 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
           (user, params) => ({ user, params })
         ),
         mergeMap(
-          () => this.dreamId > 0 ? this.dreamService.getById(this.dreamId, true) : of(this.dreamService.newDream),
+          () => this.dreamId > 0
+            ? this.dreamService.getById(this.dreamId, true)
+            : of(this.dreamService.newDream),
           (o, dream) => ({ ...o, dream })
         ),
         switchMap(r => !!r.dream ? of(r) : throwError(null)),
@@ -334,6 +336,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
           this.dateMin = new Date(this.user.birthDate);
           this.fromMark = params.from?.toString() || "";
           this.dream = dream;
+          this.dream.user = dream.user ?? user;
           // Создать форму
           this.createForm();
           this.setTitle();
