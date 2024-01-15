@@ -15,4 +15,7 @@
     <dimen name="card_buttons_spacing">10dp</dimen>
     <!-- Поля ввода -->
     <dimen name="fields_between_spacing">15dp</dimen>
+    <!-- Загрузчик -->
+    <dimen name="loader_size">90dp</dimen>
+    <dimen name="loader_inset">0dp</dimen>
 </resources>
