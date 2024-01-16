@@ -107,6 +107,7 @@
                             android:id="@+id/authButton"
                             style="@style/Material.FlatButton"
                             android:layout_marginLeft="@dimen/card_buttons_spacing"
+                            android:enabled="false"
                             android:text="@string/activity_auth_button_login" />
                     </LinearLayout>
                 </LinearLayout>

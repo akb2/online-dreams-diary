@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.DreamsDiary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
@@ -39,7 +39,7 @@
     <!-- Стиль кнопок: закрашенная -->
     <style name="Material.FlatButton" parent="Material.TextButton">
         <item name="android:textColor">@color/white</item>
-        <item name="android:backgroundTint">@color/primary_500</item>
+        <item name="android:backgroundTint">@color/mtrl_btn_text_btn_flat_background</item>
         <item name="rippleColor">@color/mtrl_btn_text_btn_ripple_flat_color</item>
     </style>
 </resources>

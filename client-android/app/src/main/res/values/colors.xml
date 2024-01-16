@@ -8,6 +8,8 @@
     <!-- Второстепенный цвет темы -->
     <color name="secondary_200">#c19ad8</color>
     <color name="secondary_700">#7027a1</color>
+    <!-- Неактивный цвет темы -->
+    <color name="disabled_500">#666</color>
     <!-- Фоны -->
     <color name="background">#f3f3f3</color>
     <!-- Текст -->
