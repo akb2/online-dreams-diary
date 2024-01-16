@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("plugin.serialization") version "1.9.21"
 }
 
 android {
@@ -20,7 +21,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -39,6 +43,11 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.11.0")
+    implementation("io.ktor:ktor-client-core:3.0.0-beta-1")
+    implementation("io.ktor:ktor-client-cio:3.0.0-beta-1")
+    implementation("io.ktor:ktor-client-serialization:3.0.0-beta-1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0-beta-1")
+    implementation("io.ktor:ktor-client-content-negotiation:3.0.0-beta-1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
