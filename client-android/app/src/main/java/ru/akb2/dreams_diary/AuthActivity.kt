@@ -9,6 +9,8 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.datas.LoginMinSize
@@ -22,6 +24,8 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var restoreLink: TextView
     private lateinit var registerButton: Button
     private lateinit var authButton: Button
+    private lateinit var authCardLayout: MaterialCardView
+    private lateinit var formLoader: CircularProgressIndicator
 
     private var login: String = ""
     private var password: String = ""
@@ -48,6 +52,8 @@ class AuthActivity : AppCompatActivity() {
         restoreLink = findViewById(R.id.restoreLink);
         registerButton = findViewById(R.id.registerButton);
         authButton = findViewById(R.id.authButton);
+        authCardLayout = findViewById(R.id.authCardLayout);
+        formLoader = findViewById(R.id.formLoader);
     }
 
     /**
@@ -116,7 +122,13 @@ class AuthActivity : AppCompatActivity() {
      * */
     private fun tryAuth() {
         lifecycleScope.launch {
+            authCardLayout.visibility = View.GONE
+            formLoader.visibility = View.VISIBLE
+            // Авторизация
             AuthService.auth(login, password)
+            // Вернуть форму
+            authCardLayout.visibility = View.VISIBLE
+            formLoader.visibility = View.GONE
         }
     }
 }
