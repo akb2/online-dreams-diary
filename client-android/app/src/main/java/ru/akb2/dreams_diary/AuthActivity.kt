@@ -13,6 +13,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
+import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
 import ru.akb2.dreams_diary.services.AuthService
@@ -122,11 +123,30 @@ class AuthActivity : AppCompatActivity() {
      * */
     private fun tryAuth() {
         lifecycleScope.launch {
+            toggleLoader(true)
+            // Авторизация
+            val authResult = AuthService.auth(login, password)
+            // Успешная авторизация
+            if (authResult === ApiCode.SUCCESS) {
+                toggleLoader(false)
+            }
+            // Ошибка авторизации
+            else {
+                toggleLoader(false)
+            }
+        }
+    }
+
+    /**
+     * Показать или скрыть лоадер
+     * */
+    private fun toggleLoader(showState: Boolean) {
+        if (showState) {
             authCardLayout.visibility = View.GONE
             formLoader.visibility = View.VISIBLE
-            // Авторизация
-            AuthService.auth(login, password)
-            // Вернуть форму
+        }
+        // Скрыть
+        else {
             authCardLayout.visibility = View.VISIBLE
             formLoader.visibility = View.GONE
         }
