@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
-import ru.akb2.dreams_diary.helpers.KeyboardService
-import ru.akb2.dreams_diary.helpers.SnackBarService
+import ru.akb2.dreams_diary.services.KeyboardService
+import ru.akb2.dreams_diary.services.SnackBarService
 import ru.akb2.dreams_diary.services.AuthService
 
 

@@ -1,4 +1,4 @@
-package ru.akb2.dreams_diary.helpers
+package ru.akb2.dreams_diary.services
 
 import android.app.Activity
 import android.content.Context
