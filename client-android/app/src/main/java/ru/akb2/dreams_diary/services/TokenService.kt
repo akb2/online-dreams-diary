@@ -37,4 +37,11 @@ class TokenService(context: Context) {
     fun getAuthToken(): String {
         return sharedPreferences.getString(KEY_AUTH_TOKEN, "") ?: ""
     }
+
+    /**
+     * Очистить данные авторизации
+     * */
+    fun clearAuthData() {
+        sharedPreferences.edit().clear().apply()
+    }
 }
