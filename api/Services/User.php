@@ -87,7 +87,7 @@ class UserService
   {
     $code = '9010';
     $message = '';
-    $id = '';
+    $id = '0';
     $token = '';
     $sqlData = array();
     $activateIsAvail = false;
