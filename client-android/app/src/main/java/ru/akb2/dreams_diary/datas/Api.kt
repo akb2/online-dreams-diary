@@ -39,7 +39,8 @@ data class ApiRequestQueryParams(
 enum class ApiCode(val value: String) {
     BLOCK_BY_APP("XXXX"),
     UNDEFINED("0000"),
-    SUCCESS("0001");
+    SUCCESS("0001"),
+    USER_NOT_FOUND("9013");
 
     companion object {
         fun fromValue(value: String): ApiCode? {
