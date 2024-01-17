@@ -17,60 +17,58 @@ import ru.akb2.dreams_diary.datas.ApiRequest
 import ru.akb2.dreams_diary.datas.ApiServerPreffix
 
 class ApiService {
-    companion object {
-        val jsonBuilder = Json {
-            ignoreUnknownKeys = true
-            prettyPrint = true
-            isLenient = true
-        }
+    val jsonBuilder = Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+        isLenient = true
+    }
 
-        /**
-         * Post запрос
-         * @param controller Название Api-контроллера
-         * @param method Название метода Api-контроллера
-         * @param data Тело заропса
-         * @returns Модель с ответом
-         * */
-        suspend inline fun <reified T> post(
-            controller: String,
-            method: String,
-            data: Map<String, String>
-        ): ApiRequest<T>? {
-            val url = "$ApiServerPreffix$controller/$method"
-            var returnedData: ApiRequest<T>? = null
-            val httpClient = HttpClient(CIO) {
-                install(ContentNegotiation) {
-                    json(jsonBuilder)
-                }
+    /**
+     * Post запрос
+     * @param controller Название Api-контроллера
+     * @param method Название метода Api-контроллера
+     * @param data Тело заропса
+     * @returns Модель с ответом
+     * */
+    suspend inline fun <reified T> post(
+        controller: String,
+        method: String,
+        data: Map<String, String>
+    ): ApiRequest<T>? {
+        val url = "$ApiServerPreffix$controller/$method"
+        var returnedData: ApiRequest<T>? = null
+        val httpClient = HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(jsonBuilder)
             }
-            // Попытка запроса
-            try {
-                val request = httpClient.submitForm(
-                    url,
-                    formParameters = parameters {
-                        data.forEach { (key, value) ->
-                            append(key, value)
-                        }
-                    }
-                ) {
-                    accept(ContentType.Application.Json)
-                    contentType(ContentType.Application.Json)
-                }
-                // Успешный запрос
-                if (request.status == HttpStatusCode.OK) {
-                    returnedData = jsonBuilder.decodeFromString(request.body())
-                }
-            }
-            // Ошибка
-            catch (e: Exception) {
-                Log.e("akb2_test", e.toString())
-            }
-            // Закрыть соединение
-            finally {
-                httpClient.close()
-            }
-            // Вернуть полученную модель
-            return returnedData
         }
+        // Попытка запроса
+        try {
+            val request = httpClient.submitForm(
+                url,
+                formParameters = parameters {
+                    data.forEach { (key, value) ->
+                        append(key, value)
+                    }
+                }
+            ) {
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+            }
+            // Успешный запрос
+            if (request.status == HttpStatusCode.OK) {
+                returnedData = jsonBuilder.decodeFromString(request.body())
+            }
+        }
+        // Ошибка
+        catch (e: Exception) {
+            Log.e("akb2_test", e.toString())
+        }
+        // Закрыть соединение
+        finally {
+            httpClient.close()
+        }
+        // Вернуть полученную модель
+        return returnedData
     }
 }

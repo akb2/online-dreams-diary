@@ -19,9 +19,9 @@ import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
+import ru.akb2.dreams_diary.services.AuthService
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
-import ru.akb2.dreams_diary.services.AuthService
 
 
 class AuthActivity : AppCompatActivity() {
@@ -36,6 +36,7 @@ class AuthActivity : AppCompatActivity() {
 
     private lateinit var snackBarService: SnackBarService
     private lateinit var keyboardService: KeyboardService
+    private lateinit var authService: AuthService
 
     private var login: String = ""
     private var password: String = ""
@@ -68,6 +69,7 @@ class AuthActivity : AppCompatActivity() {
         // Запуск служб
         snackBarService = SnackBarService(this@AuthActivity, activityLayout)
         keyboardService = KeyboardService(this@AuthActivity)
+        authService = AuthService(this@AuthActivity)
     }
 
     /**
@@ -148,7 +150,7 @@ class AuthActivity : AppCompatActivity() {
             keyboardService.closeKeyboard()
             toggleLoader(true)
             // Авторизация
-            val authResult = AuthService.auth(login, password)
+            val authResult = authService.auth(login, password)
             // Успешная авторизация
             if (authResult === ApiCode.SUCCESS) {
                 toggleLoader(false)

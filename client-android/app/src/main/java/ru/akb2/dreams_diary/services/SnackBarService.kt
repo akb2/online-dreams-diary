@@ -43,7 +43,7 @@ class SnackBarService(private val context: Context, private val view: View) {
      * Уведомление об ошибке
      * @param resourceId Идентификатор ресурса
      * */
-    fun error(resourceId: Int) {
+    private fun error(resourceId: Int) {
         val message = getMessage(resourceId)
         // Вывести сообщение
         if (message.isNotEmpty()) {
