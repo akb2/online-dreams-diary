@@ -8,4 +8,8 @@
     <string name="activity_auth_link_restore"><u>Забыли пароль?</u></string>
     <string name="activity_auth_button_register">Регистрация</string>
     <string name="activity_auth_button_login">Вход</string>
+    <string name="api_error_code_message_0000">Пустой ответ сервера, состояние выполнения запроса неизвестно</string>
+    <string name="api_error_code_message_XXXX">Запрос был заблокирован на уровне приложения</string>
+    <string name="api_error_code_message_0001">Успешное выполнение запроса</string>
+    <string name="api_error_code_message_9013">Пользователь не найден</string>
 </resources>

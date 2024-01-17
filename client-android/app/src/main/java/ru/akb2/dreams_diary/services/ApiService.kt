@@ -25,11 +25,11 @@ class ApiService {
         }
 
         /**
-         * Post responce
-         * @param controller Api controller name
-         * @param method Method name of a controller
-         * @param data Input post data
-         * @returns Output model
+         * Post запрос
+         * @param controller Название Api-контроллера
+         * @param method Название метода Api-контроллера
+         * @param data Тело заропса
+         * @returns Модель с ответом
          * */
         suspend inline fun <reified T> post(
             controller: String,

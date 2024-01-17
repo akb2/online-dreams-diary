@@ -1,13 +1,16 @@
 package ru.akb2.dreams_diary
 
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.WindowInsetsController
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -16,6 +19,8 @@ import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
+import ru.akb2.dreams_diary.helpers.KeyboardService
+import ru.akb2.dreams_diary.helpers.SnackBarService
 import ru.akb2.dreams_diary.services.AuthService
 
 
@@ -27,6 +32,10 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var authButton: Button
     private lateinit var authCardLayout: MaterialCardView
     private lateinit var formLoader: CircularProgressIndicator
+    private lateinit var activityLayout: CoordinatorLayout
+
+    private lateinit var snackBarService: SnackBarService
+    private lateinit var keyboardService: KeyboardService
 
     private var login: String = ""
     private var password: String = ""
@@ -48,20 +57,33 @@ class AuthActivity : AppCompatActivity() {
      * Заполнение свойств класса
      * */
     private fun fillData() {
-        loginInput = findViewById(R.id.loginInput);
-        passwordInput = findViewById(R.id.passwordInput);
-        restoreLink = findViewById(R.id.restoreLink);
-        registerButton = findViewById(R.id.registerButton);
-        authButton = findViewById(R.id.authButton);
-        authCardLayout = findViewById(R.id.authCardLayout);
-        formLoader = findViewById(R.id.formLoader);
+        loginInput = findViewById(R.id.loginInput)
+        passwordInput = findViewById(R.id.passwordInput)
+        restoreLink = findViewById(R.id.restoreLink)
+        registerButton = findViewById(R.id.registerButton)
+        authButton = findViewById(R.id.authButton)
+        authCardLayout = findViewById(R.id.authCardLayout)
+        formLoader = findViewById(R.id.formLoader)
+        activityLayout = findViewById(R.id.activityLayout)
+        // Запуск служб
+        snackBarService = SnackBarService(this@AuthActivity, activityLayout)
+        keyboardService = KeyboardService(this@AuthActivity)
     }
 
     /**
      * Сделать кнопки управления внизу устройства темными
      * */
     private fun setNavigationIconsColor() {
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.decorView.windowInsetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        }
+        // Для более старых версий Android
+        else {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        }
     }
 
 
@@ -123,6 +145,7 @@ class AuthActivity : AppCompatActivity() {
      * */
     private fun tryAuth() {
         lifecycleScope.launch {
+            keyboardService.closeKeyboard()
             toggleLoader(true)
             // Авторизация
             val authResult = AuthService.auth(login, password)
@@ -133,6 +156,7 @@ class AuthActivity : AppCompatActivity() {
             // Ошибка авторизации
             else {
                 toggleLoader(false)
+                snackBarService.error(ApiCode.getResourceKey(authResult))
             }
         }
     }

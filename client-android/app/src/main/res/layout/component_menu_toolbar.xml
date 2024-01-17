@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textColor="@color/primary_500_contrast"
+                android:textColor="@color/primary_contrast"
                 android:textSize="@dimen/toolbar_title_font_size" />
 
             <TextView

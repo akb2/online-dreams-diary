@@ -43,9 +43,31 @@ enum class ApiCode(val value: String) {
     USER_NOT_FOUND("9013");
 
     companion object {
-        fun fromValue(value: String): ApiCode? {
-            return values().firstOrNull { it.value == value }
-        }
+        /**
+         * Преобразовать текстовый код в модель из набора
+         * @param value Текстовый код ответа сервера в формате 0000-9999
+         * @returns Преобразованное типизированное значение
+         * */
+        fun fromValue(value: String): ApiCode? = entries.firstOrNull { it.value == value }
+
+        /**
+         * Преобразовать модель из набора в текстовый код
+         * @param value Значение из модели
+         * returns Текстовое представление в виде кода в формате 0000-9999
+         * */
+        fun toValue(code: ApiCode): String = code.value
+
+        /**
+         * Получить ключ ресурсов для кода
+         * @param code код в формате модели класса
+         * */
+        fun getResourceKey(code: ApiCode): String = getResourceKey(toValue(code))
+
+        /**
+         * Получить ключ ресурсов для кода
+         * @param code код в виде строки
+         * */
+        fun getResourceKey(code: String): String = "api_error_code_message_$code"
     }
 }
 

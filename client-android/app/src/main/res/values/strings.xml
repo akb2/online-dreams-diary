@@ -7,4 +7,8 @@
     <string name="activity_auth_link_restore"><u>Forgot your password?</u></string>
     <string name="activity_auth_button_register">Sign Up</string>
     <string name="activity_auth_button_login">Log In</string>
+    <string name="api_error_code_message_0000">Empty server response, request execution status unknown</string>
+    <string name="api_error_code_message_XXXX">The request was blocked at the application level</string>
+    <string name="api_error_code_message_0001">Successful completion of the request</string>
+    <string name="api_error_code_message_9013">User is not found</string>
 </resources>

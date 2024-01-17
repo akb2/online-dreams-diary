@@ -89,7 +89,7 @@ class ComponentMenuToolbar : MaterialToolbar {
      * Отрисовка подзаголовка
      */
     private fun setSubTitle() {
-        if (subTitleText.length > 0) {
+        if (subTitleText.isNotEmpty()) {
             subTitleView.visibility = View.VISIBLE
             subTitleView.setText(subTitleText)
         }
