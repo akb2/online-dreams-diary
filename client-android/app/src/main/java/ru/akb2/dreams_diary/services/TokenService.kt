@@ -39,6 +39,13 @@ class TokenService(context: Context) {
     }
 
     /**
+     * Предварительная проверка существования данных авторизации
+     * */
+    fun isAuth(): Boolean {
+        return getAuthToken().isNotEmpty() && getUserId() > 0
+    }
+
+    /**
      * Очистить данные авторизации
      * */
     fun clearAuthData() {
