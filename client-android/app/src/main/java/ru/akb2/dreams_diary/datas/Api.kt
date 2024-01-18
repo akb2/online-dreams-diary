@@ -1,6 +1,5 @@
 package ru.akb2.dreams_diary.datas
 
-import android.annotation.SuppressLint
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -17,9 +16,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.serializer
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Serializable
 data class ApiRequest<T>(
@@ -66,7 +63,7 @@ enum class ApiCode(val value: String) {
 
         /**
          * Преобразовать модель из набора в текстовый код
-         * @param value Значение из модели
+         * @param code Значение из модели
          * returns Текстовое представление в виде кода в формате 0000-9999
          * */
         fun toValue(code: ApiCode): String = code.value
