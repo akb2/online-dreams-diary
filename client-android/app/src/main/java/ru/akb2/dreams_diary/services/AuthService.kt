@@ -1,7 +1,6 @@
 package ru.akb2.dreams_diary.services
 
 import android.content.Context
-import android.util.Log
 import kotlinx.serialization.Serializable
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.TokenData
@@ -49,15 +48,16 @@ class AuthService(context: Context) {
      * */
     suspend fun checkToken(): ApiCode {
         var code = ApiCode.UNDEFINED
-        Log.d("akb2_test", "test")
         val authRequest = apiService.get<CheckTokenOutputData>("token", "checkToken")
         // Получен ответ
         if (authRequest !== null) {
+            val userId = tokenService.getUserId()
+            val token = tokenService.getAuthToken()
             code = authRequest.result.code
-            // Удалить токен
-            if (code !== ApiCode.SUCCESS) {
+            // Обновить или удалить данные о токене
+            if (code === ApiCode.SUCCESS)
+                tokenService.saveAuthData(userId, token) else
                 tokenService.clearAuthData()
-            }
         }
         // Очистить авторизацию
         else {

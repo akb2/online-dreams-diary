@@ -3,7 +3,6 @@ package ru.akb2.dreams_diary.activities
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
@@ -60,7 +59,12 @@ open class BaseActivity : AppCompatActivity() {
             mainLayout.visibility = View.GONE
             // Проверка авторизации
             val isAuthed = tokenService.isAuth()
-            val isValidToken = if (isAuthed) authService.checkToken() === ApiCode.SUCCESS else false
+            val isNeedToCheck = tokenService.isNeedToCheckToken()
+            val isValidToken = if (isAuthed)
+                if (isNeedToCheck)
+                    authService.checkToken() === ApiCode.SUCCESS else
+                    true else
+                false
             val isValidAuth = isAuthed && isValidToken
             val isAuth = authType === AuthType.AUTH && isValidAuth
             val isNotAuth = authType === AuthType.NOT_AUTH && !isValidAuth

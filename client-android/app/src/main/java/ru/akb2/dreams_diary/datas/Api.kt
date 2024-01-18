@@ -21,8 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-val DateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-
 @Serializable
 data class ApiRequest<T>(
     val error: Boolean,
@@ -104,22 +102,19 @@ object ApiCodeSerializer : KSerializer<ApiCode> {
 
 @Serializer(forClass = Date::class)
 object DateAsStringSerializer : KSerializer<Date> {
-    @SuppressLint("ConstantLocale")
-    private val dateFormat = SimpleDateFormat(DateFormat, Locale.getDefault())
-
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("DateAsStringSerializer") {
             element<String>("date")
         }
 
     override fun serialize(encoder: Encoder, value: Date) {
-        val dateString = dateFormat.format(value)
+        val dateString = DateFormater.format(value)
         encoder.encodeString(dateString)
     }
 
     override fun deserialize(decoder: Decoder): Date {
         val dateString = decoder.decodeString()
-        return dateFormat.parse(dateString) ?: throw SerializationException("Invalid date format")
+        return DateFormater.parse(dateString) ?: throw SerializationException("Invalid date format")
     }
 }
 
