@@ -1,30 +1,32 @@
-package ru.akb2.dreams_diary
+package ru.akb2.dreams_diary.activities
 
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.WindowInsetsController
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
+import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiCode
+import ru.akb2.dreams_diary.datas.AuthType
+import ru.akb2.dreams_diary.datas.DefaultNotAuthActivity
 import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
-import ru.akb2.dreams_diary.services.AuthService
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
 
+class AuthActivity : BaseActivity() {
+    override val authType = AuthType.NOT_AUTH
 
-class AuthActivity : AppCompatActivity() {
+    private lateinit var activityLayout: CoordinatorLayout
     private lateinit var loginInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
     private lateinit var restoreLink: TextView
@@ -32,21 +34,18 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var authButton: Button
     private lateinit var authCardLayout: MaterialCardView
     private lateinit var formLoader: CircularProgressIndicator
-    private lateinit var activityLayout: CoordinatorLayout
 
     private lateinit var snackBarService: SnackBarService
     private lateinit var keyboardService: KeyboardService
-    private lateinit var authService: AuthService
 
     private var login: String = ""
     private var password: String = ""
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
         // Настройка активности
-        setNavigationIconsColor()
+        setDarkNavigationIconsColor()
         fillData()
         // Запуск событий
         loginInputKeyListener()
@@ -58,6 +57,8 @@ class AuthActivity : AppCompatActivity() {
      * Заполнение свойств класса
      * */
     private fun fillData() {
+        activityLayout = findViewById(R.id.activityLayout)
+        mainLayout = findViewById(R.id.mainLayout)
         loginInput = findViewById(R.id.loginInput)
         passwordInput = findViewById(R.id.passwordInput)
         restoreLink = findViewById(R.id.restoreLink)
@@ -65,27 +66,9 @@ class AuthActivity : AppCompatActivity() {
         authButton = findViewById(R.id.authButton)
         authCardLayout = findViewById(R.id.authCardLayout)
         formLoader = findViewById(R.id.formLoader)
-        activityLayout = findViewById(R.id.activityLayout)
         // Запуск служб
         snackBarService = SnackBarService(this@AuthActivity, activityLayout)
         keyboardService = KeyboardService(this@AuthActivity)
-        authService = AuthService(this@AuthActivity)
-    }
-
-    /**
-     * Сделать кнопки управления внизу устройства темными
-     * */
-    private fun setNavigationIconsColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.decorView.windowInsetsController?.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            )
-        }
-        // Для более старых версий Android
-        else {
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        }
     }
 
 
@@ -117,7 +100,7 @@ class AuthActivity : AppCompatActivity() {
             }
         })
         // Нажатие "Enter"
-        passwordInput.setOnEditorActionListener { v, actionId, event ->
+        passwordInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 tryAuth()
             }
@@ -153,7 +136,8 @@ class AuthActivity : AppCompatActivity() {
             val authResult = authService.auth(login, password)
             // Успешная авторизация
             if (authResult === ApiCode.SUCCESS) {
-                toggleLoader(false)
+                startActivity(Intent(this@AuthActivity, DefaultNotAuthActivity))
+                finish()
             }
             // Ошибка авторизации
             else {

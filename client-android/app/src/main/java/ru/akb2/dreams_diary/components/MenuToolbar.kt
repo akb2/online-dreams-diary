@@ -1,4 +1,4 @@
-package ru.akb2.dreams_diary
+package ru.akb2.dreams_diary.components
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -9,8 +9,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.setPadding
 import com.google.android.material.appbar.MaterialToolbar
+import ru.akb2.dreams_diary.R
 
-class ComponentMenuToolbar : MaterialToolbar {
+class MenuToolbar : MaterialToolbar {
     private lateinit var titleView: TextView
     private lateinit var subTitleView: TextView
     private lateinit var iconView: ImageView

@@ -1,15 +1,27 @@
 package ru.akb2.dreams_diary.datas
 
+import android.annotation.SuppressLint
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.serializer
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-val ApiServerPreffix = "https://api-test.dreams-diary.ru/"
+val DateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
 @Serializable
 data class ApiRequest<T>(
@@ -31,8 +43,11 @@ data class ApiRequestResult<T>(
 
 @Serializable
 data class ApiRequestQueryParams(
+    @Serializable(with = MapSerializer::class)
     val get: Map<String, String>,
+    @Serializable(with = MapSerializer::class)
     val post: Map<String, String>,
+    @Serializable(with = MapSerializer::class)
     val request: Map<String, String>
 )
 
@@ -40,7 +55,8 @@ enum class ApiCode(val value: String) {
     BLOCK_BY_APP("XXXX"),
     UNDEFINED("0000"),
     SUCCESS("0001"),
-    USER_NOT_FOUND("9013");
+    USER_NOT_FOUND("9013"),
+    WRONG_TOKEN("9015");
 
     companion object {
         /**
@@ -83,5 +99,34 @@ object ApiCodeSerializer : KSerializer<ApiCode> {
         val value = decoder.decodeString()
         return ApiCode.fromValue(value)
             ?: throw SerializationException("Неизвестный ApiCode: $value")
+    }
+}
+
+@Serializer(forClass = Date::class)
+object DateAsStringSerializer : KSerializer<Date> {
+    @SuppressLint("ConstantLocale")
+    private val dateFormat = SimpleDateFormat(DateFormat, Locale.getDefault())
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("DateAsStringSerializer") {
+            element<String>("date")
+        }
+
+    override fun serialize(encoder: Encoder, value: Date) {
+        val dateString = dateFormat.format(value)
+        encoder.encodeString(dateString)
+    }
+
+    override fun deserialize(decoder: Decoder): Date {
+        val dateString = decoder.decodeString()
+        return dateFormat.parse(dateString) ?: throw SerializationException("Invalid date format")
+    }
+}
+
+object MapSerializer : JsonTransformingSerializer<Map<String, String>>(serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return if (element is JsonArray && element.isEmpty())
+            buildJsonObject { } else
+            element
     }
 }

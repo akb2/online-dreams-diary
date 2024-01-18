@@ -1,15 +1,19 @@
 package ru.akb2.dreams_diary.services
 
 import android.content.Context
+import android.util.Log
 import kotlinx.serialization.Serializable
 import ru.akb2.dreams_diary.datas.ApiCode
+import ru.akb2.dreams_diary.datas.TokenData
+import ru.akb2.dreams_diary.datas.TokenDataSerializer
 
 class AuthService(context: Context) {
-    private var apiService: ApiService = ApiService()
-    private var tokenService: TokenService
+    private val apiService: ApiService
+    private val tokenService: TokenService
 
     init {
-        tokenService = TokenService(context)
+        apiService = ApiService(context)
+        tokenService = apiService.tokenService
     }
 
     /**
@@ -39,6 +43,29 @@ class AuthService(context: Context) {
         // Неизвестная ошибка
         return code
     }
+
+    /**
+     * Проверка токена
+     * */
+    suspend fun checkToken(): ApiCode {
+        var code = ApiCode.UNDEFINED
+        Log.d("akb2_test", "test")
+        val authRequest = apiService.get<CheckTokenOutputData>("token", "checkToken")
+        // Получен ответ
+        if (authRequest !== null) {
+            code = authRequest.result.code
+            // Удалить токен
+            if (code !== ApiCode.SUCCESS) {
+                tokenService.clearAuthData()
+            }
+        }
+        // Очистить авторизацию
+        else {
+            tokenService.clearAuthData()
+        }
+        // Неизвестная ошибка
+        return code
+    }
 }
 
 @Serializable
@@ -47,4 +74,11 @@ data class AuthOutputData(
     val result: Boolean,
     val activateIsAvail: Boolean,
     val id: Int
+)
+
+@Serializable
+data class CheckTokenOutputData(
+    val result: Boolean,
+    @Serializable(with = TokenDataSerializer::class)
+    val tokenData: TokenData
 )

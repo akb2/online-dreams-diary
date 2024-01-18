@@ -5,7 +5,7 @@
     android:id="@+id/activityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AuthActivity">
+    tools:context=".activities.AuthActivity">
 
     <LinearLayout
         android:id="@+id/mainLayout"
@@ -13,13 +13,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <ru.akb2.dreams_diary.ComponentMenuToolbar
+        <ru.akb2.dreams_diary.components.MenuToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:icon="@drawable/round_key_48"
             app:subtitle="@string/app_name"
-            app:title="@string/activity_auth_label" />
+            app:title="@string/activity_auth_title" />
 
         <LinearLayout
             android:id="@+id/contentLayout"

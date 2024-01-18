@@ -1,14 +1,16 @@
 <resources>
     <string name="app_name">Online Dreams Diary</string>
     <string name="activity_auth_login_label">Login or e-mail</string>
-    <string name="activity_auth_label">Log in</string>
+    <string name="activity_auth_title">Log In</string>
     <string name="activity_auth_password_label">Password</string>
     <string name="activity_auth_form_title">The log in form</string>
     <string name="activity_auth_link_restore"><u>Forgot your password?</u></string>
     <string name="activity_auth_button_register">Sign Up</string>
     <string name="activity_auth_button_login">Log In</string>
-    <string name="api_error_code_message_0000">Empty server response, request execution status unknown</string>
+    <string name="api_error_code_message_0000">Error 0000: Empty server response, request execution status unknown</string>
     <string name="api_error_code_message_XXXX">The request was blocked at the application level</string>
     <string name="api_error_code_message_0001">Successful completion of the request</string>
-    <string name="api_error_code_message_9013">User is not found</string>
+    <string name="api_error_code_message_9013">Error 9013: User is not found</string>
+    <string name="activity_diary_title">Dream\'s diary</string>
+    <string name="api_error_code_message_9015">Error 9015: Invalid authorization token, please log in again</string>
 </resources>
