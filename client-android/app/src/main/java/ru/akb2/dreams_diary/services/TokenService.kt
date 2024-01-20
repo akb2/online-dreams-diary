@@ -1,9 +1,11 @@
 package ru.akb2.dreams_diary.services
 
+import android.annotation.SuppressLint
 import android.content.Context
 import ru.akb2.dreams_diary.datas.DateFormater
 import java.util.Date
 
+@SuppressLint("CommitPrefEdits")
 class TokenService(context: Context) {
     private val sharedPreferences =
         context.getSharedPreferences("AuthPreferences", Context.MODE_PRIVATE)
@@ -26,12 +28,23 @@ class TokenService(context: Context) {
      * @param authToken Токен авторизации
      * */
     fun saveAuthData(userId: Int, authToken: String) {
-        sharedPreferences.edit().apply {
-            putString(KEY_USER_ID, userId.toString())
-            putString(KEY_AUTH_TOKEN, authToken)
-            putString(KEY_LAST_CHECK, DateFormater.format(Date()))
-            apply()
-        }
+        sharedPreferences.edit()
+            .putString(KEY_AUTH_TOKEN, authToken)
+            .putInt(KEY_AUTH_TOKEN, userId)
+        saveAuthDate(false)
+    }
+
+    /**
+     * Обновить дату последней проверки
+     * @param clear При значении TRUE очищает дату проверки
+     * */
+    fun saveAuthDate(clear: Boolean = false) {
+        val date = if (clear)
+            Date(0) else
+            Date()
+
+        sharedPreferences.edit()
+            .putString(KEY_LAST_CHECK, DateFormater.format(date))
     }
 
     /**
