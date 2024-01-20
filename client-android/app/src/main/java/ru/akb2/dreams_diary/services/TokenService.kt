@@ -12,7 +12,7 @@ class TokenService(context: Context) {
      * Интервал необходимости проверки актуальности токена
      * Значение указывается в секундах
      * */
-    private val tokenNeedCheckInterval = 300
+    private val tokenNeedCheckInterval = 180
 
     companion object {
         private const val KEY_USER_ID = "userId"
