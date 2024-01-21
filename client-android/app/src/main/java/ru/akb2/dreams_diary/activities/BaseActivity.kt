@@ -62,11 +62,14 @@ open class BaseActivity : AppCompatActivity() {
             // Проверка авторизации
             val isAuthed = tokenService.isAuth()
             val isNeedToCheck = tokenService.isNeedToCheckToken()
-            val isValidToken = if (isAuthed)
-                if (isNeedToCheck)
+            var isValidToken = false
+
+            if (isAuthed) {
+                isValidToken = if (isNeedToCheck)
                     authService.checkToken() === ApiCode.SUCCESS else
-                    true else
-                false
+                    true
+            }
+
             val isValidAuth = isAuthed && isValidToken
             val isAuth = authType === AuthType.AUTH && isValidAuth
             val isNotAuth = authType === AuthType.NOT_AUTH && !isValidAuth

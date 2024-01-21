@@ -1,8 +1,8 @@
 package ru.akb2.dreams_diary.datas
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -24,10 +24,11 @@ data class TokenData(
     val browser_version: String
 )
 
+
 object TokenDataSerializer : JsonTransformingSerializer<TokenData>(serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        return if (element is JsonObject)
-            element else
+
+        return if (element is JsonArray && element.isEmpty())
             buildJsonObject {
                 put("id", 0)
                 put("token", "")
@@ -40,6 +41,7 @@ object TokenDataSerializer : JsonTransformingSerializer<TokenData>(serializer())
                 put("os", "")
                 put("browser", "")
                 put("browser_version", "")
-            }
+            } else
+            element
     }
 }
