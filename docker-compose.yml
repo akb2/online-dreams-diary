@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    platform: "linux/arm64/v8"
+    container_name: nginx-container
+    volumes:
+      - ./nginx-settings/api-test.conf:/etc/nginx/nginx.conf
+      - ./api:/var/www/api
+      - ./media:/var/www/media
+    ports:
+      - "4201:4201"
+    depends_on:
+      - php
+      - angular
+
+  php:
+    image: php:fpm-alpine
+    platform: "linux/arm64/v8"
+    container_name: php-container
+    volumes:
+      - ./api:/var/www/api
+      - ./media:/var/www/media
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=mydatabase
+
+  mysql:
+    image: mysql:8.0
+    platform: "linux/arm64/v8"
+    container_name: mysql-container
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydatabase
+    ports:
+      - "3306:3306"
+
+  angular:
+    image: node:18-alpine
+    container_name: angular-container
+    volumes:
+      - ./angular-app:/usr/src/app
+    working_dir: /usr/src/app
+    command: sh -c "npm install && npm start"
+    ports:
+      - "4200:4200"
