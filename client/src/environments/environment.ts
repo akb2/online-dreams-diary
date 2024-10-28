@@ -5,14 +5,14 @@
 export const environment = {
   production: false,
   baseUrl: {
-    default: "http://localhost:4200/"
+    default: 'http://localhost:4200/',
   },
   baseApiUrl: {
-    default: "https://api-test.dreams-diary.ru/"
+    default: 'http://localhost:4201/',
   },
-  reCaptchaKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+  reCaptchaKey: '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
   httpHeader: {},
-  withCredentials: true
+  withCredentials: true,
 };
 
 /*

@@ -2,21 +2,29 @@ version: "3.8"
 
 services:
   nginx:
-    image: nginx:stable-alpine
-    platform: "linux/arm64/v8"
+    build:
+      context: ./
+      dockerfile: nginx.dockerfile
     container_name: nginx-container
     volumes:
-      - ./nginx-settings/api-test.conf:/etc/nginx/nginx.conf
+      - ./nginx-settings/main.settings.conf:/etc/nginx/nginx.conf
+      - ./nginx-settings/api-test.conf:/etc/nginx/api.conf
+      - ./nginx-settings/media-test.conf:/etc/nginx/media.conf
+      - ./nginx-settings/app-test.conf:/etc/nginx/app.conf
+      - ./nginx-settings/parts/fastcgi.conf:/etc/nginx/parts/fastcgi.conf
       - ./api:/var/www/api
       - ./media:/var/www/media
+      - ./logs:/var/log/nginx
     ports:
       - "4201:4201"
+      - "4202:4202"
+      - "4203:4203"
     depends_on:
       - php
       - angular
 
   php:
-    image: php:fpm-alpine
+    image: php:8.2-fpm-alpine
     platform: "linux/arm64/v8"
     container_name: php-container
     volumes:
@@ -44,8 +52,9 @@ services:
     image: node:18-alpine
     container_name: angular-container
     volumes:
-      - ./angular-app:/usr/src/app
-    working_dir: /usr/src/app
-    command: sh -c "npm install && npm start"
+      - ./client:/var/www/client
+      - /var/www/client/node_modules
+    working_dir: /var/www/client
     ports:
       - "4200:4200"
+    command: sh -c "npm install && npm run start:docker"

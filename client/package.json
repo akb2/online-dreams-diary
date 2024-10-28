@@ -5,10 +5,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",
+    "start:docker": "ng serve --host 0.0.0.0 --disable-host-check",
     "build": "ng build --configuration=production --aot --build-optimizer",
     "cypress-build": "ng build --configuration=cypress",
     "bundle-stats": "npm run build --stats-json && webpack-bundle-analyzer ../app/stats.json",
-    "watch": "npm run build --watch --configuration development",
+    "watch": "npm run build --watch --configuration=development",
     "test": "ng test",
     "stop-server": "httpd -k stop | mysqld -u root shutdown",
     "dev-start": "concurrently \"mysqld --console\" \"httpd -k start\" \"npm run start\"",
@@ -41,6 +42,7 @@
     "noisejs": "^2.1.0",
     "petrovich": "^0.2.1",
     "rxjs": "^7.8.0",
+    "sh": "^0.0.3",
     "snowball-stemmers": "^0.6.0",
     "tslib": "^2.3.0",
     "zone.js": "^0.13.0"
