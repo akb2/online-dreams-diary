@@ -55,7 +55,9 @@ services:
       - "3306:3306"
 
   angular:
-    image: node:18-alpine
+    build:
+      context: ./
+      dockerfile: ./server/angular.dockerfile
     container_name: angular-container
     volumes:
       - ./client:/var/www/client
@@ -63,4 +65,3 @@ services:
     working_dir: /var/www/client
     ports:
       - "4200:4200"
-    command: sh -c "npm install && npm run start:docker"
