@@ -31,44 +31,6 @@ class DreamService
 
 
 
-  // Пересобрать таблицы БД
-  public function createTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("dream/createTable.sql");
-    }
-    // Результат работы функции
-    return false;
-  }
-
-  // Удалить таблицы БД
-  public function deleteTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("dream/deleteTable.sql");
-    }
-    // Результат работы функции
-    return false;
-  }
-
-  // Заполнить таблицы БД
-  public function fillTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config["appPassword"]) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile("dream/createDreams.php");
-    }
-    // Результат работы функции
-    return false;
-  }
-
-
-
   // Проверить доступность сновидения
   public function checkAvail(string $id, string $userId, bool $edit = true): bool
   {

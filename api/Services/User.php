@@ -44,44 +44,6 @@ class UserService
 
 
 
-  // Пересобрать таблицы БД
-  public function createTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config['appPassword']) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile('account/createTable.sql');
-    }
-    // Результат работы функции
-    return false;
-  }
-
-  // Удалить таблицы БД
-  public function deleteTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config['appPassword']) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile('account/deleteTable.sql');
-    }
-    // Результат работы функции
-    return false;
-  }
-
-  // Заполнить таблицы БД
-  public function fillTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config['appPassword']) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile('account/createAdmin.php');
-    }
-    // Результат работы функции
-    return false;
-  }
-
-
-
   // Авторизация
   public function authUserApi(array $data): array
   {

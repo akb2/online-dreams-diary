@@ -27,32 +27,6 @@ class CommentService
 
 
 
-  // Пересобрать таблицы БД
-  public function createTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config['appPassword']) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile('comment/createTable.sql');
-    }
-    // Результат работы функции
-    return false;
-  }
-
-  // Удалить таблицы БД
-  public function deleteTableApi(string $password): bool
-  {
-    // Проверить секретный пароль
-    if ($password == $this->config['appPassword']) {
-      // Настройка таблиц
-      return $this->dataBaseService->executeFromFile('comment/deleteTable.sql');
-    }
-    // Результат работы функции
-    return false;
-  }
-
-
-
   // Новый комментарий
   public function create(array $data, int $userId): int
   {
