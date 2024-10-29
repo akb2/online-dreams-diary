@@ -34,13 +34,17 @@ services:
       - ./media:/var/www/media
       - ./api/Config/secretDatas.dev.json:/var/www/api/Config/secretDatas.json
       - ./server/php.ini:/usr/local/etc/php/php.ini
+      - ./server/fill-tables/:/var/www/server/fill-tables
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_USER=root
       - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=online_dreams_diary
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    command: sh -c "sleep 20 && php /var/www/server/fill-tables/fill-tables.dev.php && php-fpm"
+    restart: always
 
   mysql:
     image: mysql:8.0
@@ -53,6 +57,12 @@ services:
       MYSQL_DATABASE: online_dreams_diary
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+    restart: always
+    command: --innodb_use_native_aio=0
 
   angular:
     build:
@@ -65,3 +75,17 @@ services:
     working_dir: /var/www/client
     ports:
       - "4200:4200"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin-container
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "4204:80"
+    restart: always

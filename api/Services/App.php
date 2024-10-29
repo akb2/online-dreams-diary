@@ -33,7 +33,7 @@ class App
       $fileData = file_get_contents($src);
       $jsonData = json_decode($fileData, true);
       if (count($jsonData) > 0) {
-        $currentDomain = $_SERVER['HTTP_HOST'];
+        $currentDomain = $_SERVER['HTTP_HOST'] ?? '';
         // Определить домены
         $jsonData['appDomain'] = $jsonData['appDomain'][$currentDomain] ?? $jsonData['appDomain']['default'];
         $jsonData['apiDomain'] = $jsonData['apiDomain'][$currentDomain] ?? $jsonData['apiDomain']['default'];

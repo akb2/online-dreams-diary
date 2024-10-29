@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `users`
     FULLTEXT (`name`, `last_name`, `patronymic`)
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `comments`
   (
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `comments`
     FULLTEXT (`text`)
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `dreams`
   (
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `dreams`
     FULLTEXT (`title`, `description`, `keywords`, `text`)
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `friends`
   (
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `friends`
     FOREIGN KEY (`in_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `media_files`
   (
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `media_files`
     INDEX `extension` (`extension`)
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `notifications`
   (
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS `notifications`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
   )
 ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+CHARSET = utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `tokens`
   (
@@ -163,5 +163,5 @@ CREATE TABLE IF NOT EXISTS `tokens`
     INDEX `last_action_date` (`last_action_date`),
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
   )
-ENGINE = InnoDB
-CHARSET = utf8 COLLATE utf8_general_ci
+ENGINE = MEMORY
+CHARSET = utf8 COLLATE utf8_general_ci;
