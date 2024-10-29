@@ -26,7 +26,7 @@ RUN cd /tmp && \
 RUN rm -rf /tmp/nginx-1.21.6* /tmp/push_stream_module
 
 # Копирование конфигурационного файла Nginx
-COPY ./nginx-settings/main.settings.conf /usr/local/nginx/conf/nginx.conf
+COPY ./server/nginx/nginx.dev.conf /usr/local/nginx/conf/nginx.conf
 
 # Указываем порт
 EXPOSE 80

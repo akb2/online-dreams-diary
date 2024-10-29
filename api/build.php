@@ -13,7 +13,11 @@ use Services\App;
 
 
 
-ob_end_clean();
+// Очистить случайный нежелательный кэш
+if (ob_get_level() > 0) {
+  ob_end_clean();
+}
+
 ob_start();
 
 

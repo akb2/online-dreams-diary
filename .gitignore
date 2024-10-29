@@ -3,5 +3,5 @@
 /db_backup
 package-lock.json
 /OnlineDreamsInterpreter
-/mysql
-/logs
+/server/mysql
+/server/logs

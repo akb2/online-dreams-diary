@@ -4,17 +4,17 @@ services:
   nginx:
     build:
       context: ./
-      dockerfile: nginx.dockerfile
+      dockerfile: ./server/nginx.dockerfile
     container_name: nginx-container
     volumes:
-      - ./nginx-settings/main.settings.conf:/etc/nginx/nginx.conf
-      - ./nginx-settings/api-test.conf:/etc/nginx/api.conf
-      - ./nginx-settings/media-test.conf:/etc/nginx/media.conf
-      - ./nginx-settings/app-test.conf:/etc/nginx/app.conf
-      - ./nginx-settings/parts/fastcgi.conf:/etc/nginx/parts/fastcgi.conf
+      - ./server/nginx/nginx.dev.conf:/etc/nginx/nginx.conf
+      - ./server/nginx/api.dev.conf:/etc/nginx/api.conf
+      - ./server/nginx/media.dev.conf:/etc/nginx/media.conf
+      - ./server/nginx/app.dev.conf:/etc/nginx/app.conf
+      - ./server/nginx/parts/fastcgi.conf:/etc/nginx/parts/fastcgi.conf
       - ./api:/var/www/api
       - ./media:/var/www/media
-      - ./logs:/var/log/nginx
+      - ./server/logs:/var/log/nginx
     ports:
       - "4201:4201"
       - "4202:4202"
@@ -24,27 +24,33 @@ services:
       - angular
 
   php:
-    image: php:8.2-fpm-alpine
+    build:
+      context: ./
+      dockerfile: ./server/php.dockerfile
     platform: "linux/arm64/v8"
     container_name: php-container
     volumes:
       - ./api:/var/www/api
       - ./media:/var/www/media
+      - ./api/Config/secretDatas.dev.json:/var/www/api/Config/secretDatas.json
+      - ./server/php.ini:/usr/local/etc/php/php.ini
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_USER=root
       - MYSQL_PASSWORD=root
-      - MYSQL_DATABASE=mydatabase
+      - MYSQL_DATABASE=online_dreams_diary
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.0
     platform: "linux/arm64/v8"
     container_name: mysql-container
     volumes:
-      - ./mysql:/var/lib/mysql
+      - ./server/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mydatabase
+      MYSQL_DATABASE: online_dreams_diary
     ports:
       - "3306:3306"
 
