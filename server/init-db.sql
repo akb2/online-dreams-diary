@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `comments`
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
 
-CREATE TABLE `dreams`
+CREATE TABLE IF NOT EXISTS `dreams`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
     `user_id` INT,
@@ -88,7 +88,7 @@ CREATE TABLE `dreams`
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
 
-CREATE TABLE `friends`
+CREATE TABLE IF NOT EXISTS `friends`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
     `out_user_id` INT NOT NULL DEFAULT 0,
@@ -106,7 +106,7 @@ CREATE TABLE `friends`
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
 
-CREATE TABLE `media_files`
+CREATE TABLE IF NOT EXISTS `media_files`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
     `user_id` INT,
@@ -127,7 +127,7 @@ CREATE TABLE `media_files`
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
 
-CREATE TABLE `notifications`
+CREATE TABLE IF NOT EXISTS `notifications`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
     `user_id` INT,
@@ -145,7 +145,7 @@ CREATE TABLE `notifications`
 ENGINE = InnoDB
 CHARSET = utf8 COLLATE utf8_general_ci
 
-CREATE TABLE `tokens`
+CREATE TABLE IF NOT EXISTS `tokens`
   (
     `id` INT NOT NULL AUTO_INCREMENT,
     `token` VARCHAR(128) NOT NULL DEFAULT "",
