@@ -146,7 +146,6 @@ class UserService
           else {
             if ($this->dataBaseService->executeFromFile('account/registerUser.sql', $sqlData)) {
               $sqlData = array($login, $password);
-              // Запрос авторизации
               $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
               $code = '9018';
               // Проверить авторизацию
@@ -204,6 +203,53 @@ class UserService
         'result' => $code == '0001'
       )
     );
+  }
+
+  // Создать пользователя
+  public function createUser(array $data): string
+  {
+    $login = $data['login'] ?? '';
+    $email = $data['email'] ?? '';
+    // Данные были переданы
+    if (strlen($login) > 0 && strlen($email) > 0) {
+      $password = $this->hashPassword($data['password']);
+      $checkLogin = $this->dataBaseService->getDatasFromFile('account/checkLoginEmail.sql', array($login, $email));
+      // Проверить логин
+      if (count($checkLogin) === 0) {
+        $sqlData = array(
+          'page_status' => $data['pageStatus'] ?? '',
+          'status' => $data['status'] ?? '1',
+          'login' => $login,
+          'password' => $password,
+          'name' => $data['name'] ?? '',
+          'last_name' => $data['lastName'] ?? '',
+          'patronymic' => $data['patronymic'] ?? '',
+          'birth_date' => date('Y-m-d', strtotime($data['birthDate'])),
+          'sex' => $data['sex'] ?? 0,
+          'email' => $email,
+          'roles' => json_encode($data['roles'] ?? array()),
+          'avatar_crop_data' => json_encode($data['avatarCropData'] ?? array()),
+          'settings' => json_encode(array(
+            'profileBackground' => array($data['settings']['profileBackground'] ?? 1),
+            'profileHeaderType' => array($data['settings']['profileHeaderType'] ?? 'short'),
+          )),
+          'private' => json_encode($data['private'] ?? array())
+        );
+        // Попытка создания
+        if ($this->dataBaseService->executeFromFile('account/createUser.sql', $sqlData)) {
+          $sqlData = array($login, $password);
+          $auth = $this->dataBaseService->getDatasFromFile('account/auth.sql', $sqlData);
+          // Проверить авторизацию
+          if (count($auth) > 0) {
+            if (strlen($auth[0]['id']) > 0) {
+              return $auth[0]['id'];
+            }
+          }
+        }
+      }
+    }
+    // Пользователь не создан
+    return '0';
   }
 
   // Создание ключа активации
@@ -904,7 +950,7 @@ class UserService
     return array(
       'id' => $user['id'],
       'status' => $user['status'],
-      'activation_key' => $user['activation_key'] ?? "",
+      'activation_key' => $user['activation_key'] ?? '',
       'activation_key_expire' => $user['activation_key_expire'] ?? $defaultDate,
       'name' => $user['name'],
       'pageStatus' => $user['page_status'],

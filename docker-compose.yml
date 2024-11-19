@@ -27,6 +27,7 @@ services:
     build:
       context: ./
       dockerfile: ./server/php.dockerfile
+    user: "www-data:www-data"
     platform: "linux/arm64/v8"
     container_name: php-container
     volumes:
@@ -43,7 +44,7 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    command: sh -c "sleep 20 && php /var/www/server/fill-tables/fill-tables.dev.php && php-fpm"
+    command: sh -c "sleep 5 && php /var/www/server/fill-tables/fill-tables.dev.php && php-fpm"
     restart: always
 
   mysql:

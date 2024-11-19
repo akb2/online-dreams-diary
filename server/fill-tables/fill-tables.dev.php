@@ -1,4 +1,6 @@
 <?
+$_SERVER['DOCUMENT_ROOT'] = __DIR__ . '/../../api/';
+
 spl_autoload_register(function ($name) {
   $name = preg_replace('/^(.*?)(Service)$/i', '$1', $name);
   $file = __DIR__ . '/../../api/' . $name . '.php';
@@ -11,6 +13,7 @@ spl_autoload_register(function ($name) {
 });
 
 use Services\App;
+use Services\UserService;
 
 
 
@@ -23,6 +26,15 @@ ob_start();
 
 
 
-$app = new App();
-$config = $app->getSecretDatas();
-$pdo = $app->dbConnect();
+$appService = new App();
+$config = $appService->getSecretDatas();
+$pdo = $appService->dbConnect();
+$userService = new UserService($pdo, $config);
+
+
+
+$users = array();
+
+
+
+include "fill-users.dev.php";

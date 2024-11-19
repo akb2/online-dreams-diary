@@ -1,0 +1,33 @@
+INSERT INTO `users`
+(
+  `page_status`,
+  `status`,
+  `login`,
+  `password`,
+  `name`,
+  `last_name`,
+  `patronymic`,
+  `birth_date`,
+  `sex`,
+  `email`,
+  `roles`,
+  `avatar_crop_data`,
+  `settings`,
+  `private`
+)
+VALUES (
+  :page_status,
+  :status,
+  :login,
+  :password,
+  :name,
+  :last_name,
+  :patronymic,
+  :birth_date,
+  :sex,
+  :email,
+  :roles,
+  :avatar_crop_data,
+  :settings,
+  :private
+);
