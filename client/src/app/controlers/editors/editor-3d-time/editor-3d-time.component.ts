@@ -19,7 +19,7 @@ export class Editor3DTimeComponent {
   @Output() showOverlay = new EventEmitter<void>();
   @Output() hideOverlay = new EventEmitter<void>();
 
-  @ViewChild("settingsTimeContainer", { read: ElementRef }) settingsTimeContainer: ElementRef<HTMLDivElement>;
+  @ViewChild("settingsContainer", { read: ElementRef }) settingsContainer: ElementRef<HTMLDivElement>;
 
   private serigRotateCorrect = -45;
 
@@ -80,8 +80,8 @@ export class Editor3DTimeComponent {
 
   // Изменение времени суток
   onSkyTimeChange(event: MouseEvent | TouchEvent, multiplier: NumberDirection = 0) {
-    if (!!this.settingsTimeContainer?.nativeElement) {
-      const container = this.settingsTimeContainer.nativeElement;
+    if (!!this.settingsContainer?.nativeElement) {
+      const container = this.settingsContainer.nativeElement;
       const containerRect = container.getBoundingClientRect();
       const containerLeft = containerRect.left;
       const containerTop = containerRect.top;
