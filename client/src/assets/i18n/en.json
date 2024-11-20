@@ -446,6 +446,7 @@
       "controls": {
         "settings": {
           "time": "Times of day",
+          "world_ocean": "World Ocean",
           "landscape": "Landscape",
           "clouds": "Clouds"
         }

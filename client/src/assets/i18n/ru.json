@@ -446,6 +446,7 @@
       "controls": {
         "settings": {
           "time": "Время суток",
+          "world_ocean": "Мировой океан",
           "landscape": "Тип местности",
           "clouds": "Облака"
         }

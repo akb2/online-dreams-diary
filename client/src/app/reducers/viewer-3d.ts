@@ -12,7 +12,8 @@ export const VIEWER_3D_KEY = "3d_viewer";
 // Перечисление настроек перекрывающих вид
 export enum Editor3DOverlaySettings {
   none = "none",
-  time = "time"
+  time = "time",
+  worldOcean = "world_ocean"
 }
 
 // Позиция компаса
