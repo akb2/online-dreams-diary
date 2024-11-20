@@ -12,7 +12,7 @@ import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Observable, Subject, catchError, concatMap, filter, forkJoin, map, of, share, switchMap, take, tap, timer } from "rxjs";
+import { Observable, Subject, catchError, concatMap, defer, forkJoin, map, of, repeat, retry, switchMap, take, tap } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 import { DreamService } from "./dream.service";
@@ -169,16 +169,19 @@ export class CommentService extends TextMessage {
 
   // Ожидания новых комментариев
   waitNewComment(materialType: CommentMaterialType, materialId: number, codes: string[] = []): Observable<Comment> {
-    let connect: boolean = false;
-    // Вернуть подписку
-    return timer(0, 1000).pipe(
-      share(),
-      filter(() => !connect),
-      concatMap(() => this.httpClient.get("longPolling/get/comment/" + materialType + "/" + materialId).pipe(catchError(e => of({ ...e, text: "" })))),
-      catchError(() => of({ text: "" })),
-      map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.commentId)),
-      concatMap(commentId => commentId > 0 ? this.getById(commentId, codes).pipe(catchError(() => of(null))) : of(null)),
-      tap(() => connect = false)
+    const url = "longPolling/get/comment/" + materialType + "/" + materialId;
+    const request = this.httpClient.get(url, { responseType: "text" }).pipe(
+      catchError(e => of({ ...e, text: "" })),
+      map(result => ParseInt(UrlParamsStringToObject(result ?? "")?.commentId)),
+      switchMap(commentId => commentId > 0
+        ? this.getById(commentId, codes).pipe(catchError(() => of(null)))
+        : of(null)
+      )
+    );
+
+    return defer(() => request).pipe(
+      repeat(),
+      retry(),
     );
   }
 }

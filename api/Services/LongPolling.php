@@ -18,7 +18,7 @@ class LongPollingService
   // Получить URL
   private function getUrl(string $path, string $type): string
   {
-    return $this->config['longPollingDomain'] . $type . '/' . $path;
+    return $this->config['longPollingDomain'] .  $type . '/' . $path;
   }
 
 
