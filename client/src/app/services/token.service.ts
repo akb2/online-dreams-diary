@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
 import { accountDeleteUserIdAction, accountUserIdSelector } from "@app/reducers/account";
 import { Store } from "@ngrx/store";
 import { Observable, Subject } from "rxjs";
-import { concatMap, map, switchMap, take, takeUntil, tap } from "rxjs/operators";
+import { concatMap, first, map, switchMap, takeUntil, tap } from "rxjs/operators";
 
 
 
@@ -59,22 +59,17 @@ export class TokenService {
   // Проверить токен
   checkToken(codes: string[] = []): Observable<string> {
     return this.httpClient.get<ApiResponse>("token/checkToken").pipe(
-      concatMap(() => this.userId$.pipe(take(1)), (result, userId) => ({ result, userId })),
-      switchMap(
-        ({ result, userId }) => {
-          const code: ApiResponseCodes = result.result.code;
-          const newUserId: number = ParseInt(result?.result?.data?.tokenData?.user_id);
-          // Сохранить токен
-          if (code === "0001") {
-            if (userId !== newUserId) {
-              this.store$.dispatch(accountDeleteUserIdAction());
-              this.router.navigate([""]);
-            }
-          }
-          // Вернуть данные
-          return this.apiService.checkResponse(result.result.code, codes);
+      concatMap(() => this.userId$.pipe(first()), (result, userId) => ({ result, userId })),
+      switchMap(({ result, userId }) => {
+        const code: ApiResponseCodes = result.result.code;
+        const newUserId: number = ParseInt(result?.result?.data?.tokenData?.user_id);
+        // Сохранить токен
+        if ((code === "0001" && userId !== newUserId) || code !== "0001") {
+          this.clearStoreData();
         }
-      )
+        // Вернуть данные
+        return this.apiService.checkResponse(result.result.code, codes);
+      })
     );
   }
 
@@ -150,5 +145,11 @@ export class TokenService {
       ip: tokenData.ip.toString(),
       browser: { os, name, version }
     };
+  }
+
+  // Очистить данные из стора
+  private clearStoreData() {
+    this.store$.dispatch(accountDeleteUserIdAction());
+    this.router.navigate([""]);
   }
 }

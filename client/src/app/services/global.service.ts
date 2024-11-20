@@ -11,7 +11,7 @@ import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
 import { accountCheckAuthSelector } from "@app/reducers/account";
 import { notificationsClearAction } from "@app/reducers/notifications";
 import { Store } from "@ngrx/store";
-import { Observable, map, of, switchMap, take, tap } from "rxjs";
+import { Observable, map, of, switchMap, take, tap, first } from "rxjs";
 
 
 
@@ -74,7 +74,7 @@ export class GlobalService {
 
   init(): Observable<User> {
     return this.store$.select(accountCheckAuthSelector).pipe(
-      take(1),
+      first(),
       map(checkAuth => ({ ...this.getExtraDatas, checkAuth })),
       switchMap(({ checkAuth, checkToken }) => checkAuth && checkToken
         ? this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
@@ -84,17 +84,19 @@ export class GlobalService {
             }
             // Ошибка проверки токена
             else {
-              this.router.navigate([""]);
-              this.accountService.quit();
-              this.friendService.quit();
-              this.store$.dispatch(notificationsClearAction());
-              // Сообщение с ошибкой
               this.snackBar.open({
                 "mode": "error",
                 "message": this.apiService.getMessageByCode(code)
               });
               // Анонимный пользователь
-              return of(null);
+              return of(null).pipe(
+                tap(() => {
+                  this.router.navigate([""]);
+                  this.accountService.quit();
+                  this.friendService.quit();
+                  this.store$.dispatch(notificationsClearAction());
+                })
+              );
             }
           })
         )
