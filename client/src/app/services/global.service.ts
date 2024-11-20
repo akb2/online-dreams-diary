@@ -76,7 +76,6 @@ export class GlobalService {
     return this.store$.select(accountCheckAuthSelector).pipe(
       first(),
       map(checkAuth => ({ ...this.getExtraDatas, checkAuth })),
-      tap(data => console.log(data)),
       switchMap(({ checkAuth, checkToken }) => checkAuth && checkToken
         ? this.tokenService.checkToken(["9014", "9015", "9016"]).pipe(
           switchMap(code => {
