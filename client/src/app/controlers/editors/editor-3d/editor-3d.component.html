@@ -63,7 +63,8 @@
     <!-- Содержимое -->
     <div class="settings__content"
          [ngSwitch]="currentSetting">
-      <editor-3d-time (hideOverlay)="hideOverlay()"
+      <editor-3d-time *ngSwitchCase="settingsTypes.time"
+                      (hideOverlay)="hideOverlay()"
                       (showOverlay)="showOverlay()"></editor-3d-time>
     </div>
   </div>

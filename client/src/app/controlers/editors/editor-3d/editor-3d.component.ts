@@ -16,6 +16,7 @@ export class Editor3DComponent implements OnInit {
   @Input() showCompass: boolean = true;
 
   showingOverlay = true;
+  settingsTypes = Editor3DOverlaySettings;
 
   showControls$ = this.store$.select(editor3DShowControlsSelector);
   showSettings$ = this.store$.select(editor3DShowOverlaySettingsSelector);
