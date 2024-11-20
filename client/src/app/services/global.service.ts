@@ -89,21 +89,28 @@ export class GlobalService {
                 "message": this.apiService.getMessageByCode(code)
               });
               // Анонимный пользователь
-              return of(null).pipe(
-                tap(() => {
-                  this.router.navigate([""]);
-                  this.accountService.quit();
-                  this.friendService.quit();
-                  this.store$.dispatch(notificationsClearAction());
-                })
-              );
+              return this.deleteAuth();
             }
           })
         )
-        : of(null)
+        : checkAuth && !checkToken
+          ? this.deleteAuth()
+          : of(null)
       ),
-      tap(user => this.user = user)
+      tap((user: User) => this.user = user)
     );
+  }
+
+  // Удалить авторизацию
+  private deleteAuth() {
+    return this.accountService.quit().pipe(
+      map(() => null),
+      tap(() => {
+        this.friendService.quit();
+        this.router.navigate([""]);
+        this.store$.dispatch(notificationsClearAction());
+      })
+    )
   }
 
   // Создать текст заголовка

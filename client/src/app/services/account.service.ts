@@ -183,10 +183,8 @@ export class AccountService implements OnDestroy {
   }
 
   // Выйти из аккаунта
-  quit(): void {
-    this.tokenService.deleteAuth()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => this.clearUsersFromStore());
+  quit(): Observable<string> {
+    return this.tokenService.deleteAuth();
   }
 
   // Проверка настроек приватности

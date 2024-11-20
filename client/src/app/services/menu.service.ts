@@ -108,9 +108,12 @@ export class MenuService implements OnDestroy {
 
   // Выход из системы
   private onLogOut(): void {
-    this.accountService.quit();
-    this.friendService.quit();
-    this.store$.dispatch(notificationsClearAction());
+    this.accountService.quit()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => {
+        this.friendService.quit();
+        this.store$.dispatch(notificationsClearAction());
+      });
   }
 
   // Смена языки
