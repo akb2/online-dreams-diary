@@ -1,5 +1,5 @@
-import { CircleParamSetting } from "@_helpers/circle-param-settings";
 import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRound, MathRoundByStep, Sin } from "@_helpers/math";
+import { CircleParamSetting } from "@_helpers/special-inputs-param-settings";
 import { NumberDirection } from "@_models/math";
 import { CssProperties } from "@_models/nav-menu";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
