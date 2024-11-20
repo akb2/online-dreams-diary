@@ -66,16 +66,16 @@ services:
     command: --innodb_use_native_aio=0
 
   angular:
-    build:
-      context: ./
-      dockerfile: ./server/angular.dockerfile
+    image: node:18-alpine
     container_name: angular-container
     volumes:
       - ./client:/var/www/client
       - /var/www/client/node_modules
+      - ./client/node_modules:/host_client/node_modules
     working_dir: /var/www/client
     ports:
       - "4200:4200"
+    command: sh -c "before=$(stat -c %Y /var/www/client/node_modules 2>/dev/null || echo 0) && npm install && after=$(stat -c %Y /var/www/client/node_modules 2>/dev/null || echo 0) && [ $before -ne $after ] && cp -r /var/www/client/node_modules /host_client && npm run start:docker"
 
   phpmyadmin:
     image: phpmyadmin:latest
