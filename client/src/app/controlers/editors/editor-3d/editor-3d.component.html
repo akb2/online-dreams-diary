@@ -18,14 +18,22 @@
 <!-- Управление: настройки -->
 <ng-template #controlsSettings>
   <div class="controls controls--settings">
-    <!-- Управление окружением -->
+    <!-- Время суток -->
     <ul class="buttons">
-      <!-- Время суток -->
       <li class="buttons__item"
           [matTooltip]="'3d.editor.controls.settings.time' | translate"
           matTooltipPosition="below"
           (click)="onTimeSettingsOpen()">
         <mat-icon>wb_sunny</mat-icon>
+      </li>
+    </ul>
+    <!-- Уровень мирового океана -->
+    <ul class="buttons">
+      <li class="buttons__item"
+          [matTooltip]="'3d.editor.controls.settings.world_ocean' | translate"
+          matTooltipPosition="below"
+          (click)="onWorldOceanSettingsOpen()">
+        <mat-icon>water</mat-icon>
       </li>
     </ul>
     <!-- Управление местностью -->
@@ -53,51 +61,10 @@
     <h5 class="settings__title"
         *ngIf="showingOverlay">{{('3d.editor.controls.settings.' + currentSetting) | translate}}</h5>
     <!-- Содержимое -->
-    <div class="settings__content">
-      <ng-container [ngTemplateOutlet]="settingsTime"
-                    *ngIf="currentSetting === settingsTypes.time"></ng-container>
+    <div class="settings__content"
+         [ngSwitch]="currentSetting">
+      <editor-3d-time (hideOverlay)="hideOverlay()"
+                      (showOverlay)="showOverlay()"></editor-3d-time>
     </div>
   </div>
-</ng-template>
-
-
-
-<!-- Настройки: время суток -->
-<ng-template #settingsTime>
-  <span #settingsTimeContainer
-        class="settings-time">
-    <span class="settings-time__line"></span>
-    <span class="settings-time__cicrle">
-      <!-- Основные засечки -->
-      <ng-container *ngIf="skyTimeControl.showLargeSerifs">
-        <span class="settings-time__cicrle-serif large"
-              [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.largeStep) + 'deg)' }"
-              *ngFor="let i of skyTimeControl.largeSerifItterator"></span>
-      </ng-container>
-      <!-- Вспомогательные засечки -->
-      <ng-container *ngIf="skyTimeControl.showSerifs">
-        <span class="settings-time__cicrle-serif"
-              [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.step) + 'deg)' }"
-              *ngFor="let i of skyTimeControl.serifItterator"></span>
-      </ng-container>
-    </span>
-    <!-- Солнце -->
-    <span class="settings-time__sun"
-          [ngStyle]="settingsSunStyles$ | async"
-          mousePress
-          (mouseUp)="showOverlay()"
-          (mouseDown)="hideOverlay()"
-          (mouseMovePress)="onSkyTimeChange($event)">
-      <mat-icon>wb_sunny</mat-icon>
-    </span>
-    <!-- Луна -->
-    <span class="settings-time__moon"
-          [ngStyle]="settingsMoonStyles$ | async"
-          mousePress
-          (mouseUp)="showOverlay()"
-          (mouseDown)="hideOverlay()"
-          (mouseMovePress)="onSkyTimeChange($event, 1)">
-      <mat-icon>brightness_2</mat-icon>
-    </span>
-  </span>
 </ng-template>

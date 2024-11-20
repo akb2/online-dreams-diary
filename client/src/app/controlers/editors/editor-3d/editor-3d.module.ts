@@ -6,10 +6,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { TranslateModule } from "@ngx-translate/core";
 import { Editor3DComponent } from "./editor-3d.component";
-
-
-
-
+import { Editor3DTimeModule } from "@_controlers/editor-3d-time/editor-3d-time.module";
 
 @NgModule({
   declarations: [
@@ -24,7 +21,8 @@ import { Editor3DComponent } from "./editor-3d.component";
     Viewer3DModule,
     MatIconModule,
     MatTooltipModule,
-    TranslateModule
+    TranslateModule,
+    Editor3DTimeModule
   ]
 })
 

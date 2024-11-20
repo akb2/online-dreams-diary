@@ -1,0 +1,36 @@
+<span #settingsTimeContainer
+      class="settings">
+  <span class="settings__line"></span>
+  <span class="settings__cicrle">
+    <!-- Основные засечки -->
+    <ng-container *ngIf="skyTimeControl.showLargeSerifs">
+      <span class="settings__cicrle-serif large"
+            [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.largeStep) + 'deg)' }"
+            *ngFor="let i of skyTimeControl.largeSerifItterator"></span>
+    </ng-container>
+    <!-- Вспомогательные засечки -->
+    <ng-container *ngIf="skyTimeControl.showSerifs">
+      <span class="settings__cicrle-serif"
+            [ngStyle]="{ transform: 'rotate(' + angleRotate(i, skyTimeControl.step) + 'deg)' }"
+            *ngFor="let i of skyTimeControl.serifItterator"></span>
+    </ng-container>
+  </span>
+  <!-- Солнце -->
+  <span class="settings__sun"
+        [ngStyle]="settingsSunStyles$ | async"
+        mousePress
+        (mouseUp)="onShowOverlay()"
+        (mouseDown)="onHideOverlay()"
+        (mouseMovePress)="onSkyTimeChange($event)">
+    <mat-icon>wb_sunny</mat-icon>
+  </span>
+  <!-- Луна -->
+  <span class="settings__moon"
+        [ngStyle]="settingsMoonStyles$ | async"
+        mousePress
+        (mouseUp)="onShowOverlay()"
+        (mouseDown)="onHideOverlay()"
+        (mouseMovePress)="onSkyTimeChange($event, 1)">
+    <mat-icon>brightness_2</mat-icon>
+  </span>
+</span>
