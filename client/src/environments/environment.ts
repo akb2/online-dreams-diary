@@ -5,10 +5,10 @@
 export const environment = {
   production: false,
   baseUrl: {
-    default: 'http://localhost:4200/',
+    default: 'https://localhost:4200/',
   },
   baseApiUrl: {
-    default: 'http://localhost:4201/',
+    default: 'https://localhost:4201/',
   },
   reCaptchaKey: '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
   httpHeader: {},

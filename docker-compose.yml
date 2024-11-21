@@ -71,10 +71,12 @@ services:
     volumes:
       - ./client:/var/www/client
       - /var/www/client/node_modules
+      - ./ssl/ssl-key.pem:/etc/ssl/private/ssl-key.pem
+      - ./ssl/ssl-cert.pem:/etc/ssl/certs/ssl-cert.pem
     working_dir: /var/www/client
     ports:
       - "4200:4200"
-    command: sh -c "npm install && npm run start:docker"
+    command: sh -c "npm install && npm run start:docker:ssl"
 
   phpmyadmin:
     image: phpmyadmin:latest
