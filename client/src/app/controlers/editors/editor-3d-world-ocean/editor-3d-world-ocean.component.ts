@@ -1,3 +1,4 @@
+import { CreateArray } from "@_datas/app";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 @Component({
@@ -8,4 +9,5 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 
 export class Editor3DWorldOceanComponent {
+  lines = CreateArray(8);
 }

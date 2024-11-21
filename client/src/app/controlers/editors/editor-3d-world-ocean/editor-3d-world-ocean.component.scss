@@ -1,0 +1,86 @@
+@use "sass:math";
+@use "sass:map";
+@use "mixins";
+@use "colors";
+
+$mainControlSize: 90px;
+$controlSize: $mainControlSize * 4;
+$lineSize: 1px;
+// Свойства линий (в процентах)
+$lines: (
+  0: (
+    width: 8,
+    height: 1
+  ),
+  1: (
+    width: 10,
+    height: 32
+  ),
+  2: (
+    width: 18,
+    height: 18
+  ),
+  3: (
+    width: 32,
+    height: 2
+  ),
+  4: (
+    width: 11,
+    height: 24
+  ),
+  5: (
+    width: 3,
+    height: -6
+  ),
+  6: (
+    width: 13,
+    height: 29
+  ),
+  7: (
+    width: 5,
+    height: -9
+  )
+);
+
+// Настройки времени
+.settings {
+  $lineXItterator: 0;
+  $lineYItterator: 0;
+  // Свойства
+  display: block;
+  position: relative;
+  width: $controlSize;
+  height: $controlSize;
+  // Имитация ландшафта
+  &__landscape {
+    @include mixins.inset;
+    // Свойства
+    position: absolute;
+    display: block;
+    // Общие свойства линий
+    &-line {
+      position: absolute;
+      display: block;
+      height: $lineSize;
+      background-color: colors.$titleDark;
+      transform-origin: 0 50%;
+    }
+    // Линии
+    @each $index, $line in $lines {
+      &-line-#{$index} {
+        $boxWidth: map.get($line, width);
+        $boxHeight: map.get($line, height);
+        $width: math.sqrt(math.pow($boxWidth, 2) + math.pow($boxHeight, 2));
+        $rotate: math.atan(math.div($boxHeight, $boxWidth));
+        // Свойства
+        left: mixins.decimalToPercent($lineXItterator);
+        bottom: mixins.decimalToPercent($lineYItterator);
+        width: mixins.decimalToPercent($width);
+        transform: rotate(-$rotate);
+        // Обновить переменные
+        $lineXItterator: $lineXItterator + $boxWidth;
+        $lineYItterator: $lineYItterator + $boxHeight;
+      }
+    }
+  }
+}
