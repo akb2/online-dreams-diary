@@ -71,8 +71,8 @@ services:
     volumes:
       - ./client:/var/www/client
       - /var/www/client/node_modules
-      - ./ssl/ssl-key.pem:/etc/ssl/private/ssl-key.pem
-      - ./ssl/ssl-cert.pem:/etc/ssl/certs/ssl-cert.pem
+      - ./ssl/localhost.key:/etc/ssl/private/localhost.key
+      - ./ssl/localhost.crt:/etc/ssl/certs/localhost.crt
     working_dir: /var/www/client
     ports:
       - "4200:4200"

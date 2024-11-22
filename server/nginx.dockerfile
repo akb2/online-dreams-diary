@@ -26,8 +26,8 @@ RUN cd /tmp && \
 RUN rm -rf /tmp/nginx-1.24.0* /tmp/push_stream_module
 
 # Копирование конфигурационного файла Nginx
-COPY ./ssl/ssl-key.pem /etc/ssl/private/ssl-key.pem
-COPY ./ssl/ssl-cert.pem /etc/ssl/certs/ssl-cert.pem
+COPY ./ssl/localhost.key /etc/ssl/private/localhost.key
+COPY ./ssl/localhost.crt /etc/ssl/certs/localhost.crt
 COPY ./server/nginx/nginx.dev.conf /usr/local/nginx/conf/nginx.conf
 
 # Указываем порт
