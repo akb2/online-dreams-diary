@@ -30,7 +30,7 @@ class NotificationService
 
 
   // Новое уведомление
-  public function create(int $userId, string $text, string $link = '', array $data = array(), string $actionType = ''): bool
+  public function create(int $userId, string $text, string $link = '', array $data = array(), string $actionType = ''): int
   {
     if ($userId > 0 && strlen($text) > 0) {
       $sqlData = array(
@@ -41,7 +41,7 @@ class NotificationService
         'data' => json_encode($data),
         'diff_time' => $this->config['notifications']['noRepeatTime']
       );
-      $result = false;
+      $result = 0;
       ['site' => $ruleSite, 'email' => $ruleEmail] = $this->checkNotificationSettings($userId, $actionType);
       // Отправка уведомления внутри сайта
       if ($ruleSite) {
@@ -51,16 +51,19 @@ class NotificationService
         if (isset($check[0]['id']) && $check[0]['id'] > 0) {
           $notificationId = $check[0]['id'];
           $sqlData['id'] = $notificationId;
-          $result = $this->dataBaseService->executeFromFile('notification/update.sql', $sqlData);
+          // Создание уведомления
+          if (!$this->dataBaseService->executeFromFile('notification/update.sql', $sqlData)) {
+            $notificationId = 0;
+          }
         }
         // Создать запись
-        else {
-          $result = $this->dataBaseService->executeFromFile('notification/create.sql', $sqlData);
+        else if ($this->dataBaseService->executeFromFile('notification/create.sql', $sqlData)) {
           $notificationId = $this->pdo->lastInsertId();
         }
         // Отправить в Long Polling
         if ($notificationId > 0) {
           $this->sendNotificationToLongPolling($notificationId);
+          $result = $notificationId;
         }
       }
       // Отправка письма на почту

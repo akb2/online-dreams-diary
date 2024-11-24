@@ -44,22 +44,24 @@ class CommentService
     // Попытка сохранения
     if ($this->dataBaseService->executeFromFile('comment/send.php', $sqlData)) {
       $commentId = $this->pdo->lastInsertId();
+      $notificationOwnerId = 0;
+      $notificationReplyId = 0;
       // Отправить в Long Polling
       $this->longPollingService->send(
         'comment/' . intval($data['materialType']) . '/' . intval($data['materialId']),
         array('commentId' => $commentId)
       );
-      // Отправить уведомление владельцу
-      $this->sendNotice(
+      // Отправить уведомление владельцу комментируемого материала
+      $notificationOwnerId = $this->sendNotice(
         intval($data['materialType']),
         intval($data['materialId']),
         $materialOwner,
         intval($userId),
         intval($commentId)
       );
-      // Отправить уведомление адресату
+      // Отправить уведомление адресату (кому происходит ответ)
       if ($replyToUserId > 0 && $replyToUserId != $materialOwner) {
-        $this->sendNotice(
+        $notificationReplyId = $this->sendNotice(
           intval($data['materialType']),
           intval($data['materialId']),
           $materialOwner,
@@ -67,6 +69,9 @@ class CommentService
           intval($commentId),
           $replyToUserId
         );
+      }
+      // Добавить идентификаторы уведомлений в запись о комментарии
+      if ($notificationOwnerId > 0 || $notificationReplyId > 0) {
       }
       // Вернуть ID
       return $commentId;
@@ -166,7 +171,7 @@ class CommentService
 
 
   // Отправить уведомление
-  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId, int $commentId, int $replyToUserId = 0): void
+  private function sendNotice(int $materialType, int $materialId, int $materialOwner, int $userId, int $commentId, int $replyToUserId = 0): int
   {
     // Не отправлять самому себе
     if ($materialOwner !== $userId || ($replyToUserId > 0 && $replyToUserId !== $userId)) {
@@ -191,7 +196,7 @@ class CommentService
       // Дополнить текст
       $text .= ' <a href="' . $link . '">Прочитать комментарий</a>';
       // Отправить уведомление
-      $this->notificationService->create(
+      return $this->notificationService->create(
         $destinationUser,
         $text,
         $link,
@@ -199,5 +204,7 @@ class CommentService
         'send_comment'
       );
     }
+    // Уведомление не создано
+    return 0;
   }
 }
