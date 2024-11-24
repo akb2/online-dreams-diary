@@ -72,6 +72,10 @@ class CommentService
       }
       // Добавить идентификаторы уведомлений в запись о комментарии
       if ($notificationOwnerId > 0 || $notificationReplyId > 0) {
+        $this->dataBaseService->executeFromFile(
+          'comment/send.php',
+          array($notificationOwnerId, $notificationReplyId, $commentId)
+        );
       }
       // Вернуть ID
       return $commentId;
