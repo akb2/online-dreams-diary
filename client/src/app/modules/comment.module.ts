@@ -1,5 +1,6 @@
 import { CommentEditorComponent } from "@_controlers/comment-editor/comment-editor.component";
 import { CommentListComponent } from "@_controlers/comment-list/comment-list.component";
+import { PopupConfirmModule } from "@_controlers/confirm/confirm.module";
 import { PopupGraffityModule } from "@_controlers/graffity/graffity.module";
 import { InformModule } from "@_controlers/inform/inform.module";
 import { LoaderModule } from "@_controlers/loader/loader.module";
@@ -49,7 +50,8 @@ import { TranslateModule } from "@ngx-translate/core";
     MatMenuModule,
     PickerModule,
     PopupGraffityModule,
-    TranslateModule
+    TranslateModule,
+    PopupConfirmModule
   ],
   providers: [
     StringTemplatePipe

@@ -1,3 +1,4 @@
+import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { MediaFileView, MediaFileViewType, PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
 import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
@@ -323,6 +324,19 @@ export class CommentListComponent implements OnInit, OnDestroy {
     });
     // Открыть окно
     PopupPhotoViewerComponent.open(this.matDialog, { mediaFiles, mediaFileId });
+  }
+
+  // Подтверждение удаления комментария
+  onDelete(comment: Comment) {
+    const title = "Удаление комментария";
+    const text: string = "Вы действительно желаете удалить комментарий? Комментарий нельзя будет восстановить.";
+    // Открыть окно
+    PopupConfirmComponent.open(this.matDialog, { title, text }).afterClosed()
+      .pipe(
+        filter(Boolean),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(() => console.log(comment));
   }
 
 
