@@ -24,7 +24,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
 import { Subject, merge } from "rxjs";
-import { concatMap, filter, map, mergeMap, switchMap, take, takeUntil, timeout } from "rxjs/operators";
+import { filter, map, mergeMap, switchMap, take, takeUntil, timeout } from "rxjs/operators";
 
 
 
@@ -210,7 +210,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     // Скольжение аватарок видимых комментариев
     WaitObservable(() => !this.listElm?.nativeElement)
       .pipe(
-        concatMap(() => merge(
+        switchMap(() => merge(
           this.scrollService.onAlwaysScroll(),
           this.screenService.breakpoint$.pipe(
             map(() => this.scrollService.getCurrentScroll)
@@ -342,6 +342,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
         const commentIndex = this.comments.findIndex(({ id }) => id === comment.id);
         // Удаление комментария
         this.comments.splice(commentIndex, 1);
+        this.onCommentOutOfScreen(comment.id);
         // Обновить
         this.changeDetectorRef.detectChanges();
       });
