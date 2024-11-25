@@ -147,6 +147,40 @@ class Comment
     );
   }
 
+  // Удаление комментария
+  #[Request('post'), CheckToken]
+  public function delete(array $data): array
+  {
+    $code = '5002';
+    $userId = intval($_SERVER['TOKEN_USER_ID']);
+    $commentId = intval($data['commentId']);
+    $comment = $this->commentService->get($commentId);
+    $test = array();
+    // Комментарий найден
+    if (!!$comment) {
+      $commentOwnerId = intval($comment['material_owner']);
+      $commentAuthorId = intval($comment['user_id']);
+      // Проверка доступа
+      if ($commentAuthorId === $userId || $commentOwnerId === $userId) {
+        $code = $this->commentService->delete($commentId)
+          ? '0001'
+          : $code;
+      }
+      // Нет доступа
+      else {
+        $code = '5003';
+      }
+    }
+    // Комментарий не найден
+    else {
+      $code = '0002';
+    }
+    // Вернуть результат
+    return array(
+      'code' => $code
+    );
+  }
+
 
 
   // Проверка доступа к комментарию

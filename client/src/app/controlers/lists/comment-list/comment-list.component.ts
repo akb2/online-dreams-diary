@@ -24,7 +24,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
 import { Subject, merge } from "rxjs";
-import { concatMap, filter, map, mergeMap, take, takeUntil, timeout } from "rxjs/operators";
+import { concatMap, filter, map, mergeMap, switchMap, take, takeUntil, timeout } from "rxjs/operators";
 
 
 
@@ -334,9 +334,17 @@ export class CommentListComponent implements OnInit, OnDestroy {
     PopupConfirmComponent.open(this.matDialog, { title, text }).afterClosed()
       .pipe(
         filter(Boolean),
+        switchMap(() => this.commentService.delete(comment.id)),
+        filter(Boolean),
         takeUntil(this.destroyed$)
       )
-      .subscribe(() => console.log(comment));
+      .subscribe(() => {
+        const commentIndex = this.comments.findIndex(({ id }) => id === comment.id);
+        // Удаление комментария
+        this.comments.splice(commentIndex, 1);
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+      });
   }
 
 

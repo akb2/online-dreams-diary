@@ -1,7 +1,6 @@
-import { HttpParams } from "@angular/common/http";
 import { ExcludeUrlObjectParams, ExcludeUrlObjectValues } from "@_models/api";
 import { CustomObject, MultiObject, SimpleObject } from "@_models/app";
-import { map, Observable, skipWhile, takeWhile, timer } from "rxjs";
+import { HttpParams } from "@angular/common/http";
 
 
 
@@ -93,6 +92,8 @@ export const ApiResponseMessages: SimpleObject = {
   "4003": "Ошибка загрузки медиа файла с сервера",
 
   "5001": "Комментарий не отправлен",
+  "5002": "Не удалось удалить комментарий",
+  "5003": "У вас нет доступа к удалению комментария",
 
   "6001": "Не удалось отправить заявку в друзья",
   "6002": "Не удалось отклонить заявку в друзья",

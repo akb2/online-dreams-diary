@@ -12,7 +12,7 @@ import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Observable, Subject, catchError, concatMap, defer, forkJoin, map, of, repeat, retry, switchMap, take, tap } from "rxjs";
+import { Observable, Subject, catchError, concatMap, defer, forkJoin, map, of, repeat, retry, switchMap, take } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 import { DreamService } from "./dream.service";
@@ -138,7 +138,7 @@ export class CommentService extends TextMessage {
     // Вернуть подписчик
     return this.httpClient.get<ApiResponse>("comment/getList", { params }).pipe(
       switchMap(data => this.apiService.checkSwitchMap(data, codes)),
-      concatMap(
+      switchMap(
         ({ result: { data } }) => !!data?.comments?.length ?
           forkJoin<Comment[]>((data?.comments ?? []).map(comment => this.getConvertedComment(comment))) :
           of([] as Comment[]),
@@ -164,6 +164,16 @@ export class CommentService extends TextMessage {
         this.apiService.checkResponse(result.result.code, codes)
       ),
       concatMap(comment => this.getConvertedComment(comment))
+    );
+  }
+
+  // Удаление комментария
+  delete(commentId: number, codes: string[] = []) {
+    return this.httpClient.post<ApiResponse>("comment/delete", ObjectToFormData({ commentId })).pipe(
+      switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString())
+        ? of(result.result.code === "0001")
+        : this.apiService.checkResponse(result.result.code, codes)
+      ),
     );
   }
 

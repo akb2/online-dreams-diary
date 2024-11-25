@@ -160,16 +160,22 @@ class CommentService
   public function get(int $commentId): array | null
   {
     if ($commentId > 0) {
-      $notification = $this->dataBaseService->getDatasFromFile('comment/getById.sql', array($commentId));
+      $comment = $this->dataBaseService->getDatasFromFile('comment/getById.sql', array($commentId));
       // Уведомление найдено
-      if (count($notification) > 0) {
-        if (isset($notification[0]['id']) && $notification[0]['id'] > 0) {
-          return $notification[0];
+      if (count($comment) > 0) {
+        if (isset($comment[0]['id']) && $comment[0]['id'] > 0) {
+          return $comment[0];
         }
       }
     }
     // Уведомления не существует
     return null;
+  }
+
+  // Удалить комментарий
+  public function delete(int $commentId): bool
+  {
+    return $this->dataBaseService->executeFromFile('comment/delete.sql', array($commentId));
   }
 
 
