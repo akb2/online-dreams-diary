@@ -8,9 +8,9 @@ import { AuthRules } from "@_models/menu";
 export type MultiArray<T> = T[] | MultiArray<T>[];
 
 // Тип базового одномерного объекта
-export type SimpleObject = { [key: string]: string };
-export type CustomObject<V> = { [key: string]: V };
 export type CustomObjectKey<K, V> = { [key in K as string | number | symbol]: V };
+export type CustomObject<V> = CustomObjectKey<string, V>;
+export type SimpleObject = CustomObject<string>;
 export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
 
 // Тип иконки
