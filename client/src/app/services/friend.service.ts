@@ -5,6 +5,7 @@ import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { ApiResponse, SearchResponce } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
+import { NumberDirection } from "@_models/math";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
@@ -332,7 +333,7 @@ export class FriendService {
   }
 
   // Обновить счетчик подписок на статусы дружбы
-  private updateFriendsCounter(inUser: number, outUser: number, eventType: -1 | 1 | 0 = 0): number {
+  private updateFriendsCounter(inUser: number, outUser: number, eventType: NumberDirection = 0): number {
     const counterIndex: number = this.firensSubscritionCounter.findIndex(f => this.compareFriend(f, inUser, outUser));
     // Для существующего счетчика
     if (counterIndex >= 0) {

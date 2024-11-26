@@ -66,8 +66,6 @@ export class DrawDatas {
   };
   private static menuItemSizes: DrawDataArray = {
     default: [this.minHeight, this.minHeight, "px"],
-    large: [40, this.minHeight, "px"],
-    middle: [40, this.minHeight, "px"],
   };
   private static titleSizes: DrawDataArray = {
     default: [20, 90, "px"],
@@ -422,7 +420,7 @@ export class DrawDatas {
         data: {
           default: { min: this.minHeight, max: this.maxHeight, unit: "px" }
         }
-      }
+      },
     ];
     // Обертка меню
     this.menuLayer = [

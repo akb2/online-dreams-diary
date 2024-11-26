@@ -6,6 +6,8 @@ package-lock.json
 /server/mysql
 /server/logs
 
+.DS_Store
+
 media/images/hashed/large/*
 media/images/hashed/middle/*
 media/images/hashed/original/*

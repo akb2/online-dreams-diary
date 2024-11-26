@@ -1,12 +1,12 @@
 import { ScrollElement } from "@_datas/app";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { CheckInRange, DetectDirectionByExpressions, ParseFloat, ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, animationFrameScheduler, filter, fromEvent, map, merge, mergeMap, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
+import { BehaviorSubject, Observable, Subject, animationFrameScheduler, distinctUntilChanged, filter, first, fromEvent, map, merge, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
 
 
@@ -20,26 +20,26 @@ export class ScrollService implements OnDestroy {
 
   private scrollElement: HTMLElement;
 
-  private emitEvent: boolean = true;
-  private scrollSpeedByStep: number = 10;
-  private scrollMaxTime: number = 600;
-  private scrollStepShift: number = 50;
-  private scrollInterruptTime: number = 50;
-  private saveScrollInterruptTime: number = 1500;
+  private emitEvent = true;
+  private scrollSpeedByStep = 50;
+  private scrollMaxTime = 600;
+  private scrollStepShift = 50;
+  private scrollInterruptTime = 50;
+  private saveScrollInterruptTime = 1500;
 
   private scrollEventLastId: string;
   private scrollLastX: number;
   private scrollLastY: number;
-  private scrollLastTime: number = 0;
-  private addingScrollY: number = 0;
+  private scrollLastTime = 0;
+  private addingScrollY = 0;
 
-  private scrollStartEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private scrollEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private scrollEndEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private scrollAlwaysStartEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private scrollAlwaysEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private scrollAlwaysEndEvent$: BehaviorSubject<ScrollData> = new BehaviorSubject(null);
-  private destroyed$: Subject<void> = new Subject();
+  private scrollStartEvent$ = new BehaviorSubject<ScrollData>(null);
+  private scrollEvent$ = new BehaviorSubject<ScrollData>(null);
+  private scrollEndEvent$ = new BehaviorSubject<ScrollData>(null);
+  private scrollAlwaysStartEvent$ = new BehaviorSubject<ScrollData>(null);
+  private scrollAlwaysEvent$ = new BehaviorSubject<ScrollData>(null);
+  private scrollAlwaysEndEvent$ = new BehaviorSubject<ScrollData>(null);
+  private destroyed$ = new Subject<void>();
 
 
 
@@ -47,29 +47,18 @@ export class ScrollService implements OnDestroy {
 
   // Текущий скролл
   get getCurrentScroll(): ScrollData {
-    const elm: HTMLElement = this.scrollElement;
-    const x: number = ParseInt(Math.ceil(elm?.scrollLeft) ?? 0);
-    const y: number = ParseInt(Math.ceil(elm?.scrollTop) ?? 0);
-    const maxX: number = ParseInt((elm?.scrollWidth - elm?.clientWidth) ?? 0);
-    const maxY: number = ParseInt((elm?.scrollHeight - elm?.clientHeight) ?? 0);
-    const lastDirectionX: NumberDirection = this.scrollLastX < x ? 1 : (this.scrollLastX > x ? -1 : 0);
-    const lastDirectionY: NumberDirection = this.scrollLastY < y ? 1 : (this.scrollLastY > y ? -1 : 0);
-    const emitEvent: boolean = this.emitEvent;
-    const lastScrollAddedY: number = this.addingScrollY;
-    const scrollableHeight: number = ParseInt(elm?.offsetHeight + maxY);
+    const elm = this.scrollElement;
+    const x = Math.ceil(ParseFloat(elm?.scrollLeft, 0, 10));
+    const y = Math.ceil(ParseFloat(elm?.scrollTop, 0, 10));
+    const maxX = ParseInt(elm?.scrollWidth) - ParseInt(elm?.clientWidth);
+    const maxY = ParseInt(elm?.scrollHeight) - ParseInt(elm?.clientHeight);
+    const lastDirectionX = DetectDirectionByExpressions(this.scrollLastX < x, this.scrollLastX > x);
+    const lastDirectionY = DetectDirectionByExpressions(this.scrollLastY < y, this.scrollLastY > y);
+    const emitEvent = this.emitEvent;
+    const lastScrollAddedY = this.addingScrollY;
+    const scrollableHeight = ParseInt(elm?.offsetHeight + maxY);
     // Скролл
-    return {
-      x,
-      y,
-      maxX,
-      maxY,
-      lastDirectionX,
-      lastDirectionY,
-      emitEvent,
-      elm,
-      lastScrollAddedY,
-      scrollableHeight
-    };
+    return { x, y, maxX, maxY, lastDirectionX, lastDirectionY, emitEvent, elm, lastScrollAddedY, scrollableHeight };
   }
 
 
@@ -77,71 +66,8 @@ export class ScrollService implements OnDestroy {
 
 
   constructor() {
-    WaitObservable(() => !ScrollElement())
-      .pipe(
-        tap(() => this.scrollElement = ScrollElement()),
-        mergeMap(
-          () => fromEvent(this.scrollElement, "scroll").pipe(
-            observeOn(animationFrameScheduler)
-          ),
-          () => this.getCurrentScroll
-        ),
-        switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY ? of(scrollData) : throwError(scrollData)),
-        retry(),
-        takeUntil(this.destroyed$)
-      )
-      .subscribe(
-        scrollData => {
-          const currentDate: number = (new Date()).getTime();
-          // Неконтролируемое начало скролла
-          if (this.scrollLastTime + this.scrollInterruptTime <= currentDate && this.emitEvent) {
-            this.scrollAlwaysStartEvent$.next(scrollData);
-          }
-          // Неконтролируемое событие
-          this.scrollAlwaysEvent$.next(scrollData);
-          // Контролируемое событие
-          if (this.emitEvent) {
-            this.scrollEvent$.next(scrollData);
-          }
-          // Неконтролируемый конец скрола
-          timer(this.scrollInterruptTime)
-            .pipe(
-              take(1),
-              map(() => (new Date()).getTime()),
-              switchMap(currentDate => this.scrollLastTime + this.scrollInterruptTime <= currentDate ? of(true) : throwError(false)),
-              switchMap(() => this.emitEvent ? of(true) : throwError(true)),
-              takeUntil(this.destroyed$)
-            )
-            .subscribe(
-              () => {
-                if (this.emitEvent) {
-                  this.scrollAlwaysEndEvent$.next(scrollData);
-                }
-                // Вернуть прослушивание событий
-                this.restoreScrollEvents();
-              },
-              error => !!error ?
-                this.restoreScrollEvents(error) :
-                null
-            );
-          // Запонить предыдущие значения скролла
-          this.scrollLastX = scrollData.x;
-          this.scrollLastY = scrollData.y;
-          this.scrollLastTime = currentDate;
-        },
-        event => this.restoreScrollEvents(event)
-      );
-    // Заблокировать прокрутку для пользователя
-    merge(
-      fromEvent<WheelEvent>(window, "mousewheel", { passive: false }),
-      fromEvent<WheelEvent>(window, "DOMMouseScroll", { passive: false }),
-      fromEvent<WheelEvent>(window, "wheel", { passive: false })
-    )
-      .pipe(
-        filter(() => !this.emitEvent),
-        takeUntil(this.destroyed$)
-      )
-      .subscribe(event => event.preventDefault());
+    this.scrollListener();
+    this.blockScrollListener();
   }
 
   ngOnDestroy(): void {
@@ -157,7 +83,7 @@ export class ScrollService implements OnDestroy {
   private onScrollEvents({ x: left, y: top }: XYCoord): void {
     if (!!this.scrollElement) {
       const newScroll: ScrollData = this.getCurrentScroll;
-      const emitEvent: boolean = this.emitEvent;
+      const emitEvent = this.emitEvent;
       // Событие перед скролом
       if (emitEvent) {
         this.scrollStartEvent$.next(newScroll);
@@ -235,7 +161,7 @@ export class ScrollService implements OnDestroy {
         }
         // Плавный скролл
         else {
-          const scrollEventId: string = CreateRandomID(128);
+          const scrollEventId = CreateRandomID(128);
           const xyCoordKeys: (keyof XYCoord)[] = ["x", "y"];
           const newScroll: XYCoord = { x: left, y: top };
           let startScroll: Partial<XYCoord> = { ...scrollData };
@@ -243,10 +169,10 @@ export class ScrollService implements OnDestroy {
           let scrollSteps: Partial<XYCoord> = {};
           let scrollDelta: Partial<XYCoord<NumberDirection>> = {};
           let stepShifts: Partial<XYCoord> = {};
-          let maxStep: number = 0;
+          let maxStep = 0;
           // Запонить данные
           xyCoordKeys.forEach(key => {
-            const diff: number = newScroll[key] - startScroll[key];
+            const diff = newScroll[key] - startScroll[key];
             // Установить параметры
             scrollDiff[key] = Math.abs(diff);
             stepShifts[key] = this.scrollStepShift;
@@ -278,10 +204,10 @@ export class ScrollService implements OnDestroy {
               takeUntil(this.destroyed$)
             )
             .subscribe(({ step, stepX, stepY }) => {
-              const shiftX: number = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
-              const shiftY: number = CheckInRange(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
-              const top: number = scrollData.y + shiftY;
-              const left: number = scrollData.x + shiftX;
+              const shiftX = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
+              const shiftY = CheckInRange(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
+              const top = scrollData.y + shiftY;
+              const left = scrollData.x + shiftX;
               // Скролл
               this.scrollElement.scrollTo({ top, left, behavior: "auto" });
               // Конец скролла
@@ -299,7 +225,7 @@ export class ScrollService implements OnDestroy {
   }
 
   // Скролл к определенной позиции по Y
-  scrollToY(top: number, behavior: ScrollBehavior = "auto", emitEvent: boolean = true): void {
+  scrollToY(top: number, behavior: ScrollBehavior = "auto", emitEvent = true): void {
     const { x: left }: ScrollData = this.getCurrentScroll;
     // Вызов события
     this.scrollTo({ top, left, behavior, emitEvent });
@@ -308,10 +234,10 @@ export class ScrollService implements OnDestroy {
   // Сохранить скролл в текущей позиции
   saveScroll(): Observable<ScrollData> {
     let startScrollData: ScrollData = this.getCurrentScroll;
-    let scrollLastTime: number = (new Date()).getTime();
+    let scrollLastTime = (new Date()).getTime();
     // Вернуть подписчик
     return WaitObservable(() => !this.getCurrentScroll?.elm).pipe(
-      mergeMap(() => merge(timer(0, this.scrollSpeedByStep), this.onAlwaysScroll()).pipe(
+      switchMap(() => merge(timer(0, this.scrollSpeedByStep), this.onAlwaysScroll()).pipe(
         filter(() => startScrollData.scrollableHeight !== this.getCurrentScroll.scrollableHeight)
       )),
       timeout(this.saveScrollInterruptTime),
@@ -319,8 +245,8 @@ export class ScrollService implements OnDestroy {
       takeWhile(currentDate => scrollLastTime + this.saveScrollInterruptTime > currentDate),
       map(currentDate => ({ currentDate, scrollData: this.getCurrentScroll })),
       map(({ currentDate, scrollData }) => {
-        const pageDiff: number = scrollData.scrollableHeight - startScrollData.scrollableHeight;
-        const top: number = scrollData.y + pageDiff;
+        const pageDiff = scrollData.scrollableHeight - startScrollData.scrollableHeight;
+        const top = scrollData.y + pageDiff;
         // Метка о добавлении
         this.addingScrollY = pageDiff;
         // Перенести на новое место
@@ -342,5 +268,102 @@ export class ScrollService implements OnDestroy {
     if (!!event && event !== true) {
       console.error(event);
     }
+  }
+
+
+
+
+
+  // Прослушивание скролла
+  private scrollListener() {
+    WaitObservable(() => !ScrollElement())
+      .pipe(
+        tap(() => this.scrollElement = ScrollElement()),
+        switchMap(
+          () => fromEvent(this.scrollElement, "scroll").pipe(
+            observeOn(animationFrameScheduler),
+            map(() => this.getCurrentScroll),
+            distinctUntilChanged((prev, next) => prev.y === next.y && prev.maxY === next.maxY),
+            switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY
+              ? of(scrollData)
+              : throwError(scrollData)
+            ),
+            retry()
+          )
+        ),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(
+        scrollData => {
+          const currentDate = (new Date()).getTime();
+          // Неконтролируемое начало скролла
+          if (this.scrollLastTime + this.scrollInterruptTime <= currentDate && this.emitEvent) {
+            this.scrollAlwaysStartEvent$.next(scrollData);
+          }
+          // Неконтролируемое событие
+          this.scrollAlwaysEvent$.next(scrollData);
+          // Контролируемое событие
+          if (this.emitEvent) {
+            this.scrollEvent$.next(scrollData);
+          }
+          // Неконтролируемый конец скрола
+          timer(this.scrollInterruptTime)
+            .pipe(
+              first(),
+              map(() => (new Date()).getTime()),
+              switchMap(currentDate => this.scrollLastTime + this.scrollInterruptTime <= currentDate
+                ? of(true)
+                : throwError(false)
+              ),
+              switchMap(() => this.emitEvent
+                ? of(true)
+                : throwError(true)
+              ),
+              takeUntil(this.destroyed$)
+            )
+            .subscribe(
+              () => {
+                if (this.emitEvent) {
+                  this.scrollAlwaysEndEvent$.next(scrollData);
+                }
+                // Вернуть прослушивание событий
+                this.restoreScrollEvents();
+              },
+              error => !!error
+                ? this.restoreScrollEvents(error)
+                : null
+            );
+          // Запонить предыдущие значения скролла
+          this.scrollLastX = scrollData.x;
+          this.scrollLastY = scrollData.y;
+          this.scrollLastTime = currentDate;
+        },
+        event => this.restoreScrollEvents(event)
+      );
+  }
+
+  // Заблокировать прокрутку для пользователя
+  private blockScrollListener() {
+    merge(
+      fromEvent<WheelEvent>(window, "mousewheel", { passive: false }),
+      fromEvent<WheelEvent>(window, "DOMMouseScroll", { passive: false }),
+      fromEvent<WheelEvent>(window, "wheel", { passive: false })
+    )
+      .pipe(
+        map(event => ({ event, scroll: this.getCurrentScroll })),
+        filter(({ scroll }) => !this.emitEvent || scroll.y < 0 || scroll.y > scroll.maxY),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(({ event, scroll }) => {
+        event.preventDefault();
+        // Поправить скролл
+        if (scroll.y < 0 || scroll.y > scroll.maxY) {
+          this.scrollTo({
+            top: Math.min(Math.max(scroll.y, 0), scroll.maxY),
+            behavior: "auto",
+            emitEvent: false
+          })
+        }
+      });
   }
 }

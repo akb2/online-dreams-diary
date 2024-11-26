@@ -51,6 +51,7 @@ html {
     overflow-x: hidden;
     overflow-y: hidden;
     scrollbar-width: none;
+    overscroll-behavior: none;
   }
   // Тело
   body {
@@ -102,6 +103,7 @@ html {
     overflow-x: hidden;
     overflow-y: scroll;
     scrollbar-width: none;
+    will-change: scroll-position;
     // Отступ снизу для мобильного меню
     &.mobile-menu-bottom-spacing {
       padding-bottom: vars.$mobileMenuBottomHeight;

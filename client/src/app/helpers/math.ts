@@ -1,5 +1,6 @@
 import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
+import { NumberDirection } from "@_models/math";
 import { ArrayForEach } from "./objects";
 
 
@@ -9,7 +10,9 @@ import { ArrayForEach } from "./objects";
 // Преобразовать данные в число
 export const ParseInt = (value: any, defaultValue: number = 0) => {
   let num: number = parseInt(value);
-  num = isNaN(num) ? defaultValue : num;
+  num = isNaN(num)
+    ? defaultValue
+    : num;
   // Вернуть число
   return num;
 };
@@ -17,7 +20,9 @@ export const ParseInt = (value: any, defaultValue: number = 0) => {
 // Преобразовать данные в число
 export const ParseFloat = (value: any, defaultValue: number = 0, afterDotNum: number = 0) => {
   let num: number = parseFloat(value);
-  num = isNaN(num) ? defaultValue : num;
+  num = isNaN(num)
+    ? defaultValue
+    : num;
   // Вернуть число
   return MathRound(num, afterDotNum);
 };
@@ -324,3 +329,15 @@ export const GetLengthFromSquareCenter = (size: number, angle: number) => {
     size / 2
   );
 };
+
+/**
+ * Определяет направление на основе двух выражений.
+ * @param positiveExpression - Функция, возвращающая булево значение, указывающее на положительное направление.
+ * @param negativeExpression - Функция, возвращающая булево значение, указывающее на отрицательное направление.
+ * @returns 1, если positiveExpression возвращает true, -1, если negativeExpression возвращает true, и 0, если оба выражения возвращают false.
+ */
+export const DetectDirectionByExpressions = (positiveExpression: boolean, negativeExpression: boolean): NumberDirection => positiveExpression
+  ? 1
+  : negativeExpression
+    ? -1
+    : 0;

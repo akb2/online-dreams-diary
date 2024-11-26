@@ -1,7 +1,8 @@
 import { PopupLanguageListComponent } from "@_controlers/language-list/language-list.component";
 import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { User, UserSex } from "@_models/account";
+import { ParseFloat } from "@_helpers/math";
+import { User } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
 import { MenuItem } from "@_models/menu";
@@ -28,73 +29,71 @@ import { Subject, forkJoin, fromEvent, merge, mergeMap, takeUntil, tap, timer } 
 })
 
 export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-
-
   @Input() type: NavMenuType = NavMenuType.collapse;
-  @Input() image: string = "";
-  @Input() class: string = "";
-  @Input() autoCollapse: boolean = false;
+  @Input() image = "";
+  @Input() class = "";
+  @Input() autoCollapse = false;
   @Input() imagePositionX: BackgroundHorizontalPosition = "center";
   @Input() imagePositionY: BackgroundVerticalPosition = "center";
-  @Input() imageOverlay: boolean = true;
-  @Input() imageFullShow: boolean = false;
+  @Input() imageOverlay = true;
+  @Input() imageFullShow = false;
 
-  @Input() mainTitle: string = "";
-  @Input() subTitle: string = "";
+  @Input() mainTitle = "";
+  @Input() subTitle = "";
   @Input() lastSeenUser: User;
-  @Input() avatarImage: string = "";
-  @Input() avatarIcon: string = "";
-  @Input() avatarCustomIcon: string = "";
-  @Input() avatarBlink: boolean = false;
+  @Input() avatarImage = "";
+  @Input() avatarIcon = "";
+  @Input() avatarCustomIcon = "";
+  @Input() avatarBlink = false;
 
-  @Input() floatButtonIcon: string = "";
-  @Input() floatButtonText: string = "";
+  @Input() floatButtonIcon = "";
+  @Input() floatButtonText = "";
   @Input() floatButtonLink: string;
   @Input() floatButtonLinkParams: SimpleObject;
 
   @Input() backButtonLink: string;
   @Input() backButtonLinkParams: SimpleObject;
 
-  @Input() hideToContentButton: boolean = false;
+  @Input() hideToContentButton = false;
 
   @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
 
   @ViewChild("contentLayerContainer", { read: ElementRef }) private contentLayerContainer: ElementRef;
   @ViewChild("contentLayerContainerLeft", { read: ElementRef }) private contentLayerContainerLeft: ElementRef;
 
-  imagePrefix: string = "/assets/images/backgrounds/";
-  tempImage: string = "";
-  tempImagePositionY: string = "";
-  tempImagePositionX: string = "";
-  tempImageOverlay: boolean = true;
-  private clearTempImageTimeout: number = 300;
-  isShowNotifications: boolean = false;
+  imagePrefix = "/assets/images/backgrounds/";
+  tempImage = "";
+  tempImagePositionY = "";
+  tempImagePositionX = "";
+  tempImageOverlay = true;
+  private clearTempImageTimeout = 300;
+  isShowNotifications = false;
 
   private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
   mobileMenuStates: typeof MobileMenuState = MobileMenuState;
 
   user: User;
-  isAutorizedUser: boolean = false;
+  isAutorizedUser = false;
 
-  private scroll: number = 0;
+  private scroll = 0;
   private breakpoint: ScreenKeys = "default";
-  headerHeight: number = DrawDatas.minHeight;
+  headerHeight = DrawDatas.minHeight;
 
-  isMobile: boolean = false;
-  showMobileMenu: boolean = false;
+  isMobile = false;
+  showMobileMenu = false;
   menuItems: MenuItem[] = [];
-  minHeight: number = 0;
-  maxHeight: number = 0;
+  minHeight = 0;
+  maxHeight = 0;
 
-  private scrollMousePosY: number = 0;
-  private scrollMouseStartY: number = 0;
-  private swipeScrollDistance: number = 0;
-  private swipeScrollPress: boolean = false;
+  private scrollMousePosY = 0;
+  private scrollMouseStartY = 0;
+  private swipeScrollDistance = 0;
+  private swipeScrollPress = false;
 
-  notificationRepeat: number[] = CreateArray(2);
-  tooManyNotificationSymbol: string = "+";
+  notificationRepeat = CreateArray(2);
+  tooManyNotificationSymbol = "+";
 
-  private mobileMenuBottomBodyClass: string = "mobile-menu-bottom-spacing";
+  private mobileMenuBottomBodyClass = "mobile-menu-bottom-spacing";
 
   css: CustomObject<SimpleObject> = {};
 
@@ -111,56 +110,63 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Получить ключи для CSS правил
   get cssNames(): SimpleObject {
-    CssNamesVar.subtitle = this.backButtonLink?.length ? "subtitleWithBackButton" : "subtitle";
-    CssNamesVar.menuList = this.floatButtonIcon?.length > 0 ? "menuListWithFloatingButton" : "menuList";
-    CssNamesVar.helper = this.type == NavMenuType.short && this.floatButtonIcon?.length > 0 ? "helperWithFloatingButton" : "helper";
+    const hasIconButton = this.backButtonLink || this.isMobile;
+    // Свойства
+    CssNamesVar.subtitle = !!this.backButtonLink?.length
+      ? "subtitleWithBackButton" :
+      "subtitle";
+    CssNamesVar.menuList = !!this.floatButtonIcon?.length
+      ? "menuListWithFloatingButton"
+      : "menuList";
+    CssNamesVar.helper = this.type == NavMenuType.short && !!this.floatButtonIcon?.length
+      ? "helperWithFloatingButton"
+      : "helper";
     // Расчет заголовка
     {
-      CssNamesVar.title = "title";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile) && this.hasAvatar) {
+      if (hasIconButton && this.hasAvatar) {
         CssNamesVar.title = "titleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile) && !this.hasAvatar) {
+      else if (hasIconButton && !this.hasAvatar) {
         CssNamesVar.title = "titleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile) && this.hasAvatar) {
+      else if (!hasIconButton && this.hasAvatar) {
         CssNamesVar.title = "titleWithAvatar";
+      }
+      // по умолчанию
+      else {
+        CssNamesVar.title = "title";
       }
     }
     // Расчет подзаголовка
     {
-      CssNamesVar.subtitle = "subtitle";
       // С кнопкой и аватаркой
-      if ((this.backButtonLink || this.isMobile) && this.hasAvatar) {
+      if (hasIconButton && this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithBackButtonAndAvatar";
       }
       // Только с кнопкой
-      else if ((this.backButtonLink || this.isMobile) && !this.hasAvatar) {
+      else if (hasIconButton && !this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithBackButton";
       }
       // Только с аватркой
-      if (!(this.backButtonLink || this.isMobile) && this.hasAvatar) {
+      else if (!hasIconButton && this.hasAvatar) {
         CssNamesVar.subtitle = "subtitleWithAvatar";
+      }
+      // По умолчанию
+      else {
+        CssNamesVar.subtitle = "subtitle";
       }
     }
     // Расчет аватарки
     {
-      CssNamesVar.avatar = "avatar";
-      // С кнопкой и аватаркой
-      if (this.backButtonLink || this.isMobile) {
-        CssNamesVar.avatar = "avatarWithBackButton";
-      }
+      CssNamesVar.avatar = hasIconButton
+        ? "avatarWithBackButton"
+        : "avatar";
     }
     // Вернуть CSS правила
     return CssNamesVar;
-  }
-
-  // Высота документа для скролла
-  get scrollHeight(): number {
-    return this.scrollService.getCurrentScroll.maxY - this.headerHeight;
   }
 
   // Состояние шапки
@@ -175,11 +181,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   // Максимальная высота шапки
   private get getHeaderMaxHeight(): number {
     return Math.round(DrawDatas.maxHeight - DrawDatas.minHeight);
-  }
-
-  // Проверка пола
-  get userIsMale(): boolean {
-    return this.user.sex === UserSex.Male;
   }
 
   // Проверить есть ли аватарка
@@ -268,14 +269,14 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     if (changes.image && !changes.image.firstChange && changes.image.previousValue !== changes.image.currentValue) {
       // Старые значения
       this.tempImage = changes.image.previousValue;
-      this.tempImagePositionY = changes.imagePositionY?.previousValue || this.imagePositionY;
-      this.tempImagePositionX = changes.imagePositionX?.previousValue || this.imagePositionX;
-      this.tempImageOverlay = changes.imageOverlay?.previousValue || this.imageOverlay;
+      this.tempImagePositionY = changes.imagePositionY?.previousValue ?? this.imagePositionY;
+      this.tempImagePositionX = changes.imagePositionX?.previousValue ?? this.imagePositionX;
+      this.tempImageOverlay = changes.imageOverlay?.previousValue ?? this.imageOverlay;
       // Новые значения
       this.image = changes.image.currentValue;
-      this.imagePositionY = changes.imagePositionY?.currentValue || this.imagePositionY;
-      this.imagePositionX = changes.imagePositionX?.currentValue || this.imagePositionX;
-      this.imageOverlay = changes.imageOverlay?.currentValue || this.imageOverlay;
+      this.imagePositionY = changes.imagePositionY?.currentValue ?? this.imagePositionY;
+      this.imagePositionX = changes.imagePositionX?.currentValue ?? this.imagePositionX;
+      this.imageOverlay = changes.imageOverlay?.currentValue ?? this.imageOverlay;
       // Очистить временную картинку
       timer(this.clearTempImageTimeout)
         .pipe(takeUntil(this.destroyed$))
@@ -446,10 +447,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Расчет параметров шапки
   private dataCalculate(currentScroll: ScrollData): void {
-    this.scroll = currentScroll.y;
+    this.scroll = Math.max(0, currentScroll.y);
     // Проход по параметрам
     for (let titleKey in this.cssNames) {
-      let titleValue: string = this.cssNames[titleKey];
+      let titleValue = this.cssNames[titleKey];
       this.css[titleKey] = {};
       // Свойство существует
       if (DrawDatas[titleValue as DrawDatasKeys]) {
@@ -457,7 +458,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           let sizes: DrawDataPeriod = datas.data[this.breakpoint as ScreenKeys] ?
             datas.data[this.breakpoint as ScreenKeys] as DrawDataPeriod :
             datas.data.default;
-
           // Значение
           let value: string
           // Определить значение для заранее заданных значений
@@ -468,7 +468,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
           else {
             value =
               (sizes.prefixUnit ? sizes.prefixUnit : "") +
-              this.dataCalculateFormula(sizes.max || 0, sizes.min || 0, sizes.unit, sizes.separatorUnit) +
+              this.dataCalculateFormula(sizes.max ?? 0, sizes.min ?? 0, sizes.unit, sizes.separatorUnit) +
               (sizes.sufixUnit ? sizes.sufixUnit : "")
               ;
           }
@@ -486,39 +486,34 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         }
       }
     }
-    // Главное меню: позиция сверху
-    if (!!this.cssNames.menu) {
-      if (this.scroll < this.getHeaderMaxHeight) {
-        this.css.menu.position = "absolute";
-        this.css.menu["margin-top"] = this.scroll + "px";
-      }
-      // Схлопнутая шапка
-      else {
-        this.css.menu.position = "fixed";
-        this.css.menu["margin-top"] = "0px";
-      }
-    }
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
 
   // Формула расчета параметров
-  private dataCalculateFormula(max: number | number[], min: number | number[], unit: string | string[] = "", separator: string = ""): string {
-    const headerMaxHeight: number = this.getHeaderMaxHeight;
+  private dataCalculateFormula(max: number | number[], min: number | number[], unit: string | string[] = "", separator = ""): string {
+    const headerMaxHeight = this.getHeaderMaxHeight;
+    const minMaxIsArray = Array.isArray(min) || Array.isArray(max);
     // Расчет
     if (this.scroll < headerMaxHeight) {
       // Для массивов
-      if (Array.isArray(min) || Array.isArray(max)) {
-        let value: string = "";
-        const length: number = Array.isArray(min) && Array.isArray(max) ?
-          (min.length + max.length) / 2 :
-          (Array.isArray(min) ? min.length : Array.isArray(max) ? max.length : 1);
+      if (minMaxIsArray) {
+        let value = "";
+        const length = Array.isArray(min) && Array.isArray(max)
+          ? Math.max(min.length, max.length)
+          : (Array.isArray(min) ? min.length : Array.isArray(max) ? max.length : 1);
         // Цикл по данным
         for (let i = 0; i < length; i++) {
-          const tempMin: number = Array.isArray(min) ? min[i] || 0 : min;
-          const tempMax: number = Array.isArray(max) ? max[i] || 0 : max;
-          const tempUnit: string = Array.isArray(unit) ? unit[i] || "" : unit;
-          const koof: number = (tempMin - tempMax) / headerMaxHeight;
+          const tempMin = Array.isArray(min)
+            ? ParseFloat(min[i])
+            : min;
+          const tempMax = Array.isArray(max)
+            ? ParseFloat(max[i])
+            : max;
+          const tempUnit = Array.isArray(unit)
+            ? unit[i] ?? ""
+            : unit;
+          const koof = (tempMin - tempMax) / headerMaxHeight;
           // Присвоение значения
           value += (i > 0 ? separator : "") + ((koof * this.scroll) + tempMax) + tempUnit;
         }
@@ -527,24 +522,31 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
       // Оба числа
       else {
-        unit = Array.isArray(unit) ? unit[0] : unit;
+        const koof = (min - max) / headerMaxHeight;
+        // Обозначение
+        unit = Array.isArray(unit)
+          ? unit[0]
+          : unit;
         // Расчитать значение
-        const koof: number = (min - max) / headerMaxHeight;
         return ((koof * this.scroll) + max) + unit;
       }
     }
     // Вернуть минимальное значение
     else {
       // Для массивов
-      if (Array.isArray(min) || Array.isArray(max)) {
-        let value: string = "";
-        const length: number = Array.isArray(min) && Array.isArray(max) ?
+      if (minMaxIsArray) {
+        let value = "";
+        const length = Array.isArray(min) && Array.isArray(max) ?
           (min.length + max.length) / 2 :
           (Array.isArray(min) ? min.length : Array.isArray(max) ? max.length : 1);
         // Цикл по данным
         for (let i = 0; i < length; i++) {
-          const tempMin: number = Array.isArray(min) ? min[i] || 0 : min;
-          const tempUnit: string = Array.isArray(unit) ? unit[i] || "" : unit;
+          const tempMin = Array.isArray(min)
+            ? ParseFloat(min[i])
+            : min;
+          const tempUnit = Array.isArray(unit)
+            ? unit[i] ?? ""
+            : unit;
           // Присвоение значения
           value += (i > 0 ? separator : "") + tempMin + tempUnit;
         }
@@ -553,7 +555,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
       // Для чисел
       else {
-        unit = Array.isArray(unit) ? unit[0] || "" : unit;
+        unit = Array.isArray(unit)
+          ? unit[0] ?? ""
+          : unit;
+        // Расчитать значение
         return min + unit;
       }
     }
