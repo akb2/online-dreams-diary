@@ -59,6 +59,7 @@ $spacing: containers.$cardPaddingY;
     display: block;
     position: relative;
     flex-basis: containers.$avatarSize;
+    will-change: top;
     // Картинка
     > img {
       width: 100%;
