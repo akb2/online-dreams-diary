@@ -148,7 +148,7 @@ export class ScrollService implements OnDestroy {
     if (!!this.scrollElement) {
       const scrollData: ScrollData = this.getCurrentScroll;
       // Проверка параметров
-      emitEvent = emitEvent === false ? false : true;
+      emitEvent = emitEvent === false;
       top = top ?? scrollData.y;
       left = left ?? scrollData.x;
       behavior = behavior ?? "auto";
@@ -203,18 +203,31 @@ export class ScrollService implements OnDestroy {
               map(i => ({ step: i, stepX: CheckInRange(i, scrollSteps.x), stepY: CheckInRange(i, scrollSteps.y) })),
               takeUntil(this.destroyed$)
             )
-            .subscribe(({ step, stepX, stepY }) => {
-              const shiftX = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
-              const shiftY = CheckInRange(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
-              const top = scrollData.y + shiftY;
-              const left = scrollData.x + shiftX;
-              // Скролл
-              this.scrollElement.scrollTo({ top, left, behavior: "auto" });
-              // Конец скролла
-              if (step === maxStep && emitEvent) {
-                this.scrollEndEvent$.next(this.getCurrentScroll);
+            .subscribe(
+              ({ step, stepX, stepY }) => {
+                const shiftX = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
+                const shiftY = CheckInRange(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
+                const top = scrollData.y + shiftY;
+                const left = scrollData.x + shiftX;
+                // Скролл
+                this.scrollElement.scrollTo({ top, left, behavior: "auto" });
+                // Конец скролла
+                if (step === maxStep && emitEvent) {
+                  if (this.emitEvent) {
+                    this.scrollEndEvent$.next(this.getCurrentScroll);
+                  }
+                  // Восстановить события скролла
+                  this.restoreScrollEvents();
+                }
+              },
+              event => {
+                if (this.emitEvent) {
+                  this.scrollEndEvent$.next(this.getCurrentScroll);
+                }
+                // Восстановить события скролла
+                this.restoreScrollEvents(event);
               }
-            });
+            );
         }
       }
       // Окончание скролла
@@ -227,6 +240,14 @@ export class ScrollService implements OnDestroy {
   // Скролл к определенной позиции по Y
   scrollToY(top: number, behavior: ScrollBehavior = "auto", emitEvent = true): void {
     const { x: left }: ScrollData = this.getCurrentScroll;
+    // Вызов события
+    this.scrollTo({ top, left, behavior, emitEvent });
+  }
+
+  // Сместить скролл
+  scrollBy({ top, left, behavior, emitEvent }: SetScrollData) {
+    top += this.getCurrentScroll.y;
+    left += this.getCurrentScroll.x;
     // Вызов события
     this.scrollTo({ top, left, behavior, emitEvent });
   }
@@ -279,18 +300,16 @@ export class ScrollService implements OnDestroy {
     WaitObservable(() => !ScrollElement())
       .pipe(
         tap(() => this.scrollElement = ScrollElement()),
-        switchMap(
-          () => fromEvent(this.scrollElement, "scroll").pipe(
-            observeOn(animationFrameScheduler),
-            map(() => this.getCurrentScroll),
-            distinctUntilChanged((prev, next) => prev.y === next.y && prev.maxY === next.maxY),
-            switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY
-              ? of(scrollData)
-              : throwError(scrollData)
-            ),
-            retry()
-          )
-        ),
+        switchMap(() => fromEvent(this.scrollElement, "scroll").pipe(
+          observeOn(animationFrameScheduler),
+          map(() => this.getCurrentScroll),
+          distinctUntilChanged((prev, next) => prev.y === next.y && prev.maxY === next.maxY),
+          switchMap(scrollData => scrollData.x !== this.scrollLastX || scrollData.y !== this.scrollLastY
+            ? of(scrollData)
+            : throwError(scrollData)
+          ),
+          retry()
+        )),
         takeUntil(this.destroyed$)
       )
       .subscribe(

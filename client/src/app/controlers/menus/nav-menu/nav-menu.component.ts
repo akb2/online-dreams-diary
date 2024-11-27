@@ -2,6 +2,7 @@ import { PopupLanguageListComponent } from "@_controlers/language-list/language-
 import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseFloat } from "@_helpers/math";
+import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { BackgroundHorizontalPosition, BackgroundVerticalPosition } from "@_models/appearance";
@@ -58,6 +59,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   @Output() floatButtonCallback: EventEmitter<void> = new EventEmitter<void>();
 
+  @ViewChild("mainMenuElement", { read: ElementRef }) private mainMenuElement: ElementRef<HTMLDivElement>;
   @ViewChild("contentLayerContainer", { read: ElementRef }) private contentLayerContainer: ElementRef;
   @ViewChild("contentLayerContainerLeft", { read: ElementRef }) private contentLayerContainerLeft: ElementRef;
 
@@ -66,10 +68,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   tempImagePositionY = "";
   tempImagePositionX = "";
   tempImageOverlay = true;
-  private clearTempImageTimeout = 300;
+  private readonly clearTempImageTimeout = 300;
   isShowNotifications = false;
 
-  private mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
+  private readonly mobileBreakpoints: ScreenKeys[] = ["xxsmall", "xsmall", "small"];
   mobileMenuStates: typeof MobileMenuState = MobileMenuState;
 
   user: User;
@@ -90,10 +92,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private swipeScrollDistance = 0;
   private swipeScrollPress = false;
 
-  notificationRepeat = CreateArray(2);
-  tooManyNotificationSymbol = "+";
+  readonly notificationRepeat = CreateArray(2);
+  readonly tooManyNotificationSymbol = "+";
 
-  private mobileMenuBottomBodyClass = "mobile-menu-bottom-spacing";
+  private readonly mobileMenuBottomBodyClass = "mobile-menu-bottom-spacing";
 
   css: CustomObject<SimpleObject> = {};
 
@@ -208,57 +210,12 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   ngOnInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
-    // События
-    merge(
-      this.scrollService.onAlwaysScroll().pipe(tap(data => this.dataCalculate(data))),
-      this.scrollService.onAlwaysEndScroll().pipe(tap(data => this.onAlwaysEndScroll(data))),
-      fromEvent<TouchEvent>(window, "touchstart").pipe(tap(event => this.onScrollMouseDown(event))),
-      fromEvent<TouchEvent>(window, "touchend").pipe(tap(event => this.onMouseUp(event))),
-      fromEvent<MouseEvent>(window, "mousemove").pipe(tap(event => this.onMouseMove(event))),
-      fromEvent<MouseEvent>(window, "mouseup").pipe(tap(event => this.onMouseUp(event))),
-      this.screenService.elmResize(ScrollElement()).pipe(tap(() => this.onResize()))
-    )
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe();
-    // Пункты меню
-    this.menuService.menuItems$
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(menuItems => {
-        this.menuItems = menuItems;
-        this.changeDetectorRef.detectChanges();
-      });
-    // Подписка на брейкпоинт
-    this.screenService.breakpoint$
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(breakpoint => {
-        const scrollElement: HTMLElement = ScrollElement();
-        // Добавить класс мобильного меню снизу
-        if (this.mobileBreakpoints.includes(breakpoint)) {
-          scrollElement.classList.add(this.mobileMenuBottomBodyClass);
-        }
-        // Убрать класс мобильного меню снизу
-        else {
-          scrollElement.classList.remove(this.mobileMenuBottomBodyClass);
-        }
-        // Сохранить параметры
-        this.breakpoint = breakpoint;
-        this.onResize();
-      });
-    // Подписка на тип устройства
-    this.screenService.isMobile$
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(isMobile => {
-        this.isMobile = isMobile;
-        this.onResize();
-      });
-    // Подписка на данные о текущем пользователей
-    this.accountService.user$()
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(user => {
-        this.user = user;
-        this.isAutorizedUser = this.accountService.checkAuth;
-        this.changeDetectorRef.detectChanges();
-      });
+    // Прослушивание событий
+    this.scrollListener();
+    this.menuListener();
+    this.breakpointListener();
+    this.deviceTypeListener();
+    this.userListener();
     // Скролл
     this.scrollService.scrollToY(0, "auto", false);
   }
@@ -298,14 +255,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   ngAfterViewInit() {
     this.minHeight = DrawDatas.minHeight;
     this.maxHeight = DrawDatas.maxHeight;
-    // Изменения размера контейнера текста
-    forkJoin([this.screenService.waitWhileFalse(this.contentLayerContainer), this.screenService.waitWhileFalse(this.contentLayerContainerLeft)])
-      .pipe(
-        mergeMap(() => this.screenService.elmResize(this.contentLayerContainer.nativeElement)),
-        mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement)),
-        takeUntil(this.destroyed$)
-      )
-      .subscribe(() => this.onResize());
+    // События
+    this.textSizeChangesListener();
   }
 
   ngOnDestroy() {
@@ -620,6 +571,90 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   hideNotifications(): void {
     this.isShowNotifications = false;
     this.changeDetectorRef.detectChanges();
+  }
+
+
+
+
+
+  // События скрола
+  private scrollListener() {
+    merge(
+      this.scrollService.onAlwaysScroll().pipe(tap(data => this.dataCalculate(data))),
+      this.scrollService.onAlwaysEndScroll().pipe(tap(data => this.onAlwaysEndScroll(data))),
+      fromEvent<TouchEvent>(window, "touchstart").pipe(tap(event => this.onScrollMouseDown(event))),
+      fromEvent<TouchEvent>(window, "touchend").pipe(tap(event => this.onMouseUp(event))),
+      fromEvent<MouseEvent>(window, "mousemove").pipe(tap(event => this.onMouseMove(event))),
+      fromEvent<MouseEvent>(window, "mouseup").pipe(tap(event => this.onMouseUp(event))),
+      this.screenService.elmResize(ScrollElement()).pipe(tap(() => this.onResize()))
+    )
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
+  }
+
+  // Пункты меню
+  private menuListener() {
+    this.menuService.menuItems$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(menuItems => {
+        this.menuItems = menuItems;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Подписка на брейкпоинт
+  private breakpointListener() {
+    this.screenService.breakpoint$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(breakpoint => {
+        const scrollElement: HTMLElement = ScrollElement();
+        // Добавить класс мобильного меню снизу
+        if (this.mobileBreakpoints.includes(breakpoint)) {
+          scrollElement.classList.add(this.mobileMenuBottomBodyClass);
+        }
+        // Убрать класс мобильного меню снизу
+        else {
+          scrollElement.classList.remove(this.mobileMenuBottomBodyClass);
+        }
+        // Сохранить параметры
+        this.breakpoint = breakpoint;
+        this.onResize();
+      });
+  }
+
+  // Подписка на тип устройства
+  private deviceTypeListener() {
+    this.screenService.isMobile$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(isMobile => {
+        this.isMobile = isMobile;
+        this.onResize();
+      });
+  }
+
+  // Подписка на данные о текущем пользователей
+  private userListener() {
+    this.accountService.user$()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(user => {
+        this.user = user;
+        this.isAutorizedUser = this.accountService.checkAuth;
+        this.changeDetectorRef.detectChanges();
+      });
+  }
+
+  // Изменения размера контейнера текста
+  private textSizeChangesListener() {
+    forkJoin([
+      WaitObservable(() => !this.contentLayerContainer?.nativeElement),
+      WaitObservable(() => !this.contentLayerContainerLeft?.nativeElement)
+    ])
+      .pipe(
+        mergeMap(() => this.screenService.elmResize(this.contentLayerContainer.nativeElement)),
+        mergeMap(() => this.screenService.elmResize(this.contentLayerContainerLeft.nativeElement)),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(() => this.onResize());
   }
 }
 

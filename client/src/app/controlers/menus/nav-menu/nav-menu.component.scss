@@ -20,6 +20,7 @@ $breakpointMobile: small;
   top: 0;
   transform-origin: 0;
   will-change: height, box-shadow;
+  pointer-events: none;
   // Полноразмерное меню
   &.type-full {
     height: vars.$screenHeight;
@@ -539,6 +540,7 @@ $breakpointMobile: small;
         color screens.$animationTime;
       background-color: transparent;
       border: none;
+      pointer-events: auto;
       // Текст
       > span {
         z-index: 1;
@@ -697,6 +699,7 @@ $breakpointMobile: small;
   border: none;
   padding: 0;
   background-color: transparent;
+  pointer-events: auto;
   // Иконка
   > mat-icon {
     font-size: inherit;
