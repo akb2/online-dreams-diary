@@ -1,4 +1,5 @@
 import { BackgroundImageData } from "@_models/appearance";
+import { over } from "cypress/types/lodash";
 
 
 
@@ -64,6 +65,10 @@ export const BackgroundImageDatas: BackgroundImageData[] = [
     id: 13,
     title: "Разумный муравейник",
     positionY: "top"
+  }, {
+    id: 14,
+    title: "Персональный рай",
+    imageOverlay: false
   }
 ].map(d => ({
   ...BackgroundImageDataDefault,
