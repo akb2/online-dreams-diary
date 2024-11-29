@@ -1,6 +1,6 @@
 import { WaitObservable } from "@_helpers/rxjs";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
-import { Subject, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
+import { Subject, filter, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -15,7 +15,7 @@ export class MousePressDirective implements OnInit, OnDestroy {
   @Input() pressInterval: number = 25;
 
   @Output() mouseDown: EventEmitter<MouseEvent | TouchEvent> = new EventEmitter();
-  @Output() mouseUp: EventEmitter<MouseEvent | TouchEvent> = new EventEmitter();
+  @Output() mouseUp: EventEmitter<Event | MouseEvent | TouchEvent> = new EventEmitter();
   @Output() mousePress: EventEmitter<void> = new EventEmitter();
   @Output() mouseMovePress: EventEmitter<MouseEvent | TouchEvent> = new EventEmitter();
   @Output() mouseMoveUnPress: EventEmitter<MouseEvent | TouchEvent> = new EventEmitter();
@@ -33,20 +33,6 @@ export class MousePressDirective implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    WaitObservable(() => !this.elementRef?.nativeElement)
-      .pipe(
-        mergeMap(() => merge(
-          fromEvent<MouseEvent>(this.elementRef.nativeElement, "mousedown").pipe(tap(event => this.onMouseDown(event))),
-          fromEvent<TouchEvent>(this.elementRef.nativeElement, "touchstart").pipe(tap(event => this.onMouseDown(event))),
-          fromEvent<MouseEvent>(document, "mouseup").pipe(tap(event => this.onMouseUp(event))),
-          fromEvent<TouchEvent>(document, "touchend").pipe(tap(event => this.onMouseUp(event))),
-          fromEvent<MouseEvent>(document, "mousemove").pipe(tap(event => this.onMouseMove(event))),
-          fromEvent<TouchEvent>(document, "touchmove").pipe(tap(event => this.onMouseMove(event)))
-        )),
-        takeUntil(this.destroyed$)
-      )
-      .subscribe();
-    // Постоянное событие мышки
     timer(0, this.pressInterval)
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => this.onMousePress());
@@ -61,6 +47,30 @@ export class MousePressDirective implements OnInit, OnDestroy {
 
 
 
+  // Прослушивание событий мышки
+  private eventsListener() {
+    WaitObservable(() => !this.elementRef?.nativeElement)
+      .pipe(
+        mergeMap(() => merge(
+          fromEvent<MouseEvent>(this.elementRef.nativeElement, "mousedown").pipe(tap(event => this.onMouseDown(event))),
+          fromEvent<TouchEvent>(this.elementRef.nativeElement, "touchstart").pipe(tap(event => this.onMouseDown(event))),
+          fromEvent<MouseEvent>(document, "mouseup").pipe(tap(event => this.onMouseUp(event))),
+          fromEvent<TouchEvent>(document, "touchend").pipe(tap(event => this.onMouseUp(event))),
+          fromEvent<Event>(window, "blur").pipe(tap(event => this.onMouseUp(event))),
+          fromEvent<Event>(window, "visibilitychange").pipe(filter(() => document.visibilityState === "hidden"), tap(event => this.onMouseUp(event))),
+          fromEvent<MouseEvent>(document, "mousemove").pipe(tap(event => this.onMouseMove(event))),
+          fromEvent<TouchEvent>(document, "touchmove").pipe(tap(event => this.onMouseMove(event)))
+        )),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe();
+
+  }
+
+
+
+
+
   // Мышка зажата
   private onMouseDown(event: MouseEvent | TouchEvent): void {
     this.mousePressing = true;
@@ -69,7 +79,7 @@ export class MousePressDirective implements OnInit, OnDestroy {
   }
 
   // Мышка отпущена
-  private onMouseUp(event: MouseEvent | TouchEvent): void {
+  private onMouseUp(event: Event | MouseEvent | TouchEvent): void {
     this.mousePressing = false;
     // Событие
     this.mouseUp.emit(event);
