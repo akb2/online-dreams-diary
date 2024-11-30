@@ -21,11 +21,11 @@ export class ScrollService implements OnDestroy {
   private scrollElement: HTMLElement;
 
   private emitEvent = true;
-  private scrollSpeedByStep = 50;
-  private scrollMaxTime = 600;
-  private scrollStepShift = 50;
-  private scrollInterruptTime = 50;
-  private saveScrollInterruptTime = 1500;
+  private readonly scrollSpeedByStep = 25;
+  private readonly scrollMaxTime = 350;
+  private readonly scrollStepShift = 50;
+  private readonly scrollInterruptTime = 50;
+  private readonly saveScrollInterruptTime = 1500;
 
   private scrollEventLastId: string;
   private scrollLastX: number;
