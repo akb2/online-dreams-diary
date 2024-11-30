@@ -148,7 +148,6 @@ export class ScrollService implements OnDestroy {
     if (!!this.scrollElement) {
       const scrollData: ScrollData = this.getCurrentScroll;
       // Проверка параметров
-      emitEvent = emitEvent === false;
       top = top ?? scrollData.y;
       left = left ?? scrollData.x;
       behavior = behavior ?? "auto";
