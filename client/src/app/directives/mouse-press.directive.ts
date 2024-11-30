@@ -33,9 +33,8 @@ export class MousePressDirective implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    timer(0, this.pressInterval)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => this.onMousePress());
+    this.eventsListener();
+    this.cycleMouseListener();
   }
 
   ngOnDestroy(): void {
@@ -65,6 +64,13 @@ export class MousePressDirective implements OnInit, OnDestroy {
       )
       .subscribe();
 
+  }
+
+  // Циклическое событие мышки
+  private cycleMouseListener() {
+    timer(0, this.pressInterval)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(() => this.onMousePress());
   }
 
 
