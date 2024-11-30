@@ -22,6 +22,7 @@ $columnTemplates: (
   $textLines: 4;
   $textLineHeight: 22px;
   $overlayGap: 15px;
+  $maxWidth: calc(100% - #{$overlayGap * 2} - #{vars.$buttonSize * 2});
   // Свойства
   position: relative;
   width: auto;
@@ -123,7 +124,14 @@ $columnTemplates: (
   // Редактирование
   &.edit,
   &__editor-helper {
-    max-width: calc(100% - #{$overlayGap * 2} - #{vars.$buttonSize * 2});
+    max-width: $maxWidth;
+  }
+
+  // Вспомогательный элемент для расчета макисмальной ширины формы
+  &__helper {
+    position: absolute;
+    left: 0;
+    width: $maxWidth;
   }
 
   // Адаптив

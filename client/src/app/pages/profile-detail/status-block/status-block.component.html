@@ -33,9 +33,12 @@
     <ng-template #statusTextViewer>
       <div class="status__content"
            [ngClass]="{ default: !user.pageStatus }"
-           (click)="onOpenEdit()">{{!!user.pageStatus? user.pageStatus: ('pages.profile.blocks.status.placeholder' | translate)}}</div>
+           (click)="onOpenEdit()">{{helperText | translate}}</div>
     </ng-template>
   </form>
+  <!-- Вспомогательный элемент для расчета макисмальной ширины формы -->
+  <div #statusBlockHelper
+       class="status__helper"></div>
   <!-- Помощник для автоматического размера -->
   <div #inputHelper
        class="status__editor-helper"
@@ -57,13 +60,17 @@
               mat-mini-fab
               color="primary"
               [matTooltip]="'general.buttons.save' | translate"
-              (click)="onSaveStatus()"><mat-icon>save</mat-icon></button>
+              (click)="onSaveStatus()">
+        <mat-icon>save</mat-icon>
+      </button>
       <!-- Отменить -->
       <button #cancelButton
               mat-mini-fab
               color="basic"
               [matTooltip]="'general.buttons.cancel' | translate"
-              (click)="onCloseEdit(null)"><mat-icon>close</mat-icon></button>
+              (click)="onCloseEdit(null)">
+        <mat-icon>close</mat-icon>
+      </button>
     </ng-container>
   </ng-template>
   <!-- Открыть редактирование -->
@@ -73,6 +80,8 @@
             mat-mini-fab
             color="primary"
             [matTooltip]="'pages.profile.blocks.status.buttons.change_status' | translate"
-            (click)="onOpenEdit()"><mat-icon>stylus</mat-icon></button>
+            (click)="onOpenEdit()">
+      <mat-icon>stylus</mat-icon>
+    </button>
   </ng-template>
 </ng-template>

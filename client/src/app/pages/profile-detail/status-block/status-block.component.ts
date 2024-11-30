@@ -4,7 +4,6 @@ import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
-import { transform as cssCalc } from "css-calc-transform";
 import { Subject, fromEvent, skipWhile, takeUntil, takeWhile, timer } from "rxjs";
 
 
@@ -27,6 +26,7 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterViewChecked
   @ViewChild("inputField") inputField!: ElementRef;
   @ViewChild("inputHelperText", { static: false }) inputHelperText!: ElementRef;
   @ViewChild("statusBlock") statusBlock!: ElementRef;
+  @ViewChild("statusBlockHelper") statusBlockHelper!: ElementRef;
   @ViewChild("statusOverlay") statusOverlay!: ElementRef;
   @ViewChild("saveButton", { read: ElementRef }) saveButton!: ElementRef;
   @ViewChild("cancelButton", { read: ElementRef }) cancelButton!: ElementRef;
@@ -70,20 +70,24 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterViewChecked
   get noPaddingRight(): boolean {
     const overlay: HTMLElement = this.statusOverlay?.nativeElement as HTMLElement;
     const form: HTMLElement = this.statusBlock?.nativeElement as HTMLElement;
+    const formHelper: HTMLElement = this.statusBlockHelper?.nativeElement as HTMLElement;
     const input: HTMLTextAreaElement = this.inputField?.nativeElement as HTMLTextAreaElement;
     // Только если есть элемент
     if (!!overlay && !!form && !!input) {
-      const maxWidth: number = cssCalc({
-        prop: "width",
-        value: getComputedStyle(form).maxWidth,
-        parent: { width: overlay.offsetWidth }
-      });
+      const maxWidth = ParseInt(formHelper.getBoundingClientRect()?.width);
       const width: number = ParseInt(this.editInputStyles?.width);
       // Вернуть результат
       return width < maxWidth;
     }
     // Есть отступ справа
     return false;
+  }
+
+  // Вспомогательный текст
+  get helperText(): string {
+    return !!this.getEditorText
+      ? this.getEditorText
+      : 'pages.profile.blocks.status.placeholder'
   }
 
 
