@@ -15,6 +15,8 @@ import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
+import { appSetUserSelectAction, userSelectSelector } from "@app/reducers/app";
+import { Store } from "@ngrx/store";
 import { Subject, forkJoin, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
 
 
@@ -90,7 +92,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollMousePosY = 0;
   private scrollMouseStartY = 0;
   private swipeScrollDistance = 0;
-  private swipeScrollPress = false;
 
   readonly notificationRepeat = CreateArray(2);
   readonly tooManyNotificationSymbol = "+";
@@ -200,7 +201,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     private accountService: AccountService,
     private menuService: MenuService,
     private scrollService: ScrollService,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
+    private store$: Store
   ) {
     DrawDatas.dataRender();
     // Запретить скролл к предыдущему месту
@@ -302,24 +304,23 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
 
   // Фокус для скролла смахиванием
   onScrollMouseDown(event: MouseEvent | TouchEvent): void {
-    this.scrollMousePosY = (event instanceof MouseEvent ? event.y : event.touches.item(0).clientY);
+    this.scrollMousePosY = event instanceof MouseEvent
+      ? event.y
+      : event.touches.item(0).clientY;
     this.scrollMouseStartY = this.scrollService.getCurrentScroll.y;
-    // Включить обнаружение движения мышкой
-    this.swipeScrollPress = true;
+    this.store$.dispatch(appSetUserSelectAction({ userSelect: false }));
   }
 
   // Движение мышкой
-  onMouseMove(event: MouseEvent | TouchEvent): void {
-    if (this.swipeScrollPress) {
-      this.swipeScrollDistance = (event instanceof MouseEvent ? event.y : event.touches.item(0).clientY) - this.scrollMousePosY;
-      // Установить скролл
-      this.scrollService.scrollToY(this.scrollMouseStartY - this.swipeScrollDistance, "auto", false);
-    }
+  onScrollMouseMove(event: MouseEvent | TouchEvent): void {
+    this.swipeScrollDistance = (event instanceof MouseEvent ? event.y : event.touches.item(0).clientY) - this.scrollMousePosY;
+    // Установить скролл
+    this.scrollService.scrollToY(this.scrollMouseStartY - this.swipeScrollDistance, "auto", false);
   }
 
   // Потеря фокуса любым элементом
-  onMouseUp(event: MouseEvent | TouchEvent): void {
-    this.swipeScrollPress = false;
+  onScrollMouseUp(event: Event | MouseEvent | TouchEvent): void {
+    this.store$.dispatch(appSetUserSelectAction({ userSelect: true }));
     // Для мышки
     if (event instanceof MouseEvent) {
       this.onSwipeDetect();
@@ -353,7 +354,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     }
     // Остановить слушателя
     this.swipeScrollDistance = 0;
-    this.swipeScrollPress = false;
   }
 
   // Нажатие по плавающей кнопке
@@ -437,6 +437,8 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         }
       }
     }
+    // Скролл вспомогательного элемента
+    this.css.helper.top = Math.max(0, this.scroll - (DrawDatas.maxHeight - DrawDatas.minHeight)) + "px";
     // Обновить
     this.changeDetectorRef.detectChanges();
   }
@@ -582,10 +584,6 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     merge(
       this.scrollService.onAlwaysScroll().pipe(tap(data => this.dataCalculate(data))),
       this.scrollService.onAlwaysEndScroll().pipe(tap(data => this.onAlwaysEndScroll(data))),
-      fromEvent<TouchEvent>(window, "touchstart").pipe(tap(event => this.onScrollMouseDown(event))),
-      fromEvent<TouchEvent>(window, "touchend").pipe(tap(event => this.onMouseUp(event))),
-      fromEvent<MouseEvent>(window, "mousemove").pipe(tap(event => this.onMouseMove(event))),
-      fromEvent<MouseEvent>(window, "mouseup").pipe(tap(event => this.onMouseUp(event))),
       this.screenService.elmResize(ScrollElement()).pipe(tap(() => this.onResize()))
     )
       .pipe(takeUntil(this.destroyed$))

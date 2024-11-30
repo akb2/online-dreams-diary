@@ -3,8 +3,7 @@
 <!-- Шапка -->
 <div id="mainMenuElement"
      class="main-menu {{ class }} type-{{ type }}"
-     [ngStyle]="css.menu"
-     (mousedown)="onScrollMouseDown($event)">
+     [ngStyle]="css.menu">
 
   <!-- Задний фон -->
   <div class="main-menu__layer back">
@@ -153,7 +152,11 @@
 
 <!-- Вспомогательный блок для коррекции контента -->
 <div class="main-menu {{ class }} type-{{ type }} helper"
-     [ngStyle]="css.helper"></div>
+     [ngStyle]="css.helper"
+     mousePress
+     (mouseDown)="onScrollMouseDown($event)"
+     (mouseMovePress)="onScrollMouseMove($event)"
+     (mouseUp)="onScrollMouseUp($event)"></div>
 <div id="mainMenuCollapsedHelperAfter"></div>
 
 <!-- Скролл страницы -->

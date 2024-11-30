@@ -27,7 +27,10 @@ $breakpointMobile: small;
   }
   // Вспомогательный блок
   &.helper {
-    position: static;
+    position: relative;
+    pointer-events: auto;
+    box-shadow: none;
+    z-index: 11;
   }
 
   // Слой
