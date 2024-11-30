@@ -1,0 +1,7 @@
+.app-main-page {
+  user-select: none;
+
+  &.user-select {
+    user-select: auto;
+  }
+}

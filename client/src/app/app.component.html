@@ -1,4 +1,6 @@
-<div id="app_main_page">
+<div id="app_main_page"
+     class="app-main-page"
+     [class.user-select]="userSelect$ | async">
   <router-outlet *ngIf="!showPreLoader; else loader"></router-outlet>
 </div>
 
