@@ -2,10 +2,19 @@
 @use "sass:map";
 @use "mixins";
 @use "colors";
+@use "containers";
+@use "screens";
 
 $mainControlSize: 90px;
 $controlSize: $mainControlSize * 4;
 $lineSize: 1px;
+$oceanOutSpacing: 6px;
+$oceanHeight: 2px;
+$rulerSpacing: 16px;
+$largeSerifWidth: 12px;
+$serifWidth: 6px;
+$rulerWidth: math.max($largeSerifWidth, $serifWidth);
+$subControlSize: containers.$avatarSize;
 // Свойства линий (в процентах)
 $lines: (
   0: (
@@ -47,16 +56,18 @@ $lines: (
   $lineXItterator: 0;
   $lineYItterator: 0;
   // Свойства
-  display: block;
+  display: flex;
   position: relative;
-  width: $controlSize;
-  height: $controlSize;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: $rulerSpacing;
   // Имитация ландшафта
   &__landscape {
-    @include mixins.inset;
-    // Свойства
-    position: absolute;
+    position: relative;
     display: block;
+    width: $controlSize;
+    height: $controlSize;
     // Общие свойства линий
     &-line {
       position: absolute;
@@ -81,6 +92,88 @@ $lines: (
         $lineXItterator: $lineXItterator + $boxWidth;
         $lineYItterator: $lineYItterator + $boxHeight;
       }
+    }
+  }
+  // Иммитация океана
+  &__ocean {
+    $spacings: ($rulerWidth + $rulerSpacing) - $oceanOutSpacing;
+    // Свойства
+    position: absolute;
+    left: $spacings;
+    width: calc(100% - #{$spacings * 2});
+    height: $oceanHeight;
+    margin-bottom: math.div($oceanHeight, -2);
+    border-radius: math.div($oceanHeight, 2);
+    background-color: colors.$titleDark;
+  }
+  // Линейка
+  &__ruler {
+    position: relative;
+    display: block;
+    width: $rulerWidth;
+    height: ($controlSize - $lineSize);
+    border: 0 dotted #{colors.$titleDark};
+    border-right-width: $lineSize;
+    // Засечки
+    &-serif {
+      position: absolute;
+      display: block;
+      width: $serifWidth;
+      height: $lineSize;
+      background-color: colors.$titleDark;
+      right: -$lineSize;
+      // Широкие засечки
+      &.large {
+        width: $largeSerifWidth;
+      }
+      // Линейка справа
+      &.right {
+        right: auto;
+        left: -$lineSize;
+      }
+    }
+    // Линейка справа
+    &.right {
+      border-left-width: $lineSize;
+      border-right-width: 0;
+    }
+  }
+  // Кнопка
+  &__button {
+    position: absolute;
+    margin-top: math.div(-$subControlSize, 2);
+    left: -#{$subControlSize + $rulerSpacing};
+    cursor: pointer;
+    z-index: 2;
+    background-color: colors.$titleDark;
+    color: colors.$title;
+    border-radius: 50%;
+    text-align: center;
+    transition:
+      background-color #{screens.$animationTime},
+      color #{screens.$animationTime};
+    // Общий стиль
+    &,
+    > mat-icon {
+      user-select: none;
+      width: $subControlSize;
+      height: $subControlSize;
+      line-height: $subControlSize;
+    }
+    // Иконка
+    > mat-icon {
+      pointer-events: none;
+      font-size: $subControlSize * 0.7;
+    }
+    // Выделение
+    &:hover {
+      background-color: map.get(colors.$matPrimary, 500);
+      color: map.get(colors.$matPrimary, contrast, 500);
+    }
+    // Правая кнопка
+    &.right {
+      left: auto;
+      right: -#{$subControlSize + $rulerSpacing};
     }
   }
 }

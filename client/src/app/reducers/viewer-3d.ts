@@ -29,6 +29,7 @@ export interface Viewer3DState {
   compass: Viewer3DStateCompass;
   overlaySettings: Editor3DOverlaySettings;
   skyTime: number;
+  worldOceanHeight: number;
   loaders: {
     initial: boolean;
   };
@@ -46,6 +47,7 @@ const viewer3DInitialState: Viewer3DState = {
   },
   overlaySettings: Editor3DOverlaySettings.none,
   skyTime: 0,
+  worldOceanHeight: 0,
   loaders: {
     initial: true
   },
@@ -85,7 +87,13 @@ export const editor3DSetNoneOverlaySettingsStateAction = createAction("[3D EDITO
 // Обновить текущее время
 export const editor3DSetSkyTimeAction = createAction(
   "[3D EDITOR] Set sky time",
-  props<{ skyTime: number }>()
+  props<Pick<Viewer3DState, "skyTime">>()
+);
+
+// Обновить текущую высоту океана
+export const editor3DSetWorldOceanHeightAction = createAction(
+  "[3D EDITOR] Set world ocean height",
+  props<Pick<Viewer3DState, "worldOceanHeight">>()
 );
 
 // Обновить текущую ячейку, выделенную мышкой
@@ -109,6 +117,8 @@ export const viewer3DReducer = createReducer(
   on(editor3DSetNoneOverlaySettingsStateAction, state => ({ ...state, overlaySettings: Editor3DOverlaySettings.none })),
   // Обновить текущее время
   on(editor3DSetSkyTimeAction, (state, { skyTime }) => ({ ...state, skyTime })),
+  // Обновить текущую ячейку, выделенную мышкой
+  on(editor3DSetWorldOceanHeightAction, (state, { worldOceanHeight }) => ({ ...state, worldOceanHeight })),
   // Обновить текущую ячейку, выделенную мышкой
   on(editor3DHoveringCeil, (state, { hoverCeil }) => ({ ...state, hoverCeil }))
 );
@@ -147,6 +157,9 @@ export const editor3DShowControlsSelector = createSelector(
 
 // Текущее время суток
 export const editor3DSkyTimeSelector = createSelector(viewer3DFeatureSelector, ({ skyTime }) => skyTime);
+
+// Текущая высота мирового океана
+export const editor3DWorldOceanHeightSelector = createSelector(viewer3DFeatureSelector, ({ worldOceanHeight }) => worldOceanHeight);
 
 // Координаты текущей ячейки, в фокусе мышки
 export const editor3DHoverCeilCoordsSelector = createSelector(viewer3DFeatureSelector, ({ hoverCeil }) => hoverCeil);

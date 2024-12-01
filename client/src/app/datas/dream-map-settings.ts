@@ -34,6 +34,9 @@ export const DreamCloudsMinHeight = 0.7 * DreamRealMaxHeight;
 export const DreamCloudsMaxHeight = 1.2 * DreamRealMaxHeight;
 export const DreamCloudsDefaultHeight = CheckInRange(0.9 * DreamRealMaxHeight, DreamCloudsMaxHeight, DreamCloudsMinHeight);
 
+// Настройки мирового океана
+export const DreamWorldOceanFlowSpeed = DreamCeilSize * 4;
+
 // Настройки камеры
 export const DreamCameraMinZoom = DreamCeilSize;
 export const DreamCameraMaxZoom = DreamRealMaxHeight;

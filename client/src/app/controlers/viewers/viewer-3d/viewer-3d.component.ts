@@ -12,10 +12,11 @@ import { Cursor3DService } from "@_services/3d/cursor-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
 import { Sky3DService } from "@_services/3d/sky-3d.service";
+import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 import { Observable, Subject, animationFrameScheduler, catchError, concatMap, delay, fromEvent, map, merge, observeOn, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
@@ -64,6 +65,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private compass$ = this.store$.select(viewer3DCompassSelector);
   private skyTime$ = this.store$.select(editor3DSkyTimeSelector);
+  private worldOceanHeight$ = this.store$.select(editor3DWorldOceanHeightSelector);
 
   compassStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => ({
     transform: (
@@ -163,6 +165,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     private engine3DService: Engine3DService,
     private landscape3DService: Landscape3DService,
     private sky3DService: Sky3DService,
+    private worldOcean3DService: WorldOcean3DService,
     private cursor3DService: Cursor3DService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
@@ -175,6 +178,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       this.engine3DService.dreamMap = this.dreamMap;
       this.landscape3DService.dreamMap = this.dreamMap;
       this.sky3DService.dreamMap = this.dreamMap;
+      this.worldOcean3DService.dreamMap = this.dreamMap;
       this.cursor3DService.dreamMap = this.dreamMap;
     }
   }
@@ -369,6 +373,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     return merge(
       // Изменение времени
       this.skyTime$.pipe(tap(skyTime => this.onSkyUpdate(skyTime))),
+      this.worldOceanHeight$.pipe(tap(worldOceanHeight => this.onWorldOceanUpdate(worldOceanHeight))),
       // Движение мышкой
       fromEvent<MouseEvent | TouchEvent>(document, moveEvent).pipe(tap(event => this.onMouseIntersectionUpdate(event)))
     ).pipe(
@@ -415,6 +420,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         },
         context: this
       },
+      // Создание мирового океана
+      {
+        callable: () => {
+          this.worldOcean3DService.renderer = this.engine3DService.renderer;
+          this.worldOcean3DService.create();
+        },
+        context: this
+      },
       // Обновить геометрию ландшафта
       {
         callable: this.landscape3DService.updateGeometry,
@@ -447,6 +460,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
           () => this.sky3DService.sky,
           () => this.sky3DService.sun,
           () => this.sky3DService.atmosphere,
+          () => this.worldOcean3DService.ocean,
           () => this.cursor3DService.group,
           // () => this.sky3DService.clouds
         ]
@@ -464,7 +478,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.engine3DService.addToAnimation,
         context: this.engine3DService,
         args: [
-          () => this.sky3DService.onAnimate.bind(this.sky3DService)
+          () => this.sky3DService.onAnimate.bind(this.sky3DService),
+          () => this.worldOcean3DService.onAnimate.bind(this.worldOcean3DService)
         ]
       }
     );
@@ -487,6 +502,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private onSkyUpdate(skyTime: number): void {
     this.dreamMap.sky.time = skyTime;
     this.sky3DService.updateSky();
+  }
+
+  // Обновление времени
+  private onWorldOceanUpdate(worldOceanHeight: number): void {
+    this.dreamMap.ocean.z = worldOceanHeight;
+    this.worldOcean3DService.updateWorldOcean();
   }
 
   // Обновление пересечения с мышкой

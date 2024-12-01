@@ -1,6 +1,6 @@
 import { DreamMap } from "@_models/dream-map";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
-import { Editor3DOverlaySettings, editor3DOverlaySettingsSelector, editor3DSetNoneOverlaySettingsStateAction, editor3DSetSkyTimeAction, editor3DShowControlsSelector, editor3DShowOverlaySettingsSelector, editor3DUpdateOverlaySettingsStateAction } from "@app/reducers/viewer-3d";
+import { Editor3DOverlaySettings, editor3DOverlaySettingsSelector, editor3DSetNoneOverlaySettingsStateAction, editor3DSetSkyTimeAction, editor3DSetWorldOceanHeightAction, editor3DShowControlsSelector, editor3DShowOverlaySettingsSelector, editor3DUpdateOverlaySettingsStateAction } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 
 @Component({
@@ -33,6 +33,7 @@ export class Editor3DComponent implements OnInit {
 
   ngOnInit() {
     this.store$.dispatch(editor3DSetSkyTimeAction({ skyTime: this.dreamMap?.sky?.time }));
+    this.store$.dispatch(editor3DSetWorldOceanHeightAction({ worldOceanHeight: this.dreamMap?.ocean?.z }));
   }
 
 

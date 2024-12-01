@@ -11,6 +11,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { TranslateModule } from "@ngx-translate/core";
 import { Viewer3DComponent } from "./viewer-3d.component";
+import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 
 
 
@@ -28,7 +29,8 @@ import { Viewer3DComponent } from "./viewer-3d.component";
     Engine3DService,
     Landscape3DService,
     Sky3DService,
-    Cursor3DService
+    Cursor3DService,
+    WorldOcean3DService
   ],
   imports: [
     CommonModule,

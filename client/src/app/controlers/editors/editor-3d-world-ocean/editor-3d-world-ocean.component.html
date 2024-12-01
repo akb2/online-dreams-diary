@@ -1,7 +1,53 @@
 <div #settingsContainer
      class="settings">
+  <!-- Манипулятор -->
+  <ng-container [ngTemplateOutlet]="button"
+                [ngTemplateOutletContext]="{ dimensionClass: 'left' }" />
+  <!-- Линейка -->
+  <ng-container [ngTemplateOutlet]="lineRuler"
+                [ngTemplateOutletContext]="{ dimensionClass: 'left' }" />
+  <!-- Иллюстрация ландшафта -->
   <span class="settings__landscape">
     <span class="settings__landscape-line settings__landscape-line-{{line}}"
           *ngFor="let line of lines"></span>
   </span>
+  <!-- Линия океана -->
+  <span class="settings__ocean"
+        [ngStyle]="settingsOceanLineStyles$ | async"></span>
+  <!-- Линейка -->
+  <ng-container [ngTemplateOutlet]="lineRuler"
+                [ngTemplateOutletContext]="{ dimensionClass: 'right' }" />
+  <!-- Манипулятор -->
+  <ng-container [ngTemplateOutlet]="button"
+                [ngTemplateOutletContext]="{ dimensionClass: 'right' }" />
 </div>
+
+<ng-template #lineRuler
+             let-dimensionClass="dimensionClass">
+  <span class="settings__ruler {{dimensionClass}}">
+    <!-- Основные засечки -->
+    <ng-container *ngIf="worldOceanHeightControl.showLargeSerifs">
+      <span class="settings__ruler-serif {{dimensionClass}} large"
+            [ngStyle]="{ top: (i * worldOceanHeightControl.largeStep) + '%' }"
+            *ngFor="let i of worldOceanHeightControl.largeSerifItterator"></span>
+    </ng-container>
+    <!-- Вспомогательные засечки -->
+    <ng-container *ngIf="worldOceanHeightControl.showSerifs">
+      <span class="settings__ruler-serif {{dimensionClass}}"
+            [ngStyle]="{ top: (i * worldOceanHeightControl.step) + '%' }"
+            *ngFor="let i of worldOceanHeightControl.serifItterator"></span>
+    </ng-container>
+  </span>
+</ng-template>
+
+<ng-template #button
+             let-dimensionClass="dimensionClass">
+  <span class="settings__button {{dimensionClass}}"
+        [ngStyle]="settingsOceanButtonStyles$ | async"
+        mousePress
+        (mouseUp)="onShowOverlay()"
+        (mouseDown)="onHideOverlay()"
+        (mouseMovePress)="onWorldOceanTimeChange($event)">
+    <mat-icon>water</mat-icon>
+  </span>
+</ng-template>
