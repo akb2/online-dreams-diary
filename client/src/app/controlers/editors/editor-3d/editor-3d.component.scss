@@ -112,6 +112,7 @@ $controlOffset: 5px;
   padding: $controlOffset;
   gap: $controlOffset;
   transition: background-color #{screens.$animationTime};
+  border-radius: containers.$cardBorderRadius;
   // Скрыть затенение
   &.noOverlay {
     background-color: transparent;
