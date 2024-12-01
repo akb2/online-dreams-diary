@@ -66,6 +66,10 @@ $tabsHeight: 49px;
   // Группа
   &-group {
     display: block !important;
+    // Скрытый элемент
+    &[hidden] {
+      display: none !important;
+    }
   }
   // Тело
   &-body {

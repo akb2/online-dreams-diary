@@ -14,7 +14,6 @@
                  [backButtonLinkParams]="backLinkParams"
                  floatButtonIcon="save"
                  (floatButtonCallback)="onSave()"></app-main-menu>
-
   <!-- Контейнер с данными -->
   <div class="root-section"
        [ngClass]="{ center: loading }">
@@ -24,7 +23,7 @@
                      color="primary"
                      [selectedIndex]="selectedTab"
                      (selectedIndexChange)="onChangeTab($event)"
-                     *ngIf="!loading; else saveLoader">
+                     [hidden]="loading">
         <!-- Общее -->
         <mat-tab [label]="'pages.diary_editor.tabs.titles.general' | translate">
           <ng-template matTabContent>
@@ -157,6 +156,9 @@
           </ng-template>
         </mat-tab>
       </mat-tab-group>
+      <!-- Лоадер -->
+      <ng-container [ngTemplateOutlet]="saveLoader"
+                    *ngIf="loading" />
     </div>
   </div>
 </div>
