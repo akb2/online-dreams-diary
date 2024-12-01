@@ -21,6 +21,7 @@
          [ngClass]="{ 'floating-margin': navMenuType === _navMenuType.short }">
       <mat-tab-group dynamicHeight
                      color="primary"
+                     [preserveContent]="true"
                      [selectedIndex]="selectedTab"
                      (selectedIndexChange)="onChangeTab($event)"
                      [hidden]="loading">

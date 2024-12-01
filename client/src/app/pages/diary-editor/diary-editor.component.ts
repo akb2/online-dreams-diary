@@ -301,6 +301,9 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   // Переключение вкладки
   onChangeTab(index: number): void {
     this.mainMenu.collapseMenu();
+    this.selectedTab = ParseInt(index);
+    // Обнаружить изменения
+    this.changeDetectorRef.detectChanges();
   }
 
 
