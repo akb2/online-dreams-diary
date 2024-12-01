@@ -1,36 +1,34 @@
-import { DreamMapTerrainName } from "@_datas/dream-map-objects";
+import { DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMaxHeight, DreamMinHeight } from "@_datas/dream-map-settings";
-import { CheckInRange, Cos, MathFloor, Sin, SinCosToRad } from "@_helpers/math";
+import { CheckInRange, Cos, DetectDirectionByExpressions, MathFloor, Sin, SinCosToRad } from "@_helpers/math";
 import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
+import { CustomObjectKey } from "@_models/app";
 import { CoordDto, DreamMap } from "@_models/dream-map";
 import { Injectable, OnDestroy } from "@angular/core";
 import { editor3DCursorSizeSelector, editor3DHoverCeilCoordsSelector } from "@app/reducers/viewer-3d";
 import { OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
-import { Subject, combineLatest, concatMap, distinctUntilChanged, merge, takeUntil, tap } from "rxjs";
+import { Subject, combineLatest, distinctUntilChanged, switchMap, takeUntil, tap } from "rxjs";
 import { Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, SpotLight, SpotLightHelper, Vector3 } from "three";
-import { Landscape3DService } from "./landscape-3d.service";
-
-
+import { Engine3DService } from "./engine-3d.service";
 
 
 
 @Injectable()
-
 export class Cursor3DService implements OnDestroy {
   dreamMap: DreamMap;
 
   // ? Размер ячейки умножается на этот множитель
-  private heightMultiplier = 0.3;
+  private readonly heightMultiplier = 0.3;
   // ? Ширина сигмента для цилиндра будет примерно равнятся этому числу
-  private radialSigmentsDelimiter = 0.2;
+  private readonly radialSigmentsDelimiter = 0.2;
   // ? Количество точек для поиска пересечений с ландшафтом
-  private intersectionPoints = 5;
-  private lightMaxDistance = DreamCeilSize * 7;
-  private lightColor = new Color("white");
-  private lightSizeMultiplier = 0.5;
-  private lightIntensity = 30;
+  private readonly intersectionPoints = 5;
+  private readonly lightMaxDistance = DreamCeilSize * 7;
+  private readonly lightColor = new Color("white");
+  private readonly lightSizeMultiplier = 0.5;
+  private readonly lightIntensity = 30;
 
   group: Group;
 
@@ -41,12 +39,13 @@ export class Cursor3DService implements OnDestroy {
   private lightHelper: SpotLightHelper;
 
   hoverItems = [
-    DreamMapTerrainName
+    DreamMapTerrainName,
+    DreamMapOceanName
   ];
 
   private lastSize: number;
   private lastHeight: number;
-  private intersectionCache: [number, number, number][] = [];
+  private intersectionCache: CustomObjectKey<number, CustomObjectKey<number, number>> = {};
 
   private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamMaxHeight - DreamMinHeight);
   private rayCasterOrigin = new Vector3();
@@ -66,8 +65,6 @@ export class Cursor3DService implements OnDestroy {
 
 
 
-
-
   // Получить размер
   private getGeometryRadius(size: number): number {
     return (((CheckInRange(size - 1) * 2) + 1) * DreamCeilSize) / 2;
@@ -75,10 +72,12 @@ export class Cursor3DService implements OnDestroy {
 
   // Получение точки пересечения
   private getIntersectedPoint(landX: number, landZ: number): CoordDto {
-    const cacheIndex = this.intersectionCache.findIndex(([x, , z]) => x === landX && z === landZ);
+    const cacheIndex = this.intersectionCache[landX]?.[landZ];
     // Результат из кеша
-    if (cacheIndex >= 0) {
-      const [x, y, z] = this.intersectionCache[cacheIndex];
+    if (!!cacheIndex) {
+      const x = landX;
+      const z = landZ;
+      const y = cacheIndex;
       // Пересечение
       return { x, y, z };
     }
@@ -87,10 +86,13 @@ export class Cursor3DService implements OnDestroy {
       this.rayCasterOrigin.set(landX, DreamMaxHeight + DreamCeilSize, landZ);
       this.rayCaster.set(this.rayCasterOrigin, this.rayCasterDirection);
       // Объекты в фокусе
-      const intersects = this.rayCaster.intersectObject(this.landscape3DService.mesh, false);
-      const { x, y, z } = intersects?.[0]?.point ?? { x: 0, y: 0, z: 0 };
+      const intersects = this.rayCaster
+        .intersectObjects(this.engine3DService.intersectionList, false)
+        .sort(({ point: { y: a } }, { point: { y: b } }) => DetectDirectionByExpressions(a > b, a < b));
+      const { x, y, z } = intersects[intersects.length - 1].point ?? { x: 0, y: 0, z: 0 };
       // Добавить в кеш
-      this.intersectionCache.push([x, y, z]);
+      this.intersectionCache[x] = this.intersectionCache[x] ?? {};
+      this.intersectionCache[x][z] = y;
       // Пересечение
       return { x, y, z };
     }
@@ -98,17 +100,13 @@ export class Cursor3DService implements OnDestroy {
 
 
 
-
-
   constructor(
-    private landscape3DService: Landscape3DService,
+    private engine3DService: Engine3DService,
     private store$: Store
   ) {
     WaitObservable(() => !this.dreamMap)
       .pipe(
-        concatMap(() => merge(
-          combineLatest([this.cursorPosition$, this.cursorSize$]).pipe(tap(([{ x, y }, size]) => this.onPositionChange(x, y, size)))
-        )),
+        switchMap(() => combineLatest([this.cursorPosition$, this.cursorSize$]).pipe(tap(([{ x, y }, size]) => this.onPositionChange(x, y, size)))),
         takeUntil(this.destroyed$)
       )
       .subscribe();
@@ -118,8 +116,6 @@ export class Cursor3DService implements OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -188,7 +184,10 @@ export class Cursor3DService implements OnDestroy {
     this.group.add(this.mesh, this.light);
   }
 
-
+  // Очистить кэш
+  clearIntersectionCache() {
+    this.intersectionCache = {};
+  }
 
 
 

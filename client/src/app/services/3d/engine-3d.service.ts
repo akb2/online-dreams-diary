@@ -1,5 +1,5 @@
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
-import { AngleByLegs, AngleToRad, CheckInRange, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, CheckInRange, DetectDirectionByExpressions, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -19,20 +19,17 @@ import { Ceil3dService } from "./ceil-3d.service";
 
 
 
-
-
 @Injectable()
-
 export class Engine3DService implements OnDestroy {
 
-  private contextType: CanvasContextType = "webgl2";
-  private sceneColor: number = 0x000000;
-  private drawShadows: boolean = true;
-  private rotateSpeed: number = 1.4;
-  private moveSpeed: number = DreamCeilSize * 14;
-  private zoomSpeed: number = 1;
-  private minAngle: number = 0;
-  private maxAngle: number = 80;
+  private readonly contextType: CanvasContextType = "webgl2";
+  private readonly sceneColor = 0x000000;
+  private readonly drawShadows = true;
+  private readonly rotateSpeed = 1.4;
+  private readonly moveSpeed = DreamCeilSize * 14;
+  private readonly zoomSpeed = 1;
+  private readonly minAngle = 0;
+  private readonly maxAngle = 80;
 
   dreamMap: DreamMap;
   scene: Scene;
@@ -40,9 +37,10 @@ export class Engine3DService implements OnDestroy {
   stats: Stats;
   camera: PerspectiveCamera;
   octree: Octree;
+  intersectionList: Mesh[] = [];
 
-  private canvasWidth: number = 0;
-  private canvasHeight: number = 0;
+  private canvasWidth = 0;
+  private canvasHeight = 0;
 
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
@@ -50,15 +48,12 @@ export class Engine3DService implements OnDestroy {
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
   private animationList: AnimationCallback[] = [];
-  private intersectionList: Mesh[] = [];
   private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamFogFar)
   private rayCasterCoords = new Vector2();
 
   private lastCamera: PerspectiveCamera;
 
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -78,11 +73,9 @@ export class Engine3DService implements OnDestroy {
     const intersect: Intersection[] = this.rayCaster.intersectObjects(this.intersectionList, false);
     // Обработка объектов
     return !!intersect?.length
-      ? intersect.sort(({ distance: a }, { distance: b }) => a - b)
+      ? intersect.sort(({ distance: a }, { distance: b }) => DetectDirectionByExpressions(a < b, a > b))
       : [];
   }
-
-
 
 
 
@@ -98,8 +91,6 @@ export class Engine3DService implements OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -164,12 +155,12 @@ export class Engine3DService implements OnDestroy {
 
   // Создание пересечений
   private createOctree(): void {
-    const mapWidth: number = this.dreamMap.size.width * DreamCeilSize; // 50
-    const mapHeight: number = this.dreamMap.size.height * DreamCeilSize; // 50
-    const raycastSize: number = (mapWidth * mapHeight) + 3;
-    const depthMax: number = 10;
-    const preferredObjectsPerNode: number = 8;
-    const objectsThreshold: number = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
+    const mapWidth = this.dreamMap.size.width * DreamCeilSize; // 50
+    const mapHeight = this.dreamMap.size.height * DreamCeilSize; // 50
+    const raycastSize = (mapWidth * mapHeight) + 3;
+    const depthMax = 10;
+    const preferredObjectsPerNode = 8;
+    const objectsThreshold = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Настройка пересечений
     this.octree = new Octree({
       // scene: this.scene,
@@ -265,8 +256,6 @@ export class Engine3DService implements OnDestroy {
 
 
 
-
-
   // Добавить объект на сцену
   addToScene(...objects: Mesh[]): void {
     ArrayForEach(
@@ -303,8 +292,6 @@ export class Engine3DService implements OnDestroy {
 
 
 
-
-
   // Изменение размера canvas
   private onCanvasResize(): void {
     WaitObservable(() => !this.helper)
@@ -331,24 +318,24 @@ export class Engine3DService implements OnDestroy {
 
   // Изменение позиции камеры
   private onCameraChange(event: OrbitControls): void {
-    const width: number = this.dreamMap.size.width * DreamCeilSize;
-    const height: number = this.dreamMap.size.height * DreamCeilSize;
+    const width = this.dreamMap.size.width * DreamCeilSize;
+    const height = this.dreamMap.size.height * DreamCeilSize;
     const vector: Vector3 = new Vector3();
     // Настройка позиции камеры
     this.control.panSpeed = this.moveSpeed / event.getDistance();
     // Параметры
-    let x: number = event.target.x;
-    let z: number = event.target.z;
-    const mapX: number = width / 2;
-    const mapZ: number = height / 2;
+    let x = event.target.x;
+    let z = event.target.z;
+    const mapX = width / 2;
+    const mapZ = height / 2;
     const xLimited = x > mapX || x < -mapX;
     const zLimited = z > mapZ || z < -mapZ;
     // Ограничить положение камеры X
     if (xLimited || zLimited) {
-      const cameraX: number = xLimited
+      const cameraX = xLimited
         ? this.lastCamera.position.x
         : event.object.position.x;
-      const cameraZ: number = zLimited
+      const cameraZ = zLimited
         ? this.lastCamera.position.z
         : event.object.position.z;
       // Новые позмции
@@ -385,7 +372,8 @@ export class Engine3DService implements OnDestroy {
     if (!!this.postProcessingEffects) {
       const chairPositionX = this.canvasWidth * 0.5;
       const chairPositionY = this.canvasHeight * 0.5;
-      const closestObject = this.getIntercectionObject(chairPositionX, chairPositionY)?.[0];
+      const intersects = this.getIntercectionObject(chairPositionX, chairPositionY);
+      const closestObject = intersects[intersects.length - 1];
       const { depthOfFieldEffect, bloomEffect } = this.postProcessingEffects;
       const circleOfConfusionMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
       const blendMode = depthOfFieldEffect.blendMode;

@@ -22,17 +22,13 @@ import { Observable, Subject, animationFrameScheduler, catchError, concatMap, de
 
 
 
-
-
 @Component({
   selector: "viewer-3d",
   templateUrl: "./viewer-3d.component.html",
   styleUrls: ["viewer-3d.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
-
   @Input() dreamMap: DreamMap;
   @Input() debugInfo = true;
   @Input() showCompass = true;
@@ -44,12 +40,12 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   loadingStep: LoadingStep = LoadingStep.prepared;
 
-  private loadCeilsByTime = 250;
-  private calcOperationLoadingSize = 500;
-  private calcOperationLoadingDelay = 80;
-  private texturesLoadingSize = 1000;
-  private compassAzimuthShift = -90;
-  private compassRadialShift = 45;
+  private readonly loadCeilsByTime = 250;
+  private readonly calcOperationLoadingSize = 500;
+  private readonly calcOperationLoadingDelay = 80;
+  private readonly texturesLoadingSize = 1000;
+  private readonly compassAzimuthShift = -90;
+  private readonly compassRadialShift = 45;
 
   private loadingCeilLimit = 0;
   private loadingCeilCurrent: CustomObjectKey<LoadingStep, number> = {};
@@ -99,8 +95,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   })));
 
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -158,8 +152,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
 
-
-
   constructor(
     private ceil3dService: Ceil3dService,
     private engine3DService: Engine3DService,
@@ -189,15 +181,15 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
-          concatMap(() => this.loadScene()),
-          concatMap(() => this.getTexturesData()),
-          concatMap(() => this.loadTextures()),
-          concatMap(() => this.createLandScapeCycle()),
-          concatMap(() => this.callCalcMethods()),
-          concatMap(() => this.onViewerLoad()),
+          switchMap(() => this.loadScene()),
+          switchMap(() => this.getTexturesData()),
+          switchMap(() => this.loadTextures()),
+          switchMap(() => this.createLandScapeCycle()),
+          switchMap(() => this.callCalcMethods()),
+          switchMap(() => this.onViewerLoad()),
           tap(() => this.store$.dispatch(viewer3DInitialLoaderDisableAction())),
-          concatMap(() => this.createStats()),
-          concatMap(() => this.dreamMapChangesListeners()),
+          switchMap(() => this.createStats()),
+          switchMap(() => this.dreamMapChangesListeners()),
           takeUntil(this.destroyed$)
         )
         .subscribe();
@@ -208,8 +200,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -383,8 +373,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
 
 
-
-
   // Заполнить список действий над ячейками
   private fillCellsActions(): void {
     this.ceilsOperations.push(
@@ -470,7 +458,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         callable: this.engine3DService.addToIntersection,
         context: this.engine3DService,
         args: [
-          () => this.landscape3DService.mesh
+          () => this.landscape3DService.mesh,
+          () => this.worldOcean3DService.ocean
         ]
       },
       // Анимация ландшафта
@@ -484,8 +473,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       }
     );
   }
-
-
 
 
 
@@ -508,6 +495,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private onWorldOceanUpdate(worldOceanHeight: number): void {
     this.dreamMap.ocean.z = worldOceanHeight;
     this.worldOcean3DService.updateWorldOcean();
+    this.cursor3DService.clearIntersectionCache();
   }
 
   // Обновление пересечения с мышкой
@@ -546,8 +534,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
   }
 }
-
-
 
 
 
