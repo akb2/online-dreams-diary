@@ -17,12 +17,8 @@ import { Landscape3DService } from "./landscape-3d.service";
 
 
 
-
-
 @Injectable()
-
 export class Sky3DService {
-
   dreamMap: DreamMap;
   dreamMapSettings: DreamMapSettings = DefaultDreamMapSettings;
   renderer: WebGLRenderer;
@@ -51,8 +47,6 @@ export class Sky3DService {
 
   private colorWhite = new Color(1, 1, 1);
   private colorClouds = new Color(0.47, 0.54, 0.63);
-
-
 
 
 
@@ -110,13 +104,9 @@ export class Sky3DService {
 
 
 
-
-
   constructor(
     private landscape3DService: Landscape3DService
   ) { }
-
-
 
 
 
@@ -266,8 +256,6 @@ export class Sky3DService {
       this.sun.shadow.map = null;
     }
   }
-
-
 
 
 

@@ -80,15 +80,20 @@ export class Editor3DTimeComponent {
 
   // Изменение времени суток
   onSkyTimeChange(event: MouseEvent | TouchEvent, multiplier: NumberDirection = 0) {
-    if (!!this.settingsContainer?.nativeElement) {
-      const container = this.settingsContainer.nativeElement;
+    const container = this.settingsContainer?.nativeElement;
+    // Вычисление если контейнер существует
+    if (!!container) {
       const containerRect = container.getBoundingClientRect();
       const containerLeft = containerRect.left;
       const containerTop = containerRect.top;
       const containerWidth = containerRect.width / 2;
       const containerHeight = containerRect.height / 2;
-      const mouseX = event instanceof MouseEvent ? event.clientX : 0;
-      const mouseY = event instanceof MouseEvent ? event.clientY : 0;
+      const mouseX = event instanceof MouseEvent
+        ? event.clientX
+        : 0;
+      const mouseY = event instanceof MouseEvent
+        ? event.clientY
+        : 0;
       const positionX = CheckInRange(mouseX - containerLeft - containerWidth, containerWidth, -containerWidth);
       const positionY = CheckInRange(mouseY - containerTop - containerHeight, containerHeight, -containerHeight);
       const sin = MathRound(positionX / containerWidth, 5);
