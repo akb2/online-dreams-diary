@@ -1,4 +1,4 @@
-import { DreamMapEditorComponent } from "@_controlers/dream-map-editor/dream-map-editor.component";
+import { Editor3DComponent } from "@_controlers/editor-3d/editor-3d.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { ToDate } from "@_datas/app";
@@ -7,7 +7,6 @@ import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { ParseInt } from "@_helpers/math";
-import { CompareObjects } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
@@ -28,49 +27,43 @@ import { mergeMap, switchMap, takeUntil } from "rxjs/operators";
 
 
 
-
-
 @Component({
   selector: "app-diary-editor",
   templateUrl: "./diary-editor.component.html",
   styleUrls: ["./diary-editor.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class DiaryEditorComponent implements OnInit, OnDestroy {
-
-
   @ViewChild(NavMenuComponent) mainMenu!: NavMenuComponent;
-  @ViewChild(DreamMapEditorComponent) mapEditor!: DreamMapEditorComponent;
+  @ViewChild(Editor3DComponent) mapEditor!: Editor3DComponent;
 
-  imagePrefix: string = "../../../../assets/images/backgrounds/";
-  ready: boolean = false;
-  loading: boolean = false;
-  selectedTab: number = 2;
+  imagePrefix = "../../../../assets/images/backgrounds/";
+  ready = false;
+  loading = false;
+  selectedTab = 2;
   private pageTitle: string[] = [
     "pages.diary_editor.page_titles.new",
     "pages.diary_editor.page_titles.edit"
   ];
 
   navMenuType: NavMenuType = NavMenuType.collapse;
-  defaultTitle: string = DreamTitle;
-  today: Date = new Date();
+  defaultTitle = DreamTitle;
 
   _navMenuType: typeof NavMenuType = NavMenuType;
   _dreamMode: typeof DreamMode = DreamMode;
 
   dreamForm: FormGroup;
-  dreamId: number = 0;
+  dreamId = 0;
   dream: Dream;
   private fromMark: string;
   errors: ErrorMessagesType = DreamErrorMessages;
 
   user: User;
 
-  titleMinLength: number = FormData.dreamTitleMinLength;
-  titleMaxLength: number = FormData.dreamTitleMaxLength;
-  descriptionMaxLength: number = FormData.dreamDescriptionMaxLength;
-  keywordsMaxLength: number = 500;
+  titleMinLength = FormData.dreamTitleMinLength;
+  titleMaxLength = FormData.dreamTitleMaxLength;
+  descriptionMaxLength = FormData.dreamDescriptionMaxLength;
+  keywordsMaxLength = 500;
   dateMin: Date = new Date();
   dateMax: Date = new Date();
   dreamModes: OptionData[] = DreamModes;
@@ -82,12 +75,14 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
 
 
-
+  get today(): Date {
+    return new Date();
+  }
 
   // Кнопка назад: URL
   get backLink(): string {
     const fromArray: string[] = this.fromMark.split("|") || [];
-    const from: string = fromArray[fromArray.length - 1] || "";
+    const from = fromArray[fromArray.length - 1] || "";
     // Список всех сновидений
     if (from === "diary-all") {
       return "/diary/all";
@@ -107,7 +102,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   // Кнопка назад: параметры
   get backLinkParams(): SimpleObject {
     const fromArray: string[] = this.fromMark.split("|") || [];
-    const fromMark: string = fromArray.filter((v, k) => k < fromArray.length - 1).join("|");
+    const fromMark = fromArray.filter((v, k) => k < fromArray.length - 1).join("|");
     // Вернуть значение
     return fromMark ? { from: fromMark } : {};
   }
@@ -119,7 +114,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Доступна ли карта
   private get isMapAvail(): boolean {
-    const mode: DreamMode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
+    const mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
     // Проверка
     return mode === DreamMode.map || mode === DreamMode.mixed;
   }
@@ -138,18 +133,20 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Проверка изменений
   private get formHasChanges(): boolean {
-    const title: string = this.dreamForm.get("title")?.value?.toString() ?? "";
-    const description: string = this.dreamForm.get("description")?.value?.toString() ?? "";
+    const title = this.dreamForm.get("title")?.value?.toString() ?? "";
+    const description = this.dreamForm.get("description")?.value?.toString() ?? "";
     const date: Date = ToDate(this.dreamForm.get("date")?.value);
     const headerType: NavMenuType = this.dreamForm.get("headerType")?.value?.toString() as NavMenuType;
-    const headerBackground: number = ParseInt(this.dreamForm.get("headerBackground")?.value);
+    const headerBackground = ParseInt(this.dreamForm.get("headerBackground")?.value);
     const mode: DreamMode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
     const type: DreamType = ParseInt(this.dreamForm.get("type")?.value) as DreamType;
     const mood: DreamMood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood;
     const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
-    const keywords: string = ((this.dreamForm.get("keywords")?.value as string[]) ?? []).sort().join(",");
-    const text: string = (this.dreamForm.get("text")?.value?.toString() as string) ?? "";
-    const map: DreamMap = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
+    const keywords = ((this.dreamForm.get("keywords")?.value as string[]) ?? []).sort().join(",");
+    const text = (this.dreamForm.get("text")?.value?.toString() as string) ?? "";
+    const map: DreamMap = this.mapEditor
+      ? this.mapEditor.getMap
+      : this.dream.map;
     // Проверка
     return (
       this.dream.title !== title ||
@@ -163,7 +160,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       this.dream.status !== status ||
       this.dream.keywords.sort().join(",") !== keywords ||
       (this.isTextAvail && this.dream.text !== text) ||
-      (this.isMapAvail && !CompareObjects(this.dream.map, map))
+      (this.isMapAvail && !!map.isChanged)
     );
   }
 
@@ -171,8 +168,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   get dreamDate(): Date {
     return ToDate(this.dreamForm?.get('date')?.value ?? this.today);
   }
-
-
 
 
 
@@ -204,6 +199,10 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       headerType: [null],
       headerBackground: [null]
     });
+  }
+
+  ngOnInit() {
+    this.defineData();
     // Изменения названия
     this.dreamForm.get("title").valueChanges
       .pipe(takeUntil(this.destroyed$))
@@ -211,19 +210,13 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     // Изменение даты
     this.dreamForm.get("date").valueChanges
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(value => this.onChangeDate(value ?? new Date()));
-  }
-
-  ngOnInit() {
-    this.defineData();
+      .subscribe(value => this.onChangeDate(value ?? this.today));
   }
 
   ngOnDestroy() {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -252,7 +245,9 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
         this.dream.date = ToDate(this.dreamForm.get("date")?.value);
         this.dream.keywords = this.dreamForm.get("keywords").value as string[];
         this.dream.text = this.dreamForm.get("text").value as string;
-        this.dream.map = this.mapEditor ? this.mapEditor.getMap : this.dream.map;
+        this.dream.map = this.mapEditor
+          ? this.mapEditor.getMap
+          : this.dream.map;
         this.dream.headerType = this.dreamForm.get("headerType")?.value?.toString() as NavMenuType ?? NavMenuType.collapse;
         this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === ParseInt(this.dreamForm.get("headerBackground")?.value)) ?? BackgroundImageDatas[0];
         // Лоадер
@@ -307,8 +302,6 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   onChangeTab(index: number): void {
     this.mainMenu.collapseMenu();
   }
-
-
 
 
 

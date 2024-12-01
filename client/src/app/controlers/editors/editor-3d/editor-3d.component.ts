@@ -1,5 +1,6 @@
+import { Viewer3DComponent } from "@_controlers/viewer-3d/viewer-3d.component";
 import { DreamMap } from "@_models/dream-map";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from "@angular/core";
 import { Editor3DOverlaySettings, editor3DOverlaySettingsSelector, editor3DSetNoneOverlaySettingsStateAction, editor3DSetSkyTimeAction, editor3DSetWorldOceanHeightAction, editor3DShowControlsSelector, editor3DShowOverlaySettingsSelector, editor3DUpdateOverlaySettingsStateAction } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 
@@ -12,8 +13,10 @@ import { Store } from "@ngrx/store";
 
 export class Editor3DComponent implements OnInit {
   @Input() dreamMap: DreamMap;
-  @Input() debugInfo: boolean = true;
-  @Input() showCompass: boolean = true;
+  @Input() debugInfo = true;
+  @Input() showCompass = true;
+
+  @ViewChild("viewerComponent", { read: Viewer3DComponent }) viewerComponent!: Viewer3DComponent;
 
   showingOverlay = true;
   settingsTypes = Editor3DOverlaySettings;
@@ -23,6 +26,11 @@ export class Editor3DComponent implements OnInit {
   currentSetting$ = this.store$.select(editor3DOverlaySettingsSelector);
 
 
+
+  // Данные карты
+  get getMap(): DreamMap {
+    return this.viewerComponent?.getMap;
+  }
 
 
 
@@ -35,8 +43,6 @@ export class Editor3DComponent implements OnInit {
     this.store$.dispatch(editor3DSetSkyTimeAction({ skyTime: this.dreamMap?.sky?.time }));
     this.store$.dispatch(editor3DSetWorldOceanHeightAction({ worldOceanHeight: this.dreamMap?.ocean?.z }));
   }
-
-
 
 
 
@@ -54,8 +60,6 @@ export class Editor3DComponent implements OnInit {
   onCloseSettings() {
     this.store$.dispatch(editor3DSetNoneOverlaySettingsStateAction());
   }
-
-
 
 
 

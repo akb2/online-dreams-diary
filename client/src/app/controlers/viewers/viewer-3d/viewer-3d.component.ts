@@ -1,11 +1,12 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
-import { DreamCeilSize } from "@_datas/dream-map-settings";
+import { ClosestHeightNames } from "@_datas/dream-map";
+import { DreamCeilSize, DreamDefHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
-import { DreamMap, DreamMapCeil } from "@_models/dream-map";
+import { ClosestHeightName, DreamMap, DreamMapCeil, ReliefType } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Cursor3DService } from "@_services/3d/cursor-3d.service";
@@ -150,6 +151,58 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     return "ontouchstart" in window || !!navigator?.maxTouchPoints;
   }
 
+  // Данные карты
+  get getMap(): DreamMap {
+    const control = this.engine3DService.control;
+    const camera = this.engine3DService.camera;
+    const defaultControl = this.engine3DService.getDefaultControlPosition(this.dreamMap?.size.width, this.dreamMap?.size.height);
+    const ceils = this.dreamMap?.ceils.filter(c =>
+      (!!c.terrain && c.terrain > 0 && c.terrain !== DreamTerrain)
+      || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
+    );
+    // Вернуть карту
+    return {
+      ceils,
+      camera: {
+        target: {
+          x: control?.target?.x ?? defaultControl.target.x,
+          y: control?.target?.y ?? defaultControl.target.y,
+          z: control?.target?.z ?? defaultControl.target.z,
+        },
+        position: {
+          x: camera?.position?.x ?? defaultControl.position.x,
+          y: camera?.position?.y ?? defaultControl.position.y,
+          z: camera?.position?.z ?? defaultControl.position.z,
+        }
+      },
+      dreamerWay: [],
+      size: this.dreamMap?.size,
+      ocean: {
+        material: this.dreamMap?.ocean?.material ?? 1,
+        z: this.dreamMap?.ocean?.z ?? DreamWaterDefHeight
+      },
+      land: {
+        type: this.dreamMap?.land?.type ?? DreamTerrain,
+        z: this.dreamMap?.land?.z ?? DreamDefHeight
+      },
+      sky: {
+        time: this.dreamMap?.sky?.time ?? DreamSkyTime
+      },
+      relief: {
+        types: ClosestHeightNames.reduce((o, name) => ({
+          ...o,
+          [name as ClosestHeightName]: this.dreamMap?.relief?.types?.hasOwnProperty(name)
+            ? this.dreamMap?.relief.types[name]
+            : ReliefType.flat
+        }), {})
+      },
+      isNew: false,
+      noiseSeed: 0,
+      noise: null,
+      isChanged: !!this.dreamMap?.isChanged
+    };
+  }
+
 
 
   constructor(
@@ -269,8 +322,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   // Создать цикл ячеек
   private createLandScapeCycle(): Observable<any> {
     const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
-    const width: number = this.dreamMap.size.width;
-    const height: number = this.dreamMap.size.height;
+    const width: number = this.dreamMap?.size.width;
+    const height: number = this.dreamMap?.size.height;
     const totalWidth: number = (width * repeat) + 1;
     const totalHeight: number = (height * repeat) + 1;
     // Состояния
@@ -292,8 +345,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   // Загрузка ячеек ландшафта
   private loadLandScape(callback: CeilCallBack, step: LoadingStep): Observable<any> {
     const repeat: number = (this.landscape3DService.outSideRepeat * 2) + 1;
-    const width: number = this.dreamMap.size.width;
-    const height: number = this.dreamMap.size.height;
+    const width: number = this.dreamMap?.size.width;
+    const height: number = this.dreamMap?.size.height;
     const totalWidth: number = (width * repeat) + 1;
     const totalHeight: number = (height * repeat) + 1;
     const widthShift: number = this.landscape3DService.outSideRepeat * width;
@@ -487,16 +540,22 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // Обновление времени
   private onSkyUpdate(skyTime: number): void {
-    this.dreamMap.sky.time = skyTime;
-    this.sky3DService.updateSky();
+    if (this.dreamMap.sky.time !== skyTime) {
+      this.dreamMap.isChanged = true;
+      this.dreamMap.sky.time = skyTime;
+      this.sky3DService.updateSky();
+    }
   }
 
   // Обновление времени
   private onWorldOceanUpdate(worldOceanHeight: number): void {
-    this.dreamMap.ocean.z = worldOceanHeight;
-    this.worldOcean3DService.updateWorldOcean();
-    this.cursor3DService.clearIntersectionCache();
-    this.engine3DService.onUpdatePostProcessors();
+    if (this.dreamMap.ocean.z !== worldOceanHeight) {
+      this.dreamMap.isChanged = true;
+      this.dreamMap.ocean.z = worldOceanHeight;
+      this.worldOcean3DService.updateWorldOcean();
+      this.cursor3DService.clearIntersectionCache();
+      this.engine3DService.onUpdatePostProcessors();
+    }
   }
 
   // Обновление пересечения с мышкой
@@ -515,8 +574,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[0];
         // Изменить координаты определения
         if (!!object) {
-          const mapWidth = this.dreamMap.size.width;
-          const mapHeight = this.dreamMap.size.height;
+          const mapWidth = this.dreamMap?.size.width;
+          const mapHeight = this.dreamMap?.size.height;
           const tempX = MathFloor(object.point.x / DreamCeilSize) + (mapWidth * DreamCeilSize / 2);
           const tempY = MathFloor(object.point.z / DreamCeilSize) + (mapHeight * DreamCeilSize / 2);
           // Координаты в рабочей области

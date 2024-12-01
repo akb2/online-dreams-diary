@@ -1,9 +1,9 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamFogFar, DreamMapSize, DreamMaxHeight, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
 import { AngleByLegs, AngleToRad, CheckInRange, DetectDirectionByExpressions, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
-import { DreamMap } from "@_models/dream-map";
+import { DreamMap, DreamMapCameraPosition } from "@_models/dream-map";
 import { AnimationData } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
@@ -34,6 +34,7 @@ export class Engine3DService implements OnDestroy {
   dreamMap: DreamMap;
   scene: Scene;
   renderer: WebGLRenderer;
+  control: OrbitControls;
   stats: Stats;
   camera: PerspectiveCamera;
   octree: Octree;
@@ -44,7 +45,6 @@ export class Engine3DService implements OnDestroy {
 
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
-  private control: OrbitControls;
   private postProcessingEffects: PostProcessingEffects;
   private composer: EffectComposer;
   private animationList: AnimationCallback[] = [];
@@ -75,6 +75,21 @@ export class Engine3DService implements OnDestroy {
     return !!intersect?.length
       ? intersect.sort(({ distance: a }, { distance: b }) => DetectDirectionByExpressions(a < b, a > b))
       : [];
+  }
+
+  getDefaultControlPosition(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
+    return {
+      target: {
+        x: 0,
+        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight),
+        z: 0,
+      },
+      position: {
+        x: 0,
+        y: 0,
+        z: -(height * DreamCeilSize) / 2,
+      }
+    };
   }
 
 
@@ -352,6 +367,7 @@ export class Engine3DService implements OnDestroy {
     // Запомнить положение камеры
     this.lastCamera = event.object.clone() as PerspectiveCamera;
     this.camera.far = DreamFogFar;
+    this.dreamMap.isChanged = true;
     // Угол для компаса
     event.object.getWorldDirection(vector);
     // Положение на компасе
@@ -405,8 +421,6 @@ export class Engine3DService implements OnDestroy {
     }));
   }
 }
-
-
 
 
 

@@ -7,8 +7,6 @@ import { ScrollAddDimension } from "./screen";
 
 
 
-
-
 // Интерфейс карты
 export interface DreamMap {
   ceils: (DreamMapCeil)[];
@@ -22,6 +20,7 @@ export interface DreamMap {
   isNew: boolean;
   noise: Noise;
   noiseSeed: number;
+  isChanged?: boolean;
 }
 
 // Интерфейс настроек неба
@@ -80,7 +79,10 @@ export enum MapTerrainSplatMapColor {
 }
 
 // Перечисление ключей цвета
-export type MapTerrainColorChannelsKeys = "r" | "g" | "b" | "a";
+export type MapTerrainColorChannelsKeys = "r"
+  | "g"
+  | "b"
+  | "a";
 
 // Интерфейс карты для сервера
 export interface DreamMapDto {
@@ -114,12 +116,15 @@ export interface ClosestHeight {
 }
 
 // Имена соседних ячеек
-export type ClosestHeightName = ScrollAddDimension | "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+export type ClosestHeightName = ScrollAddDimension
+  | "topLeft"
+  | "topRight"
+  | "bottomLeft"
+  | "bottomRight";
 
 // Имена всех секторов карты
-export type DreamMapSector = ClosestHeightName | "center";
-
-
+export type DreamMapSector = ClosestHeightName
+  | "center";
 
 
 
@@ -181,7 +186,16 @@ export interface WorldLand {
 }
 
 // Типы цветов пути
-export type WayColor = "red" | "green" | "blue" | "white" | "black" | "gray" | "orange" | "pink" | "pink" | "purple";
+export type WayColor = "red"
+  | "green"
+  | "blue"
+  | "white"
+  | "black"
+  | "gray"
+  | "orange"
+  | "pink"
+  | "pink"
+  | "purple";
 
 // Тип линии
 export interface WayLineType {
@@ -191,13 +205,23 @@ export interface WayLineType {
 }
 
 // Тип CSS границы
-export type CssBorderType = "solid" | "double" | "dashed" | "dotted";
+export type CssBorderType = "solid"
+  | "double"
+  | "dashed"
+  | "dotted";
 
 // Типы текстур
-export type BaseTextureType = "face" | "ao" | "normal" | "disp" | "roughness" | "metalness" | "parallax";
+export type BaseTextureType = "face"
+  | "ao"
+  | "normal"
+  | "disp"
+  | "roughness"
+  | "metalness"
+  | "parallax";
 
 // Типы текстур + иконка
-export type TextureType = BaseTextureType | "icons";
+export type TextureType = BaseTextureType
+  | "icons";
 
 // Настройки карты за пределами
 export interface DreamMapReliefSettings {
@@ -209,8 +233,6 @@ export interface DreamMapSettings {
   detalization: DreamObjectElmsValues;
   shadowQuality: number;
 }
-
-
 
 
 
