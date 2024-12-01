@@ -368,7 +368,7 @@ export class Engine3DService implements OnDestroy {
   }
 
   // Обновить параметры пост обработки
-  private onUpdatePostProcessors(): void {
+  onUpdatePostProcessors(): void {
     if (!!this.postProcessingEffects) {
       const chairPositionX = this.canvasWidth * 0.5;
       const chairPositionY = this.canvasHeight * 0.5;

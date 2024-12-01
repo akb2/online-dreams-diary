@@ -496,6 +496,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.dreamMap.ocean.z = worldOceanHeight;
     this.worldOcean3DService.updateWorldOcean();
     this.cursor3DService.clearIntersectionCache();
+    this.engine3DService.onUpdatePostProcessors();
   }
 
   // Обновление пересечения с мышкой
