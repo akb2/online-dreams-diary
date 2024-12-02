@@ -355,7 +355,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const testWhile: () => boolean = () => {
         return (
           !this.canvas ||
-          !this.canvas?.nativeElement?.getContext(this.contextType) ||
+          !this.canvas?.nativeElement?.getContext(this.contextType, { willReadFrequently: true }) ||
           !(!this.debugInfo || !!this.statsBlock) ||
           !(this.width && this.height)
         );
@@ -556,7 +556,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const objectsThreshold: number = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Отрисовщик
     this.renderer = new WebGLRenderer({
-      context: this.canvas.nativeElement.getContext(this.contextType),
+      context: this.canvas.nativeElement.getContext(this.contextType, { willReadFrequently: true }),
       canvas: this.canvas.nativeElement,
       antialias: true,
       alpha: true,

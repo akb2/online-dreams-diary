@@ -130,7 +130,7 @@ export const ImageRightRotate = (file: File): Observable<UploadedImage> => GetIm
     // Картинка повернута устройством
     if (uploadedImage.orientation > 1) {
       const canvas: HTMLCanvasElement = document.createElement("canvas");
-      const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+      const ctx: CanvasRenderingContext2D = canvas.getContext("2d", { willReadFrequently: true })!;
       canvas.width = uploadedImage.orientation >= 5 ? uploadedImage.htmlImage.height : uploadedImage.htmlImage.width;
       canvas.height = uploadedImage.orientation >= 5 ? uploadedImage.htmlImage.width : uploadedImage.htmlImage.height;
       // Поиск по ориентациям

@@ -13,7 +13,7 @@ import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendFunction, BloomEffect, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
 import { Subject, animationFrames, delay, filter, fromEvent, retry, switchMap, takeUntil, tap } from "rxjs";
-import { Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { Clock, Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -40,9 +40,10 @@ export class Engine3DService implements OnDestroy {
   camera: PerspectiveCamera;
   octree: Octree;
   intersectionList: Mesh[] = [];
+  clock = new Clock();
 
-  private canvasWidth = 0;
-  private canvasHeight = 0;
+  canvasWidth = 0;
+  canvasHeight = 0;
   private cameraFirstChange = true;
 
   private canvas: HTMLCanvasElement;

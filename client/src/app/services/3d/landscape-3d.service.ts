@@ -10,7 +10,7 @@ import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
-import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
+import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
 
 
@@ -79,7 +79,7 @@ export class Landscape3DService {
     const width: number = (mapBorderSizeX * 2) + mapWidth;
     const height: number = (mapBorderSizeZ * 2) + mapHeight;
     const canvas = this.reliefCanvases[reliefType];
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const scaledTextureX = MathFloor((textureX / width) * (canvas.width - 1));
     const scaledTextureZ = MathFloor((textureZ / height) * (canvas.height - 1));
@@ -301,7 +301,7 @@ export class Landscape3DService {
       texture.magFilter = LinearFilter;
       texture.minFilter = LinearFilter;
       texture.anisotropy = 1;
-      texture.encoding = LinearEncoding;
+      texture.colorSpace = LinearSRGBColorSpace;
       texture.format = RGBAFormat;
       texture.needsUpdate = true;
       // Вернуть текстуру
@@ -339,7 +339,7 @@ export class Landscape3DService {
   // Загрузка картинок рельефа
   private reliefLoaded(type: ReliefType, texture: Texture): void {
     const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     // Свойства текстуры
     canvas.width = texture.image.width;
     canvas.height = texture.image.height;
@@ -356,7 +356,7 @@ export class Landscape3DService {
     texture.format = RGBAFormat;
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearMipmapLinearFilter;
-    texture.encoding = LinearEncoding;
+    texture.colorSpace = LinearSRGBColorSpace;
     texture.wrapS = RepeatWrapping;
     texture.wrapT = RepeatWrapping;
     texture.anisotropy = 1;
