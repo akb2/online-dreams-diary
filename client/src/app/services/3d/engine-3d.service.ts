@@ -1,17 +1,18 @@
-import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamFogFar, DreamMapSize, DreamMaxHeight, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
-import { AngleByLegs, AngleToRad, CheckInRange, DetectDirectionByExpressions, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilSize, DreamFogFar, DreamMapSize } from "@_datas/dream-map-settings";
+import { AngleByLegs, AngleToRad, CheckInRange, DetectDirectionByExpressions, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
 import { DreamMap, DreamMapCameraPosition } from "@_models/dream-map";
 import { AnimationData } from "@_models/three.js/base";
+import { DreamService } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { Store } from "@ngrx/store";
 import { BlendFunction, BloomEffect, DepthOfFieldEffect, EffectComposer, EffectPass, KernelSize, RenderPass, ToneMappingEffect, ToneMappingMode } from "postprocessing";
-import { Subject, animationFrames, concatMap, fromEvent, takeUntil } from "rxjs";
+import { Subject, animationFrames, delay, filter, fromEvent, retry, switchMap, takeUntil, tap } from "rxjs";
 import { Fog, Intersection, LinearSRGBColorSpace, MOUSE, Mesh, NoToneMapping, PCFSoftShadowMap, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -42,6 +43,7 @@ export class Engine3DService implements OnDestroy {
 
   private canvasWidth = 0;
   private canvasHeight = 0;
+  private cameraFirstChange = true;
 
   private canvas: HTMLCanvasElement;
   private helper: HTMLElement;
@@ -77,29 +79,22 @@ export class Engine3DService implements OnDestroy {
       : [];
   }
 
-  getDefaultControlPosition(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
-    return {
-      target: {
-        x: 0,
-        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight),
-        z: 0,
-      },
-      position: {
-        x: 0,
-        y: 0,
-        z: -(height * DreamCeilSize) / 2,
-      }
-    };
+  get defaultControlPosition(): DreamMapCameraPosition {
+    const width = ParseInt(this.dreamMap?.size?.width, DreamMapSize);
+    const height = ParseInt(this.dreamMap?.size?.height, DreamMapSize);
+    // Параметры камеры по умолчанию
+    return this.dreamService.getDefaultCamera(width, height);
   }
 
 
 
   constructor(
+    private dreamService: DreamService,
     private screenService: ScreenService,
     private ceil3dService: Ceil3dService,
     private store$: Store
   ) {
-    this.onCanvasResize();
+    this.canvasResizeListener();
   }
 
   ngOnDestroy(): void {
@@ -160,10 +155,12 @@ export class Engine3DService implements OnDestroy {
 
   // Создание камеры
   private createCamera(): void {
+    const { position } = this.defaultControlPosition;
+    // Создание камеры
     this.camera = new PerspectiveCamera(30, this.canvasWidth / this.canvasHeight, DreamCeilSize / 10, DreamFogFar);
-    this.camera.position.setX(this.dreamMap.camera.position.x);
-    this.camera.position.setY(this.dreamMap.camera.position.y);
-    this.camera.position.setZ(this.dreamMap.camera.position.z);
+    this.camera.position.setX(ParseFloat(this.dreamMap?.camera?.position?.x, position.x, 16));
+    this.camera.position.setY(ParseFloat(this.dreamMap?.camera?.position?.y, position.y, 16));
+    this.camera.position.setZ(ParseFloat(this.dreamMap?.camera?.position?.z, position.z, 16));
     // Добавить камеру
     this.scene.add(this.camera);
   }
@@ -188,6 +185,8 @@ export class Engine3DService implements OnDestroy {
 
   // Создание управления камерой
   private createControl(): void {
+    const { target } = this.defaultControlPosition;
+    // Создание Управления
     this.control = new OrbitControls(this.camera, this.canvas);
     this.control.screenSpacePanning = false;
     this.control.enablePan = true;
@@ -199,9 +198,9 @@ export class Engine3DService implements OnDestroy {
     this.control.minPolarAngle = AngleToRad(this.minAngle);
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
-    this.control.target.setX(this.dreamMap.camera.target.x);
-    this.control.target.setY(DreamStartHeight + DreamRealMaxHeight + DreamCeilSize);
-    this.control.target.setZ(this.dreamMap.camera.target.z);
+    this.control.target.setX(ParseFloat(this.dreamMap?.camera?.target?.x, target.x, 16));
+    this.control.target.setY(ParseFloat(this.dreamMap?.camera?.target?.y, target.y, 16));
+    this.control.target.setZ(ParseFloat(this.dreamMap?.camera?.target?.z, target.z, 16));
     this.camera.far = DreamFogFar;
     // Изменение камеры
     fromEvent(this.control, "change")
@@ -307,32 +306,8 @@ export class Engine3DService implements OnDestroy {
 
 
 
-  // Изменение размера canvas
-  private onCanvasResize(): void {
-    WaitObservable(() => !this.helper)
-      .pipe(
-        concatMap(() => this.screenService.elmResize(this.helper)),
-        takeUntil(this.destroyed$)
-      )
-      .subscribe(() => {
-        this.createCanvas();
-        // Настройки
-        if (this.renderer) {
-          this.renderer.setSize(this.canvasWidth, this.canvasHeight);
-          this.renderer.setPixelRatio(window.devicePixelRatio);
-          this.composer.setSize(this.canvasWidth, this.canvasHeight);
-          this.camera.aspect = this.canvasWidth / this.canvasHeight;
-          // обновить пост отрисовку
-          this.onUpdatePostProcessors();
-          // Рендер
-          this.camera.updateProjectionMatrix();
-          this.composer.render();
-        }
-      });
-  }
-
   // Изменение позиции камеры
-  private onCameraChange(event: OrbitControls): void {
+  onCameraChange(event: OrbitControls): void {
     const width = this.dreamMap.size.width * DreamCeilSize;
     const height = this.dreamMap.size.height * DreamCeilSize;
     const vector: Vector3 = new Vector3();
@@ -367,7 +342,10 @@ export class Engine3DService implements OnDestroy {
     // Запомнить положение камеры
     this.lastCamera = event.object.clone() as PerspectiveCamera;
     this.camera.far = DreamFogFar;
-    this.dreamMap.isChanged = true;
+    this.dreamMap.isChanged = this.cameraFirstChange
+      ? !!this.dreamMap.isChanged
+      : true;
+    this.cameraFirstChange = false;
     // Угол для компаса
     event.object.getWorldDirection(vector);
     // Положение на компасе
@@ -419,6 +397,35 @@ export class Engine3DService implements OnDestroy {
       camera: this.camera,
       control: this.control
     }));
+  }
+
+
+
+  // Изменение размера canvas
+  private canvasResizeListener(): void {
+    WaitObservable(() => !this.helper)
+      .pipe(
+        switchMap(() => this.screenService.elmResize(this.helper).pipe(
+          retry()
+        )),
+        tap(() => this.createCanvas()),
+        filter(() => !!this.renderer),
+        tap(() => {
+          this.renderer.setSize(this.canvasWidth, this.canvasHeight);
+          this.renderer.setPixelRatio(window.devicePixelRatio);
+          this.composer.setSize(this.canvasWidth, this.canvasHeight);
+          this.camera.aspect = this.canvasWidth / this.canvasHeight;
+        }),
+        tap(() => {
+          this.camera.updateProjectionMatrix();
+          this.composer.render();
+        }),
+        delay(1),
+        tap(() => this.onCameraChange(this.control)),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(() => {
+      });
   }
 }
 

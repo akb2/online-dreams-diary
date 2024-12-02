@@ -221,9 +221,11 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
 
   // Сохранение
-  onSave(): void {
+  onSave() {
     if (!this.loading) {
-      const status: DreamStatus = this.dreamForm.invalid ? DreamStatus.draft : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
+      const status: DreamStatus = this.dreamForm.invalid
+        ? DreamStatus.draft
+        : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
       // Подсветить ошибки
       if (this.dreamForm.invalid) {
         this.dreamForm.markAllAsTouched();
@@ -260,6 +262,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
             id => {
               this.dream.id = id;
               this.loading = false;
+              this.dream.map.isChanged = false;
               this.changeDetectorRef.detectChanges();
               // Добавить ID в URL
               this.router.navigate(["diary", "editor", id.toString()], { queryParamsHandling: "merge", replaceUrl: true });
@@ -279,7 +282,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   // Изменение названия сновидения
-  private onChangeTitle(title: string): void {
+  private onChangeTitle(title: string) {
     this.dream.title = title;
     // Обновить название страницы
     this.setTitle();
@@ -288,18 +291,18 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   // Изменение даты сновидения
-  private onChangeDate(date: Date): void {
+  private onChangeDate(date: Date) {
     this.dreamForm.get("date").setValue(date ?? this.today, { emitEvent: false });
   }
 
   // Изменить настройки оформления
-  onChangeSettings(settings: NavMenuSettingData): void {
+  onChangeSettings(settings: NavMenuSettingData) {
     this.dreamForm.get("headerType").setValue(settings.navMenuType);
     this.dreamForm.get("headerBackground").setValue(settings.backgroundId);
   }
 
   // Переключение вкладки
-  onChangeTab(index: number): void {
+  onChangeTab(index: number) {
     this.mainMenu.collapseMenu();
     this.selectedTab = ParseInt(index);
     // Обнаружить изменения
@@ -309,7 +312,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
 
   // Определить данные
-  private defineData(): void {
+  private defineData() {
     this.accountService.user$()
       .pipe(
         switchMap(user => !!user ? of(user) : throwError(null)),
@@ -344,7 +347,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   // Создать форму
-  private createForm(): void {
+  private createForm() {
     this.dreamForm.get("title").setValue(this.dream.title);
     this.dreamForm.get("description").setValue(this.dream.description);
     this.dreamForm.get("mode").setValue(this.dream.mode.toString());
@@ -361,7 +364,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   }
 
   // Установить название страницы
-  private setTitle(): void {
+  private setTitle() {
     this.titleService.setTitle(this.globalService.createTitle([
       this.dream.title,
       this.translateService.instant(this.pageTitle[!!this.dream.id ? 1 : 0])

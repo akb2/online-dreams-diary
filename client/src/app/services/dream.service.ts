@@ -5,7 +5,7 @@ import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { CheckInRange, ParseInt, Random } from "@_helpers/math";
+import { CheckInRange, ParseFloat, ParseInt, Random } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -22,23 +22,14 @@ import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/opera
 
 
 
-
-
-@Injectable({
-  providedIn: "root"
-})
-
+@Injectable({ providedIn: "root" })
 export class DreamService implements OnDestroy {
-
-
-  private localStorageTtl: number = 60 * 60 * 24 * 365;
-  private dreamMapSettingsLocalStorageKey: string = "dream_map-settings";
+  private readonly localStorageTtl = 60 * 60 * 24 * 365;
+  private dreamMapSettingsLocalStorageKey = "dream_map-settings";
 
   private user: User;
 
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -67,7 +58,7 @@ export class DreamService implements OnDestroy {
   }
 
   // Позиция камеры по умолчанию
-  getDefaultCamera(width: number = DreamMapSize, height: number = DreamMapSize): DreamMapCameraPosition {
+  getDefaultCamera(width = DreamMapSize, height = DreamMapSize): DreamMapCameraPosition {
     return {
       target: {
         x: 0,
@@ -94,7 +85,7 @@ export class DreamService implements OnDestroy {
   }
 
   // Сведения о владельце сновидения
-  private getDreamUsers(userIds: number[], userId: number = 0): Observable<User[]> {
+  private getDreamUsers(userIds: number[], userId = 0): Observable<User[]> {
     userIds = Array.from(new Set(userIds));
     // Текущий пользователь
     if (userIds.length === 1 && ((!!this.user && this.user.id === userIds[0]) || userId === userIds[0])) {
@@ -119,8 +110,6 @@ export class DreamService implements OnDestroy {
 
 
 
-
-
   constructor(
     private accountService: AccountService,
     private httpClient: HttpClient,
@@ -136,8 +125,6 @@ export class DreamService implements OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -164,7 +151,7 @@ export class DreamService implements OnDestroy {
   }
 
   // Данные о сновидении
-  getById(id: number, edit: boolean = true, codes: string[] = []): Observable<Dream> {
+  getById(id: number, edit = true, codes: string[] = []): Observable<Dream> {
     const params: SimpleObject = {
       id: id.toString(),
       edit: edit ? "true" : "false"
@@ -228,8 +215,6 @@ export class DreamService implements OnDestroy {
   saveSettings(settings: DreamMapSettings): void {
     LocalStorageSet(this.dreamMapSettingsLocalStorageKey, settings, this.localStorageTtl);
   }
-
-
 
 
 
@@ -299,8 +284,8 @@ export class DreamService implements OnDestroy {
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
     if (!!dreamMapDto) {
-      const width: number = ParseInt(dreamMapDto?.size?.width, DreamMapSize);
-      const height: number = ParseInt(dreamMapDto?.size?.height, DreamMapSize);
+      const width = ParseInt(dreamMapDto?.size?.width, DreamMapSize);
+      const height = ParseInt(dreamMapDto?.size?.height, DreamMapSize);
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
         z: ParseInt(dreamMapDto?.ocean?.z, DreamWaterDefHeight),
@@ -325,14 +310,14 @@ export class DreamService implements OnDestroy {
         })),
         camera: {
           target: {
-            x: ParseInt(dreamMapDto?.camera?.target?.x, defaultCamera.target.x),
-            y: ParseInt(dreamMapDto?.camera?.target?.y, defaultCamera.target.y),
-            z: ParseInt(dreamMapDto?.camera?.target?.z, defaultCamera.target.z),
+            x: ParseFloat(dreamMapDto?.camera?.target?.x, defaultCamera.target.x, 16),
+            y: ParseFloat(dreamMapDto?.camera?.target?.y, defaultCamera.target.y, 16),
+            z: ParseFloat(dreamMapDto?.camera?.target?.z, defaultCamera.target.z, 16),
           },
           position: {
-            x: ParseInt(dreamMapDto?.camera?.position?.x, defaultCamera.position.x),
-            y: ParseInt(dreamMapDto?.camera?.position?.y, defaultCamera.position.y),
-            z: ParseInt(dreamMapDto?.camera?.position?.z, defaultCamera.position.z),
+            x: ParseFloat(dreamMapDto?.camera?.position?.x, defaultCamera.position.x, 16),
+            y: ParseFloat(dreamMapDto?.camera?.position?.y, defaultCamera.position.y, 16),
+            z: ParseFloat(dreamMapDto?.camera?.position?.z, defaultCamera.position.z, 16),
           }
         },
         sky: {

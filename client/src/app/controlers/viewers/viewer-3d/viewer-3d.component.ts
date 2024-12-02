@@ -2,7 +2,7 @@ import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamCeilSize, DreamDefHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseInt } from "@_helpers/math";
+import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
@@ -155,7 +155,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   get getMap(): DreamMap {
     const control = this.engine3DService.control;
     const camera = this.engine3DService.camera;
-    const defaultControl = this.engine3DService.getDefaultControlPosition(this.dreamMap?.size.width, this.dreamMap?.size.height);
+    const { position, target } = this.engine3DService.defaultControlPosition;
     const ceils = this.dreamMap?.ceils.filter(c =>
       (!!c.terrain && c.terrain > 0 && c.terrain !== DreamTerrain)
       || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
@@ -165,28 +165,28 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       ceils,
       camera: {
         target: {
-          x: control?.target?.x ?? defaultControl.target.x,
-          y: control?.target?.y ?? defaultControl.target.y,
-          z: control?.target?.z ?? defaultControl.target.z,
+          x: ParseFloat(control?.target?.x, target.x, 16),
+          y: ParseFloat(control?.target?.y, target.y, 16),
+          z: ParseFloat(control?.target?.z, target.z, 16)
         },
         position: {
-          x: camera?.position?.x ?? defaultControl.position.x,
-          y: camera?.position?.y ?? defaultControl.position.y,
-          z: camera?.position?.z ?? defaultControl.position.z,
+          x: ParseFloat(camera?.position?.x, position.x, 16),
+          y: ParseFloat(camera?.position?.y, position.y, 16),
+          z: ParseFloat(camera?.position?.z, position.z, 16)
         }
       },
       dreamerWay: [],
       size: this.dreamMap?.size,
       ocean: {
-        material: this.dreamMap?.ocean?.material ?? 1,
-        z: this.dreamMap?.ocean?.z ?? DreamWaterDefHeight
+        material: ParseInt(this.dreamMap?.ocean?.material, 1),
+        z: ParseInt(this.dreamMap?.ocean?.z, DreamWaterDefHeight)
       },
       land: {
-        type: this.dreamMap?.land?.type ?? DreamTerrain,
-        z: this.dreamMap?.land?.z ?? DreamDefHeight
+        type: ParseInt(this.dreamMap?.land?.type, DreamTerrain),
+        z: ParseInt(this.dreamMap?.land?.z, DreamDefHeight)
       },
       sky: {
-        time: this.dreamMap?.sky?.time ?? DreamSkyTime
+        time: ParseInt(this.dreamMap?.sky?.time, DreamSkyTime)
       },
       relief: {
         types: ClosestHeightNames.reduce((o, name) => ({
@@ -522,6 +522,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         args: [
           () => this.sky3DService.onAnimate.bind(this.sky3DService),
           () => this.worldOcean3DService.onAnimate.bind(this.worldOcean3DService)
+        ]
+      },
+      // Сфокусировать камеру
+      {
+        callable: this.engine3DService.onCameraChange,
+        context: this.engine3DService,
+        args: [
+          () => this.engine3DService.control
         ]
       }
     );
