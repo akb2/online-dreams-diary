@@ -1,6 +1,7 @@
 import { Viewer3DComponent } from "@_controlers/viewer-3d/viewer-3d.component";
 import { DreamMap } from "@_models/dream-map";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from "@angular/core";
+import { appSetUserSelectAction } from "@app/reducers/app";
 import { Editor3DOverlaySettings, editor3DOverlaySettingsSelector, editor3DSetNoneOverlaySettingsStateAction, editor3DSetSkyTimeAction, editor3DSetWorldOceanHeightAction, editor3DShowControlsSelector, editor3DShowOverlaySettingsSelector, editor3DUpdateOverlaySettingsStateAction } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 
@@ -66,12 +67,14 @@ export class Editor3DComponent implements OnInit {
   // Показать затенение
   showOverlay() {
     this.showingOverlay = true;
+    this.store$.dispatch(appSetUserSelectAction({ userSelect: true }));
     this.changeDetectorRef.detectChanges();
   }
 
-  // Показать затенение
+  // Скрыть затенение
   hideOverlay() {
     this.showingOverlay = false;
+    this.store$.dispatch(appSetUserSelectAction({ userSelect: false }));
     this.changeDetectorRef.detectChanges();
   }
 }
