@@ -21,8 +21,8 @@ $colors: (
 .dialog__actions {
   justify-content: flex-end;
   // Несколько кнопок
-  &.between {
-    justify-content: space-between;
+  &-filler {
+    flex-grow: 1;
   }
 }
 
@@ -237,6 +237,7 @@ $colors: (
     align-items: center;
     background-color: map.get($colors, disabled);
     border-radius: 50%;
+    cursor: default;
     // Цвета
     @each $color, $value in $colors {
       &[color="#{$color}"] {
@@ -253,6 +254,30 @@ $colors: (
     // Иконка
     > mat-icon {
       color: colors.$titleDark;
+    }
+    // Иконка при ошибке
+    &.error {
+      cursor: pointer;
+    }
+    // Иконка при ошибке
+    &.error > &-image {
+      &-unhovered {
+        display: inline;
+      }
+      // Иконка при выделении
+      &-hovered {
+        display: none;
+      }
+    }
+    // Иконка при выделении ошибки
+    &.error:hover > &-image {
+      &-unhovered {
+        display: none;
+      }
+      // Иконка при выделении
+      &-hovered {
+        display: inline;
+      }
     }
   }
   // Список

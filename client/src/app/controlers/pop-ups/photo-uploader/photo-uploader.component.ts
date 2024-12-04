@@ -8,9 +8,7 @@ import { MediaService } from "@_services/media.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { Observable, Subject, catchError, concatMap, fromEvent, map, merge, mergeMap, of, takeUntil, takeWhile, tap } from "rxjs";
-
-
+import { Observable, Subject, catchError, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, takeWhile, tap } from "rxjs";
 
 
 
@@ -20,9 +18,7 @@ import { Observable, Subject, catchError, concatMap, fromEvent, map, merge, merg
   styleUrls: ["photo-uploader.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDestroy {
-
   static popUpWidth: string = "600px";
 
   @ViewChild("dragInputElm", { read: ElementRef }) dragInputElm: ElementRef;
@@ -43,8 +39,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
   isMobile: boolean = false;
 
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -87,19 +81,24 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
 
   // Текст ошибки
   getErrorText({ loadError }: SelectedFile): string {
-    return !!loadError ? ErrorTexts[loadError] : ErrorTexts[LoadError.unDefined];
+    return !!loadError
+      ? ErrorTexts[loadError]
+      : ErrorTexts[LoadError.unDefined];
   }
 
   // Файлы готовы к сохранению
   get filesReady(): boolean {
     const noUploaded: boolean = this.uploadedFiles.some(({ uploaded }) => !uploaded);
     const all: number = ParseInt(this.uploadedFiles?.length);
-    const errors: number = ParseInt(this.uploadedFiles.filter(({ loadError }) => loadError !== LoadError.success).length);
+    const errors: number = this.errorUploadedFiles.length;
     // Файлы не готовы к загрузке
     return !(noUploaded || (errors === all && all > 0) || !all);
   }
 
-
+  // Незагруженные файлы
+  get errorUploadedFiles(): SelectedFile[] {
+    return this.uploadedFiles.filter(({ uploaded, loadError }) => uploaded && loadError !== LoadError.success) ?? [];
+  }
 
 
 
@@ -144,8 +143,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -203,13 +200,47 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
     this.onStartUpload((<HTMLInputElement>event?.target)?.files);
   }
 
+  // Повторить загрузку файла
+  onFileRetryUpload(selectedFile: SelectedFile) {
+    if (selectedFile.loadError !== LoadError.success) {
+      selectedFile.progress = 0;
+      selectedFile.uploaded = false;
+      selectedFile.loadError = LoadError.success;
+      selectedFile.mediaData = null;
+      // Загрузка
+      this.upload(selectedFile)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(() => this.changeDetectorRef.detectChanges());
+    }
+  }
+
+  // Повторить загрузку файлов
+  onFilesRetryUpload() {
+    const files = this.errorUploadedFiles;
+    // Повторить загрузку
+    if (files.length > 0) {
+      merge(...files.map(selectedFile => {
+        selectedFile.progress = 0;
+        selectedFile.uploaded = false;
+        selectedFile.loadError = LoadError.success;
+        selectedFile.mediaData = null;
+        // Загрузка
+        return this.upload(selectedFile);
+      }))
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(() => this.changeDetectorRef.detectChanges());
+    }
+  }
+
   // Начать загрузку
   private onStartUpload(mixedFiles: FileList): void {
     if (mixedFiles?.length > 0) {
-      const files: File[] = this.multiUpload ? Array.from(mixedFiles) : [mixedFiles[0]];
+      const files: File[] = this.multiUpload
+        ? Array.from(mixedFiles)
+        : [mixedFiles[0]];
       // Проверить размер
       merge(...files.map(file => ImageRightRotate(file).pipe(
-        concatMap(file => this.addFile(file)),
+        switchMap(file => this.addFile(file)),
         takeWhile(result => !!result)
       )))
         .pipe(takeUntil(this.destroyed$))
@@ -232,63 +263,64 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
 
 
 
-
+  // Загрузка файла
+  private upload(selectedFile: SelectedFile): Observable<SelectedFile> {
+    return this.mediaService.upload(selectedFile.file).pipe(
+      map(result => {
+        if (typeof result === "number") {
+          const progress: number = CheckInRange(result, 100, 0);
+          // Установить свойства файла
+          selectedFile.progress = progress;
+        }
+        // Файл загружен
+        else {
+          selectedFile.progress = 100;
+          selectedFile.uploaded = true;
+          selectedFile.mediaData = result;
+        }
+        // Вернуть объект
+        return selectedFile;
+      }),
+      catchError(() => {
+        selectedFile.progress = 0;
+        selectedFile.uploaded = true;
+        selectedFile.loadError = LoadError.uploadError;
+        // Вернуть объект
+        return of(selectedFile);
+      }),
+      takeUntil(this.destroyed$)
+    );
+  }
 
   // Добавить файл в массив
-  private addFile(file: UploadedImage): Observable<SelectedFile> {
+  addFile(uploadedImage: UploadedImage): Observable<SelectedFile> {
     const extensions: MediaFileExtension[] = [MediaFileExtension.jpeg, MediaFileExtension.jpg];
-    const extension: MediaFileExtension = file.file?.name?.split(".")?.pop()?.toLowerCase() as MediaFileExtension;
+    const extension: MediaFileExtension = uploadedImage.file?.name?.split(".")?.pop()?.toLowerCase() as MediaFileExtension;
     // Проверка файла
-    if (!this.uploadedFiles.some(({ hash }) => hash === file.hash)) {
+    if (!this.uploadedFiles.some(({ hash }) => hash === uploadedImage.hash)) {
       if (!!extension && extensions.includes(extension)) {
-        if (file.file.size <= this.fileSize) {
-          const uploadedFile: SelectedFile = {
-            file: file.file,
+        if (uploadedImage.file.size <= this.fileSize) {
+          const selectedFile: SelectedFile = {
+            file: uploadedImage.file,
             progress: 0,
             uploaded: false,
             loadError: LoadError.success,
-            src: file.src,
-            hash: file.hash,
+            src: uploadedImage.src,
+            hash: uploadedImage.hash,
             mediaData: null
           };
           // Добавить файл
-          this.uploadedFiles.push(uploadedFile);
+          this.uploadedFiles.push(selectedFile);
           // Обновить
           this.changeDetectorRef.detectChanges();
           // Начать загрузку
-          return this.mediaService.upload(file.file).pipe(
-            map(result => {
-              if (typeof result === "number") {
-                const progress: number = CheckInRange(result, 100, 0);
-                // Установить свойства файла
-                uploadedFile.progress = progress;
-              }
-              // Файл загружен
-              else {
-                uploadedFile.progress = 100;
-                uploadedFile.uploaded = true;
-                uploadedFile.mediaData = result;
-              }
-              // Вернуть объект
-              return uploadedFile;
-            }),
-            catchError(() => {
-              uploadedFile.progress = 0;
-              uploadedFile.uploaded = true;
-              uploadedFile.loadError = LoadError.uploadError;
-              // Вернуть объект
-              return of(uploadedFile);
-            }),
-            takeUntil(this.destroyed$)
-          );
+          return this.upload(selectedFile);
         }
       }
     }
     // Файл не добавлен
     return of(null);
   }
-
-
 
 
 
@@ -301,8 +333,6 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
     return matDialog.open(PopupPhotoUploaderComponent, matDialogConfig);
   }
 }
-
-
 
 
 
@@ -333,9 +363,9 @@ enum LoadError {
 }
 
 const ErrorTexts: CustomObjectKey<LoadError, string> = {
-  [LoadError.unDefined]: "Неизвестная ошибка",
+  [LoadError.unDefined]: "Неизвестная ошибка. Нажмите, чтобы повторить.",
   [LoadError.success]: "Загружено",
-  [LoadError.extension]: "Ошибка расширения",
-  [LoadError.fileSize]: "Превышен размер",
-  [LoadError.uploadError]: "Ошибка загрузки",
+  [LoadError.extension]: "Ошибка расширения. Нажмите, чтобы повторить.",
+  [LoadError.fileSize]: "Превышен размер. Нажмите, чтобы повторить.",
+  [LoadError.uploadError]: "Ошибка загрузки. Нажмите, чтобы повторить.",
 };

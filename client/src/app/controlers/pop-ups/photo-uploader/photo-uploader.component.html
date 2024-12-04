@@ -33,7 +33,6 @@
 <!-- Панель действия -->
 <div mat-dialog-actions
      class="dialog__actions"
-     [ngClass]="{ between: multiUpload }"
      *ngIf="!!uploadedFiles?.length">
   <!-- Загрузить еще файлы -->
   <button mat-stroked-button
@@ -42,6 +41,16 @@
           *ngIf="multiUpload && !!uploadedFiles?.length">
     <mat-icon>add_a_photo</mat-icon>
     Добавить файлы
+  </button>
+  <!-- Заполнитель пространства -->
+  <span class="dialog__actions-filler"></span>
+  <!-- Сохранить файлы -->
+  <button mat-icon-button
+          matTooltip="Попробовать загрузить файлы еще раз"
+          color="warn"
+          (click)="onFilesRetryUpload()"
+          *ngIf="errorUploadedFiles.length > 0">
+    <mat-icon>refresh</mat-icon>
   </button>
   <!-- Сохранить файлы -->
   <button mat-flat-button
@@ -129,11 +138,14 @@
     </ng-container>
     <!-- Результат загрузки -->
     <div class="file__icon"
-         [ngClass]="{ multi: multiUpload }"
+         [ngClass]="{ multi: multiUpload, error: file.loadError !== loadErrors.success }"
          [attr.color]="file.loadError === loadErrors.success? 'primary': 'warn'"
          [matTooltip]="getErrorText(file)"
+         (click)="onFileRetryUpload(file)"
          *ngIf="file.uploaded && !!file.loadError">
-      <mat-icon>{{file.loadError === loadErrors.success? 'check': 'priority_high'}}</mat-icon>
+      <mat-icon class="file__icon-image-unhovered">{{file.loadError === loadErrors.success? 'check': 'priority_high'}}</mat-icon>
+      <mat-icon class="file__icon-image-hovered"
+                *ngIf="file.loadError !== loadErrors.success">refresh</mat-icon>
     </div>
   </div>
 </ng-template>

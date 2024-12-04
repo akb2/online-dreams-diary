@@ -81,25 +81,18 @@ class MediaService
             }
             // Создать новую запись в базе данных
             if ($needCreate && $successReplace) {
-              $sqlData = array(
-                'user_id' => $userId,
-                'hash' => $fileHash,
-                'size' => $file['size'],
-                'extension' => $fileExt,
-                'original_name' => $file['name'],
-                'keywords' => $keywords,
-                'description' => $description
-              );
-              // Сохранение информации в базу данных
-              if ($this->dataBaseService->executeFromFile('media/create.sql', $sqlData)) {
-                return $this->pdo->lastInsertId();
-              }
+              return $this->createFromUploadQuery($file, $keywords, $description);
             }
             // Загрузить существующий файл
             else if (!$needCreate) {
               $tempData = $this->getByHash($fileHash, $fileExt);
+              $mediaId = $tempData['id'] ?? 0;
+              // Медиа не создано
+              if ($mediaId <= 0) {
+                return $this->createFromUploadQuery($file, $keywords, $description);
+              }
               // Вернуть ID
-              return $tempData['id'] ?? 0;
+              return $mediaId;
             }
           }
         }
@@ -107,6 +100,28 @@ class MediaService
     }
     // Медиафайл не сохранен
     return 0;
+  }
+
+  // Создать медиа из загружаемого файла: запрос в БД
+  private function createFromUploadQuery(array $file, string $keywords = '', $description = '')
+  {
+    $userId = intval($_SERVER['TOKEN_USER_ID']);
+    $nameParse = explode('.', $file['name']);
+    $fileExt = end($nameParse);
+    $fileHash = $this->getFileHash($file['tmp_name']);
+    $sqlData = array(
+      'user_id' => $userId,
+      'hash' => $fileHash,
+      'size' => $file['size'],
+      'extension' => $fileExt,
+      'original_name' => $file['name'],
+      'keywords' => $keywords,
+      'description' => $description
+    );
+    // Сохранение информации в базу данных
+    if ($this->dataBaseService->executeFromFile('media/create.sql', $sqlData)) {
+      return $this->pdo->lastInsertId();
+    }
   }
 
 
