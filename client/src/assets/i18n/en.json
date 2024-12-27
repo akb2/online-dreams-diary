@@ -269,6 +269,13 @@
           "buttons": {
             "change_status": "Change status"
           }
+        },
+        "comments": {
+          "no_comments": {
+            "my_wall.sub_title": "Let's write a first post on your wall",
+            "another_user.sub_title": "Be the first to write something interesting to {{name}}",
+            "no_auth.sub_title": "To write a comment, you need to log in"
+          }
         }
       }
     },
@@ -375,6 +382,10 @@
           "photo": "Photo",
           "graffity": "Graffity"
         }
+      },
+      "default": {
+        "title": "There is no comments",
+        "sub_title": "Let's write a first comment"
       }
     },
     "emojies": {

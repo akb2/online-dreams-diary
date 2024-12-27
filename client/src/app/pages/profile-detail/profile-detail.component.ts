@@ -16,10 +16,10 @@ import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
-import { DatePipe } from "@angular/common";
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
+import { TranslateService } from "@ngx-translate/core";
 import { Subject, catchError, concatMap, map, merge, mergeMap, of, skipWhile, switchMap, takeUntil, takeWhile, throwError, timer } from "rxjs";
 import { CommentBlockComponent } from "./comment-block/comment-block.component";
 
@@ -107,10 +107,11 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
 
   // Подзаголовок стены без записей
   getWallEmptySubTitle(name: string): string {
-    return this.itsMyPage ?
-      "Напишите на своей стене что у вас нового" : !!this.user?.id ?
-        "Будьте первым, напишите " + name + " что-нибудь интересное" :
-        "Авторизуйтесь или зарегистрируйтесь, чтобы оставлять комментарии";
+    return this.itsMyPage
+      ? "pages.profile.blocks.comments.no_comments.my_wall.sub_title"
+      : !!this.user?.id
+        ? this.translateService.instant("pages.profile.blocks.comments.no_comments.another_user.sub_title", { name })
+        : "pages.profile.blocks.comments.no_comments.no_auth.sub_title";
   }
 
   // Показывать статус
@@ -142,7 +143,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
     private friendService: FriendService,
     private titleService: Title,
     private globalService: GlobalService,
-    private datePipe: DatePipe,
+    private translateService: TranslateService,
     private canonicalService: CanonicalService
   ) { }
 

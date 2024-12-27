@@ -42,8 +42,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
-  @Input() emptyCommentsMainTitle: string = "Нет комментариев";
-  @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
+  @Input() emptyCommentsMainTitle: string = "components.comment.default.title";
+  @Input() emptyCommentsSubTitle: string = "components.comment.default.sub_title";
   @Input() writeAccess: boolean = false;
   @Input() goToCommentScrollSubtrahend: number = DrawDatas.minHeight;
   @Input() attachmentPerLine: number = 5;

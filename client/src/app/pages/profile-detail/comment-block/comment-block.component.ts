@@ -24,8 +24,8 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
   @Input() materialId: number;
   @Input() materialOwner: number;
   @Input() placeholder: string = "components.comment.editor.placeholder";
-  @Input() emptyCommentsMainTitle: string = "Нет комментариев";
-  @Input() emptyCommentsSubTitle: string = "Будьте первым, напишите свой комментарий";
+  @Input() emptyCommentsMainTitle: string = "components.comment.default.title";
+  @Input() emptyCommentsSubTitle: string = "components.comment.default.sub_title";
   @Input() wrapControls: boolean = false;
 
   authState: boolean = false;
