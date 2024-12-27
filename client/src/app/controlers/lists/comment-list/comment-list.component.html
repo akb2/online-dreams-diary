@@ -68,7 +68,7 @@
             <!-- Удалить -->
             <button mat-icon-button
                     color="warn"
-                    matTooltip="Удалить"
+                    [matTooltip]="'general.buttons.delete' | translate"
                     (click)="onDelete(comment)"
                     *ngIf="isDeleteAvail(comment)">
               <mat-icon>close</mat-icon>

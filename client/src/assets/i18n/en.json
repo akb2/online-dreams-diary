@@ -2,6 +2,7 @@
   "language": "en",
   "general": {
     "buttons": {
+      "delete": "Delete",
       "log_in": "Log In",
       "sign_up": "Sign Up",
       "cancel": "Cancel",

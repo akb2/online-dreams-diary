@@ -2,6 +2,7 @@
   "language": "ru",
   "general": {
     "buttons": {
+      "delete": "Удалить",
       "log_in": "Вход",
       "sign_up": "Регистрация",
       "cancel": "Отмена",
