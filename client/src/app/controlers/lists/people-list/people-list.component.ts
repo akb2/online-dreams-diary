@@ -1,12 +1,11 @@
+import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { Friend, FriendStatus } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
-import { Observable, Subject, merge, mergeMap, takeUntil } from "rxjs";
-
-
+import { Observable, Subject, merge, switchMap, takeUntil } from "rxjs";
 
 
 
@@ -16,16 +15,13 @@ import { Observable, Subject, merge, mergeMap, takeUntil } from "rxjs";
   styleUrls: ["./people-list.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
-
-
   @Input() people: User[];
   @Input() oneLine: boolean = false;
   @Input() highlightWords: string[];
 
   user: User;
-  friends: Friend[];
+  friends: Friend[] = [];
 
   friendLoader: boolean = false;
   friendBlock: boolean = false;
@@ -36,8 +32,6 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
 
   private friendStatusesDestroyed$: Subject<void> = new Subject();
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -70,8 +64,6 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-
-
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private accountService: AccountService,
@@ -96,7 +88,7 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
       // Список статусов в друзья
       WaitObservable(() => !this.user)
         .pipe(
-          mergeMap(() => merge(...this.people.filter(user => !this.itsMe(user)).map(({ id }) => this.friendService.friends$(this.user.id, id)))),
+          switchMap(() => merge(...this.people.filter(user => !this.itsMe(user)).map(({ id }) => this.friendService.friends$(this.user.id, id)))),
           takeUntil(this.friendStatusesDestroyed$),
           takeUntil(this.destroyed$)
         )
@@ -115,14 +107,6 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
 
-
-
-
-  // Добавить в друзья
-  onAddToFriendList(event: MouseEvent | PointerEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
   // Переписка
   onDialogOpen(event: MouseEvent | PointerEvent): void {
@@ -150,7 +134,6 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
     this.onFriendsEvent(this.friendService.cancelFromFriends(user.id));
   }
 
-
   // Выполнение события с заявками в друзья
   private onFriendsEvent(observable: Observable<string>): void {
     if (!this.friendLoader) {
@@ -174,24 +157,24 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-
-
   // Добавить статус друзей в массив
   private addFriendToList(friend: Friend): void {
-    const friends: Friend[] = this.friends ?? [];
-    const index: number = friends?.findIndex(f => friend?.id && f?.id && friend.id === f.id) ?? -1;
+    const index: number = ParseInt(this.friends.findIndex(({ id, inUserId, outUserId }) =>
+      (id > 0 && friend.id > 0 && friend.id === id)
+      || (friend.inUserId === inUserId && friend.outUserId === outUserId)
+      || (friend.inUserId === outUserId && friend.outUserId === inUserId)
+    ), -1);
     // Данные в порядке
-    if (!!friend && !!friends) {
+    if (!!friend && !!this.friends) {
       // Заменить существующую
       if (index >= 0) {
-        friends[index] = friend;
+        this.friends[index] = friend;
       }
       // Новая запись
       else {
-        friends.push(friend);
+        this.friends.push(friend);
       }
       // Обновить
-      this.friends = [...friends];
       this.changeDetectorRef.detectChanges();
     }
   }
