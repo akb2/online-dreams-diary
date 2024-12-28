@@ -1,6 +1,7 @@
 import { CoordDto, XYCoord } from "@_models/dream-map";
 import { IsSimpleObject } from "./app";
 import { ParseInt } from "./math";
+import { invert } from "cypress/types/lodash";
 
 
 
@@ -71,9 +72,9 @@ export const UniqueArray: <T>(a: T[]) => T[] = <T>(a: T[]) => {
 };
 
 // Оптимизированный цикл
-export const ForCycle = (size: number, callback: (index: number) => void, inverse: boolean = false) => {
+export const ForCycle = (size: number, callback: (index: number) => void, invert = false) => {
   if (size > 0) {
-    if (!inverse) {
+    if (!invert) {
       for (let i = 0; i < size; i++) {
         callback(i);
       }
@@ -109,38 +110,52 @@ export const MapCycle = <T>(size: number, callback: (index: number) => T, invers
 };
 
 // Оптимизированный цикл по массиву
-export const ArrayForEach = <T>(array: T[], callback: (item: T, index?: number) => void, inverse: boolean = false) => {
-  ForCycle(ParseInt(array?.length), index => {
+export const ArrayForEach = <T>(array: T[], callback: (item: T, index?: number) => void, invert = false) => ForCycle(
+  ParseInt(array?.length),
+  index => {
     const item: T = array[index];
     // Вызвать обработку элемента
     callback(item, index);
-  }, inverse);
-};
+  },
+  invert
+);
 
 // Оптимизированная фильтрация массива
-export const ArrayFilter = <T>(array: T[], filterCallback: (item: T, index?: number) => boolean) => {
+export const ArrayFilter = <T>(array: T[], filterCallback: (item: T, index?: number) => boolean, invert = false) => {
   const filteredArray: T[] = [];
   // Цикл по массиву
-  ArrayForEach(array, (item: T, index: number) => filterCallback(item, index) ? filteredArray.unshift(item) : null);
+  ArrayForEach(
+    array,
+    (item: T, index: number) => filterCallback(item, index)
+      ? invert
+        ? filteredArray.push(item)
+        : filteredArray.unshift(item)
+      : null,
+    true
+  );
   // Вернуть отфильрованный массив
   return filteredArray;
 };
 
 // Оптимизированное преобразование массива
-export const ArrayMap = <O, T>(array: O[], callback: (item: O, index?: number) => T, inverse: boolean = false) => {
+export const ArrayMap = <O, T>(array: O[], callback: (item: O, index?: number) => T, invert = false) => {
   const list: T[] = [];
   // Цикл
-  ForCycle(ParseInt(array?.length), index => {
-    const item: O = array[index];
-    // Вызвать обработку элемента
-    if (!inverse) {
-      list.push(callback(item, index));
-    }
-    // Вызвать обработку элемента с инверсией
-    else {
-      list.unshift(callback(item, index));
-    }
-  }, inverse);
+  ForCycle(
+    ParseInt(array?.length),
+    index => {
+      const item: O = array[index];
+      // Вызвать обработку элемента
+      if (!invert) {
+        list.push(callback(item, index));
+      }
+      // Вызвать обработку элемента с инверсией
+      else {
+        list.unshift(callback(item, index));
+      }
+    },
+    invert
+  );
   // Вернуть массив
   return list;
 };
