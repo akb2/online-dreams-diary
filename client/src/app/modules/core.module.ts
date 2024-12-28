@@ -7,6 +7,7 @@ import { NotificationTextPipe } from "@_pipes/notification-text.pipe";
 import { PetrovichPipe } from "@_pipes/petrovich.pipe";
 import { ShortCounterPipe } from "@_pipes/short-counter.pipe";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
+import { TimerFormatPipe } from "@_pipes/timer-formst.pipe";
 import { OverlayModule } from "@angular/cdk/overlay";
 import { CommonModule, DatePipe, I18nPluralPipe } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -33,6 +34,7 @@ const directives = [
 
 // Пайпы
 const pipes = [
+  TimerFormatPipe,
   PetrovichPipe,
   NotificationTextPipe,
   StringTemplatePipe,
