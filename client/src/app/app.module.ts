@@ -28,8 +28,6 @@ import { metaReducers, reducers } from './reducers';
 
 
 
-
-
 // Регистрация локалей
 registerLocaleData(localeEn);
 registerLocaleData(localeRu);
@@ -51,6 +49,26 @@ const materialIcons: CustomMaterialIcon[] = [
     keys: ["fence"],
     path: "assets/images/icons/material-icons/fence.svg"
   },
+  // YouTube A
+  {
+    keys: ["youtube", "youtube_a"],
+    path: "assets/images/icons/material-icons/youtube-a.svg"
+  },
+  // YouTube B
+  {
+    keys: ["youtube_b"],
+    path: "assets/images/icons/material-icons/youtube-b.svg"
+  },
+  // Apple
+  {
+    keys: ["apple"],
+    path: "assets/images/icons/material-icons/apple.svg"
+  },
+  // Windows 11
+  {
+    keys: ["windows", "windows_11"],
+    path: "assets/images/icons/material-icons/windows-11.svg"
+  },
   // Уровни детализации графики
   ...MapCycle(7, i => ({
     keys: ["detalization_level_" + i],
@@ -70,8 +88,6 @@ const materialIcons: CustomMaterialIcon[] = [
 
 // Загрузчик переводов
 const CreateTranslateLoader = (http: HttpClient) => new TranslateHttpLoader(http, "./assets/i18n/", ".json");
-
-
 
 
 
