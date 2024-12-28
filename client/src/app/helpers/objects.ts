@@ -5,7 +5,12 @@ import { invert } from "cypress/types/lodash";
 
 
 
-
+// Преобразовать любой тип в массив
+export const AnyToArray = <T>(value: T): T[] => Array.isArray(value)
+  ? value
+  : !!value
+    ? [value]
+    : [];
 
 // Сравнение двух объектов
 export const CompareObjects: <T>(objA: T, objB: T) => boolean = <T>(objA: T, objB: T) => {

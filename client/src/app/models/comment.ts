@@ -67,6 +67,8 @@ export interface SearchRequestComment extends Pick<BaseSearch, "limit"> {
   loadListType: NumberDirection;
 }
 
+export type YouTubeImageResolution = "default" | "mqdefault" | "hqdefault" | "sddefault" | "maxresdefault";
+
 // Сокращенные данные видео YouTube
 export interface YouTubeVideoShort {
   id: string;
@@ -81,6 +83,7 @@ export interface YouTubeVideoBase extends YouTubeVideoShort {
 // Полные данные YouTube видео
 export interface YouTubeVideo extends YouTubeVideoBase {
   smallImage: string;
+  middleImage: string;
 }
 
 

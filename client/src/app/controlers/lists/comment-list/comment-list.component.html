@@ -97,6 +97,11 @@
               <ng-container [ngTemplateOutlet]="dreamAttachment"
                             [ngTemplateOutletContext]="{ dreams }"></ng-container>
             </ng-container>
+            <!-- Ссылка на видео YouTube -->
+            <ng-container *ngVar="comment?.attachment?.youTubeVideos as youTubeVideos">
+              <ng-container [ngTemplateOutlet]="youTubeVideoAttachment"
+                            [ngTemplateOutletContext]="{ youTubeVideos }"></ng-container>
+            </ng-container>
           </ng-container>
           <!-- Текст комментария -->
           <div class="comment__body-text"
@@ -272,5 +277,25 @@
         </div>
       </div>
     </a>
+  </ng-container>
+</ng-template>
+
+<!-- Ссылка на видео YouTube в закреплении -->
+<ng-template #youTubeVideoAttachment
+             let-youTubeVideos="youTubeVideos">
+  <ng-container *ngIf="!!youTubeVideos?.length">
+    <div class="comment__body-attachment"
+         *ngFor="let video of youTubeVideos">
+      <div class="comment__body-attachment-data">
+        <img class="media-photo contain black"
+             [src]="video.middleImage"
+             alt="YouTube видео" />
+        <!-- Эффект наведения -->
+        <div class="comment__body-attachment-overlay">
+          <mat-icon>play_arrow</mat-icon>
+          <title>Просмотр видео</title>
+        </div>
+      </div>
+    </div>
   </ng-container>
 </ng-template>

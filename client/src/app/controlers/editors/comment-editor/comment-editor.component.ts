@@ -2,7 +2,7 @@ import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
 import { UrlParamsStringToObject } from "@_datas/api";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
-import { GetYouTubeLink, GetYouTubeSmallImage } from "@_helpers/comment";
+import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
 import { ArrayMap } from "@_helpers/objects";
@@ -10,7 +10,7 @@ import { WaitObservable } from "@_helpers/rxjs";
 import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { Comment, CommentMaterialType, GraffityDrawData, YouTubeVideo, YouTubeVideoBase, YouTubeVideoShort } from "@_models/comment";
+import { Comment, CommentMaterialType, GraffityDrawData, YouTubeVideo, YouTubeVideoBase } from "@_models/comment";
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
 import { CaretPosition } from "@_models/text";
@@ -454,7 +454,8 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
       id,
       startTime,
       link: GetYouTubeLink(id),
-      smallImage: GetYouTubeSmallImage(id)
+      smallImage: GetYouTubeImage(id),
+      middleImage: GetYouTubeImage(id, "hqdefault")
     }
     // Обновить видео
     if (index >= 0) {

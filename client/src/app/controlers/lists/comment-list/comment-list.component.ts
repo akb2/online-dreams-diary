@@ -142,6 +142,10 @@ export class CommentListComponent implements OnInit, OnDestroy {
       if (!!comment.attachment?.mediaPhotos?.length) {
         count += UniqueArray(comment.attachment.mediaPhotos).length;
       }
+      // YouTube видео
+      if (!!comment.attachment?.youTubeVideos?.length) {
+        count += UniqueArray(comment.attachment.youTubeVideos).length;
+      }
     }
     // Вернуть количество комментариев
     return count;

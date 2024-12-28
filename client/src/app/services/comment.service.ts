@@ -1,11 +1,12 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { ToDate } from "@_datas/app";
+import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { ParseInt } from "@_helpers/math";
-import { UniqueArray } from "@_helpers/objects";
-import { GetDreamIdByUrl, GetLinksFromString, IsDreamUrl } from "@_helpers/string";
+import { AnyToArray, ArrayMap, UniqueArray } from "@_helpers/objects";
+import { AnyToString, GetDreamIdByUrl, GetLinksFromString, IsDreamUrl } from "@_helpers/string";
 import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
-import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment } from "@_models/comment";
+import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment, YouTubeVideo } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, Optional, Self } from "@angular/core";
@@ -40,23 +41,32 @@ export class CommentService extends TextMessage {
     const userId: number = ParseInt(comment?.userId);
     const replyToUserId: number = ParseInt(comment?.replyToUserId);
     let attachment: CommentAttachment = {};
-    const getUser = (id: number) => !!id ?
-      this.accountService.user$(id).pipe(take(1)) :
-      of(null);
-    const getDreams = (ids: number[]) => !!ids?.length ?
-      this.dreamService.search({ ids, limit: ids.length, checkPrivate: true }, ["0002"]) :
-      of(null);
+    const getUser = (id: number) => !!id
+      ? this.accountService.user$(id).pipe(take(1))
+      : of(null);
+    const getDreams = (ids: number[]) => !!ids?.length
+      ? this.dreamService.search({ ids, limit: ids.length, checkPrivate: true }, ["0002"])
+      : of(null);
     // Закрепления
     try {
-      attachment = (typeof comment?.attachment === "string" ? JSON.parse(comment?.attachment) : comment?.attachment) ?? {};
+      attachment = (typeof comment?.attachment === "string"
+        ? JSON.parse(comment?.attachment)
+        : comment?.attachment
+      ) ?? {};
     }
     // Ошибка преобразования
     catch (e: any) { }
     // Вернуть подписчика
     return of({ comment }).pipe(
-      concatMap(() => getUser(userId), (data, user) => ({ ...data, user })),
-      concatMap(() => getUser(replyToUserId), (data, replyToUser) => ({ ...data, replyToUser })),
-      concatMap(
+      switchMap(
+        () => getUser(userId),
+        (data, user) => ({ ...data, user })
+      ),
+      switchMap(
+        () => getUser(replyToUserId),
+        (data, replyToUser) => ({ ...data, replyToUser })
+      ),
+      switchMap(
         data => {
           const text: string = (data?.comment?.text ?? "").replace(new RegExp("\\[br\\]", "ig"), " <br> ");
           const dreamIds: number[] = UniqueArray(GetLinksFromString(text)
@@ -65,21 +75,49 @@ export class CommentService extends TextMessage {
             .filter(id => id > 0)
           );
           // Вернуть подписчик
-          return dreamIds.length > 0 ? getDreams(dreamIds) : of({} as SearchRequestDream);
+          return dreamIds.length > 0
+            ? getDreams(dreamIds)
+            : of({} as SearchRequestDream);
         },
         (data, dreams) => ({ ...data, dreams: dreams?.result ?? [] })
       ),
-      concatMap(
-        () => !!attachment?.graffity ? this.mediaService.convertData(attachment.graffity) : of(null),
+      switchMap(
+        () => !!attachment?.graffity
+          ? this.mediaService.convertData(attachment.graffity)
+          : of(null),
         (data, graffity) => ({ ...data, graffity })
       ),
-      concatMap(
-        () => !!attachment?.mediaPhotos?.length ?
-          forkJoin(attachment.mediaPhotos.map(id => this.mediaService.convertData(id))) :
-          of([]),
+      switchMap(
+        () => !!attachment?.mediaPhotos?.length
+          ? forkJoin(ArrayMap(
+            attachment.mediaPhotos,
+            id => this.mediaService.convertData(id),
+            false
+          ))
+          : of([]),
         (data, mediaPhotos) => ({ ...data, mediaPhotos })
       ),
-      map(({ comment, user, replyToUser, graffity, dreams, mediaPhotos }) => ({
+      map(
+        data => ({
+          ...data,
+          youTubeVideos: ArrayMap(
+            AnyToArray(attachment?.youTubeVideos),
+            data => {
+              const id = AnyToString(data?.[0]);
+              // Данные видео
+              return {
+                id,
+                startTime: ParseInt(data?.[1]),
+                smallImage: GetYouTubeImage(id, "default"),
+                middleImage: GetYouTubeImage(id, "hqdefault"),
+                link: GetYouTubeLink(id)
+              } as YouTubeVideo;
+            },
+            false
+          )
+        })
+      ),
+      map(({ comment, user, replyToUser, graffity, dreams, mediaPhotos, youTubeVideos }) => ({
         id: ParseInt(comment?.id),
         user,
         replyToUser,
@@ -89,7 +127,7 @@ export class CommentService extends TextMessage {
         text: comment?.text ?? "",
         html: this.textTransform(comment?.text ?? ""),
         createDate: ToDate(comment?.createDate),
-        attachment: { graffity, dreams, mediaPhotos }
+        attachment: { graffity, dreams, mediaPhotos, youTubeVideos }
       }))
     );
   }
