@@ -290,6 +290,12 @@
         <img class="media-photo contain black"
              [src]="video.middleImage"
              alt="YouTube видео" />
+        <!-- Логотип YoutTube -->
+        <mat-icon class="comment__body-attachment-logo youtube"
+                  svgIcon="youtube_b" />
+        <!-- Время начала -->
+        <span class="comment__body-attachment-time"
+              *ngIf="!!video?.startTime">Начало: {{video.startTime | timerFormat}}</span>
         <!-- Эффект наведения -->
         <div class="comment__body-attachment-overlay">
           <mat-icon>play_arrow</mat-icon>

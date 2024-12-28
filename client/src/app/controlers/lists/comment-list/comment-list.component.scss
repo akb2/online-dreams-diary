@@ -34,6 +34,13 @@ $attachmentCounts: (
   )
 );
 $spacing: containers.$cardPaddingY;
+$logoSizes: (
+  default: 48px,
+  middle: 36px,
+  small: 36px,
+  xsmall: 36px,
+  xxsmall: 40px
+);
 
 // Список
 .list {
@@ -237,6 +244,25 @@ $spacing: containers.$cardPaddingY;
           text-align: center;
         }
       }
+      // Логотип
+      &-logo {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        // YouTube
+        &.youtube {
+          color: red;
+        }
+      }
+      // Время начала
+      &-time {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        font-size: 12px;
+        font-weight: 300;
+        color: colors.$subTitleDark;
+      }
       // Выделение
       &:hover &-overlay {
         opacity: 1;
@@ -315,7 +341,7 @@ $spacing: containers.$cardPaddingY;
     }
   }
   // Адаптив
-  @include screens.adaptiveFor(vars.$userProfileBlocksGaps) using($gap) {
+  @include screens.adaptiveFor(vars.$userProfileBlocksGaps, $logoSizes) using($gap, $logoSize) {
     gap: 0 #{$gap};
     // Последующие блоки
     @each $elmA in $__marginElms {
@@ -324,6 +350,13 @@ $spacing: containers.$cardPaddingY;
           margin-top: $gap;
         }
       }
+    }
+    // Тело
+    &__body-attachment-logo {
+      width: $logoSize;
+      height: $logoSize;
+      line-height: $logoSize;
+      font-size: $logoSize * 0.9;
     }
     // Смещения для блоков определения загрузки
     &__more-loader {
