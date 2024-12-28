@@ -125,6 +125,7 @@ export class CommentService extends TextMessage {
       text: data.text,
       graffityUpload: data?.uploadAttachment?.graffity,
       attachment: JSON.stringify({
+        youTubeVideos: data?.uploadAttachment?.youTubeVideos ?? [],
         mediaPhotos: data?.uploadAttachment?.mediaPhotos ?? []
       })
     })).pipe(

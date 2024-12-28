@@ -52,7 +52,9 @@ class Comment
     $ownerId = $data['materialOwner'];
     // Проверка доступа
     if ($this->userSettingsService->checkPrivate('myCommentsWrite', $ownerId, $userId)) {
-      $data['attachment'] = isset($data['attachment']) ? @json_decode($data['attachment'], true) ?? array() : array();
+      $data['attachment'] = isset($data['attachment'])
+        ? @json_decode($data['attachment'], true) ?? array()
+        : array();
       // Создание медиафайла для графити
       if (!!$_FILES && !!$_FILES['graffityUpload']) {
         $graffityMediaId = $this->mediaService->createFromUpload($_FILES['graffityUpload'], 'графити');

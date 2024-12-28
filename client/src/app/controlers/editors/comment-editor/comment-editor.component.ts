@@ -1,12 +1,16 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
+import { UrlParamsStringToObject } from "@_datas/api";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
+import { GetYouTubeLink, GetYouTubeSmallImage } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
+import { ArrayMap } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
+import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
-import { Comment, CommentMaterialType, GraffityDrawData } from "@_models/comment";
+import { Comment, CommentMaterialType, GraffityDrawData, YouTubeVideo, YouTubeVideoBase, YouTubeVideoShort } from "@_models/comment";
 import { MediaFile } from "@_models/media";
 import { ScrollData } from "@_models/screen";
 import { CaretPosition } from "@_models/text";
@@ -23,8 +27,6 @@ import { Subject, filter, map, takeUntil } from "rxjs";
 
 
 
-
-
 @Component({
   selector: "app-comment-editor",
   templateUrl: "./comment-editor.component.html",
@@ -34,10 +36,7 @@ import { Subject, filter, map, takeUntil } from "rxjs";
   },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class CommentEditorComponent implements OnChanges, OnDestroy {
-
-
   @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
 
   @Input() materialType: CommentMaterialType;
@@ -63,6 +62,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   graffityData: GraffityDrawData;
   photos: MediaFile[] = [];
+  youtubeVideos: YouTubeVideo[] = [];
 
   emojiClassName: string = "emoji-elm";
 
@@ -71,8 +71,6 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   needPetrovich$ = this.store$.select(translateNeedPetrovichSelector);
   i18nEmoji$ = this.needPetrovich$.pipe(map(() => this.translateService.get("components.emojies")));
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -142,15 +140,81 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Состояние кнопки отправить
   get sendIsAvail(): boolean {
-    return !!this.getEditorValue || !!this.graffityData?.image || !!this.photos?.length;
+    return !!this.getEditorValue || this.hasAttachment;
   }
 
   // Есть закрепленные данные
   get hasAttachment(): boolean {
-    return !!this.graffityData?.image || !!this.photos?.length;
+    return !!this.graffityData?.image || !!this.photos?.length || !!this.youtubeVideos?.length;
   }
 
+  // Предыдущий узел
+  private getBeforeNode(node: Node, parent: Node) {
+    if (node !== parent) {
+      if (!!node.previousSibling) {
+        return node.previousSibling;
+      }
+      // Поиск по родителям
+      else {
+        let tempNode: Node = node;
+        // Поиск
+        while (!!tempNode.parentElement && tempNode !== parent) {
+          tempNode = tempNode.parentElement;
+          // Элемент найден
+          if (!!tempNode.previousSibling) {
+            return tempNode.previousSibling;
+          }
+        }
+      }
+    }
+    // Нет предыдущего элемента
+    return null;
+  };
 
+  // Проверка дочерних элементов
+  private hasChildNodes(node: Node) {
+    const noHasChildAvail: string[] = ["img"];
+    // Поиск
+    if (!!node) {
+      return node.nodeName.toLowerCase() === "#text" ?
+        !!node.textContent :
+        !!node.childNodes?.length || noHasChildAvail.includes(node.nodeName.toLowerCase());
+    }
+    // Нет потомков
+    return false;
+  }
+
+  // Проверка ссылки YouTube
+  private getYouTubeLinks(text: string): YouTubeVideoBase[] {
+    const idSubString = "([A-z0-9\\-_]{11})";
+    const founded: YouTubeVideoBase[] = [];
+    // Преобразовать в массив ссылки из адресной строки
+    const fillArray = (regExpString: string, idKey?: number) => {
+      const regExp = new RegExp(regExpString, "ig");
+      const matches = text.matchAll(regExp);
+      // Анализ вхождений
+      for (const match of matches) {
+        const link = match[0];
+        const params = UrlParamsStringToObject(link.split("?")[1]);
+        const id = AnyToString(idKey >= 0
+          ? match?.[idKey]
+          : params?.["v"]
+        );
+        const startTime = ParseInt(params?.["t"], 0);
+        // Удалось извлечь ID
+        if (!!id) {
+          founded.push({ link, id, startTime });
+        }
+      }
+    };
+    // Извлечение ссылок
+    fillArray("https:\\/\\/(www\\.)?youtube\\.com\\/watch(\\/|\\?)(.*)?");
+    fillArray("https:\\/\\/(www\\.)?youtube\\.com\\/watch\\/" + idSubString + "(\\/|\\?)?(.*)?", 2);
+    fillArray("https:\\/\\/youtu\\.be\\/\\?(.*)?");
+    fillArray("https:\\/\\/youtu\\.be\\/" + idSubString + "(\\/|\\?)?(.*)?", 1);
+    // Вернуть найденные ссылки
+    return founded;
+  }
 
 
 
@@ -208,8 +272,6 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
 
 
-
-
   // Потеря фокуса
   onBlur(): void {
     this.lastPosition = this.getRangePosition();
@@ -218,83 +280,40 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   // Ввод
   onEdit(event: Event): void {
     if (!!this.editor?.nativeElement) {
-      // Проверка дочерних элементов
-      const hasChildNodes = (node: Node) => !!node ? (node.nodeName.toLowerCase() === "#text" ?
-        !!node.textContent :
-        !!node.childNodes?.length || noHasChildAvail.includes(node.nodeName.toLowerCase())) :
-        false;
-      // Предыдущий узел
-      const getBeforeNode = (node: Node) => {
-        if (node !== editor) {
-          if (!!node.previousSibling) {
-            return node.previousSibling;
-          }
-          // Поиск по родителям
-          else {
-            let tempNode: Node = node;
-            // Поиск
-            while (!!tempNode.parentElement && tempNode !== editor) {
-              tempNode = tempNode.parentElement;
-              // Элемент найден
-              if (!!tempNode.previousSibling) {
-                return tempNode.previousSibling;
-              }
-            }
-          }
-        }
-        // Нет предыдущего элемента
-        return null;
-      };
-      // Очистка переносов
-      const removeEmptyBr = (node: ChildNode) => {
-        const children: ChildNode[] = Array.from(node.childNodes);
-        // Очистка дочерних
-        children.forEach(child => removeEmptyBr(child));
-        // Проверка
-        const testChildren: ChildNode[] = Array.from(node.childNodes);
-        // Удалить пустые переносы
-        if (!!testChildren?.length && testChildren.every(child => child.nodeName.toLowerCase() === "br") && noRemoveNode !== node && noRemoveBeforeNode !== node) {
-          testChildren.forEach(child => child.remove());
-        }
-      };
-      // Функция поиска и очистки
-      const clearChild = (node: ChildNode, clearNode: boolean) => {
-        const children: ChildNode[] = Array.from(node.childNodes);
-        const nodeName: string = node.nodeName.toLowerCase();
-        // Очистка дочерних
-        children.forEach(child => clearChild(child, true));
-        // Очистка текущего элемента
-        if (clearNode && !clearIgnore.includes(nodeName)) {
-          const testChildren: ChildNode[] = Array.from(node.childNodes);
-          // Удалить если нет дочерних элементов
-          if (testChildren?.every(child => !hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
-            node.remove();
-          }
-        }
-      };
-      // Параметры
       const ignoreKeys: string[] = ["Enter", "NumpadEnter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
       const editor: HTMLElement = this.editor.nativeElement;
-      const clearIgnore: string[] = ["#text", "br", "img"];
-      const noHasChildAvail: string[] = ["img"];
       const selection: Selection = document.getSelection();
       const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
       const firstChild: Node = editor.childNodes[0] ?? null;
-      const noRemoveNode: Node = keyEnter ? selection.anchorNode : null;
-      const noRemoveBeforeNode: Node = !!noRemoveNode && !!firstChild && getBeforeNode(noRemoveNode) === firstChild && hasChildNodes(noRemoveNode) ?
-        firstChild : null;
+      const noRemoveNode: Node = keyEnter
+        ? selection.anchorNode
+        : null;
+      const hasfirstCHild = !!noRemoveNode && !!firstChild && this.getBeforeNode(noRemoveNode, editor) === firstChild && this.hasChildNodes(noRemoveNode);
+      const noRemoveBeforeNode: Node = hasfirstCHild
+        ? firstChild
+        : null;
       // Начать очистку
-      removeEmptyBr(editor);
-      clearChild(editor, false);
+      this.removeEmptyBr(editor, noRemoveNode, noRemoveBeforeNode);
+      this.clearChild(editor, false, noRemoveNode, noRemoveBeforeNode);
     }
   }
 
   // Вставка из буффера
   onPaste(event: ClipboardEvent): void {
-    const text: string = event.clipboardData.getData("text/plain");
-    // Вставка текста
+    let text: string = event.clipboardData.getData("text/plain");
+    const youtubeLinks = this.getYouTubeLinks(text);
+    // Очистить найденные ссылки
+    youtubeLinks.forEach(data => {
+      text = text.replace(data.link, "").trim();
+      // Закрепить видео
+      this.onAddYouTubeVideo(data);
+    });
+    // Остановка всплытия
     event.preventDefault();
-    document.execCommand("insertHTML", false, text);
+    // Вставка текста
+    if (!!text) {
+      document.execCommand("insertHTML", false, text);
+    }
   }
 
   // Выбран смайлик
@@ -311,6 +330,10 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
       // Параметры
       const text: string = this.getEditorValue;
       const mediaPhotos: number[] = !!this.photos?.length ? this.photos.map(({ id }) => id) : [];
+      const youTubeVideos: [string, number][] = ArrayMap(this.youtubeVideos, ({ id, startTime }) => ([id, startTime]))
+      const graffity = !!this.graffityData?.blob
+        ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type })
+        : null;
       const data: Partial<Comment> = {
         materialType: this.materialType,
         materialId: this.materialId,
@@ -318,12 +341,13 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
         replyToUser: this.replyUser,
         text,
         uploadAttachment: {
-          graffity: !!this.graffityData?.blob ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type }) : null,
-          mediaPhotos
+          graffity,
+          mediaPhotos,
+          youTubeVideos
         }
       };
       // Проверка текста
-      if (!!text || data?.uploadAttachment?.graffity || !!mediaPhotos) {
+      if (!!text || data?.uploadAttachment?.graffity || !!mediaPhotos || !!youTubeVideos) {
         this.sendLoader = true;
         this.changeDetectorRef.detectChanges();
         // Отправка
@@ -339,6 +363,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
               // Очистить другие данные
               this.graffityData = null;
               this.photos = [];
+              this.youtubeVideos = [];
               this.onReplyUserDelete();
               // Обновить
               this.sendLoader = false;
@@ -404,6 +429,17 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     }
   }
 
+  // Удалить фото из закреплений
+  onYouTubeVideoDelete(youTubeId: string): void {
+    const index: number = this.youtubeVideos.findIndex(({ id }) => id === youTubeId);
+    // Элемент найден
+    if (index >= 0) {
+      this.youtubeVideos.splice(index, 1);
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
   // Удалить адресата ответа
   onReplyUserDelete(): void {
     this.replyUser = null;
@@ -411,9 +447,58 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Добавить видео YouTube
+  private onAddYouTubeVideo({ id, startTime }: YouTubeVideoBase): void {
+    const index = this.youtubeVideos.findIndex(youTube => id === youTube.id);
+    const youTubeVideo: YouTubeVideo = {
+      id,
+      startTime,
+      link: GetYouTubeLink(id),
+      smallImage: GetYouTubeSmallImage(id)
+    }
+    // Обновить видео
+    if (index >= 0) {
+      this.youtubeVideos[index] = youTubeVideo;
+    }
+    // Добавить видео
+    else {
+      this.youtubeVideos.push(youTubeVideo);
+    }
+    // Обновить
+    this.changeDetectorRef.detectChanges();
+  }
 
 
 
+  // Очистка переносов
+  private removeEmptyBr(node: ChildNode, noRemoveNode: Node, noRemoveBeforeNode: Node) {
+    const children: ChildNode[] = Array.from(node.childNodes);
+    // Очистка дочерних
+    children.forEach(child => this.removeEmptyBr(child, noRemoveNode, noRemoveBeforeNode));
+    // Проверка
+    const testChildren: ChildNode[] = Array.from(node.childNodes);
+    // Удалить пустые переносы
+    if (!!testChildren?.length && testChildren.every(child => child.nodeName.toLowerCase() === "br") && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+      testChildren.forEach(child => child.remove());
+    }
+  }
+
+  // Функция поиска и очистки
+  private clearChild(node: ChildNode, clearNode: boolean, noRemoveNode: Node, noRemoveBeforeNode: Node) {
+    const children: ChildNode[] = Array.from(node.childNodes);
+    const nodeName: string = node.nodeName.toLowerCase();
+    const clearIgnore: string[] = ["#text", "br", "img"];
+    // Очистка дочерних
+    children.forEach(child => this.clearChild(child, true, noRemoveNode, noRemoveBeforeNode));
+    // Очистка текущего элемента
+    if (clearNode && !clearIgnore.includes(nodeName)) {
+      const testChildren: ChildNode[] = Array.from(node.childNodes);
+      // Удалить если нет дочерних элементов
+      if (testChildren?.every(child => !this.hasChildNodes(child)) && noRemoveNode !== node && noRemoveBeforeNode !== node) {
+        node.remove();
+      }
+    }
+  };
 
   // Установить текст
   private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {

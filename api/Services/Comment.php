@@ -39,7 +39,9 @@ class CommentService
       'material_id' => intval($data['materialId']),
       'material_owner' => $materialOwner,
       'text' => strval($data['text']),
-      'attachment' => !!$data['attachment'] ? json_encode($data['attachment']) : null
+      'attachment' => !!$data['attachment']
+        ? json_encode($data['attachment'])
+        : null
     );
     // Попытка сохранения
     if ($this->dataBaseService->executeFromFile('comment/send.php', $sqlData)) {

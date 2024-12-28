@@ -338,6 +338,7 @@ $adaptiveMax: large;
 
 // Закрепленные материалы
 .attachments {
+  $itemWideWidth: 110px;
   $itemHeight: 80px;
   // Свойства
   padding: #{containers.$cardPaddingY} 0;
@@ -348,8 +349,9 @@ $adaptiveMax: large;
   align-items: center;
   gap: 6px;
   grid-area: attachments;
-  // Изображение
-  &__image {
+  // Все типы
+  &__image,
+  &__video {
     position: relative;
     height: $itemHeight;
     cursor: pointer;
@@ -380,6 +382,33 @@ $adaptiveMax: large;
     // Выделение
     &:hover &-overlay:not(.noSelect) {
       opacity: 1;
+    }
+  }
+  // Только видео
+  &__video {
+    width: $itemWideWidth;
+    // Иконка
+    &-youtube-logo {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      height: 24px;
+      line-height: 24px;
+      font-size: 22px;
+      color: red;
+      text-shadow: 1px 1px 2px #{colors.$shadow};
+    }
+    // Время
+    &-time {
+      position: absolute;
+      bottom: 3px;
+      right: 3px;
+      background-color: colors.$overlayColor;
+      color: colors.$titleDark;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-size: 12px;
+      line-height: 16px;
     }
   }
 }

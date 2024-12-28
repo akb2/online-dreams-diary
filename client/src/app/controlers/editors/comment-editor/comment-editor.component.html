@@ -123,6 +123,12 @@
                     }"
                     *ngFor="let photo of photos"></ng-container>
     </ng-container>
+    <!-- Видео YouTube -->
+    <ng-container *ngIf="!!youtubeVideos?.length">
+      <ng-container [ngTemplateOutlet]="attachedYouTubeVideo"
+                    [ngTemplateOutletContext]="{ video }"
+                    *ngFor="let video of youtubeVideos"></ng-container>
+    </ng-container>
   </div>
 </div>
 
@@ -199,6 +205,27 @@
     <div class="attachments__image-overlay"
          [ngClass]="{ noSelect: sendLoader }">
       <mat-icon>{{overlayIcon ?? 'close'}}</mat-icon>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Прикрепленная картинка -->
+<ng-template #attachedYouTubeVideo
+             let-video="video">
+  <div class="attachments__video"
+       (click)="onYouTubeVideoDelete(video.id)">
+    <!-- Картинка -->
+    <img [src]="video.smallImage" />
+    <!-- Логотип -->
+    <mat-icon class="attachments__video-youtube-logo"
+              svgIcon="youtube_b" />
+    <!-- Время начала -->
+    <span class="attachments__video-time"
+          *ngIf="!!video?.startTime">Начало: {{video.startTime | timerFormat}}</span>
+    <!-- Удаление -->
+    <div class="attachments__video-overlay"
+         [ngClass]="{ noSelect: sendLoader }">
+      <mat-icon>close</mat-icon>
     </div>
   </div>
 </ng-template>

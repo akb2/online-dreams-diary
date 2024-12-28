@@ -29,12 +29,14 @@ export interface CommentAttachment {
   graffity?: MediaFile;
   dreams?: Dream[];
   mediaPhotos?: MediaFile[];
+  youTubeVideos?: YouTubeVideo[];
 }
 
 // Интерфейс прикрепленных данных для сохранения на сервер
 export interface CommentUploadAttachment {
   graffity?: File;
   mediaPhotos?: number[];
+  youTubeVideos?: [string, number][];
 }
 
 // Интерфейс данных рисовалки
@@ -65,7 +67,21 @@ export interface SearchRequestComment extends Pick<BaseSearch, "limit"> {
   loadListType: NumberDirection;
 }
 
+// Сокращенные данные видео YouTube
+export interface YouTubeVideoShort {
+  id: string;
+  startTime?: number;
+}
 
+// Видео YouTube
+export interface YouTubeVideoBase extends YouTubeVideoShort {
+  link: string;
+}
+
+// Полные данные YouTube видео
+export interface YouTubeVideo extends YouTubeVideoBase {
+  smallImage: string;
+}
 
 
 
