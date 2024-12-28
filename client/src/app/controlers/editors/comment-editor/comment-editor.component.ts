@@ -1,13 +1,12 @@
 import { PopupGraffityComponent } from "@_controlers/graffity/graffity.component";
 import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-uploader.component";
-import { UrlParamsStringToObject } from "@_datas/api";
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { ParseInt } from "@_helpers/math";
-import { ArrayMap } from "@_helpers/objects";
+import { ArrayFilter, ArrayMap, UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
-import { AnyToString } from "@_helpers/string";
+import { GetLinksFromString, GetYouTubeDataByUrl } from "@_helpers/string";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData, YouTubeVideo, YouTubeVideoBase } from "@_models/comment";
@@ -186,34 +185,14 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Проверка ссылки YouTube
   private getYouTubeLinks(text: string): YouTubeVideoBase[] {
-    const idSubString = "([A-z0-9\\-_]{11})";
-    const founded: YouTubeVideoBase[] = [];
-    // Преобразовать в массив ссылки из адресной строки
-    const fillArray = (regExpString: string, idKey?: number) => {
-      const regExp = new RegExp(regExpString, "ig");
-      const matches = text.matchAll(regExp);
-      // Анализ вхождений
-      for (const match of matches) {
-        const link = match[0];
-        const params = UrlParamsStringToObject(link.split("?")[1]);
-        const id = AnyToString(idKey >= 0
-          ? match?.[idKey]
-          : params?.["v"]
-        );
-        const startTime = ParseInt(params?.["t"], 0);
-        // Удалось извлечь ID
-        if (!!id) {
-          founded.push({ link, id, startTime });
-        }
-      }
-    };
-    // Извлечение ссылок
-    fillArray("https:\\/\\/(www\\.)?youtube\\.com\\/watch(\\/|\\?)(.*)?");
-    fillArray("https:\\/\\/(www\\.)?youtube\\.com\\/watch\\/" + idSubString + "(\\/|\\?)?(.*)?", 2);
-    fillArray("https:\\/\\/youtu\\.be\\/\\?(.*)?");
-    fillArray("https:\\/\\/youtu\\.be\\/" + idSubString + "(\\/|\\?)?(.*)?", 1);
-    // Вернуть найденные ссылки
-    return founded;
+    return ArrayFilter(
+      ArrayMap(
+        UniqueArray(GetLinksFromString(text)),
+        link => GetYouTubeDataByUrl(link),
+      ),
+      Boolean,
+      false
+    );
   }
 
 

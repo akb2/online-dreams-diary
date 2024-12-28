@@ -1,4 +1,6 @@
+import { UrlParamsStringToObject } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
+import { YouTubeVideoBase } from "@_models/comment";
 import { ParseInt, Random } from "./math";
 
 
@@ -25,10 +27,19 @@ export const CapitalizeFirstLetter = (mixedText: string) => {
 };
 
 // Регулярное выражение для поиска URL в тексте
-export const SearchUrlRegExp: RegExp = /(https?:\/\/[^\s<>\[\],!]+(?<![.,!?]))/gi;
+export const SearchUrlRegExp = /(https?:\/\/[^\s<>\[\],!]+(?<![.,!?]))/gi;
 
 // Регулярное выражение для проверки ссылки, что она является ссылкой на сон
-export const SearchDreamUrlRegExp: RegExp = new RegExp("^https?:\/\/" + window.location.hostname + "(:[0-9]{1,5})?\/diary\/viewer\/([0-9]+)(.*)?$", "i");
+export const SearchDreamUrlRegExp = new RegExp("^https?:\/\/" + window.location.hostname + "(:[0-9]{1,5})?\/diary\/viewer\/([0-9]+)(.*)?$", "i");
+
+// Регулярное выражение для проверки ссылки, что она является ссылкой на видео YouTube
+export const SearchYouTubeVideoUrlRegExps: [RegExp, number][] = [
+  [new RegExp("^https:\\/\\/(www\\.)?youtube\\.com\\/watch(\\/|\\?)(.*)?$", "i"), -1],
+  [new RegExp("^https:\\/\\/(www\\.)?youtube\\.com\\/watch\\/([A-z0-9\\-_]{11})(\\/|\\?)?(.*)?$", "i"), 2],
+  [new RegExp("^https:\\/\\/(www\\.)?youtube\\.com\\/live\\/([A-z0-9\\-_]{11})(\\/|\\?)?(.*)?$", "i"), 2],
+  [new RegExp("^https:\\/\\/youtu\\.be\\/\\?(.*)?$", "i"), -1],
+  [new RegExp("^https:\\/\\/youtu\\.be\\/([A-z0-9\\-_]{11})(\\/|\\?)?(.*)?$", "i"), 1]
+];
 
 // Получить список всех ссылок
 export const GetLinksFromString = (text: string) => {
@@ -50,5 +61,35 @@ export const GetLinksFromString = (text: string) => {
 // Ссылка я вляется ссылкой на дневник сновидений
 export const IsDreamUrl = (url: string) => SearchDreamUrlRegExp.test(url);
 
+// Ссылка я вляется ссылкой на дневник сновидений
+export const IsYouTubeVideoUrl = (url: string) => !!GetYouTubeDataByUrl(url)?.id;
+
 // Ид сновидения по ссылке
 export const GetDreamIdByUrl = (url: string) => ParseInt(url.replace(SearchDreamUrlRegExp, "$2"));
+
+// Данные о YouTube видео по ссылке
+export const GetYouTubeDataByUrl = (url: string): YouTubeVideoBase => {
+  for (let [regExp, idKey] of SearchYouTubeVideoUrlRegExps) {
+    const match = url.match(regExp);
+    // Анализ вхождений
+    if (!!match) {
+      const link = match[0];
+      const params = UrlParamsStringToObject(link.split("?")[1]);
+      const id = AnyToString(idKey >= 0
+        ? match?.[idKey]
+        : params?.["v"]
+      );
+      const startTime = ParseInt(params?.["t"], 0);
+      // Удалось извлечь ID
+      if (!!id) {
+        return {
+          link,
+          id,
+          startTime
+        };
+      }
+    }
+  }
+  // Ничего не найдено
+  return null;
+};

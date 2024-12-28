@@ -13,13 +13,11 @@ import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Observable, Subject, catchError, concatMap, defer, forkJoin, map, of, repeat, retry, switchMap, take } from "rxjs";
+import { Observable, catchError, concatMap, defer, forkJoin, map, of, repeat, retry, switchMap, take } from "rxjs";
 import { AccountService } from "./account.service";
 import { ApiService } from "./api.service";
 import { DreamService } from "./dream.service";
 import { MediaService } from "./media.service";
-
-
 
 
 
@@ -28,14 +26,6 @@ import { MediaService } from "./media.service";
 })
 
 export class CommentService extends TextMessage {
-
-
-  private destroyed$: Subject<void> = new Subject();
-
-
-
-
-
   // Конвертация комментария
   private getConvertedComment(comment: any): Observable<Comment> {
     const userId: number = ParseInt(comment?.userId);
@@ -134,8 +124,6 @@ export class CommentService extends TextMessage {
 
 
 
-
-
   constructor(
     @Optional() @Self() controlDir: NgControl,
     private httpClient: HttpClient,
@@ -148,8 +136,6 @@ export class CommentService extends TextMessage {
   ) {
     super(controlDir, emojiService, domSanitizer);
   }
-
-
 
 
 
