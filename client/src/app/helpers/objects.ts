@@ -6,7 +6,7 @@ import { invert } from "cypress/types/lodash";
 
 
 // Преобразовать любой тип в массив
-export const AnyToArray = <T>(value: T): T[] => Array.isArray(value)
+export const AnyToArray = <T>(value: T | T[]): T[] => Array.isArray(value)
   ? value
   : !!value
     ? [value]
