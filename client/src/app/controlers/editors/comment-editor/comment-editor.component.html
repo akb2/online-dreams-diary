@@ -1,5 +1,5 @@
 <div class="overlay"
-     [ngClass]="{ 'with-reply': !!replyUser }">
+     [class.with-reply]="!!replyUser">
   <!-- Ответ -->
   <div #replyElement
        class="reply__overlay"
@@ -38,7 +38,9 @@
       <button mat-icon-button
               class="reply__delete"
               color="primary"
-              (click)="onReplyUserDelete()"><mat-icon>close</mat-icon></button>
+              (click)="onReplyUserDelete()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
   </div>
 
@@ -112,7 +114,7 @@
                     callback: onGraffityPopupOpen.bind(this),
                     overlayIcon: 'stylus'
                   }"
-                  *ngIf="!!graffityData?.image"></ng-container>
+                  *ngIf="!!graffityData?.image" />
     <!-- Фотографии -->
     <ng-container *ngIf="!!photos?.length">
       <ng-container [ngTemplateOutlet]="attachedImage"
@@ -121,13 +123,19 @@
                       callback: onPhotoDelete.bind(this, photo.id),
                       overlayIcon: 'close'
                     }"
-                    *ngFor="let photo of photos"></ng-container>
+                    *ngFor="let photo of photos" />
     </ng-container>
     <!-- Видео YouTube -->
     <ng-container *ngIf="!!youtubeVideos?.length">
       <ng-container [ngTemplateOutlet]="attachedYouTubeVideo"
                     [ngTemplateOutletContext]="{ video }"
-                    *ngFor="let video of youtubeVideos"></ng-container>
+                    *ngFor="let video of youtubeVideos" />
+    </ng-container>
+    <!-- Сновидение -->
+    <ng-container *ngIf="!!dreams?.length">
+      <ng-container [ngTemplateOutlet]="attachedDream"
+                    [ngTemplateOutletContext]="{ dream }"
+                    *ngFor="let dream of dreams" />
     </ng-container>
   </div>
 </div>
@@ -153,7 +161,7 @@
               title="Pick your emoji…"
               emoji="point_up"
               [useButton]="false"
-              (emojiSelect)="onEmojiSelect($event)"></emoji-mart>
+              (emojiSelect)="onEmojiSelect($event)" />
 </ng-template>
 
 <!-- Смайлик -->
@@ -185,7 +193,7 @@
     <!-- Граффити -->
     <button mat-menu-item
             (click)="onGraffityPopupOpen()">
-      <mat-icon svgIcon="paint_spray"></mat-icon>
+      <mat-icon svgIcon="paint_spray" />
       {{'components.comment.editor.attach_menu_items.graffity' | translate}}
     </button>
   </ng-container>
@@ -201,11 +209,34 @@
        *ngIf="!!url">
     <!-- Картинка -->
     <img [src]="url" />
-    <!-- Удаление -->
-    <div class="attachments__image-overlay"
-         [ngClass]="{ noSelect: sendLoader }">
-      <mat-icon>{{overlayIcon ?? 'close'}}</mat-icon>
-    </div>
+    <!-- Удаление --><!-- Удаление -->
+    <ng-container [ngTemplateOutlet]="deleteAttachment" />
+  </div>
+</ng-template>
+
+<!-- Прикрепленное сновидение -->
+<ng-template #attachedDream
+             let-dream="dream">
+  <div class="attachments__dream"
+       [class.loading]="dream.loading"
+       (click)="onDreamDelete(dream.id)">
+    <app-loader size="32px"
+                color="primary"
+                *ngIf="dream.loading; else attachedDreamData" />
+    <!-- Данные сниппета -->
+    <ng-template #attachedDreamData>
+      <img [src]="imagePrefix + dream.headerBackground.imageNameShort"
+           *ngIf="isDreamHasImage(dream)" />
+      <!-- Иконка -->
+      <mat-icon class="attachments__dream-logo">nights_stay</mat-icon>
+      <!-- Название -->
+      <span class="attachments__dream-title">{{dream.title}}</span>
+      <!-- Дата сновидения -->
+      <time class="attachments__dream-date"
+            [attr.datetime]="(dream.date || today).toISOString()">{{(dream.date || today) | date: 'shortDate'}}</time>
+      <!-- Удаление -->
+      <ng-container [ngTemplateOutlet]="deleteAttachment" />
+    </ng-template>
   </div>
 </ng-template>
 
@@ -217,15 +248,20 @@
     <!-- Картинка -->
     <img [src]="video.smallImage" />
     <!-- Логотип -->
-    <mat-icon class="attachments__video-youtube-logo"
+    <mat-icon class="attachments__video-logo youtube"
               svgIcon="youtube_b" />
     <!-- Время начала -->
     <span class="attachments__video-time"
           *ngIf="!!video?.startTime">Начало: {{video.startTime | timerFormat}}</span>
     <!-- Удаление -->
-    <div class="attachments__video-overlay"
-         [ngClass]="{ noSelect: sendLoader }">
-      <mat-icon>close</mat-icon>
-    </div>
+    <ng-container [ngTemplateOutlet]="deleteAttachment" />
+  </div>
+</ng-template>
+
+<!-- Удаление -->
+<ng-template #deleteAttachment>
+  <div class="attachments__image-overlay"
+       [class.noSelect]="sendLoader">
+    <mat-icon>close</mat-icon>
   </div>
 </ng-template>

@@ -35,6 +35,7 @@ export interface CommentAttachment {
 // Интерфейс прикрепленных данных для сохранения на сервер
 export interface CommentUploadAttachment {
   graffity?: File;
+  dreams?: number[];
   mediaPhotos?: number[];
   youTubeVideos?: [string, number][];
 }

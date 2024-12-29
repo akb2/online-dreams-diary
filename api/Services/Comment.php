@@ -73,10 +73,21 @@ class CommentService
         );
       }
       // Добавить идентификаторы уведомлений в запись о комментарии
-      if ($notificationOwnerId > 0 || $notificationReplyId > 0) {
+      if ($commentId > 0 && ($notificationOwnerId > 0 || $notificationReplyId > 0)) {
+        $notificationOwnerId = $notificationOwnerId > 0
+          ? intval($notificationOwnerId)
+          : null;
+        $notificationReplyId = $notificationReplyId > 0
+          ? intval($notificationReplyId)
+          : null;
+        // сохранение
         $this->dataBaseService->executeFromFile(
-          'comment/send.php',
-          array($notificationOwnerId, $notificationReplyId, $commentId)
+          'comment/addNotificationIds.sql',
+          array(
+            $notificationOwnerId,
+            $notificationReplyId,
+            intval($commentId)
+          )
         );
       }
       // Вернуть ID

@@ -2,8 +2,8 @@ import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_dat
 import { ToDate } from "@_datas/app";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { ParseInt } from "@_helpers/math";
-import { AnyToArray, ArrayMap, UniqueArray } from "@_helpers/objects";
-import { AnyToString, GetDreamIdByUrl, GetLinksFromString, IsDreamUrl } from "@_helpers/string";
+import { AnyToArray, ArrayMap } from "@_helpers/objects";
+import { AnyToString } from "@_helpers/string";
 import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment, YouTubeVideo } from "@_models/comment";
@@ -57,18 +57,9 @@ export class CommentService extends TextMessage {
         (data, replyToUser) => ({ ...data, replyToUser })
       ),
       switchMap(
-        data => {
-          const text: string = (data?.comment?.text ?? "").replace(new RegExp("\\[br\\]", "ig"), " <br> ");
-          const dreamIds: number[] = UniqueArray(GetLinksFromString(text)
-            .filter(url => IsDreamUrl(url))
-            .map(url => GetDreamIdByUrl(url))
-            .filter(id => id > 0)
-          );
-          // Вернуть подписчик
-          return dreamIds.length > 0
-            ? getDreams(dreamIds)
-            : of({} as SearchRequestDream);
-        },
+        data => data.comment?.attachment?.dreams?.length > 0
+          ? getDreams(data.comment?.attachment?.dreams)
+          : of({} as SearchRequestDream),
         (data, dreams) => ({ ...data, dreams: dreams?.result ?? [] })
       ),
       switchMap(
@@ -149,8 +140,9 @@ export class CommentService extends TextMessage {
       text: data.text,
       graffityUpload: data?.uploadAttachment?.graffity,
       attachment: JSON.stringify({
-        youTubeVideos: data?.uploadAttachment?.youTubeVideos ?? [],
-        mediaPhotos: data?.uploadAttachment?.mediaPhotos ?? []
+        youTubeVideos: AnyToArray(data?.uploadAttachment?.youTubeVideos),
+        mediaPhotos: AnyToArray(data?.uploadAttachment?.mediaPhotos),
+        dreams: AnyToArray(data?.uploadAttachment?.dreams)
       })
     })).pipe(
       switchMap(data => this.apiService.checkSwitchMap(data, codes))

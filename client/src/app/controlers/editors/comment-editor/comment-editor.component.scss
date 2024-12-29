@@ -351,16 +351,44 @@ $adaptiveMax: large;
   grid-area: attachments;
   // Все типы
   &__image,
-  &__video {
+  &__video,
+  &__dream {
     position: relative;
     height: $itemHeight;
     cursor: pointer;
     width: $itemHeight;
+    overflow: hidden;
+    border-radius: vars.$iconsMediumBorderRadius;
     // Картинка
     > img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    // Иконка
+    &-logo {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      height: 24px;
+      line-height: 24px;
+      font-size: 22px;
+      color: colors.$titleDark;
+      text-shadow: 1px 1px 2px #{colors.$shadow};
+    }
+    // Время
+    &-time,
+    &-date {
+      @include mixins.lineClamp(1, 16px, 12px, 2px);
+      // Свойства
+      position: absolute;
+      bottom: 3px;
+      right: 3px;
+      background-color: colors.$overlayColor;
+      color: colors.$titleDark;
+      padding-left: 4px;
+      padding-right: 4px;
+      border-radius: 2px;
     }
     // Удаление
     &-overlay {
@@ -384,31 +412,47 @@ $adaptiveMax: large;
       opacity: 1;
     }
   }
-  // Только видео
-  &__video {
+  // Горизонтальные сниппеты
+  &__video,
+  &__dream {
     width: $itemWideWidth;
     // Иконка
-    &-youtube-logo {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      height: 24px;
-      line-height: 24px;
-      font-size: 22px;
-      color: red;
-      text-shadow: 1px 1px 2px #{colors.$shadow};
+    &-logo {
+      top: 0;
     }
-    // Время
-    &-time {
+  }
+  // Только видео
+  &__video {
+    // Иконка
+    &-logo.youtube {
+      color: red;
+    }
+  }
+  // Только сны
+  &__dream {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // Название
+    &-title {
+      @include mixins.lineClamp(3, 15px, 13px);
+      // Свойства
       position: absolute;
-      bottom: 3px;
-      right: 3px;
-      background-color: colors.$overlayColor;
+      text-align: center;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
       color: colors.$titleDark;
-      padding: 2px 4px;
-      border-radius: 2px;
-      font-size: 12px;
-      line-height: 16px;
+    }
+    // Дата
+    &-date {
+      bottom: auto;
+      top: 3px;
+      right: 3px;
+    }
+    // Загрузка
+    &.loading {
+      background-color: colors.$background;
     }
   }
 }

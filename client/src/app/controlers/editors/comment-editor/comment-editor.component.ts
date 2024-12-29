@@ -3,18 +3,21 @@ import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-u
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
-import { GetLinksFromString, GetYouTubeDataByUrl } from "@_helpers/string";
+import { GetDreamIdByUrl, GetLinksFromString, GetYouTubeDataByUrl } from "@_helpers/string";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Comment, CommentMaterialType, GraffityDrawData, YouTubeVideo, YouTubeVideoBase } from "@_models/comment";
+import { Dream } from "@_models/dream";
 import { MediaFile } from "@_models/media";
+import { NavMenuType } from "@_models/nav-menu";
 import { ScrollData } from "@_models/screen";
 import { CaretPosition } from "@_models/text";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
+import { DreamService } from "@_services/dream.service";
 import { ScrollService } from "@_services/scroll.service";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
@@ -36,15 +39,15 @@ import { Subject, filter, map, takeUntil } from "rxjs";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CommentEditorComponent implements OnChanges, OnDestroy {
-  @HostBinding("class.wrap-controls") wrapControlsClass: boolean = false;
+  @HostBinding("class.wrap-controls") wrapControlsClass = false;
 
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
   @Input() materialOwner: number;
-  @Input() placeholder: string = "components.comment.editor.placeholder";
-  @Input() wrapControls: boolean = false;
+  @Input() placeholder = "components.comment.editor.placeholder";
+  @Input() wrapControls = false;
   @Input() replyUser: User;
-  @Input() scrollSpacing: number = 15;
+  @Input() scrollSpacing = 15;
 
   @Output() onSuccessSend: EventEmitter<string> = new EventEmitter();
   @Output() replyUserChange: EventEmitter<User> = new EventEmitter();
@@ -56,28 +59,32 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   @ViewChild("emojiListItem", { read: ElementRef }) emojiListItem: ElementRef<HTMLElement>;
   @ViewChild("emojiListToggleButton", { read: ElementRef }) emojiListToggleButton: ElementRef<HTMLElement>;
 
+  readonly imagePrefix = "../../../../assets/images/backgrounds/";
+  readonly emojiClassName = "emoji-elm";
+  readonly today = new Date();
+
   private lastPosition: CaretPosition;
-  private smileSize: number = 24;
+  private readonly smileSize = 24;
 
   graffityData: GraffityDrawData;
   photos: MediaFile[] = [];
   youtubeVideos: YouTubeVideo[] = [];
+  dreams: (Partial<Dream> & { loading: boolean })[] = [];
 
-  emojiClassName: string = "emoji-elm";
-
-  sendLoader: boolean = false;
+  sendLoader = false;
 
   needPetrovich$ = this.store$.select(translateNeedPetrovichSelector);
   i18nEmoji$ = this.needPetrovich$.pipe(map(() => this.translateService.get("components.emojies")));
-  private destroyed$: Subject<void> = new Subject();
+
+  private destroyed$ = new Subject<void>();
 
 
 
   // Получить текущий курсор
-  private getRangePosition(forceFocus: boolean = false): CaretPosition {
+  private getRangePosition(forceFocus = false): CaretPosition {
     const editor: HTMLElement = this.editor?.nativeElement;
-    let start: number = 0;
-    let end: number = 0;
+    let start = 0;
+    let end = 0;
     let selection: Selection;
     let range: Range;
     // Поиск позиции
@@ -107,11 +114,11 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   private getSmileNode(mixedEmoji: string | EmojiData): Element {
     const emoji: EmojiData = typeof mixedEmoji === "string" ? this.emojiService.getData(mixedEmoji) : mixedEmoji;
     const styles: SimpleObject = this.smileStyles(emoji);
-    const id: string = emoji.id;
-    const alt: string = emoji.name;
-    const skin: number = emoji?.skinTone ?? 1;
-    const set: string = emoji?.set ?? "";
-    const content: string = this.stringTemplatePipe.transform(this.smileElm, { styles, id, alt, skin, set });
+    const id = emoji.id;
+    const alt = emoji.name;
+    const skin = emoji?.skinTone ?? 1;
+    const set = emoji?.set ?? "";
+    const content = this.stringTemplatePipe.transform(this.smileElm, { styles, id, alt, skin, set });
     const node: Element = (new DOMParser()).parseFromString(content, "text/html").getElementsByClassName(this.emojiClassName)[0];
     // Вернуть шаблон
     return node;
@@ -144,7 +151,17 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Есть закрепленные данные
   get hasAttachment(): boolean {
-    return !!this.graffityData?.image || !!this.photos?.length || !!this.youtubeVideos?.length;
+    return (
+      !!this.graffityData?.image
+      || !!this.photos?.length
+      || !!this.youtubeVideos?.length
+      || !!this.dreams?.length
+    );
+  }
+
+  // У сна есть обложка
+  isDreamHasImage(dream: Dream): boolean {
+    return dream.headerType === NavMenuType.full || dream.headerType === NavMenuType.short;
   }
 
   // Предыдущий узел
@@ -183,18 +200,6 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     return false;
   }
 
-  // Проверка ссылки YouTube
-  private getYouTubeLinks(text: string): YouTubeVideoBase[] {
-    return ArrayFilter(
-      ArrayMap(
-        UniqueArray(GetLinksFromString(text)),
-        link => GetYouTubeDataByUrl(link),
-      ),
-      Boolean,
-      false
-    );
-  }
-
 
 
   constructor(
@@ -203,6 +208,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     private stringTemplatePipe: StringTemplatePipe,
     private scrollService: ScrollService,
     private commentService: CommentService,
+    private dreamService: DreamService,
     private matDialog: MatDialog,
     private store$: Store,
     private translateService: TranslateService
@@ -229,11 +235,11 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
             const { y: currentScroll }: ScrollData = this.scrollService.getCurrentScroll;
             const replyBounding: DOMRect = replyElement.getBoundingClientRect();
             const replyStyles: CSSStyleDeclaration = getComputedStyle(replyElement);
-            const mainMenuHeight: number = DrawDatas.minHeight;
-            const scrollBorderTop: number = currentScroll + mainMenuHeight;
-            // const scrollBorderBottom: number = currentScroll + window.innerHeight;
-            const fieldBorderTop: number = currentScroll + replyBounding.top - ParseInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
-            // const fieldBorderBottom: number = fieldBorderTop + editorContainer.clientHeight - this.scrollSpacing;
+            const mainMenuHeight = DrawDatas.minHeight;
+            const scrollBorderTop = currentScroll + mainMenuHeight;
+            // const scrollBorderBottom= currentScroll + window.innerHeight;
+            const fieldBorderTop = currentScroll + replyBounding.top - ParseInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
+            // const fieldBorderBottom= fieldBorderTop + editorContainer.clientHeight - this.scrollSpacing;
             // Скролл
             if (fieldBorderTop < scrollBorderTop) {
               this.scrollService.scrollToY(fieldBorderTop, "auto", false);
@@ -262,7 +268,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
       const ignoreKeys: string[] = ["Enter", "NumpadEnter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
       const editor: HTMLElement = this.editor.nativeElement;
       const selection: Selection = document.getSelection();
-      const keyEnter: boolean = !!event["key"] && ignoreKeys.includes(event["key"]);
+      const keyEnter = !!event["key"] && ignoreKeys.includes(event["key"]);
       const firstChild: Node = editor.childNodes[0] ?? null;
       const noRemoveNode: Node = keyEnter
         ? selection.anchorNode
@@ -279,14 +285,13 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Вставка из буффера
   onPaste(event: ClipboardEvent): void {
-    let text: string = event.clipboardData.getData("text/plain");
-    const youtubeLinks = this.getYouTubeLinks(text);
-    // Очистить найденные ссылки
-    youtubeLinks.forEach(data => {
-      text = text.replace(data.link, "").trim();
-      // Закрепить видео
-      this.onAddYouTubeVideo(data);
-    });
+    let text = event.clipboardData.getData("text/plain");
+    const links = UniqueArray(GetLinksFromString(text));
+    // Замена ссылок на снипеты
+    if (links.length > 0) {
+      text = this.attachYouTubeLinks(links, text);
+      text = this.attachDreamLinks(links, text);
+    }
     // Остановка всплытия
     event.preventDefault();
     // Вставка текста
@@ -307,8 +312,9 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     if (this.sendIsAvail && !this.sendLoader) {
       this.onEdit(event);
       // Параметры
-      const text: string = this.getEditorValue;
-      const mediaPhotos: number[] = !!this.photos?.length ? this.photos.map(({ id }) => id) : [];
+      const text = this.getEditorValue;
+      const dreams = ArrayMap(this.dreams, ({ id }) => id);
+      const mediaPhotos = ArrayMap(this.photos, ({ id }) => id);
       const youTubeVideos: [string, number][] = ArrayMap(this.youtubeVideos, ({ id, startTime }) => ([id, startTime]))
       const graffity = !!this.graffityData?.blob
         ? new File([this.graffityData.blob], "graffity.jpg", { type: this.graffityData.blob.type })
@@ -320,6 +326,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
         replyToUser: this.replyUser,
         text,
         uploadAttachment: {
+          dreams,
           graffity,
           mediaPhotos,
           youTubeVideos
@@ -342,6 +349,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
               // Очистить другие данные
               this.graffityData = null;
               this.photos = [];
+              this.dreams = [];
               this.youtubeVideos = [];
               this.onReplyUserDelete();
               // Обновить
@@ -399,7 +407,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Удалить фото из закреплений
   onPhotoDelete(photoId: number): void {
-    const index: number = this.photos.findIndex(({ id }) => id === photoId);
+    const index = this.photos.findIndex(({ id }) => id === photoId);
     // Элемент найден
     if (index >= 0) {
       this.photos.splice(index, 1);
@@ -410,10 +418,21 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
 
   // Удалить фото из закреплений
   onYouTubeVideoDelete(youTubeId: string): void {
-    const index: number = this.youtubeVideos.findIndex(({ id }) => id === youTubeId);
+    const index = this.youtubeVideos.findIndex(({ id }) => id === youTubeId);
     // Элемент найден
     if (index >= 0) {
       this.youtubeVideos.splice(index, 1);
+      // Обновить
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Удалить cновидение из закреплений
+  onDreamDelete(dreamId: number): void {
+    const index = this.dreams.findIndex(({ id }) => id === dreamId);
+    // Элемент найден
+    if (index >= 0) {
+      this.dreams.splice(index, 1);
       // Обновить
       this.changeDetectorRef.detectChanges();
     }
@@ -448,6 +467,40 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Добавить сновидение
+  private onAddDream(id: number): void {
+    if (id > 0) {
+      const index = this.dreams.findIndex(dream => dream.id === id);
+      // Добавить новое сновидение
+      if (index < 0) {
+        this.dreams.push({ id, loading: true });
+        // Обновить
+        this.changeDetectorRef.detectChanges();
+        // Загрузка данных
+        this.dreamService.getById(id, false)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe({
+            next: dream => {
+              const index = CheckInRange(this.dreams.findIndex(dream => dream.id === id), this.dreams.length, 0);
+              // Удалить сновидение
+              this.dreams[index] = ({ ...dream, loading: false });
+              // Обновить
+              this.changeDetectorRef.detectChanges();
+            },
+            error: () => {
+              const index = this.dreams.findIndex(dream => dream.id === id);
+              // Удалить сновидение
+              if (index >= 0) {
+                this.dreams.splice(index, 1);
+                // Обновить
+                this.changeDetectorRef.detectChanges();
+              }
+            }
+          });
+      }
+    }
+  }
+
 
 
   // Очистка переносов
@@ -466,7 +519,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   // Функция поиска и очистки
   private clearChild(node: ChildNode, clearNode: boolean, noRemoveNode: Node, noRemoveBeforeNode: Node) {
     const children: ChildNode[] = Array.from(node.childNodes);
-    const nodeName: string = node.nodeName.toLowerCase();
+    const nodeName = node.nodeName.toLowerCase();
     const clearIgnore: string[] = ["#text", "br", "img"];
     // Очистка дочерних
     children.forEach(child => this.clearChild(child, true, noRemoveNode, noRemoveBeforeNode));
@@ -481,7 +534,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   };
 
   // Установить текст
-  private insertContent(content: string | Node, event: Event, setSelectionIntoNode: boolean = false): void {
+  private insertContent(content: string | Node, event: Event, setSelectionIntoNode = false): void {
     if (!this.lastPosition) {
       this.lastPosition = this.getRangePosition(true);
     }
@@ -505,12 +558,12 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     const emojiNodes: Element[] = Array.from(editor.getElementsByClassName(this.emojiClassName));
     // Замена смайликов
     emojiNodes.forEach(node => {
-      const text: string = editor.innerHTML;
-      const nodeText: string = node.outerHTML;
-      const id: string = node.getAttribute("data-emoji-id");
-      const set: string = node.getAttribute("data-emoji-set");
-      const skin: number = ParseInt(node.getAttribute("data-emoji-skin"), 1);
-      const emojiCode: string = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + (!!set ? ":" + set : "") + "]";
+      const text = editor.innerHTML;
+      const nodeText = node.outerHTML;
+      const id = node.getAttribute("data-emoji-id");
+      const set = node.getAttribute("data-emoji-set");
+      const skin = ParseInt(node.getAttribute("data-emoji-skin"), 1);
+      const emojiCode = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + (!!set ? ":" + set : "") + "]";
       // Замена текста
       editor.innerHTML = text.replace(nodeText, emojiCode);
     });
@@ -527,11 +580,11 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
   }
 
   // Убрать обертку элемента
-  private editorTagRemove(editor: HTMLElement, node: Element, br: boolean = false): void {
-    const nodeText: string = node.outerHTML;
-    const text: string = editor.innerHTML;
-    const brTag: string = br ? "[br]" : "";
-    const tagCode: string = brTag + node.innerHTML + brTag;
+  private editorTagRemove(editor: HTMLElement, node: Element, br = false): void {
+    const nodeText = node.outerHTML;
+    const text = editor.innerHTML;
+    const brTag = br ? "[br]" : "";
+    const tagCode = brTag + node.innerHTML + brTag;
     // Замена текста
     editor.innerHTML = text.replace(nodeText, tagCode);
   }
@@ -552,5 +605,47 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
     editor.innerHTML = editor.innerHTML.replace(new RegExp("\\[br\\]$", "i"), "");
     editor.innerHTML = editor.innerHTML.replace(new RegExp("([\\s\\n\\r\\t])+", "ig"), " ");
     editor.innerHTML = editor.innerHTML.trim();
+  }
+
+  // Замена ссылок YouTube на сниппеты
+  private attachYouTubeLinks(links: string[], text: string): string {
+    const youTubeLinks = ArrayFilter(
+      ArrayMap(
+        links,
+        link => GetYouTubeDataByUrl(link),
+      ),
+      Boolean,
+      false
+    );
+    // Замена ссылок
+    return youTubeLinks.reduce(
+      (text, data) => {
+        this.onAddYouTubeVideo(data);
+        // Удалить ссылку
+        return text.replace(data.link, "").trim();
+      },
+      text
+    );
+  }
+
+  // Замена ссылок на сновидения
+  private attachDreamLinks(links: string[], text: string): string {
+    const dreamLinks = ArrayFilter(
+      ArrayMap(
+        links,
+        link => ({ link, id: GetDreamIdByUrl(link) }),
+      ),
+      ({ id }) => !!id,
+      false
+    );
+    // Замена ссылок
+    return dreamLinks.reduce(
+      (text, data) => {
+        this.onAddDream(data.id);
+        // Удалить ссылку
+        return text.replace(data.link, "").trim();
+      },
+      text
+    );
   }
 }
