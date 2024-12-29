@@ -8,7 +8,7 @@
                  [imagePositionX]="dream.headerBackground.positionX"
                  [imagePositionY]="dream.headerBackground.positionY"
                  [imageOverlay]="dream.headerBackground.imageOverlay"
-                 [mainTitle]="dream.title || defaultTitle"
+                 [mainTitle]="currentTitle"
                  [subTitle]="'pages.diary_editor.header.sub_title' | translate: { date: dreamDate | date: 'longDate' }"
                  [backButtonLink]="backLink"
                  [backButtonLinkParams]="backLinkParams"
@@ -149,7 +149,7 @@
                 <app-nav-menu-settings [backgroundId]="dream.headerBackground.id"
                                        [navMenuType]="dream.headerType"
                                        [useAvatar]="false"
-                                       [mainTitle]="dream.title || defaultTitle"
+                                       [mainTitle]="currentTitle"
                                        [subTitle]="'pages.diary_editor.header.sub_title' | translate: { date: dreamDate | date: 'longDate' }"
                                        (changeSettings)="onChangeSettings($event)"></app-nav-menu-settings>
               </div>
