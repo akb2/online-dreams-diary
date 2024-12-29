@@ -140,7 +140,7 @@ class DreamService
         $sqlData['sort_field'] = $sortFields[rand(0, count($sortFields) - 2)];
         $sqlData['sort_type'] = $sortTypes[rand(0, count($sortTypes) - 1)];
         $sqlData['limit_length'] = intval($limit);
-        $sqlData['limit_start'] =  max(0, rand(0, $count - $sqlData['limit_length']));
+        $sqlData['limit_start'] =  intval(max(0, rand(0, $count - $sqlData['limit_length'])));
       }
       // Сортировка по определенному полю
       else {
