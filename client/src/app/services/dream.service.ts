@@ -6,6 +6,7 @@ import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHe
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
 import { CheckInRange, ParseFloat, ParseInt, Random } from "@_helpers/math";
+import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -18,7 +19,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
 import { Observable, Subject, of } from "rxjs";
-import { concatMap, map, mergeMap, switchMap, take, takeUntil } from "rxjs/operators";
+import { concatMap, map, switchMap, take, takeUntil } from "rxjs/operators";
 
 
 
@@ -163,7 +164,7 @@ export class DreamService implements OnDestroy {
           of(result.result.data) :
           this.apiService.checkResponse(result.result.code, codes)
       ),
-      mergeMap(
+      switchMap(
         (d: DreamDto) => this.getDreamUsers([d.userId], d.userId),
         (dreamDto, user) => ({ dreamDto, user: user[0] })
       ),
@@ -233,11 +234,11 @@ export class DreamService implements OnDestroy {
     dreamDto.status = DreamStatus[dreamDto.status] ? dreamDto.status : DreamStatus.draft;
     dreamDto.keywords = dreamDto.keywords.trim()?.length > 0 ? dreamDto.keywords.trim() : "";
     // Итоговый массив
-    const dream: Dream = {
+    return {
       id: ParseInt(dreamDto.id),
       user: null,
       createDate: ToDate(dreamDto?.createDate),
-      title: dreamDto?.title ?? "",
+      title: AnyToString(dreamDto?.title),
       date: ToDate(dreamDto?.date),
       description: dreamDto.description,
       mode: (dreamDto?.mode as DreamMode) ?? DreamMode.mixed,
@@ -247,14 +248,12 @@ export class DreamService implements OnDestroy {
       keywords,
       places: null,
       members: null,
-      text: dreamDto?.text ?? "",
-      interpretation: dreamDto.interpretation ?? "",
+      text: AnyToString(dreamDto?.text),
+      interpretation: AnyToString(dreamDto.interpretation),
       map: this.dreamMapConverter(dreamMap),
-      headerType: dreamDto.headerType as NavMenuType,
+      headerType: (dreamDto?.headerType as NavMenuType) ?? NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === dreamDto.headerBackgroundId)
     };
-    // Текущий пользователь
-    return dream;
   }
 
   // Конвертер сновидений для сервера
