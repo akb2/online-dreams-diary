@@ -7,7 +7,7 @@ import { HttpParams } from "@angular/common/http";
 
 
 // Преобразование объекта в параметры
-export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "") => {
+export const ObjectToParams = (params: CustomObject<any>, keyPreffix = "") => {
   const unPreffixKeys: string[] = ["withCredentials"];
   // Вернуть параметры
   return Object.entries(params)
@@ -16,10 +16,10 @@ export const ObjectToParams = (params: CustomObject<any>, keyPreffix: string = "
 };
 
 // Подготовка объекта как параметры URL
-export const ObjectToUrlObject = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: ExcludeUrlObjectValues) => Object.entries(params)
+export const ObjectToUrlObject = (params: CustomObject<any>, keyPreffix = "", excludeParams: ExcludeUrlObjectValues = {}) => Object.entries(params)
   .map(([k, v]) => ([keyPreffix + k, Array.isArray(v) ? v.join(",") : (v?.toString() ?? null)]))
   .map(([k, v]) => {
-    const hasInExclude: boolean = excludeParams.hasOwnProperty(k) && (
+    const hasInExclude = excludeParams.hasOwnProperty(k) && (
       excludeParams[k] === true ||
       (Array.isArray(excludeParams[k]) && (excludeParams[k] as ExcludeUrlObjectParams).map(e => e.toString()).includes(v))
     );
@@ -32,14 +32,14 @@ export const ObjectToUrlObject = (params: CustomObject<any>, keyPreffix: string 
   }), {} as SimpleObject);
 
 // Преобразование объекта в параметры в виде строки
-export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix: string = "", excludeParams: ExcludeUrlObjectValues) =>
+export const ObjectToStringParams = (params: CustomObject<any>, keyPreffix = "", excludeParams: ExcludeUrlObjectValues = {}) =>
   Object.entries(ObjectToUrlObject(params, keyPreffix, excludeParams))
     .filter(([, v]) => !!v)
     .map(([k, v]) => (keyPreffix + k) + "=" + v)
     .join('&');
 
 // Преобразование объекта в FormControl
-export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix: string = "") => {
+export const ObjectToFormData = (params: CustomObject<any> = {}, keyPreffix = "") => {
   const formData: FormData = new FormData();
   // Добавить параметры в форму
   Object.entries(params)
