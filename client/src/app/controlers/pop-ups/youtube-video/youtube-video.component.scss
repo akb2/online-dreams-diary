@@ -1,0 +1,42 @@
+@use "vars";
+@use "material";
+@use "containers";
+
+// Заготовки стилей
+@include material.matDialogSort;
+
+// Просмотрщик
+.viewer {
+  position: fixed;
+  border-radius: 0;
+  box-shadow: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: vars.$screenHeight;
+  max-height: vars.$screenHeight;
+  overflow: initial;
+  z-index: 1;
+  padding: containers.$paddingX;
+  padding-top: vars.$headerHeight + containers.$paddingX;
+  pointer-events: none;
+  user-select: none;
+  // Вспомогательный элементы
+  &__helper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  // Фрейм
+  &__frame {
+    display: block;
+    border: none;
+    outline: none;
+    border-radius: containers.$cardBorderRadius;
+    box-shadow: containers.$cardBoxShadow;
+    overflow: hidden;
+    pointer-events: auto;
+  }
+}

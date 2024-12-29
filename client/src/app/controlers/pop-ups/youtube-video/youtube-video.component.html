@@ -1,0 +1,18 @@
+<section mat-dialog-content
+         class="viewer"
+         appSwipe>
+  <div #sectionHelper
+       class="viewer__helper">
+    <iframe class="viewer__frame"
+            [src]="iframeLink"
+            [width]="iframeWidth"
+            [height]="iframeHeight"
+            [frameBorder]="0"
+            allowfullscreen="allowfullscreen"
+            mozallowfullscreen="mozallowfullscreen"
+            msallowfullscreen="msallowfullscreen"
+            oallowfullscreen="oallowfullscreen"
+            webkitallowfullscreen="webkitallowfullscreen"
+            *ngIf="!!iframeLink"></iframe>
+  </div>
+</section>
