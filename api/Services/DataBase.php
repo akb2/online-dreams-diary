@@ -153,7 +153,10 @@ class DataBaseService
       $position = 1;
       // Цикл по значениям
       foreach ($params as $key => $value) {
-        $type = $types[strtolower(gettype($value))] ?? $types['default'];
+        $typeKey = $value == null
+          ? 'null'
+          : gettype($value);
+        $type = $types[$typeKey] ?? $types['default'];
         // Ассоциативный параметр
         if (is_string($key)) {
           $sql->bindValue(':' . $key, $value, $type);
