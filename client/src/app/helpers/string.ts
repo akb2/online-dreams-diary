@@ -6,7 +6,7 @@ import { ParseInt, Random } from "./math";
 
 
 // Преобразование любого значения в строку
-export const AnyToString = (value: any) => value?.toString() ?? "";
+export const AnyToString = (value: any, defaultTitle = "") => value?.toString() ?? defaultTitle;
 
 // Генерация уникального ID
 export const CreateRandomID = (length: number) => {
