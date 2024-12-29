@@ -575,8 +575,8 @@ export class DrawDatas {
         property: ["top"],
         data: {
           default: { min: 5, max: -13, unit: "px" },
-          large: { min: -8, max: -12, unit: "px" },
-          middle: { min: -8, max: -11, unit: "px" }
+          large: { min: 0, max: -12, unit: "px" },
+          middle: { min: 0, max: -11, unit: "px" }
         }
       },
       // Позиция справа
