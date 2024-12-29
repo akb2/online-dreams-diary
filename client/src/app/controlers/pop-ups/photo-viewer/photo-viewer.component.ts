@@ -299,16 +299,18 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
 
   // Открыть текущее окно
   static open(matDialog: MatDialog, data?: PopupPhotoViewerData): MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult> {
-    const matDialogConfig: MatDialogConfig = { ...AppMatDialogConfig };
     const mediaFiles: number[] = (data?.mediaFiles ?? []).map(({ id }) => id);
     const mediaFileId: number = ParseInt(data?.mediaFileId);
     const dialogId: string = "popup-photo-viewer--files-" + (mediaFiles.join("-")) + "--file-" + (mediaFileId);
+    const matDialogConfig: MatDialogConfig = {
+      ...AppMatDialogConfig,
+      width: PopupPhotoViewerComponent.popUpWidth,
+      data,
+      panelClass: "clear-styles",
+      id: dialogId
+    };
     const existsDialog: MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult> = matDialog.getDialogById(dialogId);
     // Настройки окна
-    matDialogConfig.width = PopupPhotoViewerComponent.popUpWidth;
-    matDialogConfig.data = data;
-    matDialogConfig.panelClass = "popup-photo-viewer";
-    matDialogConfig.id = dialogId;
     // Открыть существующий
     if (!!existsDialog) {
       const existsElm: HTMLElement = document.getElementById(dialogId).closest(".cdk-global-overlay-wrapper");

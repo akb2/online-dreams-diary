@@ -18,13 +18,7 @@ $commentWidths: (
 
 // Заготовки стилей
 @include material.matDialogSort;
-
-// Убрать стили по умолчанию
-::ng-deep .popup-photo-viewer .mat-mdc-dialog-surface.mdc-dialog__surface {
-  background-color: transparent;
-  box-shadow: none;
-  padding: 0;
-}
+@include material.matDialogClearStyles;
 
 // Просмотрщик
 .viewer {

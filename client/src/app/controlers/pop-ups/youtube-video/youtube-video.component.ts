@@ -80,7 +80,8 @@ export class PopupYoutubeVideoComponent implements AfterViewInit, OnDestroy {
     const matDialogConfig: MatDialogConfig = {
       ...AppMatDialogConfig,
       width: PopupYoutubeVideoComponent.popUpWidth,
-      data
+      data,
+      panelClass: "clear-styles"
     };
     // Вернуть диалог
     return matDialog.open(PopupYoutubeVideoComponent, matDialogConfig);

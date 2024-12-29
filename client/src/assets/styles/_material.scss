@@ -350,6 +350,15 @@
   }
 }
 
+// Убрать стили по умолчанию
+@mixin matDialogClearStyles {
+  ::ng-deep .clear-styles .mat-mdc-dialog-surface.mdc-dialog__surface {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
 // Диалоговое окно
 @mixin matDialog {
   // Заголовок
