@@ -1,5 +1,6 @@
 import { PopupConfirmComponent } from "@_controlers/confirm/confirm.component";
 import { MediaFileView, MediaFileViewType, PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
+import { PopupYoutubeVideoComponent } from "@_controlers/youtube-video/youtube-video.component";
 import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
@@ -9,7 +10,7 @@ import { UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObject, CustomObjectKey } from "@_models/app";
-import { Comment, CommentMaterialType, SearchRequestComment } from "@_models/comment";
+import { Comment, CommentMaterialType, SearchRequestComment, YouTubeVideo } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
 import { NumberDirection } from "@_models/math";
@@ -317,6 +318,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
     });
     // Открыть окно
     PopupPhotoViewerComponent.open(this.matDialog, { mediaFiles, mediaFileId });
+  }
+
+  // Просмотр видео
+  onViewYouTubeVideo(youTubeVideo: YouTubeVideo): void {
+    PopupYoutubeVideoComponent.open(this.matDialog, youTubeVideo)
+      .afterClosed()
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
   }
 
   // Подтверждение удаления комментария

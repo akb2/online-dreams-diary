@@ -8,6 +8,7 @@ import { PaintCanvasModule } from "@_controlers/paint-canvas/paint-canvas.module
 import { PopupPhotoUploaderModule } from "@_controlers/photo-uploader/photo-uploader.module";
 import { PopupPhotoViewerComponent } from "@_controlers/photo-viewer/photo-viewer.component";
 import { ScrollModule } from "@_controlers/scroll/scroll.module";
+import { PopupYoutubeVideoModule } from "@_controlers/youtube-video/youtube-video.module";
 import { CoreModule } from "@_modules/core.module";
 import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommonModule } from "@angular/common";
@@ -51,7 +52,8 @@ import { TranslateModule } from "@ngx-translate/core";
     PickerModule,
     PopupGraffityModule,
     TranslateModule,
-    PopupConfirmModule
+    PopupConfirmModule,
+    PopupYoutubeVideoModule
   ],
   providers: [
     StringTemplatePipe

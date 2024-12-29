@@ -285,6 +285,7 @@
              let-youTubeVideos="youTubeVideos">
   <ng-container *ngIf="!!youTubeVideos?.length">
     <div class="comment__body-attachment"
+         (click)="onViewYouTubeVideo(video)"
          *ngFor="let video of youTubeVideos">
       <div class="comment__body-attachment-data">
         <img class="media-photo contain black"
