@@ -28,27 +28,22 @@ import { filter, map, mergeMap, switchMap, take, takeUntil, timeout } from "rxjs
 
 
 
-
-
 @Component({
   selector: "app-comment-list",
   templateUrl: "./comment-list.component.html",
   styleUrls: ["./comment-list.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class CommentListComponent implements OnInit, OnDestroy {
-
-
   @Input() materialType: CommentMaterialType;
   @Input() materialId: number;
-  @Input() emptyCommentsMainTitle: string = "components.comment.default.title";
-  @Input() emptyCommentsSubTitle: string = "components.comment.default.sub_title";
-  @Input() writeAccess: boolean = false;
-  @Input() goToCommentScrollSubtrahend: number = DrawDatas.minHeight;
-  @Input() attachmentPerLine: number = 5;
+  @Input() emptyCommentsMainTitle = "components.comment.default.title";
+  @Input() emptyCommentsSubTitle = "components.comment.default.sub_title";
+  @Input() writeAccess = false;
+  @Input() goToCommentScrollSubtrahend = DrawDatas.minHeight;
+  @Input() attachmentPerLine = 5;
 
-  @Output() replyEvent: EventEmitter<User> = new EventEmitter();
+  @Output() replyEvent = new EventEmitter<User>();
 
   @ViewChild("list", { read: ElementRef }) listElm: ElementRef;
   @ViewChildren("comment", { read: ElementRef }) commentElms: QueryList<ElementRef>;
@@ -56,32 +51,30 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   private user: User;
   comments: Comment[] = [];
-  count: number = 0;
+  count = 0;
   private inScreenComments: number[] = [];
   private avatarTopPositions: CustomObjectKey<number, number> = {};
 
-  loading: boolean = true;
-  prevLoading: boolean = false;
-  nextLoading: boolean = false;
-  prevLeftCount: number = 0;
-  nextLeftCount: number = 0;
+  loading = true;
+  prevLoading = false;
+  nextLoading = false;
+  prevLeftCount = 0;
+  nextLeftCount = 0;
 
   minDate: Date;
   maxDate: Date;
   minId: number;
   maxId: number;
 
-  imagePrefix: string = "../../../../assets/images/backgrounds/";
+  readonly imagePrefix = "../../../../assets/images/backgrounds/";
 
-  defaultDreamTitle: string = DreamTitle;
-  today: Date = new Date();
+  readonly defaultDreamTitle = DreamTitle;
+  readonly today = new Date();
 
-  private goToCommentUrlParam: string = "goToComment";
-  private openMediaViewerId: string = "openMediaViewer";
+  private readonly goToCommentUrlParam = "goToComment";
+  private readonly openMediaViewerId = "openMediaViewer";
 
-  private destroyed$: Subject<void> = new Subject();
-
-
+  private destroyed$ = new Subject<void>();
 
 
 
@@ -127,7 +120,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Количество закреплений
   getAttachmentCount(comment: Comment): number {
-    let count: number = 0;
+    let count = 0;
     // Есть закрепления
     if (!!comment?.attachment) {
       // Граффити
@@ -183,8 +176,6 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
 
-
-
   constructor(
     private commentService: CommentService,
     private screenService: ScreenService,
@@ -225,14 +216,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
       )
       .subscribe(({ y }) => {
         const listElm: HTMLElement = this.listElm.nativeElement;
-        const gapY: number = ParseInt(window.getComputedStyle(listElm)?.rowGap);
-        const avatarTop: number = y + DrawDatas.minHeight + gapY;
+        const gapY = ParseInt(window.getComputedStyle(listElm)?.rowGap);
+        const avatarTop = y + DrawDatas.minHeight + gapY;
         // Цикл по элементам
         this.inScreenComments.forEach(commentId => {
           const commentElm: HTMLElement = this.getCommentElm(commentId);
           const commentAvatarElm: HTMLElement = this.getCommentAvatarElm(commentId);
-          const minTop: number = y + commentElm.getBoundingClientRect().top;
-          const maxTop: number = minTop + commentElm.getBoundingClientRect().height - commentAvatarElm.getBoundingClientRect().height;
+          const minTop = y + commentElm.getBoundingClientRect().top;
+          const maxTop = minTop + commentElm.getBoundingClientRect().height - commentAvatarElm.getBoundingClientRect().height;
           // Элемент найден
           if (!!commentElm) {
             this.avatarTopPositions[commentId] = CheckInRange(avatarTop, maxTop, minTop) - minTop;
@@ -250,8 +241,6 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
 
-
-
   // Ответить
   onReply(user: User): void {
     if (!!user) {
@@ -261,8 +250,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Элемент в области видимости
   onLoadMoreComments(next: boolean): void {
-    const lastId: number = next ? this.maxId : this.minId;
-    const lastDate: Date = next ? this.maxDate : this.minDate;
+    const lastId = next ? this.maxId : this.minId;
+    const lastDate = next ? this.maxDate : this.minDate;
     const loadListType: NumberDirection = next ? 1 : -1;
     // Загрузка новых комментариев
     if ((next && !this.nextLoading) || (!next && !this.prevLoading)) {
@@ -291,7 +280,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
         data => {
           const commentElm = data[0].element;
           const { y: scroll }: ScrollData = this.scrollService.getCurrentScroll;
-          const top: number = commentElm.getBoundingClientRect().top - this.goToCommentScrollSubtrahend + scroll;
+          const top = commentElm.getBoundingClientRect().top - this.goToCommentScrollSubtrahend + scroll;
           // Скролл к комментарию
           this.scrollService.scrollToY(top, "auto", false);
         },
@@ -308,7 +297,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Комментарий ушел за экран
   onCommentOutOfScreen(commentId: number): void {
-    const index: number = this.inScreenComments.findIndex(id => id === commentId);
+    const index = this.inScreenComments.findIndex(id => id === commentId);
     // Элемент найден
     if (index >= 0) {
       this.inScreenComments.splice(index, 1);
@@ -333,7 +322,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
   // Подтверждение удаления комментария
   onDelete(comment: Comment) {
     const title = "Удаление комментария";
-    const text: string = "Вы действительно желаете удалить комментарий? Комментарий нельзя будет восстановить.";
+    const text = "Вы действительно желаете удалить комментарий? Комментарий нельзя будет восстановить.";
     // Открыть окно
     PopupConfirmComponent.open(this.matDialog, { title, text }).afterClosed()
       .pipe(
@@ -354,11 +343,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
 
-
-
   // Загрузка комментариев
-  private loadComments(listenNew: boolean = false, startWithId: number = 0, lastDate: Date = null, loadListType: NumberDirection = 0): void {
-    const prevNextLoad: boolean = startWithId > 0 && !!lastDate && loadListType !== 0;
+  private loadComments(listenNew = false, startWithId = 0, lastDate = null, loadListType: NumberDirection = 0): void {
+    const prevNextLoad = startWithId > 0 && !!lastDate && loadListType !== 0;
     const lastSearch: Partial<SearchRequestComment> = prevNextLoad ?
       {
         loadListType,
@@ -422,14 +409,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
   }
 
   // Добавить комментарии в общий список
-  private addComment(mixedComments: Comment | Comment[], saveScroll: boolean = false, goToComment: number = 0): void {
+  private addComment(mixedComments: Comment | Comment[], saveScroll = false, goToComment = 0): void {
     const comments: Comment[] = (Array.isArray(mixedComments) ? mixedComments : [mixedComments]).filter(comment => !!comment);
     let savingScroll = false;
     // Данные в порядке
     if (!!comments && this.comments) {
       // Добавление
       comments.forEach(comment => {
-        const index: number = this.comments.findIndex(c => !!comment?.id && !!c.id && comment.id === c.id);
+        const index = this.comments.findIndex(c => !!comment?.id && !!c.id && comment.id === c.id);
         // Обновить
         if (index >= 0) {
           this.comments[index] = comment;
@@ -453,7 +440,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
           return date === 0 ? id : date;
         });
         // Последний ключ
-        const lastIndex: number = this.comments?.length - 1;
+        const lastIndex = this.comments?.length - 1;
         // Параметры
         this.maxId = this.comments[0].id;
         this.minId = this.comments[lastIndex].id;
@@ -471,8 +458,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Обновить URL
   private updateUrl(params: CustomObject<string | number>): void {
-    const currentUrl: string = this.location?.path() ?? "";
-    const currentPath: string = currentUrl.split('?')?.[0] ?? "";
+    const currentUrl = this.location?.path() ?? "";
+    const currentPath = currentUrl.split('?')?.[0] ?? "";
     const queryString: URLSearchParams = new URLSearchParams(currentUrl.split('?')?.[1] ?? "");
     // Добавить параметры
     Object.entries(params).forEach(([key, value]) => queryString.set(key, value?.toString()));
