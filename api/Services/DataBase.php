@@ -92,7 +92,7 @@ class DataBaseService
     if ($file->exists()) {
       // Текст запроса из файла с выполнением кода PHP
       if ($file->extension() === 'php') {
-        $sqlText = $file->eval($this->checkInputParams("", $params, false));
+        $sqlText = $file->eval($this->checkInputParams('', $params, false));
       }
       // Текст запроса из файла
       else {
@@ -119,16 +119,29 @@ class DataBaseService
       $findAsArrayCount = count($findAsArray[1]);
       // Корректировка для порядкого перечисления
       for ($k = 0; $k < $findAsArrayCount; $k++) {
-        $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
+        $type = strtolower(gettype($params[$k]));
+        $defaultValue = $type === 'null'
+          ? null
+          : '';
+        $newParams[$k] = isset($params[$k])
+          ? $params[$k]
+          : $defaultValue;
       }
       // Корректировка для параметров с ключами
       foreach ($findAsObject[1] as $k) {
-        $newParams[$k] = isset($params[$k]) ? $params[$k] : "";
+        $type = strtolower(gettype($params[$k]));
+        $defaultValue = $type === 'null'
+          ? null
+          : '';
+        $newParams[$k] = isset($params[$k])
+          ? $params[$k]
+          : $defaultValue;
       }
       // Корректировать тип данных
       foreach ($newParams as $k => $v) {
-        $types = array('boolean', 'integer', 'double', 'string');
-        if (!in_array(gettype($v), $types)) {
+        $types = array('boolean', 'integer', 'double', 'float', 'string', 'null');
+        // Проверка типов
+        if (!in_array(strtolower(gettype($v)), $types)) {
           $newParams[$k] = $this->pdo->quote(strval($v));
         }
       }
@@ -146,16 +159,15 @@ class DataBaseService
         'integer' => PDO::PARAM_INT,
         'double' => PDO::PARAM_INT,
         'float' => PDO::PARAM_INT,
+        'string' => PDO::PARAM_STR,
         'null' => PDO::PARAM_NULL,
-        'default' => PDO::PARAM_STR
+        'default' => PDO::PARAM_NULL
       );
       // Счетчик позиций для нумерованных параметров
       $position = 1;
       // Цикл по значениям
       foreach ($params as $key => $value) {
-        $typeKey = $value == null
-          ? 'null'
-          : gettype($value);
+        $typeKey = strtolower(gettype($value));
         $type = $types[$typeKey] ?? $types['default'];
         // Ассоциативный параметр
         if (is_string($key)) {
