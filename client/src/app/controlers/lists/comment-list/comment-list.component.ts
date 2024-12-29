@@ -321,8 +321,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Подтверждение удаления комментария
   onDelete(comment: Comment) {
-    const title = "Удаление комментария";
-    const text = "Вы действительно желаете удалить комментарий? Комментарий нельзя будет восстановить.";
+    const title = "components.comment.popups.delete.title";
+    const text = "components.comment.popups.delete.description";
     // Открыть окно
     PopupConfirmComponent.open(this.matDialog, { title, text }).afterClosed()
       .pipe(

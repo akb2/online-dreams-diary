@@ -387,6 +387,12 @@
       "default": {
         "title": "There is no comments",
         "sub_title": "Let's write a first comment"
+      },
+      "popups": {
+        "delete": {
+          "title": "Delete the comment",
+          "description": "Are you sure you want to delete the comment? The comment can't be restored."
+        }
       }
     },
     "emojies": {
