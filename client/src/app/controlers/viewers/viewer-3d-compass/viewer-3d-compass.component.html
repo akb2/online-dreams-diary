@@ -1,0 +1,24 @@
+<span class="compass">
+  <span class="compass__circle"
+        [ngStyle]="compassStyles$ | async">
+    <span class="compass__circle-border">
+      <span class="compass__label">
+        <span class="compass__label-text"
+              [ngStyle]="compassCorrectStyles">{{'3d.viewer.compass.label' | translate}}</span>
+      </span>
+      <!-- Отметка о положении на карте -->
+      <span class="compass__mark"
+            [ngStyle]="compassCorrectStyles">
+        <span class="compass__mark-area"
+              [ngStyle]="compassMarkAreaStyles$ | async">
+          <span class="compass__mark-overlay"
+                [ngStyle]="compassMarkColumnStyles$ | async">
+            <span class="compass__mark-head"
+                  [ngStyle]="compassMarkHeadStyles$ | async"></span>
+            <span class="compass__mark-column"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+  </span>
+</span>

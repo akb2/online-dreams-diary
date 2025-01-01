@@ -27,6 +27,5 @@ import { Editor3DComponent } from "./editor-3d.component";
     Editor3DWorldOceanModule
   ]
 })
-
 export class Editor3DModule {
 }

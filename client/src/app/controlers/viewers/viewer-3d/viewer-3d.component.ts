@@ -5,7 +5,7 @@ import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
-import { CustomObjectKey, DefaultKey, SimpleObject } from "@_models/app";
+import { CustomObjectKey, DefaultKey } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, ReliefType } from "@_models/dream-map";
 import { LoadTexture } from "@_models/three.js/base";
 import { Ceil3dService } from "@_services/3d/ceil-3d.service";
@@ -17,7 +17,7 @@ import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
-import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DCompassSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
+import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
 import { Observable, Subject, animationFrameScheduler, catchError, concatMap, delay, fromEvent, map, merge, observeOn, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
@@ -45,8 +45,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   private readonly calcOperationLoadingSize = 500;
   private readonly calcOperationLoadingDelay = 80;
   private readonly texturesLoadingSize = 1000;
-  private readonly compassAzimuthShift = -90;
-  private readonly compassRadialShift = 45;
 
   private loadingCeilLimit = 0;
   private loadingCeilCurrent: CustomObjectKey<LoadingStep, number> = {};
@@ -60,40 +58,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   cursorInWorkArea$ = this.store$.select(editor3DHoverInWorkAreaSelector);
   cursorCoords$ = this.store$.select(editor3DHoverCeilCoordsSelector);
 
-  private compass$ = this.store$.select(viewer3DCompassSelector);
   private skyTime$ = this.store$.select(editor3DSkyTimeSelector);
   private worldOceanHeight$ = this.store$.select(editor3DWorldOceanHeightSelector);
-
-  compassStyles$ = this.compass$.pipe(map(({ radial, azimuth }) => ({
-    transform: (
-      " rotateX(" + (azimuth - this.compassAzimuthShift) + "deg) " +
-      " rotateZ(" + (radial - this.compassRadialShift) + "deg) "
-    )
-  })));
-
-  compassMarkAreaStyles$ = this.compass$.pipe(map(({ cos, sin }) => {
-    const value: number = 50;
-    const top: number = (value * cos) + value;
-    const left: number = (value * sin) + value;
-    // Объект стилей
-    return {
-      marginTop: top + "%",
-      marginLeft: left + "%"
-    };
-  }));
-
-  compassMarkColumnStyles$ = this.compass$.pipe(map(({ radial }) => ({
-    transform: (
-      " rotateX(-90deg) " +
-      " rotateY(" + radial + "deg) "
-    )
-  })));
-
-  compassMarkHeadStyles$ = this.compass$.pipe(map(({ azimuth }) => ({
-    transform: (
-      "rotateX(" + (-azimuth) + "deg)"
-    )
-  })));
 
   private destroyed$: Subject<void> = new Subject();
 
@@ -137,13 +103,6 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
     // Вернуть состояние
     return { mode, icon, progress, subSteps, completedSubSteps };
-  }
-
-  // Корректировка поворота компаса
-  get compassCorrectStyles(): SimpleObject {
-    return {
-      transform: "rotate(" + this.compassRadialShift + "deg)"
-    };
   }
 
   // Проверка сенсорного экрана
