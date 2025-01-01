@@ -27,8 +27,8 @@ export class Viewer3DCompassComponent {
 
   compassMarkAreaStyles$ = this.compass$.pipe(map(({ cos, sin }) => {
     const value: number = 50;
-    const top: number = (value * cos) + value;
-    const left: number = (value * sin) + value;
+    const top: number = (value * sin) + value;
+    const left: number = (value * cos) + value;
     // Объект стилей
     return {
       marginTop: top + "%",

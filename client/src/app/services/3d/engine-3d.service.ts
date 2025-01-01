@@ -355,7 +355,7 @@ export class Engine3DService implements OnDestroy {
     this.store$.dispatch(viewer3DSetCompassAction({
       radial: AngleByLegs(-vector.x, -vector.z),
       azimuth: RadToAngle(vector.y * (Math.PI / 2)),
-      sin: -circlePos.v,
+      sin: circlePos.v,
       cos: circlePos.u
     }))
     // обновить пост отрисовку
