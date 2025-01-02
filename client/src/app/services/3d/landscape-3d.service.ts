@@ -1,6 +1,5 @@
 import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { DreamCeilSize, DreamDefHeight, DreamMaxHeight, DreamRealMaxHeight, DreamStartHeight } from "@_datas/dream-map-settings";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
@@ -12,10 +11,7 @@ import { ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
 import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
-
-
-
-
+import { Settings3DService } from "./settings-3d.service";
 
 @Injectable()
 
@@ -59,8 +55,6 @@ export class Landscape3DService {
 
 
 
-
-
   // Получить тип рельефа по сектору
   private getReliefTypeBySector(sector: DreamMapSector): ReliefType {
     return sector === "center"
@@ -97,9 +91,9 @@ export class Landscape3DService {
 
   // Получение предварительной высоты вершины в виде цвета
   private getColorByCoords(x: number, z: number, y: number): number {
-    return this.ceil3dService.isBorderCeil(x, z) || y === DreamDefHeight
+    return this.ceil3dService.isBorderCeil(x, z) || y === this.settings3DService.defaultHeight
       ? this.getColorByReliefTypeAndCoords(this.getReliefTypeBySector(this.ceil3dService.getSectorByCoords(x, z)), x, z)
-      : MathRound((y / DreamMaxHeight) * MaxColorValue);
+      : MathRound((y / this.settings3DService.maxHeight) * MaxColorValue);
   }
 
   // Данные для высоты
@@ -117,7 +111,7 @@ export class Landscape3DService {
     const vertexStartY: number = y + mapBorderSizeY;
     const vertexWidth: number = (mapWidth * ((this.outSideRepeat * 2) + 1)) + 1;
     const indexV: number = (vertexStartY * vertexWidth) + vertexStartX;
-    const scale: number = DreamRealMaxHeight;
+    const scale: number = this.settings3DService.realMaxHeight;
     const width: number = (mapBorderSizeX * 2) + mapWidth;
     const height: number = (mapBorderSizeY * 2) + mapHeight;
     const textureX: number = x + mapBorderSizeX;
@@ -161,8 +155,6 @@ export class Landscape3DService {
       ? MaxColorValue
       : 0;
   }
-
-
 
 
 
@@ -232,13 +224,10 @@ export class Landscape3DService {
 
 
 
-
-
   constructor(
-    private ceil3dService: Ceil3dService
+    private ceil3dService: Ceil3dService,
+    private settings3DService: Settings3DService
   ) { }
-
-
 
 
 
@@ -254,7 +243,7 @@ export class Landscape3DService {
     this.mesh.receiveShadow = true;
     this.mesh.castShadow = true;
     this.mesh.name = DreamMapTerrainName;
-    this.mesh.position.setY(DreamStartHeight);
+    this.mesh.position.setY(this.settings3DService.startHeight);
     this.mesh.renderOrder = 1;
     this.mesh.updateMatrix();
   }
@@ -268,7 +257,7 @@ export class Landscape3DService {
     const totalHeight: number = height * repeat;
     const totalSize: number = totalWidth * totalHeight;
     // Создание геометрии
-    this.geometry = new PlaneGeometry(totalWidth * DreamCeilSize, totalHeight * DreamCeilSize, totalWidth, totalHeight);
+    this.geometry = new PlaneGeometry(totalWidth * this.settings3DService.ceilSize, totalHeight * this.settings3DService.ceilSize, totalWidth, totalHeight);
     this.geometryVertex = this.geometry.getAttribute("position") as Float32BufferAttribute;
     this.displacementTexture = new DataTexture(new Uint8Array(ColorsChannelsCount * totalSize), totalWidth, totalHeight);
     // Свойства геоиетрии
@@ -393,8 +382,6 @@ export class Landscape3DService {
     this.material.uniformsNeedUpdate = true;
   }
 }
-
-
 
 
 

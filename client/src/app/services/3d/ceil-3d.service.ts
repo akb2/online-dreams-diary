@@ -1,21 +1,15 @@
 import { DreamMapSectors, MapTerrains } from "@_datas/dream-map";
-import { DreamCeilSize, DreamDefHeight, DreamTerrain } from "@_datas/dream-map-settings";
 import { ArrayFind } from "@_helpers/objects";
 import { DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, UVCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { Injectable } from "@angular/core";
-
-
-
-
+import { Settings3DService } from "./settings-3d.service";
 
 @Injectable()
 
 export class Ceil3dService {
 
   dreamMap: DreamMap;
-
-
 
 
 
@@ -51,13 +45,13 @@ export class Ceil3dService {
   private getDefaultCeil(x: number, y: number): DreamMapCeil {
     return {
       place: null,
-      terrain: DreamTerrain,
+      terrain: this.settings3DService.terrain,
       object: null,
       coord: {
         x,
         y,
-        z: DreamDefHeight,
-        originalZ: DreamDefHeight
+        z: this.settings3DService.defaultHeight,
+        originalZ: this.settings3DService.defaultHeight
       }
     };
   }
@@ -66,13 +60,13 @@ export class Ceil3dService {
   private getBorderCeil(x: number, y: number): DreamMapCeil {
     return {
       place: null,
-      terrain: DreamTerrain,
+      terrain: this.settings3DService.terrain,
       object: null,
       coord: {
         x,
         y,
-        z: DreamDefHeight,
-        originalZ: DreamDefHeight
+        z: this.settings3DService.defaultHeight,
+        originalZ: this.settings3DService.defaultHeight
       }
     };
   }
@@ -95,8 +89,8 @@ export class Ceil3dService {
 
   // Перевести координаты в круговые координаты
   coordsToUV(x: number, y: number): UVCoord {
-    const width: number = this.dreamMap.size.width / 2 * DreamCeilSize;
-    const height: number = this.dreamMap.size.height / 2 * DreamCeilSize;
+    const width: number = this.dreamMap.size.width / 2 * this.settings3DService.ceilSize;
+    const height: number = this.dreamMap.size.height / 2 * this.settings3DService.ceilSize;
     const nX: number = x / width;
     const nY: number = y / height;
     const u: number = nX * Math.sqrt(1 - ((nY * nY) / 2));
@@ -111,4 +105,10 @@ export class Ceil3dService {
     // Вернуть данные
     return ArrayFind(MapTerrains, ({ id }) => id === ceil.terrain) ?? MapTerrains.find(({ id }) => id === 1);
   }
+
+
+
+  constructor(
+    private settings3DService: Settings3DService
+  ) { }
 }

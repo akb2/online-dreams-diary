@@ -1,5 +1,4 @@
 import { DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { DreamCeilSize, DreamMaxHeight, DreamMinHeight } from "@_datas/dream-map-settings";
 import { CheckInRange, Cos, DetectDirectionByExpressions, MathFloor, Sin, SinCosToRad } from "@_helpers/math";
 import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
@@ -12,10 +11,10 @@ import { Store } from "@ngrx/store";
 import { Subject, combineLatest, distinctUntilChanged, switchMap, takeUntil, tap } from "rxjs";
 import { Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, SpotLight, SpotLightHelper, Vector3 } from "three";
 import { Engine3DService } from "./engine-3d.service";
-
-
+import { Settings3DService } from "./settings-3d.service";
 
 @Injectable()
+
 export class Cursor3DService implements OnDestroy {
   dreamMap: DreamMap;
 
@@ -25,7 +24,7 @@ export class Cursor3DService implements OnDestroy {
   private readonly radialSigmentsDelimiter = 0.2;
   // ? Количество точек для поиска пересечений с ландшафтом
   private readonly intersectionPoints = 5;
-  private readonly lightMaxDistance = DreamCeilSize * 7;
+  private readonly lightMaxDistance = this.settings3DService.ceilSize * 7;
   private readonly lightColor = new Color("white");
   private readonly lightSizeMultiplier = 0.5;
   private readonly lightIntensity = 30;
@@ -47,7 +46,7 @@ export class Cursor3DService implements OnDestroy {
   private lastHeight: number;
   private intersectionCache: CustomObjectKey<number, CustomObjectKey<number, number>> = {};
 
-  private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, DreamMaxHeight - DreamMinHeight);
+  private rayCaster = new OctreeRaycaster(new Vector3(), new Vector3(), 0, this.settings3DService.maxHeight - this.settings3DService.minHeight);
   private rayCasterOrigin = new Vector3();
   private rayCasterDirection = new Vector3(0, -1, 0);
 
@@ -67,7 +66,7 @@ export class Cursor3DService implements OnDestroy {
 
   // Получить размер
   private getGeometryRadius(size: number): number {
-    return (((CheckInRange(size - 1) * 2) + 1) * DreamCeilSize) / 2;
+    return (((CheckInRange(size - 1) * 2) + 1) * this.settings3DService.ceilSize) / 2;
   }
 
   // Получение точки пересечения
@@ -83,7 +82,7 @@ export class Cursor3DService implements OnDestroy {
     }
     // Расчет пересечения
     else {
-      this.rayCasterOrigin.set(landX, DreamMaxHeight + DreamCeilSize, landZ);
+      this.rayCasterOrigin.set(landX, this.settings3DService.maxHeight + this.settings3DService.ceilSize, landZ);
       this.rayCaster.set(this.rayCasterOrigin, this.rayCasterDirection);
       // Объекты в фокусе
       const intersects = this.rayCaster
@@ -102,6 +101,7 @@ export class Cursor3DService implements OnDestroy {
 
   constructor(
     private engine3DService: Engine3DService,
+    private settings3DService: Settings3DService,
     private store$: Store
   ) {
     WaitObservable(() => !this.dreamMap)
@@ -161,7 +161,7 @@ export class Cursor3DService implements OnDestroy {
 
   // Создание освещения
   private createLight(): void {
-    const minDistance = DreamCeilSize * 0.1;
+    const minDistance = this.settings3DService.ceilSize * 0.1;
     const maxDistance = this.lightMaxDistance;
     // Создание объектов
     this.light = new SpotLight(this.lightColor);
@@ -199,10 +199,10 @@ export class Cursor3DService implements OnDestroy {
         const halfCeil = 0.5;
         const halfMapWidth = this.dreamMap.size.width / 2;
         const halfMapHeight = this.dreamMap.size.height / 2;
-        const positionX = (ceilX - halfMapWidth + halfCeil) * DreamCeilSize;
-        const positionZ = (ceilY - halfMapHeight + halfCeil) * DreamCeilSize;
+        const positionX = (ceilX - halfMapWidth + halfCeil) * this.settings3DService.ceilSize;
+        const positionZ = (ceilY - halfMapHeight + halfCeil) * this.settings3DService.ceilSize;
         const stepAngle = 360 / this.intersectionPoints;
-        const underHeight = DreamCeilSize * this.heightMultiplier;
+        const underHeight = this.settings3DService.ceilSize * this.heightMultiplier;
         let minPositionY = Infinity;
         let maxPositionY = -Infinity;
         // Поиск высот

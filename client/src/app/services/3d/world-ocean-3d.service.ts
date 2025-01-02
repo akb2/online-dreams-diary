@@ -1,5 +1,4 @@
 import { DreamMapOceanName } from "@_datas/dream-map-objects";
-import { DreamCeilParts, DreamCeilSize, DreamWorldOceanFlowSpeed } from "@_datas/dream-map-settings";
 import { WorldOceanDefines, WorldOceanFragmentShader, WorldOceanUniforms, WorldOceanVertexShader } from "@_datas/three.js/shaders/ocean.shader";
 import { AngleToRad, ParseFloat, ParseInt } from "@_helpers/math";
 import { DreamMap } from "@_models/dream-map";
@@ -7,11 +6,10 @@ import { Injectable } from "@angular/core";
 import { DoubleSide, Mesh, PlaneGeometry, ShaderMaterial, Vector3, WebGLRenderer } from "three";
 import { Engine3DService } from "./engine-3d.service";
 import { Landscape3DService } from "./landscape-3d.service";
-import { Sky3DService } from "./sky-3d.service";
-
-
+import { Settings3DService } from "./settings-3d.service";
 
 @Injectable()
+
 export class WorldOcean3DService {
   dreamMap: DreamMap;
   renderer: WebGLRenderer;
@@ -21,15 +19,15 @@ export class WorldOcean3DService {
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
 
-  private readonly oceanFlowSpeed = DreamWorldOceanFlowSpeed;
-  private readonly heightPart = DreamCeilSize / DreamCeilParts;
+  private readonly oceanFlowSpeed = this.settings3DService.worldOceanFlowSpeed;
+  private readonly heightPart = this.settings3DService.ceilSize / this.settings3DService.ceilParts;
 
 
 
   constructor(
     private landscape3DService: Landscape3DService,
     private engine3DService: Engine3DService,
-    private sky3DService: Sky3DService
+    private settings3DService: Settings3DService
   ) { }
 
 
@@ -55,7 +53,7 @@ export class WorldOcean3DService {
     const totalHeight = height * repeat;
     const position = new Vector3(0, 0, 0);
     // Создание объекта
-    this.geometry = new PlaneGeometry(totalWidth * DreamCeilSize, totalHeight * DreamCeilSize, 1, 1);
+    this.geometry = new PlaneGeometry(totalWidth * this.settings3DService.ceilSize, totalHeight * this.settings3DService.ceilSize, 1, 1);
     this.ocean = new Mesh(this.geometry, this.material);
     this.ocean.rotation.x = AngleToRad(-90);
     this.ocean.position.set(position.x, position.y, position.z);

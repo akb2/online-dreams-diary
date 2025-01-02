@@ -2,7 +2,7 @@ import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ClosestHeightNames } from "@_datas/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamObjectElmsValues, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
+import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
 import { CheckInRange, ParseFloat, ParseInt, Random } from "@_helpers/math";
@@ -20,10 +20,10 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
 import { Observable, Subject, of } from "rxjs";
 import { concatMap, map, switchMap, take, takeUntil } from "rxjs/operators";
-
-
+import { Settings3DService } from "./3d/settings-3d.service";
 
 @Injectable({ providedIn: "root" })
+
 export class DreamService implements OnDestroy {
   private readonly localStorageTtl = 60 * 60 * 24 * 365;
   private dreamMapSettingsLocalStorageKey = "dream_map-settings";
@@ -59,17 +59,17 @@ export class DreamService implements OnDestroy {
   }
 
   // Позиция камеры по умолчанию
-  getDefaultCamera(width = DreamMapSize, height = DreamMapSize): DreamMapCameraPosition {
+  getDefaultCamera(width = this.settings3DService.mapSize, height = this.settings3DService.mapSize): DreamMapCameraPosition {
     return {
       target: {
         x: 0,
-        y: ((DreamCeilSize / DreamCeilParts) * DreamMaxHeight),
+        y: ((this.settings3DService.ceilSize / this.settings3DService.ceilParts) * this.settings3DService.maxHeight),
         z: 0,
       },
       position: {
         x: 0,
         y: 0,
-        z: -(height * DreamCeilSize) / 2,
+        z: -(height * this.settings3DService.ceilSize) / 2,
       }
     };
   }
@@ -114,7 +114,8 @@ export class DreamService implements OnDestroy {
   constructor(
     private accountService: AccountService,
     private httpClient: HttpClient,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private settings3DService: Settings3DService
   ) {
     // Подписка на актуальные сведения о пользователе
     this.accountService.user$()
@@ -283,24 +284,24 @@ export class DreamService implements OnDestroy {
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
     if (!!dreamMapDto) {
-      const width = ParseInt(dreamMapDto?.size?.width, DreamMapSize);
-      const height = ParseInt(dreamMapDto?.size?.height, DreamMapSize);
+      const width = ParseInt(dreamMapDto?.size?.width, this.settings3DService.mapSize);
+      const height = ParseInt(dreamMapDto?.size?.height, this.settings3DService.mapSize);
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
-        z: ParseInt(dreamMapDto?.ocean?.z, DreamWaterDefHeight),
+        z: ParseInt(dreamMapDto?.ocean?.z, this.settings3DService.waterDefaultHeight),
         material: ParseInt(dreamMapDto?.ocean?.material, 1)
       };
       const noiseSeed = ParseInt(dreamMapDto?.noiseSeed, this.newSeed);
       // Вернуть объект
       return {
         size: {
-          width: ParseInt(dreamMapDto?.size?.width, DreamMapSize),
-          height: ParseInt(dreamMapDto?.size?.height, DreamMapSize),
-          zHeight: ParseInt(dreamMapDto?.size?.zHeight, DreamDefHeight)
+          width: ParseInt(dreamMapDto?.size?.width, this.settings3DService.mapSize),
+          height: ParseInt(dreamMapDto?.size?.height, this.settings3DService.mapSize),
+          zHeight: ParseInt(dreamMapDto?.size?.zHeight, this.settings3DService.defaultHeight)
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: ParseInt(c?.terrain, DreamTerrain),
+          terrain: ParseInt(c?.terrain, this.settings3DService.skyTime),
           object: ParseInt(c?.object, 0),
           coord: {
             ...c.coord,
@@ -320,7 +321,7 @@ export class DreamService implements OnDestroy {
           }
         },
         sky: {
-          time: ParseInt(dreamMapDto?.sky?.time, DreamSkyTime)
+          time: ParseInt(dreamMapDto?.sky?.time, this.settings3DService.skyTime)
         },
         dreamerWay: dreamMapDto.dreamerWay,
         ocean,
@@ -342,23 +343,23 @@ export class DreamService implements OnDestroy {
       // Карта
       return {
         size: {
-          width: DreamMapSize,
-          height: DreamMapSize,
-          zHeight: DreamDefHeight
+          width: this.settings3DService.mapSize,
+          height: this.settings3DService.mapSize,
+          zHeight: this.settings3DService.defaultHeight
         },
         camera: this.getDefaultCamera(),
         ceils: [],
         dreamerWay: [],
         ocean: {
-          z: DreamWaterDefHeight,
+          z: this.settings3DService.waterDefaultHeight,
           material: 1
         },
         land: {
-          type: DreamTerrain,
-          z: DreamDefHeight
+          type: this.settings3DService.terrain,
+          z: this.settings3DService.defaultHeight
         },
         sky: {
-          time: DreamSkyTime
+          time: this.settings3DService.skyTime
         },
         relief: {
           types: ClosestHeightNames.reduce((o, name) => ({ ...o, [name as ClosestHeightName]: ReliefType.flat }), {})
@@ -375,8 +376,8 @@ export class DreamService implements OnDestroy {
     const ceils: DreamMapCeilDto[] = dreamMap.ceils
       .filter(c => !(
         !c.object &&
-        (!c.terrain || c.terrain === DreamTerrain /* || c.water === null || c.water.z <= c.coord.originalZ */) &&
-        c.coord.originalZ === DreamDefHeight
+        (!c.terrain || c.terrain === this.settings3DService.terrain /* || c.water === null || c.water.z <= c.coord.originalZ */) &&
+        c.coord.originalZ === this.settings3DService.defaultHeight
       ))
       .map(c => {
         const ceil: DreamMapCeilDto = {};
@@ -388,7 +389,7 @@ export class DreamService implements OnDestroy {
         };
         // if (!!c.water && c.water.z > c.coord.originalZ) ceil.water = c.water;
         if (!!c.place) ceil.place = c.place.id;
-        if (!!c.terrain && c.terrain !== DreamTerrain) ceil.terrain = c.terrain;
+        if (!!c.terrain && c.terrain !== this.settings3DService.terrain) ceil.terrain = c.terrain;
         if (!!c.object) ceil.object = c.object;
         // Ячейка
         return ceil;

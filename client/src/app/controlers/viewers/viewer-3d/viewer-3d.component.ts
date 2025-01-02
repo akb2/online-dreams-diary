@@ -1,6 +1,5 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
-import { DreamCeilSize, DreamDefHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
 import { AverageSumm, CheckInRange, MathFloor, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
@@ -12,6 +11,7 @@ import { Ceil3dService } from "@_services/3d/ceil-3d.service";
 import { Cursor3DService } from "@_services/3d/cursor-3d.service";
 import { Engine3DService } from "@_services/3d/engine-3d.service";
 import { Landscape3DService } from "@_services/3d/landscape-3d.service";
+import { Settings3DService } from "@_services/3d/settings-3d.service";
 import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
@@ -21,14 +21,13 @@ import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, edito
 import { Store } from "@ngrx/store";
 import { Observable, Subject, animationFrameScheduler, catchError, concatMap, delay, fromEvent, map, merge, observeOn, of, skipWhile, switchMap, takeUntil, tap, throwError, timer } from "rxjs";
 
-
-
 @Component({
   selector: "viewer-3d",
   templateUrl: "./viewer-3d.component.html",
   styleUrls: ["viewer-3d.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
 export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() dreamMap: DreamMap;
   @Input() debugInfo = true;
@@ -116,8 +115,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const camera = this.engine3DService.camera;
     const { position, target } = this.engine3DService.defaultControlPosition;
     const ceils = this.dreamMap?.ceils.filter(c =>
-      (!!c.terrain && c.terrain > 0 && c.terrain !== DreamTerrain)
-      || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== DreamDefHeight)
+      (!!c.terrain && c.terrain > 0 && c.terrain !== this.settings3DService.terrain)
+      || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.settings3DService.defaultHeight)
     );
     // Вернуть карту
     return {
@@ -138,14 +137,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       size: this.dreamMap?.size,
       ocean: {
         material: ParseInt(this.dreamMap?.ocean?.material, 1),
-        z: ParseInt(this.dreamMap?.ocean?.z, DreamWaterDefHeight)
+        z: ParseInt(this.dreamMap?.ocean?.z, this.settings3DService.waterDefaultHeight)
       },
       land: {
-        type: ParseInt(this.dreamMap?.land?.type, DreamTerrain),
-        z: ParseInt(this.dreamMap?.land?.z, DreamDefHeight)
+        type: ParseInt(this.dreamMap?.land?.type, this.settings3DService.terrain),
+        z: ParseInt(this.dreamMap?.land?.z, this.settings3DService.defaultHeight)
       },
       sky: {
-        time: ParseInt(this.dreamMap?.sky?.time, DreamSkyTime)
+        time: ParseInt(this.dreamMap?.sky?.time, this.settings3DService.skyTime)
       },
       relief: {
         types: ClosestHeightNames.reduce((o, name) => ({
@@ -173,6 +172,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     private cursor3DService: Cursor3DService,
     private changeDetectorRef: ChangeDetectorRef,
     private screenService: ScreenService,
+    private settings3DService: Settings3DService,
     private store$: Store
   ) { }
 
@@ -543,8 +543,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         if (!!object) {
           const mapWidth = this.dreamMap?.size.width;
           const mapHeight = this.dreamMap?.size.height;
-          const tempX = MathFloor(object.point.x / DreamCeilSize) + (mapWidth * DreamCeilSize / 2);
-          const tempY = MathFloor(object.point.z / DreamCeilSize) + (mapHeight * DreamCeilSize / 2);
+          const tempX = MathFloor(object.point.x / this.settings3DService.ceilSize) + (mapWidth * this.settings3DService.ceilSize / 2);
+          const tempY = MathFloor(object.point.z / this.settings3DService.ceilSize) + (mapHeight * this.settings3DService.ceilSize / 2);
           // Координаты в рабочей области
           if (!this.ceil3dService.isBorderCeil(tempX, tempY)) {
             x = tempX;

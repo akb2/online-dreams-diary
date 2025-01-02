@@ -1,8 +1,8 @@
 import { CreateArray } from "@_datas/app";
-import { DreamCeilParts, DreamCeilSize, DreamMaxHeight, DreamMinHeight } from "@_datas/dream-map-settings";
 import { CheckInRange, MathRoundByStep } from "@_helpers/math";
 import { LineParamSetting } from "@_helpers/special-inputs-param-settings";
 import { CssProperties } from "@_models/nav-menu";
+import { Settings3DService } from "@_services/3d/settings-3d.service";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
 import { editor3DSetWorldOceanHeightAction, editor3DWorldOceanHeightSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
@@ -24,8 +24,8 @@ export class Editor3DWorldOceanComponent {
 
   lines = CreateArray(8);
 
-  private maxOceanHeight = DreamMaxHeight;
-  private minOceanHeight = DreamMinHeight;
+  private maxOceanHeight = this.settings3DService.maxHeight;
+  private minOceanHeight = this.settings3DService.minHeight;
 
   worldOceanHeightControl = new LineParamSetting(2, 10);
 
@@ -50,6 +50,7 @@ export class Editor3DWorldOceanComponent {
 
 
   constructor(
+    private settings3DService: Settings3DService,
     private store$: Store
   ) { }
 

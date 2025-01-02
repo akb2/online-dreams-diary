@@ -1,12 +1,11 @@
 import { CreateArray } from "@_datas/app";
 import { MaxColorValue } from "@_datas/dream-map";
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
-import { DefaultDreamMapSettings, DreamCeilSize, DreamCloudsDefaultHeight, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize, DreamStartHeight } from "@_datas/dream-map-settings";
 import { FragmentShader, VertexShader } from "@_datas/three.js/shaders/clouds.shader";
 import { AngleInRange, AngleToRad, CheckInRange, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
 import { XYZForEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
-import { CoordDto, DreamMap, DreamMapSettings } from "@_models/dream-map";
+import { CoordDto, DreamMap } from "@_models/dream-map";
 import { CoordsXYZToIndex, MinMax } from "@_models/math";
 import { AnimationData } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector3Uniform } from "@_threejs/base";
@@ -14,13 +13,13 @@ import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, ClampToEdgeWrapping, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, Vector2, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Landscape3DService } from "./landscape-3d.service";
-
-
+import { Settings3DService } from "./settings-3d.service";
 
 @Injectable()
+
 export class Sky3DService {
   dreamMap: DreamMap;
-  dreamMapSettings: DreamMapSettings = DefaultDreamMapSettings;
+  dreamMapSettings = this.settings3DService.settings;
   renderer: WebGLRenderer;
 
   sky: Sky;
@@ -57,13 +56,13 @@ export class Sky3DService {
   private get getCloudsMeshSize(): CoordDto {
     const mapWidth = this.dreamMap.size.width;
     const mapHeight = this.dreamMap.size.height;
-    const mapBorderSizeX = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
-    const mapBorderSizeZ = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
+    const mapBorderSizeX = (mapWidth * this.landscape3DService.outSideRepeat) * this.settings3DService.ceilSize;
+    const mapBorderSizeZ = (mapHeight * this.landscape3DService.outSideRepeat) * this.settings3DService.ceilSize;
     // Размеры
     return {
-      x: this.cloudsMultiplierX * ((mapWidth * DreamCeilSize) + (mapBorderSizeX * 2)),
-      z: this.cloudsMultiplierZ * ((mapHeight * DreamCeilSize) + (mapBorderSizeZ * 2)),
-      y: this.cloudsMultiplierY * DreamCeilSize
+      x: this.cloudsMultiplierX * ((mapWidth * this.settings3DService.ceilSize) + (mapBorderSizeX * 2)),
+      z: this.cloudsMultiplierZ * ((mapHeight * this.settings3DService.ceilSize) + (mapBorderSizeZ * 2)),
+      y: this.cloudsMultiplierY * this.settings3DService.ceilSize
     };
   }
 
@@ -105,13 +104,14 @@ export class Sky3DService {
 
 
   constructor(
-    private landscape3DService: Landscape3DService
+    private landscape3DService: Landscape3DService,
+    private settings3DService: Settings3DService
   ) { }
 
 
 
   // Создание неба
-  create(): void {
+  create() {
     this.createSky();
     this.createFog();
     this.createSun();
@@ -122,9 +122,9 @@ export class Sky3DService {
   }
 
   // Создать небосвод
-  private createSky(): void {
-    const horizontSize: number = DreamFogFar * 10000;
-    const boxSize: number = DreamHorizont;
+  private createSky() {
+    const horizontSize = this.settings3DService.fogFar * 10000;
+    const boxSize = this.settings3DService.horizont;
     const sky = new Sky();
     const uniforms: CustomObject<IUniform<any>> = {
       ...sky.material.uniforms,
@@ -143,14 +143,14 @@ export class Sky3DService {
   }
 
   // Создать солнце
-  private createSun(): void {
-    const mapWidth: number = this.dreamMap.size.width;
-    const mapHeight: number = this.dreamMap.size.height;
-    const mapBorderSizeX: number = (mapWidth * this.landscape3DService.outSideRepeat) * DreamCeilSize;
-    const mapBorderSizeY: number = (mapHeight * this.landscape3DService.outSideRepeat) * DreamCeilSize;
-    const width: number = (mapWidth * DreamCeilSize) + (mapBorderSizeX * 2);
-    const height: number = (mapHeight * DreamCeilSize) + (mapBorderSizeY * 2);
-    const size: number = Math.max(width, height);
+  private createSun() {
+    const mapWidth = this.dreamMap.size.width;
+    const mapHeight = this.dreamMap.size.height;
+    const mapBorderSizeX = (mapWidth * this.landscape3DService.outSideRepeat) * this.settings3DService.ceilSize;
+    const mapBorderSizeY = (mapHeight * this.landscape3DService.outSideRepeat) * this.settings3DService.ceilSize;
+    const width = (mapWidth * this.settings3DService.ceilSize) + (mapBorderSizeX * 2);
+    const height = (mapHeight * this.settings3DService.ceilSize) + (mapBorderSizeY * 2);
+    const size = Math.max(width, height);
     // Создание объекта
     this.sun = new DirectionalLight(this.colorWhite, 1.2);
     this.sun.castShadow = true;
@@ -166,17 +166,17 @@ export class Sky3DService {
   }
 
   // Создать туман
-  private createFog(): void {
-    this.fog = new Fog(this.colorWhite, DreamFogNear, DreamFogFar);
+  private createFog() {
+    this.fog = new Fog(this.colorWhite, this.settings3DService.fogNear, this.settings3DService.fogFar);
   }
 
   // Создать атмосферное свечение
-  private createAtmosphere(): void {
+  private createAtmosphere() {
     this.atmosphere = new AmbientLight(0xFFFFFF, 0.5);
   }
 
   // Создать облака
-  private createClouds(): void {
+  private createClouds() {
     const { x: sizeX, y: sizeY, z: sizeZ } = this.getCloudsMeshSize;
     const geometry = new BoxGeometry(sizeX, sizeY, sizeZ, 1, 1, 1);
     // Материал облаков
@@ -197,46 +197,54 @@ export class Sky3DService {
         steps: ThreeFloatUniform(this.shaderSteps),
         frame: ThreeFloatUniform(this.shaderStartFrame),
         boxSize: ThreeVector3Uniform(sizeX, sizeY, sizeZ),
-        fogNear: ThreeFloatUniform(DreamFogNear),
-        fogFar: ThreeFloatUniform(DreamFogFar),
+        fogNear: ThreeFloatUniform(this.settings3DService.fogNear),
+        fogFar: ThreeFloatUniform(this.settings3DService.fogFar),
         discardOpacity: ThreeFloatUniform(this.shaderDiscardOpacity)
       }
     });
     // Настройки
     this.clouds = new Mesh(geometry, this.cloudsMaterial);
-    this.clouds.position.setY(DreamStartHeight + DreamCloudsDefaultHeight);
+    this.clouds.position.setY(this.settings3DService.startHeight + this.settings3DService.cloudsDefaultHeight);
     this.clouds.receiveShadow = true;
     this.clouds.castShadow = true;
   }
 
   // Обновить время
-  updateSky(): void {
+  updateSky() {
     const time = AngleInRange(this.dreamMap.sky.time);
     const uniforms = this.sky.material.uniforms;
     const sin = Sin(time);
     const cos = Cos(time);
-    const absCos: number = Math.abs(cos);
+    const absCos = Math.abs(cos);
     const isDay = cos < 0 || (sin < 0 && cos === 0);
-    const settingsKey: DayType = isDay ? "day" : "night";
-    const absSin: number = isDay ? sin : sin * -1;
+    const settingsKey: DayType = isDay
+      ? "day"
+      : "night";
+    const absSin = isDay
+      ? sin
+      : sin * -1;
     const shadowQuality = ParseInt(this.dreamMapSettings?.shadowQuality);
     // Настраиваемые параметры
-    const azimuth: number = LineFunc(SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max, absSin, -1, 1);
-    const elevation: number = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, absCos, 0, 1);
-    const sunLight: number = LineFunc(SkySettings.sunLight[settingsKey].min, SkySettings.sunLight[settingsKey].max, absCos, 0, 1);
-    const atmosphereLight: number = LineFunc(SkySettings.atmosphereLight[settingsKey].min, SkySettings.atmosphereLight[settingsKey].max, absCos, 0, 1);
-    const atmSkyColorR: number = LineFunc(SkySettings.atmSkyColorR[settingsKey].min, SkySettings.atmSkyColorR[settingsKey].max, absCos, 0, 1);
-    const atmSkyColorG: number = LineFunc(SkySettings.atmSkyColorG[settingsKey].min, SkySettings.atmSkyColorG[settingsKey].max, absCos, 0, 1);
-    const atmSkyColorB: number = LineFunc(SkySettings.atmSkyColorB[settingsKey].min, SkySettings.atmSkyColorB[settingsKey].max, absCos, 0, 1);
-    const turbidity: number = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, absCos, 0, 1);
-    const rayleigh: number = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, absCos, 0, 1);
-    const mieCoefficient: number = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, absCos, 0, 1);
-    const mieDirectionalG: number = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, absCos, 0, 1);
+    const azimuth = LineFunc(SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max, absSin, -1, 1);
+    const elevation = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, absCos, 0, 1);
+    const sunLight = LineFunc(SkySettings.sunLight[settingsKey].min, SkySettings.sunLight[settingsKey].max, absCos, 0, 1);
+    const atmosphereLight = LineFunc(SkySettings.atmosphereLight[settingsKey].min, SkySettings.atmosphereLight[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorR = LineFunc(SkySettings.atmSkyColorR[settingsKey].min, SkySettings.atmSkyColorR[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorG = LineFunc(SkySettings.atmSkyColorG[settingsKey].min, SkySettings.atmSkyColorG[settingsKey].max, absCos, 0, 1);
+    const atmSkyColorB = LineFunc(SkySettings.atmSkyColorB[settingsKey].min, SkySettings.atmSkyColorB[settingsKey].max, absCos, 0, 1);
+    const turbidity = LineFunc(SkySettings.turbidity[settingsKey].min, SkySettings.turbidity[settingsKey].max, absCos, 0, 1);
+    const rayleigh = LineFunc(SkySettings.rayleigh[settingsKey].min, SkySettings.rayleigh[settingsKey].max, absCos, 0, 1);
+    const mieCoefficient = LineFunc(SkySettings.mieCoefficient[settingsKey].min, SkySettings.mieCoefficient[settingsKey].max, absCos, 0, 1);
+    const mieDirectionalG = LineFunc(SkySettings.mieDirectionalG[settingsKey].min, SkySettings.mieDirectionalG[settingsKey].max, absCos, 0, 1);
     // Прочие параметры
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
-    const sunPosition: Vector3 = new Vector3();
-    const shadowSize: number = DreamShadowQualitySize * CheckInRange(shadowQuality, DreamMapMaxShadowQuality, DreamMapMinShadowQuality);
+    const sunPosition = new Vector3();
+    const shadowSize = this.settings3DService.shadowQualitySize * CheckInRange(
+      shadowQuality,
+      this.settings3DService.mapMaxShadowQuality,
+      this.settings3DService.mapMinShadowQuality
+    );
     // Обновить данные
     sunPosition.setFromSphericalCoords(1, phi, theta);
     uniforms.sunPosition.value = sunPosition;
@@ -262,7 +270,7 @@ export class Sky3DService {
   /**
    * Анимация
    */
-  onAnimate({ camera }: AnimationData): void {
+  onAnimate({ camera }: AnimationData) {
     const uniforms = this.cloudsMaterial?.uniforms;
     if (!!uniforms && !!uniforms.cameraPosition) {
       uniforms.cameraPosition = ThreeVector3Uniform(camera.position);
