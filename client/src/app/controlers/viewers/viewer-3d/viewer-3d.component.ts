@@ -178,6 +178,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!!changes?.dreamMap) {
+      this.settings3DService.setMapSize(this.dreamMap?.size?.width, this.dreamMap?.size?.height);
+      // Обновить карту в сервисах
       this.ceil3dService.dreamMap = this.dreamMap;
       this.engine3DService.dreamMap = this.dreamMap;
       this.landscape3DService.dreamMap = this.dreamMap;
@@ -193,6 +195,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
+          tap(() => this.settings3DService.setMapSize(this.dreamMap.size.width, this.dreamMap.size.height)),
           switchMap(() => this.loadScene()),
           switchMap(() => this.getTexturesData()),
           switchMap(() => this.loadTextures()),

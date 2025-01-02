@@ -142,6 +142,15 @@ export class Sky3DService {
     this.sky.name = DreamMapSkyName;
   }
 
+  // Создать туман
+  private createFog() {
+    this.fog = new Fog(
+      this.colorWhite,
+      this.settings3DService.fogNear,
+      this.settings3DService.fogFar
+    );
+  }
+
   // Создать солнце
   private createSun() {
     const mapWidth = this.dreamMap.size.width;
@@ -163,11 +172,6 @@ export class Sky3DService {
     this.sun.shadow.camera.bottom = -size / 2;
     this.sun.shadow.radius = 2;
     this.sun.shadow.bias = 0.00357;
-  }
-
-  // Создать туман
-  private createFog() {
-    this.fog = new Fog(this.colorWhite, this.settings3DService.fogNear, this.settings3DService.fogFar);
   }
 
   // Создать атмосферное свечение

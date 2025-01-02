@@ -10,8 +10,6 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 
 
-
-
 // Настройки паралакса
 // ? Рекомендуемо: 3 единицы размера на 1 шаг
 const ParallaxDistance = DreamFogNear + ((DreamFogFar - DreamFogNear) * 0.8);
