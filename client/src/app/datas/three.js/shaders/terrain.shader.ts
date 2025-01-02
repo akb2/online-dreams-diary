@@ -1,5 +1,4 @@
 import { MapTerrains } from "@_datas/dream-map";
-import { DreamCeilParts, DreamCeilSize, DreamFogFar, DreamFogNear } from "@_datas/dream-map-settings";
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { CustomObject, CustomObjectKey } from "@_models/app";
@@ -11,10 +10,8 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 
 // Настройки паралакса
-// ? Рекомендуемо: 3 единицы размера на 1 шаг
-const ParallaxDistance = DreamFogNear + ((DreamFogFar - DreamFogNear) * 0.8);
-const ParallaxScale = 15;
 const ParallaxSteps = 15;
+export const ParallaxScale = 15;
 
 // Основные значения
 const TerrainColorCount = 4;
@@ -88,11 +85,7 @@ export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniform
   roughness: ThreeFloatUniform(1),
   metalness: ThreeFloatUniform(1),
   lightMapIntensity: ThreeFloatUniform(0.05),
-  fogNear: ThreeFloatUniform(DreamFogNear),
-  fogFar: ThreeFloatUniform(DreamFogFar),
-  parallaxScale: ThreeFloatUniform(ParallaxScale * (DreamCeilSize / DreamCeilParts)),
-  parallaxSteps: ThreeFloatUniform(ParallaxSteps),
-  parallaxDistance: ThreeFloatUniform(ParallaxDistance)
+  parallaxSteps: ThreeFloatUniform(ParallaxSteps)
 }]);
 
 // Фрагментный шейдер

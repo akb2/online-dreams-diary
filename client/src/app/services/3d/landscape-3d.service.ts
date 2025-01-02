@@ -1,13 +1,13 @@
 import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
+import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, ReliefType } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
-import { ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
+import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { Injectable } from "@angular/core";
 import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -373,10 +373,22 @@ export class Landscape3DService {
       ...MaskNames.reduce((o, name, k) => ({ ...o, [name]: this.maskTextures[k] }), {}),
       ...Object.entries(this.terrainTextureKeys).reduce((o, [type, name]) => ({ ...o, [name]: this.mapTextures[type] }), {})
     };
-    const uniforms: Uniforms = UniformsUtils.merge([TerrainUniforms, {
-      ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: ThreeTextureUniform(value) }), {}),
-      mapRepeat: ThreeVector2Uniform(repeatX, repeatY)
-    }]);
+    const fogNear = this.settings3DService.fogNear;
+    const fogFar = this.settings3DService.fogFar;
+    const uniforms: Uniforms = UniformsUtils.merge([
+      TerrainUniforms,
+      {
+        // ? Рекомендуемо: 3 единицы размера на 1 шаг
+        parallaxDistance: ThreeFloatUniform(fogNear + ((fogFar - fogNear) * 0.8)),
+        parallaxScale: ThreeFloatUniform(ParallaxScale * (this.settings3DService.ceilSize / this.settings3DService.ceilParts)),
+        fogNear: ThreeFloatUniform(fogNear),
+        fogFar: ThreeFloatUniform(fogFar),
+      },
+      {
+        ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: ThreeTextureUniform(value) }), {}),
+        mapRepeat: ThreeVector2Uniform(repeatX, repeatY)
+      }
+    ]);
     // Обновление материала
     this.material.uniforms = uniforms;
     this.material.uniformsNeedUpdate = true;

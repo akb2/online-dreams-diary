@@ -59,6 +59,7 @@ export class Settings3DService {
 
   // Установить размер карты
   setMapSize(width = this.defaultMapSize, height = this.defaultMapSize) {
+    console.log(width, height);
     this.mapSize = Math.min(width, height);
     this.maxHeight = (this.mapSize / 2) * this.ceilParts * this.ceilSize;
     this.realMaxHeight = this.maxHeight / this.ceilParts;
