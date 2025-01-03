@@ -333,7 +333,7 @@ export class DreamService implements OnDestroy {
         },
         isNew: false,
         noiseSeed,
-        noise: new Noise(),
+        noise: new Noise(noiseSeed),
         land: null
       };
     }
