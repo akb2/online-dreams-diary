@@ -6,7 +6,7 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 
 // Настройки паралакса
-const ParallaxSteps = 128;
+const ParallaxSteps = 16;
 export const ParallaxScale = 1;
 
 // Основные значения
@@ -56,22 +56,29 @@ export const WorldOceanFragmentShader = `
   }
 
   vec4 getTextureData(sampler2D textureData, vec2 uv) {
-    vec4 speeds = vec4(1., .8, .1, .02);
+    float speedA = 1.;
+    float speedB = .8;
+    float speedC = .1;
+    float speedD = .02;
+    float speedE = .013;
 
-    vec2 coordsA = fract((uv + vec2(uTime, -uTime) / speeds.x) * mapRepeat * speeds.x);
-    vec2 coordsB = fract((uv + vec2(-uTime, -uTime) / speeds.y) * mapRepeat * speeds.y);
-    vec2 coordsC = fract((uv + vec2(uTime * .1, -uTime) / speeds.z) * mapRepeat * speeds.z);
-    vec2 coordsD = fract((uv + vec2(-uTime * .1, -uTime) / speeds.w) * mapRepeat * speeds.w);
+    vec2 coordsA = fract((uv + vec2(uTime, -uTime) / speedA) * mapRepeat * speedA);
+    vec2 coordsB = fract((uv + vec2(-uTime, -uTime) / speedB) * mapRepeat * speedB);
+    vec2 coordsC = fract((uv + vec2(0. , -uTime) / speedC) * mapRepeat * speedC);
+    vec2 coordsD = fract((uv + vec2(-uTime * .15, -uTime) / speedD) * mapRepeat * speedD);
+    vec2 coordsE = fract((uv + vec2(uTime * .15, -uTime) / speedE) * mapRepeat * speedE);
 
     vec4 textelA = texture(textureData, coordsA);
     vec4 textelB = texture(textureData, coordsB);
     vec4 textelC = texture(textureData, coordsC);
     vec4 textelD = texture(textureData, coordsD);
-    vec4 textelAB = mix(textelA, textelB, .75);
+    vec4 textelE = texture(textureData, coordsE);
+    vec4 textelAB = mix(textelA, textelB, .5);
     vec4 textelABC = mix(textelAB, textelC, .75);
     vec4 textelABCD = mix(textelABC, textelD, .75);
+    vec4 textelABCDE = mix(textelABCD, textelE, .5);
 
-    return textelABCD;
+    return textelABCDE;
   }
 
   #ifdef USE_AOMAP

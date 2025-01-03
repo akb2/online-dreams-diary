@@ -24,7 +24,7 @@ export class WorldOcean3DService {
   ocean: Mesh;
 
   private readonly textureSize = 64;
-  private readonly waveSpeed = 0.00001;
+  private readonly waveSpeed = 0.000005;
 
   private geometry: PlaneGeometry;
   private material: ShaderMaterial;
