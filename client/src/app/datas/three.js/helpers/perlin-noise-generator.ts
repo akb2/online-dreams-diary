@@ -7,8 +7,6 @@ export class PerlinNoiseGenerator {
 
 
 
-
-
   constructor(private gridSize: number) {
     this.gradient = CreateArray(this.gridSize).map(() => CreateArray(this.gridSize).map(() => {
       const angle = Random(0, 2 * Math.PI);
@@ -16,8 +14,6 @@ export class PerlinNoiseGenerator {
       return [Math.cos(angle), Math.sin(angle)];
     }));
   }
-
-
 
 
 

@@ -63,30 +63,33 @@ const getTextureTexel = (textureName: string, channel?: MapTerrainColorChannelsK
   .join(" + ") + ")";
 
 // Униформы
-export const TerrainUniforms: Uniforms = UniformsUtils.merge([BaseShader.uniforms, {
-  // Координаты текстур
-  ...MapTileCoords.reduce((o, name, k) => {
-    const terrain: MapTerrain = MapTerrains[k];
-    // Запомнить координаты
-    return {
-      ...o,
-      [name]: ThreeVector2Uniform(terrain.tileCoords.x, terrain.tileCoords.y)
-    };
-  }, {}),
-  // Повторы
-  b_one_repeat: ThreeVector2Uniform(1),
-  // Прочее
-  tileSize: ThreeVector2Uniform(TerrainTileSize),
-  tileSpacing: ThreeVector2Uniform(TerrainTileSpacing),
-  tileSetSize: ThreeVector2Uniform(TerrainTileSetSize),
-  normalScale: ThreeVector2Uniform(3),
-  normalMapType: ThreeFloatUniform(ObjectSpaceNormalMap),
-  aoMapIntensity: ThreeFloatUniform(1),
-  roughness: ThreeFloatUniform(1),
-  metalness: ThreeFloatUniform(1),
-  lightMapIntensity: ThreeFloatUniform(0.05),
-  parallaxSteps: ThreeFloatUniform(ParallaxSteps)
-}]);
+export const TerrainUniforms: Uniforms = UniformsUtils.merge([
+  BaseShader.uniforms,
+  {
+    // Координаты текстур
+    ...MapTileCoords.reduce((o, name, k) => {
+      const terrain: MapTerrain = MapTerrains[k];
+      // Запомнить координаты
+      return {
+        ...o,
+        [name]: ThreeVector2Uniform(terrain.tileCoords.x, terrain.tileCoords.y)
+      };
+    }, {}),
+    // Повторы
+    b_one_repeat: ThreeVector2Uniform(1),
+    // Прочее
+    tileSize: ThreeVector2Uniform(TerrainTileSize),
+    tileSpacing: ThreeVector2Uniform(TerrainTileSpacing),
+    tileSetSize: ThreeVector2Uniform(TerrainTileSetSize),
+    normalScale: ThreeVector2Uniform(3),
+    normalMapType: ThreeFloatUniform(ObjectSpaceNormalMap),
+    aoMapIntensity: ThreeFloatUniform(1),
+    roughness: ThreeFloatUniform(1),
+    metalness: ThreeFloatUniform(1),
+    lightMapIntensity: ThreeFloatUniform(0.05),
+    parallaxSteps: ThreeFloatUniform(ParallaxSteps),
+  }
+]);
 
 // Фрагментный шейдер
 export const TerrainFragmentShader = `
