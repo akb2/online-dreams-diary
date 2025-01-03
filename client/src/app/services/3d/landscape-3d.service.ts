@@ -1,4 +1,4 @@
-import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TexturePaths } from "@_datas/dream-map";
+import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, MathRound, ParseInt } from "@_helpers/math";
@@ -19,7 +19,7 @@ export class Landscape3DService {
 
   dreamMap: DreamMap;
 
-  outSideRepeat: number = 1;
+  outSideRepeat: number = this.settings3DService.outsideSize;
 
   mesh: Mesh;
   geometry: PlaneGeometry;
@@ -48,7 +48,7 @@ export class Landscape3DService {
     })),
     // Текстуры ландшафта
     ...Object.keys(this.terrainTextureKeys).map(type => ({
-      url: TexturePaths[type] + "." + ImageExtension.png,
+      url: TexturePaths(TerrainTexturePath)[type] + "." + ImageExtension.png,
       afterLoadEvent: this.mapTextureLoaded.bind(this, type as BaseTextureType)
     }))
   ];
@@ -383,8 +383,6 @@ export class Landscape3DService {
         parallaxScale: ThreeFloatUniform(ParallaxScale * (this.settings3DService.ceilSize / this.settings3DService.ceilParts)),
         fogNear: ThreeFloatUniform(fogNear),
         fogFar: ThreeFloatUniform(fogFar),
-      },
-      {
         ...Object.entries(textures).reduce((o, [name, value]) => ({ ...o, [name]: ThreeTextureUniform(value) }), {}),
         mapRepeat: ThreeVector2Uniform(repeatX, repeatY)
       }
