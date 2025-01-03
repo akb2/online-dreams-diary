@@ -221,7 +221,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
   // Загрузка сцены
   private loadScene(): Observable<number> {
     const textures: Partial<LoadTexture>[] = [
-      ...this.landscape3DService.textures
+      ...this.landscape3DService.textures,
+      ...this.worldOcean3DService.textures,
     ];
     // Обновить загрузчик
     this.loadingStep = LoadingStep.prepared;
@@ -541,7 +542,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         const screenX = eventData.clientX - canvasRect.left;
         const screenY = eventData.clientY - canvasRect.top;
         const objects = this.engine3DService.getIntercectionObject(screenX, screenY) ?? [];
-        const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[0];
+        const object = ArrayFilter(objects, ({ object: { name } }) => this.cursor3DService.hoverItems.includes(name))?.[objects.length - 1];
         // Изменить координаты определения
         if (!!object) {
           const mapWidth = this.dreamMap?.size.width;
