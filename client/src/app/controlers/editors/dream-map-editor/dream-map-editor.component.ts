@@ -1,7 +1,7 @@
 import { PopupDreamMapSettingsComponent } from "@_controlers/dream-map-settings/dream-map-settings.component";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
 import { ArrayRandom, CreateArray } from "@_datas/app";
-import { ClosestHeightNames, MapTerrains, TexturePaths } from "@_datas/dream-map";
+import { ClosestHeightNames, MapTerrains, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
@@ -203,7 +203,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     if (this.terrainList.some(t => t.id === id)) {
       const terrain: MapTerrain = this.terrainList.find(t => t.id === id)!;
       // Ссылка на картинку
-      return TexturePaths.icons + terrain.name + "." + ImageExtension.jpg;
+      return TexturePaths(TerrainTexturePath).icons + terrain.name + "." + ImageExtension.jpg;
     }
     // Картинка не найдена
     return "";
