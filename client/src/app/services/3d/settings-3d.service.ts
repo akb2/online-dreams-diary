@@ -28,8 +28,9 @@ export class Settings3DService {
   private readonly defaultTitle = "*** Новое сновидение ***";
   private readonly defaultDescription = "*** Без описания ***";
 
-  mapSize = this.defaultMapSize;
 
+  mapSize: number;
+  fullMapSize: number;
   maxHeight: number;
   realMaxHeight: number;
   waterDefaultHeight: number;
@@ -60,6 +61,7 @@ export class Settings3DService {
   // Установить размер карты
   setMapSize(width = this.defaultMapSize, height = this.defaultMapSize) {
     this.mapSize = Math.min(width, height);
+    this.fullMapSize = this.mapSize * ((this.outsideSize * 2) + 1);
     this.maxHeight = (this.mapSize / 2) * this.ceilParts * this.ceilSize;
     this.realMaxHeight = this.maxHeight / this.ceilParts;
     this.waterDefaultHeight = (this.maxHeight / 2) - (this.ceilSize / this.ceilParts);
