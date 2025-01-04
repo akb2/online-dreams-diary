@@ -1,5 +1,5 @@
 import { ObjectToFormData, ObjectToParams } from "@_datas/api";
-import { ToDate } from "@_datas/app";
+import { AnyToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
@@ -22,8 +22,9 @@ import { Observable, Subject, of } from "rxjs";
 import { concatMap, map, switchMap, take, takeUntil } from "rxjs/operators";
 import { Settings3DService } from "./3d/settings-3d.service";
 
-@Injectable({ providedIn: "root" })
 
+
+@Injectable({ providedIn: "root" })
 export class DreamService implements OnDestroy {
   private readonly localStorageTtl = 60 * 60 * 24 * 365;
   private dreamMapSettingsLocalStorageKey = "dream_map-settings";
@@ -238,9 +239,9 @@ export class DreamService implements OnDestroy {
     return {
       id: ParseInt(dreamDto.id),
       user: null,
-      createDate: ToDate(dreamDto?.createDate),
+      createDate: AnyToDate(dreamDto?.createDate),
       title: AnyToString(dreamDto?.title),
-      date: ToDate(dreamDto?.date),
+      date: AnyToDate(dreamDto?.date),
       description: dreamDto.description,
       mode: (dreamDto?.mode as DreamMode) ?? DreamMode.mixed,
       status: (dreamDto?.status as DreamStatus) ?? DreamStatus.private,

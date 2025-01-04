@@ -1,7 +1,7 @@
 import { Editor3DComponent } from "@_controlers/editor-3d/editor-3d.component";
 import { NavMenuSettingData } from "@_controlers/nav-menu-settings/nav-menu-settings.component";
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
-import { ToDate } from "@_datas/app";
+import { AnyToDate } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
@@ -143,7 +143,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   private get formHasChanges(): boolean {
     const title = AnyToString(this.dreamForm.get("title")?.value);
     const description = AnyToString(this.dreamForm.get("description")?.value);
-    const date = ToDate(this.dreamForm.get("date")?.value);
+    const date = AnyToDate(this.dreamForm.get("date")?.value);
     const headerType: NavMenuType = AnyToString(this.dreamForm.get("headerType")?.value, NavMenuType.short) as NavMenuType;
     const headerBackground = ParseInt(this.dreamForm.get("headerBackground")?.value);
     const mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
@@ -176,7 +176,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Дата сновидения
   get dreamDate(): Date {
-    return ToDate(this.dreamForm?.get('date')?.value ?? this.today);
+    return AnyToDate(this.dreamForm?.get('date')?.value ?? this.today);
   }
 
 
@@ -257,7 +257,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
         this.dream.type = ParseInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
         this.dream.mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
         this.dream.status = status;
-        this.dream.date = ToDate(this.dreamForm.get("date")?.value);
+        this.dream.date = AnyToDate(this.dreamForm.get("date")?.value);
         this.dream.keywords = AnyToString(this.dreamForm.get("keywords")?.value);
         this.dream.text = AnyToString(this.dreamForm.get("text")?.value);
         this.dream.map = this.mapEditor

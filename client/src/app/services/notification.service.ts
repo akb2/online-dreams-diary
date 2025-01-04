@@ -1,5 +1,5 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
-import { ToArray, ToDate } from "@_datas/app";
+import { AnyToDate, ToArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse, SearchResponce } from "@_models/api";
@@ -15,21 +15,15 @@ import { Observable, Subject, catchError, concatMap, filter, map, of, share, swi
 
 
 
-
-
 @Injectable({
   providedIn: "root"
 })
-
 export class NotificationService implements OnDestroy {
-
   private user: User;
 
   notifications$ = this.store$.select(notificationsSelector).pipe(map(notifications => notifications.map(n => this.notificationCoverter(n))));
   private userId$ = this.store$.select(accountUserIdSelector).pipe(take(1));
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -48,8 +42,6 @@ export class NotificationService implements OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -133,8 +125,6 @@ export class NotificationService implements OnDestroy {
 
 
 
-
-
   // Преобразование уведомлений
   private notificationCoverter(mixedData?: any): Notification {
     const id: number = ParseInt(mixedData?.id);
@@ -143,7 +133,7 @@ export class NotificationService implements OnDestroy {
       id: ParseInt(mixedData?.id),
       userId: ParseInt(mixedData?.userId),
       status: ParseInt(mixedData?.status) as NotificationStatus,
-      createDate: ToDate(mixedData?.createDate),
+      createDate: AnyToDate(mixedData?.createDate),
       text: mixedData?.text?.toString() ?? "",
       link: mixedData?.link?.toString() ?? "",
       actionType: mixedData?.actionType?.toString() ?? "",

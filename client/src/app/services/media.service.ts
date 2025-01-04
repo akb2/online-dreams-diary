@@ -1,5 +1,5 @@
 import { ObjectToFormData } from "@_datas/api";
-import { ToDate } from "@_datas/app";
+import { AnyToDate } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { MediaFile, MediaFileDto, MediaFileExtension } from "@_models/media";
@@ -11,25 +11,15 @@ import { ApiService } from "./api.service";
 
 
 
-
-
 @Injectable({
   providedIn: "root"
 })
-
 export class MediaService {
-
-
-
-
-
   constructor(
     private accountService: AccountService,
     private httpClient: HttpClient,
     private apiService: ApiService
   ) { }
-
-
 
 
 
@@ -58,8 +48,6 @@ export class MediaService {
 
 
 
-
-
   // Конвертировать медиаданные
   convertData(data: MediaFileDto | MediaFile): Observable<MediaFile> {
     return of(data).pipe(
@@ -71,7 +59,7 @@ export class MediaService {
       take(1),
       map(data => ({
         id: ParseInt(data?.id),
-        createDate: ToDate(data?.createDate),
+        createDate: AnyToDate(data?.createDate),
         user: data?.user ?? null,
         hash: data?.hash?.toString() ?? "",
         size: ParseInt(data?.size),

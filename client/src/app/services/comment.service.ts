@@ -1,5 +1,5 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
-import { ToDate } from "@_datas/app";
+import { AnyToDate } from "@_datas/app";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { ParseInt } from "@_helpers/math";
 import { AnyToArray, ArrayMap } from "@_helpers/objects";
@@ -24,7 +24,6 @@ import { MediaService } from "./media.service";
 @Injectable({
   providedIn: "root"
 })
-
 export class CommentService extends TextMessage {
   // Конвертация комментария
   private getConvertedComment(comment: any): Observable<Comment> {
@@ -107,7 +106,7 @@ export class CommentService extends TextMessage {
         materialOwner: ParseInt(comment?.materialOwner),
         text: comment?.text ?? "",
         html: this.textTransform(comment?.text ?? ""),
-        createDate: ToDate(comment?.createDate),
+        createDate: AnyToDate(comment?.createDate),
         attachment: { graffity, dreams, mediaPhotos, youTubeVideos }
       }))
     );

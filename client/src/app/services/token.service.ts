@@ -1,5 +1,5 @@
 import { ObjectToFormData } from "@_datas/api";
-import { BrowserNames, OsNames, ToDate } from "@_datas/app";
+import { AnyToDate, BrowserNames, OsNames } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
@@ -15,21 +15,15 @@ import { concatMap, first, map, switchMap, takeUntil, tap } from "rxjs/operators
 
 
 
-
-
 @Injectable({
   providedIn: "root"
 })
-
 export class TokenService {
-
   userId: number = 0;
   checkAuth: boolean = false;
 
   private userId$ = this.store$.select(accountUserIdSelector);
   private destroyed$: Subject<void> = new Subject();
-
-
 
 
 
@@ -51,8 +45,6 @@ export class TokenService {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -128,8 +120,6 @@ export class TokenService {
 
 
 
-
-
   // Преобразование информации о токене
   private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
     const os: string = OsNames.hasOwnProperty(tokenData.os) ? tokenData.os.toString() : "unknown";
@@ -139,8 +129,8 @@ export class TokenService {
     return {
       id: ParseInt(tokenData.id),
       token: tokenData.token.toString(),
-      createDate: ToDate(tokenData.create_date),
-      lastActionDate: ToDate(tokenData.last_action_date),
+      createDate: AnyToDate(tokenData.create_date),
+      lastActionDate: AnyToDate(tokenData.last_action_date),
       userId: ParseInt(tokenData.user_id),
       ip: tokenData.ip.toString(),
       browser: { os, name, version }

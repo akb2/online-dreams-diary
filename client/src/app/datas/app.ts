@@ -4,8 +4,6 @@ import { MatDialogConfig } from "@angular/material/dialog";
 
 
 
-
-
 // Класс для определения окна как на переднем плане
 export const FrontDialogClass: string = "front-dialog";
 
@@ -24,7 +22,7 @@ export const AppMatDialogConfig: MatDialogConfig = {
 export const VoidFunctionVar: VoidFunction = () => { };
 
 // Преобразовать в дату
-export const ToDate = (mixedDate: any, defaultDate: Date = new Date()) => typeof mixedDate === "string" || typeof mixedDate === "number" ?
+export const AnyToDate = (mixedDate: any, defaultDate: Date = new Date()) => typeof mixedDate === "string" || typeof mixedDate === "number" ?
   new Date(mixedDate) : typeof mixedDate === "object" && mixedDate instanceof Date ?
     mixedDate :
     defaultDate;
@@ -97,8 +95,6 @@ export const AvatarMaxSize: number = 10485760;
 // Максимальный размер фотографии
 // ? 10 Mb
 export const PhotoMaxSize: number = 10485760;
-
-
 
 
 

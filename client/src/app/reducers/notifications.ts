@@ -1,8 +1,6 @@
-import { ToDate } from "@_datas/app";
+import { AnyToDate } from "@_datas/app";
 import { Notification, NotificationStatus } from "@_models/notification";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
-
-
 
 
 
@@ -18,8 +16,6 @@ export interface NotificationsState {
 export const notificationsInitialState: NotificationsState = {
   list: []
 };
-
-
 
 
 
@@ -84,8 +80,6 @@ export const notificationsReducer = createReducer(
 
 
 
-
-
 // Общее состояние
 export const notificationsFeatureSelector = createFeatureSelector<NotificationsState>(NOTIFICATIONS_KEY);
 
@@ -107,7 +101,7 @@ export const notificationsNoReadCountSelector = createSelector(
 
 // Отсортировать массив уведомлений
 const sortNotifications = (notifications: Notification[]): Notification[] => notifications
-  .sort(({ createDate: a }, { createDate: b }) => ToDate(b).getTime() - ToDate(a).getTime());
+  .sort(({ createDate: a }, { createDate: b }) => AnyToDate(b).getTime() - AnyToDate(a).getTime());
 
 // Добавить/обновить уведомление
 const addOrUpdateNotification = (notifications: Notification[], notification: Notification): Notification[] => {
@@ -134,7 +128,7 @@ const findInsertIndex = (notifications: Notification[], notification: Notificati
   while (low <= high) {
     const mid: number = Math.floor((low + high) / 2);
     // Увеличить нижний индекс
-    if (ToDate(notifications[mid].createDate).getTime() > ToDate(notification.createDate).getTime()) {
+    if (AnyToDate(notifications[mid].createDate).getTime() > AnyToDate(notification.createDate).getTime()) {
       low = mid + 1;
     }
     // Увеличить верхний индекс

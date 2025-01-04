@@ -1,5 +1,5 @@
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
-import { CompareElementBySelector, CreateArray, ToDate } from "@_datas/app";
+import { AnyToDate, CompareElementBySelector, CreateArray } from "@_datas/app";
 import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
@@ -14,18 +14,13 @@ import { Observable, Subject, concatMap, filter, forkJoin, fromEvent, map, of, t
 
 
 
-
-
 @Component({
   selector: "app-notifications",
   templateUrl: "./notifications.component.html",
   styleUrls: ["./notifications.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
-
-
   @Input() show: boolean = false;
   @Input() listStyles: SimpleObject = {};
   @Input() outerClickClose: boolean = true;
@@ -57,8 +52,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
 
 
-
-
   // Иконка уведомления
   notificationUser(notification: Notification): User {
     const userId: number = ParseInt(notification?.data?.user);
@@ -71,7 +64,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     const dataStrings: string[] = [
       notification.id.toString(),
       notification.status.toString(),
-      ToDate(notification.createDate).toISOString(),
+      AnyToDate(notification.createDate).toISOString(),
       notification.actionType,
       notification.link,
       notification.text,
@@ -81,8 +74,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     // Объединить данные
     return dataStrings.join("-");
   }
-
-
 
 
 
@@ -148,8 +139,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
-
-
 
 
 
@@ -226,8 +215,6 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
         );
     }
   }
-
-
 
 
 
