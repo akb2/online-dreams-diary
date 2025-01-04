@@ -26,6 +26,7 @@ export class Cursor3DService implements OnDestroy {
   private readonly intersectionPoints = 5;
   private readonly lightMaxDistance = this.settings3DService.ceilSize * 7;
   private readonly lightColor = new Color("white");
+  private readonly cursorColor = new Color(0x3f52b5);
   private readonly lightSizeMultiplier = 0.5;
   private readonly lightIntensity = 30;
 
@@ -144,7 +145,7 @@ export class Cursor3DService implements OnDestroy {
   // Создание материала
   private createMaterial(): void {
     this.material = new MeshBasicMaterial({
-      color: 0x2265ff,
+      color: this.cursorColor,
       opacity: 0.5,
       transparent: true,
       side: DoubleSide,
