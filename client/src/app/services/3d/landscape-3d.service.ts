@@ -236,16 +236,7 @@ export class Landscape3DService {
     this.createGeometry();
     this.createTextures();
     this.createMaterial();
-    // Свойства объекта
-    this.mesh = new Mesh(this.geometry, this.material);
-    this.mesh.rotateX(AngleToRad(-90));
-    this.mesh.matrixAutoUpdate = false;
-    this.mesh.receiveShadow = true;
-    this.mesh.castShadow = true;
-    this.mesh.name = DreamMapTerrainName;
-    this.mesh.position.setY(this.settings3DService.startHeight);
-    this.mesh.renderOrder = 1;
-    this.mesh.updateMatrix();
+    this.createObject();
   }
 
   // Создание материала
@@ -323,6 +314,20 @@ export class Landscape3DService {
     this.material.depthTest = true;
     this.material.depthWrite = true;
     this.material.needsUpdate = true;
+  }
+
+  // Создание объекта
+  private createObject() {
+    this.mesh = new Mesh(this.geometry, this.material);
+    // Свойства объекта
+    this.mesh.rotateX(AngleToRad(-90));
+    this.mesh.matrixAutoUpdate = false;
+    this.mesh.receiveShadow = true;
+    this.mesh.castShadow = true;
+    this.mesh.name = DreamMapTerrainName;
+    this.mesh.position.setY(this.settings3DService.startHeight);
+    this.mesh.renderOrder = 1;
+    this.mesh.updateMatrix();
   }
 
   // Загрузка картинок рельефа
