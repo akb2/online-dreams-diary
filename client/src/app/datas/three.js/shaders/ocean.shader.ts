@@ -7,7 +7,7 @@ import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 // Настройки паралакса
 const ParallaxSteps = 16;
-export const ParallaxScale = 1;
+export const ParallaxScale = 2;
 
 // Основные значения
 const MaterialType: keyof typeof ShaderLib = "standard";
