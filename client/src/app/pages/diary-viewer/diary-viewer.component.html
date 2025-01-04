@@ -63,8 +63,8 @@
         <!-- Карта -->
         <ng-container *ngIf="isMapAvail">
           <div class="dream__map">
-            <app-dream-map-viewer [dreamMap]="dream.map"
-                                  [debugInfo]="true"></app-dream-map-viewer>
+            <viewer-3d [dreamMap]="dream.map"
+                       [debugInfo]="true"></viewer-3d>
           </div>
         </ng-container>
         <!-- Текст -->

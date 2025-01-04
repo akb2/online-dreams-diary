@@ -1,7 +1,6 @@
 import { AutocompleteInputModule } from '@_controlers/autocomplete-input/autocomplete-input.module';
 import { CardModule } from '@_controlers/card/card.module';
 import { ChipsInputModule } from '@_controlers/chips-input/chips-input.module';
-import { DreamMapEditorModule } from '@_controlers/dream-map-editor/dream-map-editor.module';
 import { Editor3DModule } from "@_controlers/editor-3d/editor-3d.module";
 import { InformModule } from "@_controlers/inform/inform.module";
 import { NavMenuSettingsModule } from '@_controlers/nav-menu-settings/nav-menu-settings.module';
@@ -16,10 +15,6 @@ import { DiaryEditorComponent } from '@_pages/diary-editor/diary-editor.componen
 import { NgModule } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { TranslateModule } from "@ngx-translate/core";
-
-
-
-
 
 @NgModule({
   declarations: [
@@ -36,7 +31,6 @@ import { TranslateModule } from "@ngx-translate/core";
     CardModule,
     TextInputModule,
     AutocompleteInputModule,
-    DreamMapEditorModule,
     SliderInputModule,
     InformModule,
     TextEditorModule,
@@ -44,5 +38,4 @@ import { TranslateModule } from "@ngx-translate/core";
     TranslateModule
   ]
 })
-
 export class DiaryEditorModule { }

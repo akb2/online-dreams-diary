@@ -1,10 +1,10 @@
 import { CardModule } from "@_controlers/card/card.module";
 import { DreamListModule } from "@_controlers/dream-list/dream-list.module";
-import { DreamMapViewerModule } from "@_controlers/dream-map-viewer/dream-map-viewer.module";
 import { HighlightKeywordsModule } from "@_controlers/highlight-keywords/highlight-keywordsmodule";
 import { NavMenuModule } from "@_controlers/nav-menu/nav-menu.module";
 import { PageLoaderModule } from '@_controlers/page-loader/page-loader.module';
 import { TitleModule } from "@_controlers/title/title.module";
+import { Viewer3DModule } from "@_controlers/viewer-3d/viewer-3d.module";
 import { CommentModule } from "@_modules/comment.module";
 import { CoreModule } from '@_modules/core.module';
 import { DiaryViewerRoutingModule } from '@_pages/diary-viewer/diary-viewer-routing.module';
@@ -15,10 +15,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { TranslateModule } from "@ngx-translate/core";
 
-
-
-
-
 @NgModule({
   declarations: [
     DiaryViewerComponent
@@ -28,7 +24,7 @@ import { TranslateModule } from "@ngx-translate/core";
     DiaryViewerRoutingModule,
     NavMenuModule,
     PageLoaderModule,
-    DreamMapViewerModule,
+    Viewer3DModule,
     CommentModule,
     CardModule,
     HighlightKeywordsModule,
