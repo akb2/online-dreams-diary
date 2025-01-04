@@ -91,7 +91,7 @@ export class Landscape3DService {
 
   // Получение предварительной высоты вершины в виде цвета
   private getColorByCoords(x: number, z: number, y: number): number {
-    return this.ceil3dService.isBorderCeil(x, z) || y === this.settings3DService.defaultHeight
+    return this.ceil3dService.isBorderCeil(x, z) || y === this.settings3DService.height
       ? this.getColorByReliefTypeAndCoords(this.getReliefTypeBySector(this.ceil3dService.getSectorByCoords(x, z)), x, z)
       : MathRound((y / this.settings3DService.maxHeight) * MaxColorValue);
   }

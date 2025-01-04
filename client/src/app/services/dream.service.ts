@@ -22,9 +22,10 @@ import { Observable, Subject, of } from "rxjs";
 import { concatMap, map, switchMap, take, takeUntil } from "rxjs/operators";
 import { Settings3DService } from "./3d/settings-3d.service";
 
+@Injectable({
+  providedIn: "root"
+})
 
-
-@Injectable({ providedIn: "root" })
 export class DreamService implements OnDestroy {
   private readonly localStorageTtl = 60 * 60 * 24 * 365;
   private dreamMapSettingsLocalStorageKey = "dream_map-settings";
@@ -298,7 +299,7 @@ export class DreamService implements OnDestroy {
         size: {
           width: ParseInt(dreamMapDto?.size?.width, this.settings3DService.mapSize),
           height: ParseInt(dreamMapDto?.size?.height, this.settings3DService.mapSize),
-          zHeight: ParseInt(dreamMapDto?.size?.zHeight, this.settings3DService.defaultHeight)
+          zHeight: ParseInt(dreamMapDto?.size?.zHeight, this.settings3DService.height)
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
@@ -346,7 +347,7 @@ export class DreamService implements OnDestroy {
         size: {
           width: this.settings3DService.mapSize,
           height: this.settings3DService.mapSize,
-          zHeight: this.settings3DService.defaultHeight
+          zHeight: this.settings3DService.height
         },
         camera: this.getDefaultCamera(),
         ceils: [],
@@ -357,7 +358,7 @@ export class DreamService implements OnDestroy {
         },
         land: {
           type: this.settings3DService.terrain,
-          z: this.settings3DService.defaultHeight
+          z: this.settings3DService.height
         },
         sky: {
           time: this.settings3DService.skyTime
@@ -378,7 +379,7 @@ export class DreamService implements OnDestroy {
       .filter(c => !(
         !c.object &&
         (!c.terrain || c.terrain === this.settings3DService.terrain /* || c.water === null || c.water.z <= c.coord.originalZ */) &&
-        c.coord.originalZ === this.settings3DService.defaultHeight
+        c.coord.originalZ === this.settings3DService.height
       ))
       .map(c => {
         const ceil: DreamMapCeilDto = {};

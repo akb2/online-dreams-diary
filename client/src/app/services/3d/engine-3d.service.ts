@@ -158,7 +158,13 @@ export class Engine3DService implements OnDestroy {
   private createCamera(): void {
     const { position } = this.defaultControlPosition;
     // Создание камеры
-    this.camera = new PerspectiveCamera(30, this.canvasWidth / this.canvasHeight, this.settings3DService.ceilSize / 10, this.settings3DService.fogFar);
+    this.camera = new PerspectiveCamera(
+      30,
+      this.canvasWidth / this.canvasHeight,
+      this.settings3DService.ceilSize / 10,
+      this.settings3DService.fogFar
+    );
+    // Свойства камеры
     this.camera.position.setX(ParseFloat(this.dreamMap?.camera?.position?.x, position.x, 16));
     this.camera.position.setY(ParseFloat(this.dreamMap?.camera?.position?.y, position.y, 16));
     this.camera.position.setZ(ParseFloat(this.dreamMap?.camera?.position?.z, position.z, 16));
@@ -202,7 +208,6 @@ export class Engine3DService implements OnDestroy {
     this.control.target.setX(ParseFloat(this.dreamMap?.camera?.target?.x, target.x, 16));
     this.control.target.setY(ParseFloat(this.dreamMap?.camera?.target?.y, target.y, 16));
     this.control.target.setZ(ParseFloat(this.dreamMap?.camera?.target?.z, target.z, 16));
-    this.camera.far = this.settings3DService.fogFar;
     // Изменение камеры
     fromEvent(this.control, "change")
       .pipe(takeUntil(this.destroyed$))
@@ -342,7 +347,6 @@ export class Engine3DService implements OnDestroy {
     }
     // Запомнить положение камеры
     this.lastCamera = event.object.clone() as PerspectiveCamera;
-    this.camera.far = this.settings3DService.fogFar;
     this.dreamMap.isChanged = this.cameraFirstChange
       ? !!this.dreamMap.isChanged
       : true;

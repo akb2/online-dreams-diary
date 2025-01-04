@@ -50,8 +50,8 @@ export class Ceil3dService {
       coord: {
         x,
         y,
-        z: this.settings3DService.defaultHeight,
-        originalZ: this.settings3DService.defaultHeight
+        z: this.settings3DService.height,
+        originalZ: this.settings3DService.height
       }
     };
   }
@@ -65,8 +65,8 @@ export class Ceil3dService {
       coord: {
         x,
         y,
-        z: this.settings3DService.defaultHeight,
-        originalZ: this.settings3DService.defaultHeight
+        z: this.settings3DService.height,
+        originalZ: this.settings3DService.height
       }
     };
   }

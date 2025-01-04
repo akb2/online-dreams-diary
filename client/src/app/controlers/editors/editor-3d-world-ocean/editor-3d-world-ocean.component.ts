@@ -24,9 +24,6 @@ export class Editor3DWorldOceanComponent {
 
   lines = CreateArray(8);
 
-  private maxOceanHeight = this.settings3DService.maxHeight;
-  private minOceanHeight = this.settings3DService.minHeight;
-
   worldOceanHeightControl = new LineParamSetting(2, 10);
 
   private worldOceanHeight$ = this.store$.select(editor3DWorldOceanHeightSelector);
@@ -38,7 +35,7 @@ export class Editor3DWorldOceanComponent {
 
   // Базовые параметры настроек
   private getSettingsOceanStyles(skyTime: number, invert = false): CssProperties {
-    const rulerSize = this.maxOceanHeight - this.minOceanHeight;
+    const rulerSize = this.settings3DService.maxHeight - this.settings3DService.minHeight;
     const bottom = (skyTime / rulerSize) * 100;
     const top = 100 - bottom;
     // Вернуть стили
@@ -81,7 +78,7 @@ export class Editor3DWorldOceanComponent {
         CheckInRange(containerHeight - (mouseY - containerTop), containerHeight),
         (this.worldOceanHeightControl.step / (this.worldOceanHeightControl.maxValue - this.worldOceanHeightControl.minValue)) * containerHeight
       );
-      const worldOceanHeight = positionY / containerHeight * (this.maxOceanHeight - this.minOceanHeight);
+      const worldOceanHeight = this.settings3DService.minHeight + (positionY / containerHeight * (this.settings3DService.maxHeight - this.settings3DService.minHeight));
       // Обновить высоту мирового океана
       this.store$.dispatch(editor3DSetWorldOceanHeightAction({ worldOceanHeight }));
     }

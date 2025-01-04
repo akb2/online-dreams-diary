@@ -116,7 +116,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const { position, target } = this.engine3DService.defaultControlPosition;
     const ceils = this.dreamMap?.ceils.filter(c =>
       (!!c.terrain && c.terrain > 0 && c.terrain !== this.settings3DService.terrain)
-      || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.settings3DService.defaultHeight)
+      || (!!c.coord.originalZ && c.coord.originalZ > 0 && c.coord.originalZ !== this.settings3DService.height)
     );
     // Вернуть карту
     return {
@@ -141,7 +141,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       },
       land: {
         type: ParseInt(this.dreamMap?.land?.type, this.settings3DService.terrain),
-        z: ParseInt(this.dreamMap?.land?.z, this.settings3DService.defaultHeight)
+        z: ParseInt(this.dreamMap?.land?.z, this.settings3DService.height)
       },
       sky: {
         time: ParseInt(this.dreamMap?.sky?.time, this.settings3DService.skyTime)
@@ -178,7 +178,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!!changes?.dreamMap) {
-      this.settings3DService.setMapSize(this.dreamMap?.size?.width, this.dreamMap?.size?.height);
+      this.settings3DService.setMapSize(
+        this.dreamMap?.size?.width,
+        this.dreamMap?.size?.height,
+        this.dreamMap?.size?.zHeight
+      );
       // Обновить карту в сервисах
       this.ceil3dService.dreamMap = this.dreamMap;
       this.engine3DService.dreamMap = this.dreamMap;
@@ -195,7 +199,11 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       // Цикл загрузок
       WaitObservable(() => !this.canvas?.nativeElement || !this.helper?.nativeElement || !this.dreamMap)
         .pipe(
-          tap(() => this.settings3DService.setMapSize(this.dreamMap.size.width, this.dreamMap.size.height)),
+          tap(() => this.settings3DService.setMapSize(
+            this.dreamMap.size.width,
+            this.dreamMap.size.height,
+            this.dreamMap.size.zHeight
+          )),
           switchMap(() => this.loadScene()),
           switchMap(() => this.getTexturesData()),
           switchMap(() => this.loadTextures()),

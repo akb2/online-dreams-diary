@@ -3,15 +3,15 @@ import { Average, CheckInRange } from "@_helpers/math";
 import { DreamMapSettings } from "@_models/dream-map";
 import { Injectable } from "@angular/core";
 
-@Injectable({ providedIn: "root" })
+@Injectable({
+  providedIn: "root"
+})
 
 export class Settings3DService {
-  readonly defaultMapSize = 50;
   readonly ceilSize = 1;
   readonly ceilParts = 64;
   readonly skyTime = 180; //?  0 - 360
   readonly minHeight = 0;
-  readonly defaultHeight = -1;
   readonly startHeight = this.minHeight;
   readonly worldOceanFlowSpeed = this.ceilSize * 4;
   readonly cameraMinZoom = this.ceilSize;
@@ -21,6 +21,8 @@ export class Settings3DService {
   readonly mapMinShadowQuality = 1;
   readonly mapMaxShadowQuality = 7;
 
+  private readonly defaultMapSize = 50;
+  private readonly defaultHeight = -1;
   private readonly ceilWaterParts = 1;
   private readonly skyType = 1;
   private readonly baseElmsCount = 128;
@@ -28,8 +30,8 @@ export class Settings3DService {
   private readonly defaultTitle = "*** Новое сновидение ***";
   private readonly defaultDescription = "*** Без описания ***";
 
-
   mapSize: number;
+  height: number;
   fullMapSize: number;
   maxHeight: number;
   realMaxHeight: number;
@@ -59,8 +61,9 @@ export class Settings3DService {
 
 
   // Установить размер карты
-  setMapSize(width = this.defaultMapSize, height = this.defaultMapSize) {
+  setMapSize(width = this.defaultMapSize, height = this.defaultMapSize, zHeight = this.defaultHeight) {
     this.mapSize = Math.min(width, height);
+    this.height = zHeight;
     this.fullMapSize = this.mapSize * ((this.outsideSize * 2) + 1);
     this.maxHeight = (this.mapSize / 2) * this.ceilParts * this.ceilSize;
     this.realMaxHeight = this.maxHeight / this.ceilParts;
