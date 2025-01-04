@@ -21,7 +21,7 @@ export class Cursor3DService implements OnDestroy {
   // ? Размер ячейки умножается на этот множитель
   private readonly heightMultiplier = 0.3;
   // ? Ширина сигмента для цилиндра будет примерно равнятся этому числу
-  private readonly radialSigmentsDelimiter = 0.2;
+  private readonly radialSigmentsDelimiter = 0.1;
   // ? Количество точек для поиска пересечений с ландшафтом
   private readonly intersectionPoints = 5;
   private readonly lightMaxDistance = this.settings3DService.ceilSize * 7;
