@@ -28,3 +28,4 @@ media/images/user_avatars/small/*
 
 ssl/localhost.crt
 ssl/localhost.key
+ssl/openssl.cnf
