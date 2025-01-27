@@ -25,3 +25,6 @@ media/images/user_avatars/small/*
 !media/images/user_avatars/full/info.txt
 !media/images/user_avatars/middle/info.txt
 !media/images/user_avatars/small/info.txt
+
+ssl/localhost.crt
+ssl/localhost.key
