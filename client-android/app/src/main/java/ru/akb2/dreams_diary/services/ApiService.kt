@@ -17,16 +17,16 @@ import io.ktor.http.contentType
 import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiRequest
 
 class ApiService(context: Context) {
     companion object {
-        val ServerPreffix = "https://api-test.dreams-diary.ru/"
-
         val QueryParamTokenUserId = "token_user_id"
         val CookieParamToken = "api-token"
     }
 
+    val serverPreffix = context.resources.getString(R.string.server_prefix)
     val tokenService: TokenService
 
     val jsonBuilder = Json {
@@ -51,7 +51,7 @@ class ApiService(context: Context) {
         method: String,
         data: Map<String, String> = mapOf()
     ): ApiRequest<T>? {
-        val url = "$ServerPreffix$controller/$method"
+        val url = "$serverPreffix$controller/$method"
         var returnedData: ApiRequest<T>? = null
         val httpClient = HttpClient(CIO) {
             install(ContentNegotiation) {
@@ -84,7 +84,7 @@ class ApiService(context: Context) {
         }
         // Ошибка
         catch (e: Exception) {
-            Log.e("akb2_test", e.toString())
+            Log.e("akb2_test", e.message.toString())
         }
         // Закрыть соединение
         finally {
@@ -106,7 +106,7 @@ class ApiService(context: Context) {
         method: String,
         data: Map<String, String> = mapOf()
     ): ApiRequest<T>? {
-        val url = "$ServerPreffix$controller/$method"
+        val url = "$serverPreffix$controller/$method"
         var returnedData: ApiRequest<T>? = null
         val httpClient = HttpClient(CIO) {
             install(ContentNegotiation) {

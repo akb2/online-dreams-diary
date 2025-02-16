@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="server_prefix">https://api.dreams-diary.com/</string>
+
     <string name="app_name">Online Dreams Diary</string>
     <string name="activity_auth_login_label">Login or e-mail</string>
     <string name="activity_auth_title">Log In</string>

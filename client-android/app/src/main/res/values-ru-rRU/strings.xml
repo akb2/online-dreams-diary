@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="server_prefix">https://api.dreams-diary.ru/</string>
+
     <string name="app_name">Дневник сновидений Онлайн</string>
     <string name="activity_auth_login_label">Логин или e-mail</string>
     <string name="activity_auth_title">Вход</string>

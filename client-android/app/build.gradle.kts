@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "ru.akb2.dreams_diary"
     compileSdk = 34
+    flavorDimensions += "environment"
 
     defaultConfig {
         applicationId = "ru.akb2.dreams_diary"
@@ -18,6 +19,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+        }
+        create("prod") {
+            dimension = "environment"
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -25,19 +39,26 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("Boolean", "DEBUG", "false")
+            resValue("string", "config_path", "\"@xml/config\"")
+        }
+        debug {
+            buildConfigField("Boolean", "DEBUG", "true")
+            resValue("string", "config_path", "\"@xml/config\"")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
