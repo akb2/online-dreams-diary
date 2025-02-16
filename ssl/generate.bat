@@ -2,8 +2,15 @@
 cls
 for /F %%a in ('echo prompt $E ^| cmd') do set "ESC=%%a"
 
-set SucLabel=%ESC%[32m[+]%ESC%[0m
-set ErrLabel=%ESC%[31m[-]%ESC%[0m
+set ClearColor=%ESC%[0m
+set GrayColor=%ESC%[90m
+set GreenColor=%ESC%[32m
+set RedColor=%ESC%[31m
+set BlueColor=%ESC%[36m
+set YellowColor=%ESC%[33m
+
+set SucLabel=%GreenColor%[+]%ClearColor%
+set ErrLabel=%RedColor%[-]%ClearColor%
 
 REM =======================
 REM Настройки
@@ -49,7 +56,7 @@ if "%~1"=="" (
   )
 ) else (
   set LOCAL_IP=%~1
-  echo !SucLabel! Использование введенного IP: %ESC%[36m!LOCAL_IP!%ESC%[0m
+  echo !SucLabel! Использование введенного IP: !BlueColor!!LOCAL_IP!!ClearColor!
 )
 
 :found_ip
@@ -57,7 +64,7 @@ if not defined LOCAL_IP (
   echo !ErrLabel! Не удалось определить локальный IP-адрес
   exit /b 1
 )
-echo !SucLabel! Локальный IP: %ESC%[36m!LOCAL_IP!%ESC%[0m
+echo !SucLabel! Локальный IP: !BlueColor!!LOCAL_IP!!ClearColor!
 
 REM =======================
 REM Main process
@@ -89,6 +96,7 @@ REM Create an OpenSSL config file
   echo.
   echo [alt_names]
   echo DNS.1 = localhost
+  echo DNS.2 = bs-local.com
   echo IP.1 = 127.0.0.1
   echo IP.2 = 10.0.2.2
   echo IP.3 = !LOCAL_IP!
@@ -138,10 +146,11 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo !SucLabel! Сертификат успешно создан и добавлен в хранилище доверенных корневых центров сертификации
-echo !SucLabel! Key file: %ESC%[33m!CERT_KEY_FILE!%ESC%[0m
-echo !SucLabel! Certificate: %ESC%[33m!CERT_CRT_FILE!%ESC%[0m
-echo !SucLabel! Hosts included:
-echo     %ESC%[90mЛокальный хост%ESC%[0m                           %ESC%[36mlocalhost%ESC%[0m
-echo     %ESC%[90mЛокальный IP%ESC%[0m                             %ESC%[36m127.0.0.1%ESC%[0m
-echo     %ESC%[90mЛокальный IP эмулятора в Android Studio%ESC%[0m  %ESC%[36m10.0.2.2%ESC%[0m
-echo     %ESC%[90mIP устройства в локальной сети%ESC%[0m           %ESC%[36m!LOCAL_IP!%ESC%[0m
+echo !SucLabel! Файл с ключом: !YellowColor!!CERT_KEY_FILE!!ClearColor!
+echo !SucLabel! Файл сертификата: !YellowColor!!CERT_CRT_FILE!!ClearColor!
+echo !SucLabel! Добавленные хосты:
+echo     !GrayColor!Локальный хост!ClearColor!                           !BlueColor!localhost!ClearColor!
+echo     !GrayColor!Локальный хост BrowserStack!ClearColor!              !BlueColor!bs-local.com!ClearColor!
+echo     !GrayColor!Локальный IP!ClearColor!                             !BlueColor!127.0.0.1!ClearColor!
+echo     !GrayColor!Локальный IP эмулятора в Android Studio!ClearColor!  !BlueColor!10.0.2.2!ClearColor!
+echo     !GrayColor!IP устройства в локальной сети!ClearColor!           !BlueColor!!LOCAL_IP!!ClearColor!
