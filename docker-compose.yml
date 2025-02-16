@@ -91,3 +91,7 @@ services:
     ports:
       - "4204:80"
     restart: always
+
+networks:
+  frontend_network:
+    driver: bridge
