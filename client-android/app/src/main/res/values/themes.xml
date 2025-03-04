@@ -1,6 +1,6 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.DreamsDiary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="DreamsDiary" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary_500</item>
         <item name="colorPrimaryVariant">@color/primary_700</item>
@@ -16,6 +16,34 @@
         <item name="android:contentInsetLeft">0dp</item>
         <item name="android:contentInsetStart">0dp</item>
         <item name="android:insetLeft">0dp</item>
+    </style>
+    <!-- Главный блок -->
+    <style name="DreamsDiary.MainLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+    <!-- Основной фон -->
+    <style name="DreamsDiary.ContentLayout" parent="DreamsDiary.MainLayout">
+        <item name="android:background">@color/background</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <!-- Общий стиль для шапки -->
+    <style name="DreamsDiary.NavigationBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <!-- Стиль форм -->
+    <style name="Material.CardForm" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="cardCornerRadius">@dimen/card_border_radius</item>
+        <item name="cardElevation">@dimen/card_shadow_size</item>
+        <item name="strokeColor">@color/white</item>
+        <item name="strokeWidth">@dimen/card_border_size</item>
+        <item name="android:padding">@dimen/card_padding</item>
+        <item name="android:layout_margin">@dimen/activity_padding</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
     </style>
     <!-- Стиль кнопок: текст -->
     <style name="Material.TextButton" parent="Widget.MaterialComponents.Button.TextButton">

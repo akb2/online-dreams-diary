@@ -9,33 +9,22 @@
 
     <LinearLayout
         android:id="@+id/mainLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        style="@style/DreamsDiary.MainLayout">
 
         <ru.akb2.dreams_diary.components.MenuToolbar
             android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/DreamsDiary.NavigationBar"
             app:icon="@drawable/round_key_48"
             app:subtitle="@string/app_name"
             app:title="@string/activity_auth_title" />
 
         <LinearLayout
             android:id="@+id/contentLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/background"
-            android:gravity="center"
-            android:orientation="vertical">
+            style="@style/DreamsDiary.ContentLayout">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/authCardLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/activity_padding"
-                android:padding="@dimen/card_padding"
-                app:cardElevation="@dimen/card_shadow_size">
+                style="@style/Material.CardForm">
 
                 <LinearLayout
                     android:id="@+id/authLayout"
