@@ -20,16 +20,25 @@ import kotlinx.serialization.json.Json
 import ru.akb2.dreams_diary.BuildConfig
 import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiRequest
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
-class ApiService(context: Context) {
+class ApiService(private val context: Context) {
     companion object {
         val QueryParamTokenUserId = "token_user_id"
         val CookieParamToken = "api-token"
     }
 
     val isDebug = BuildConfig.DEBUG
-    val serverPreffix =
-        context.resources.getString(if (isDebug) R.string.server_dev_prefix else R.string.server_prefix)
+    val serverPreffix = context.resources.getString(
+        if (isDebug) R.string.server_dev_prefix
+        else R.string.server_prefix
+    )
     val tokenService: TokenService
 
     val jsonBuilder = Json {
@@ -42,6 +51,24 @@ class ApiService(context: Context) {
         tokenService = TokenService(context)
     }
 
+    private fun httpClient(): HttpClient {
+        val trustManager = getCustomTrustManager()
+
+        val sslContext = SSLContext.getInstance("TLS").apply {
+            init(null, arrayOf(trustManager), SecureRandom())
+        }
+
+        return HttpClient(CIO) {
+            engine {
+                customizeClient {
+                }
+            }
+            install(ContentNegotiation) {
+                json(jsonBuilder)
+            }
+        }
+    }
+
     /**
      * Post запрос
      * @param controller Название Api-контроллера
@@ -49,18 +76,14 @@ class ApiService(context: Context) {
      * @param data Тело заропса
      * @returns Модель с ответом
      * */
-    suspend inline fun <reified T> post(
+    suspend fun <T> post(
         controller: String,
         method: String,
         data: Map<String, String> = mapOf()
     ): ApiRequest<T>? {
         val url = "$serverPreffix$controller/$method"
         var returnedData: ApiRequest<T>? = null
-        val httpClient = HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(jsonBuilder)
-            }
-        }
+        val httpClient = httpClient()
         Log.i("akb2_test", url)
         // Попытка запроса
         try {
@@ -105,18 +128,14 @@ class ApiService(context: Context) {
      * @param data Url параметры запроса
      * @returns Модель с ответом
      * */
-    suspend inline fun <reified T> get(
+    suspend fun <T> get(
         controller: String,
         method: String,
         data: Map<String, String> = mapOf()
     ): ApiRequest<T>? {
         val url = "$serverPreffix$controller/$method"
         var returnedData: ApiRequest<T>? = null
-        val httpClient = HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(jsonBuilder)
-            }
-        }
+        val httpClient = httpClient()
         // Попытка запроса
         try {
             val token = tokenService.getAuthToken()
@@ -145,5 +164,24 @@ class ApiService(context: Context) {
         }
         // Вернуть полученную модель
         return returnedData
+    }
+
+    private fun getCustomTrustManager(): X509TrustManager {
+        val certificateFactory = CertificateFactory.getInstance("X.509")
+        val inputStream = context.resources.openRawResource(R.raw.localhost)
+        val certificate = certificateFactory.generateCertificate(inputStream) as X509Certificate
+        inputStream.close()
+
+        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+            load(null, null)
+            setCertificateEntry("server", certificate)
+        }
+
+        val trustManagerFactory =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
+                init(keyStore)
+            }
+
+        return trustManagerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
     }
 }
