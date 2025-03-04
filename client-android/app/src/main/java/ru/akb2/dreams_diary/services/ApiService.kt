@@ -17,6 +17,7 @@ import io.ktor.http.contentType
 import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import ru.akb2.dreams_diary.BuildConfig
 import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiRequest
 
@@ -26,7 +27,9 @@ class ApiService(context: Context) {
         val CookieParamToken = "api-token"
     }
 
-    val serverPreffix = context.resources.getString(R.string.server_prefix)
+    val isDebug = BuildConfig.DEBUG
+    val serverPreffix =
+        context.resources.getString(if (isDebug) R.string.server_dev_prefix else R.string.server_prefix)
     val tokenService: TokenService
 
     val jsonBuilder = Json {
@@ -58,6 +61,7 @@ class ApiService(context: Context) {
                 json(jsonBuilder)
             }
         }
+        Log.i("akb2_test", url)
         // Попытка запроса
         try {
             val token = tokenService.getAuthToken()
