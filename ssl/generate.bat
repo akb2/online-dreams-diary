@@ -18,6 +18,7 @@ REM =======================
 setlocal enabledelayedexpansion
 set CERT_NAME=Online Dreams Diary Development Server
 set SSL_DIR=ssl
+set ANDROID_ASSETS_DIR=client-android\app\src\main\res\raw
 set CERT_KEY_FILE=%SSL_DIR%\localhost.key
 set CERT_CRT_FILE=%SSL_DIR%\localhost.crt
 set OPENSSL_CONFIG_FILE=%SSL_DIR%\openssl.cnf
@@ -113,6 +114,16 @@ if %ERRORLEVEL% NEQ 0 (
   echo !ErrLabel! Ошибка при создании сертификата
   exit /b 1
 )
+
+REM Copy for Android Studio debug server
+copy %CERT_CRT_FILE% %ANDROID_ASSETS_DIR% >nul
+
+if %ERRORLEVEL% NEQ 0 (
+  echo !ErrLabel! Ошибка при копировании сертификата в проект Android Studio
+  exit /b 1
+)
+
+echo !SucLabel! Сертификат скопирован в проект Android Studio
 
 REM Make the certificate trusted
 REM Check if the certificate already exists in the store
