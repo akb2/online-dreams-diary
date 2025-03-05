@@ -35,6 +35,7 @@ services:
       - ./api/Config/secretDatas.dev.json:/var/www/api/Config/secretDatas.json
       - ./media/Config/settings.dev.json:/var/www/media/Config/settings.json
       - ./server/php.ini:/usr/local/etc/php/php.ini
+      - ./server/browscap.ini:/usr/local/etc/php/browscap.ini
       - ./server/fill-tables/:/var/www/server/fill-tables
     environment:
       - MYSQL_HOST=mysql
