@@ -188,6 +188,9 @@ class ApiService(private val context: Context) {
                 init(keyStore)
             }
 
-        return trustManagerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
+        val trustManager =
+            trustManagerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
+
+        return trustManager
     }
 }
