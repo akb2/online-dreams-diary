@@ -65,7 +65,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.11.0")
     implementation("io.ktor:ktor-client-core:3.0.0-beta-1")
-    implementation("io.ktor:ktor-client-cio:3.0.0-beta-1")
+    implementation("io.ktor:ktor-client-okhttp:3.0.0-beta-1")
     implementation("io.ktor:ktor-client-serialization:3.0.0-beta-1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0-beta-1")
     implementation("io.ktor:ktor-client-content-negotiation:3.0.0-beta-1")

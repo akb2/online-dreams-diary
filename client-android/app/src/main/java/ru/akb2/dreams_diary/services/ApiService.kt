@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.accept
 import io.ktor.client.request.forms.submitForm
@@ -17,11 +17,12 @@ import io.ktor.http.contentType
 import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import ru.akb2.dreams_diary.BuildConfig
 import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiRequest
+import java.io.InputStream
 import java.security.KeyStore
-import java.security.SecureRandom
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -29,42 +30,46 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 class ApiService(private val context: Context) {
+    private var certName = "Online Dreams Diary Development Server";
+
+    var tokenService = TokenService(context)
+
     companion object {
-        val QueryParamTokenUserId = "token_user_id"
-        val CookieParamToken = "api-token"
+        var QueryParamTokenUserId = "token_user_id"
+        var CookieParamToken = "api-token"
     }
 
-    val isDebug = BuildConfig.DEBUG
-    val serverPreffix = context.resources.getString(
-        if (isDebug) R.string.server_dev_prefix
-        else R.string.server_prefix
-    )
-    val tokenService: TokenService
+    private var isDebug = BuildConfig.DEBUG
 
-    val jsonBuilder = Json {
+    private var jsonBuilder = Json {
         ignoreUnknownKeys = true
         prettyPrint = true
         isLenient = true
     }
 
-    init {
-        tokenService = TokenService(context)
-    }
+    private var serverPreffix = context.resources.getString(
+        if (isDebug)
+            R.string.server_dev_prefix
+        else
+            R.string.server_prefix
+    )
 
     private fun httpClient(): HttpClient {
         val trustManager = getCustomTrustManager()
-
         val sslContext = SSLContext.getInstance("TLS").apply {
-            init(null, arrayOf(trustManager), SecureRandom())
+            init(null, arrayOf(trustManager), null)
         }
 
-        return HttpClient(CIO) {
+        val okHttpClient = OkHttpClient.Builder()
+            .sslSocketFactory(sslContext.socketFactory, trustManager)
+            .build()
+
+        return HttpClient(OkHttp) {
             engine {
-                customizeClient {
-                }
+                preconfigured = okHttpClient
             }
             install(ContentNegotiation) {
-                json(jsonBuilder)
+                json(Json { ignoreUnknownKeys = true })
             }
         }
     }
@@ -76,7 +81,7 @@ class ApiService(private val context: Context) {
      * @param data Тело заропса
      * @returns Модель с ответом
      * */
-    suspend fun <T> post(
+    internal suspend inline fun <reified T> post(
         controller: String,
         method: String,
         data: Map<String, String> = mapOf()
@@ -84,7 +89,6 @@ class ApiService(private val context: Context) {
         val url = "$serverPreffix$controller/$method"
         var returnedData: ApiRequest<T>? = null
         val httpClient = httpClient()
-        Log.i("akb2_test", url)
         // Попытка запроса
         try {
             val token = tokenService.getAuthToken()
@@ -128,7 +132,7 @@ class ApiService(private val context: Context) {
      * @param data Url параметры запроса
      * @returns Модель с ответом
      * */
-    suspend fun <T> get(
+    internal suspend inline fun <reified T> get(
         controller: String,
         method: String,
         data: Map<String, String> = mapOf()
@@ -168,13 +172,15 @@ class ApiService(private val context: Context) {
 
     private fun getCustomTrustManager(): X509TrustManager {
         val certificateFactory = CertificateFactory.getInstance("X.509")
-        val inputStream = context.resources.openRawResource(R.raw.localhost)
-        val certificate = certificateFactory.generateCertificate(inputStream) as X509Certificate
-        inputStream.close()
+        val inputStream: InputStream = context.resources.openRawResource(R.raw.localhost)
+
+        val certificate = inputStream.use {
+            certificateFactory.generateCertificate(it) as X509Certificate
+        }
 
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
             load(null, null)
-            setCertificateEntry("server", certificate)
+            setCertificateEntry(certName, certificate)
         }
 
         val trustManagerFactory =
