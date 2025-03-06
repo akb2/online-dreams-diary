@@ -30,3 +30,5 @@ ssl/localhost.crt
 ssl/localhost.key
 ssl/openssl.cnf
 client-android/app/src/main/res/raw/localhost.crt
+
+server/browscap.ini
