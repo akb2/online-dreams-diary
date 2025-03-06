@@ -2,13 +2,30 @@ package ru.akb2.dreams_diary.services
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import ru.akb2.dreams_diary.datas.DateFormater
 import java.util.Date
 
 @SuppressLint("CommitPrefEdits")
 class TokenService(context: Context) {
-    private val sharedPreferences =
-        context.getSharedPreferences("AuthPreferences", Context.MODE_PRIVATE)
+    private val masterKey = MasterKey
+        .Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val sharedPreferences = context.getSharedPreferences(
+        KEY_PREFERENCES_NAME,
+        Context.MODE_PRIVATE
+    )
+
+    private val encryptedSharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        KEY_PREFERENCES_NAME,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     /**
      * Интервал необходимости проверки актуальности токена
@@ -20,6 +37,7 @@ class TokenService(context: Context) {
         private const val KEY_USER_ID = "userId"
         private const val KEY_AUTH_TOKEN = "authToken"
         private const val KEY_LAST_CHECK = "authTokenLastCheck"
+        private const val KEY_PREFERENCES_NAME = "AuthPreferences"
     }
 
     /**
@@ -28,9 +46,15 @@ class TokenService(context: Context) {
      * @param authToken Токен авторизации
      * */
     fun saveAuthData(userId: Int, authToken: String) {
-        sharedPreferences.edit()
+        sharedPreferences
+            .edit()
+            .putInt(KEY_USER_ID, userId)
+            .apply()
+        encryptedSharedPreferences
+            .edit()
             .putString(KEY_AUTH_TOKEN, authToken)
-            .putInt(KEY_AUTH_TOKEN, userId)
+            .apply()
+
         saveAuthDate(false)
     }
 
@@ -40,25 +64,28 @@ class TokenService(context: Context) {
      * */
     fun saveAuthDate(clear: Boolean = false) {
         val date = if (clear)
-            Date(0) else
+            Date(0)
+        else
             Date()
 
-        sharedPreferences.edit()
+        sharedPreferences
+            .edit()
             .putString(KEY_LAST_CHECK, DateFormater.format(date))
+            .apply()
     }
 
     /**
      * Получить идентификатор пользователя
      * */
     fun getUserId(): Int {
-        return sharedPreferences.getString(KEY_USER_ID, null)?.toInt() ?: 0
+        return sharedPreferences.getInt(KEY_USER_ID, 0)
     }
 
     /**
      * Получить токен авторизации
      * */
     fun getAuthToken(): String {
-        return sharedPreferences.getString(KEY_AUTH_TOKEN, "") ?: ""
+        return encryptedSharedPreferences.getString(KEY_AUTH_TOKEN, "") ?: ""
     }
 
     /**
@@ -100,5 +127,6 @@ class TokenService(context: Context) {
      * */
     fun clearAuthData() {
         sharedPreferences.edit().clear().apply()
+        encryptedSharedPreferences.edit().clear().apply()
     }
 }
