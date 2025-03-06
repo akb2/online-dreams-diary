@@ -14,7 +14,7 @@
         <ru.akb2.dreams_diary.components.MenuToolbar
             android:id="@+id/toolbar"
             style="@style/DreamsDiary.NavigationBar"
-            app:icon="@drawable/round_key_48"
+            app:icon="@drawable/round_book_48"
             app:subtitle="@string/activity_diary_title"
             app:title="Имя пользователя" />
     </LinearLayout>
