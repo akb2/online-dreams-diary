@@ -1,5 +1,7 @@
 package ru.akb2.dreams_diary.datas
 
+import android.annotation.SuppressLint
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -15,33 +17,39 @@ import java.util.Locale
 data class TokenData(
     val id: Int,
     val token: String,
-    val user_id: Int,
-    @Serializable(with = DateAsStringSerializer::class)
-    val last_action_date: Date,
     val ip: String,
     val os: String,
     val browser: String,
-    val browser_version: String
+
+    @SerialName("user_id")
+    val userId: Int,
+
+    @Serializable(with = DateAsStringSerializer::class)
+    @SerialName("last_action_date")
+    val lastActionDate: Date,
+
+    @SerialName("browser_version")
+    val browserVersion: String
 )
 
 
 object TokenDataSerializer : JsonTransformingSerializer<TokenData>(serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
+    @SuppressLint("ConstantLocale")
+    private val defaultDate = SimpleDateFormat(DateFormat, Locale.getDefault()).format(Date())
 
+    override fun transformDeserialize(element: JsonElement): JsonElement {
         return if (element is JsonArray && element.isEmpty())
             buildJsonObject {
                 put("id", 0)
                 put("token", "")
                 put("user_id", 0)
-                put(
-                    "last_action_date",
-                    SimpleDateFormat(DateFormat, Locale.getDefault()).format(Date())
-                )
+                put("last_action_date", defaultDate)
                 put("ip", "")
                 put("os", "")
                 put("browser", "")
                 put("browser_version", "")
-            } else
+            }
+        else
             element
     }
 }
