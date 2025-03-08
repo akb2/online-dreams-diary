@@ -15,6 +15,7 @@ import ru.akb2.dreams_diary.datas.DefaultAuthActivity
 import ru.akb2.dreams_diary.datas.DefaultNotAuthActivity
 import ru.akb2.dreams_diary.services.AuthService
 import ru.akb2.dreams_diary.services.TokenService
+import ru.akb2.dreams_diary.services.UserService
 
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
@@ -22,12 +23,14 @@ open class BaseActivity : AppCompatActivity() {
 
     lateinit var tokenService: TokenService
     lateinit var authService: AuthService
+    lateinit var userService: UserService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Создать сервисы
         tokenService = TokenService(this)
         authService = AuthService(this)
+        userService = UserService(this)
     }
 
     override fun onStart() {
@@ -63,30 +66,38 @@ open class BaseActivity : AppCompatActivity() {
             val isAuthed = tokenService.isAuth()
             val isNeedToCheck = tokenService.isNeedToCheckToken()
             var isValidToken = false
-
+            // Проверка валидности токена
             if (isAuthed) {
                 isValidToken = if (isNeedToCheck)
-                    authService.checkToken() === ApiCode.SUCCESS else
+                    authService.checkToken() === ApiCode.SUCCESS
+                else
                     true
             }
-
+            // Загрузка сведений текущего пользователя
+            if (isAuthed && isValidToken) {
+                userService.updateFromServerById(tokenService.getUserId())
+            }
+            // Определение доступа
             val isValidAuth = isAuthed && isValidToken
             val isAuth = authType === AuthType.AUTH && isValidAuth
             val isNotAuth = authType === AuthType.NOT_AUTH && !isValidAuth
             val isAnyWay = authType === AuthType.ANYWAY
+            // Показать содержимое
+            if (isAnyWay || isAuth || isNotAuth) {
+                mainLayout.visibility = View.VISIBLE
+            }
             // Редирект
-            if (!isAnyWay && !isAuth && !isNotAuth) {
+            else {
                 startActivity(
                     Intent(
                         this@BaseActivity,
-                        if (isValidAuth) DefaultAuthActivity else DefaultNotAuthActivity
+                        if (isValidAuth)
+                            DefaultAuthActivity
+                        else
+                            DefaultNotAuthActivity
                     )
                 )
                 finish()
-            }
-            // Показать содержимое
-            else {
-                mainLayout.visibility = View.VISIBLE
             }
         }
     }
