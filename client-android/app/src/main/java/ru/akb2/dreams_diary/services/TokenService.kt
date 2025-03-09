@@ -2,13 +2,18 @@ package ru.akb2.dreams_diary.services
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import ru.akb2.dreams_diary.datas.DateFormater
 import java.util.Date
+import javax.crypto.AEADBadTagException
 
 @SuppressLint("CommitPrefEdits")
-class TokenService(context: Context) {
+class TokenService(
+    private val context: Context
+) {
     private val masterKey = MasterKey
         .Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -19,13 +24,7 @@ class TokenService(context: Context) {
         Context.MODE_PRIVATE
     )
 
-    private val encryptedSharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        KEY_PREFERENCES_NAME,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    private val encryptedSharedPreferences: SharedPreferences
 
     /**
      * Интервал необходимости проверки актуальности токена
@@ -38,6 +37,16 @@ class TokenService(context: Context) {
         private const val KEY_AUTH_TOKEN = "authToken"
         private const val KEY_LAST_CHECK = "authTokenLastCheck"
         private const val KEY_PREFERENCES_NAME = "AuthPreferences"
+    }
+
+    init {
+        encryptedSharedPreferences = try {
+            getEncryptedSharedPreferences()
+        } catch (e: AEADBadTagException) {
+            Log.e("TokenService", "Encryption error, clear encryption data", e)
+            sharedPreferences.edit().clear().apply()
+            getEncryptedSharedPreferences()
+        }
     }
 
     /**
@@ -98,6 +107,19 @@ class TokenService(context: Context) {
         return if (stringDate.isNotEmpty())
             DateFormater.parse(stringDate) ?: defaultDate else
             defaultDate
+    }
+
+    /**
+     * Получить зашифрованный экземпляр Shared Preferences
+     */
+    private fun getEncryptedSharedPreferences(): SharedPreferences {
+        return EncryptedSharedPreferences.create(
+            context,
+            KEY_PREFERENCES_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     /**
