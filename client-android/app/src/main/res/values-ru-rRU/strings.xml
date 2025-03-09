@@ -15,6 +15,8 @@
     <string name="api_error_code_message_XXXX">Запрос был заблокирован на уровне приложения</string>
     <string name="api_error_code_message_0001">Успешное выполнение запроса</string>
     <string name="api_error_code_message_9013">Ошибка 9013: Пользователь не найден</string>
-    <string name="activity_diary_title">Дневник сновидений</string>
+    <string name="activity_diary_sub_title">Дневник сновидений</string>
     <string name="api_error_code_message_9015">Ошибка 9015: Неверный токен авторизации, авторизуйтесь заново</string>
+    <string name="user_no_name">*Без имени*</string>
+    <string name="loading">Загрузка...</string>
 </resources>

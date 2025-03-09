@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             style="@style/DreamsDiary.NavigationBar"
             app:icon="@drawable/round_book_48"
-            app:subtitle="@string/activity_diary_title"
+            app:subtitle="@string/activity_diary_sub_title"
             app:title="Имя пользователя" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
