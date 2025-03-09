@@ -1,5 +1,6 @@
 package ru.akb2.dreams_diary.datas
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -16,7 +17,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.serializer
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @Serializable
 data class ApiRequest<T>(
@@ -112,6 +116,26 @@ object DateAsStringSerializer : KSerializer<Date> {
     override fun deserialize(decoder: Decoder): Date {
         val dateString = decoder.decodeString()
         return DateFormater.parse(dateString) ?: throw SerializationException("Invalid date format")
+    }
+}
+
+@Serializer(forClass = Date::class)
+object DateWithoutTimeZoneSerializer : KSerializer<Date> {
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).apply {
+        timeZone = TimeZone.getTimeZone("UTC") // Игнорируем локальный часовой пояс
+    }
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("DateWithoutTimeZone", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Date) {
+        val formattedDate = dateFormat.format(value)
+        encoder.encodeString(formattedDate)
+    }
+
+    override fun deserialize(decoder: Decoder): Date {
+        val dateString = decoder.decodeString()
+        return dateFormat.parse(dateString) ?: throw IllegalArgumentException("Invalid date format: $dateString")
     }
 }
 
