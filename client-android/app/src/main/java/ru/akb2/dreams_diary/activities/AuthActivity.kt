@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.R
 import ru.akb2.dreams_diary.datas.ApiCode
@@ -22,8 +23,10 @@ import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
+import ru.akb2.dreams_diary.services.UserService
 
-class AuthActivity : BaseActivity() {
+@AndroidEntryPoint
+class AuthActivity: BaseActivity() {
     override val authType = AuthType.NOT_AUTH
 
     private lateinit var activityLayout: CoordinatorLayout

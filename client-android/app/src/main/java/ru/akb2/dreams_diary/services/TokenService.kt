@@ -6,13 +6,17 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import dagger.hilt.android.qualifiers.ApplicationContext
 import ru.akb2.dreams_diary.datas.DateFormater
 import java.util.Date
 import javax.crypto.AEADBadTagException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @SuppressLint("CommitPrefEdits")
-class TokenService(
-    private val context: Context
+@Singleton
+class TokenService @Inject constructor(
+    @ApplicationContext private val context:Context
 ) {
     private val masterKey = MasterKey
         .Builder(context)

@@ -2,6 +2,7 @@ package ru.akb2.dreams_diary.services
 
 import android.content.Context
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
@@ -25,14 +26,20 @@ import java.io.InputStream
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import javax.inject.Inject
+import javax.inject.Singleton
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
-class ApiService(private val context: Context) {
+@Singleton
+class ApiService @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     private var certName = "Online Dreams Diary Development Server";
 
-    var tokenService = TokenService(context)
+    @Inject
+    lateinit var tokenService : TokenService
 
     companion object {
         var QueryParamTokenUserId = "token_user_id"

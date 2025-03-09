@@ -1,10 +1,14 @@
 package ru.akb2.dreams_diary
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 import ru.akb2.dreams_diary.services.TokenService
+import javax.inject.Inject
 
+@HiltAndroidApp
 class App : Application() {
-    private lateinit var tokenService: TokenService
+    @Inject
+    lateinit var tokenService: TokenService
 
     override fun onCreate() {
         super.onCreate()

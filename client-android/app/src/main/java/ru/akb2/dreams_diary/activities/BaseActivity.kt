@@ -5,9 +5,9 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsetsController
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.AuthType
@@ -16,21 +16,24 @@ import ru.akb2.dreams_diary.datas.DefaultNotAuthActivity
 import ru.akb2.dreams_diary.services.AuthService
 import ru.akb2.dreams_diary.services.TokenService
 import ru.akb2.dreams_diary.services.UserService
+import javax.inject.Inject
 
+@AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
     open lateinit var mainLayout: View
 
-    lateinit var tokenService: TokenService
-    lateinit var authService: AuthService
+    @Inject
     lateinit var userService: UserService
+
+    @Inject
+    lateinit var tokenService: TokenService
+
+    @Inject
+    lateinit var authService: AuthService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Создать сервисы
-        tokenService = TokenService(this)
-        authService = AuthService(this)
-        userService = UserService(this)
     }
 
     override fun onStart() {
@@ -51,7 +54,6 @@ open class BaseActivity : AppCompatActivity() {
         }
         // Для более старых версий Android
         else {
-            @RequiresApi(Build.VERSION_CODES.O)
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
         }
     }

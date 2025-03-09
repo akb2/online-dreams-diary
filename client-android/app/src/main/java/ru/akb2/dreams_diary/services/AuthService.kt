@@ -1,14 +1,16 @@
 package ru.akb2.dreams_diary.services
 
-import android.content.Context
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.AuthOutputData
 import ru.akb2.dreams_diary.datas.CheckTokenOutputData
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthService(context: Context) {
-    private val apiService = ApiService(context)
-    private val tokenService = apiService.tokenService
-
+@Singleton
+class AuthService @Inject constructor(
+    private val apiService: ApiService,
+    private val tokenService: TokenService
+) {
     /**
      * Авторизация на сервере
      * @param login Логин

@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
     kotlin("plugin.serialization") version "1.9.21"
 }
 
@@ -69,7 +71,11 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:3.0.0-beta-1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0-beta-1")
     implementation("io.ktor:ktor-client-content-negotiation:3.0.0-beta-1")
-    implementation( "androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("com.google.dagger:hilt-android:2.48")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
+    kapt("com.google.dagger:hilt-android-compiler:2.48")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
