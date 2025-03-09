@@ -59,7 +59,7 @@ class MenuToolbar : MaterialToolbar {
         setContentInsetsRelative(0, 0)
         setContentInsetsAbsolute(0, 0)
         // Отрисовка вложенных компонентов
-        setTitle()
+        setTitle(titleText)
         setSubTitle()
         //
         context.theme.obtainStyledAttributes(
@@ -82,8 +82,8 @@ class MenuToolbar : MaterialToolbar {
     /**
      * Отрисовка заголовка
      */
-    private fun setTitle() {
-        titleView.setText(titleText)
+    fun setTitle(text: String) {
+        titleView.setText(text)
     }
 
     /**
