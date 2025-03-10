@@ -5,7 +5,9 @@
     <!-- Шапка -->
     <dimen name="toolbar_height">60dp</dimen>
     <dimen name="toolbar_icon_size">@dimen/toolbar_height</dimen>
-    <dimen name="toolbar_icon_padding">12dp</dimen>
+    <dimen name="toolbar_icon_padding">11dp</dimen>
+    <dimen name="toolbar_icon_back_left_padding">22dp</dimen> <!-- @dimen/toolbar_icon_padding * 2 -->
+    <dimen name="toolbar_icon_back_right_padding">0dp</dimen> <!-- (@dimen/toolbar_icon_padding * 2) - @dimen/toolbar_icon_back_left_padding -->
     <dimen name="toolbar_icon_spacing">15dp</dimen>
     <dimen name="toolbar_title_font_size">16sp</dimen>
     <dimen name="toolbar_subtitle_font_size">13sp</dimen>
