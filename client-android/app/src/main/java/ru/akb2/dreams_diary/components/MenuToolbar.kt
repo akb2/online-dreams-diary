@@ -9,41 +9,29 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.setPadding
 import com.google.android.material.appbar.MaterialToolbar
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import ru.akb2.dreams_diary.R
 
-class MenuToolbar : MaterialToolbar {
-    private lateinit var titleView: TextView
-    private lateinit var subTitleView: TextView
-    private lateinit var iconView: ImageView
-    private lateinit var titlesLayout: LinearLayout
+@AndroidEntryPoint
+class MenuToolbar @JvmOverloads constructor(
+    @ApplicationContext context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : MaterialToolbar(context, attrs, defStyleAttr) {
+    private val titleView: TextView
+    private val subTitleView: TextView
+    private val iconView: ImageView
+    private val titlesLayout: LinearLayout
 
-    private lateinit var titleText: String
-    private lateinit var subTitleText: String
+    private val titleText: String
+    private val subTitleText: String
     private var iconSrc: Drawable? = null
-
-    constructor(context: Context) : super(context) {
-        init(context)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init(context, attrs)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
-    ) {
-        init(context, attrs, defStyleAttr)
-    }
 
     /**
      * Инициализация компонента
-     *
-     * @param context контекст вызова
-     * @param attrs переданные атрибуты
      */
-    private fun init(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) {
+    init {
         inflate(context, R.layout.component_menu_toolbar, this)
         val typedArray =
             context.theme.obtainStyledAttributes(attrs, R.styleable.ComponentMenuToolbar, 0, 0)
