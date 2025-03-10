@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsetsController
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +46,7 @@ open class BaseActivity : AppCompatActivity() {
     /**
      * Сделать кнопки управления внизу устройства темными
      * */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun setDarkNavigationIconsColor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.decorView.windowInsetsController?.setSystemBarsAppearance(
