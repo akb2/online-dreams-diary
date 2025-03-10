@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="server_prefix">https://api.dreams-diary.com/</string>
-    <string name="server_dev_prefix">https://192.168.0.139:4201/</string>
+    <string name="server_dev_prefix" translatable="false">https://192.168.1.92:4201/</string>
 
     <string name="app_name">Online Dreams Diary</string>
     <string name="activity_auth_login_label">Login or e-mail</string>
