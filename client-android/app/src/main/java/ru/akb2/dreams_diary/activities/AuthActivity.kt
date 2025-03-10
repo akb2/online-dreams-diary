@@ -1,6 +1,7 @@
 package ru.akb2.dreams_diary.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
@@ -23,10 +25,9 @@ import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
-import ru.akb2.dreams_diary.services.UserService
 
 @AndroidEntryPoint
-class AuthActivity: BaseActivity() {
+class AuthActivity : BaseActivity() {
     override val authType = AuthType.NOT_AUTH
 
     private lateinit var activityLayout: CoordinatorLayout
@@ -44,6 +45,7 @@ class AuthActivity: BaseActivity() {
     private var login: String = ""
     private var password: String = ""
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
@@ -61,7 +63,7 @@ class AuthActivity: BaseActivity() {
      * */
     private fun fillData() {
         activityLayout = findViewById(R.id.activityLayout)
-        mainLayout = findViewById(R.id.mainLayout)
+        mainLayoutView = findViewById(R.id.mainLayout)
         loginInput = findViewById(R.id.loginInput)
         passwordInput = findViewById(R.id.passwordInput)
         restoreLink = findViewById(R.id.restoreLink)

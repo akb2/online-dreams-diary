@@ -2,7 +2,6 @@ package ru.akb2.dreams_diary.activities
 
 import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.view.View
 import android.view.WindowInsetsController
 import androidx.annotation.RequiresApi
@@ -22,7 +21,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
-    open lateinit var mainLayout: View
+    open lateinit var mainLayoutView: View
 
     @Inject
     lateinit var userService: UserService
@@ -32,10 +31,6 @@ open class BaseActivity : AppCompatActivity() {
 
     @Inject
     lateinit var authService: AuthService
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onStart() {
         super.onStart()
@@ -65,7 +60,7 @@ open class BaseActivity : AppCompatActivity() {
      * */
     private fun checkTokenValidity() {
         lifecycleScope.launch {
-            mainLayout.visibility = View.GONE
+            mainLayoutView.visibility = View.GONE
             // Проверка авторизации
             val isAuthed = tokenService.isAuth()
             val isNeedToCheck = tokenService.isNeedToCheckToken()
@@ -88,7 +83,7 @@ open class BaseActivity : AppCompatActivity() {
             val isAnyWay = authType === AuthType.ANYWAY
             // Показать содержимое
             if (isAnyWay || isAuth || isNotAuth) {
-                mainLayout.visibility = View.VISIBLE
+                mainLayoutView.visibility = View.VISIBLE
             }
             // Редирект
             else {
