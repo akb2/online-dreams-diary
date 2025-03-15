@@ -10,7 +10,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -30,7 +30,7 @@ import ru.akb2.dreams_diary.services.SnackBarService
 class AuthActivity : BaseActivity() {
     override val authType = AuthType.NOT_AUTH
 
-    private lateinit var activityLayout: CoordinatorLayout
+    private lateinit var activityLayout: DrawerLayout
     private lateinit var loginInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
     private lateinit var restoreLink: TextView

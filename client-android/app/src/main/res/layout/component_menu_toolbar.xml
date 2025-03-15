@@ -28,7 +28,8 @@
             android:paddingEnd="@dimen/toolbar_icon_back_right_padding"
             android:paddingBottom="@dimen/toolbar_icon_padding"
             app:srcCompat="@drawable/arrow_back_ios_48"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/menuButtonView"
@@ -36,7 +37,8 @@
             android:layout_height="@dimen/toolbar_icon_size"
             android:padding="@dimen/toolbar_icon_padding"
             app:srcCompat="@drawable/menu_48"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            android:visibility="gone"/>
 
         <ImageView
             android:id="@+id/iconView"

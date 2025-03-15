@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.R
-import ru.akb2.dreams_diary.components.MenuToolbar
+import ru.akb2.dreams_diary.components.MainMenu
 import ru.akb2.dreams_diary.datas.AuthType
 import ru.akb2.dreams_diary.store.view_model.UserViewModel
 
@@ -18,7 +18,7 @@ class DiaryActivity : BaseActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
 
-    private lateinit var toolbarView: MenuToolbar
+    private lateinit var mainMenuView: MainMenu
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +34,7 @@ class DiaryActivity : BaseActivity() {
      * Заполнение свойств класса
      * */
     private fun fillData() {
-        toolbarView = findViewById(R.id.toolbar)
+        mainMenuView = findViewById(R.id.toolbar)
         mainLayoutView = findViewById(R.id.mainLayout)
     }
 
@@ -51,7 +51,7 @@ class DiaryActivity : BaseActivity() {
                 else
                     getString(R.string.user_no_name)
 
-                toolbarView.setTitle(title)
+                mainMenuView.setToolbarTitle(title)
             }
         }
     }
