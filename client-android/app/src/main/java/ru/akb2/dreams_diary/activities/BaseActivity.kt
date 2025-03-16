@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -30,9 +31,10 @@ import javax.inject.Inject
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
 
-    open lateinit var baseActivityLayoutView: DrawerLayout
-    open lateinit var mainLayoutView: LinearLayout
-    open lateinit var toolbarMenuView: ToolbarMenu
+    protected lateinit var baseActivityLayoutView: DrawerLayout
+    private lateinit var mainLayoutView: LinearLayout
+    protected lateinit var toolbarMenuView: ToolbarMenu
+    private lateinit var activityLoaderView: LinearLayout
 
     @Inject
     lateinit var userService: UserService
@@ -43,10 +45,10 @@ open class BaseActivity : AppCompatActivity() {
     @Inject
     lateinit var authService: AuthService
 
-    val isLeftMenuAvail: Boolean
-        get() = toolbarMenuView.backActivity === null
+    private val isLeftMenuAvail: Boolean
+        get() = toolbarMenuView.backActivity === null && activityLoaderView.visibility == View.VISIBLE
 
-    val isLeftMenuOpen
+    private val isLeftMenuOpen
         get() = baseActivityLayoutView.isDrawerOpen(GravityCompat.START)
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -58,8 +60,9 @@ open class BaseActivity : AppCompatActivity() {
         baseActivityLayoutView = findViewById(R.id.baseActivityLayout)
         mainLayoutView = findViewById(R.id.mainLayout)
         toolbarMenuView = findViewById(R.id.toolbarMenu)
+        activityLoaderView = findViewById(R.id.activityLoader)
 
-        setDarkNavigationIconsColor()
+        setLoaderState(true)
     }
 
     override fun onStart() {
@@ -76,23 +79,6 @@ open class BaseActivity : AppCompatActivity() {
         val contentContainer = findViewById<FrameLayout>(R.id.activityContainer)
 
         layoutInflater.inflate(layoutResID, contentContainer, true)
-    }
-
-    /**
-     * Сделать кнопки управления внизу устройства темными
-     * */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun setDarkNavigationIconsColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.decorView.windowInsetsController?.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            )
-        }
-        // Для более старых версий Android
-        else {
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        }
     }
 
     /**
@@ -156,6 +142,62 @@ open class BaseActivity : AppCompatActivity() {
     private fun openLeftMenu() {
         if (isLeftMenuAvail && !isLeftMenuOpen) {
             baseActivityLayoutView.openDrawer(GravityCompat.START)
+        }
+    }
+
+    /**
+     * Показать или скрыть лоадер
+     * */
+    protected fun setLoaderState(showState: Boolean) {
+        if (showState) {
+            mainLayoutView.visibility = View.GONE
+            activityLoaderView.visibility = View.VISIBLE
+            setNavigationBarColor(R.color.primary_500, true)
+        }
+        // Скрыть
+        else {
+            mainLayoutView.visibility = View.VISIBLE
+            activityLoaderView.visibility = View.GONE
+            setNavigationBarColor(R.color.background, false)
+        }
+    }
+
+    /**
+     * Установить цвет нижней панели
+     */
+    @Suppress("DEPRECATION")
+    private fun setNavigationBarColor(color: Int, lightIcons: Boolean) {
+        // Android 11+ (API 30+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val iconMode = if (lightIcons)
+                0
+            else
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+
+            window.navigationBarColor = getColor(color)
+            window.setNavigationBarContrastEnforced(false)
+
+            window.insetsController?.setSystemBarsAppearance(
+                iconMode,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        }
+        // Android 8-10 (API 26-29)
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val decorView = window.decorView
+            val flags = decorView.systemUiVisibility
+            val iconMode = if (lightIcons)
+                flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            else
+                flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+
+
+            window.navigationBarColor = ContextCompat.getColor(this, color)
+            decorView.systemUiVisibility = iconMode
+        }
+        // Android 6-7 (API 23-25), без изменения иконок, но можно задать цвет
+        else {
+            window.navigationBarColor = ContextCompat.getColor(this, color)
         }
     }
 }

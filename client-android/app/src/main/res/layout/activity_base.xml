@@ -23,7 +23,18 @@
     </LinearLayout>
     <!-- Боковое меню -->
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigationView"
+        android:id="@+id/leftMenu"
         style="@style/DreamsDiary.LeftMenu"
         app:menu="@menu/main_menu" />
+    <!-- Лоадер -->
+    <LinearLayout
+        android:id="@+id/activityLoader"
+        style="@style/DreamsDiary.ActivityLoader">
+        <!-- Кружок загрузки -->
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            style="@style/DreamsDiary.ActivityLoader.Spinner"
+            app:indicatorColor="@color/white"
+            app:indicatorInset="@dimen/loader_inset"
+            app:indicatorSize="@dimen/loader_size" />
+    </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -1,7 +1,6 @@
 package ru.akb2.dreams_diary.activities
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +40,10 @@ class DiaryActivity : BaseActivity() {
     private fun userDataListen() {
         lifecycleScope.launch {
             userViewModel.state.collect { state ->
-                Log.i("akb2_test", state.toString())
+                if (!state.isLoading) {
+                    setLoaderState(false)
+                }
+
                 val title = if (state.isLoading)
                     getString(R.string.loading)
                 else if (state.user !== null)

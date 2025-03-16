@@ -41,6 +41,20 @@
         <item name="android:layout_gravity">start</item>
         <item name="android:fitsSystemWindows">true</item>
     </style>
+    <!-- Лоадер -->
+    <style name="DreamsDiary.ActivityLoader">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@color/primary_500</item>
+    </style>
+    <!-- Лоадер: спинер -->
+    <style name="DreamsDiary.ActivityLoader.Spinner">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:indeterminate">true</item>
+    </style>
     <!-- Стиль форм -->
     <style name="Material.CardForm" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/white</item>

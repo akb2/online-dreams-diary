@@ -4,13 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -40,7 +38,6 @@ class AuthActivity : BaseActivity() {
     private lateinit var registerButton: Button
     private lateinit var authButton: Button
     private lateinit var authCardLayout: MaterialCardView
-    private lateinit var formLoader: CircularProgressIndicator
 
     private var login: String = ""
     private var password: String = ""
@@ -50,6 +47,7 @@ class AuthActivity : BaseActivity() {
         // Шаблон
         setActivityLayout(R.layout.activity_auth)
         fillData()
+        setLoaderState(false)
         // Запуск событий
         loginInputKeyListener()
         passwordInputKeyListener()
@@ -66,7 +64,6 @@ class AuthActivity : BaseActivity() {
         registerButton = findViewById(R.id.registerButton)
         authButton = findViewById(R.id.authButton)
         authCardLayout = findViewById(R.id.authCardLayout)
-        formLoader = findViewById(R.id.formLoader)
         // Настройки тулбара
         toolbarMenuView.setTitle(R.string.activity_auth_title)
         toolbarMenuView.setSubTitle(R.string.app_name)
@@ -134,7 +131,7 @@ class AuthActivity : BaseActivity() {
     private fun tryAuth() {
         lifecycleScope.launch {
             keyboardService.closeKeyboard(this@AuthActivity)
-            toggleLoader(true)
+            setLoaderState(true)
             // Авторизация
             val authResult = authService.auth(login, password)
             // Успешная авторизация
@@ -144,24 +141,9 @@ class AuthActivity : BaseActivity() {
             }
             // Ошибка авторизации
             else {
-                toggleLoader(false)
+                setLoaderState(false)
                 snackBarService.error(ApiCode.getResourceKey(authResult), baseActivityLayoutView)
             }
-        }
-    }
-
-    /**
-     * Показать или скрыть лоадер
-     * */
-    private fun toggleLoader(showState: Boolean) {
-        if (showState) {
-            authCardLayout.visibility = View.GONE
-            formLoader.visibility = View.VISIBLE
-        }
-        // Скрыть
-        else {
-            authCardLayout.visibility = View.VISIBLE
-            formLoader.visibility = View.GONE
         }
     }
 }
