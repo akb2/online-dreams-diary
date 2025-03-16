@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -44,13 +43,11 @@ class AuthActivity : BaseActivity() {
     private var login: String = ""
     private var password: String = ""
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
         // Настройка активности
-        setDarkNavigationIconsColor()
-        fillData()
+        fillData(R.id.activityLayout, R.id.mainLayout, R.id.mainMenu)
         // Запуск событий
         loginInputKeyListener()
         passwordInputKeyListener()
@@ -60,9 +57,7 @@ class AuthActivity : BaseActivity() {
     /**
      * Заполнение свойств класса
      * */
-    private fun fillData() {
-        activityLayoutView = findViewById(R.id.activityLayout)
-        mainLayoutView = findViewById(R.id.mainLayout)
+    override fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
         loginInput = findViewById(R.id.loginInput)
         passwordInput = findViewById(R.id.passwordInput)
         restoreLink = findViewById(R.id.restoreLink)
@@ -70,6 +65,8 @@ class AuthActivity : BaseActivity() {
         authButton = findViewById(R.id.authButton)
         authCardLayout = findViewById(R.id.authCardLayout)
         formLoader = findViewById(R.id.formLoader)
+        // Настройка
+        super.fillData(activityLayoutId, mainLayoutId, mainMenuId)
         // Запуск служб
         snackBarService = SnackBarService(this@AuthActivity, activityLayoutView)
         keyboardService = KeyboardService(this@AuthActivity)

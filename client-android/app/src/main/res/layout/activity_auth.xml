@@ -12,7 +12,7 @@
         style="@style/DreamsDiary.MainLayout">
 
         <ru.akb2.dreams_diary.components.MainMenu
-            android:id="@+id/toolbar"
+            android:id="@+id/mainMenu"
             style="@style/DreamsDiary.NavigationBar"
             app:icon="@drawable/round_key_48"
             app:subtitle="@string/app_name"

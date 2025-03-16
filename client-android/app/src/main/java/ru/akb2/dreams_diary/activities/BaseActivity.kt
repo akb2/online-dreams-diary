@@ -2,6 +2,8 @@ package ru.akb2.dreams_diary.activities
 
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.View
 import android.view.WindowInsetsController
 import androidx.annotation.RequiresApi
@@ -10,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import ru.akb2.dreams_diary.components.MainMenu
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.AuthType
 import ru.akb2.dreams_diary.datas.DefaultAuthActivity
@@ -23,8 +26,9 @@ import javax.inject.Inject
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
 
-    open lateinit var mainLayoutView: View
     open lateinit var activityLayoutView: DrawerLayout
+    open lateinit var mainLayoutView: View
+    open lateinit var mainMenuView: MainMenu
 
     @Inject
     lateinit var userService: UserService
@@ -35,10 +39,25 @@ open class BaseActivity : AppCompatActivity() {
     @Inject
     lateinit var authService: AuthService
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setDarkNavigationIconsColor()
+    }
+
     override fun onStart() {
         super.onStart()
         // Проверка авторизации
         checkTokenValidity()
+    }
+
+    open fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
+        activityLayoutView = findViewById(activityLayoutId)
+        mainLayoutView = findViewById(mainLayoutId)
+        mainMenuView = findViewById(mainMenuId)
+
+        mainMenuView.setActivityLayoutView(activityLayoutView)
     }
 
     /**

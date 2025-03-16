@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.R
-import ru.akb2.dreams_diary.components.MainMenu
 import ru.akb2.dreams_diary.datas.AuthType
 import ru.akb2.dreams_diary.store.view_model.UserViewModel
 
@@ -18,25 +17,24 @@ class DiaryActivity : BaseActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
 
-    private lateinit var mainMenuView: MainMenu
-
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Шаблон
         setContentView(R.layout.activity_diary)
         // Настройка активности
-        setDarkNavigationIconsColor()
-        fillData()
+        fillData(R.id.activityLayout, R.id.mainLayout, R.id.mainMenu)
         userDataListen()
     }
 
     /**
      * Заполнение свойств класса
      * */
-    private fun fillData() {
+    override fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
         activityLayoutView = findViewById(R.id.activityLayout)
-        mainMenuView = findViewById(R.id.toolbar)
         mainLayoutView = findViewById(R.id.mainLayout)
+        mainMenuView = findViewById(R.id.mainMenu)
+        // Настройка
+        super.fillData(activityLayoutId, mainLayoutId, mainMenuId)
     }
 
     /**
