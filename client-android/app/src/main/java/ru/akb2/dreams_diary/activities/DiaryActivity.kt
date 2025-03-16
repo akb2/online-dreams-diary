@@ -34,6 +34,7 @@ class DiaryActivity : BaseActivity() {
      * Заполнение свойств класса
      * */
     private fun fillData() {
+        activityLayoutView = findViewById(R.id.activityLayout)
         mainMenuView = findViewById(R.id.toolbar)
         mainLayoutView = findViewById(R.id.mainLayout)
     }

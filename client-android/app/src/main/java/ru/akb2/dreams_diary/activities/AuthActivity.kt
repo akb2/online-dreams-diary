@@ -30,7 +30,6 @@ import ru.akb2.dreams_diary.services.SnackBarService
 class AuthActivity : BaseActivity() {
     override val authType = AuthType.NOT_AUTH
 
-    private lateinit var activityLayout: DrawerLayout
     private lateinit var loginInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
     private lateinit var restoreLink: TextView
@@ -62,7 +61,7 @@ class AuthActivity : BaseActivity() {
      * Заполнение свойств класса
      * */
     private fun fillData() {
-        activityLayout = findViewById(R.id.activityLayout)
+        activityLayoutView = findViewById(R.id.activityLayout)
         mainLayoutView = findViewById(R.id.mainLayout)
         loginInput = findViewById(R.id.loginInput)
         passwordInput = findViewById(R.id.passwordInput)
@@ -72,7 +71,7 @@ class AuthActivity : BaseActivity() {
         authCardLayout = findViewById(R.id.authCardLayout)
         formLoader = findViewById(R.id.formLoader)
         // Запуск служб
-        snackBarService = SnackBarService(this@AuthActivity, activityLayout)
+        snackBarService = SnackBarService(this@AuthActivity, activityLayoutView)
         keyboardService = KeyboardService(this@AuthActivity)
     }
 

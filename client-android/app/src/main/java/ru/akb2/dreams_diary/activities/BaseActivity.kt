@@ -6,6 +6,7 @@ import android.view.View
 import android.view.WindowInsetsController
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -21,7 +22,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
+
     open lateinit var mainLayoutView: View
+    open lateinit var activityLayoutView: DrawerLayout
 
     @Inject
     lateinit var userService: UserService
