@@ -3,16 +3,18 @@ package ru.akb2.dreams_diary.activities
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.view.View
 import android.view.WindowInsetsController
+import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import ru.akb2.dreams_diary.components.MainMenu
+import ru.akb2.dreams_diary.R
+import ru.akb2.dreams_diary.components.ToolbarMenu
 import ru.akb2.dreams_diary.datas.ApiCode
 import ru.akb2.dreams_diary.datas.AuthType
 import ru.akb2.dreams_diary.datas.DefaultAuthActivity
@@ -26,9 +28,9 @@ import javax.inject.Inject
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
 
-    open lateinit var activityLayoutView: DrawerLayout
-    open lateinit var mainLayoutView: View
-    open lateinit var mainMenuView: MainMenu
+    open lateinit var baseActivityLayoutView: DrawerLayout
+    open lateinit var mainLayoutView: CoordinatorLayout
+    open lateinit var toolbarMenuView: ToolbarMenu
 
     @Inject
     lateinit var userService: UserService
@@ -43,6 +45,12 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setContentView(R.layout.activity_base)
+
+        baseActivityLayoutView = findViewById(R.id.baseActivityLayout)
+        mainLayoutView = findViewById(R.id.mainLayout)
+        toolbarMenuView = findViewById(R.id.toolbarMenu)
+
         setDarkNavigationIconsColor()
     }
 
@@ -52,12 +60,13 @@ open class BaseActivity : AppCompatActivity() {
         checkTokenValidity()
     }
 
-    open fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
-        activityLayoutView = findViewById(activityLayoutId)
-        mainLayoutView = findViewById(mainLayoutId)
-        mainMenuView = findViewById(mainMenuId)
+    /**
+     * Устанавливает разметку дочерней Activity
+     */
+    protected fun setActivityLayout(layoutResID: Int) {
+        val contentContainer = findViewById<FrameLayout>(R.id.activityContainer)
 
-        mainMenuView.setActivityLayoutView(activityLayoutView)
+        layoutInflater.inflate(layoutResID, contentContainer, true)
     }
 
     /**

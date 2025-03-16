@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:theme="@style/DreamsDiary">
 
-    <ru.akb2.dreams_diary.components.MainMenuToolbar
+    <ru.akb2.dreams_diary.components.ToolbarMenu
         android:id="@+id/menuToolbar"
         style="@style/DreamsDiary.NavigationBar" />
 </FrameLayout>

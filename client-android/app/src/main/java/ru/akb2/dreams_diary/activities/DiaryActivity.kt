@@ -1,9 +1,8 @@
 package ru.akb2.dreams_diary.activities
 
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -20,21 +19,20 @@ class DiaryActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Шаблон
-        setContentView(R.layout.activity_diary)
+        setActivityLayout(R.layout.activity_diary)
+        fillData()
         // Настройка активности
-        fillData(R.id.activityLayout, R.id.mainLayout, R.id.mainMenu)
         userDataListen()
     }
 
     /**
      * Заполнение свойств класса
      * */
-    override fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
-        activityLayoutView = findViewById(R.id.activityLayout)
-        mainLayoutView = findViewById(R.id.mainLayout)
-        mainMenuView = findViewById(R.id.mainMenu)
-        // Настройка
-        super.fillData(activityLayoutId, mainLayoutId, mainMenuId)
+    private fun fillData() {
+        toolbarMenuView.setTitle(R.string.user_no_name)
+        toolbarMenuView.setSubTitle(R.string.activity_diary_sub_title)
+        toolbarMenuView.setIcon(R.drawable.round_book_48)
+        toolbarMenuView.setBackActivity(null)
     }
 
     /**
@@ -43,6 +41,7 @@ class DiaryActivity : BaseActivity() {
     private fun userDataListen() {
         lifecycleScope.launch {
             userViewModel.state.collect { state ->
+                Log.i("akb2_test", state.toString())
                 val title = if (state.isLoading)
                     getString(R.string.loading)
                 else if (state.user !== null)
@@ -50,7 +49,7 @@ class DiaryActivity : BaseActivity() {
                 else
                     getString(R.string.user_no_name)
 
-                mainMenuView.setToolbarTitle(title)
+                toolbarMenuView.setTitle(title)
             }
         }
     }

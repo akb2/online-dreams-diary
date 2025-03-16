@@ -1,7 +1,6 @@
 package ru.akb2.dreams_diary.activities
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -24,10 +22,17 @@ import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthActivity : BaseActivity() {
     override val authType = AuthType.NOT_AUTH
+
+    @Inject
+    lateinit var snackBarService: SnackBarService
+
+    @Inject
+    lateinit var keyboardService: KeyboardService
 
     private lateinit var loginInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
@@ -37,17 +42,14 @@ class AuthActivity : BaseActivity() {
     private lateinit var authCardLayout: MaterialCardView
     private lateinit var formLoader: CircularProgressIndicator
 
-    private lateinit var snackBarService: SnackBarService
-    private lateinit var keyboardService: KeyboardService
-
     private var login: String = ""
     private var password: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth)
-        // Настройка активности
-        fillData(R.id.activityLayout, R.id.mainLayout, R.id.mainMenu)
+        // Шаблон
+        setActivityLayout(R.layout.activity_auth)
+        fillData()
         // Запуск событий
         loginInputKeyListener()
         passwordInputKeyListener()
@@ -57,7 +59,7 @@ class AuthActivity : BaseActivity() {
     /**
      * Заполнение свойств класса
      * */
-    override fun fillData(activityLayoutId: Int, mainLayoutId: Int, mainMenuId: Int) {
+    private fun fillData() {
         loginInput = findViewById(R.id.loginInput)
         passwordInput = findViewById(R.id.passwordInput)
         restoreLink = findViewById(R.id.restoreLink)
@@ -65,11 +67,11 @@ class AuthActivity : BaseActivity() {
         authButton = findViewById(R.id.authButton)
         authCardLayout = findViewById(R.id.authCardLayout)
         formLoader = findViewById(R.id.formLoader)
-        // Настройка
-        super.fillData(activityLayoutId, mainLayoutId, mainMenuId)
-        // Запуск служб
-        snackBarService = SnackBarService(this@AuthActivity, activityLayoutView)
-        keyboardService = KeyboardService(this@AuthActivity)
+        // Настройки тулбара
+        toolbarMenuView.setTitle(R.string.activity_auth_title)
+        toolbarMenuView.setSubTitle(R.string.app_name)
+        toolbarMenuView.setIcon(R.drawable.round_key_48)
+        toolbarMenuView.setBackActivity(null)
     }
 
 
@@ -131,7 +133,7 @@ class AuthActivity : BaseActivity() {
      * */
     private fun tryAuth() {
         lifecycleScope.launch {
-            keyboardService.closeKeyboard()
+            keyboardService.closeKeyboard(this@AuthActivity)
             toggleLoader(true)
             // Авторизация
             val authResult = authService.auth(login, password)
@@ -143,7 +145,7 @@ class AuthActivity : BaseActivity() {
             // Ошибка авторизации
             else {
                 toggleLoader(false)
-                snackBarService.error(ApiCode.getResourceKey(authResult))
+                snackBarService.error(ApiCode.getResourceKey(authResult), baseActivityLayoutView)
             }
         }
     }

@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @SuppressLint("CommitPrefEdits")
 @Singleton
 class TokenService @Inject constructor(
-    @ApplicationContext private val context:Context
+    @ApplicationContext private val context: Context
 ) {
     private val masterKey = MasterKey
         .Builder(context)

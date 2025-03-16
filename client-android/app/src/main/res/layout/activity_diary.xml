@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activityLayout"
+    style="@style/DreamsDiary.MainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.DiaryActivity">
-
-    <LinearLayout
-        android:id="@+id/mainLayout"
-        style="@style/DreamsDiary.MainLayout">
-
-        <ru.akb2.dreams_diary.components.MainMenu
-            android:id="@+id/mainMenu"
-            style="@style/DreamsDiary.NavigationBar"
-            app:icon="@drawable/round_book_48"
-            app:subtitle="@string/activity_diary_sub_title"
-            app:title="Имя пользователя" />
-    </LinearLayout>
-</androidx.drawerlayout.widget.DrawerLayout>
+    tools:context=".activities.DiaryActivity" />

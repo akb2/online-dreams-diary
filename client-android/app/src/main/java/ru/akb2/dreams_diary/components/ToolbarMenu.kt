@@ -1,5 +1,6 @@
 package ru.akb2.dreams_diary.components
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -7,6 +8,8 @@ import android.util.AttributeSet
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.view.setPadding
 import com.google.android.material.appbar.MaterialToolbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,7 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import ru.akb2.dreams_diary.R
 
 @AndroidEntryPoint
-class MainMenuToolbar @JvmOverloads constructor(
+class ToolbarMenu @JvmOverloads constructor(
     @ApplicationContext context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -43,62 +46,64 @@ class MainMenuToolbar @JvmOverloads constructor(
         // Отрисовка базового слоя
         setContentInsetsRelative(0, 0)
         setContentInsetsAbsolute(0, 0)
+
+        setTitle(R.string.app_name)
+        setSubTitle("")
+        setIcon(null)
+        setBackActivity(null)
     }
 
     /**
-     * Задать заголовок
+     * Задать заголовок из ресурса
      */
+    override fun setTitle(@StringRes resourceId: Int) = setTitle(context.getString(resourceId))
     fun setTitle(text: String) {
-        titleView.setText(text)
+        titleView.text = text
     }
 
     /**
      * Задать подзаголовок
      */
-    fun setSubTitle(text: String) {
-        if (text.isNotEmpty()) {
-            subTitleView.visibility = VISIBLE
-            subTitleView.setText(text)
-        }
-        // Скрыть подзаголовок
-        else {
+    fun setSubTitle(@StringRes resourceId: Int) = setSubTitle(context.getString(resourceId))
+    private fun setSubTitle(text: String?) {
+        if (text.isNullOrEmpty()) {
             subTitleView.visibility = GONE
+        }
+        // Показать подзаголовок
+        else {
+            subTitleView.visibility = VISIBLE
+            subTitleView.text = text
         }
     }
 
     /**
      * Отрисовка иконки
      */
-    fun setIcon(icon: Drawable?) {
-        if (icon != null) {
-            iconView.visibility = VISIBLE
-            iconView.setImageDrawable(icon)
-            // Отступ для заголовка
-            titlesLayoutView.setPadding(0)
-        }
-        // Скрыть иконку
-        else {
+    @SuppressLint("UseCompatLoadingForDrawables")
+    fun setIcon(@DrawableRes resourceId: Int) = setIcon(resources.getDrawable(resourceId))
+    private fun setIcon(icon: Drawable?) {
+        if (icon === null) {
             iconView.visibility = GONE
             // Отступ для заголовка
             val paddingLeft: Int = resources.getDimension(R.dimen.toolbar_icon_spacing).toInt()
             titlesLayoutView.setPadding(paddingLeft, 0, 0, 0)
+        }
+        // Скрыть иконку
+        else {
+            iconView.visibility = VISIBLE
+            iconView.setImageDrawable(icon)
+            // Отступ для заголовка
+            titlesLayoutView.setPadding(0)
         }
     }
 
     /**
      * Установить класс активити для кнопки назад
      */
-    fun setBackActivity(backActivity: Class<out Activity>?) {
-        this.backActivity = backActivity
+    fun setBackActivity(activity: Class<out Activity>?) {
+        backActivity = activity
 
-        setBackButtonState()
-    }
-
-    /**
-     * Показать/скрыть кнопку назад
-     */
-    private fun setBackButtonState() {
-        if (this.backActivity !== null) {
+        if (backActivity !== null) {
             backButtonView.visibility = VISIBLE
             menuButtonView.visibility = GONE
         }
