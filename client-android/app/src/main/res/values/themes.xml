@@ -1,4 +1,4 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base application theme. -->
     <style name="DreamsDiary" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
@@ -16,6 +16,7 @@
         <item name="android:contentInsetLeft">0dp</item>
         <item name="android:contentInsetStart">0dp</item>
         <item name="android:insetLeft">0dp</item>
+        <item name="android:fitsSystemWindows">true</item>
     </style>
     <!-- Главный блок -->
     <style name="DreamsDiary.MainLayout">
@@ -29,9 +30,16 @@
         <item name="android:gravity">center</item>
     </style>
     <!-- Общий стиль для шапки -->
-    <style name="DreamsDiary.NavigationBar">
+    <style name="DreamsDiary.ToolbarMenu">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+    </style>
+    <!-- Общий стиль для левого меню -->
+    <style name="DreamsDiary.LeftMenu">
+        <item name="android:layout_width">@dimen/left_menu_width</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">start</item>
+        <item name="android:fitsSystemWindows">true</item>
     </style>
     <!-- Стиль форм -->
     <style name="Material.CardForm" parent="Widget.MaterialComponents.CardView">

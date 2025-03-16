@@ -6,9 +6,10 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowInsetsController
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,12 +25,13 @@ import ru.akb2.dreams_diary.services.TokenService
 import ru.akb2.dreams_diary.services.UserService
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
 
     open lateinit var baseActivityLayoutView: DrawerLayout
-    open lateinit var mainLayoutView: CoordinatorLayout
+    open lateinit var mainLayoutView: LinearLayout
     open lateinit var toolbarMenuView: ToolbarMenu
 
     @Inject
@@ -40,6 +42,12 @@ open class BaseActivity : AppCompatActivity() {
 
     @Inject
     lateinit var authService: AuthService
+
+    val isLeftMenuAvail: Boolean
+        get() = toolbarMenuView.backActivity === null
+
+    val isLeftMenuOpen
+        get() = baseActivityLayoutView.isDrawerOpen(GravityCompat.START)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +64,8 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Проверка авторизации
+        // События
+        menuButtonClickListener()
         checkTokenValidity()
     }
 
@@ -129,6 +138,24 @@ open class BaseActivity : AppCompatActivity() {
                 )
                 finish()
             }
+        }
+    }
+
+    /**
+     * Прослушивание нажатий кнопки меню
+     */
+    private fun menuButtonClickListener() {
+        toolbarMenuView.menuButtonView.setOnClickListener {
+            openLeftMenu()
+        }
+    }
+
+    /**
+     * Открыть меню слева
+     */
+    private fun openLeftMenu() {
+        if (isLeftMenuAvail && !isLeftMenuOpen) {
+            baseActivityLayoutView.openDrawer(GravityCompat.START)
         }
     }
 }

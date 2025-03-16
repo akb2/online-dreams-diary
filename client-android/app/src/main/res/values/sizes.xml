@@ -11,6 +11,8 @@
     <dimen name="toolbar_icon_spacing">15dp</dimen>
     <dimen name="toolbar_title_font_size">16sp</dimen>
     <dimen name="toolbar_subtitle_font_size">13sp</dimen>
+    <!-- Меню слева -->
+    <dimen name="left_menu_width">280dp</dimen>
     <!-- Карточка -->
     <dimen name="card_padding">20dp</dimen>
     <dimen name="card_border_size">0dp</dimen>

@@ -27,15 +27,19 @@ class ToolbarMenu @JvmOverloads constructor(
     private val iconView: ImageView
     private val titlesLayoutView: LinearLayout
     private val backButtonView: ImageView
-    private val menuButtonView: ImageView
 
-    private var backActivity: Class<out Activity>? = null
+    val menuButtonView: ImageView
+
+    private var backActivityClass: Class<out Activity>? = null
+
+    val backActivity
+        get() = backActivityClass
 
     /**
      * Инициализация компонента
      */
     init {
-        inflate(context, R.layout.component_menu_toolbar, this)
+        inflate(context, R.layout.component_toolbar_menu, this)
         // Свойства класса
         titleView = findViewById(R.id.titleView)
         subTitleView = findViewById(R.id.subTitleView)
@@ -101,9 +105,9 @@ class ToolbarMenu @JvmOverloads constructor(
      * Установить класс активити для кнопки назад
      */
     fun setBackActivity(activity: Class<out Activity>?) {
-        backActivity = activity
+        backActivityClass = activity
 
-        if (backActivity !== null) {
+        if (backActivityClass !== null) {
             backButtonView.visibility = VISIBLE
             menuButtonView.visibility = GONE
         }

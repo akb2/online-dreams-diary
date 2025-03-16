@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -5,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.AuthActivity">
-
+    <!-- Форма входа -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/authCardLayout"
         style="@style/Material.CardForm">
@@ -16,20 +17,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="@dimen/card_padding">
-
+            <!-- Заголовок -->
             <TextView
                 android:id="@+id/authCardTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/activity_auth_form_title"
                 android:textAppearance="?attr/textAppearanceHeadline6" />
-
+            <!-- Логин -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/loginGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/card_padding">
-
+                <!-- Поле ввода -->
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/loginInput"
                     android:layout_width="match_parent"
@@ -37,14 +38,14 @@
                     android:hint="@string/activity_auth_login_label"
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
-
+            <!-- Пароль -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/passwordGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/card_padding"
                 app:endIconMode="password_toggle">
-
+                <!-- Поле ввода -->
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/passwordInput"
                     android:layout_width="match_parent"
@@ -52,7 +53,7 @@
                     android:hint="@string/activity_auth_password_label"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
-
+            <!-- Восстановление пароля -->
             <TextView
                 android:id="@+id/restoreLink"
                 android:layout_width="match_parent"
@@ -61,7 +62,7 @@
                 android:gravity="right"
                 android:text="@string/activity_auth_link_restore"
                 android:textColor="@color/link" />
-
+            <!-- Действия -->
             <LinearLayout
                 android:id="@+id/authButtonsLayout"
                 android:layout_width="match_parent"
@@ -70,12 +71,12 @@
                 android:layout_marginTop="@dimen/card_padding"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal">
-
+                <!-- Регистрация -->
                 <Button
                     android:id="@+id/registerButton"
                     style="@style/Material.OutlinedButton"
                     android:text="@string/activity_auth_button_register" />
-
+                <!-- Вход -->
                 <Button
                     android:id="@+id/authButton"
                     style="@style/Material.FlatButton"
@@ -85,7 +86,7 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
-
+    <!-- Лоадер -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/formLoader"
         android:layout_width="wrap_content"
