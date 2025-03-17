@@ -4,13 +4,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -167,13 +165,11 @@ open class BaseActivity : AppCompatActivity() {
         if (showState) {
             mainLayoutView.visibility = View.GONE
             activityLoaderView.visibility = View.VISIBLE
-            setNavigationBarColor(R.color.primary_500, true)
         }
         // Скрыть
         else {
             mainLayoutView.visibility = View.VISIBLE
             activityLoaderView.visibility = View.GONE
-            setNavigationBarColor(R.color.background, false)
         }
     }
 
@@ -192,45 +188,6 @@ open class BaseActivity : AppCompatActivity() {
 
         isLeftMenuAvail = availableState
         baseActivityLayoutView.setDrawerLockMode(lockMode, GravityCompat.START)
-    }
-
-    /**
-     * Установить цвет нижней панели
-     */
-    @Suppress("DEPRECATION")
-    private fun setNavigationBarColor(color: Int, lightIcons: Boolean) {
-        // Android 11+ (API 30+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val iconMode = if (lightIcons)
-                0
-            else
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-
-            window.navigationBarColor = getColor(color)
-            window.setNavigationBarContrastEnforced(false)
-
-            window.insetsController?.setSystemBarsAppearance(
-                iconMode,
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            )
-        }
-        // Android 8-10 (API 26-29)
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val decorView = window.decorView
-            val flags = decorView.systemUiVisibility
-            val iconMode = if (lightIcons)
-                flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            else
-                flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-
-
-            window.navigationBarColor = ContextCompat.getColor(this, color)
-            decorView.systemUiVisibility = iconMode
-        }
-        // Android 6-7 (API 23-25), без изменения иконок, но можно задать цвет
-        else {
-            window.navigationBarColor = ContextCompat.getColor(this, color)
-        }
     }
 
     /**

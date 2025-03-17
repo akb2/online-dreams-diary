@@ -25,6 +25,7 @@
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/leftMenu"
         style="@style/DreamsDiary.LeftMenu"
+        app:drawerLayoutCornerSize="0dp"
         app:menu="@menu/main_menu" />
     <!-- Лоадер -->
     <LinearLayout

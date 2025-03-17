@@ -1,6 +1,6 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base application theme. -->
-    <style name="DreamsDiary" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="DreamsDiary" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary_500</item>
         <item name="colorPrimaryVariant">@color/primary_700</item>
@@ -10,13 +10,16 @@
         <item name="colorSecondaryVariant">@color/secondary_700</item>
         <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimary</item>
-        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">true</item>
         <!-- Customize your theme here. -->
         <item name="android:contentInsetLeft">0dp</item>
         <item name="android:contentInsetStart">0dp</item>
         <item name="android:insetLeft">0dp</item>
-        <item name="android:fitsSystemWindows">true</item>
     </style>
     <!-- Главный блок -->
     <style name="DreamsDiary.MainLayout">
@@ -33,6 +36,7 @@
     <style name="DreamsDiary.ToolbarMenu">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:fitsSystemWindows">true</item>
     </style>
     <!-- Общий стиль для левого меню -->
     <style name="DreamsDiary.LeftMenu">
@@ -40,6 +44,8 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_gravity">start</item>
         <item name="android:fitsSystemWindows">true</item>
+        <item name="android:topRightRadius">0dp</item>
+        <item name="android:bottomRightRadius">0dp</item>
     </style>
     <!-- Лоадер -->
     <style name="DreamsDiary.ActivityLoader">
@@ -66,6 +72,18 @@
         <item name="android:layout_margin">@dimen/activity_padding</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+    </style>
+    <!-- Стиль текстовых полей: обертка -->
+    <style name="Material.TextField" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/card_padding</item>
+    </style>
+    <!-- Стиль текстовых полей: поле ввода -->
+    <style name="Material.TextField.EditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">0dp</item>
     </style>
     <!-- Стиль кнопок: текст -->
     <style name="Material.TextButton" parent="Widget.MaterialComponents.Button.TextButton">

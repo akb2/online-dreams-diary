@@ -27,29 +27,23 @@
             <!-- Логин -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/loginGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/card_padding">
+                style="@style/Material.TextField">
                 <!-- Поле ввода -->
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/loginInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/Material.TextField.EditText"
                     android:hint="@string/activity_auth_login_label"
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
             <!-- Пароль -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/passwordGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/card_padding"
+                style="@style/Material.TextField"
                 app:endIconMode="password_toggle">
                 <!-- Поле ввода -->
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/passwordInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/Material.TextField.EditText"
                     android:hint="@string/activity_auth_password_label"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
