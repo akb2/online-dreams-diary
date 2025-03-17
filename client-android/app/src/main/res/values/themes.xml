@@ -27,6 +27,13 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:orientation">vertical</item>
     </style>
+    <!-- Главный блок: содержимое -->
+    <style name="DreamsDiary.MainLayoutContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
     <!-- Основной фон -->
     <style name="DreamsDiary.ContentLayout" parent="DreamsDiary.MainLayout">
         <item name="android:background">@color/background</item>
@@ -36,14 +43,12 @@
     <style name="DreamsDiary.ToolbarMenu">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:fitsSystemWindows">true</item>
     </style>
     <!-- Общий стиль для левого меню -->
     <style name="DreamsDiary.LeftMenu">
         <item name="android:layout_width">@dimen/left_menu_width</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_gravity">start</item>
-        <item name="android:fitsSystemWindows">true</item>
         <item name="android:topRightRadius">0dp</item>
         <item name="android:bottomRightRadius">0dp</item>
     </style>

@@ -18,8 +18,7 @@
         <!-- Контейнер для дочерних Activity -->
         <FrameLayout
             android:id="@+id/activityContainer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            style="@style/DreamsDiary.MainLayoutContent" />
     </LinearLayout>
     <!-- Боковое меню -->
     <com.google.android.material.navigation.NavigationView

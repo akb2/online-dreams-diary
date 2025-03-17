@@ -4,12 +4,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -48,20 +49,22 @@ open class BaseActivity : AppCompatActivity() {
 
     protected lateinit var baseActivityLayoutView: DrawerLayout
     private lateinit var mainLayoutView: LinearLayout
+    private lateinit var activityContainerView: FrameLayout
     protected lateinit var toolbarMenuView: ToolbarMenu
     private lateinit var activityLoaderView: LinearLayout
 
     private val isLeftMenuOpen
         get() = baseActivityLayoutView.isDrawerOpen(GravityCompat.START)
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_base)
 
         baseActivityLayoutView = findViewById(R.id.baseActivityLayout)
         mainLayoutView = findViewById(R.id.mainLayout)
+        activityContainerView = findViewById(R.id.activityContainer)
         toolbarMenuView = findViewById(R.id.toolbarMenu)
         activityLoaderView = findViewById(R.id.activityLoader)
 
@@ -80,9 +83,7 @@ open class BaseActivity : AppCompatActivity() {
      * Устанавливает разметку дочерней Activity
      */
     protected fun setActivityLayout(layoutResID: Int) {
-        val contentContainer = findViewById<FrameLayout>(R.id.activityContainer)
-
-        layoutInflater.inflate(layoutResID, contentContainer, true)
+        layoutInflater.inflate(layoutResID, activityContainerView, true)
     }
 
     /**
@@ -165,11 +166,48 @@ open class BaseActivity : AppCompatActivity() {
         if (showState) {
             mainLayoutView.visibility = View.GONE
             activityLoaderView.visibility = View.VISIBLE
+            setNavigationBarColor(true)
         }
         // Скрыть
         else {
             mainLayoutView.visibility = View.VISIBLE
             activityLoaderView.visibility = View.GONE
+            setNavigationBarColor(false)
+        }
+    }
+
+    /**
+     * Установить цвет нижней панели
+     */
+    @Suppress("DEPRECATION")
+    private fun setNavigationBarColor(lightIcons: Boolean) {
+        window.apply {
+            // Android 11+ (API 30+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val iconMode = if (lightIcons)
+                    0
+                else
+                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+
+                setStatusBarContrastEnforced(false)
+                setNavigationBarContrastEnforced(false)
+
+                insetsController?.setSystemBarsAppearance(
+                    iconMode,
+                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                )
+            }
+            // Android 8-10 (API 26-29)
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val flags = decorView.systemUiVisibility
+                val iconMode = if (lightIcons)
+                    flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                else
+                    flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+
+
+                decorView.systemUiVisibility = iconMode
+            }
         }
     }
 
