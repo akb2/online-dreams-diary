@@ -20,6 +20,7 @@ import ru.akb2.dreams_diary.datas.LoginMinSize
 import ru.akb2.dreams_diary.datas.PasswordMinSize
 import ru.akb2.dreams_diary.services.KeyboardService
 import ru.akb2.dreams_diary.services.SnackBarService
+import ru.akb2.dreams_diary.store.actions.ApplicationAction
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,7 +48,6 @@ class AuthActivity : BaseActivity() {
         // Шаблон
         setActivityLayout(R.layout.activity_auth)
         fillData()
-        setLoaderState(false)
         // Запуск событий
         loginInputKeyListener()
         passwordInputKeyListener()
@@ -68,7 +68,7 @@ class AuthActivity : BaseActivity() {
         toolbarMenuView.setTitle(R.string.activity_auth_title)
         toolbarMenuView.setSubTitle(R.string.app_name)
         toolbarMenuView.setIcon(R.drawable.round_key_48)
-        toolbarMenuView.setBackActivity(null)
+        applicationViewModel.dispatch(ApplicationAction.RemoveBackButtonActivity)
     }
 
 
@@ -131,7 +131,7 @@ class AuthActivity : BaseActivity() {
     private fun tryAuth() {
         lifecycleScope.launch {
             keyboardService.closeKeyboard(this@AuthActivity)
-            setLoaderState(true)
+            applicationViewModel.dispatch(ApplicationAction.EnableGlobalLoader)
             // Авторизация
             val authResult = authService.auth(login, password)
             // Успешная авторизация
@@ -141,7 +141,7 @@ class AuthActivity : BaseActivity() {
             }
             // Ошибка авторизации
             else {
-                setLoaderState(false)
+                applicationViewModel.dispatch(ApplicationAction.DisableGlobalLoader)
                 snackBarService.error(ApiCode.getResourceKey(authResult), baseActivityLayoutView)
             }
         }

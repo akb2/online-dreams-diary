@@ -32,9 +32,6 @@ class ToolbarMenu @JvmOverloads constructor(
 
     private var backActivityClass: Class<out Activity>? = null
 
-    val backActivity
-        get() = backActivityClass
-
     /**
      * Инициализация компонента
      */
@@ -50,7 +47,7 @@ class ToolbarMenu @JvmOverloads constructor(
         // Отрисовка базового слоя
         setContentInsetsRelative(0, 0)
         setContentInsetsAbsolute(0, 0)
-
+        // Базовый вид
         setTitle(R.string.app_name)
         setSubTitle("")
         setIcon(null)

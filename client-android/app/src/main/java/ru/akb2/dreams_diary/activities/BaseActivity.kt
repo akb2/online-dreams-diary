@@ -7,12 +7,15 @@ import android.view.View
 import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.akb2.dreams_diary.R
@@ -24,17 +27,13 @@ import ru.akb2.dreams_diary.datas.DefaultNotAuthActivity
 import ru.akb2.dreams_diary.services.AuthService
 import ru.akb2.dreams_diary.services.TokenService
 import ru.akb2.dreams_diary.services.UserService
+import ru.akb2.dreams_diary.store.actions.ApplicationAction
+import ru.akb2.dreams_diary.store.view_model.ApplicationViewModel
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
     open val authType = AuthType.ANYWAY
-
-    protected lateinit var baseActivityLayoutView: DrawerLayout
-    private lateinit var mainLayoutView: LinearLayout
-    protected lateinit var toolbarMenuView: ToolbarMenu
-    private lateinit var activityLoaderView: LinearLayout
 
     @Inject
     lateinit var userService: UserService
@@ -45,8 +44,14 @@ open class BaseActivity : AppCompatActivity() {
     @Inject
     lateinit var authService: AuthService
 
-    private val isLeftMenuAvail: Boolean
-        get() = toolbarMenuView.backActivity === null && activityLoaderView.visibility == View.VISIBLE
+    protected val applicationViewModel: ApplicationViewModel by viewModels()
+
+    private var isLeftMenuAvail = false
+
+    protected lateinit var baseActivityLayoutView: DrawerLayout
+    private lateinit var mainLayoutView: LinearLayout
+    protected lateinit var toolbarMenuView: ToolbarMenu
+    private lateinit var activityLoaderView: LinearLayout
 
     private val isLeftMenuOpen
         get() = baseActivityLayoutView.isDrawerOpen(GravityCompat.START)
@@ -62,7 +67,8 @@ open class BaseActivity : AppCompatActivity() {
         toolbarMenuView = findViewById(R.id.toolbarMenu)
         activityLoaderView = findViewById(R.id.activityLoader)
 
-        setLoaderState(true)
+        applicationViewModel.dispatch(ApplicationAction.EnableGlobalLoader)
+        applicationStoreListener()
     }
 
     override fun onStart() {
@@ -86,7 +92,7 @@ open class BaseActivity : AppCompatActivity() {
      * */
     private fun checkTokenValidity() {
         lifecycleScope.launch {
-            mainLayoutView.visibility = View.GONE
+            applicationViewModel.dispatch(ApplicationAction.EnableGlobalLoader)
             // Проверка авторизации
             val isAuthed = tokenService.isAuth()
             val isNeedToCheck = tokenService.isNeedToCheckToken()
@@ -109,7 +115,7 @@ open class BaseActivity : AppCompatActivity() {
             val isAnyWay = authType === AuthType.ANYWAY
             // Показать содержимое
             if (isAnyWay || isAuth || isNotAuth) {
-                mainLayoutView.visibility = View.VISIBLE
+                applicationViewModel.dispatch(ApplicationAction.DisableGlobalLoader)
             }
             // Редирект
             else {
@@ -146,9 +152,18 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     /**
+     * Открыть меню слева
+     */
+    private fun closeLeftMenu() {
+        if (isLeftMenuOpen) {
+            baseActivityLayoutView.closeDrawer(GravityCompat.START)
+        }
+    }
+
+    /**
      * Показать или скрыть лоадер
      * */
-    protected fun setLoaderState(showState: Boolean) {
+    private fun setLoaderState(showState: Boolean) {
         if (showState) {
             mainLayoutView.visibility = View.GONE
             activityLoaderView.visibility = View.VISIBLE
@@ -160,6 +175,23 @@ open class BaseActivity : AppCompatActivity() {
             activityLoaderView.visibility = View.GONE
             setNavigationBarColor(R.color.background, false)
         }
+    }
+
+    /**
+     * Заблокировать или разблокировать меню слева
+     */
+    private fun setLeftMenuAvailability(availableState: Boolean) {
+        val lockMode = if (availableState)
+            DrawerLayout.LOCK_MODE_UNLOCKED
+        else
+            DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+
+        if (!availableState) {
+            closeLeftMenu()
+        }
+
+        isLeftMenuAvail = availableState
+        baseActivityLayoutView.setDrawerLockMode(lockMode, GravityCompat.START)
     }
 
     /**
@@ -198,6 +230,30 @@ open class BaseActivity : AppCompatActivity() {
         // Android 6-7 (API 23-25), без изменения иконок, но можно задать цвет
         else {
             window.navigationBarColor = ContextCompat.getColor(this, color)
+        }
+    }
+
+    /**
+     * Прослушивание данных стора
+     */
+    private fun applicationStoreListener() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    applicationViewModel.state.collect { state ->
+                        // Лоадер
+                        setLoaderState(state.activityLoader)
+                        // Активность для кнопки назад
+                        toolbarMenuView.setBackActivity(state.backButtonActivity)
+                    }
+                }
+                // Доступность меню слева
+                launch {
+                    applicationViewModel.isLeftMenuAvailable.collect { isAvailable ->
+                        setLeftMenuAvailability(isAvailable)
+                    }
+                }
+            }
         }
     }
 }
