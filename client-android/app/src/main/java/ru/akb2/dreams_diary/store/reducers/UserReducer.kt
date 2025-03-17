@@ -25,6 +25,8 @@ class UserReducer @Inject constructor() {
             is UserAction.Error -> state.update {
                 it.copy(error = action.message, isLoading = false)
             }
+
+            else -> {}
         }
     }
 }

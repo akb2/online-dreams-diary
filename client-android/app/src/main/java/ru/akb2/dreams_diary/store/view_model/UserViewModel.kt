@@ -11,8 +11,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
-    private val reducer: UserReducer,
-    private val effects: UserEffects
+    private val reducer: UserReducer
 ) : ViewModel() {
     val state: StateFlow<UserState> = reducer.state
 
