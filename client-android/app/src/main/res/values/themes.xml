@@ -59,6 +59,7 @@
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@color/primary_500</item>
+        <item name="android:visibility">gone</item>
     </style>
     <!-- Лоадер: спинер -->
     <style name="DreamsDiary.ActivityLoader.Spinner">
