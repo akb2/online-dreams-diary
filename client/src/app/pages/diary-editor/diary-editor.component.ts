@@ -258,7 +258,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
         this.dream.mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
         this.dream.status = status;
         this.dream.date = AnyToDate(this.dreamForm.get("date")?.value);
-        this.dream.keywords = AnyToString(this.dreamForm.get("keywords")?.value);
+        this.dream.keywords = AnyToArray(this.dreamForm.get("keywords")?.value);
         this.dream.text = AnyToString(this.dreamForm.get("text")?.value);
         this.dream.map = this.mapEditor
           ? this.mapEditor.getMap
