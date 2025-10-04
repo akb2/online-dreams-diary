@@ -150,21 +150,6 @@ export const MathFloor = (value: number, afterDotNum: number = 0): number => {
 };
 
 /**
- * Округление до большего
- * @param {number} value Число требуещее округления
- * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.26
- * @returns {number} Округленное значение
- */
-export const MathCeil = (value: number, afterDotNum: number = 0): number => {
-  if (afterDotNum > 0) {
-    const sqrt: number = Math.pow(10, afterDotNum);
-    return Math.ceil((value * sqrt)) / sqrt;
-  }
-  // Округлить до целого
-  return Math.ceil(value);
-};
-
-/**
  * Случайное число
  * @param {number} min Минимальное число
  * @param {number} max Максимальное число

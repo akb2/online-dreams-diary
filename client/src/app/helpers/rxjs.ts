@@ -1,6 +1,7 @@
 import { CreateArray } from "@_datas/app";
+import { ceil } from "@akb2/math";
 import { Observable, concatMap, map, mergeMap, of, skipWhile, take, takeWhile, timer } from "rxjs";
-import { CheckInRange, MathCeil } from "./math";
+import { CheckInRange } from "./math";
 
 
 
@@ -15,7 +16,7 @@ export const WaitObservable = (callback: () => boolean, limit: number = Infinity
 
 // RXJS цикл
 export const TakeCycle = (limit: number, grouping: number = 1, delayTime: number = 1): Observable<number> => timer(delayTime, delayTime).pipe(
-  take(MathCeil(limit / grouping)),
+  take(ceil(limit / grouping)),
   mergeMap(n => {
     const before: number = n * grouping;
     const length: number = CheckInRange(grouping, limit - before);
