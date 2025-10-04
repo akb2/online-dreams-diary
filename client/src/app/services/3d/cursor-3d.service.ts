@@ -1,9 +1,10 @@
 import { DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
-import { CheckInRange, Cos, DetectDirectionByExpressions, MathFloor, Sin, SinCosToRad } from "@_helpers/math";
+import { CheckInRange, Cos, DetectDirectionByExpressions, Sin, SinCosToRad } from "@_helpers/math";
 import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto, DreamMap } from "@_models/dream-map";
+import { floor } from "@akb2/math";
 import { Injectable, OnDestroy } from "@angular/core";
 import { editor3DCursorSizeSelector, editor3DHoverCeilCoordsSelector } from "@app/reducers/viewer-3d";
 import { OctreeRaycaster } from "@brakebein/threeoctree";
@@ -134,7 +135,7 @@ export class Cursor3DService implements OnDestroy {
     if (this.lastSize !== size || this.lastHeight !== height) {
       const radius = this.getGeometryRadius(size);
       const circleLength = radius * 2 * Math.PI;
-      const radialSegments = MathFloor(circleLength / this.radialSigmentsDelimiter);
+      const radialSegments = floor(circleLength / this.radialSigmentsDelimiter);
       // Новая геометрия
       this.lastSize = size;
       this.lastHeight = height;

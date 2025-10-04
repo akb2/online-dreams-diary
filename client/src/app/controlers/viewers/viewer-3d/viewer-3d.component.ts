@@ -1,7 +1,7 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, MathFloor, ParseFloat, ParseInt } from "@_helpers/math";
+import { AverageSumm, CheckInRange, ParseFloat, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
@@ -15,7 +15,7 @@ import { Settings3DService } from "@_services/3d/settings-3d.service";
 import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
-import { round } from "@akb2/math";
+import { floor, round } from "@akb2/math";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
@@ -556,8 +556,8 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
         if (!!object) {
           const mapWidth = this.dreamMap?.size.width;
           const mapHeight = this.dreamMap?.size.height;
-          const tempX = MathFloor(object.point.x / this.settings3DService.ceilSize) + (mapWidth * this.settings3DService.ceilSize / 2);
-          const tempY = MathFloor(object.point.z / this.settings3DService.ceilSize) + (mapHeight * this.settings3DService.ceilSize / 2);
+          const tempX = floor(object.point.x / this.settings3DService.ceilSize) + (mapWidth * this.settings3DService.ceilSize / 2);
+          const tempY = floor(object.point.z / this.settings3DService.ceilSize) + (mapHeight * this.settings3DService.ceilSize / 2);
           // Координаты в рабочей области
           if (!this.ceil3dService.isBorderCeil(tempX, tempY)) {
             x = tempX;

@@ -1,7 +1,7 @@
 import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
-import { round } from "@akb2/math";
+import { floor, round } from "@akb2/math";
 import { ArrayForEach } from "./objects";
 
 
@@ -102,7 +102,7 @@ export const AngleByCoordsAndRadius = (x: number, y: number): number => AngleInR
  * */
 export const AngleInRange = (angle: number): number => {
   const maxAngle = 360;
-  const circles = MathFloor(angle / maxAngle);
+  const circles = floor(angle / maxAngle);
   const newAngle = angle - (circles * maxAngle);
   // Рассчет
   return newAngle < 0
@@ -133,21 +133,6 @@ export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: nu
   round((value / step), afterDotNum) * step,
   afterDotNum
 );
-
-/**
- * Округление до меньшего
- * @param {number} value Число требуещее округления
- * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.25
- * @returns {number} Округленное значение
- */
-export const MathFloor = (value: number, afterDotNum: number = 0): number => {
-  if (afterDotNum > 0) {
-    const sqrt: number = Math.pow(10, afterDotNum);
-    return Math.floor((value * sqrt)) / sqrt;
-  }
-  // Округлить до целого
-  return Math.floor(value);
-};
 
 /**
  * Случайное число

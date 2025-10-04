@@ -1,14 +1,14 @@
 import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
-import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, MathFloor, ParseInt } from "@_helpers/math";
+import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, ReliefType } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
-import { round } from "@akb2/math";
+import { floor, round } from "@akb2/math";
 import { Injectable } from "@angular/core";
 import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -76,8 +76,8 @@ export class Landscape3DService {
     const canvas = this.reliefCanvases[reliefType];
     const context = canvas.getContext("2d", { willReadFrequently: true });
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const scaledTextureX = MathFloor((textureX / width) * (canvas.width - 1));
-    const scaledTextureZ = MathFloor((textureZ / height) * (canvas.height - 1));
+    const scaledTextureX = floor((textureX / width) * (canvas.width - 1));
+    const scaledTextureZ = floor((textureZ / height) * (canvas.height - 1));
     const imageWidth = imageData.width;
     const imageHeight = imageData.height;
     // Вернуть цвет
