@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, IsMultiple, LineFunc, MathRound, Random, Sin } from "@_helpers/math";
+import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/math";
 import { MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -8,6 +8,7 @@ import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
+import { round } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "../_functions";
@@ -149,9 +150,9 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         const leafZRotate: number = Random(0, 180);
         // Применение параметров
         translate = {
-          x: MathRound((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
-          y: MathRound((branchEnd.y * scale) - (branchSizes.y * shiftSize), 6),
-          z: MathRound((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
+          x: round((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
+          y: round((branchEnd.y * scale) - (branchSizes.y * shiftSize), 6),
+          z: round((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
         };
         // Параметры
         const branchUpRotate: number = LineFunc(0, 90, translate.y, minY, maxY) + AngleToRad(Random(-5, 15));
@@ -241,9 +242,9 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const lodStep: number = Math.floor(k / lodItemPerStep);
       // Применение параметров
       translate = {
-        x: MathRound((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
-        y: MathRound((branchEnd.y * scale) - (branchSizes.y * shiftSize), 6),
-        z: MathRound((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
+        x: round((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
+        y: round((branchEnd.y * scale) - (branchSizes.y * shiftSize), 6),
+        z: round((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
       };
       // Применение параметров
       leafRotate = Random(0, 360);
@@ -335,8 +336,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const useTextureTreeKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       const useTextureLeafKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap"];
       // Параметры геометрии
-      const objWidth: number = MathRound(this.width * WidthPart, 4);
-      const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
+      const objWidth: number = round(this.width * WidthPart, 4);
+      const objHeight: number = round((this.height * DreamCeilSize) * HeightPart, 4);
       const leafWidth: number = objWidth * 2.5;
       const leafHeight: number = leafWidth * 2;
       const leafDiameter: number = (leafHeight * 2) * 1.2;
@@ -349,7 +350,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
       const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-branch.jpg", "tree", useTextureTreeKeys, texture => {
         const repeat: number = 1;
         // Настройки
-        texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
+        texture.repeat.set(repeat, round(repeat * (this.height / this.segmentsCount)));
       });
       const leafATextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-a.png", "tree", useTextureLeafKeys);
       const leafBTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("fir-leaf-b.png", "tree", ["displacementMap", ...useTextureLeafKeys]);

@@ -1,6 +1,6 @@
 import { MapObjectRaycastBoxData } from "@_models/dream-map-objects";
+import { round } from "@akb2/math";
 import { Box3, BufferAttribute, BufferGeometry, InstancedMesh, Matrix4 } from "three";
-import { MathRound } from "./math";
 import { ForCycle } from "./objects";
 
 
@@ -15,7 +15,7 @@ export const GetGeometryMaxX = (geometry: BufferGeometry): number => {
   const vertices = GetVerticesByGeometry(geometry);
   let maxX: number = -Infinity;
   // Найдите максимальное значение X
-  ForCycle(MathRound(vertices.length / 3), index => maxX = vertices[index * 3] > maxX ? vertices[index * 3] : maxX, true);
+  ForCycle(round(vertices.length / 3), index => maxX = vertices[index * 3] > maxX ? vertices[index * 3] : maxX, true);
   // Вернуть высоту
   return maxX;
 };
@@ -25,7 +25,7 @@ export const GetGeometryMinX = (geometry: BufferGeometry): number => {
   const vertices = GetVerticesByGeometry(geometry);
   let minX: number = Infinity;
   // Найдите максимальное значение X
-  ForCycle(MathRound(vertices.length / 3), index => minX = vertices[index * 3] < minX ? vertices[index * 3] : minX, true);
+  ForCycle(round(vertices.length / 3), index => minX = vertices[index * 3] < minX ? vertices[index * 3] : minX, true);
   // Вернуть высоту
   return minX;
 };
@@ -35,7 +35,7 @@ export const GetGeometryMaxY = (geometry: BufferGeometry): number => {
   const vertices = GetVerticesByGeometry(geometry);
   let maxY: number = -Infinity;
   // Найдите максимальное значение Y
-  ForCycle(MathRound(vertices.length / 3), index => maxY = vertices[(index * 3) + 1] > maxY ? vertices[(index * 3) + 1] : maxY, true);
+  ForCycle(round(vertices.length / 3), index => maxY = vertices[(index * 3) + 1] > maxY ? vertices[(index * 3) + 1] : maxY, true);
   // Вернуть высоту
   return maxY;
 };
@@ -45,7 +45,7 @@ export const GetGeometryMinY = (geometry: BufferGeometry): number => {
   const vertices = GetVerticesByGeometry(geometry);
   let minY: number = Infinity;
   // Найдите максимальное значение Y
-  ForCycle(MathRound(vertices.length / 3), index => minY = vertices[(index * 3) + 1] < minY ? vertices[(index * 3) + 1] : minY, true);
+  ForCycle(round(vertices.length / 3), index => minY = vertices[(index * 3) + 1] < minY ? vertices[(index * 3) + 1] : minY, true);
   // Вернуть высоту
   return minY;
 };
@@ -55,7 +55,7 @@ export const GetGeometryMaxZ = (geometry: BufferGeometry): number => {
   const vertices: ArrayLike<number> = (geometry.getAttribute("position") as BufferAttribute).array;
   let maxZ: number = -Infinity;
   // Найдите максимальное значение Z
-  ForCycle(MathRound(vertices.length / 3), index => maxZ = vertices[(index * 3) + 2] > maxZ ? vertices[(index * 3) + 2] : maxZ, true);
+  ForCycle(round(vertices.length / 3), index => maxZ = vertices[(index * 3) + 2] > maxZ ? vertices[(index * 3) + 2] : maxZ, true);
   // Вернуть высоту
   return maxZ;
 };
@@ -65,7 +65,7 @@ export const GetGeometryMinZ = (geometry: BufferGeometry): number => {
   const vertices = GetVerticesByGeometry(geometry);
   let minZ: number = Infinity;
   // Найдите максимальное значение Z
-  ForCycle(MathRound(vertices.length / 3), index => minZ = vertices[(index * 3) + 2] < minZ ? vertices[(index * 3) + 2] : minZ, true);
+  ForCycle(round(vertices.length / 3), index => minZ = vertices[(index * 3) + 2] < minZ ? vertices[(index * 3) + 2] : minZ, true);
   // Вернуть высоту
   return minZ;
 };

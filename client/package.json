@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve --open",
     "start:docker": "ng serve --poll=2000 --host 0.0.0.0 --disable-host-check",
-    "start:docker:ssl":"npm run start:docker -- --ssl true --ssl-key /etc/ssl/private/localhost.key --ssl-cert /etc/ssl/certs/localhost.crt",
+    "start:docker:ssl": "npm run start:docker -- --ssl true --ssl-key /etc/ssl/private/localhost.key --ssl-cert /etc/ssl/certs/localhost.crt",
     "build": "ng build --configuration=production --aot --build-optimizer",
     "cypress-build": "ng build --configuration=cypress",
     "bundle-stats": "npm run build --stats-json && webpack-bundle-analyzer ../app/stats.json",
@@ -48,6 +48,7 @@
     "zone.js": "^0.13.0"
   },
   "devDependencies": {
+    "@akb2/math": "^1.0.0",
     "@angular-devkit/build-angular": "^15.1.2",
     "@angular-devkit/build-optimizer": "^0.1302.1",
     "@angular/cli": "^15.1.2",

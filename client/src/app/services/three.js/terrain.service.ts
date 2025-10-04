@@ -3,13 +3,14 @@ import { MapTerrains, ReliefTexturePath, TerrainTexturePath, TexturePaths } from
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
 import { MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
-import { AngleToRad, CheckInRange, MathRound } from "@_helpers/math";
+import { AngleToRad, CheckInRange } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, ReliefType, XYCoord } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
+import { round } from "@akb2/math";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
 import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
@@ -139,8 +140,8 @@ export class DreamMapTerrainService implements OnDestroy {
     const borderOSize = this.outsideMapSize * Math.max(oWidth, oHeight);
     const width = oWidth + (borderOSize * 2);
     const height = oHeight + (borderOSize * 2);
-    const repeatX = MathRound(TerrainRepeat * width);
-    const repeatY = MathRound(TerrainRepeat * height);
+    const repeatX = round(TerrainRepeat * width);
+    const repeatY = round(TerrainRepeat * height);
     const colorTextures: DataTexture[] = this.createMaterials();
     const fragmentShader = TerrainFragmentShader;
     const vertexShader = TerrainVertexShader;
@@ -258,8 +259,8 @@ export class DreamMapTerrainService implements OnDestroy {
       // Цикл по размеру
       CreateArray(size).forEach(s => {
         const stride = s * 4;
-        const realX = MathRound((s - (Math.floor(s / width) * width)), 2);
-        const realY = MathRound(height - 1 - Math.floor(s / width), 2);
+        const realX = round((s - (Math.floor(s / width) * width)), 2);
+        const realY = round(height - 1 - Math.floor(s / width), 2);
         const x = Math.floor(realX);
         const y = Math.ceil(realY);
         const terrain: MapTerrain = this.getTerrain(x, y);
@@ -386,12 +387,12 @@ export class DreamMapTerrainService implements OnDestroy {
           const index = ((textureY * width) + textureX) * 4;
           // Не перезаписывать
           if (!rewrite) {
-            const color = MathRound(this.correctColor((ceil.coord.z * 255) / DreamMaxHeight), 5);
+            const color = round(this.correctColor((ceil.coord.z * 255) / DreamMaxHeight), 5);
             ForCycle(3, k => mapData[index + k] = color, true);
           }
           // Перезаписать высоты
           else {
-            let color = MathRound(this.correctColor((z * 255) / DreamMaxHeight), 5);
+            let color = round(this.correctColor((z * 255) / DreamMaxHeight), 5);
             const topY = y < reliefDatas.top.correctSize.bottom ? reliefDatas.top.size.height - reliefDatas.top.correctSize.bottom + y : -1;
             const rightX = (oWidth - 1) - x < reliefDatas.right.correctSize.left ? (oWidth - 1) - x : -1;
             const leftX = x < reliefDatas.left.correctSize.right ? reliefDatas.left.size.width - reliefDatas.left.correctSize.right + x : -1;
@@ -435,7 +436,7 @@ export class DreamMapTerrainService implements OnDestroy {
             });
             // Записать значения в общий массив
             ForCycle(3, k => mapData[index + k] = color, true)
-            ceil.coord.z = MathRound((color * DreamMaxHeight) / 255, 5);
+            ceil.coord.z = round((color * DreamMaxHeight) / 255, 5);
             ceil.coord.originalZ = ceil.coord.z;
             // Запомнить значения
             if (!ArraySome(this.dreamMap.ceils, ({ coord: { x: cX, y: cY } }) => cX === x && cY === y)) {

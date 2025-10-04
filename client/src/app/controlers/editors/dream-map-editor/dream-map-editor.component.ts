@@ -4,13 +4,14 @@ import { ArrayRandom, CreateArray } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { IsMultiple, LengthByCoords, MathRound, ParseInt } from "@_helpers/math";
+import { IsMultiple, LengthByCoords, ParseInt } from "@_helpers/math";
 import { CustomObjectKey, IconType, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSector, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
 import { SliderSettings } from "@_models/form";
 import { ImageExtension } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
+import { round } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
@@ -171,7 +172,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     key = key < this.timeSettings.min ? this.timeSettings.min : key;
     // В процентах
     if (asPercent) {
-      value = MathRound(key / (this.timeSettings.max - 1) * 100).toString();
+      value = round(key / (this.timeSettings.max - 1) * 100).toString();
     }
     // В формате 24 часов
     else {
@@ -591,7 +592,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
         const currentZ: number = ceil.coord.z;
         const currentRadius: number = LengthByCoords({ x: cX, y: cY });
         let corrDirection: HeightDirection = 0;
-        let zChange: number = MathRound(this.terrainChangeStep * ((size - currentRadius) / size));
+        let zChange: number = round(this.terrainChangeStep * ((size - currentRadius) / size));
         // Изменение высоты: выравнивание
         if (direction === 0) {
           corrDirection = currentZ < z ? 1 : currentZ > z ? -1 : 0;

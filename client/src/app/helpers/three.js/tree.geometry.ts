@@ -1,6 +1,7 @@
 import { CreateArray } from "@_datas/app";
-import { MathRound, Random } from "@_helpers/math";
+import { Random } from "@_helpers/math";
 import { MultiArray } from "@_models/app";
+import { round } from "@akb2/math";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -45,9 +46,9 @@ export class TreeGeometry extends BufferGeometry {
         ...node.segments
           .map(({ vertices }) => vertices)
           .map(vertices => {
-            const x: number = MathRound(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
-            const y: number = MathRound(vertices.map(({ y }) => y).reduce((o, y) => o + y, 0) / vertices.length, 5);
-            const z: number = MathRound(vertices.map(({ z }) => z).reduce((o, z) => o + z, 0) / vertices.length, 5);
+            const x: number = round(vertices.map(({ x }) => x).reduce((o, x) => o + x, 0) / vertices.length, 5);
+            const y: number = round(vertices.map(({ y }) => y).reduce((o, y) => o + y, 0) / vertices.length, 5);
+            const z: number = round(vertices.map(({ z }) => z).reduce((o, z) => o + z, 0) / vertices.length, 5);
             return new Vector3(x, y, z);
           }),
         ...node.children.map(n => search(n)).reduce((o, v) => ([...o, ...v]), [])

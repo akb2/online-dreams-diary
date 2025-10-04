@@ -1,6 +1,6 @@
-import { MathRound } from "@_helpers/math";
 import { UniversalVector3, XYCoord } from "@_models/dream-map";
 import { OnBeforeCompileCallback, ThreeUniform, ThreeUniformType } from "@_models/three.js/base";
+import { round } from "@akb2/math";
 import { Color, Material, Shader, Texture, Vector3, WebGLRenderer } from "three";
 
 
@@ -26,7 +26,7 @@ export const AddMaterialBeforeCompile = (material: Material, callback: OnBeforeC
 export const ThreeFloatUniform = (value: number): ThreeUniform<number> => ({ value, type: ThreeUniformType.float });
 
 // Создание числовой униформы
-export const ThreeIntUniform = (value: number): ThreeUniform<number> => ({ value: MathRound(value), type: ThreeUniformType.int });
+export const ThreeIntUniform = (value: number): ThreeUniform<number> => ({ value: round(value), type: ThreeUniformType.int });
 
 // Создание векторной (2) униформы
 export const ThreeVector2Uniform = (...[x, y]: number[]): ThreeUniform<XYCoord> => {

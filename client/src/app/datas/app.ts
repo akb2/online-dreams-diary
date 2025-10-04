@@ -1,5 +1,6 @@
-import { MathRound, Random } from "@_helpers/math";
+import { Random } from "@_helpers/math";
 import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
+import { round } from "@akb2/math";
 import { MatDialogConfig } from "@angular/material/dialog";
 
 
@@ -108,7 +109,7 @@ export const ConvertFileSize = (size: number, translatedStrings?: string[]) => {
     key++;
   }
   // Преобразование неудалось
-  return MathRound(size) + " " + strings[key];
+  return round(size) + " " + strings[key];
 }
 
 // Случайный элемент массива

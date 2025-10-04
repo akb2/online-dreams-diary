@@ -1,5 +1,6 @@
 import { CreateArray } from "@_datas/app";
-import { MathRound, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
+import { round } from "@akb2/math";
 import { Pipe, PipeTransform } from "@angular/core";
 
 
@@ -35,7 +36,7 @@ export class ShortCounterPipe implements PipeTransform {
       const maxValue: number = Math.pow(this.groupNumber, step);
       // Найден разряд
       if (digit >= minValue && digit < maxValue) {
-        result = MathRound(digit / minValue, 1) + this.units[key];
+        result = round(digit / minValue, 1) + this.units[key];
       }
     });
     // Разряд не найден

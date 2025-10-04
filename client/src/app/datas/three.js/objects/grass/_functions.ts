@@ -1,6 +1,7 @@
 import { DreamCeilSize } from "@_datas/dream-map-settings";
-import { MathRound, Random, TriangleSquare } from "@_helpers/math";
+import { Random, TriangleSquare } from "@_helpers/math";
 import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
+import { round } from "@akb2/math";
 import { GetDreamMapObjectByID } from "../_functions";
 import { ClosestKeysAll } from "../_models";
 import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, RandomFactor, TrianglesCoords } from "./_models";
@@ -115,7 +116,7 @@ export const CheckCeilTriangleForm = (cX: number, cY: number, oX: number, oY: nu
   const triangle: XYCoord[] = TrianglesCoords[angle];
   // Проверка внутри треугольника
   if (!!triangle) {
-    const traingleSquare: number = MathRound(TriangleSquare(triangle), 5);
+    const traingleSquare: number = round(TriangleSquare(triangle), 5);
     const x: number = oX - cX;
     const y: number = oY - cY;
     const checkCoord: XYCoord = { x, y };
@@ -124,7 +125,7 @@ export const CheckCeilTriangleForm = (cX: number, cY: number, oX: number, oY: nu
       [triangle[0], checkCoord, triangle[2]],
       [triangle[0], triangle[1], checkCoord],
     ];
-    const checkSquaries: number = MathRound(checkCoords.map(c => TriangleSquare(c)).reduce((s, o) => s + o, 0), 5);
+    const checkSquaries: number = round(checkCoords.map(c => TriangleSquare(c)).reduce((s, o) => s + o, 0), 5);
     // Вписывается
     return traingleSquare === checkSquaries;
   }

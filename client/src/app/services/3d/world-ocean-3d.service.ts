@@ -1,12 +1,13 @@
 import { TexturePaths, WorldOceanTexturePath } from "@_datas/dream-map";
 import { DreamMapOceanName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, WorldOceanDefines, WorldOceanFragmentShader, WorldOceanRepeat, WorldOceanUniforms, WorldOceanVertexShader } from "@_datas/three.js/shaders/ocean.shader";
-import { AngleToRad, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
+import { AngleToRad, ParseFloat, ParseInt } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, MapSize } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
+import { round } from "@akb2/math";
 import { Injectable } from "@angular/core";
 import { DataTexture, DoubleSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RepeatWrapping, RGBAFormat, ShaderMaterial, Texture, UniformsUtils, Vector3, WebGLRenderer } from "three";
 import { Engine3DService } from "./engine-3d.service";
@@ -103,8 +104,8 @@ export class WorldOcean3DService {
    */
   private createMaterial() {
     const { width, height } = this.getDisplacementData();
-    const repeatX: number = MathRound(WorldOceanRepeat * width);
-    const repeatY: number = MathRound(WorldOceanRepeat * height);
+    const repeatX: number = round(WorldOceanRepeat * width);
+    const repeatY: number = round(WorldOceanRepeat * height);
     const fogNear = this.settings3DService.fogNear;
     const fogFar = this.settings3DService.fogFar;
     const textures: CustomObject<Texture | DataTexture> = Object.entries(this.textureKeys).reduce((o, [type, name]) => ({ ...o, [name]: this.mapTextures[type] }), {});

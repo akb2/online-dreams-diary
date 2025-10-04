@@ -1,18 +1,19 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, CheckInRange, Cos, MathRound, Random, Sin } from "@_helpers/math";
+import { AngleToRad, CheckInRange, Cos, Random, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
+import { round } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { ColorRange, CreateTerrainTrianglesObject, DefaultMatrix, GetHeightByTerrainObject } from "../_models";
 import { DreamTreeElmsCount, HeightPart, TreeCounts, WidthPart } from "./_models";
-import { Uniforms } from "@_models/three.js/base";
 
 
 
@@ -186,7 +187,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
       const generations: number = Random(this.minGeneration, this.maxGeneration);
-      const heightSegments: number = CheckInRange(MathRound(this.segmentsCount / generations), Infinity, 1);
+      const heightSegments: number = CheckInRange(round(this.segmentsCount / generations), Infinity, 1);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {
@@ -212,8 +213,8 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
       const useTextureTreeKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "normalMap"];
       const useTextureLeafKeys: (keyof MeshPhongMaterial)[] = ["map", "aoMap", "lightMap", "displacementMap"];
       // Параметры геометрии
-      const objWidth: number = MathRound(this.width * WidthPart, 4);
-      const objHeight: number = MathRound((this.height * DreamCeilSize) * HeightPart, 4);
+      const objWidth: number = round(this.width * WidthPart, 4);
+      const objHeight: number = round((this.height * DreamCeilSize) * HeightPart, 4);
       const leafSize: number = objWidth * 15;
       // Данные фигуры
       const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
@@ -221,7 +222,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
       const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureTreeKeys, texture => {
         const repeat: number = 2;
         // Настройки
-        texture.repeat.set(repeat, MathRound(repeat * (this.height / this.segmentsCount)));
+        texture.repeat.set(repeat, round(repeat * (this.height / this.segmentsCount)));
       });
       const leafTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("oak-leaf.png", "tree", useTextureLeafKeys);
       const treeMaterial: MeshPhongMaterial = new MeshPhongMaterial({

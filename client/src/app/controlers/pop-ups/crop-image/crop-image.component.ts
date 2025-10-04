@@ -1,9 +1,10 @@
 import { AppMatDialogConfig } from "@_datas/app";
-import { CheckInRange, MathRound } from "@_helpers/math";
+import { CheckInRange } from "@_helpers/math";
 import { UserAvatarCropDataElement } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { ScreenKeys, ScrollAddDimension } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
+import { round } from "@akb2/math";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Subject, forkJoin, fromEvent, mergeMap, skipWhile, takeUntil, takeWhile, tap, timer } from "rxjs";
@@ -266,10 +267,10 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
   private cropCoordsToSizes(): void {
     if (!!this.position) {
       this.data.coords = {
-        startX: MathRound(this.position.x1),
-        startY: MathRound(this.position.y1),
-        width: MathRound(this.position.x2 - this.position.x1),
-        height: MathRound(this.position.y2 - this.position.y1)
+        startX: round(this.position.x1),
+        startY: round(this.position.y1),
+        width: round(this.position.x2 - this.position.x1),
+        height: round(this.position.y2 - this.position.y1)
       };
       // Обновить
       this.changeDetectorRef.detectChanges();

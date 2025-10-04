@@ -1,7 +1,8 @@
-import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRound, MathRoundByStep, Sin } from "@_helpers/math";
+import { AngleByCoordsAndRadius, AngleInRange, CheckInRange, Cos, LineFunc, MathRoundByStep, Sin } from "@_helpers/math";
 import { CircleParamSetting } from "@_helpers/special-inputs-param-settings";
 import { NumberDirection } from "@_models/math";
 import { CssProperties } from "@_models/nav-menu";
+import { round } from "@akb2/math";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
 import { editor3DSetSkyTimeAction, editor3DSkyTimeSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
@@ -96,8 +97,8 @@ export class Editor3DTimeComponent {
         : 0;
       const positionX = CheckInRange(mouseX - containerLeft - containerWidth, containerWidth, -containerWidth);
       const positionY = CheckInRange(mouseY - containerTop - containerHeight, containerHeight, -containerHeight);
-      const sin = MathRound(positionX / containerWidth, 5);
-      const cos = MathRound(positionY / containerHeight, 5);
+      const sin = round(positionX / containerWidth, 5);
+      const cos = round(positionY / containerHeight, 5);
       const skyTime = MathRoundByStep(AngleInRange(AngleByCoordsAndRadius(sin, -cos) + (180 * multiplier) + 90), this.skyTimeControl.step);
       // Обновить время
       this.store$.dispatch(editor3DSetSkyTimeAction({ skyTime }));

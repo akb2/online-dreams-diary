@@ -1,5 +1,5 @@
 import { CustomObject } from "@_models/app";
-import { MathRound } from "@_helpers/math";
+import { round } from "@akb2/math";
 import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
 
 
@@ -40,8 +40,8 @@ export class TriangleGeometry extends BufferGeometry {
     // ? a: Координаты угла: нижний левый
     // ? b: Координаты угла: нижний правый
     // ? c: Координаты угла: верхний
-    const cX: number = MathRound((Math.pow(sideA, 2) + Math.pow(sideB, 2) - Math.pow(sideC, 2)) / (2 * sideB), 10);
-    const cY: number = MathRound(Math.sqrt((sideC * sideC) - (cX * cX)), 10);
+    const cX: number = round((Math.pow(sideA, 2) + Math.pow(sideB, 2) - Math.pow(sideC, 2)) / (2 * sideB), 10);
+    const cY: number = round(Math.sqrt((sideC * sideC) - (cX * cX)), 10);
     const a: Vector3 = new Vector3(-sideB / 2, 0, 0);
     const b: Vector3 = new Vector3(sideB / 2, 0, 0);
     const c: Vector3 = new Vector3(cX - (sideB / 2), cY, 0);

@@ -1,6 +1,7 @@
 import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
+import { round } from "@akb2/math";
 import { ArrayForEach } from "./objects";
 
 
@@ -24,7 +25,7 @@ export const ParseFloat = (value: any, defaultValue: number = 0, afterDotNum: nu
     ? defaultValue
     : num;
   // Вернуть число
-  return MathRound(num, afterDotNum);
+  return round(num, afterDotNum);
 };
 
 // Проверить число в пределах и вернуть новое значение
@@ -113,40 +114,25 @@ export const AngleInRange = (angle: number): number => {
  * Получить синус угла
  * @param {number} angle Угол в диапазоне [0; 360]
  * */
-export const Sin = (angle: number): number => MathRound(Math.sin(AngleToRad(angle)), 10);
+export const Sin = (angle: number): number => round(Math.sin(AngleToRad(angle)), 10);
 
 /**
  * Получить косинус угла
  * @param {number} angle Угол в диапазоне [0; 360]
  * */
-export const Cos = (angle: number): number => MathRound(Math.cos(AngleToRad(angle)), 10);
+export const Cos = (angle: number): number => round(Math.cos(AngleToRad(angle)), 10);
 
 // Тангенс угла
-export const Tan: (angle: number) => number = (angle: number) => MathRound(Math.tan(AngleToRad(angle)), 10);
+export const Tan: (angle: number) => number = (angle: number) => round(Math.tan(AngleToRad(angle)), 10);
 
 // Катангенс угла
-export const Ctg: (angle: number) => number = (angle: number) => MathRound(1 / Math.tan(AngleToRad(angle)), 10);
+export const Ctg: (angle: number) => number = (angle: number) => round(1 / Math.tan(AngleToRad(angle)), 10);
 
 // Округление по шагу
-export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: number = 0): number => MathRound(
-  MathRound((value / step), afterDotNum) * step,
+export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: number = 0): number => round(
+  round((value / step), afterDotNum) * step,
   afterDotNum
 );
-
-/**
- * Округление после запятой
- * @param {number} value Число требуещее округления
- * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [value:10.256; afterDotNum:2] => 10.26
- * @returns {number} Округленное значение
- */
-export const MathRound = (value: number, afterDotNum: number = 0): number => {
-  if (afterDotNum > 0) {
-    const sqrt: number = Math.pow(10, afterDotNum);
-    return Math.round((value * sqrt)) / sqrt;
-  }
-  // Округлить до целого
-  return Math.round(value);
-};
 
 /**
  * Округление до меньшего
@@ -192,7 +178,7 @@ export const Random = (min: number, max: number, noBorder: boolean = false, afte
   min = min + border;
   max = max - border;
   // Вернуть случайное число
-  return MathRound(Math.random() * (max - min) + min, afterDotNum);
+  return round(Math.random() * (max - min) + min, afterDotNum);
 };
 
 // Подготовка массива для среднего арифметического
@@ -211,7 +197,7 @@ const AverageFunc = (
   const size = ParseInt(values?.length);
   // Получены параметры
   if (size > 0) {
-    return MathRound(resultCallback(values.reduce((o, v) => MathRound(callback(o, v), 10), startValue), size), 10);
+    return round(resultCallback(values.reduce((o, v) => round(callback(o, v), 10), startValue), size), 10);
   }
   // Неудалось найти общее число
   return NaN;

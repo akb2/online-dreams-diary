@@ -1,6 +1,7 @@
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { CheckInRange, MathRound, ParseFloat, ParseInt } from "@_helpers/math";
+import { CheckInRange, ParseFloat, ParseInt } from "@_helpers/math";
 import { OptionData } from "@_models/form";
+import { round } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
@@ -79,7 +80,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
     // Вернуть подпись
     return this.isAnOptionDataList
       ? (this.optionData?.[tempValue]?.title ?? "")
-      : MathRound(tempValue, afterDotNum).toFixed(afterDotNum);
+      : round(tempValue, afterDotNum).toFixed(afterDotNum);
   }
 
 

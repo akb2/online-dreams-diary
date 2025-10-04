@@ -1,10 +1,11 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { PerlinNoiseGenerator } from "@_datas/three.js/helpers/perlin-noise-generator";
-import { Average, AverageGeometric, AverageHarmonic, AverageMax, AverageMedian, AverageMin, AverageMode, AverageMultiply, AveragePower, AverageQuadratic, CheckInRange, LineFunc, MathRound, ParseInt } from "@_helpers/math";
+import { Average, AverageGeometric, AverageHarmonic, AverageMax, AverageMedian, AverageMin, AverageMode, AverageMultiply, AveragePower, AverageQuadratic, CheckInRange, LineFunc, ParseInt } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { TakeCycle } from "@_helpers/rxjs";
 import { OptionData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
+import { round } from "@akb2/math";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Subject, map, takeUntil, tap } from "rxjs";
@@ -50,7 +51,7 @@ export class PerlinNoiseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Получить HEX цвет
   private getHexColor(value: number): string {
-    const preColor = CheckInRange(MathRound(value, 0), this.colorRange[1], this.colorRange[0]).toString(16).padStart(2, "0");
+    const preColor = CheckInRange(round(value, 0), this.colorRange[1], this.colorRange[0]).toString(16).padStart(2, "0");
     // Вернуть цвет
     return "#" + preColor + preColor + preColor;
   }
