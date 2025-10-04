@@ -134,23 +134,6 @@ export const MathRoundByStep = (value: number, step: number = 1, afterDotNum: nu
   afterDotNum
 );
 
-/**
- * Случайное число
- * @param {number} min Минимальное число
- * @param {number} max Максимальное число
- * @param {number} [noBorder=false] TRUE, чтобы не включать значения min и max в результат
- * @param {number} [afterDotNum=0] Количество десятичных знаков, например: [afterDotNum:2] => 10.26
- * @returns Новое случайное число
- */
-export const Random = (min: number, max: number, noBorder: boolean = false, afterDotNum: number = 0) => {
-  const border: number = noBorder ? 1 / Math.pow(10, afterDotNum) : 0;
-  // Параметры
-  min = min + border;
-  max = max - border;
-  // Вернуть случайное число
-  return round(Math.random() * (max - min) + min, afterDotNum);
-};
-
 // Подготовка массива для среднего арифметического
 const AverageArrayPrepare = (mixedValues: number[] | number[][]): number[] => typeof mixedValues?.[0] === "number"
   ? mixedValues as number[]

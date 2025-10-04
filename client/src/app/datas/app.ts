@@ -1,6 +1,5 @@
-import { Random } from "@_helpers/math";
 import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
-import { round } from "@akb2/math";
+import { random, round } from "@akb2/math";
 import { MatDialogConfig } from "@angular/material/dialog";
 
 
@@ -114,7 +113,7 @@ export const ConvertFileSize = (size: number, translatedStrings?: string[]) => {
 
 // Случайный элемент массива
 export const ArrayRandom: <T>(data: T[]) => T = function <T>(data: T[]) {
-  return data[Random(0, data.length - 1, false, 0)];
+  return data[random(0, data.length - 1, false, 0)];
 };
 
 // Преобразовать в массив

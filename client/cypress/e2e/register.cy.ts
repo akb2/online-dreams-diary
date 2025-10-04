@@ -1,5 +1,5 @@
+import { random } from "@akb2/math";
 import { elmExists, elmNotExists, getElm } from "cypress/models/form";
-import { Random } from "cypress/models/math";
 
 
 
@@ -12,8 +12,8 @@ const testSite: string = "https://test.dreams-diary.ru";
 
 
 describe("Регистрация", () => {
-  const password: string = "password-" + Random(100000000, 999999999);
-  const birthDate: string = Random(1, 28) + "-" + Random(1, 12) + "-" + Random(1950, 2004);
+  const password: string = "password-" + random(100000000, 999999999);
+  const birthDate: string = random(1, 28) + "-" + random(1, 12) + "-" + random(1950, 2004);
 
 
 
@@ -67,7 +67,7 @@ describe("Регистрация", () => {
 
 
   it("Регистрация: мужчина", () => {
-    const login: string = "user-test-" + Random(100000000, 999999999);
+    const login: string = "user-test-" + random(100000000, 999999999);
     // Заполнение форм
     openForm();
     fillStep1(login);
@@ -77,7 +77,7 @@ describe("Регистрация", () => {
   });
 
   it("Регистрация: женщина", () => {
-    const login: string = "user-test-" + Random(100000000, 999999999);
+    const login: string = "user-test-" + random(100000000, 999999999);
     // Заполнение форм
     openForm();
     fillStep1(login);
@@ -87,7 +87,7 @@ describe("Регистрация", () => {
   });
 
   it("Регистрация: существующий логин", () => {
-    const login: string = "user-test-" + Random(100000000, 999999999);
+    const login: string = "user-test-" + random(100000000, 999999999);
     // Заполнение форм
     openForm();
     fillStep1("akb2");
@@ -97,7 +97,7 @@ describe("Регистрация", () => {
   });
 
   it("Регистрация: существующая почта", () => {
-    const login: string = "user-test-" + Random(100000000, 999999999);
+    const login: string = "user-test-" + random(100000000, 999999999);
     // Заполнение форм
     openForm();
     fillStep1(login);

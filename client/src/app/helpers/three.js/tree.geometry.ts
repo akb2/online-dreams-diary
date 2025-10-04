@@ -1,7 +1,6 @@
 import { CreateArray } from "@_datas/app";
-import { Random } from "@_helpers/math";
 import { MultiArray } from "@_models/app";
-import { round } from "@akb2/math";
+import { random, round } from "@akb2/math";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -327,8 +326,8 @@ class TreeSpawner {
   // Генерация дерева
   spawn(branch: TreeBranch, extension: boolean = false): TreeBranch {
     const htheta: number = this.theta * 0.5;
-    const x: number = Random(0, 1, false, 5) * this.theta - htheta;
-    const z: number = Random(0, 1, false, 5) * this.theta - htheta;
+    const x: number = random(0, 1, false, 5) * this.theta - htheta;
+    const z: number = random(0, 1, false, 5) * this.theta - htheta;
     const len: number = branch.length * this.attenuation;
     const rot: Matrix4 = new Matrix4();
     const euler: Euler = new Euler(x, 0, z);

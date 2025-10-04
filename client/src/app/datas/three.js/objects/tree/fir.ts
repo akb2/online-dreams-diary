@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/math";
+import { AngleToRad, Cos, IsMultiple, LineFunc, Sin } from "@_helpers/math";
 import { MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -8,7 +8,7 @@ import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { round } from "@akb2/math";
+import { random, round } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, Euler, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetNormalizeVector, GetRandomColorByRange, GetRotateFromNormal, GetTextures, RotateCoordsByY, UpdateHeight } from "../_functions";
@@ -55,12 +55,12 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
   getObject(): MapObject[] {
     const { terrainGeometry, qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY }: Params = this.getParams;
     const params: GetHeightByTerrainObject = { terrainGeometry, qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY };
-    const geometryIndex: number = Random(0, this.treeCount - 1, false, 0);
+    const geometryIndex: number = random(0, this.treeCount - 1, false, 0);
     const centerX: number = DreamCeilSize / 2;
-    const scale: number = Random(0.8, 1, false, 3);
-    const rotate: number = Random(0, 360, false, 0);
-    const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
-    const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
+    const scale: number = random(0.8, 1, false, 3);
+    const rotate: number = random(0, 360, false, 0);
+    const lX: number = centerX + random(-this.posRange, this.posRange, true, 5);
+    const lY: number = centerX + random(-this.posRange, this.posRange, true, 5);
     const x: number = cX + lX;
     const y: number = cY + lY;
     // Координата Z
@@ -137,7 +137,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = MapCycle(this.leafACount, k => {
       isEven = IsMultiple(k, this.leafBranchCount);
-      branchIndex = isEven ? Random(0, branchEnds.length - 1) : branchIndex;
+      branchIndex = isEven ? random(0, branchEnds.length - 1) : branchIndex;
       const dummy: Object3D = new Object3D();
       const branchEnd: Vector3 = branchEnds[branchIndex].clone();
       const lodStep: number = Math.floor(k / lodItemPerStep);
@@ -146,8 +146,8 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         const beforePoint: Vector3 = branchIndex > 0 ? branchEnds[branchIndex - 1].clone() : new Vector3(0, 0, 0);
         const branchNormals: Vector3 = GetNormalizeVector(branchEnd, beforePoint);
         const branchSizes: Vector3 = new Vector3((branchEnd.x - beforePoint.x) * scale, (branchEnd.y - beforePoint.y) * scale, (branchEnd.z - beforePoint.z) * scale);
-        const shiftSize: number = Random(0, branchIndex > 0 ? 0.999999 : 0.2, false, 6);
-        const leafZRotate: number = Random(0, 180);
+        const shiftSize: number = random(0, branchIndex > 0 ? 0.999999 : 0.2, false, 6);
+        const leafZRotate: number = random(0, 180);
         // Применение параметров
         translate = {
           x: round((branchEnd.x * scale) - (branchSizes.x * shiftSize), 6),
@@ -155,12 +155,12 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
           z: round((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
         };
         // Параметры
-        const branchUpRotate: number = LineFunc(0, 90, translate.y, minY, maxY) + AngleToRad(Random(-5, 15));
+        const branchUpRotate: number = LineFunc(0, 90, translate.y, minY, maxY) + AngleToRad(random(-5, 15));
         // Применение параметров
-        leafRotate = Random(0, 360);
+        leafRotate = random(0, 360);
         rotationCorr = GetRotateFromNormal(RotateCoordsByY(branchNormals, leafRotate), branchUpRotate, 0, leafZRotate);
         leafScale = LineFunc(0.0001, 1.5, translate.y, minY, maxY);
-        leafScale += Random(-leafScale * 0.05, leafScale * 0.05, false, 5);
+        leafScale += random(-leafScale * 0.05, leafScale * 0.05, false, 5);
       }
       // Копировать старый
       else {
@@ -232,13 +232,13 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     let leafRotate: number;
     // Цикл по количеству фрагментов
     const matrix: Matrix4[] = MapCycle(this.leafBCount, k => {
-      const branchIndex: number = Random(0, branchEnds.length - 1);
+      const branchIndex: number = random(0, branchEnds.length - 1);
       const dummy: Object3D = new Object3D();
       const branchEnd: Vector3 = branchEnds[branchIndex].clone();
       const beforePoint: Vector3 = branchIndex > 0 ? branchEnds[branchIndex - 1].clone() : new Vector3(0, 0, 0);
       const branchNormals: Vector3 = GetNormalizeVector(branchEnd, beforePoint);
       const branchSizes: Vector3 = new Vector3((branchEnd.x - beforePoint.x) * scale, (branchEnd.y - beforePoint.y) * scale, (branchEnd.z - beforePoint.z) * scale);
-      const shiftSize: number = Random(0, branchIndex > 0 ? 0.999999 : 0.2, false, 6);
+      const shiftSize: number = random(0, branchIndex > 0 ? 0.999999 : 0.2, false, 6);
       const lodStep: number = Math.floor(k / lodItemPerStep);
       // Применение параметров
       translate = {
@@ -247,10 +247,10 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         z: round((branchEnd.z * scale) - (branchSizes.z * shiftSize), 6)
       };
       // Применение параметров
-      leafRotate = Random(0, 360);
+      leafRotate = random(0, 360);
       rotationCorr = GetRotateFromNormal(RotateCoordsByY(branchNormals, leafRotate));
       leafScale = LineFunc(0.0001, 1.6, translate.y, minY, maxY);
-      leafScale += Random(-leafScale * 0.001, leafScale * 0.001, true, 5);
+      leafScale += random(-leafScale * 0.001, leafScale * 0.001, true, 5);
       // Преобразования
       dummy.position.set(bX, bZ, bY);
       dummy.rotateY(AngleToRad(rotate));
@@ -309,7 +309,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
     this.leafBranchCount = LeafBranchCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
-      const generations: number = Random(1, this.maxGeneration);
+      const generations: number = random(1, this.maxGeneration);
       const heightSegments: number = Math.round(this.segmentsCount / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
@@ -317,7 +317,7 @@ export class DreamMapFirTreeObject extends DreamMapObjectTemplate implements Dre
         generations,
         length,
         uvLength: generations * 4,
-        radius: objWidth * Random(1, 2, false, 3),
+        radius: objWidth * random(1, 2, false, 3),
         radiusSegments: this.radiusSegments,
         heightSegments
       };

@@ -1,18 +1,19 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, IsMultiple, Random } from "@_helpers/math";
+import { AngleToRad, IsMultiple } from "@_helpers/math";
 import { ArrayFilter, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
+import { random } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
 import { CheckCeilForm, GetGrassSubType } from "./_functions";
 import { GrassColorRange } from "./_models";
-import { Uniforms } from "@_models/three.js/base";
 
 
 
@@ -64,9 +65,9 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       // Цикл по количеству фрагментов
       const matrix: Matrix4[] = ArrayFilter(MapCycle(this.count, key => {
         if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
-          lX = Random(0, DreamCeilSize, true, 5);
-          lY = Random(0, DreamCeilSize, true, 5);
-          countStep = Random(this.countStep[0], this.countStep[1], false, 0);
+          lX = random(0, DreamCeilSize, true, 5);
+          lY = random(0, DreamCeilSize, true, 5);
+          countStep = random(this.countStep[0], this.countStep[1], false, 0);
           i = 0;
         }
         // Итератор
@@ -78,13 +79,13 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
         const lodStep: number = Math.floor(key / lodItemPerStep) + 1;
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
-          const scale: number = Random(this.scaleRange[0], this.scaleRange[1], false, 5);
-          const rotateY: number = (stepAngle * i) + Random(this.itemRotateRange[0], this.itemRotateRange[1]);
+          const scale: number = random(this.scaleRange[0], this.scaleRange[1], false, 5);
+          const rotateY: number = (stepAngle * i) + random(this.itemRotateRange[0], this.itemRotateRange[1]);
           // Настройки
           dummy.rotation.set(0, 0, 0);
           dummy.position.set(x, GetHeightByTerrain(params, x, y), y);
           dummy.rotateY(AngleToRad(rotateY));
-          dummy.rotateX(AngleToRad(Random(this.rotationRadiusRange[0], this.rotationRadiusRange[1])));
+          dummy.rotateX(AngleToRad(random(this.rotationRadiusRange[0], this.rotationRadiusRange[1])));
           dummy.scale.setScalar(scale);
           dummy.updateMatrix();
           // Дистанция отрисовки

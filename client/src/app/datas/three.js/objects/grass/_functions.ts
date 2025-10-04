@@ -1,7 +1,7 @@
 import { DreamCeilSize } from "@_datas/dream-map-settings";
-import { Random, TriangleSquare } from "@_helpers/math";
+import { TriangleSquare } from "@_helpers/math";
 import { ClosestHeight, ClosestHeights, DreamMapCeil, XYCoord } from "@_models/dream-map";
-import { round } from "@akb2/math";
+import { random, round } from "@akb2/math";
 import { GetDreamMapObjectByID } from "../_functions";
 import { ClosestKeysAll } from "../_models";
 import { AllCorners, AnglesA, AnglesB, BordersX, BordersY, CeilGrassFillGeometry, RandomFactor, TrianglesCoords } from "./_models";
@@ -51,7 +51,7 @@ export const GetLikeNeighboringKeys = (ceil: DreamMapCeil, neighboringCeils: Clo
 
 // Проверка вписания травы в плавную фигуру с учетом соседних ячеек
 export const CheckCeilForm = (cX: number, cY: number, x: number, y: number, neighboringCeils: ClosestHeights, ceil: DreamMapCeil): boolean => {
-  const randomCheck: boolean = Random(1, 100) <= RandomFactor;
+  const randomCheck: boolean = random(1, 100) <= RandomFactor;
   // Проверка соседних ячеек, если не фактор случайности не сработал
   if (!randomCheck) {
     const closestKeys: (keyof ClosestHeights)[] = GetLikeNeighboringKeys(ceil, neighboringCeils);

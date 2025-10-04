@@ -1,12 +1,13 @@
 import { CreateArray } from "@_datas/app";
 import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, IsEven, IsMultiple, Random, Sin, SinCosToRad } from "@_helpers/math";
+import { AngleToRad, Cos, IsEven, IsMultiple, Sin, SinCosToRad } from "@_helpers/math";
 import { ArrayFilter, ArrayFind, ArrayForEach } from "@_helpers/objects";
 import { CoordDto } from "@_models/dream-map";
 import { DreamMapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { GeometryQuality } from "@_services/three.js/terrain.service";
+import { random } from "@akb2/math";
 import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, LinearMipmapLinearFilter, Matrix4, MeshPhongMaterial, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, Texture, Triangle, Vector3 } from "three";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, TextureKeys } from "./_models";
 
@@ -158,9 +159,9 @@ export const CreateTerrainTriangles = (terrainGeometry: PlaneGeometry, x: number
 
 // Случайный цвет из диапазона
 export const GetRandomColorByRange = ([rA, rB, gA, gB, bA, bB]: ColorRange, afterDotNum: number = 5) => new Color(
-  Random(rA, rB, false, afterDotNum),
-  Random(gA, gB, false, afterDotNum),
-  Random(bA, bB, false, afterDotNum)
+  random(rA, rB, false, afterDotNum),
+  random(gA, gB, false, afterDotNum),
+  random(bA, bB, false, afterDotNum)
 );
 
 // Анимация для шейдера ветра

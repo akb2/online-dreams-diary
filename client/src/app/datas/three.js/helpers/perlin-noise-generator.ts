@@ -1,5 +1,5 @@
 import { CreateArray } from "@_datas/app";
-import { Random } from "@_helpers/math";
+import { random } from "@akb2/math";
 
 export class PerlinNoiseGenerator {
 
@@ -9,7 +9,7 @@ export class PerlinNoiseGenerator {
 
   constructor(private gridSize: number) {
     this.gradient = CreateArray(this.gridSize).map(() => CreateArray(this.gridSize).map(() => {
-      const angle = Random(0, 2 * Math.PI);
+      const angle = random(0, 2 * Math.PI);
       // Значения
       return [Math.cos(angle), Math.sin(angle)];
     }));

@@ -1,7 +1,8 @@
 import { UrlParamsStringToObject } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { YouTubeVideoBase } from "@_models/comment";
-import { ParseInt, Random } from "./math";
+import { random } from "@akb2/math";
+import { ParseInt } from "./math";
 
 
 
@@ -15,7 +16,7 @@ export const CreateRandomID = (length: number) => {
   // Генерация
   return CreateArray(length)
     .map(() => characters.charAt(Math.floor(Math.random() * charactersLength)))
-    .map(letter => !!Random(0, 1) ? letter.toLowerCase() : letter)
+    .map(letter => !!random(0, 1) ? letter.toLowerCase() : letter)
     .join("");
 }
 

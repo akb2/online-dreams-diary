@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, Random, Sin } from "@_helpers/math";
+import { AngleToRad, Cos, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -8,7 +8,7 @@ import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { round } from "@akb2/math";
+import { random, round } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
@@ -48,12 +48,12 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
   getObject(): MapObject[] {
     const { terrainGeometry, qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY }: Params = this.getParams;
     const params: GetHeightByTerrainObject = { terrainGeometry, qualityHelper, hyp, v1, v2, dir, ray, intersect, triangle, faces, cX, cY };
-    const geometryIndex: number = Random(0, this.treeCount - 1, false, 0);
+    const geometryIndex: number = random(0, this.treeCount - 1, false, 0);
     const centerX: number = DreamCeilSize / 2;
-    const scale: number = Random(0.8, 1, false, 3);
-    const rotate: number = Random(0, 360, false, 0);
-    const lX: number = centerX + Random(-this.posRange, this.posRange, true, 5);
-    const lY: number = centerX + Random(-this.posRange, this.posRange, true, 5);
+    const scale: number = random(0.8, 1, false, 3);
+    const rotate: number = random(0, 360, false, 0);
+    const lX: number = centerX + random(-this.posRange, this.posRange, true, 5);
+    const lY: number = centerX + random(-this.posRange, this.posRange, true, 5);
     const x: number = cX + lX;
     const y: number = cY + lY;
     // Координата Z
@@ -121,12 +121,12 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     // Цикл по количеству фрагментов
     const translates: CoordDto[] = [];
     const matrix: Matrix4[] = MapCycle(this.leafCount, k => {
-      branchIndex = Random(0, branchEnds.length - 1);
+      branchIndex = random(0, branchEnds.length - 1);
       // Если найдена ветка
       if (!!branchEnds[branchIndex]) {
         const dummy: Object3D = new Object3D();
         const branchEnd: Vector3 = branchEnds[branchIndex];
-        const leafScale: number = Random(0.7, 1, false, 4);
+        const leafScale: number = random(0.7, 1, false, 4);
         const translate: CoordDto = { x: branchEnd.x * scale, y: branchEnd.y * scale, z: branchEnd.z * scale };
         const lodStep: number = Math.floor(k / lodItemPerStep);
         // Преобразования
@@ -135,7 +135,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         dummy.translateX(translate.x);
         dummy.translateY(translate.y);
         dummy.translateZ(translate.z);
-        dummy.rotation.set(Random(0, 180), Random(0, 180), Random(0, 180));
+        dummy.rotation.set(random(0, 180), random(0, 180), random(0, 180));
         dummy.scale.setScalar(leafScale);
         dummy.updateMatrix();
         lodDistances.unshift(lodStep * this.lodDistance) + 1;
@@ -185,7 +185,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     this.treeCount = TreeCounts[this.dreamMapSettings.detalization];
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
-      const generations: number = Random(1, this.maxGeneration);
+      const generations: number = random(1, this.maxGeneration);
       const heightSegments: number = Math.round(this.segmentsCount / generations);
       const length: number = objHeight;
       // Вернуть геоиетрию
@@ -193,7 +193,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
         generations,
         length,
         uvLength: generations * 4,
-        radius: objWidth * Random(1, 2, false, 3),
+        radius: objWidth * random(1, 2, false, 3),
         radiusSegments: this.radiusSegments,
         heightSegments
       };

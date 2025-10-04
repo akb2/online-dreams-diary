@@ -1,19 +1,20 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilParts, DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, IsMultiple, LineFunc, Random, Sin } from "@_helpers/math";
+import { AngleToRad, Cos, IsMultiple, LineFunc, Sin } from "@_helpers/math";
 import { ArrayFilter, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream-map-objects";
+import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TriangleGeometry } from "@_threejs/triangle.geometry";
+import { random } from "@akb2/math";
 import { BufferGeometry, Color, DoubleSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
 import { CreateTerrainTrianglesObject, GetHeightByTerrainObject } from "../_models";
 import { CheckCeilForm, GetGrassSubType } from "./_functions";
 import { GrassColorRange } from "./_models";
-import { Uniforms } from "@_models/three.js/base";
 
 
 
@@ -68,9 +69,9 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
       // Цикл по количеству фрагментов
       const matrix: Matrix4[] = ArrayFilter(MapCycle(this.count, key => {
         if ((IsMultiple(i, countStep) && i !== 0) || i === -1) {
-          lX = Random(0, DreamCeilSize, true, 5);
-          lY = Random(0, DreamCeilSize, true, 5);
-          countStep = Random(this.countStep[0], this.countStep[1], false, 0);
+          lX = random(0, DreamCeilSize, true, 5);
+          lY = random(0, DreamCeilSize, true, 5);
+          countStep = random(this.countStep[0], this.countStep[1], false, 0);
           i = 0;
         }
         // Итератор
@@ -81,16 +82,16 @@ export class DreamMapWheatGrassObject extends DreamMapObjectTemplate implements 
         const LODStep: number = Math.floor(key / LODItemPerStep) + 1;
         // Проверка вписания в фигуру
         if (CheckCeilForm(cX, cY, x, y, this.neighboringCeils, this.ceil)) {
-          const scaleY: number = Random(this.scaleY[0], this.scaleY[1], false, 5);
+          const scaleY: number = random(this.scaleY[0], this.scaleY[1], false, 5);
           const scaleX: number = LineFunc(this.scaleX[0], this.scaleX[1], scaleY, this.scaleY[0], this.scaleY[1]);
-          const rotationRadius: number = Random(0, this.rotationRadiusRange, false, 5);
-          const rotationAngle: number = Random(0, 360);
+          const rotationRadius: number = random(0, this.rotationRadiusRange, false, 5);
+          const rotationAngle: number = random(0, 360);
           // Настройки
           dummy.rotation.set(0, 0, 0);
           dummy.position.set(x, GetHeightByTerrain(params, x, y), y);
           dummy.rotation.x = AngleToRad((rotationRadius * Sin(rotationAngle)) - this.noizeRotate);
           dummy.rotation.z = AngleToRad(rotationRadius * Cos(rotationAngle));
-          dummy.rotation.y = AngleToRad(Random(0, 180, false, 1));
+          dummy.rotation.y = AngleToRad(random(0, 180, false, 1));
           dummy.scale.set(scaleX, scaleY, 0);
           dummy.updateMatrix();
           // Дистанция отрисовки
