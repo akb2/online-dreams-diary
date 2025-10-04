@@ -2,7 +2,7 @@ import { CommentListComponent } from "@_controlers/comment-list/comment-list.com
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { User } from "@_models/account";
@@ -18,6 +18,7 @@ import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { clamp } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, Title } from "@angular/platform-browser";
@@ -330,18 +331,18 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
         interpretationPanel.getBoundingClientRect().height + ParseInt(getComputedStyle(interpretationPanel).marginTop) :
         0;
       const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom) - interpretationPanelHeight;
-      const headerKeywordsTop: number = CheckInRange(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
+      const headerKeywordsTop: number = clamp(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
       const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
       const screenKeywordsHeight: number = scrollElement.clientHeight - headerKeywordsShift - spacing;
       const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;
       const maxRightShift: number = rightPanelHeight - screenHeight - headerShift;
       // Если отступ допустим: левая панель
       this.leftPanelHelperShift = availLeftShift && leftPanelHeight > screenKeywordsHeight ?
-        -CheckInRange(scrollShift - this.leftPanelHelperShift, maxLeftShift, -keywordsPanelHeight - spacing) :
+        -clamp(scrollShift - this.leftPanelHelperShift, maxLeftShift, -keywordsPanelHeight - spacing) :
         keywordsPanelHeight + spacing;
       // Если отступ допустим: правая панель
       this.rightPanelHelperShift = availRightShift && rightPanelHeight > screenHeight ?
-        -CheckInRange(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
+        -clamp(scrollShift - this.rightPanelHelperShift, maxRightShift, -headerShift) :
         headerShift;
       // Если отступ допустим: ключевые слова
       this.topPanelHelperShift = headerKeywordsTop;

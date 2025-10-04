@@ -1,10 +1,11 @@
 import { ScrollElement } from "@_datas/app";
-import { CheckInRange, DetectDirectionByExpressions, ParseFloat, ParseInt } from "@_helpers/math";
+import { DetectDirectionByExpressions, ParseFloat, ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
+import { clamp } from "@akb2/math";
 import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, animationFrameScheduler, distinctUntilChanged, filter, first, fromEvent, map, merge, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
@@ -199,13 +200,13 @@ export class ScrollService implements OnDestroy {
               takeWhile(() => this.scrollEventLastId === scrollEventId),
               take(maxStep),
               map(i => i + 1),
-              map(i => ({ step: i, stepX: CheckInRange(i, scrollSteps.x), stepY: CheckInRange(i, scrollSteps.y) })),
+              map(i => ({ step: i, stepX: clamp(i, scrollSteps.x), stepY: clamp(i, scrollSteps.y) })),
               takeUntil(this.destroyed$)
             )
             .subscribe(
               ({ step, stepX, stepY }) => {
-                const shiftX = CheckInRange(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
-                const shiftY = CheckInRange(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
+                const shiftX = clamp(stepShifts.x * stepX, scrollDiff.x) * scrollDelta.x;
+                const shiftY = clamp(stepShifts.y * stepY, scrollDiff.y) * scrollDelta.y;
                 const top = scrollData.y + shiftY;
                 const left = scrollData.x + shiftX;
                 // Скролл

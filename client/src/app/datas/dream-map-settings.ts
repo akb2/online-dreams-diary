@@ -1,5 +1,6 @@
-import { Average, CheckInRange } from "@_helpers/math";
+import { Average } from "@_helpers/math";
 import { DreamMapSettings } from "@_models/dream-map";
+import { clamp } from "@akb2/math";
 
 
 
@@ -32,7 +33,7 @@ export const DreamStartHeight = DreamMinHeight;
 // Высота облаков
 export const DreamCloudsMinHeight = 0.7 * DreamRealMaxHeight;
 export const DreamCloudsMaxHeight = 1.2 * DreamRealMaxHeight;
-export const DreamCloudsDefaultHeight = CheckInRange(0.9 * DreamRealMaxHeight, DreamCloudsMaxHeight, DreamCloudsMinHeight);
+export const DreamCloudsDefaultHeight = clamp(0.9 * DreamRealMaxHeight, DreamCloudsMaxHeight, DreamCloudsMinHeight);
 
 // Настройки мирового океана
 export const DreamWorldOceanFlowSpeed = DreamCeilSize * 4;

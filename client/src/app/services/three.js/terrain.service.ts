@@ -3,14 +3,14 @@ import { MapTerrains, ReliefTexturePath, TerrainTexturePath, TexturePaths } from
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
 import { MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
-import { AngleToRad, CheckInRange } from "@_helpers/math";
+import { AngleToRad } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, ReliefType, XYCoord } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
-import { round } from "@akb2/math";
+import { clamp, round } from "@akb2/math";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
 import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
@@ -225,7 +225,7 @@ export class DreamMapTerrainService implements OnDestroy {
 
   // Корректировка цвета
   private correctColor(color: number): number {
-    return CheckInRange(color, 255, 0);
+    return clamp(color, 255, 0);
   }
 
 

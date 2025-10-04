@@ -5,7 +5,7 @@ import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { CheckInRange, ParseFloat, ParseInt } from "@_helpers/math";
+import { ParseFloat, ParseInt } from "@_helpers/math";
 import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
@@ -15,7 +15,7 @@ import { ClosestHeightName, DreamMap, DreamMapCameraPosition, DreamMapCeilDto, D
 import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
-import { random } from "@akb2/math";
+import { clamp, random } from "@akb2/math";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
@@ -82,7 +82,7 @@ export class DreamService implements OnDestroy {
     return LocalStorageGet(
       this.dreamMapSettingsLocalStorageKey,
       settings => ({
-        detalization: CheckInRange(ParseInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
+        detalization: clamp(ParseInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
         shadowQuality: ParseInt(settings?.shadowQuality)
       })
     );

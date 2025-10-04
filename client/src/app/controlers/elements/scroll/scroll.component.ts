@@ -1,9 +1,10 @@
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
+import { clamp } from "@akb2/math";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Observable, Subject, animationFrameScheduler, concatMap, fromEvent, of, tap, timer } from "rxjs";
 import { filter, map, observeOn, pairwise, startWith, takeUntil } from "rxjs/operators";
@@ -114,7 +115,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
       const maxWidth: number = trackH.clientWidth ?? 0;
       const minWidth: number = ParseInt(getComputedStyle(sliderH).minWidth) ?? 0;
       // Проверка размера
-      return (CheckInRange(size > 0 ? size : sliderH.clientWidth ?? 0, maxWidth, minWidth) / maxWidth) * 100;
+      return (clamp(size > 0 ? size : sliderH.clientWidth ?? 0, maxWidth, minWidth) / maxWidth) * 100;
     }
     // Нет скролла
     return 0;
@@ -130,7 +131,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
       const currentHeight: number = ((sliderV.clientHeight ?? 0) / maxHeight) * 100;
       const minHeight: number = ((ParseInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
       // Проверка размера
-      return CheckInRange(size > 0 ? size : currentHeight, 100, minHeight);
+      return clamp(size > 0 ? size : currentHeight, 100, minHeight);
     }
     // Нет скролла
     return 0;
@@ -266,7 +267,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
           event.pageY - this.scrollMoveStartY - trackData.y;
         const trackSize: number = this.scrollMoveDimension === "h" ? trackElm.clientWidth : trackElm.clientHeight;
         const trackAvailSize: number = trackSize - (this.scrollMoveDimension === "h" ? sliderData.width : sliderData.height);
-        const newScroll: number = CheckInRange((shift / trackAvailSize) * maxScroll, maxScroll, 0);
+        const newScroll: number = clamp((shift / trackAvailSize) * maxScroll, maxScroll, 0);
         // Скроллинг
         this.scrollMoveDimension === "h" ?
           elm.scrollTo({ left: newScroll, behavior: "auto" }) :
@@ -284,7 +285,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
       const scroll: number = scrollType === "h" ? scrollData.x : scrollData.y;
       const maxScroll: number = scrollType === "h" ? scrollData.maxX : scrollData.maxY;
       const addScroll: number = this.scrollAddDimension === "left" || this.scrollAddDimension === "top" ? -this.scrollAddSize : this.scrollAddSize;
-      const newScroll: number = CheckInRange(scroll + addScroll, maxScroll, 0);
+      const newScroll: number = clamp(scroll + addScroll, maxScroll, 0);
       // Скроллинг
       scrollType === "h" ?
         elm.scrollTo({ left: newScroll, behavior: "auto" }) :

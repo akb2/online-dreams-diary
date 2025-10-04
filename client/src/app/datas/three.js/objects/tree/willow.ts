@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
-import { AngleToRad, CheckInRange, Cos, Sin } from "@_helpers/math";
+import { AngleToRad, Cos, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
@@ -8,7 +8,7 @@ import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
-import { random, round } from "@akb2/math";
+import { clamp, random, round } from "@akb2/math";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
@@ -187,7 +187,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
     // Генерация параметров
     const treeGeometryParams: (objWidth: number, objHeight: number) => TreeGeometryParams = (objWidth: number, objHeight: number) => {
       const generations: number = random(this.minGeneration, this.maxGeneration);
-      const heightSegments: number = CheckInRange(round(this.segmentsCount / generations), Infinity, 1);
+      const heightSegments: number = clamp(round(this.segmentsCount / generations), Infinity, 1);
       const length: number = objHeight;
       // Вернуть геоиетрию
       return {

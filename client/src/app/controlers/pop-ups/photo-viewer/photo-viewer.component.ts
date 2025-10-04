@@ -1,5 +1,5 @@
 import { AppMatDialogConfig, CompareElementByElement, FirstPrevBySelector, FrontDialogClass } from "@_datas/app";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObjectKey } from "@_models/app";
@@ -8,6 +8,7 @@ import { MediaFile } from "@_models/media";
 import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
+import { clamp } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Subject, concatMap, filter, forkJoin, fromEvent, map, merge, of, pairwise, switchMap, takeUntil, timer } from "rxjs";
@@ -233,7 +234,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
         const imageHeight: number = this.imageElm.nativeElement.getBoundingClientRect().height;
         // Обновить параметры
         this.commentListMaxHeight = elementMaxHeight - editorHeight;
-        this.commentListMinHeight = CheckInRange(imageHeight - editorHeight, this.commentListMaxHeight, 0);
+        this.commentListMinHeight = clamp(imageHeight - editorHeight, this.commentListMaxHeight, 0);
         // Обновить
         this.changeDetectorRef.detectChanges();
       });

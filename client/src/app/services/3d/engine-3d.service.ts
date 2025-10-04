@@ -1,4 +1,4 @@
-import { AngleByLegs, AngleToRad, CheckInRange, DetectDirectionByExpressions, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, DetectDirectionByExpressions, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -6,6 +6,7 @@ import { DreamMap, DreamMapCameraPosition } from "@_models/dream-map";
 import { AnimationData } from "@_models/three.js/base";
 import { DreamService } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
+import { clamp } from "@akb2/math";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
@@ -335,8 +336,8 @@ export class Engine3DService implements OnDestroy {
         ? this.lastCamera.position.z
         : event.object.position.z;
       // Новые позмции
-      x = CheckInRange(x, mapX, -mapX);
-      z = CheckInRange(z, mapZ, -mapZ);
+      x = clamp(x, mapX, -mapX);
+      z = clamp(z, mapZ, -mapZ);
       // Установить позицию
       event.target.setX(x);
       event.target.setZ(z);

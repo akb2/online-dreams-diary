@@ -3,7 +3,7 @@ import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-u
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { GetDreamIdByUrl, GetLinksFromString, GetYouTubeDataByUrl } from "@_helpers/string";
@@ -19,6 +19,7 @@ import { StringTemplatePipe } from "@_pipes/string-template.pipe";
 import { CommentService } from "@_services/comment.service";
 import { DreamService } from "@_services/dream.service";
 import { ScrollService } from "@_services/scroll.service";
+import { clamp } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { translateNeedPetrovichSelector } from "@app/reducers/translate";
@@ -481,7 +482,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
           .pipe(takeUntil(this.destroyed$))
           .subscribe({
             next: dream => {
-              const index = CheckInRange(this.dreams.findIndex(dream => dream.id === id), this.dreams.length, 0);
+              const index = clamp(this.dreams.findIndex(dream => dream.id === id), this.dreams.length, 0);
               // Удалить сновидение
               this.dreams[index] = ({ ...dream, loading: false });
               // Обновить

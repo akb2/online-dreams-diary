@@ -1,7 +1,6 @@
 import { CreateArray } from "@_datas/app";
-import { ceil } from "@akb2/math";
+import { ceil, clamp } from "@akb2/math";
 import { Observable, concatMap, map, mergeMap, of, skipWhile, take, takeWhile, timer } from "rxjs";
-import { CheckInRange } from "./math";
 
 
 
@@ -19,7 +18,7 @@ export const TakeCycle = (limit: number, grouping: number = 1, delayTime: number
   take(ceil(limit / grouping)),
   mergeMap(n => {
     const before: number = n * grouping;
-    const length: number = CheckInRange(grouping, limit - before);
+    const length: number = clamp(grouping, limit - before);
     const group: number[] = CreateArray(length).map(i => before + i);
     // Вернуть группу
     return of(...group);

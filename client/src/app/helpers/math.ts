@@ -1,7 +1,7 @@
 import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
-import { floor, round } from "@akb2/math";
+import { clamp, floor, round } from "@akb2/math";
 import { ArrayForEach } from "./objects";
 
 
@@ -26,14 +26,6 @@ export const ParseFloat = (value: any, defaultValue: number = 0, afterDotNum: nu
     : num;
   // Вернуть число
   return round(num, afterDotNum);
-};
-
-// Проверить число в пределах и вернуть новое значение
-export const CheckInRange = (value: number, max: number = Infinity, min: number = 0) => {
-  value = value < min ? min : value;
-  value = value > max ? max : value;
-  // Вернуть значение
-  return value;
 };
 
 // Проверка числа на четность
@@ -262,7 +254,7 @@ export const GetLengthFromSquareCenter = (size: number, angle: number) => {
     return size / 2;
   }
   // Посчитать расстояние
-  return CheckInRange(
+  return clamp(
     Math.abs(size / (2 * Math.cos(AngleToRad(collapsedAngle)))),
     GetHypotinuze(size) / 2,
     size / 2

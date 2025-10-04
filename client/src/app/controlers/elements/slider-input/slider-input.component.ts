@@ -1,7 +1,7 @@
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { CheckInRange, ParseFloat, ParseInt } from "@_helpers/math";
+import { ParseFloat, ParseInt } from "@_helpers/math";
 import { OptionData } from "@_models/form";
-import { round } from "@akb2/math";
+import { clamp, round } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
@@ -66,7 +66,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
   // Текущее значение
   get getValue(): number {
     const afterDotNum = this.getDecimalCount;
-    const tempValue = CheckInRange(ParseFloat(this.control?.value, 0, afterDotNum), this.getMaxValue, this.getMinValue);
+    const tempValue = clamp(ParseFloat(this.control?.value, 0, afterDotNum), this.getMaxValue, this.getMinValue);
     // Вернуть значение
     return this.isAnOptionDataList
       ? ParseInt(this.optionData?.findIndex(({ key }) => key === tempValue.toString()))
@@ -116,7 +116,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
       ? event
       : (event.target as HTMLInputElement)?.value;
     const currentValue = this.getValue;
-    const newValue = CheckInRange(ParseFloat(mixedValue, 0, afterDotNum), this.getMaxValue, this.getMinValue);
+    const newValue = clamp(ParseFloat(mixedValue, 0, afterDotNum), this.getMaxValue, this.getMinValue);
     // Значения отличаются
     if (currentValue !== newValue) {
       if (this.isAnOptionDataList) {

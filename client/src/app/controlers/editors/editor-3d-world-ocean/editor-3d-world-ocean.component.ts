@@ -1,8 +1,9 @@
 import { CreateArray } from "@_datas/app";
-import { CheckInRange, MathRoundByStep } from "@_helpers/math";
+import { MathRoundByStep } from "@_helpers/math";
 import { LineParamSetting } from "@_helpers/special-inputs-param-settings";
 import { CssProperties } from "@_models/nav-menu";
 import { Settings3DService } from "@_services/3d/settings-3d.service";
+import { clamp } from "@akb2/math";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
 import { editor3DSetWorldOceanHeightAction, editor3DWorldOceanHeightSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
@@ -75,7 +76,7 @@ export class Editor3DWorldOceanComponent {
         ? event.clientY
         : 0;
       const positionY = MathRoundByStep(
-        CheckInRange(containerHeight - (mouseY - containerTop), containerHeight),
+        clamp(containerHeight - (mouseY - containerTop), containerHeight),
         (this.worldOceanHeightControl.step / (this.worldOceanHeightControl.maxValue - this.worldOceanHeightControl.minValue)) * containerHeight
       );
       const worldOceanHeight = this.settings3DService.minHeight + (positionY / containerHeight * (this.settings3DService.maxHeight - this.settings3DService.minHeight));

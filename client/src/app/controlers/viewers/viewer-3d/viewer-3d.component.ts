@@ -1,7 +1,7 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, CheckInRange, ParseFloat, ParseInt } from "@_helpers/math";
+import { AverageSumm, ParseFloat, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
@@ -15,7 +15,7 @@ import { Settings3DService } from "@_services/3d/settings-3d.service";
 import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
-import { floor, round } from "@akb2/math";
+import { clamp, floor, round } from "@akb2/math";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
@@ -331,7 +331,7 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     // Подписка
     return TakeCycle(this.loadingCeilLimit, this.loadCeilsByTime).pipe(
       tap(i => {
-        this.loadingCeilCurrent[step] = CheckInRange(i + 1, this.loadingCeilLimit);
+        this.loadingCeilCurrent[step] = clamp(i + 1, this.loadingCeilLimit);
         // Обновить
         this.changeDetectorRef.detectChanges();
       }),

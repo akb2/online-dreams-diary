@@ -1,10 +1,9 @@
 import { AppMatDialogConfig } from "@_datas/app";
-import { CheckInRange } from "@_helpers/math";
 import { UserAvatarCropDataElement } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { ScreenKeys, ScrollAddDimension } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
-import { round } from "@akb2/math";
+import { clamp, round } from "@akb2/math";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Subject, forkJoin, fromEvent, mergeMap, skipWhile, takeUntil, takeWhile, tap, timer } from "rxjs";
@@ -205,33 +204,33 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     const moveY: number = (pageY - this.mouseMoveStart[1]) / this.sizeKoof;
     // Перемещение всего блока
     if (this.moveDirection.includes("move")) {
-      const width: number = CheckInRange(this.position.x2 - this.position.x1, this.imageWidth);
-      const height: number = CheckInRange(this.position.y2 - this.position.y1, this.imageHeight);
+      const width: number = clamp(this.position.x2 - this.position.x1, this.imageWidth);
+      const height: number = clamp(this.position.y2 - this.position.y1, this.imageHeight);
       // Границы краев выделения
-      this.position.x1 = CheckInRange(this.data.coords.startX + moveX, this.imageWidth - width);
-      this.position.x2 = CheckInRange(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, width);
-      this.position.y1 = CheckInRange(this.data.coords.startY + moveY, this.imageHeight - height);
-      this.position.y2 = CheckInRange(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, height);
+      this.position.x1 = clamp(this.data.coords.startX + moveX, this.imageWidth - width);
+      this.position.x2 = clamp(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, width);
+      this.position.y1 = clamp(this.data.coords.startY + moveY, this.imageHeight - height);
+      this.position.y2 = clamp(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, height);
     }
     // Перемещение сторон
     else {
       // Передвижение влево
       if (this.moveDirection.includes("left")) {
-        this.position.x1 = CheckInRange(this.data.coords.startX + moveX, this.position.x2 - this.data.minimal[0]);
-        this.position.x2 = CheckInRange(this.position.x2, this.imageWidth);
+        this.position.x1 = clamp(this.data.coords.startX + moveX, this.position.x2 - this.data.minimal[0]);
+        this.position.x2 = clamp(this.position.x2, this.imageWidth);
       }
       // Передвижение вправо
       else if (this.moveDirection.includes("right")) {
-        this.position.x2 = CheckInRange(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, this.position.x1 + this.data.minimal[0]);
+        this.position.x2 = clamp(this.data.coords.startX + this.data.coords.width + moveX, this.imageWidth, this.position.x1 + this.data.minimal[0]);
       }
       // Передвижение вверх
       if (this.moveDirection.includes("top")) {
-        this.position.y1 = CheckInRange(this.data.coords.startY + moveY, this.position.y2 - this.data.minimal[1]);
-        this.position.y2 = CheckInRange(this.position.y2, this.imageHeight);
+        this.position.y1 = clamp(this.data.coords.startY + moveY, this.position.y2 - this.data.minimal[1]);
+        this.position.y2 = clamp(this.position.y2, this.imageHeight);
       }
       // Передвижение вниз
       else if (this.moveDirection.includes("bottom")) {
-        this.position.y2 = CheckInRange(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, this.position.y1 + this.data.minimal[1]);
+        this.position.y2 = clamp(this.data.coords.startY + this.data.coords.height + moveY, this.imageHeight, this.position.y1 + this.data.minimal[1]);
       }
       // Корректировка для предела соотношений сторон по вертикали
       if (!!this.data?.verticalAspectRatio || !!this.data?.horizontalAspectRatio) {
@@ -298,8 +297,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
 
   // Корректировка в строгом соответсвии соотношении сторон
   private strictAspectCorrect([aspectX, aspectY]: [number, number]): void {
-    let width: number = CheckInRange(this.position.x2 - this.position.x1, this.imageWidth);
-    let height: number = CheckInRange(this.position.y2 - this.position.y1, this.imageHeight);
+    let width: number = clamp(this.position.x2 - this.position.x1, this.imageWidth);
+    let height: number = clamp(this.position.y2 - this.position.y1, this.imageHeight);
     // Передвижение по горизонтали
     if (this.moveDirection.includes("left") || this.moveDirection.includes("right")) {
       this.position.y2 = this.position.y1 + ((width / aspectX) * aspectY);
@@ -309,7 +308,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
       }
       // Корректировка перепендикулярной оси
       if (this.position.y2 > this.imageHeight) {
-        this.position.y1 = CheckInRange(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - height);
+        this.position.y1 = clamp(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - height);
         this.position.y2 = this.imageHeight;
       }
       // Обновить высоту и ширину
@@ -335,7 +334,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
       }
       // Корректировка перепендикулярной оси
       if (this.position.x2 > this.imageWidth) {
-        this.position.x1 = CheckInRange(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - width);
+        this.position.x1 = clamp(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - width);
         this.position.x2 = this.imageWidth;
       }
       // Обновить высоту и ширину
@@ -366,8 +365,8 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
     let currentHeight: number = 0;
     // Функция обновления параметров
     const updateData = () => {
-      width = CheckInRange(Math.abs(this.position.x2 - this.position.x1), this.imageWidth);
-      height = CheckInRange(Math.abs(this.position.y2 - this.position.y1), this.imageHeight);
+      width = clamp(Math.abs(this.position.x2 - this.position.x1), this.imageWidth);
+      height = clamp(Math.abs(this.position.y2 - this.position.y1), this.imageHeight);
       minWidth = (height / vAspectY) * vAspectX;
       maxWidth = (height / hAspectY) * hAspectX;
       minHeight = (width / hAspectX) * hAspectY;
@@ -385,7 +384,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
         this.position.y2 = this.position.y1 + newHeight;
         // Корректировка за пределами
         if (this.position.y2 > this.imageHeight) {
-          this.position.y1 = CheckInRange(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - newHeight);
+          this.position.y1 = clamp(this.position.y1 - this.position.y2 + this.imageHeight, this.imageHeight - newHeight);
           this.position.y2 = this.imageHeight;
         }
       }
@@ -395,7 +394,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
       if (currentWidth < minWidth) {
         const newHeight: number = Math.min(height, ((width / vAspectX) * vAspectY));
         // Нижний край
-        this.position.y2 = CheckInRange(this.position.y1 + newHeight, this.imageHeight, this.position.y1 + this.data.minimal[1]);
+        this.position.y2 = clamp(this.position.y1 + newHeight, this.imageHeight, this.position.y1 + this.data.minimal[1]);
       }
       // Обновить данные
       updateData();
@@ -434,7 +433,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
         this.position.x2 = this.position.x1 + newWidth;
         // Корректировка за пределами
         if (this.position.x2 > this.imageWidth) {
-          this.position.x1 = CheckInRange(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - newWidth);
+          this.position.x1 = clamp(this.position.x1 - this.position.x2 + this.imageWidth, this.imageWidth - newWidth);
           this.position.x2 = this.imageWidth;
         }
       }
@@ -444,7 +443,7 @@ export class PopupCropImageComponent implements OnInit, AfterViewChecked, OnDest
       if (currentHeight < minHeight) {
         const newWidth: number = Math.min(width, ((height / hAspectY) * hAspectX));
         // Правый край
-        this.position.x2 = CheckInRange(this.position.x1 + newWidth, this.imageWidth, this.position.x1 + this.data.minimal[0]);
+        this.position.x2 = clamp(this.position.x1 + newWidth, this.imageWidth, this.position.x1 + this.data.minimal[0]);
       }
       // Обновить данные
       updateData();

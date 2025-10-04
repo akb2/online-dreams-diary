@@ -1,11 +1,12 @@
 import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMaxSize } from "@_datas/app";
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
-import { CheckInRange, LineFunc, ParseInt } from "@_helpers/math";
+import { LineFunc, ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, FileTypes } from "@_models/app";
 import { MediaFile, MediaFileExtension } from "@_models/media";
 import { MediaService } from "@_services/media.service";
 import { ScreenService } from "@_services/screen.service";
+import { clamp } from "@akb2/math";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Observable, Subject, catchError, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, takeWhile, tap } from "rxjs";
@@ -268,7 +269,7 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
     return this.mediaService.upload(selectedFile.file).pipe(
       map(result => {
         if (typeof result === "number") {
-          const progress: number = CheckInRange(result, 100, 0);
+          const progress: number = clamp(result, 100, 0);
           // Установить свойства файла
           selectedFile.progress = progress;
         }

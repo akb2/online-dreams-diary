@@ -1,9 +1,10 @@
 import { PageComponentElement, ScrollElement } from "@_datas/app";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { clamp } from "@akb2/math";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Subject, forkJoin, fromEvent, of, timer } from "rxjs";
 import { concatMap, filter, takeUntil, tap } from "rxjs/operators";
@@ -57,7 +58,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
       const currentHeight: number = ((sliderV.clientHeight ?? 0) / maxHeight) * 100;
       const minHeight: number = ((ParseInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
       // Проверка размера
-      return CheckInRange(size > 0 ? size : currentHeight, 100, minHeight);
+      return clamp(size > 0 ? size : currentHeight, 100, minHeight);
     }
     // Нет скролла
     return 0;
@@ -167,7 +168,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
         const shift: number = event.pageY - this.sliderMousePosY - trackData.y;
         const trackSize: number = trackElm.clientHeight;
         const trackAvailSize: number = trackSize - sliderData.height;
-        const newScroll: number = CheckInRange((shift / trackAvailSize) * maxScroll, maxScroll, 0);
+        const newScroll: number = clamp((shift / trackAvailSize) * maxScroll, maxScroll, 0);
         // Скроллинг
         this.scrollService.scrollToY(newScroll, "auto", false);
       }
@@ -190,7 +191,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
     if (!!this.scrollAddDimension) {
       const { y: scroll, maxY: maxScroll }: ScrollData = this.scrollService.getCurrentScroll;
       const addScroll: number = this.scrollAddDimension === "top" ? -this.scrollAddSize : this.scrollAddSize;
-      const newScroll: number = CheckInRange(scroll + addScroll, maxScroll, 0);
+      const newScroll: number = clamp(scroll + addScroll, maxScroll, 0);
       // Скроллинг
       this.scrollService.scrollToY(newScroll, "auto", false);
     }

@@ -3,7 +3,7 @@ import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.com
 import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
@@ -20,6 +20,7 @@ import { DreamService } from "@_services/dream.service";
 import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
+import { clamp } from "@akb2/math";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
@@ -351,7 +352,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       )
       .subscribe(({ visitedUserId, queryParams }) => {
         this.queryParams = queryParams;
-        this.pageCurrent = CheckInRange(ParseInt(queryParams?.page), Infinity, 1);
+        this.pageCurrent = clamp(ParseInt(queryParams?.page), Infinity, 1);
         this.visitedUserId = visitedUserId;
         this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
         this.itsAllPage = visitedUserId === 0;

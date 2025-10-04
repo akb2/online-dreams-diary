@@ -1,6 +1,6 @@
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { CheckInRange, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { SearchResponce } from "@_models/api";
@@ -16,6 +16,7 @@ import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { clamp } from "@akb2/math";
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -250,7 +251,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       // Если отступ допустим
       if (lastScrollAddedY === 0) {
         this.leftPanelHelperShift = availShift && elmHelperHeight > screenHeight ?
-          -CheckInRange(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
+          -clamp(scrollShift - this.leftPanelHelperShift, maxShift, -headerShift) :
           headerShift;
       }
       // Обновить

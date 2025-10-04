@@ -1,6 +1,7 @@
 import { DreamMapDefaultShadowQuality, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { Average, CheckInRange } from "@_helpers/math";
+import { Average } from "@_helpers/math";
 import { DreamMapSettings } from "@_models/dream-map";
+import { clamp } from "@akb2/math";
 import { Injectable } from "@angular/core";
 
 @Injectable({
@@ -70,7 +71,7 @@ export class Settings3DService {
     this.waterDefaultHeight = (this.maxHeight / 2) - (this.ceilSize / this.ceilParts);
     this.cloudsMinHeight = 0.7 * this.realMaxHeight;
     this.cloudsMaxHeight = 1.2 * this.realMaxHeight;
-    this.cloudsDefaultHeight = CheckInRange(0.9 * this.realMaxHeight, this.cloudsMaxHeight, this.cloudsMinHeight);
+    this.cloudsDefaultHeight = clamp(0.9 * this.realMaxHeight, this.cloudsMaxHeight, this.cloudsMinHeight);
     this.cameraMaxZoom = this.realMaxHeight;
     this.fogFar = this.mapSize * this.ceilSize;
     this.fogNear = 0.7 * this.fogFar;

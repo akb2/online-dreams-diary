@@ -1,14 +1,14 @@
 import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
-import { AngleToRad, Average, AverageSumm, CheckInRange, LengthByCoords, LineFunc, ParseInt } from "@_helpers/math";
+import { AngleToRad, Average, AverageSumm, LengthByCoords, LineFunc, ParseInt } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, ReliefType } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
-import { floor, round } from "@akb2/math";
+import { clamp, floor, round } from "@akb2/math";
 import { Injectable } from "@angular/core";
 import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -82,8 +82,8 @@ export class Landscape3DService {
     const imageHeight = imageData.height;
     // Вернуть цвет
     return Average(XYMapEach(2, 2, (z, x) => {
-      const iZ: number = CheckInRange(scaledTextureZ + z, imageHeight - 1, 0);
-      const iX: number = CheckInRange(scaledTextureX + x, imageWidth - 1, 0);
+      const iZ: number = clamp(scaledTextureZ + z, imageHeight - 1, 0);
+      const iX: number = clamp(scaledTextureX + x, imageWidth - 1, 0);
       const position = ((iX * imageData.width) + iZ) * ColorsChannelsCount;
       // Вернуть цвет
       return imageData.data[position];
@@ -127,8 +127,8 @@ export class Landscape3DService {
     const { vertexStartX, vertexStartY, imageHeight, imageWidth } = this.getDisplacementData(ceil);
     // Координаты
     return XYMapEach(2, 2, (x2, y2) => {
-      const iY: number = CheckInRange(vertexStartY + y2 - 1, imageHeight - 1, 0);
-      const iX: number = CheckInRange(vertexStartX + x2 - 1, imageWidth - 1, 0);
+      const iY: number = clamp(vertexStartY + y2 - 1, imageHeight - 1, 0);
+      const iX: number = clamp(vertexStartX + x2 - 1, imageWidth - 1, 0);
       // Индекс
       return ((iY * imageWidth) + iX) * ColorsChannelsCount;
     });
@@ -147,7 +147,7 @@ export class Landscape3DService {
   private getDisplacementMiddleZ(ceil: DreamMapCeil, getOriginal: boolean = false): number {
     const { scale: maxHeight } = this.getDisplacementData(ceil);
     // Расчет
-    return CheckInRange((this.getDisplacementMiddleZColor(ceil, getOriginal) / MaxColorValue) * maxHeight, maxHeight, 0);
+    return clamp((this.getDisplacementMiddleZColor(ceil, getOriginal) / MaxColorValue) * maxHeight, maxHeight, 0);
   }
 
   // Получить сведения о цвете
