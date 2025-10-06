@@ -1,4 +1,4 @@
-import { AngleByLegs, AngleToRad, DetectDirectionByExpressions, LineFunc, ParseFloat, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, DetectDirectionByExpressions, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -7,6 +7,7 @@ import { AnimationData } from "@_models/three.js/base";
 import { DreamService } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
+import { anyToFloat } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
@@ -166,9 +167,9 @@ export class Engine3DService implements OnDestroy {
       this.settings3DService.fogFar
     );
     // Свойства камеры
-    this.camera.position.setX(ParseFloat(this.dreamMap?.camera?.position?.x, position.x, 16));
-    this.camera.position.setY(ParseFloat(this.dreamMap?.camera?.position?.y, position.y, 16));
-    this.camera.position.setZ(ParseFloat(this.dreamMap?.camera?.position?.z, position.z, 16));
+    this.camera.position.setX(anyToFloat(this.dreamMap?.camera?.position?.x, position.x, 16));
+    this.camera.position.setY(anyToFloat(this.dreamMap?.camera?.position?.y, position.y, 16));
+    this.camera.position.setZ(anyToFloat(this.dreamMap?.camera?.position?.z, position.z, 16));
     // Добавить камеру
     this.scene.add(this.camera);
   }
@@ -206,9 +207,9 @@ export class Engine3DService implements OnDestroy {
     this.control.minPolarAngle = AngleToRad(this.minAngle);
     this.control.maxPolarAngle = AngleToRad(this.maxAngle);
     this.control.mouseButtons = { LEFT: null, MIDDLE: MOUSE.LEFT, RIGHT: MOUSE.RIGHT };
-    this.control.target.setX(ParseFloat(this.dreamMap?.camera?.target?.x, target.x, 16));
-    this.control.target.setY(ParseFloat(this.dreamMap?.camera?.target?.y, target.y, 16));
-    this.control.target.setZ(ParseFloat(this.dreamMap?.camera?.target?.z, target.z, 16));
+    this.control.target.setX(anyToFloat(this.dreamMap?.camera?.target?.x, target.x, 16));
+    this.control.target.setY(anyToFloat(this.dreamMap?.camera?.target?.y, target.y, 16));
+    this.control.target.setZ(anyToFloat(this.dreamMap?.camera?.target?.z, target.z, 16));
     // Изменение камеры
     fromEvent(this.control, "change")
       .pipe(takeUntil(this.destroyed$))

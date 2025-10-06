@@ -18,16 +18,6 @@ export const ParseInt = (value: any, defaultValue: number = 0) => {
   return num;
 };
 
-// Преобразовать данные в число
-export const ParseFloat = (value: any, defaultValue: number = 0, afterDotNum: number = 0) => {
-  let num: number = parseFloat(value);
-  num = isNaN(num)
-    ? defaultValue
-    : num;
-  // Вернуть число
-  return round(num, afterDotNum);
-};
-
 // Проверка числа на четность
 export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
 

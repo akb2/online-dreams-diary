@@ -1,11 +1,12 @@
 import { ScrollElement } from "@_datas/app";
-import { DetectDirectionByExpressions, ParseFloat, ParseInt } from "@_helpers/math";
+import { DetectDirectionByExpressions, ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { clamp } from "@akb2/math";
+import { anyToFloat } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, animationFrameScheduler, distinctUntilChanged, filter, first, fromEvent, map, merge, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
@@ -49,8 +50,8 @@ export class ScrollService implements OnDestroy {
   // Текущий скролл
   get getCurrentScroll(): ScrollData {
     const elm = this.scrollElement;
-    const x = Math.ceil(ParseFloat(elm?.scrollLeft, 0, 10));
-    const y = Math.ceil(ParseFloat(elm?.scrollTop, 0, 10));
+    const x = Math.ceil(anyToFloat(elm?.scrollLeft, 0, 10));
+    const y = Math.ceil(anyToFloat(elm?.scrollTop, 0, 10));
     const maxX = ParseInt(elm?.scrollWidth) - ParseInt(elm?.clientWidth);
     const maxY = ParseInt(elm?.scrollHeight) - ParseInt(elm?.clientHeight);
     const lastDirectionX = DetectDirectionByExpressions(this.scrollLastX < x, this.scrollLastX > x);

@@ -1,7 +1,7 @@
 import { DreamFogFar } from "@_datas/dream-map-settings";
 import { InstancedDistanceShaderKey, InstancedShader, InstancedShearShaderKey } from "@_datas/three.js/shaders/instanced-mesh.shader";
-import { ParseFloat } from "@_helpers/math";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
+import { anyToFloat } from "@akb2/types-tools";
 import { BufferGeometry, InstancedBufferAttribute, InstancedMesh, Material, Vector3 } from "three";
 
 
@@ -18,7 +18,7 @@ export class ShearableInstancedMesh extends InstancedMesh {
 
 
   constructor(params: ShearableInstancedMeshParams) {
-    AddMaterialBeforeCompile(params.material, shader => shader = InstancedShader(shader, ParseFloat(params.noize, 0, 5)));
+    AddMaterialBeforeCompile(params.material, shader => shader = InstancedShader(shader, anyToFloat(params.noize, 0, 5)));
     // Родительский конструктор
     super(params.geometry, params.material, params.count);
     // Объявить аттрибуты

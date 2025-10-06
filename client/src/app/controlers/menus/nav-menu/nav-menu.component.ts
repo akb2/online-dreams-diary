@@ -1,7 +1,6 @@
 import { PopupLanguageListComponent } from "@_controlers/language-list/language-list.component";
 import { CreateArray, ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { ParseFloat } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObject, SimpleObject } from "@_models/app";
@@ -13,11 +12,12 @@ import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { anyToFloat } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { appSetUserSelectAction, userSelectSelector } from "@app/reducers/app";
+import { appSetUserSelectAction } from "@app/reducers/app";
 import { Store } from "@ngrx/store";
-import { Subject, forkJoin, fromEvent, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
+import { Subject, forkJoin, merge, mergeMap, takeUntil, tap, timer } from "rxjs";
 
 
 
@@ -458,10 +458,10 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         // Цикл по данным
         for (let i = 0; i < length; i++) {
           const tempMin = Array.isArray(min)
-            ? ParseFloat(min[i])
+            ? anyToFloat(min[i], 0, 5)
             : min;
           const tempMax = Array.isArray(max)
-            ? ParseFloat(max[i])
+            ? anyToFloat(max[i], 0, 5)
             : max;
           const tempUnit = Array.isArray(unit)
             ? unit[i] ?? ""
@@ -495,7 +495,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         // Цикл по данным
         for (let i = 0; i < length; i++) {
           const tempMin = Array.isArray(min)
-            ? ParseFloat(min[i])
+            ? anyToFloat(min[i], 0, 5)
             : min;
           const tempUnit = Array.isArray(unit)
             ? unit[i] ?? ""

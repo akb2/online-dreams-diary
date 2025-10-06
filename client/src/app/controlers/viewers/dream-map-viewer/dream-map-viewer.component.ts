@@ -4,7 +4,7 @@ import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, D
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleByLegs, AngleToRad, Cos, LineFunc, ParseFloat, ParseInt, Sin } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach, ArraySome, MapCycle, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -16,6 +16,7 @@ import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
 import { DreamMapTerrainService } from "@_services/three.js/terrain.service";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
+import { anyToFloat } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
@@ -956,7 +957,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                   mesh.setMatrixAt(index, object.matrix[k] ?? defaultMatrix);
                   mesh.setColorAt(index, object.color[k] ?? defaultColor);
                   mesh.setShearAt(index, object.skews[k] ?? defaultSkew);
-                  mesh.setDistanceAt(index, ParseFloat(object.lodDistances[k], 0, 2));
+                  mesh.setDistanceAt(index, anyToFloat(object.lodDistances[k], 0, 2));
                   // Коробка для пересечений
                   if (!!object?.raycastBox && hasMatrix) {
                     raycastCoords = GetInstanceBoundingBox(mesh, index, raycastCoords);

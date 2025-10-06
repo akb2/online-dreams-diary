@@ -1,7 +1,7 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, ParseFloat, ParseInt } from "@_helpers/math";
+import { AverageSumm, ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
@@ -16,6 +16,7 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp, floor, round } from "@akb2/math";
+import { anyToFloat } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
@@ -124,14 +125,14 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       ceils,
       camera: {
         target: {
-          x: ParseFloat(control?.target?.x, target.x, 16),
-          y: ParseFloat(control?.target?.y, target.y, 16),
-          z: ParseFloat(control?.target?.z, target.z, 16)
+          x: anyToFloat(control?.target?.x, target.x, 16),
+          y: anyToFloat(control?.target?.y, target.y, 16),
+          z: anyToFloat(control?.target?.z, target.z, 16)
         },
         position: {
-          x: ParseFloat(camera?.position?.x, position.x, 16),
-          y: ParseFloat(camera?.position?.y, position.y, 16),
-          z: ParseFloat(camera?.position?.z, position.z, 16)
+          x: anyToFloat(camera?.position?.x, position.x, 16),
+          y: anyToFloat(camera?.position?.y, position.y, 16),
+          z: anyToFloat(camera?.position?.z, position.z, 16)
         }
       },
       dreamerWay: [],

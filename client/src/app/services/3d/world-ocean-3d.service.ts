@@ -1,13 +1,14 @@
 import { TexturePaths, WorldOceanTexturePath } from "@_datas/dream-map";
 import { DreamMapOceanName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, WorldOceanDefines, WorldOceanFragmentShader, WorldOceanRepeat, WorldOceanUniforms, WorldOceanVertexShader } from "@_datas/three.js/shaders/ocean.shader";
-import { AngleToRad, ParseFloat, ParseInt } from "@_helpers/math";
+import { AngleToRad, ParseInt } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, MapSize } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { LoadTexture } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { round } from "@akb2/math";
+import { anyToFloat } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { DataTexture, DoubleSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RepeatWrapping, RGBAFormat, ShaderMaterial, Texture, UniformsUtils, Vector3, WebGLRenderer } from "three";
 import { Engine3DService } from "./engine-3d.service";
@@ -172,7 +173,7 @@ export class WorldOcean3DService {
 
     if (!!uniforms) {
       const deltaTime = this.engine3DService.clock.getDelta();
-      const newTime = ParseFloat(uniforms.uTime?.value, 0, 20) + (deltaTime * this.waveSpeed);
+      const newTime = anyToFloat(uniforms.uTime?.value, 0, 20) + (deltaTime * this.waveSpeed);
       // Установить новое время
       uniforms.uTime.value = newTime > 1.0
         ? newTime - 1.0

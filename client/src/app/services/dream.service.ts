@@ -5,7 +5,7 @@ import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { ParseFloat, ParseInt } from "@_helpers/math";
+import { ParseInt } from "@_helpers/math";
 import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
@@ -16,6 +16,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { clamp, random } from "@akb2/math";
+import { anyToFloat } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
@@ -313,14 +314,14 @@ export class DreamService implements OnDestroy {
         })),
         camera: {
           target: {
-            x: ParseFloat(dreamMapDto?.camera?.target?.x, defaultCamera.target.x, 16),
-            y: ParseFloat(dreamMapDto?.camera?.target?.y, defaultCamera.target.y, 16),
-            z: ParseFloat(dreamMapDto?.camera?.target?.z, defaultCamera.target.z, 16),
+            x: anyToFloat(dreamMapDto?.camera?.target?.x, defaultCamera.target.x, 16),
+            y: anyToFloat(dreamMapDto?.camera?.target?.y, defaultCamera.target.y, 16),
+            z: anyToFloat(dreamMapDto?.camera?.target?.z, defaultCamera.target.z, 16),
           },
           position: {
-            x: ParseFloat(dreamMapDto?.camera?.position?.x, defaultCamera.position.x, 16),
-            y: ParseFloat(dreamMapDto?.camera?.position?.y, defaultCamera.position.y, 16),
-            z: ParseFloat(dreamMapDto?.camera?.position?.z, defaultCamera.position.z, 16),
+            x: anyToFloat(dreamMapDto?.camera?.position?.x, defaultCamera.position.x, 16),
+            y: anyToFloat(dreamMapDto?.camera?.position?.y, defaultCamera.position.y, 16),
+            z: anyToFloat(dreamMapDto?.camera?.position?.z, defaultCamera.position.z, 16),
           }
         },
         sky: {
