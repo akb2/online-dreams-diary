@@ -1,10 +1,10 @@
 import { ObjectToFormData } from "@_datas/api";
 import { AnyToDate, BrowserNames, OsNames } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { CustomObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
@@ -54,7 +54,7 @@ export class TokenService {
       concatMap(() => this.userId$.pipe(first()), (result, userId) => ({ result, userId })),
       switchMap(({ result, userId }) => {
         const code: ApiResponseCodes = result.result.code;
-        const newUserId: number = ParseInt(result?.result?.data?.tokenData?.user_id);
+        const newUserId: number = anyToInt(result?.result?.data?.tokenData?.user_id);
         // Сохранить токен
         if ((code === "0001" && userId !== newUserId) || code !== "0001") {
           this.clearStoreData();
@@ -124,14 +124,14 @@ export class TokenService {
   private convertToken(tokenData: CustomObject<string | number>): TokenInfo {
     const os: string = OsNames.hasOwnProperty(tokenData.os) ? tokenData.os.toString() : "unknown";
     const name: string = BrowserNames.hasOwnProperty(tokenData.browser) ? tokenData.browser.toString() : "Default Browser";
-    const version: string = ParseInt(tokenData.browser_version) > 0 ? tokenData.browser_version.toString() : "";
+    const version: string = anyToInt(tokenData.browser_version) > 0 ? tokenData.browser_version.toString() : "";
     // Вернуть модель
     return {
-      id: ParseInt(tokenData.id),
+      id: anyToInt(tokenData.id),
       token: tokenData.token.toString(),
       createDate: AnyToDate(tokenData.create_date),
       lastActionDate: AnyToDate(tokenData.last_action_date),
-      userId: ParseInt(tokenData.user_id),
+      userId: anyToInt(tokenData.user_id),
       ip: tokenData.ip.toString(),
       browser: { os, name, version }
     };

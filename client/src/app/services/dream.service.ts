@@ -5,7 +5,6 @@ import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { ParseInt } from "@_helpers/math";
 import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
@@ -16,7 +15,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { clamp, random } from "@akb2/math";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, anyToInt } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
@@ -83,8 +82,8 @@ export class DreamService implements OnDestroy {
     return LocalStorageGet(
       this.dreamMapSettingsLocalStorageKey,
       settings => ({
-        detalization: clamp(ParseInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
-        shadowQuality: ParseInt(settings?.shadowQuality)
+        detalization: clamp(anyToInt(settings?.detalization), DreamObjectElmsValues.Awesome, DreamObjectElmsValues.VeryLow),
+        shadowQuality: anyToInt(settings?.shadowQuality)
       })
     );
   }
@@ -240,7 +239,7 @@ export class DreamService implements OnDestroy {
     dreamDto.keywords = dreamDto.keywords.trim()?.length > 0 ? dreamDto.keywords.trim() : "";
     // Итоговый массив
     return {
-      id: ParseInt(dreamDto.id),
+      id: anyToInt(dreamDto.id),
       user: null,
       createDate: AnyToDate(dreamDto?.createDate),
       title: AnyToString(dreamDto?.title),
@@ -288,25 +287,25 @@ export class DreamService implements OnDestroy {
   // Конвертер карты
   dreamMapConverter(dreamMapDto: DreamMapDto = null): DreamMap {
     if (!!dreamMapDto) {
-      const width = ParseInt(dreamMapDto?.size?.width, this.settings3DService.mapSize);
-      const height = ParseInt(dreamMapDto?.size?.height, this.settings3DService.mapSize);
+      const width = anyToInt(dreamMapDto?.size?.width, this.settings3DService.mapSize);
+      const height = anyToInt(dreamMapDto?.size?.height, this.settings3DService.mapSize);
       const defaultCamera: DreamMapCameraPosition = this.getDefaultCamera(width, height);
       const ocean: Water = {
-        z: ParseInt(dreamMapDto?.ocean?.z, this.settings3DService.waterDefaultHeight),
-        material: ParseInt(dreamMapDto?.ocean?.material, 1)
+        z: anyToInt(dreamMapDto?.ocean?.z, this.settings3DService.waterDefaultHeight),
+        material: anyToInt(dreamMapDto?.ocean?.material, 1)
       };
-      const noiseSeed = ParseInt(dreamMapDto?.noiseSeed, this.newSeed);
+      const noiseSeed = anyToInt(dreamMapDto?.noiseSeed, this.newSeed);
       // Вернуть объект
       return {
         size: {
-          width: ParseInt(dreamMapDto?.size?.width, this.settings3DService.mapSize),
-          height: ParseInt(dreamMapDto?.size?.height, this.settings3DService.mapSize),
-          zHeight: ParseInt(dreamMapDto?.size?.zHeight, this.settings3DService.height)
+          width: anyToInt(dreamMapDto?.size?.width, this.settings3DService.mapSize),
+          height: anyToInt(dreamMapDto?.size?.height, this.settings3DService.mapSize),
+          zHeight: anyToInt(dreamMapDto?.size?.zHeight, this.settings3DService.height)
         },
         ceils: dreamMapDto.ceils.map(c => ({
           place: null,
-          terrain: ParseInt(c?.terrain, this.settings3DService.skyTime),
-          object: ParseInt(c?.object, 0),
+          terrain: anyToInt(c?.terrain, this.settings3DService.skyTime),
+          object: anyToInt(c?.object, 0),
           coord: {
             ...c.coord,
             originalZ: c.coord.z
@@ -325,7 +324,7 @@ export class DreamService implements OnDestroy {
           }
         },
         sky: {
-          time: ParseInt(dreamMapDto?.sky?.time, this.settings3DService.skyTime)
+          time: anyToInt(dreamMapDto?.sky?.time, this.settings3DService.skyTime)
         },
         dreamerWay: dreamMapDto.dreamerWay,
         ocean,
@@ -407,7 +406,7 @@ export class DreamService implements OnDestroy {
       ocean: dreamMap.ocean,
       sky: dreamMap.sky,
       relief: dreamMap.relief,
-      noiseSeed: ParseInt(dreamMap?.noiseSeed, this.newSeed)
+      noiseSeed: anyToInt(dreamMap?.noiseSeed, this.newSeed)
     };
   }
 }

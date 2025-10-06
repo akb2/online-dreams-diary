@@ -1,7 +1,7 @@
-import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { AccountService } from "@_services/account.service";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Subject, fromEvent, skipWhile, takeUntil, takeWhile, timer } from "rxjs";
@@ -74,8 +74,8 @@ export class StatusBlockComponent implements OnChanges, OnInit, AfterViewChecked
     const input: HTMLTextAreaElement = this.inputField?.nativeElement as HTMLTextAreaElement;
     // Только если есть элемент
     if (!!overlay && !!form && !!input) {
-      const maxWidth = ParseInt(formHelper.getBoundingClientRect()?.width);
-      const width: number = ParseInt(this.editInputStyles?.width);
+      const maxWidth = anyToInt(formHelper.getBoundingClientRect()?.width);
+      const width: number = anyToInt(this.editInputStyles?.width);
       // Вернуть результат
       return width < maxWidth;
     }

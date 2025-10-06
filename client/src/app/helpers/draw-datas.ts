@@ -1,7 +1,7 @@
-import { ParseInt } from "@_helpers/math";
 import { CustomObject } from "@_models/app";
 import { MinMax } from "@_models/math";
 import { CssProperty, DrawData, DrawDataArray, DrawDataKeys, DrawDataPeriod, DrawInterface } from "@_models/nav-menu";
+import { anyToInt } from "@akb2/types-tools";
 
 
 
@@ -218,8 +218,8 @@ export class DrawDatas {
       .filter(screen => sizes.hasOwnProperty(screen))
       .reduce((o, screen) => {
         const unit: string = this.getValueFromArray(sizes, screen, "unit") as string;
-        let min: number = ParseInt(this.getValueFromArray(sizes, screen, MinMax.min));
-        let max: number = ParseInt(this.getValueFromArray(sizes, screen, MinMax.max));
+        let min: number = anyToInt(this.getValueFromArray(sizes, screen, MinMax.min));
+        let max: number = anyToInt(this.getValueFromArray(sizes, screen, MinMax.max));
         // Преобразовать данные
         min = !!minF ? minF(min, screen) : min;
         max = !!maxF ? maxF(max, screen) : max;
@@ -533,16 +533,16 @@ export class DrawDatas {
       // Внешний отступ слева
       this.mixProperties({ menuItem: ["paddingLeft"] }, "marginLeft", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = -ParseInt(data["paddingLeft"].min);
-        const max: number = -ParseInt(data["paddingLeft"].max);
+        const min: number = -anyToInt(data["paddingLeft"].min);
+        const max: number = -anyToInt(data["paddingLeft"].max);
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
       // Внешний отступ справа
       this.mixProperties({ menuItem: ["paddingRight"] }, "marginRight", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = ParseInt(data["paddingRight"].min) / 2;
-        const max: number = ParseInt(data["paddingRight"].max) / 2;
+        const min: number = anyToInt(data["paddingRight"].min) / 2;
+        const max: number = anyToInt(data["paddingRight"].max) / 2;
         // Вернуть данные
         return { min, max, unit: "px" };
       })
@@ -553,8 +553,8 @@ export class DrawDatas {
       // Внешний отступ справа
       this.mixProperties({ menuItem: ["paddingRight", "paddingLeft", "height"] }, "marginRight", d => {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
-        const min: number = -Math.min(ParseInt(data["paddingRight"].min), ParseInt(data.height.min) - ParseInt(data["paddingLeft"].min));
-        const max: number = -Math.min(ParseInt(data["paddingRight"].max), ParseInt(data.height.max) - ParseInt(data["paddingLeft"].max));
+        const min: number = -Math.min(anyToInt(data["paddingRight"].min), anyToInt(data.height.min) - anyToInt(data["paddingLeft"].min));
+        const max: number = -Math.min(anyToInt(data["paddingRight"].max), anyToInt(data.height.max) - anyToInt(data["paddingLeft"].max));
         // Вернуть данные
         return { min, max, unit: "px" };
       })
@@ -744,14 +744,14 @@ export class DrawDatas {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
         const height: DrawDataPeriod = data.height;
         const marginTop: DrawDataPeriod = data["marginTop"];
-        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
-        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
-        let min: number = ParseInt(height.min) + ParseInt(marginTop.min) + spacingMin;
-        let max: number = ParseInt(height.max) + ParseInt(marginTop.max) + spacingMax;
+        const spacingMin: number = anyToInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
+        const spacingMax: number = anyToInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
+        let min: number = anyToInt(height.min) + anyToInt(marginTop.min) + spacingMin;
+        let max: number = anyToInt(height.max) + anyToInt(marginTop.max) + spacingMax;
         // Для мобильного меню
         if (s === "small" || s === "xsmall" || s === "xxsmall") {
-          min = ParseInt(height.min);
-          max = ParseInt(height.max);
+          min = anyToInt(height.min);
+          max = anyToInt(height.max);
         }
         // Вернуть данные
         return { min, max, unit: "px" };
@@ -761,14 +761,14 @@ export class DrawDatas {
         const data: CustomObject<DrawDataPeriod> = d.menuItem;
         const height: DrawDataPeriod = data.height;
         const marginTop: DrawDataPeriod = data["marginTop"];
-        const spacingMin: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
-        const spacingMax: number = ParseInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
-        let min: number = this.screenHeight - ParseInt(height.min) - ParseInt(marginTop.min) - (spacingMin * 2);
-        let max: number = this.screenHeight - ParseInt(height.max) - ParseInt(marginTop.max) - (spacingMax * 2);
+        const spacingMin: number = anyToInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.min));
+        const spacingMax: number = anyToInt(this.getValueFromArray(this.notificationsListSpacing, s, MinMax.max));
+        let min: number = this.screenHeight - anyToInt(height.min) - anyToInt(marginTop.min) - (spacingMin * 2);
+        let max: number = this.screenHeight - anyToInt(height.max) - anyToInt(marginTop.max) - (spacingMax * 2);
         // Для мобильного меню
         if (s === "small" || s === "xsmall" || s === "xxsmall") {
-          min = this.screenHeight - (ParseInt(height.min) * 2);
-          max = this.screenHeight - (ParseInt(height.max) * 2);
+          min = this.screenHeight - (anyToInt(height.min) * 2);
+          max = this.screenHeight - (anyToInt(height.max) * 2);
         }
         // Вернуть данные
         return { min, max, unit: "px" };
@@ -875,8 +875,8 @@ export class DrawDatas {
         property: "marginLeft",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min)),
-          (v, s) => v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max))
+          (v, s) => v + anyToInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min)),
+          (v, s) => v + anyToInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max))
         )
       },
       // Ширина
@@ -884,8 +884,8 @@ export class DrawDatas {
         property: "width",
         data: this.valueArrayToDrawData(
           this.avatarSpacings,
-          (v, s) => this.containerLeftWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min))),
-          (v, s) => this.containerWidth - (v + ParseInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max)))
+          (v, s) => this.containerLeftWidth - (v + anyToInt(this.getValueFromArray(this.avatarSizes, s, MinMax.min))),
+          (v, s) => this.containerWidth - (v + anyToInt(this.getValueFromArray(this.avatarSizes, s, MinMax.max)))
         )
       }
     ];
@@ -895,8 +895,8 @@ export class DrawDatas {
       // Отступ слева
       this.mixProperties({ avatarWithBackButton: ["width", "left"] }, "marginLeft", (d, s) => {
         const data: CustomObject<DrawDataPeriod> = d.avatarWithBackButton;
-        const min: number = ParseInt(data.width.min) + ParseInt(data.left.min) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.min));
-        const max: number = ParseInt(data.width.max) + ParseInt(data.left.max) + ParseInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.max));
+        const min: number = anyToInt(data.width.min) + anyToInt(data.left.min) + anyToInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.min));
+        const max: number = anyToInt(data.width.max) + anyToInt(data.left.max) + anyToInt(this.getValueFromArray(this.avatarSpacings, s, MinMax.max));
         // Вернуть данные
         return { min, max, unit: "px" };
       }),
@@ -907,8 +907,8 @@ export class DrawDatas {
       // Ширина
       this.mixProperties({ titleWithBackButtonAndAvatar: ["marginLeft"] }, "width", (d, s) => {
         const data: DrawDataPeriod = d.titleWithBackButtonAndAvatar["marginLeft"];
-        const min: number = this.containerLeftWidth - ParseInt(data.min);
-        const max: number = this.containerWidth - ParseInt(data.max);
+        const min: number = this.containerLeftWidth - anyToInt(data.min);
+        const max: number = this.containerWidth - anyToInt(data.max);
         // Вернуть данные
         return { min, max, unit: "px" };
       })

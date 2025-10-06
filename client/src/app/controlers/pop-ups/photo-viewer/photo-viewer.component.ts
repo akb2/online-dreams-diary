@@ -1,5 +1,4 @@
 import { AppMatDialogConfig, CompareElementByElement, FirstPrevBySelector, FrontDialogClass } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { CustomObjectKey } from "@_models/app";
@@ -9,6 +8,7 @@ import { ScreenKeys } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Subject, concatMap, filter, forkJoin, fromEvent, map, merge, of, pairwise, switchMap, takeUntil, timer } from "rxjs";
@@ -116,7 +116,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
     private accountService: AccountService
   ) {
     this.mediaFiles = data?.mediaFiles ?? [];
-    this.mediaFileId = ParseInt(data?.mediaFileId);
+    this.mediaFileId = (data?.mediaFileId);
     this.mediaFileId = !!this.getCurrentMediaFile?.id ? this.mediaFileId : (!!this.mediaFiles?.length ? this.mediaFiles[0].id : 0);
   }
 
@@ -229,8 +229,8 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         const element: HTMLElement = this.viewerTemplateContainer.nativeElement;
-        const editorHeight: number = ParseInt(this.commentEditor?.nativeElement?.getBoundingClientRect()?.height);
-        const elementMaxHeight: number = ParseInt(window.getComputedStyle(element).maxHeight);
+        const editorHeight: number = anyToInt(this.commentEditor?.nativeElement?.getBoundingClientRect()?.height);
+        const elementMaxHeight: number = anyToInt(window.getComputedStyle(element).maxHeight);
         const imageHeight: number = this.imageElm.nativeElement.getBoundingClientRect().height;
         // Обновить параметры
         this.commentListMaxHeight = elementMaxHeight - editorHeight;
@@ -301,7 +301,7 @@ export class PopupPhotoViewerComponent implements OnInit, OnDestroy {
   // Открыть текущее окно
   static open(matDialog: MatDialog, data?: PopupPhotoViewerData): MatDialogRef<PopupPhotoViewerComponent, PopupPhotoViewerResult> {
     const mediaFiles: number[] = (data?.mediaFiles ?? []).map(({ id }) => id);
-    const mediaFileId: number = ParseInt(data?.mediaFileId);
+    const mediaFileId: number = anyToInt(data?.mediaFileId);
     const dialogId: string = "popup-photo-viewer--files-" + (mediaFiles.join("-")) + "--file-" + (mediaFileId);
     const matDialogConfig: MatDialogConfig = {
       ...AppMatDialogConfig,

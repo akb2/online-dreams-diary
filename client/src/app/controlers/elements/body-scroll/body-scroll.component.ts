@@ -1,10 +1,10 @@
 import { PageComponentElement, ScrollElement } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Subject, forkJoin, fromEvent, of, timer } from "rxjs";
 import { concatMap, filter, takeUntil, tap } from "rxjs/operators";
@@ -56,7 +56,7 @@ export class BodyScrollComponent implements OnInit, OnChanges, AfterViewChecked,
     if (!!sliderV && !!trackV) {
       const maxHeight: number = trackV.clientHeight ?? 1;
       const currentHeight: number = ((sliderV.clientHeight ?? 0) / maxHeight) * 100;
-      const minHeight: number = ((ParseInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
+      const minHeight: number = ((anyToInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
       // Проверка размера
       return clamp(size > 0 ? size : currentHeight, 100, minHeight);
     }

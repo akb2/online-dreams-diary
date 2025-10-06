@@ -2,21 +2,8 @@ import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { clamp, floor, round } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ArrayForEach } from "./objects";
-
-
-
-
-
-// Преобразовать данные в число
-export const ParseInt = (value: any, defaultValue: number = 0) => {
-  let num: number = parseInt(value);
-  num = isNaN(num)
-    ? defaultValue
-    : num;
-  // Вернуть число
-  return num;
-};
 
 // Проверка числа на четность
 export const IsEven: (num: number) => boolean = (num: number) => num / 2 === Math.round(num / 2);
@@ -129,7 +116,7 @@ const AverageFunc = (
   mixedValues: number[] | number[][]
 ): number => {
   const values: number[] = AverageArrayPrepare(mixedValues);
-  const size = ParseInt(values?.length);
+  const size = anyToInt(values?.length);
   // Получены параметры
   if (size > 0) {
     return round(resultCallback(values.reduce((o, v) => round(callback(o, v), 10), startValue), size), 10);
@@ -181,7 +168,7 @@ export const AverageMode = (...mixedValues: number[] | number[][]) => {
   let maxFreq = 0;
   // Цикл по значениям
   ArrayForEach(values, value => {
-    frequency[value] = ParseInt(frequency?.[value]) + 1;
+    frequency[value] = anyToInt(frequency?.[value]) + 1;
     // Вычисление
     if (frequency[value] > maxFreq) {
       maxFreq = frequency[value];

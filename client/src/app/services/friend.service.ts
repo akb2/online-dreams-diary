@@ -1,7 +1,6 @@
 import { ApiResponseMessages, ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { ToArray } from "@_datas/app";
 import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
-import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { ApiResponse, SearchResponce } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
@@ -9,6 +8,7 @@ import { NumberDirection } from "@_models/math";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, catchError, filter, finalize, map, mergeMap, of, pairwise, startWith, switchMap, tap, throwError } from "rxjs";
@@ -46,7 +46,9 @@ export class FriendService {
 
   // Получить подписку на данные о статусах дружбы
   friends$(inUser: number, outUser: number = 0, sync: boolean = false): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
+    outUser = outUser > 0
+      ? outUser
+      : anyToInt(this.tokenService.userId);
     // Обновить счетчик
     let counter: number = this.updateFriendsCounter(inUser, outUser, 1);
     // Подписки
@@ -88,7 +90,9 @@ export class FriendService {
 
   // Сравнение записи о пользователе
   private compareFriend(friend: Friend | number[], inUser: number, outUser: number = 0): boolean {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
+    outUser = outUser > 0
+      ? outUser
+      : anyToInt(this.tokenService.userId);
     // Проверка данных
     if (!!friend && (inUser > 0 || outUser > 0)) {
       const fInUser: number = Array.isArray(friend) ? friend[0] : friend.inUserId;
@@ -122,7 +126,9 @@ export class FriendService {
 
   // Проверка статуса в друзьях
   getFriendStatus(inUser: number, outUser: number = 0, codes: string[] = []): Observable<Friend> {
-    outUser = outUser > 0 ? outUser : ParseInt(this.tokenService.userId);
+    outUser = outUser > 0
+      ? outUser
+      : anyToInt(this.tokenService.userId);
     // Только для авторизованных пользователей
     if (outUser > 0) {
       codes = Array.from(new Set([...codes, "0002"]));
@@ -195,8 +201,8 @@ export class FriendService {
       map(data => Object.entries(data as any).reduce((o, [k, { count, limit, friends }]: [string, any]) => ({
         ...o,
         [k]: {
-          count: ParseInt(count, 0),
-          limit: ParseInt(limit, search?.limit),
+          count: anyToInt(count, 0),
+          limit: anyToInt(limit, search?.limit),
           result: !!friends?.length ? friends.map(u => this.friendWithUsersConverter(u)) : []
         }
       }), {}))
@@ -244,10 +250,10 @@ export class FriendService {
 
   // Конвертация заявки в друзья
   private friendConverter(data: any, userId: number = 0): Friend {
-    const inUserId: number = ParseInt(data?.inUserId) ?? userId;
-    const outUserId: number = ParseInt(data?.outUserId ?? this.tokenService.userId);
+    const inUserId: number = anyToInt(data?.inUserId) ?? userId;
+    const outUserId: number = anyToInt(data?.outUserId ?? this.tokenService.userId);
     const checkUserId: number = inUserId === userId ? outUserId : inUserId;
-    const status: FriendStatus = this.friendStatusConverter(ParseInt(data?.status, -1), inUserId, outUserId, checkUserId);
+    const status: FriendStatus = this.friendStatusConverter(anyToInt(data?.status, -1), inUserId, outUserId, checkUserId);
     // Вернуть массив
     return {
       id: data?.id ?? 0,

@@ -1,10 +1,10 @@
-import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Observable, Subject, animationFrameScheduler, concatMap, fromEvent, of, tap, timer } from "rxjs";
 import { filter, map, observeOn, pairwise, startWith, takeUntil } from "rxjs/operators";
@@ -72,10 +72,10 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
   // Текущий скролл по оси Y
   private get getCurrentScroll(): ScrollData {
     const elm: HTMLElement = this.listElm.nativeElement;
-    const x: number = ParseInt(elm?.scrollLeft);
-    const y: number = ParseInt(elm?.scrollTop);
-    const maxX: number = ParseInt(elm?.scrollWidth - elm?.clientWidth);
-    const maxY: number = ParseInt(elm?.scrollHeight - elm?.clientHeight);
+    const x: number = anyToInt(elm?.scrollLeft);
+    const y: number = anyToInt(elm?.scrollTop);
+    const maxX: number = anyToInt(elm?.scrollWidth - elm?.clientWidth);
+    const maxY: number = anyToInt(elm?.scrollHeight - elm?.clientHeight);
     // Скролл
     return { x, y, maxX, maxY };
   }
@@ -113,7 +113,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     // Все элементы определены
     if (!!sliderH && !!trackH) {
       const maxWidth: number = trackH.clientWidth ?? 0;
-      const minWidth: number = ParseInt(getComputedStyle(sliderH).minWidth) ?? 0;
+      const minWidth: number = anyToInt(getComputedStyle(sliderH).minWidth) ?? 0;
       // Проверка размера
       return (clamp(size > 0 ? size : sliderH.clientWidth ?? 0, maxWidth, minWidth) / maxWidth) * 100;
     }
@@ -129,7 +129,7 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!!sliderV && !!trackV) {
       const maxHeight: number = trackV.clientHeight ?? 1;
       const currentHeight: number = ((sliderV.clientHeight ?? 0) / maxHeight) * 100;
-      const minHeight: number = ((ParseInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
+      const minHeight: number = ((anyToInt(getComputedStyle(sliderV).minHeight) ?? 0) / maxHeight) * 100;
       // Проверка размера
       return clamp(size > 0 ? size : currentHeight, 100, minHeight);
     }
@@ -204,8 +204,8 @@ export class ScrollComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getWaitObservable(() => this.screenService.elmResize(this.hostElement.nativeElement).pipe(tap(([{ element }]) => {
       const datas: DOMRect = element.getBoundingClientRect();
       // Обновить данные
-      this.listWidth = Math.max(datas.width, ParseInt(getComputedStyle(element).maxWidth));
-      this.listHeight = Math.max(datas.height, ParseInt(getComputedStyle(element).maxHeight));
+      this.listWidth = Math.max(datas.width, anyToInt(getComputedStyle(element).maxWidth));
+      this.listHeight = Math.max(datas.height, anyToInt(getComputedStyle(element).maxHeight));
     })))
       .subscribe(() => this.onScrollRender());
     // Скролл

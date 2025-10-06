@@ -1,8 +1,8 @@
 import { DefaultTagSettings, FullModeSaveTags, ShortModeSaveTags, TagSettings } from "@_datas/text";
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { ParseInt } from "@_helpers/math";
 import { IsDreamUrl, SearchUrlRegExp } from "@_helpers/string";
 import { TagSetting } from "@_models/text";
+import { anyToInt } from "@akb2/types-tools";
 import { Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
@@ -92,7 +92,7 @@ export class TextMessage extends BaseInputDirective {
     if (!!emojies?.length) {
       emojies.forEach(textEmoji => {
         const mixedEmoji: string = textEmoji.replace(emojiRegExp, "$1");
-        const skin: EmojiSkin = ParseInt(textEmoji.replace(emojiRegExp, "$3"), 1) as EmojiSkin;
+        const skin: EmojiSkin = anyToInt(textEmoji.replace(emojiRegExp, "$3"), 1) as EmojiSkin;
         const set: EmojiSet = textEmoji.replace(emojiRegExp, "$5") as EmojiSet;
         const emojiHTML: string = this.getEmojiHTML(mixedEmoji, skin, set);
         // Замена смайлика

@@ -5,7 +5,6 @@ import { VoidFunctionVar } from "@_datas/app";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
@@ -21,6 +20,7 @@ import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { Location } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
@@ -112,12 +112,12 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Получить элемент комментария
   private getCommentElm(commentId: number): HTMLElement {
-    return this.commentElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
+    return this.commentElms.find(elementRef => anyToInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
   }
 
   // Получить элемент аватарки комментария
   private getCommentAvatarElm(commentId: number): HTMLElement {
-    return this.commentAvatarElms.find(elementRef => ParseInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
+    return this.commentAvatarElms.find(elementRef => anyToInt(elementRef.nativeElement.getAttribute('comment-id')) === commentId)?.nativeElement ?? null;
   }
 
   // Количество закреплений
@@ -173,7 +173,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
   // Позиция аватарки сверху
   getAvatarTopPosition(commentId: number): number {
-    return ParseInt(this.avatarTopPositions?.[commentId]);
+    return anyToInt(this.avatarTopPositions?.[commentId]);
   }
 
 
@@ -193,7 +193,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
     this.activatedRoute.queryParams
       .pipe(
         take(1),
-        map(params => ParseInt(params?.[this.goToCommentUrlParam])),
+        map(params => anyToInt(params?.[this.goToCommentUrlParam])),
         takeUntil(this.destroyed$)
       )
       .subscribe(startWithId => this.loadComments(true, startWithId));
@@ -218,7 +218,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
       )
       .subscribe(({ y }) => {
         const listElm: HTMLElement = this.listElm.nativeElement;
-        const gapY = ParseInt(window.getComputedStyle(listElm)?.rowGap);
+        const gapY = anyToInt(window.getComputedStyle(listElm)?.rowGap);
         const avatarTop = y + DrawDatas.minHeight + gapY;
         // Цикл по элементам
         this.inScreenComments.forEach(commentId => {

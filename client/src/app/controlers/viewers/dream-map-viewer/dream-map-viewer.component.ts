@@ -4,7 +4,7 @@ import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, D
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { GetDreamMapObjectByID } from "@_datas/three.js/objects/_functions";
 import { GetInstanceBoundingBox } from "@_helpers/geometry";
-import { AngleByLegs, AngleToRad, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, Cos, LineFunc, Sin } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach, ArraySome, MapCycle, XYForEach } from "@_helpers/objects";
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
@@ -16,7 +16,7 @@ import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
 import { DreamMapTerrainService } from "@_services/three.js/terrain.service";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
@@ -554,7 +554,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
     const raycastSize: number = (mapWidth * mapHeight) + 3;
     const depthMax: number = 1;
     const preferredObjectsPerNode: number = 8;
-    const objectsThreshold: number = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
+    const objectsThreshold: number = anyToInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Отрисовщик
     this.renderer = new WebGLRenderer({
       context: this.canvas.nativeElement.getContext(this.contextType, { willReadFrequently: true }),

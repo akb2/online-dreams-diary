@@ -1,8 +1,7 @@
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { ParseInt } from "@_helpers/math";
 import { OptionData } from "@_models/form";
 import { clamp, round } from "@akb2/math";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
@@ -61,7 +60,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
 
   // Количество десятичных разрядов
   private get getDecimalCount(): number {
-    return ParseInt(this.step?.toString()?.split(/([\.,])/i)?.[1]?.length);
+    return anyToInt(this.step?.toString()?.split(/([\.,])/i)?.[1]?.length);
   }
 
   // Текущее значение
@@ -70,7 +69,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
     const tempValue = clamp(anyToFloat(this.control?.value, 0, afterDotNum), this.getMaxValue, this.getMinValue);
     // Вернуть значение
     return this.isAnOptionDataList
-      ? ParseInt(this.optionData?.findIndex(({ key }) => key === tempValue.toString()))
+      ? anyToInt(this.optionData?.findIndex(({ key }) => key === tempValue.toString()))
       : tempValue;
   }
 
@@ -121,7 +120,7 @@ export class SliderInputComponent extends BaseInputDirective implements OnInit, 
     // Значения отличаются
     if (currentValue !== newValue) {
       if (this.isAnOptionDataList) {
-        this.control.setValue(ParseInt(this.optionData[newValue].key));
+        this.control.setValue(anyToInt(this.optionData[newValue].key));
         this.changeDetectorRef.detectChanges();
       }
       // Обычный слайдер

@@ -2,7 +2,7 @@ import { UrlParamsStringToObject } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { YouTubeVideoBase } from "@_models/comment";
 import { random } from "@akb2/math";
-import { ParseInt } from "./math";
+import { anyToInt } from "@akb2/types-tools";
 
 
 
@@ -66,7 +66,7 @@ export const IsDreamUrl = (url: string) => SearchDreamUrlRegExp.test(url);
 export const IsYouTubeVideoUrl = (url: string) => !!GetYouTubeDataByUrl(url)?.id;
 
 // Ид сновидения по ссылке
-export const GetDreamIdByUrl = (url: string) => ParseInt(url.replace(SearchDreamUrlRegExp, "$2"));
+export const GetDreamIdByUrl = (url: string) => anyToInt(url.replace(SearchDreamUrlRegExp, "$2"));
 
 // Данные о YouTube видео по ссылке
 export const GetYouTubeDataByUrl = (url: string): YouTubeVideoBase => {
@@ -80,7 +80,7 @@ export const GetYouTubeDataByUrl = (url: string): YouTubeVideoBase => {
         ? match?.[idKey]
         : params?.["v"]
       );
-      const startTime = ParseInt(params?.["t"], 0);
+      const startTime = anyToInt(params?.["t"], 0);
       // Удалось извлечь ID
       if (!!id) {
         return {

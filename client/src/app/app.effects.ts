@@ -3,8 +3,8 @@ import { ToArray } from "@_datas/app";
 import { NOTIFICATIONS_LOCAL_STORAGE_KEY, NOTIFICATIONS_LOCAL_STORAGE_TTL } from "@_datas/notification";
 import { LanguageLocalStorageKey, LocalStorageTtl } from "@_datas/translate";
 import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
-import { ParseInt } from "@_helpers/math";
 import { GetDetectedLanguage } from "@_helpers/translate";
+import { anyToInt } from "@akb2/types-tools";
 import { Injectable } from '@angular/core';
 import { Actions, ROOT_EFFECTS_INIT, createEffect, ofType } from '@ngrx/effects';
 import { Store } from "@ngrx/store";
@@ -36,7 +36,7 @@ export class AppEffects {
   accountInitUserId$ = createEffect(
     () => this.actions$.pipe(
       ofType(ROOT_EFFECTS_INIT),
-      map(() => accountInitUserIdAction({ userId: ParseInt(LocalStorageGet(CurrentUserIdLocalStorageKey)) }))
+      map(() => accountInitUserIdAction({ userId: anyToInt(LocalStorageGet(CurrentUserIdLocalStorageKey)) }))
     )
   );
 

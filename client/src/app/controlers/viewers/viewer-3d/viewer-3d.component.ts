@@ -1,7 +1,7 @@
 import { CompareElementByElement, VoidFunctionVar } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { Load3DTexture } from "@_datas/three.js/core/texture";
-import { AverageSumm, ParseInt } from "@_helpers/math";
+import { AverageSumm } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, GetCoordsByIndex } from "@_helpers/objects";
 import { ConsistentResponses, TakeCycle, WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, DefaultKey } from "@_models/app";
@@ -16,7 +16,7 @@ import { Sky3DService } from "@_services/3d/sky-3d.service";
 import { WorldOcean3DService } from "@_services/3d/world-ocean-3d.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp, floor, round } from "@akb2/math";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import { ProgressBarMode } from "@angular/material/progress-bar";
 import { editor3DHoverCeilCoordsSelector, editor3DHoverInWorkAreaSelector, editor3DHoveringCeil, editor3DShowControlsSelector, editor3DSkyTimeSelector, editor3DWorldOceanHeightSelector, viewer3DInitialLoaderDisableAction, viewer3DInitialLoaderEnableAction, viewer3DInitialLoaderSelector } from "@app/reducers/viewer-3d";
@@ -71,16 +71,16 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
     const withProgress = LoaderProgressSteps.includes(this.loadingStep);
     const mode: ProgressBarMode = withProgress ? "determinate" : "indeterminate";
     const icon = LoaderIcons?.[this.loadingStep] ?? LoaderIcons[DefaultKey];
-    const ceilsCycles = ParseInt(this.ceilsOperations?.length);
-    const ceilsProgress = ParseInt(AverageSumm(Object.values(this.loadingCeilCurrent)));
+    const ceilsCycles = anyToInt(this.ceilsOperations?.length);
+    const ceilsProgress = anyToInt(AverageSumm(Object.values(this.loadingCeilCurrent)));
     let subSteps: number = 0;
     let completedSubSteps: number = 0;
     // Функции просчета сцены
     const allCalcSize: number = this.calcOperations.length * this.calcOperationLoadingSize;
     const completedCalcSize: number = this.calcOperations.filter(d => !!d?.called).length * this.calcOperationLoadingSize;
     // Текстуры
-    const allTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ size }) => size)) / this.texturesLoadingSize);
-    const loadedTexturesSize: number = ParseInt(AverageSumm(this.textures.map(({ loadedSize }) => loadedSize)) / this.texturesLoadingSize);
+    const allTexturesSize: number = anyToInt(AverageSumm(this.textures.map(({ size }) => size)) / this.texturesLoadingSize);
+    const loadedTexturesSize: number = anyToInt(AverageSumm(this.textures.map(({ loadedSize }) => loadedSize)) / this.texturesLoadingSize);
     // Прогресс
     const maxOperations: number = (this.loadingCeilLimit * ceilsCycles) + allCalcSize + allTexturesSize;
     const currentOperation: number = 1 + ceilsProgress + completedCalcSize + loadedTexturesSize;
@@ -138,15 +138,15 @@ export class Viewer3DComponent implements OnChanges, AfterViewInit, OnDestroy {
       dreamerWay: [],
       size: this.dreamMap?.size,
       ocean: {
-        material: ParseInt(this.dreamMap?.ocean?.material, 1),
-        z: ParseInt(this.dreamMap?.ocean?.z, this.settings3DService.waterDefaultHeight)
+        material: anyToInt(this.dreamMap?.ocean?.material, 1),
+        z: anyToInt(this.dreamMap?.ocean?.z, this.settings3DService.waterDefaultHeight)
       },
       land: {
-        type: ParseInt(this.dreamMap?.land?.type, this.settings3DService.terrain),
-        z: ParseInt(this.dreamMap?.land?.z, this.settings3DService.height)
+        type: anyToInt(this.dreamMap?.land?.type, this.settings3DService.terrain),
+        z: anyToInt(this.dreamMap?.land?.z, this.settings3DService.height)
       },
       sky: {
-        time: ParseInt(this.dreamMap?.sky?.time, this.settings3DService.skyTime)
+        time: anyToInt(this.dreamMap?.sky?.time, this.settings3DService.skyTime)
       },
       relief: {
         types: ClosestHeightNames.reduce((o, name) => ({

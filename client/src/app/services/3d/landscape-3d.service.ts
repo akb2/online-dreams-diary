@@ -1,7 +1,7 @@
 import { ColorsChannelsCount, MaxColorValue, NeighBoringSectors, NeighBoringShifts, ReliefTexturePath, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { AoMapTextureName, MapTextureName, MaskNames, MetalnessMapTextureName, NormalMapTextureName, ParallaxMapTextureName, ParallaxScale, RoughnessMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
-import { AngleToRad, Average, AverageSumm, LengthByCoords, LineFunc, ParseInt } from "@_helpers/math";
+import { AngleToRad, Average, AverageSumm, LengthByCoords, LineFunc } from "@_helpers/math";
 import { ArrayMap, ForCycle, MapCycle, XYMapEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { BaseTextureType, DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, ReliefType } from "@_models/dream-map";
@@ -9,6 +9,7 @@ import { ImageExtension } from "@_models/screen";
 import { LoadTexture, Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector2Uniform } from "@_threejs/base";
 import { clamp, floor, round } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { BackSide, DataTexture, Float32BufferAttribute, FrontSide, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Mesh, PlaneGeometry, RGBAFormat, RepeatWrapping, ShaderMaterial, Texture, UniformsUtils } from "three";
 import { Ceil3dService } from "./ceil-3d.service";
@@ -105,9 +106,9 @@ export class Landscape3DService {
     const mapHeight: number = this.dreamMap.size.height;
     const mapBorderSizeX: number = mapWidth * this.outSideRepeat;
     const mapBorderSizeY: number = mapHeight * this.outSideRepeat;
-    const x = ParseInt(ceil?.coord?.x);
-    const y = ParseInt(ceil?.coord?.y);
-    const originalZ = ParseInt(ceil?.coord?.originalZ);
+    const x = anyToInt(ceil?.coord?.x);
+    const y = anyToInt(ceil?.coord?.y);
+    const originalZ = anyToInt(ceil?.coord?.originalZ);
     const vertexStartX: number = x + mapBorderSizeX;
     const vertexStartY: number = y + mapBorderSizeY;
     const vertexWidth: number = (mapWidth * ((this.outSideRepeat * 2) + 1)) + 1;
@@ -188,8 +189,8 @@ export class Landscape3DService {
     ArrayMap(
       Object.entries(neighBoringSectors),
       ([, sector]) => {
-        const centerX = (ParseInt(NeighBoringShifts?.[sector]?.x) * mapWidth) + mapHalfWidth;
-        const centerY = (ParseInt(NeighBoringShifts?.[sector]?.y) * mapHeight) + mapHalfHeight;
+        const centerX = (anyToInt(NeighBoringShifts?.[sector]?.x) * mapWidth) + mapHalfWidth;
+        const centerY = (anyToInt(NeighBoringShifts?.[sector]?.y) * mapHeight) + mapHalfHeight;
         const distance = Math.abs(LengthByCoords({ x, y }, { x: centerX, y: centerY }));
         const koof = LineFunc(0.5, 0, distance, 0, radius);
         // Коэффициент в допустимом пределе
@@ -242,8 +243,8 @@ export class Landscape3DService {
 
   // Создание материала
   private createGeometry(): void {
-    const width = ParseInt(this.dreamMap.size.width);
-    const height = ParseInt(this.dreamMap.size.height);
+    const width = anyToInt(this.dreamMap.size.width);
+    const height = anyToInt(this.dreamMap.size.height);
     const repeat: number = 1 + (this.outSideRepeat * 2)
     const totalWidth: number = width * repeat;
     const totalHeight: number = height * repeat;

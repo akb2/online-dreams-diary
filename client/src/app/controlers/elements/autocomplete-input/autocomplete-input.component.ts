@@ -1,11 +1,11 @@
 import { ScrollElement } from "@_datas/app";
 import { BaseInputDirective } from "@_directives/base-input.directive";
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { CustomObject, IconBackground, IconColor } from "@_models/app";
 import { AutocompleteImageSize, AutocompleteType, OptionData } from "@_models/form";
 import { ScrollService } from "@_services/scroll.service";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { FormControl, NgControl } from "@angular/forms";
 import { MatAutocompleteTrigger } from "@angular/material/autocomplete";
@@ -256,12 +256,12 @@ export class AutocompleteInputComponent extends BaseInputDirective implements On
     const defaultValue: number = Infinity;
     const field: HTMLElement = this.field.nativeElement;
     const parent: HTMLElement = elm.parentElement;
-    const left: number = ParseInt(parent.style.left, defaultValue);
-    const right: number = ParseInt(parent.style.right, defaultValue);
+    const left: number = anyToInt(parent.style.left, defaultValue);
+    const right: number = anyToInt(parent.style.right, defaultValue);
     const autoCompleteRight: boolean = left === defaultValue && right !== defaultValue;
     const screenHeight: number = ScrollElement().clientHeight;
     const fieldTop: number = field.getBoundingClientRect().top;
-    const top: number = ParseInt(parent.style.top, defaultValue);
+    const top: number = anyToInt(parent.style.top, defaultValue);
     const height: number = parent.getBoundingClientRect().height;
     // Поле справа
     if (autoCompleteRight) {

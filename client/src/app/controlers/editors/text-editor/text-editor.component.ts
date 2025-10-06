@@ -1,11 +1,11 @@
 import { CompareElementByElement, CreateArray } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { SimpleObject } from "@_models/app";
 import { CaretPosition } from "@_models/text";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
@@ -633,7 +633,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
       const nodeText: string = node.outerHTML;
       const id: string = node.getAttribute("data-emoji-id");
       const set: string = node.getAttribute("data-emoji-set");
-      const skin: number = ParseInt(node.getAttribute("data-emoji-skin"), 1);
+      const skin: number = anyToInt(node.getAttribute("data-emoji-skin"), 1);
       const emojiCode: string = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + (!!set ? ":" + set : "") + "]";
       // Замена текста
       editor.innerHTML = text.replace(nodeText, emojiCode);
@@ -811,7 +811,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           .forEach(node => handleTextWrap(node));
         // Обновить выделение
         if (!!firstInsered?.firstChild && !!lastInsered?.firstChild) {
-          const lastSize: number = ParseInt((lastInsered?.firstChild as Text)?.length);
+          const lastSize: number = anyToInt((lastInsered?.firstChild as Text)?.length);
           const newRange: Range = this.createRange(firstInsered?.firstChild, lastInsered?.firstChild, 0, lastSize);
           // Обновить выделение
           selection.removeAllRanges();
@@ -1024,7 +1024,7 @@ export class TextEditorComponent extends TextMessage implements OnInit, AfterVie
           const isEndSelected: boolean = endContainer === node;
           // Переместить в предыдущий абзац
           if (previousNodeIsP) {
-            const previousNodeTextLength: number = ParseInt(previousNode?.textContent?.length);
+            const previousNodeTextLength: number = anyToInt(previousNode?.textContent?.length);
             // Перемещение
             previousNode.appendChild(node);
             previousNode.normalize();

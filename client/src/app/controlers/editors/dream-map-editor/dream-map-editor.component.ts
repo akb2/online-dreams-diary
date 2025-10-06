@@ -4,7 +4,7 @@ import { ArrayRandom, CreateArray } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
-import { IsMultiple, LengthByCoords, ParseInt } from "@_helpers/math";
+import { IsMultiple, LengthByCoords } from "@_helpers/math";
 import { CustomObjectKey, IconType, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSector, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
@@ -12,6 +12,7 @@ import { SliderSettings } from "@_models/form";
 import { ImageExtension } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
 import { round } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
@@ -441,12 +442,12 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение размера кисти
   onToolSizeLandChange(value: any): void {
-    this.toolSizeLand = ToolSizeLand[ParseInt(value)];
+    this.toolSizeLand = ToolSizeLand[anyToInt(value)];
   }
 
   // Изменение высоты мирового океана
   onOceanHeightChange(value: any): void {
-    this.dreamMap.ocean.z = ParseInt(value) ?? DreamWaterDefHeight;
+    this.dreamMap.ocean.z = anyToInt(value) ?? DreamWaterDefHeight;
     // Установить высоту
     this.setOceanHeight();
     // Обновить
@@ -455,7 +456,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение времени
   onTimeChange(value: any): void {
-    this.dreamMap.sky.time = ParseInt(value) ?? DreamSkyTime;
+    this.dreamMap.sky.time = anyToInt(value) ?? DreamSkyTime;
     this.form.get("currentTime").setValue(this.dreamMap.sky.time, { emitEvent: false });
     // Установить высоту
     this.setSkyTime();

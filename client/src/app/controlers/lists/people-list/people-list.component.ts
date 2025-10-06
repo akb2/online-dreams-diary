@@ -1,9 +1,9 @@
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { Friend, FriendStatus } from "@_models/friend";
 import { AccountService } from "@_services/account.service";
 import { FriendService } from "@_services/friend.service";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
 import { Observable, Subject, merge, switchMap, takeUntil } from "rxjs";
 
@@ -159,7 +159,7 @@ export class PeopleListComponent implements OnInit, OnChanges, OnDestroy {
 
   // Добавить статус друзей в массив
   private addFriendToList(friend: Friend): void {
-    const index: number = ParseInt(this.friends.findIndex(({ id, inUserId, outUserId }) =>
+    const index: number = anyToInt(this.friends.findIndex(({ id, inUserId, outUserId }) =>
       (id > 0 && friend.id > 0 && friend.id === id)
       || (friend.inUserId === inUserId && friend.outUserId === outUserId)
       || (friend.inUserId === outUserId && friend.outUserId === inUserId)

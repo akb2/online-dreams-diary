@@ -1,5 +1,5 @@
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
+import { anyToInt } from "@akb2/types-tools";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Observable, Subject, fromEvent, throwError } from 'rxjs';
 import { catchError, concatMap, filter, last, map, skipWhile, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
@@ -34,8 +34,8 @@ export class SwipeDirective implements OnInit, OnDestroy {
       skipWhile(() => !this.el?.nativeElement),
       concatMap(() => fromEvent<TouchEvent>(this.el.nativeElement, event).pipe(
         map(event => ({
-          clientX: ParseInt(event?.touches?.[0]?.clientX),
-          clientY: ParseInt(event?.touches?.[0]?.clientY)
+          clientX: anyToInt(event?.touches?.[0]?.clientX),
+          clientY: anyToInt(event?.touches?.[0]?.clientY)
         })),
         takeUntil(this.destroyed$)
       ))

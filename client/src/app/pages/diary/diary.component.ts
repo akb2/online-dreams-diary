@@ -3,7 +3,6 @@ import { SearchPanelComponent } from "@_controlers/search-panel/search-panel.com
 import { ObjectToUrlObject } from "@_datas/api";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
-import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
@@ -21,6 +20,7 @@ import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
@@ -112,9 +112,9 @@ export class DiaryComponent implements OnInit, OnDestroy {
     // Вернуть данные
     return {
       ...fromForm,
-      status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
-      type: ParseInt(fromForm.type) ?? -1,
-      mood: ParseInt(fromForm.mood) ?? -1,
+      status: this.getDreamStatusesFieldAvail ? (anyToInt(fromForm.status) ?? -1) : -1,
+      type: anyToInt(fromForm.type) ?? -1,
+      mood: anyToInt(fromForm.mood) ?? -1,
       withMap: !!fromForm.withMap && fromForm.withMap !== "false",
       withText: !!fromForm.withText && fromForm.withText !== "false",
       page,
@@ -125,16 +125,16 @@ export class DiaryComponent implements OnInit, OnDestroy {
 
   // Текущие данные из URL
   private get getCurrentSearch(): Partial<SearchDream> {
-    const page: number = parseInt(this.queryParams.page) > 0 ? parseInt(this.queryParams.page) : 1;
+    const page: number = anyToInt(this.queryParams.page) > 0 ? anyToInt(this.queryParams.page) : 1;
     const fromForm: CustomObjectKey<keyof SearchDream, string | number> = Object.entries(this.getDefaultSearch)
       .filter(([k]) => k !== "page")
       .reduce((o, [k, defaultValue]) => ({ ...o, [k]: this.queryParams[k]?.toString() ?? defaultValue }), {});
     // Вернуть данные
     return {
       q: fromForm.q.toString() ?? "",
-      status: this.getDreamStatusesFieldAvail ? (ParseInt(fromForm.status) ?? -1) : -1,
-      type: ParseInt(fromForm.type) ?? -1,
-      mood: ParseInt(fromForm.mood) ?? -1,
+      status: this.getDreamStatusesFieldAvail ? (anyToInt(fromForm.status) ?? -1) : -1,
+      type: anyToInt(fromForm.type) ?? -1,
+      mood: anyToInt(fromForm.mood) ?? -1,
       withMap: !!fromForm.withMap && fromForm.withMap !== "false",
       withText: !!fromForm.withText && fromForm.withText !== "false",
       page
@@ -334,7 +334,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
         switchMap(({ params, queryParams }) => {
           let visitedUserId: number = 0;
           // Определение идентификатора пользователя
-          if (ParseInt(this.pageData.userId) === -1) {
+          if (anyToInt(this.pageData.userId) === -1) {
             if (params?.user_id === "0") {
               this.router.navigate(["/diary/" + this.user.id], { replaceUrl: true });
               // Вернуть ошибку
@@ -342,7 +342,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
             }
             // Определить ID просматриваемого пользователя
             else {
-              visitedUserId = ParseInt(params?.user_id, !!this.user ? this.user.id : 0);
+              visitedUserId = anyToInt(params?.user_id, !!this.user ? this.user.id : 0);
             }
           }
           // Вернуть данные
@@ -352,7 +352,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       )
       .subscribe(({ visitedUserId, queryParams }) => {
         this.queryParams = queryParams;
-        this.pageCurrent = clamp(ParseInt(queryParams?.page), Infinity, 1);
+        this.pageCurrent = clamp(anyToInt(queryParams?.page), Infinity, 1);
         this.visitedUserId = visitedUserId;
         this.itsMyPage = visitedUserId > 0 && visitedUserId === this.user?.id;
         this.itsAllPage = visitedUserId === 0;
@@ -452,7 +452,7 @@ export class DiaryComponent implements OnInit, OnDestroy {
       .filter(([k]) => k !== "page")
       .forEach(([k, v]) => this.searchForm.get(k)?.setValue(v));
     // Проверка текущего значения
-    const currentStatus: -1 | DreamStatus = ParseInt(this.searchForm.get("status")?.value);
+    const currentStatus: -1 | DreamStatus = anyToInt(this.searchForm.get("status")?.value);
     this.searchForm.get("status")?.setValue(this.dreamStatuses.some(({ key }) => key === currentStatus.toString()) ? currentStatus : -1);
     // Обновить
     this.changeDetectorRef.detectChanges();

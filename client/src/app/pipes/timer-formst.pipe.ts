@@ -1,5 +1,5 @@
-import { ParseInt } from "@_helpers/math";
 import { ArrayFilter } from "@_helpers/objects";
+import { anyToInt } from "@akb2/types-tools";
 import { Pipe, PipeTransform } from "@angular/core";
 
 @Pipe({
@@ -7,7 +7,7 @@ import { Pipe, PipeTransform } from "@angular/core";
 })
 export class TimerFormatPipe implements PipeTransform {
   transform(value: any): string {
-    const time = ParseInt(value);
+    const time = anyToInt(value);
     // Преобразование числа во время
     if (time > 0) {
       const hours = Math.floor(value / 3600);

@@ -1,8 +1,8 @@
-import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { CommentMaterialType } from "@_models/comment";
 import { AccountService } from "@_services/account.service";
 import { ScreenService } from "@_services/screen.service";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit } from "@angular/core";
 import { Subject, concatMap, map, of, takeUntil } from "rxjs";
 
@@ -79,7 +79,7 @@ export class CommentBlockComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$)
       )
       .subscribe(hostElement => {
-        this.scrollSpacing = !!hostElement ? ParseInt(getComputedStyle(hostElement).rowGap) : 0;
+        this.scrollSpacing = !!hostElement ? anyToInt(getComputedStyle(hostElement).rowGap) : 0;
         this.changeDetectorRef.detectChanges();
       });
   }

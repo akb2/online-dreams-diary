@@ -1,6 +1,5 @@
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { BackgroundImageDatas } from "@_datas/appearance";
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { SearchResponce } from "@_models/api";
@@ -17,6 +16,7 @@ import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -239,7 +239,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
       const elm: HTMLElement = this.leftPanel.nativeElement;
       const elmHelper: HTMLElement = this.leftPanelHelper.nativeElement;
       const elmInformation: HTMLElement = this.informationElm.nativeElement;
-      const spacing: number = ParseInt(getComputedStyle(elmInformation).rowGap);
+      const spacing: number = anyToInt(getComputedStyle(elmInformation).rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const elmHeight: number = elm.clientHeight;
       const elmHelperHeight: number = elmHelper.clientHeight;
@@ -294,7 +294,7 @@ export class ProfileDetailComponent implements OnInit, AfterContentChecked, OnDe
           }
           // Определить ID просматриваемого пользователя
           else {
-            return of(ParseInt(params?.user_id, !!this.user ? this.user.id : 0));
+            return of(anyToInt(params?.user_id, !!this.user ? this.user.id : 0));
           }
         }),
         takeUntil(this.destroyed$)

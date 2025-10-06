@@ -1,6 +1,6 @@
 import { CreateArray } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { round } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { Pipe, PipeTransform } from "@angular/core";
 
 
@@ -23,7 +23,7 @@ export class ShortCounterPipe implements PipeTransform {
 
 
   transform(value: any): string {
-    const digit: number = ParseInt(value);
+    const digit: number = anyToInt(value);
     let result: string = "";
     // Ноль
     if (digit === 0) {

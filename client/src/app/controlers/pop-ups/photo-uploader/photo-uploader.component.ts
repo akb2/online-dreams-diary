@@ -1,12 +1,13 @@
 import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMaxSize } from "@_datas/app";
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
-import { LineFunc, ParseInt } from "@_helpers/math";
+import { LineFunc } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CustomObjectKey, FileTypes } from "@_models/app";
 import { MediaFile, MediaFileExtension } from "@_models/media";
 import { MediaService } from "@_services/media.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Observable, Subject, catchError, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, takeWhile, tap } from "rxjs";
@@ -90,7 +91,7 @@ export class PopupPhotoUploaderComponent implements OnInit, AfterViewInit, OnDes
   // Файлы готовы к сохранению
   get filesReady(): boolean {
     const noUploaded: boolean = this.uploadedFiles.some(({ uploaded }) => !uploaded);
-    const all: number = ParseInt(this.uploadedFiles?.length);
+    const all: number = anyToInt(this.uploadedFiles?.length);
     const errors: number = this.errorUploadedFiles.length;
     // Файлы не готовы к загрузке
     return !(noUploaded || (errors === all && all > 0) || !all);

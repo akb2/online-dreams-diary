@@ -6,7 +6,6 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
-import { ParseInt } from "@_helpers/math";
 import { AnyToArray } from "@_helpers/objects";
 import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
@@ -18,6 +17,7 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
@@ -117,21 +117,21 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Доступна ли карта
   private get isMapAvail(): boolean {
-    const mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
+    const mode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode;
     // Проверка
     return mode === DreamMode.map || mode === DreamMode.mixed;
   }
 
   // Доступен ли текст
   get isTextAvail(): boolean {
-    const mode: DreamMode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
+    const mode: DreamMode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode;
     // Проверка
     return mode === DreamMode.text || mode === DreamMode.mixed;
   }
 
   // Текущий режим
   get getCurrentMode(): DreamMode {
-    return ParseInt(this.dreamForm.get("mode")?.value) as DreamMode;
+    return anyToInt(this.dreamForm.get("mode")?.value) as DreamMode;
   }
 
   // Текущее название заголовка
@@ -145,13 +145,13 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     const description = AnyToString(this.dreamForm.get("description")?.value);
     const date = AnyToDate(this.dreamForm.get("date")?.value);
     const headerType: NavMenuType = AnyToString(this.dreamForm.get("headerType")?.value, NavMenuType.short) as NavMenuType;
-    const headerBackground = ParseInt(this.dreamForm.get("headerBackground")?.value);
-    const mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
-    const type = ParseInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
-    const mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
+    const headerBackground = anyToInt(this.dreamForm.get("headerBackground")?.value);
+    const mode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
+    const type = anyToInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
+    const mood = anyToInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
     const status: DreamStatus = this.dreamForm.invalid
       ? DreamStatus.draft
-      : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
+      : anyToInt(this.dreamForm.get("status").value) as DreamStatus;
     const keywords = AnyToArray(this.dreamForm.get("keywords")?.value).sort().join(",");
     const text = AnyToString(this.dreamForm.get("text")?.value);
     const map: DreamMap = this.mapEditor
@@ -193,7 +193,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private translateService: TranslateService
   ) {
-    this.dreamId = ParseInt(this.activatedRoute.snapshot.params.dreamId);
+    this.dreamId = anyToInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
     // Форма сновидений
     this.dreamForm = this.formBuilder.group({
@@ -235,7 +235,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     if (!this.loading) {
       const status: DreamStatus = this.dreamForm.invalid
         ? DreamStatus.draft
-        : ParseInt(this.dreamForm.get("status").value) as DreamStatus;
+        : anyToInt(this.dreamForm.get("status").value) as DreamStatus;
       // Подсветить ошибки
       if (this.dreamForm.invalid) {
         this.dreamForm.markAllAsTouched();
@@ -249,13 +249,13 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       }
       // Сохранить
       else if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
-        const headerBackground = ParseInt(this.dreamForm.get("headerBackground")?.value);
+        const headerBackground = anyToInt(this.dreamForm.get("headerBackground")?.value);
         // Свойства
         this.dream.title = AnyToString(this.dreamForm.get("title")?.value);
         this.dream.description = AnyToString(this.dreamForm.get("description")?.value);
-        this.dream.mode = ParseInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
-        this.dream.type = ParseInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
-        this.dream.mood = ParseInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
+        this.dream.mode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
+        this.dream.type = anyToInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
+        this.dream.mood = anyToInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
         this.dream.status = status;
         this.dream.date = AnyToDate(this.dreamForm.get("date")?.value);
         this.dream.keywords = AnyToArray(this.dreamForm.get("keywords")?.value);
@@ -308,7 +308,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   // Переключение вкладки
   onChangeTab(index: number) {
     this.mainMenu.collapseMenu();
-    this.selectedTab = ParseInt(index);
+    this.selectedTab = anyToInt(index);
     // Обнаружить изменения
     this.changeDetectorRef.detectChanges();
   }

@@ -1,10 +1,11 @@
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
 import { DefaultDreamMapSettings, DreamCeilSize, DreamFogFar, DreamFogNear, DreamHorizont, DreamMapMaxShadowQuality, DreamMapMinShadowQuality, DreamShadowQualitySize } from "@_datas/dream-map-settings";
-import { AngleToRad, Cos, LineFunc, ParseInt } from "@_helpers/math";
+import { AngleToRad, Cos, LineFunc } from "@_helpers/math";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { DreamMapSettings } from "@_models/dream-map";
 import { MinMax } from "@_models/math";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, Color, DirectionalLight, Fog, IUniform, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -105,7 +106,7 @@ export class DreamMapSkyBoxService {
     const phi = AngleToRad(90 - elevation);
     const theta = AngleToRad(azimuth);
     const sunPosition: Vector3 = new Vector3();
-    const shadowSize: number = DreamShadowQualitySize * clamp(ParseInt(settings?.shadowQuality), DreamMapMaxShadowQuality, DreamMapMinShadowQuality);
+    const shadowSize: number = DreamShadowQualitySize * clamp(anyToInt(settings?.shadowQuality), DreamMapMaxShadowQuality, DreamMapMinShadowQuality);
     // Обновить данные
     sunPosition.setFromSphericalCoords(1, phi, theta);
     uniforms.sunPosition.value = sunPosition;

@@ -3,7 +3,6 @@ import { ObjectToFormData, ObjectToParams } from "@_datas/api";
 import { AnyToDate, ToArray } from "@_datas/app";
 import { BackgroundImageDatas } from "@_datas/appearance";
 import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
-import { ParseInt } from "@_helpers/math";
 import { CompareObjects } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
 import { AuthResponce, PrivateType, SearchUser, User, UserAvatarCropDataElement, UserAvatarCropDataKeys, UserPrivate, UserRegister, UserSave, UserSettings, UserSex } from "@_models/account";
@@ -12,7 +11,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
-import { isDefined } from "@akb2/types-tools";
+import { anyToInt, isDefined } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
@@ -56,7 +55,7 @@ export class AccountService implements OnDestroy {
 
   // Получить подписку на данные о пользователе
   user$(userId: number = 0, sync: boolean = false, codes: string[] = [], test?: any): Observable<User> {
-    userId = userId > 0 ? userId : ParseInt(this.tokenService.userId);
+    userId = userId > 0 ? userId : anyToInt(this.tokenService.userId);
     codes.push("8100");
     // Обновить счетчик
     let firstCall: boolean = true;
@@ -133,7 +132,7 @@ export class AccountService implements OnDestroy {
       .pipe(
         switchMap(result => {
           const code: ApiResponseCodes = result.result.code.toString();
-          const userId: number = ParseInt(result?.result?.data?.id);
+          const userId: number = anyToInt(result?.result?.data?.id);
           // Доступна ли активация
           activateIsAvail = !!result?.result?.data?.activateIsAvail;
           // Сохранить токен
@@ -190,11 +189,11 @@ export class AccountService implements OnDestroy {
 
   // Автополучение данных о пользователе
   syncUserData(mixedId: string | number = 0, lastEditDate: Date = null): Observable<User> {
-    let id: number = ParseInt(mixedId);
+    let id: number = anyToInt(mixedId);
     // Параметры
     let connect: boolean = false;
     const observable = (id: number = 0, lastEditDate: Date = null) => {
-      const user: User = this.users$.getValue()?.find(({ id: userId }) => userId === ParseInt(id > 0 ? id : this.tokenService.userId));
+      const user: User = this.users$.getValue()?.find(({ id: userId }) => userId === anyToInt(id > 0 ? id : this.tokenService.userId));
       // Параметры
       id = user?.id ?? id ?? 0;
       lastEditDate = user?.lastEditDate ?? lastEditDate ?? new Date(0);
@@ -268,8 +267,8 @@ export class AccountService implements OnDestroy {
       switchMap(result => {
         const code: string = result?.result?.code?.toString() ?? "";
         const people: User[] = !!result?.result?.data?.people?.length ? result.result.data.people.map(u => this.userConverter(u)) : [];
-        const count: number = parseInt(result?.result?.data?.count);
-        const limit: number = parseInt(result?.result?.data?.limit);
+        const count: number = anyToInt(result?.result?.data?.count);
+        const limit: number = anyToInt(result?.result?.data?.limit);
         // Сохранить данные пользователя
         if (code === "0001") {
           people.forEach(user => this.saveUserToStore(user));
@@ -359,7 +358,7 @@ export class AccountService implements OnDestroy {
   // Преобразовать данные с сервера
   userConverter(data: any): User {
     try {
-      const background: number = ParseInt(typeof data?.settings?.profileBackground === "object" ? data?.settings?.profileBackground?.id : data?.settings?.profileBackground);
+      const background: number = anyToInt(typeof data?.settings?.profileBackground === "object" ? data?.settings?.profileBackground?.id : data?.settings?.profileBackground);
       const headerType: NavMenuType = data?.settings?.profileHeaderType as NavMenuType;
       let notifications = {};
       // Настройки уведомлений из объекта
@@ -373,10 +372,10 @@ export class AccountService implements OnDestroy {
       // Данные пользователя
       const user: User = {
         ...data,
-        id: ParseInt(data?.id),
+        id: anyToInt(data?.id),
         name: CapitalizeFirstLetter(data?.name?.toString()),
         lastName: CapitalizeFirstLetter(data?.lastName?.toString()),
-        sex: ParseInt(data?.sex) as UserSex,
+        sex: anyToInt(data?.sex) as UserSex,
         online: this.isOnlineByDate(AnyToDate(data?.lastActionDate)),
         lastActionDate: AnyToDate(data?.lastActionDate),
         lastEditDate: AnyToDate(data?.lastEditDate),
@@ -415,9 +414,9 @@ export class AccountService implements OnDestroy {
         .map(rule => ({ rule, data: data[rule] ?? DefaultUserPrivItem }))
         .map(({ rule, data }) => ({
           rule, data: {
-            type: ParseInt(data?.type),
-            blackList: ToArray(data?.blackList, d => ParseInt(d)),
-            whiteList: ToArray(data?.whiteList, d => ParseInt(d))
+            type: anyToInt(data?.type),
+            blackList: ToArray(data?.blackList, d => anyToInt(d)),
+            whiteList: ToArray(data?.whiteList, d => anyToInt(d))
           }
         }))
         .map(({ rule, data }) => {

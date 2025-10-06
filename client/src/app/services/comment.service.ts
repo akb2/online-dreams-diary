@@ -1,13 +1,13 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { AnyToDate } from "@_datas/app";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
-import { ParseInt } from "@_helpers/math";
 import { AnyToArray, ArrayMap } from "@_helpers/objects";
 import { AnyToString } from "@_helpers/string";
 import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment, YouTubeVideo } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
@@ -27,8 +27,8 @@ import { MediaService } from "./media.service";
 export class CommentService extends TextMessage {
   // Конвертация комментария
   private getConvertedComment(comment: any): Observable<Comment> {
-    const userId: number = ParseInt(comment?.userId);
-    const replyToUserId: number = ParseInt(comment?.replyToUserId);
+    const userId: number = anyToInt(comment?.userId);
+    const replyToUserId: number = anyToInt(comment?.replyToUserId);
     let attachment: CommentAttachment = {};
     const getUser = (id: number) => !!id
       ? this.accountService.user$(id).pipe(take(1))
@@ -87,7 +87,7 @@ export class CommentService extends TextMessage {
               // Данные видео
               return {
                 id,
-                startTime: ParseInt(data?.[1]),
+                startTime: anyToInt(data?.[1]),
                 smallImage: GetYouTubeImage(id, "default"),
                 middleImage: GetYouTubeImage(id, "hqdefault"),
                 link: GetYouTubeLink(id)
@@ -98,12 +98,12 @@ export class CommentService extends TextMessage {
         })
       ),
       map(({ comment, user, replyToUser, graffity, dreams, mediaPhotos, youTubeVideos }) => ({
-        id: ParseInt(comment?.id),
+        id: anyToInt(comment?.id),
         user,
         replyToUser,
-        materialType: ParseInt(comment?.materialType) as CommentMaterialType,
-        materialId: ParseInt(comment?.materialId),
-        materialOwner: ParseInt(comment?.materialOwner),
+        materialType: anyToInt(comment?.materialType) as CommentMaterialType,
+        materialId: anyToInt(comment?.materialId),
+        materialOwner: anyToInt(comment?.materialOwner),
         text: comment?.text ?? "",
         html: this.textTransform(comment?.text ?? ""),
         createDate: AnyToDate(comment?.createDate),
@@ -135,7 +135,7 @@ export class CommentService extends TextMessage {
       materialType: data.materialType,
       materialId: data.materialId,
       materialOwner: data.materialOwner,
-      replyToUserId: ParseInt(data?.replyToUser?.id),
+      replyToUserId: anyToInt(data?.replyToUser?.id),
       text: data.text,
       graffityUpload: data?.uploadAttachment?.graffity,
       attachment: JSON.stringify({
@@ -159,10 +159,10 @@ export class CommentService extends TextMessage {
           forkJoin<Comment[]>((data?.comments ?? []).map(comment => this.getConvertedComment(comment))) :
           of([] as Comment[]),
         ({ result: { data } }, result) => ({
-          count: ParseInt(data?.count),
-          limit: ParseInt(data?.limit),
-          prevCount: ParseInt(data?.prevCount),
-          nextCount: ParseInt(data?.nextCount),
+          count: anyToInt(data?.count),
+          limit: anyToInt(data?.limit),
+          prevCount: anyToInt(data?.prevCount),
+          nextCount: anyToInt(data?.nextCount),
           result,
           hasAccess: !!data?.hasAccess
         })
@@ -198,7 +198,7 @@ export class CommentService extends TextMessage {
     const url = "longPolling/get/comment/" + materialType + "/" + materialId;
     const request = this.httpClient.get(url, { responseType: "text" }).pipe(
       catchError(e => of({ ...e, text: "" })),
-      map(result => ParseInt(UrlParamsStringToObject(result ?? "")?.commentId)),
+      map(result => anyToInt(UrlParamsStringToObject(result ?? "")?.commentId)),
       switchMap(commentId => commentId > 0
         ? this.getById(commentId, codes).pipe(catchError(() => of(null)))
         : of(null)

@@ -1,7 +1,6 @@
 import { CoordDto, XYCoord } from "@_models/dream-map";
+import { anyToInt } from "@akb2/types-tools";
 import { IsSimpleObject } from "./app";
-import { ParseInt } from "./math";
-import { invert } from "cypress/types/lodash";
 
 
 
@@ -116,7 +115,7 @@ export const MapCycle = <T>(size: number, callback: (index: number) => T, invers
 
 // Оптимизированный цикл по массиву
 export const ArrayForEach = <T>(array: T[], callback: (item: T, index?: number) => void, invert = false) => ForCycle(
-  ParseInt(array?.length),
+  anyToInt(array?.length),
   index => {
     const item: T = array[index];
     // Вызвать обработку элемента
@@ -147,7 +146,7 @@ export const ArrayMap = <O, T>(array: O[], callback: (item: O, index?: number) =
   const list: T[] = [];
   // Цикл
   ForCycle(
-    ParseInt(array?.length),
+    anyToInt(array?.length),
     index => {
       const item: O = array[index];
       // Вызвать обработку элемента

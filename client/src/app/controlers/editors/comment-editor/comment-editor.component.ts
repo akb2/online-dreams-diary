@@ -3,7 +3,6 @@ import { PopupPhotoUploaderComponent } from "@_controlers/photo-uploader/photo-u
 import { ShortModeBlockRemoveTags, ShortModeInlineRemoveTags } from "@_datas/text";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { DrawDatas } from "@_helpers/draw-datas";
-import { ParseInt } from "@_helpers/math";
 import { ArrayFilter, ArrayMap, UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { GetDreamIdByUrl, GetLinksFromString, GetYouTubeDataByUrl } from "@_helpers/string";
@@ -20,6 +19,7 @@ import { CommentService } from "@_services/comment.service";
 import { DreamService } from "@_services/dream.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, TemplateRef, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { translateNeedPetrovichSelector } from "@app/reducers/translate";
@@ -239,7 +239,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
             const mainMenuHeight = DrawDatas.minHeight;
             const scrollBorderTop = currentScroll + mainMenuHeight;
             // const scrollBorderBottom= currentScroll + window.innerHeight;
-            const fieldBorderTop = currentScroll + replyBounding.top - ParseInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
+            const fieldBorderTop = currentScroll + replyBounding.top - anyToInt(replyStyles.marginTop) - mainMenuHeight - this.scrollSpacing;
             // const fieldBorderBottom= fieldBorderTop + editorContainer.clientHeight - this.scrollSpacing;
             // Скролл
             if (fieldBorderTop < scrollBorderTop) {
@@ -563,7 +563,7 @@ export class CommentEditorComponent implements OnChanges, OnDestroy {
       const nodeText = node.outerHTML;
       const id = node.getAttribute("data-emoji-id");
       const set = node.getAttribute("data-emoji-set");
-      const skin = ParseInt(node.getAttribute("data-emoji-skin"), 1);
+      const skin = anyToInt(node.getAttribute("data-emoji-skin"), 1);
       const emojiCode = "[emoji=" + id + (skin > 1 ? ":" + skin : "") + (!!set ? ":" + set : "") + "]";
       // Замена текста
       editor.innerHTML = text.replace(nodeText, emojiCode);

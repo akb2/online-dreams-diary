@@ -1,10 +1,6 @@
 import { CurrentUserIdLocalStorageKey } from "@_datas/account";
+import { anyToInt } from "@akb2/types-tools";
 import { LocalStorageGet } from "./local-storage";
-import { ParseInt } from "./math";
-
-
-
-
 
 // Получить текущий токен
-export const GetCurrentUserId = () => ParseInt(LocalStorageGet(CurrentUserIdLocalStorageKey));
+export const GetCurrentUserId = () => anyToInt(LocalStorageGet(CurrentUserIdLocalStorageKey));

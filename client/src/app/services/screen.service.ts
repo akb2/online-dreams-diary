@@ -1,5 +1,5 @@
-import { ParseInt } from "@_helpers/math";
 import { ElmSize, LoadingImageData, ScreenBreakpoints, ScreenKeys } from "@_models/screen";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, Subscriber, fromEvent, of, throwError, timer } from "rxjs";
@@ -161,7 +161,7 @@ export class ScreenService implements OnDestroy {
   getImageSize(url: string): Observable<number> {
     return this.httpClient.head(url, { observe: "response" }).pipe(
       switchMap(response => {
-        const size: number = ParseInt(response?.headers?.get("Content-Length"));
+        const size: number = anyToInt(response?.headers?.get("Content-Length"));
         // Вернуть размер
         return size > 0
           ? of(size)

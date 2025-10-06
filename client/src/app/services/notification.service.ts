@@ -1,11 +1,11 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { AnyToDate, ToArray } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { User } from "@_models/account";
 import { ApiResponse, SearchResponce } from "@_models/api";
 import { Notification, NotificationData, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { accountUserIdSelector } from "@app/reducers/account";
@@ -91,7 +91,7 @@ export class NotificationService implements OnDestroy {
   getNewNotifications(codes: string[] = []): Observable<Notification> {
     let connect: boolean = false;
     const observable = (mixedId: string | number = 0) => {
-      const id: number = ParseInt(this.user?.id ?? mixedId ?? 0);
+      const id: number = anyToInt(this.user?.id ?? mixedId ?? 0);
       // Подключение установлено
       connect = true;
       // Подписка
@@ -106,7 +106,7 @@ export class NotificationService implements OnDestroy {
       concatMap(() => this.userId$),
       concatMap(userId => observable(userId)),
       catchError(() => of({ text: "" })),
-      map(r => ParseInt(UrlParamsStringToObject(r?.text ?? "")?.notificationId)),
+      map(r => anyToInt(UrlParamsStringToObject(r?.text ?? "")?.notificationId)),
       concatMap(notificationId => notificationId > 0 ? this.getById(notificationId, codes).pipe(catchError(() => of(null))) : of(null)),
       tap(() => connect = false)
     );
@@ -116,7 +116,7 @@ export class NotificationService implements OnDestroy {
   readNotifications(ids: number[], codes: string[] = []): Observable<SearchResponce<Notification>> {
     return this.httpClient.post<ApiResponse>("notification/readByIds", ObjectToFormData({ ids })).pipe(
       switchMap(result => result.result.code === "0001" || codes.includes(result.result.code.toString()) ?
-        of(ParseInt(result.result.data)) :
+        of(anyToInt(result.result.data)) :
         this.apiService.checkResponse(result.result.code, codes)
       ),
       concatMap(() => this.getList({ ids }))
@@ -127,12 +127,12 @@ export class NotificationService implements OnDestroy {
 
   // Преобразование уведомлений
   private notificationCoverter(mixedData?: any): Notification {
-    const id: number = ParseInt(mixedData?.id);
+    const id: number = anyToInt(mixedData?.id);
     // Вернуть данные
     return !!mixedData && id > 0 ? {
-      id: ParseInt(mixedData?.id),
-      userId: ParseInt(mixedData?.userId),
-      status: ParseInt(mixedData?.status) as NotificationStatus,
+      id: anyToInt(mixedData?.id),
+      userId: anyToInt(mixedData?.userId),
+      status: anyToInt(mixedData?.status) as NotificationStatus,
       createDate: AnyToDate(mixedData?.createDate),
       text: mixedData?.text?.toString() ?? "",
       link: mixedData?.link?.toString() ?? "",

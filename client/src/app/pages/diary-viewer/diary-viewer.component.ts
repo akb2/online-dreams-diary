@@ -2,7 +2,6 @@ import { CommentListComponent } from "@_controlers/comment-list/comment-list.com
 import { NavMenuComponent } from "@_controlers/nav-menu/nav-menu.component";
 import { DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
-import { ParseInt } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { User } from "@_models/account";
@@ -19,6 +18,7 @@ import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, Title } from "@angular/platform-browser";
@@ -216,8 +216,8 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
       const keywordsPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
       const keywordsPanelHelperStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanelHelper);
       const keywordsPanelElmHeight: number = keywordsPanelElm.getBoundingClientRect().height;
-      const keysPanelHelperGap: number = ParseInt(keywordsPanelHelperStyles.rowGap);
-      const keywordsPanelHeight: number = keywordsPanel.getBoundingClientRect().height - ParseInt(keywordsPanelStyles.paddingTop) - ParseInt(keywordsPanelStyles.paddingBottom);
+      const keysPanelHelperGap: number = anyToInt(keywordsPanelHelperStyles.rowGap);
+      const keywordsPanelHeight: number = keywordsPanel.getBoundingClientRect().height - anyToInt(keywordsPanelStyles.paddingTop) - anyToInt(keywordsPanelStyles.paddingBottom);
       const keywordsPanelHelperHeight: number = keywordsPanelHelper.getBoundingClientRect().height;
       // Проверка доступности
       return keywordsPanelHeight < keywordsPanelHelperHeight || this.topPanelOpen ?
@@ -249,7 +249,7 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
   ) {
     super(controlDir, emojiService, domSanitizer);
     // Идентификатор сновидения
-    this.dreamId = parseInt(this.activatedRoute.snapshot.params.dreamId);
+    this.dreamId = anyToInt(this.activatedRoute.snapshot.params.dreamId);
     this.dreamId = isNaN(this.dreamId) ? 0 : this.dreamId;
   }
 
@@ -315,7 +315,7 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
       const interpretationPanel: HTMLElement = this.interpretationPanel?.nativeElement;
       const contentPanelStyles: CSSStyleDeclaration = getComputedStyle(contentPanel);
       const keywordPanelStyles: CSSStyleDeclaration = getComputedStyle(keywordsPanel);
-      const spacing: number = ParseInt(contentPanelStyles.rowGap);
+      const spacing: number = anyToInt(contentPanelStyles.rowGap);
       const mainMenuHeight: number = this.mainMenu.headerHeight;
       const mainMenuHeightDiff: number = this.mainMenu.maxHeight - mainMenuHeight;
       const contentPanelHeight: number = contentPanel.clientHeight;
@@ -328,10 +328,10 @@ export class DiaryViewerComponent extends TextMessage implements OnInit, OnDestr
       const availLeftShift: boolean = contentPanelHeight > leftPanelHeight;
       const availRightShift: boolean = contentPanelHeight > rightPanelHeight;
       const interpretationPanelHeight: number = !!interpretationPanel ?
-        interpretationPanel.getBoundingClientRect().height + ParseInt(getComputedStyle(interpretationPanel).marginTop) :
+        interpretationPanel.getBoundingClientRect().height + anyToInt(getComputedStyle(interpretationPanel).marginTop) :
         0;
-      const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + ParseInt(keywordPanelStyles.paddingBottom) - interpretationPanelHeight;
-      const headerKeywordsTop: number = clamp(scrollY + spacing - mainMenuHeightDiff - ParseInt(keywordPanelStyles.paddingTop), maxTopShift);
+      const maxTopShift: number = contentPanelHeight - headerShift - keywordsPanelHeight + anyToInt(keywordPanelStyles.paddingBottom) - interpretationPanelHeight;
+      const headerKeywordsTop: number = clamp(scrollY + spacing - mainMenuHeightDiff - anyToInt(keywordPanelStyles.paddingTop), maxTopShift);
       const headerKeywordsShift: number = headerKeywordsTop + keywordsPanelHeight;
       const screenKeywordsHeight: number = scrollElement.clientHeight - headerKeywordsShift - spacing;
       const maxLeftShift: number = leftPanelHeight - screenKeywordsHeight - headerKeywordsShift;

@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DreamMap } from '@_models/dream-map';
 import { NavMenuType } from '@_models/nav-menu';
 import { CanonicalService } from '@_services/canonical.service';
 import { DreamService } from '@_services/dream.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 
 
@@ -18,7 +18,7 @@ import { DreamService } from '@_services/dream.service';
 export class HomeComponent {
 
 
-  navMenuType: NavMenuType = NavMenuType.full;
+  navMenuType: NavMenuType = NavMenuType.collapse;
   dreamMap: DreamMap;
 
 

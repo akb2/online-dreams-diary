@@ -1,6 +1,5 @@
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
 import { AnyToDate, CompareElementBySelector, CreateArray } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
@@ -9,6 +8,7 @@ import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
 import { ScrollService } from "@_services/scroll.service";
 import { TokenService } from "@_services/token.service";
+import { anyToInt } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { Observable, Subject, concatMap, filter, forkJoin, fromEvent, map, of, take, takeUntil, tap, timer } from "rxjs";
 
@@ -54,7 +54,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
 
   // Иконка уведомления
   notificationUser(notification: Notification): User {
-    const userId: number = ParseInt(notification?.data?.user);
+    const userId: number = anyToInt(notification?.data?.user);
     // Информация о пользователе
     return this.users?.[userId];
   }
@@ -89,7 +89,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
       concatMap(
         notifications => {
           const userIds: number[] = UniqueArray(notifications
-            .map(({ data }) => ParseInt(data.user))
+            .map(({ data }) => anyToInt(data.user))
             .filter(userId => userId > 0 && !this.users[userId] && this.users[userId] !== null)
           );
           // Зарезервировать списки ID
@@ -169,7 +169,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
             .map(({ elm, key }) => {
               const styles: CSSStyleDeclaration = getComputedStyle(elm);
               const top: number = elm.offsetTop;
-              const bottom: number = elm.offsetTop + elm.clientHeight + ParseInt(styles.borderTopWidth) + ParseInt(styles.borderBottomWidth);
+              const bottom: number = elm.offsetTop + elm.clientHeight + anyToInt(styles.borderTopWidth) + anyToInt(styles.borderBottomWidth);
               // Вернуть данные
               return { elm, top, bottom, key };
             })

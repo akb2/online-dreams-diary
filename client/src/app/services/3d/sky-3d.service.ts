@@ -2,7 +2,7 @@ import { CreateArray } from "@_datas/app";
 import { MaxColorValue } from "@_datas/dream-map";
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
 import { FragmentShader, VertexShader } from "@_datas/three.js/shaders/clouds.shader";
-import { AngleInRange, AngleToRad, Cos, LineFunc, ParseInt, Sin } from "@_helpers/math";
+import { AngleInRange, AngleToRad, Cos, LineFunc, Sin } from "@_helpers/math";
 import { XYZForEach } from "@_helpers/objects";
 import { CustomObject, CustomObjectKey } from "@_models/app";
 import { CoordDto, DreamMap } from "@_models/dream-map";
@@ -10,6 +10,7 @@ import { CoordsXYZToIndex, MinMax } from "@_models/math";
 import { AnimationData } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector3Uniform } from "@_threejs/base";
 import { clamp } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, ClampToEdgeWrapping, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, Vector2, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -228,7 +229,7 @@ export class Sky3DService {
     const absSin = isDay
       ? sin
       : sin * -1;
-    const shadowQuality = ParseInt(this.dreamMapSettings?.shadowQuality);
+    const shadowQuality = anyToInt(this.dreamMapSettings?.shadowQuality);
     // Настраиваемые параметры
     const azimuth = LineFunc(SkySettings.azimuth[settingsKey].min, SkySettings.azimuth[settingsKey].max, absSin, -1, 1);
     const elevation = LineFunc(SkySettings.elevation[settingsKey].min, SkySettings.elevation[settingsKey].max, absCos, 0, 1);
@@ -279,7 +280,7 @@ export class Sky3DService {
     const uniforms = this.cloudsMaterial?.uniforms;
     if (!!uniforms && !!uniforms.cameraPosition) {
       uniforms.cameraPosition = ThreeVector3Uniform(camera.position);
-      uniforms.frame = { value: ParseInt(uniforms?.frame?.value) + 1 };
+      uniforms.frame = { value: anyToInt(uniforms?.frame?.value) + 1 };
     }
   }
 }

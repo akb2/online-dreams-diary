@@ -1,8 +1,8 @@
 import { ObjectToFormData } from "@_datas/api";
 import { AnyToDate } from "@_datas/app";
-import { ParseInt } from "@_helpers/math";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
 import { MediaFile, MediaFileDto, MediaFileExtension } from "@_models/media";
+import { anyToInt } from "@akb2/types-tools";
 import { HttpClient, HttpEventType } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, concatMap, map, of, switchMap, take } from "rxjs";
@@ -58,11 +58,11 @@ export class MediaService {
       ),
       take(1),
       map(data => ({
-        id: ParseInt(data?.id),
+        id: anyToInt(data?.id),
         createDate: AnyToDate(data?.createDate),
         user: data?.user ?? null,
         hash: data?.hash?.toString() ?? "",
-        size: ParseInt(data?.size),
+        size: anyToInt(data?.size),
         extension: data?.extension?.toString() as MediaFileExtension,
         originalName: data?.originalName?.toString(),
         keywords: (data?.keywords ?? []).map(keyword => keyword.trim()),

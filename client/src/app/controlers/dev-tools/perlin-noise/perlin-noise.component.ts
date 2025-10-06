@@ -1,11 +1,12 @@
 import { VoidFunctionVar } from "@_datas/app";
 import { PerlinNoiseGenerator } from "@_datas/three.js/helpers/perlin-noise-generator";
-import { Average, AverageGeometric, AverageHarmonic, AverageMax, AverageMedian, AverageMin, AverageMode, AverageMultiply, AveragePower, AverageQuadratic, LineFunc, ParseInt } from "@_helpers/math";
+import { Average, AverageGeometric, AverageHarmonic, AverageMax, AverageMedian, AverageMin, AverageMode, AverageMultiply, AveragePower, AverageQuadratic, LineFunc } from "@_helpers/math";
 import { GetCoordsByIndex } from "@_helpers/objects";
 import { TakeCycle } from "@_helpers/rxjs";
 import { OptionData } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { clamp, round } from "@akb2/math";
+import { anyToInt } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Subject, map, takeUntil, tap } from "rxjs";
@@ -58,12 +59,12 @@ export class PerlinNoiseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Цвет минимальной высоты
   get getMinColor(): string {
-    return this.getHexColor(ParseInt(this.form?.get("colorMinRange")?.value));
+    return this.getHexColor(anyToInt(this.form?.get("colorMinRange")?.value));
   }
 
   // Цвет максимальной высоты
   get getMaxColor(): string {
-    return this.getHexColor(ParseInt(this.form?.get("colorMaxRange")?.value));
+    return this.getHexColor(anyToInt(this.form?.get("colorMaxRange")?.value));
   }
 
   // Смешение
@@ -156,9 +157,9 @@ export class PerlinNoiseComponent implements OnInit, AfterViewInit, OnDestroy {
       const canvas = this.canvas.nativeElement;
       const context = canvas.getContext("2d");
       const perlinNoise = new PerlinNoiseGenerator(this.size);
-      const noiseLargeScale = ParseInt(this.form?.get("largeScale")?.value, this.noiseLargeScale[3]);
-      const noiseMiddleScale = ParseInt(this.form?.get("middleScale")?.value, this.noiseMiddleScale[3]);
-      const noiseSmallScale = ParseInt(this.form?.get("smallScale")?.value, this.noiseSmallScale[3]);
+      const noiseLargeScale = anyToInt(this.form?.get("largeScale")?.value, this.noiseLargeScale[3]);
+      const noiseMiddleScale = anyToInt(this.form?.get("middleScale")?.value, this.noiseMiddleScale[3]);
+      const noiseSmallScale = anyToInt(this.form?.get("smallScale")?.value, this.noiseSmallScale[3]);
       // Отметка о начале
       this.inProgress = true;
       this.changeDetectorRef.detectChanges();
@@ -171,8 +172,8 @@ export class PerlinNoiseComponent implements OnInit, AfterViewInit, OnDestroy {
           map(i => GetCoordsByIndex(this.size, this.size, i)),
           tap(({ x, y }) => {
             const noises: number[] = [];
-            const maxColor = ParseInt(this.form.get("colorMaxRange").value, this.colorRange[1]);
-            const minColor = ParseInt(this.form.get("colorMinRange").value, this.colorRange[0]);
+            const maxColor = anyToInt(this.form.get("colorMaxRange").value, this.colorRange[1]);
+            const minColor = anyToInt(this.form.get("colorMinRange").value, this.colorRange[0]);
             // Большой шум
             if (!!this.form?.get("useLargeNoise")?.value) {
               noises.push(perlinNoise.noise(x / noiseLargeScale, y / noiseLargeScale));

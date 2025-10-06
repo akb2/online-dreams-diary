@@ -1,4 +1,4 @@
-import { AngleByLegs, AngleToRad, DetectDirectionByExpressions, LineFunc, ParseInt, RadToAngle } from "@_helpers/math";
+import { AngleByLegs, AngleToRad, DetectDirectionByExpressions, LineFunc, RadToAngle } from "@_helpers/math";
 import { ArrayFilter, ArrayForEach } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CanvasContextType } from "@_models/app";
@@ -7,7 +7,7 @@ import { AnimationData } from "@_models/three.js/base";
 import { DreamService } from "@_services/dream.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, anyToInt } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { viewer3DSetCompassAction } from "@app/reducers/viewer-3d";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
@@ -82,8 +82,8 @@ export class Engine3DService implements OnDestroy {
   }
 
   get defaultControlPosition(): DreamMapCameraPosition {
-    const width = ParseInt(this.dreamMap?.size?.width, this.settings3DService.mapSize);
-    const height = ParseInt(this.dreamMap?.size?.height, this.settings3DService.mapSize);
+    const width = anyToInt(this.dreamMap?.size?.width, this.settings3DService.mapSize);
+    const height = anyToInt(this.dreamMap?.size?.height, this.settings3DService.mapSize);
     // Параметры камеры по умолчанию
     return this.dreamService.getDefaultCamera(width, height);
   }
@@ -181,7 +181,7 @@ export class Engine3DService implements OnDestroy {
     const raycastSize = (mapWidth * mapHeight) + 3;
     const depthMax = 10;
     const preferredObjectsPerNode = 8;
-    const objectsThreshold = ParseInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
+    const objectsThreshold = anyToInt(Math.ceil(raycastSize / Math.pow(2, depthMax)), preferredObjectsPerNode);
     // Настройка пересечений
     this.octree = new Octree({
       // scene: this.scene,
