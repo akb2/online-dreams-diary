@@ -7,7 +7,6 @@ import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { User } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
 import { DreamMap } from "@_models/dream-map";
 import { NavMenuType } from "@_models/nav-menu";
@@ -15,7 +14,7 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { anyToArray, anyToInt, anyToString } from "@akb2/types-tools";
+import { SimpleObject, anyToArray, anyToInt, anyToString } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";

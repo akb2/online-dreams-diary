@@ -1,11 +1,10 @@
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { environment } from "@_environments/environment";
 import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
-import { SimpleObject } from "@_models/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { CanonicalService } from "@_services/canonical.service";
-import { anyToBoolean, CustomObject } from "@akb2/types-tools";
+import { anyToBoolean, CustomObject, SimpleObject } from "@akb2/types-tools";
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";

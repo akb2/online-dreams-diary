@@ -1,10 +1,9 @@
 import { PageComponentElement, ScrollElement } from "@_datas/app";
-import { SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { SimpleObject, anyToInt } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { Subject, forkJoin, fromEvent, of, timer } from "rxjs";
 import { concatMap, filter, takeUntil, tap } from "rxjs/operators";

@@ -1,5 +1,4 @@
 import { AuthRules } from "@_models/menu";
-import { CustomObject } from "@akb2/types-tools";
 
 
 
@@ -9,7 +8,6 @@ import { CustomObject } from "@akb2/types-tools";
 export type MultiArray<T> = T[] | MultiArray<T>[];
 
 // Тип базового одномерного объекта
-export type SimpleObject = CustomObject<string>;
 export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
 
 // Тип иконки

@@ -1,5 +1,6 @@
+import { IconBackground, IconColor } from "@_models/app";
+import { SimpleObject } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, ViewChild } from "@angular/core";
-import { IconBackground, IconColor, SimpleObject } from "@_models/app";
 
 
 

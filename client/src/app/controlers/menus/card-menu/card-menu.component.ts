@@ -1,5 +1,5 @@
+import { SimpleObject } from "@akb2/types-tools";
 import { Component, Input } from "@angular/core";
-import { SimpleObject } from "@_models/app";
 
 
 

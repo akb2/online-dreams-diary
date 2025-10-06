@@ -1,16 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { BrowserNames, OsNames } from "@_datas/app";
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { CustomValidators } from "@_helpers/custom-validators";
 import { User } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { TokenInfo } from "@_models/token";
 import { AccountService } from "@_services/account.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
+import { SimpleObject } from "@akb2/types-tools";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { of, Subject } from "rxjs";
 import { switchMap, takeUntil } from "rxjs/operators";
 

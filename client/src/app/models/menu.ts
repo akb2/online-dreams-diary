@@ -1,4 +1,4 @@
-import { SimpleObject } from "@_models/app";
+import { SimpleObject } from "@akb2/types-tools";
 
 
 

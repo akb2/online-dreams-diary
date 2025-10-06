@@ -5,7 +5,7 @@ import { DreamTitle } from "@_datas/dream-map-settings";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { User } from "@_models/account";
-import { IconBackground, IconColor, SimpleObject } from "@_models/app";
+import { IconBackground, IconColor } from "@_models/app";
 import { CommentMaterialType } from "@_models/comment";
 import { Dream, DreamMode } from "@_models/dream";
 import { AutocompleteImageSize, OptionData } from "@_models/form";
@@ -18,13 +18,13 @@ import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, SimpleObject } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, Optional, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { EmojiService } from "@ctrl/ngx-emoji-mart/ngx-emoji";
-import { Subject, concatMap, map, merge, mergeMap, of, switchMap, takeUntil, throwError } from "rxjs";
+import { concatMap, map, merge, mergeMap, of, Subject, switchMap, takeUntil, throwError } from "rxjs";
 
 
 

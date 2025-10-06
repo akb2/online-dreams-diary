@@ -3,9 +3,8 @@ import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } f
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
-import { SimpleObject } from "@_models/app";
 import { CaretPosition } from "@_models/text";
-import { anyToInt, createArray } from "@akb2/types-tools";
+import { SimpleObject, anyToInt, createArray } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";

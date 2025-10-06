@@ -1,4 +1,4 @@
-import { SimpleObject } from "@_models/app";
+import { SimpleObject } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { viewer3DCompassSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";

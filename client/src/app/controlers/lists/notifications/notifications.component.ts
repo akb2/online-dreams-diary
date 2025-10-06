@@ -2,13 +2,12 @@ import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
 import { AnyToDate, CompareElementBySelector } from "@_datas/app";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { Notification, NotificationActionType, NotificationSearchRequest, NotificationStatus } from "@_models/notification";
 import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
 import { ScrollService } from "@_services/scroll.service";
 import { TokenService } from "@_services/token.service";
-import { anyToInt, createArray, CustomObjectKey } from "@akb2/types-tools";
+import { anyToInt, createArray, CustomObjectKey, SimpleObject } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { concatMap, filter, forkJoin, fromEvent, map, Observable, of, Subject, take, takeUntil, tap, timer } from "rxjs";
 

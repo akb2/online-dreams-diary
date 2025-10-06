@@ -1,7 +1,7 @@
 import { LocalStorageDefaultTtl } from "@_helpers/local-storage";
 import { PrivateType, UserPrivate, UserPrivateItem, UserPrivateNameItem } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { OptionData } from "@_models/form";
+import { SimpleObject } from "@akb2/types-tools";
 
 
 

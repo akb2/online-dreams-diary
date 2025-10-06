@@ -1,9 +1,9 @@
 import { AppMatDialogConfig } from "@_datas/app";
 import { UserAvatarCropDataElement } from "@_models/account";
-import { SimpleObject } from "@_models/app";
 import { ScreenKeys, ScrollAddDimension } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { clamp, round } from "@akb2/math";
+import { SimpleObject } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { Subject, forkJoin, fromEvent, mergeMap, skipWhile, takeUntil, takeWhile, tap, timer } from "rxjs";

@@ -1,13 +1,12 @@
 import { PopupSearchUsersComponent } from '@_controlers/search-users/search-users.component';
 import { DefaultUserPrivItem, PeoplePlural, PrivateTypes, UserPrivateNames } from "@_datas/account";
 import { PrivateType, User, UserPrivate, UserPrivateItem, UserPrivateNameItem } from '@_models/account';
-import { SimpleObject } from '@_models/app';
 import { OptionData } from "@_models/form";
 import { NavMenuType } from '@_models/nav-menu';
 import { ScreenBreakpoints, ScreenKeys } from '@_models/screen';
 import { AccountService } from '@_services/account.service';
 import { ScreenService } from '@_services/screen.service';
-import { CustomObjectKey } from "@akb2/types-tools";
+import { CustomObjectKey, SimpleObject } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
