@@ -1,12 +1,12 @@
 import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_datas/api";
 import { AnyToDate } from "@_datas/app";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
-import { AnyToArray, ArrayMap } from "@_helpers/objects";
+import { ArrayMap } from "@_helpers/objects";
 import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment, YouTubeVideo } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
-import { anyToInt, anyToString } from "@akb2/types-tools";
+import { anyToArray, anyToInt, anyToString } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
@@ -80,7 +80,7 @@ export class CommentService extends TextMessage {
         data => ({
           ...data,
           youTubeVideos: ArrayMap(
-            AnyToArray(attachment?.youTubeVideos),
+            anyToArray(attachment?.youTubeVideos),
             data => {
               const id = anyToString(data?.[0]);
               // Данные видео
@@ -138,9 +138,9 @@ export class CommentService extends TextMessage {
       text: data.text,
       graffityUpload: data?.uploadAttachment?.graffity,
       attachment: JSON.stringify({
-        youTubeVideos: AnyToArray(data?.uploadAttachment?.youTubeVideos),
-        mediaPhotos: AnyToArray(data?.uploadAttachment?.mediaPhotos),
-        dreams: AnyToArray(data?.uploadAttachment?.dreams)
+        youTubeVideos: anyToArray(data?.uploadAttachment?.youTubeVideos),
+        mediaPhotos: anyToArray(data?.uploadAttachment?.mediaPhotos),
+        dreams: anyToArray(data?.uploadAttachment?.dreams)
       })
     })).pipe(
       switchMap(data => this.apiService.checkSwitchMap(data, codes))

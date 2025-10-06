@@ -2,15 +2,6 @@ import { CoordDto, XYCoord } from "@_models/dream-map";
 import { anyToInt } from "@akb2/types-tools";
 import { IsSimpleObject } from "./app";
 
-
-
-// Преобразовать любой тип в массив
-export const AnyToArray = <T>(value: T | T[]): T[] => Array.isArray(value)
-  ? value
-  : !!value
-    ? [value]
-    : [];
-
 // Сравнение двух объектов
 export const CompareObjects: <T>(objA: T, objB: T) => boolean = <T>(objA: T, objB: T) => {
   if (IsSimpleType(objA, objB)) {

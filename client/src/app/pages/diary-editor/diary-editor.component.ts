@@ -6,7 +6,6 @@ import { BackgroundImageDatas } from "@_datas/appearance";
 import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream";
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
-import { AnyToArray } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
@@ -16,7 +15,7 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { anyToInt, anyToString } from "@akb2/types-tools";
+import { anyToArray, anyToInt, anyToString } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
@@ -81,7 +80,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Кнопка назад: URL
   get backLink(): string {
-    const fromArray = AnyToArray(this.fromMark.split("|"));
+    const fromArray = anyToArray(this.fromMark.split("|"));
     const from = anyToString(fromArray[fromArray.length - 1]);
     // Список всех сновидений
     if (from === "diary-all") {
@@ -101,7 +100,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Кнопка назад: параметры
   get backLinkParams(): SimpleObject {
-    const fromArray = AnyToArray(this.fromMark.split("|"));
+    const fromArray = anyToArray(this.fromMark.split("|"));
     const fromMark = fromArray.filter((v, k) => k < fromArray.length - 1).join("|");
     // Вернуть значение
     return fromMark
@@ -151,7 +150,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
     const status: DreamStatus = this.dreamForm.invalid
       ? DreamStatus.draft
       : anyToInt(this.dreamForm.get("status").value) as DreamStatus;
-    const keywords = AnyToArray(this.dreamForm.get("keywords")?.value).sort().join(",");
+    const keywords = anyToArray(this.dreamForm.get("keywords")?.value).sort().join(",");
     const text = anyToString(this.dreamForm.get("text")?.value);
     const map: DreamMap = this.mapEditor
       ? this.mapEditor.getMap
@@ -167,7 +166,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       this.dream.type !== type ||
       this.dream.mood !== mood ||
       this.dream.status !== status ||
-      AnyToArray(this.dream.keywords).sort().join(",") !== keywords ||
+      anyToArray(this.dream.keywords).sort().join(",") !== keywords ||
       (this.isTextAvail && this.dream.text !== text) ||
       (this.isMapAvail && !!map.isChanged)
     );
@@ -257,7 +256,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
         this.dream.mood = anyToInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
         this.dream.status = status;
         this.dream.date = AnyToDate(this.dreamForm.get("date")?.value);
-        this.dream.keywords = AnyToArray(this.dreamForm.get("keywords")?.value);
+        this.dream.keywords = anyToArray(this.dreamForm.get("keywords")?.value);
         this.dream.text = anyToString(this.dreamForm.get("text")?.value);
         this.dream.map = this.mapEditor
           ? this.mapEditor.getMap
