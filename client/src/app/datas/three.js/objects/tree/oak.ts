@@ -5,8 +5,8 @@ import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { random, round } from "@akb2/math";
+import { TreeGeometry, TreeGeometryParams } from "@akb2/three-tree-geometry";
 import { createArray, CustomObjectKey } from "@akb2/types-tools";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
@@ -112,7 +112,7 @@ export class DreamMapOakTreeObject extends DreamMapObjectTemplate implements Dre
     const { geometry: { tree: treeGeometries, leaf: geometry }, material: { leaf: material } }: Params = this.getParams;
     const type: string = this.type + "-leaf";
     const treeGeometry: TreeGeometry = treeGeometries[geometryIndex];
-    const branchEnds: Vector3[] = treeGeometry.getEndsOfBranches;
+    const branchEnds: Vector3[] = treeGeometry.branchesEnds;
     const color: Color = GetRandomColorByRange(LeafColorRange);
     const lodDistances: number[] = [];
     const lodItemPerStep: number = this.leafCount / this.lodLevels;
