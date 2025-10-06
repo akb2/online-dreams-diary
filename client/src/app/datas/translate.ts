@@ -1,5 +1,5 @@
-import { CustomObjectKey } from "@_models/app";
 import { Language, LanguageSetting, SiteDomain } from "@_models/translate";
+import { CustomObjectKey } from "@akb2/types-tools";
 
 
 

@@ -1,5 +1,5 @@
 import { DreamBaseElmsCount, DreamCeilParts, DreamCeilSize, DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@akb2/types-tools";
 
 
 

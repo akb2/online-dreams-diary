@@ -1,5 +1,5 @@
 import { User, UserSex } from "@_models/account";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { Pipe, PipeTransform } from "@angular/core";
 import * as petrovich from "petrovich";
 

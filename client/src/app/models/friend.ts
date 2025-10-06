@@ -1,6 +1,6 @@
 import { User } from "@_models/account";
 import { BaseSearch, SearchResponce } from "@_models/api";
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@akb2/types-tools";
 
 
 

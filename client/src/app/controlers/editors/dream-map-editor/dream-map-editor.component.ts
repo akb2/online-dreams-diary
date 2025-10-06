@@ -5,18 +5,18 @@ import { ClosestHeightNames, MapTerrains, TerrainTexturePath, TexturePaths } fro
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
 import { IsMultiple, LengthByCoords } from "@_helpers/math";
-import { CustomObjectKey, IconType, SimpleObject } from "@_models/app";
+import { IconType, SimpleObject } from "@_models/app";
 import { ClosestHeightName, DreamMap, DreamMapCeil, DreamMapSector, DreamMapSettings, MapTerrain, ReliefType } from "@_models/dream-map";
 import { DreamMapMixedObject, DreamMapObjectCatalog } from "@_models/dream-map-objects";
 import { SliderSettings } from "@_models/form";
 import { ImageExtension } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
 import { round } from "@akb2/math";
-import { anyToInt, createArray } from "@akb2/types-tools";
+import { anyToInt, createArray, CustomObjectKey } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { Subject, delay, fromEvent, takeUntil, takeWhile, tap, timer } from "rxjs";
+import { delay, fromEvent, Subject, takeUntil, takeWhile, tap, timer } from "rxjs";
 
 
 

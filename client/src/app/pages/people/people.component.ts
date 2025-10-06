@@ -1,6 +1,3 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { PaginateEvent } from '@_controlers/pagination/pagination.component';
 import { SearchPanelComponent } from '@_controlers/search-panel/search-panel.component';
 import { PeoplePlural } from "@_datas/account";
@@ -10,13 +7,17 @@ import { FormData, MonthPlural } from '@_datas/form';
 import { CompareObjects } from "@_helpers/objects";
 import { SearchUser, User, UserSex } from '@_models/account';
 import { ExcludeUrlObjectValues } from "@_models/api";
-import { CustomObject, CustomObjectKey, SimpleObject } from '@_models/app';
+import { CustomObject, SimpleObject } from '@_models/app';
 import { BackgroundImageData } from '@_models/appearance';
 import { OptionData } from "@_models/form";
 import { NavMenuType } from '@_models/nav-menu';
 import { AccountService } from '@_services/account.service';
 import { CanonicalService } from '@_services/canonical.service';
 import { ScreenService } from '@_services/screen.service';
+import { CustomObjectKey } from "@akb2/types-tools";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { merge, Subject, takeUntil } from 'rxjs';
 
 

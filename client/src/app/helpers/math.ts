@@ -1,8 +1,7 @@
-import { CustomObjectKey } from "@_models/app";
 import { XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
 import { clamp, floor, round } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObjectKey } from "@akb2/types-tools";
 import { ArrayForEach } from "./objects";
 
 // Проверка числа на четность

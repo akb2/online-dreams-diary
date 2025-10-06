@@ -2,15 +2,15 @@ import { AppMatDialogConfig, CompareElementByElement, JpegTypesDefault, PhotoMax
 import { ImageRightRotate, UploadedImage } from "@_helpers/image";
 import { LineFunc } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
-import { CustomObjectKey, FileTypes } from "@_models/app";
+import { FileTypes } from "@_models/app";
 import { MediaFile, MediaFileExtension } from "@_models/media";
 import { MediaService } from "@_services/media.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObjectKey } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { Observable, Subject, catchError, fromEvent, map, merge, mergeMap, of, switchMap, takeUntil, takeWhile, tap } from "rxjs";
+import { catchError, fromEvent, map, merge, mergeMap, Observable, of, Subject, switchMap, takeUntil, takeWhile, tap } from "rxjs";
 
 
 

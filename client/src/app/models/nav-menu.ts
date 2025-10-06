@@ -1,4 +1,4 @@
-import { CustomObjectKey } from "@_models/app";
+import { CustomObjectKey } from "@akb2/types-tools";
 
 // CSS свойства
 export type CssProperty = keyof CSSStyleDeclaration

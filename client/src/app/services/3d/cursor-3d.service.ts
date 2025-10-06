@@ -2,9 +2,9 @@ import { DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-object
 import { Cos, DetectDirectionByExpressions, Sin, SinCosToRad } from "@_helpers/math";
 import { ForCycle } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
-import { CustomObjectKey } from "@_models/app";
 import { CoordDto, DreamMap } from "@_models/dream-map";
 import { clamp, floor } from "@akb2/math";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { editor3DCursorSizeSelector, editor3DHoverCeilCoordsSelector } from "@app/reducers/viewer-3d";
 import { OctreeRaycaster } from "@brakebein/threeoctree";

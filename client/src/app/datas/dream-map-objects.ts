@@ -1,7 +1,8 @@
-import { CustomObjectKey, IconType } from "@_models/app";
+import { IconType } from "@_models/app";
 import { ClosestHeights } from "@_models/dream-map";
 import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
 import { NumberDirection } from "@_models/math";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { DreamMapRabitzNetObject } from "./three.js/objects/fence/rabitzNet";
 import { DreamMapPlantainGrassObject } from "./three.js/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";

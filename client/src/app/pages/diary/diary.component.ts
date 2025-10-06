@@ -7,7 +7,7 @@ import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
 import { ExcludeUrlObjectValues } from "@_models/api";
-import { CustomObject, CustomObjectKey, RouteData, SimpleObject } from "@_models/app";
+import { CustomObject, RouteData, SimpleObject } from "@_models/app";
 import { BackgroundImageData } from "@_models/appearance";
 import { Dream, DreamStatus, SearchDream } from "@_models/dream";
 import { OptionData } from "@_models/form";
@@ -20,12 +20,12 @@ import { FriendService } from "@_services/friend.service";
 import { GlobalService } from "@_services/global.service";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObjectKey } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subject, of, throwError } from "rxjs";
+import { of, Subject, throwError } from "rxjs";
 import { concatMap, switchMap, takeUntil } from "rxjs/operators";
 
 

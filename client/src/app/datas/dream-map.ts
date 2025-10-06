@@ -1,6 +1,6 @@
-import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType, XYCoord } from "@_models/dream-map";
 import { NumberDirection } from "@_models/math";
+import { CustomObjectKey } from "@akb2/types-tools";
 
 
 

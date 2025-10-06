@@ -1,6 +1,7 @@
 import { DreamMapObjectTemplate } from "@_datas/three.js/objects/_base";
-import { CustomObjectKey, IconType } from "@_models/app";
+import { IconType } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMap, DreamMapCeil, DreamMapSettings, XYCoord } from "@_models/dream-map";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { BufferGeometry, Clock, Color, DataTexture, Material, Matrix4, Mesh, Vector3 } from "three";
 import { ShearableInstancedMesh } from "./three.js/shearable-instanced-mesh";
 

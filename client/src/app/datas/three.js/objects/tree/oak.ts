@@ -1,14 +1,13 @@
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
-import { CustomObjectKey } from "@_models/app";
 import { CoordDto } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { random, round } from "@akb2/math";
-import { createArray } from "@akb2/types-tools";
+import { createArray, CustomObjectKey } from "@akb2/types-tools";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";

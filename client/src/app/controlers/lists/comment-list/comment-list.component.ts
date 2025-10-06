@@ -8,7 +8,7 @@ import { DrawDatas } from "@_helpers/draw-datas";
 import { UniqueArray } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
-import { CustomObject, CustomObjectKey } from "@_models/app";
+import { CustomObject } from "@_models/app";
 import { Comment, CommentMaterialType, SearchRequestComment, YouTubeVideo } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
@@ -20,12 +20,12 @@ import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObjectKey } from "@akb2/types-tools";
 import { Location } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
-import { Subject, merge } from "rxjs";
+import { merge, Subject } from "rxjs";
 import { filter, map, mergeMap, switchMap, take, takeUntil, timeout } from "rxjs/operators";
 
 

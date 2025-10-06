@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges } from "@angular/core";
 import { User } from "@_models/account";
-import { CustomObjectKey } from "@_models/app";
 import { FriendSearchType } from "@_models/friend";
+import { CustomObjectKey } from "@akb2/types-tools";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges } from "@angular/core";
 
 
 

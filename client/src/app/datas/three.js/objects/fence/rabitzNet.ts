@@ -1,9 +1,9 @@
 import { DreamCeilSize, DreamFogFar, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, GetLengthFromSquareCenter, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
-import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, CoordDto, DreamMapCeil } from "@_models/dream-map";
 import { MapObject, ObjectSetting } from "@_models/dream-map-objects";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { BoxGeometry, BufferGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { CreateTerrainTriangles, GetHeightByTerrain, GetTextures } from "../_functions";

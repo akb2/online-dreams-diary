@@ -1,7 +1,7 @@
 import { BaseSearch, BaseSearchSortField, BaseSearchSortType } from "@_models/api";
 import { BackgroundImageData } from "@_models/appearance";
 import { NavMenuType } from "@_models/nav-menu";
-import { CustomObjectKey } from "./app";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { NotificationActionType } from "./notification";
 
 

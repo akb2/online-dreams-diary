@@ -1,5 +1,5 @@
-import { CustomObjectKey } from "@_models/app";
 import { ClosestHeights, XYCoord } from "@_models/dream-map";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { ColorRange } from "../_models";
 
 

@@ -1,6 +1,6 @@
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
-import { CustomObjectKey } from "@_models/app";
 import { Place } from "@_models/dream";
+import { CustomObjectKey } from "@akb2/types-tools";
 import { Noise } from "noisejs";
 import { MeshStandardMaterial, Side, Texture } from "three";
 import { ScrollAddDimension } from "./screen";
