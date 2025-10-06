@@ -1,6 +1,5 @@
 import { ClosestHeightName, DreamMapSector, MapTerrain, MapTerrainSplatMapColor, TextureType, WayLineType, XYCoord } from "@_models/dream-map";
-import { NumberDirection } from "@_models/math";
-import { CustomObjectKey } from "@akb2/types-tools";
+import { CustomObjectKey, Delta } from "@akb2/types-tools";
 
 
 
@@ -124,7 +123,7 @@ export const MapTerrains: MapTerrain[] = [
 export const ClosestHeightNames: ClosestHeightName[] = ["topLeft", "top", "topRight", "left", "right", "bottomLeft", "bottom", "bottomRight"];
 
 // Сектора карты
-export const DreamMapSectors: CustomObjectKey<NumberDirection, CustomObjectKey<NumberDirection, DreamMapSector>> = {
+export const DreamMapSectors: CustomObjectKey<Delta, CustomObjectKey<Delta, DreamMapSector>> = {
   [-1]: {
     [-1]: "topLeft",
     [0]: "top",
@@ -206,7 +205,7 @@ export const NeighBoringSectors: CustomObjectKey<DreamMapSector, CustomObjectKey
 };
 
 // Координаты смещений по типу соседнего блока
-export const NeighBoringShifts: CustomObjectKey<DreamMapSector, XYCoord<NumberDirection>> = {
+export const NeighBoringShifts: CustomObjectKey<DreamMapSector, XYCoord<Delta>> = {
   topLeft: { x: -1, y: -1 },
   top: { x: 0, y: -1 },
   topRight: { x: 1, y: -1 },

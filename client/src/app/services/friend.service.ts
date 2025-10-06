@@ -4,14 +4,13 @@ import { LocalStorageDefaultTtl, LocalStorageGet, LocalStorageRemove, LocalStora
 import { CompareObjects } from "@_helpers/objects";
 import { ApiResponse, SearchResponce } from "@_models/api";
 import { Friend, FriendListMixedResopnse, FriendSearch, FriendStatus, FriendWithUsers } from "@_models/friend";
-import { NumberDirection } from "@_models/math";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, Delta } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable, catchError, filter, finalize, map, mergeMap, of, pairwise, startWith, switchMap, tap, throwError } from "rxjs";
+import { BehaviorSubject, catchError, filter, finalize, map, mergeMap, Observable, of, pairwise, startWith, switchMap, tap, throwError } from "rxjs";
 
 
 
@@ -339,7 +338,7 @@ export class FriendService {
   }
 
   // Обновить счетчик подписок на статусы дружбы
-  private updateFriendsCounter(inUser: number, outUser: number, eventType: NumberDirection = 0): number {
+  private updateFriendsCounter(inUser: number, outUser: number, eventType: Delta = 0): number {
     const counterIndex: number = this.firensSubscritionCounter.findIndex(f => this.compareFriend(f, inUser, outUser));
     // Для существующего счетчика
     if (counterIndex >= 0) {

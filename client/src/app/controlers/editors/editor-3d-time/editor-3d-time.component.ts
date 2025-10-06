@@ -1,8 +1,8 @@
 import { AngleByCoordsAndRadius, AngleInRange, Cos, LineFunc, MathRoundByStep, Sin } from "@_helpers/math";
 import { CircleParamSetting } from "@_helpers/special-inputs-param-settings";
-import { NumberDirection } from "@_models/math";
 import { CssProperties } from "@_models/nav-menu";
 import { clamp, round } from "@akb2/math";
+import { Delta } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
 import { editor3DSetSkyTimeAction, editor3DSkyTimeSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
@@ -36,7 +36,7 @@ export class Editor3DTimeComponent {
 
 
   // Базовые параметры настроек
-  private getSettingsTimeStyles(skyTime: number, multiplier: NumberDirection = 1): CssProperties {
+  private getSettingsTimeStyles(skyTime: number, multiplier: Delta = 1): CssProperties {
     const angle = AngleInRange(skyTime);
     const sin = Sin(angle) * multiplier;
     const cos = Cos(angle) * multiplier;
@@ -80,7 +80,7 @@ export class Editor3DTimeComponent {
   }
 
   // Изменение времени суток
-  onSkyTimeChange(event: MouseEvent | TouchEvent, multiplier: NumberDirection = 0) {
+  onSkyTimeChange(event: MouseEvent | TouchEvent, multiplier: Delta = 0) {
     const container = this.settingsContainer?.nativeElement;
     // Вычисление если контейнер существует
     if (!!container) {

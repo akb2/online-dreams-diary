@@ -11,7 +11,6 @@ import { User } from "@_models/account";
 import { Comment, CommentMaterialType, SearchRequestComment, YouTubeVideo } from "@_models/comment";
 import { Dream, DreamMode, DreamMood, DreamType } from "@_models/dream";
 import { OptionData } from "@_models/form";
-import { NumberDirection } from "@_models/math";
 import { NavMenuType } from "@_models/nav-menu";
 import { ScrollData } from "@_models/screen";
 import { AccountService } from "@_services/account.service";
@@ -19,7 +18,7 @@ import { CommentService } from "@_services/comment.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
 import { clamp } from "@akb2/math";
-import { anyToInt, CustomObject, CustomObjectKey } from "@akb2/types-tools";
+import { anyToInt, CustomObject, CustomObjectKey, Delta } from "@akb2/types-tools";
 import { Location } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
@@ -253,7 +252,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
   onLoadMoreComments(next: boolean): void {
     const lastId = next ? this.maxId : this.minId;
     const lastDate = next ? this.maxDate : this.minDate;
-    const loadListType: NumberDirection = next ? 1 : -1;
+    const loadListType: Delta = next ? 1 : -1;
     // Загрузка новых комментариев
     if ((next && !this.nextLoading) || (!next && !this.prevLoading)) {
       this.loadComments(false, lastId, lastDate, loadListType);
@@ -353,7 +352,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
 
 
   // Загрузка комментариев
-  private loadComments(listenNew = false, startWithId = 0, lastDate = null, loadListType: NumberDirection = 0): void {
+  private loadComments(listenNew = false, startWithId = 0, lastDate = null, loadListType: Delta = 0): void {
     const prevNextLoad = startWithId > 0 && !!lastDate && loadListType !== 0;
     const lastSearch: Partial<SearchRequestComment> = prevNextLoad ?
       {
@@ -443,8 +442,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
       // Сортировка
       if (!!this.comments?.length) {
         this.comments = this.comments.sort(({ createDate: dateA, id: idA }, { createDate: dateB, id: idB }) => {
-          const date: NumberDirection = dateA > dateB ? -1 : (dateA < dateB ? 1 : 0);
-          const id: NumberDirection = idA > idB ? -1 : (idA < idB ? 1 : 0);
+          const date: Delta = dateA > dateB ? -1 : (dateA < dateB ? 1 : 0);
+          const id: Delta = idA > idB ? -1 : (idA < idB ? 1 : 0);
           // Сортировка
           return date === 0 ? id : date;
         });

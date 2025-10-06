@@ -1,7 +1,6 @@
 import { XYCoord } from "@_models/dream-map";
-import { NumberDirection } from "@_models/math";
 import { clamp, floor, round } from "@akb2/math";
-import { anyToInt, CustomObjectKey } from "@akb2/types-tools";
+import { anyToInt, CustomObjectKey, Delta } from "@akb2/types-tools";
 import { ArrayForEach } from "./objects";
 
 // Проверка числа на четность
@@ -243,7 +242,7 @@ export const GetLengthFromSquareCenter = (size: number, angle: number) => {
  * @param negativeExpression - Функция, возвращающая булево значение, указывающее на отрицательное направление.
  * @returns 1, если positiveExpression возвращает true, -1, если negativeExpression возвращает true, и 0, если оба выражения возвращают false.
  */
-export const DetectDirectionByExpressions = (positiveExpression: boolean, negativeExpression: boolean): NumberDirection => positiveExpression
+export const DetectDirectionByExpressions = (positiveExpression: boolean, negativeExpression: boolean): Delta => positiveExpression
   ? 1
   : negativeExpression
     ? -1

@@ -1,4 +1,4 @@
-import { NumberDirection } from "./math";
+import { Delta } from "@akb2/types-tools";
 
 
 
@@ -36,8 +36,8 @@ export interface ScrollData {
   maxY: number;
   elm?: HTMLElement;
   scrollableHeight?: number;
-  lastDirectionX?: NumberDirection;
-  lastDirectionY?: NumberDirection;
+  lastDirectionX?: Delta;
+  lastDirectionY?: Delta;
   lastScrollAddedY?: number;
   emitEvent?: boolean;
 }

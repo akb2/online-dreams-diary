@@ -1,7 +1,7 @@
 import { DreamMapSectors, MapTerrains } from "@_datas/dream-map";
 import { ArrayFind } from "@_helpers/objects";
 import { DreamMap, DreamMapCeil, DreamMapSector, MapTerrain, UVCoord } from "@_models/dream-map";
-import { NumberDirection } from "@_models/math";
+import { Delta } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { Settings3DService } from "./settings-3d.service";
 
@@ -14,7 +14,7 @@ export class Ceil3dService {
 
 
   // Расположение внутри сектора
-  private sectorDimension(value: number, size: number): NumberDirection {
+  private sectorDimension(value: number, size: number): Delta {
     return value < 0
       ? -1
       : value >= size
@@ -81,8 +81,8 @@ export class Ceil3dService {
 
   // Сектор ячейки на карте
   getSectorByCoords(x: number, y: number): DreamMapSector {
-    const xDimension: NumberDirection = this.sectorDimension(x, this.dreamMap.size.width);
-    const yDimension: NumberDirection = this.sectorDimension(y, this.dreamMap.size.height);
+    const xDimension: Delta = this.sectorDimension(x, this.dreamMap.size.width);
+    const yDimension: Delta = this.sectorDimension(y, this.dreamMap.size.height);
     // Вернуть сектор
     return DreamMapSectors[yDimension][xDimension];
   }

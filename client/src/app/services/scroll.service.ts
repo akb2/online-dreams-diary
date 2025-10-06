@@ -3,12 +3,11 @@ import { DetectDirectionByExpressions } from "@_helpers/math";
 import { WaitObservable } from "@_helpers/rxjs";
 import { CreateRandomID } from "@_helpers/string";
 import { XYCoord } from "@_models/dream-map";
-import { NumberDirection } from "@_models/math";
 import { ScrollData, SetScrollData } from "@_models/screen";
 import { clamp } from "@akb2/math";
-import { anyToFloat, anyToInt } from "@akb2/types-tools";
+import { anyToFloat, anyToInt, Delta } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, animationFrameScheduler, distinctUntilChanged, filter, first, fromEvent, map, merge, observeOn, of, retry, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
+import { animationFrameScheduler, BehaviorSubject, distinctUntilChanged, filter, first, fromEvent, map, merge, Observable, observeOn, of, retry, Subject, switchMap, take, takeUntil, takeWhile, tap, throwError, timeout, timer } from "rxjs";
 
 
 
@@ -168,7 +167,7 @@ export class ScrollService implements OnDestroy {
           let startScroll: Partial<XYCoord> = { ...scrollData };
           let scrollDiff: Partial<XYCoord> = {};
           let scrollSteps: Partial<XYCoord> = {};
-          let scrollDelta: Partial<XYCoord<NumberDirection>> = {};
+          let scrollDelta: Partial<XYCoord<Delta>> = {};
           let stepShifts: Partial<XYCoord> = {};
           let maxStep = 0;
           // Запонить данные

@@ -8,14 +8,13 @@ import { ArrayFilter, ArrayForEach, ArraySome, MapCycle, XYForEach } from "@_hel
 import { CustomObjectKey } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, CoordDto, DreamMap, DreamMapCameraPosition, DreamMapCeil, DreamMapSettings, ReliefType, XYCoord } from "@_models/dream-map";
 import { DreamMapObject, MapObject, MapObjectRaycastBoxData, ObjectSetting } from "@_models/dream-map-objects";
-import { NumberDirection } from "@_models/math";
 import { ShearableInstancedMesh } from "@_models/three.js/shearable-instanced-mesh";
 import { DreamService } from "@_services/dream.service";
 import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
 import { DreamMapTerrainService } from "@_services/three.js/terrain.service";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { anyToFloat, anyToInt, createArray } from "@akb2/types-tools";
+import { Delta, anyToFloat, anyToInt, createArray } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
@@ -1566,8 +1565,8 @@ export interface ObjectHoverEvent {
     x: number;
     y: number;
     z: number;
-    xDimen: NumberDirection;
-    yDimen: NumberDirection;
+    xDimen: Delta;
+    yDimen: Delta;
   };
 }
 

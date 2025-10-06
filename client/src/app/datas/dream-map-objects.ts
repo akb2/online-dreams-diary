@@ -1,8 +1,7 @@
 import { IconType } from "@_models/app";
 import { ClosestHeights } from "@_models/dream-map";
 import { DreamMapGroupObject, DreamMapGroupObjectType, DreamMapMixedObject, DreamMapObject, DreamMapObjectCatalog, DreamMapObjectType, ObjectController } from "@_models/dream-map-objects";
-import { NumberDirection } from "@_models/math";
-import { CustomObjectKey } from "@akb2/types-tools";
+import { CustomObjectKey, Delta } from "@akb2/types-tools";
 import { DreamMapRabitzNetObject } from "./three.js/objects/fence/rabitzNet";
 import { DreamMapPlantainGrassObject } from "./three.js/objects/grass/plantaingrass";
 import { DreamMapWheatGrassObject } from "./three.js/objects/grass/wheatgrass";
@@ -204,7 +203,7 @@ export const DreamMapObjects: DreamMapMixedObject[] = [
 ];
 
 // Координаты соседних блоков
-export const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: NumberDirection, y: NumberDirection } } = {
+export const ClosestCeilsCoords: { [key in keyof ClosestHeights]: { x: Delta, y: Delta } } = {
   top: { x: 0, y: -1 },
   left: { x: -1, y: 0 },
   bottom: { x: 0, y: 1 },

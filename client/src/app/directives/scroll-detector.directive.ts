@@ -1,8 +1,8 @@
 import { DrawDatas } from "@_helpers/draw-datas";
 import { WaitObservable } from "@_helpers/rxjs";
-import { NumberDirection } from "@_models/math";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
+import { Delta } from "@akb2/types-tools";
 import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { Subject, map, merge, mergeMap, takeUntil } from "rxjs";
 
@@ -16,7 +16,7 @@ import { Subject, map, merge, mergeMap, takeUntil } from "rxjs";
 
 export class ScrollDetectorDirective implements OnInit, OnDestroy {
 
-  @Input() detectDirection: NumberDirection = 0;
+  @Input() detectDirection: Delta = 0;
 
   @Output() inScreenEvent: EventEmitter<void> = new EventEmitter();
   @Output() outOfScreenEvent: EventEmitter<void> = new EventEmitter();
@@ -66,7 +66,7 @@ export class ScrollDetectorDirective implements OnInit, OnDestroy {
     const screenPositionTop: number = scroll + DrawDatas.minHeight;
     const screenPositionBottom: number = scroll + window.innerHeight;
     const inScreen: boolean = elmPositionBottom > screenPositionTop && elmPositionTop < screenPositionBottom;
-    const scrollDirection: NumberDirection = scroll > this.scroll ? 1 : (scroll < this.scroll ? -1 : 0);
+    const scrollDirection: Delta = scroll > this.scroll ? 1 : (scroll < this.scroll ? -1 : 0);
     // Элемент попал в экран
     if (!this.inScreen && inScreen) {
       this.inScreen = true;
