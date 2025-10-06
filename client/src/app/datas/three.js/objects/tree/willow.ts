@@ -1,4 +1,3 @@
-import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamFogFar, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, Sin } from "@_helpers/math";
 import { ArrayForEach, MapCycle } from "@_helpers/objects";
@@ -9,6 +8,7 @@ import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { TreeGeometry, TreeGeometryParams } from "@_threejs/tree.geometry";
 import { clamp, random, round } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, FrontSide, Matrix4, MeshPhongMaterial, Object3D, Shader, TangentSpaceNormalMap, Texture, Vector2, Vector3 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
@@ -201,7 +201,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
     };
     // Параметры уже существуют
     if (!!this.params) {
-      this.params.geometry.tree = CreateArray(this.treeCount).map(i =>
+      this.params.geometry.tree = createArray(this.treeCount).map(i =>
         this.params.geometry.tree[i] ??
         new TreeGeometry(treeGeometryParams(this.params.objWidth, this.params.objHeight))
       );
@@ -217,7 +217,7 @@ export class DreamMapWillowTreeObject extends DreamMapObjectTemplate implements 
       const objHeight: number = round((this.height * DreamCeilSize) * HeightPart, 4);
       const leafSize: number = objWidth * 15;
       // Данные фигуры
-      const treeGeometry: TreeGeometry[] = CreateArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
+      const treeGeometry: TreeGeometry[] = createArray(this.treeCount).map(() => new TreeGeometry(treeGeometryParams(objWidth, objHeight)));
       const leafGeometry: CircleGeometry = new CircleGeometry(leafSize / 2, 15);
       const treeTextures: CustomObjectKey<keyof MeshPhongMaterial, Texture> = GetTextures("oak-branch.jpg", "tree", useTextureTreeKeys, texture => {
         const repeat: number = 2;

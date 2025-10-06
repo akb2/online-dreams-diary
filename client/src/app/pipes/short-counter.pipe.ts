@@ -1,6 +1,5 @@
-import { CreateArray } from "@_datas/app";
 import { round } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { Pipe, PipeTransform } from "@angular/core";
 
 
@@ -30,7 +29,7 @@ export class ShortCounterPipe implements PipeTransform {
       result = digit?.toString();
     }
     // Цикл по разрядам
-    CreateArray(this.units.length + 1).forEach(key => {
+    createArray(this.units.length + 1).forEach(key => {
       const step: number = key + 1;
       const minValue: number = Math.pow(this.groupNumber, key);
       const maxValue: number = Math.pow(this.groupNumber, step);

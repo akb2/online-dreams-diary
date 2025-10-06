@@ -1,6 +1,6 @@
-import { CreateArray } from "@_datas/app";
 import { MultiArray } from "@_models/app";
 import { random, round } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
@@ -137,19 +137,19 @@ export class TreeGeometry extends BufferGeometry {
     const vertices: Vector3[] = [];
     let index: number = 0;
     // Цикл по сегментам высоты
-    CreateArray(heightSegments + 1).forEach(y => {
+    createArray(heightSegments + 1).forEach(y => {
       const indicesRow: number[] = [];
       const segment = branch.segments[y];
       // Добавить параметры
       vertices.push(...segment.vertices);
       uvs.push(...segment.uvs);
       // Цикл по сегментам радиуса
-      CreateArray(radiusSegments + 1).forEach(() => indicesRow.push(index++));
+      createArray(radiusSegments + 1).forEach(() => indicesRow.push(index++));
       // Добавить индексы
       indices.push(indicesRow);
     });
     // Создание сторон
-    CreateArray(heightSegments).forEach(y => CreateArray(radiusSegments).forEach(x => {
+    createArray(heightSegments).forEach(y => createArray(radiusSegments).forEach(x => {
       const cy: number = y;
       const ny: number = y + 1;
       const cx: number = x;
@@ -169,7 +169,7 @@ export class TreeGeometry extends BufferGeometry {
       vertices.push(bottom.position);
       uvs.push(...bottom.uvs);
       // Цикл по сегментам радиуса
-      CreateArray(radiusSegments).map(x => {
+      createArray(radiusSegments).map(x => {
         const v1: number = indices[0][x] + offset;
         const v2: number = indices[0][x + 1] + offset;
         const v3: number = index + offset;
@@ -180,13 +180,13 @@ export class TreeGeometry extends BufferGeometry {
     // Остальные фрагменты
     else {
       const from: TreeSegment = branch.from;
-      const bottomIndices: number[] = CreateArray(radiusSegments + 1).map(() => (index++) + offset);
+      const bottomIndices: number[] = createArray(radiusSegments + 1).map(() => (index++) + offset);
       // Добавить индексы
       vertices.push(...from.vertices);
       uvs.push(...from.uvs);
       indices.push(bottomIndices);
       // Цикл по радиальным сегментам
-      CreateArray(radiusSegments).forEach(x => {
+      createArray(radiusSegments).forEach(x => {
         const v0: number = indices[0][x] + offset;
         const v1: number = indices[0][x + 1] + offset;
         const v2: number = bottomIndices[x];
@@ -461,7 +461,7 @@ class TreeBranch {
     // Добавить сегмент
     segments.push(new TreeSegment(points[0], rotation, uvOffset, fromRadius, radiusSegments));
     // Цикл по сегментам
-    CreateArray(heightSegments - 1).map(i => i + 1).forEach(i => {
+    createArray(heightSegments - 1).map(i => i + 1).forEach(i => {
       const p0: Vector3 = points[i];
       const p1: Vector3 = points[i + 1];
       const ry: number = i / (heightSegments - 1);
@@ -478,7 +478,7 @@ class TreeBranch {
 
   // Ветка
   branch(spawner: TreeSpawner, count: number): void {
-    CreateArray(count).forEach(i => this.spawn(spawner, i == 0));
+    createArray(count).forEach(i => this.spawn(spawner, i == 0));
     this.children.forEach(child => child.branch(spawner, count - 1));
   }
 
@@ -508,7 +508,7 @@ class TreeBranch {
     const segments: TreeSegment[] = this.segments;
     let length: number = 0;
     // Цикл по сегментам
-    CreateArray(segments.length).forEach(i => {
+    createArray(segments.length).forEach(i => {
       const p0: Vector3 = segments[i].position;
       const p1: Vector3 = segments[i + 1].position;
       //  Добавить длину
@@ -534,7 +534,7 @@ class TreeSegment {
   ) {
     const thetaLength: number = Math.PI * 2;
     // Цикл по сегментам
-    CreateArray(this.radiusSegments + 1).forEach(x => {
+    createArray(this.radiusSegments + 1).forEach(x => {
       const u: number = x / this.radiusSegments;
       const uv: Vector2 = new Vector2(u, this.uvOffset);
       const vertex: Vector3 = new Vector3(this.radius * Math.sin(u * thetaLength), 0, this.radius * Math.cos(u * thetaLength))

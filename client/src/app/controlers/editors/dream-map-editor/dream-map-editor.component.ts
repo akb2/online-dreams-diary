@@ -1,6 +1,6 @@
 import { PopupDreamMapSettingsComponent } from "@_controlers/dream-map-settings/dream-map-settings.component";
 import { DreamMapViewerComponent, ObjectHoverEvent } from "@_controlers/dream-map-viewer/dream-map-viewer.component";
-import { ArrayRandom, CreateArray } from "@_datas/app";
+import { ArrayRandom } from "@_datas/app";
 import { ClosestHeightNames, MapTerrains, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapObjectCatalogs, DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamCeilWaterParts, DreamDefHeight, DreamMaxHeight, DreamMinHeight, DreamObjectElmsValues, DreamSkyTime, DreamWaterDefHeight } from "@_datas/dream-map-settings";
@@ -12,7 +12,7 @@ import { SliderSettings } from "@_models/form";
 import { ImageExtension } from "@_models/screen";
 import { DreamService } from "@_services/dream.service";
 import { round } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
@@ -578,7 +578,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
   // Изменение высоты
   private ceilsHeight(direction: HeightDirection, update: boolean = false): void {
     const size: number = (this.toolSizeLand * 2) + 1;
-    const sizes: number[] = CreateArray(size).map(v => v - this.toolSizeLand);
+    const sizes: number[] = createArray(size).map(v => v - this.toolSizeLand);
     const z: number = direction === 0 ?
       this.startZ :
       this.viewer.getCeil(this.currentCeil.ceil.coord.x, this.currentCeil.ceil.coord.y).coord.z;
@@ -641,7 +641,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
 
   // Изменение типа местности
   private ceilsTerrain(): void {
-    const sizes: number[] = CreateArray(((this.toolSizeLand + 1) * 2) + 1).map(v => v - (this.toolSizeLand + 1));
+    const sizes: number[] = createArray(((this.toolSizeLand + 1) * 2) + 1).map(v => v - (this.toolSizeLand + 1));
     const oldTerrains: number[] = [];
     let i: number = 0;
     // Обход
@@ -702,7 +702,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
     const objectsSetting: DreamMapMixedObject = this.getCurrentObject;
     const multiCeils: boolean = !!objectsSetting?.settings?.multiCeils || this.currentObject === 0;
     const toolSize: number = multiCeils ? this.toolSizeLand : ToolSizeLand[0];
-    const sizes: number[] = multiCeils ? CreateArray(((toolSize + 1) * 2) + 1).map(v => v - (toolSize + 1)) : [0];
+    const sizes: number[] = multiCeils ? createArray(((toolSize + 1) * 2) + 1).map(v => v - (toolSize + 1)) : [0];
     // Цикл по ячейкам
     const ceils: DreamMapCeil[] = sizes
       .map(cY => sizes.map(cX => {
@@ -737,7 +737,7 @@ export class DreamMapEditorComponent implements OnInit, OnChanges, OnDestroy {
       }
       // Установить для группы объектов
       else {
-        const newObjects: number[] = CreateArray(ceils.length).map(() => ArrayRandom(objectsSetting.ids));
+        const newObjects: number[] = createArray(ceils.length).map(() => ArrayRandom(objectsSetting.ids));
         const objectCeils: DreamMapCeil[] = ceils.map((ceil, k) => ({ ...ceil, object: newObjects[k] }));
         // Перерисовать объекты
         objectsSetting.ids.forEach(objectId => {
@@ -885,7 +885,7 @@ interface ReliefElmData {
 
 
 // Типы размеров
-const ToolSizeLand: number[] = CreateArray(6);
+const ToolSizeLand: number[] = createArray(6);
 
 // Список инструментов: общее
 const Tools: ToolListItem[] = [

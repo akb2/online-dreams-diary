@@ -1,11 +1,11 @@
-import { CompareElementByElement, CreateArray } from "@_datas/app";
+import { CompareElementByElement } from "@_datas/app";
 import { FullModeBlockRemoveTags, FullModeInlineRemoveTags, FullModeSaveTags } from "@_datas/text";
 import { ElementParentsArray, GetTextNodes, TreeWalkerToArray } from "@_helpers/app";
 import { WaitObservable } from "@_helpers/rxjs";
 import { TextMessage } from "@_helpers/text-message";
 import { SimpleObject } from "@_models/app";
 import { CaretPosition } from "@_models/text";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Optional, Output, Self, ViewChild } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
@@ -1094,7 +1094,7 @@ const BaseColors: Color[] = [
 ];
 
 // Цикл по допустимым уровням заголовкам
-const ControlTitleItterator: number[] = CreateArray(5).map(i => i + 2);
+const ControlTitleItterator: number[] = createArray(5).map(i => i + 2);
 
 // Параграфы
 const ParagraphTags: SearchAndReplaceNode[] = [
@@ -1102,7 +1102,7 @@ const ParagraphTags: SearchAndReplaceNode[] = [
 ];
 
 // Теги заголовков
-const TitleTags: SearchAndReplaceNode[] = CreateArray(ControlTitleItterator.length + ControlTitleItterator[0])
+const TitleTags: SearchAndReplaceNode[] = createArray(ControlTitleItterator.length + ControlTitleItterator[0])
   .map(i => i > 0 ? "h" + i : "")
   .filter(tag => !!tag)
   .map(tag => ({

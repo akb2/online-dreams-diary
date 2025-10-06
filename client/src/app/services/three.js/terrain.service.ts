@@ -1,4 +1,4 @@
-import { CreateArray, VoidFunctionVar } from "@_datas/app";
+import { VoidFunctionVar } from "@_datas/app";
 import { MapTerrains, ReliefTexturePath, TerrainTexturePath, TexturePaths } from "@_datas/dream-map";
 import { DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamOutsideSize, DreamTerrain } from "@_datas/dream-map-settings";
@@ -11,6 +11,7 @@ import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { clamp, round } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Observable, Subject, forkJoin, map, mergeMap, of, takeUntil, tap } from "rxjs";
 import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";
@@ -55,7 +56,7 @@ export class DreamMapTerrainService implements OnDestroy {
       const iX = x + borderOSize;
       const iY = y + borderOSize;
       const index = ((iY * width) + iX) * 4;
-      const color = CreateArray(3).map(k => this.displacementTexture.image.data[index + k]).reduce((o, n) => o + n, 0) / 3;
+      const color = createArray(3).map(k => this.displacementTexture.image.data[index + k]).reduce((o, n) => o + n, 0) / 3;
       // Запомнить высоту
       z = (color * DreamMaxHeight) / 255;
     }
@@ -257,7 +258,7 @@ export class DreamMapTerrainService implements OnDestroy {
     return MapCycle(depth, d => {
       const data: Uint8Array = new Uint8Array(4 * size);
       // Цикл по размеру
-      CreateArray(size).forEach(s => {
+      createArray(size).forEach(s => {
         const stride = s * 4;
         const realX = round((s - (Math.floor(s / width) * width)), 2);
         const realY = round(height - 1 - Math.floor(s / width), 2);
@@ -316,7 +317,7 @@ export class DreamMapTerrainService implements OnDestroy {
       tap(() => this.setReliefSmooth(
         "center",
         this.displacementTexture.image.data,
-        CreateArray(oHeight).map(y => CreateArray(oWidth).map(x => ({ x, y })))
+        createArray(oHeight).map(y => createArray(oWidth).map(x => ({ x, y })))
           .reduce((o, v) => ([...o, ...v]), [])
           .reduce((o, { x, y }) => ([...o, this.getCeil(x, y)]), []),
         !!this.dreamMap?.isNew
@@ -334,14 +335,14 @@ export class DreamMapTerrainService implements OnDestroy {
     const width = (borderOSize * 2) + oWidth;
     // Область карты
     if (name === "center") {
-      CreateArray(oHeight).forEach(y => CreateArray(oWidth).forEach(x => {
+      createArray(oHeight).forEach(y => createArray(oWidth).forEach(x => {
         const { coord: { z } }: DreamMapCeil = this.getCeil(x, y);
         const colorZ = (z * 255) / DreamMaxHeight;
         const textureX = x + borderOSize;
         const textureY = y + borderOSize;
         const index = ((textureY * width) + textureX) * 4;
         // Обновить цвета
-        CreateArray(3).forEach(k => mapData[index + k] = this.correctColor(colorZ));
+        createArray(3).forEach(k => mapData[index + k] = this.correctColor(colorZ));
       }));
     }
     // Область за пределами карты
@@ -350,15 +351,15 @@ export class DreamMapTerrainService implements OnDestroy {
       const rData: ReliefData = this.reliefDatas.find(({ type: dataType }) => dataType === type);
       const { data, correctSize, size: { width: imgWidth } }: ReliefData = rData;
       const coord = this.reliefCoords[name];
-      CreateArray(oWidth).map(dY => dY + correctSize.top).forEach(dY =>
-        CreateArray(oHeight).map(dX => dX + correctSize.left).forEach(dX => {
+      createArray(oWidth).map(dY => dY + correctSize.top).forEach(dY =>
+        createArray(oHeight).map(dX => dX + correctSize.left).forEach(dX => {
           const x = dX - correctSize.top + coord.x;
           const y = dY - correctSize.left + coord.y;
           // Индексы
           const index = ((y * width) + x) * 4;
           const dIndex = ((dY * imgWidth) + dX) * 4;
           // Записать значения в общий массив
-          CreateArray(4).map(k => mapData[index + k] = this.correctColor(data[dIndex + k]));
+          createArray(4).map(k => mapData[index + k] = this.correctColor(data[dIndex + k]));
         })
       );
     }
@@ -453,7 +454,7 @@ export class DreamMapTerrainService implements OnDestroy {
         const koof = (step * (cNameType === name ? i + 1 : length - i)) + 0.5;
         const cKoof = 1 - koof;
         // Записать значения в общий массив
-        CreateArray(4).map(k => {
+        createArray(4).map(k => {
           const value = mapData[index + k];
           const cValue = reliefData.data[imgIndex + k];
           const newValue = (value * koof) + (cValue * cKoof);
@@ -471,10 +472,10 @@ export class DreamMapTerrainService implements OnDestroy {
         const lY = cNameType === "top" ? reliefData.correctSize.bottom : cNameType === "bottom" ? reliefData.correctSize.top : 0;
         // Горизонтальное смешивание
         if (lX > 0) {
-          CreateArray(lX).map(cX => cX + sX).forEach((cX, i) => {
+          createArray(lX).map(cX => cX + sX).forEach((cX, i) => {
             const x = (cNameType === "left" ? i : oWidth - lX + i) + coord.x;
             // Цикл по координатам Y
-            CreateArray(oHeight).map(y => y + coord.y).forEach(y => {
+            createArray(oHeight).map(y => y + coord.y).forEach(y => {
               const cY = y - coord.y + reliefData.correctSize.top;
               const index = ((y * width) + x) * 4;
               const cIndex = ((cY * reliefData.size.width) + cX) * 4;
@@ -485,10 +486,10 @@ export class DreamMapTerrainService implements OnDestroy {
         }
         // Вертикальное смешивание
         if (lY > 0) {
-          CreateArray(lY).map(cY => cY + sY).forEach((cY, i) => {
+          createArray(lY).map(cY => cY + sY).forEach((cY, i) => {
             const y = (cNameType === "top" ? i : oHeight - lY + i) + coord.y;
             // Цикл по координатам X
-            CreateArray(oWidth).map(x => x + coord.x).forEach(x => {
+            createArray(oWidth).map(x => x + coord.x).forEach(x => {
               const cX = x - coord.x + reliefData.correctSize.left;
               const index = ((y * width) + x) * 4;
               const cIndex = ((cY * reliefData.size.width) + cX) * 4;
@@ -559,8 +560,8 @@ export class DreamMapTerrainService implements OnDestroy {
       const stride = ((dataY * width) + dataX) * 4;
       const terrain: MapTerrain = this.getTerrain(ceil.coord.x + borderOSize, ceil.coord.y + borderOSize);
       // Уровни
-      CreateArray(depth).forEach(d => {
-        CreateArray(3).forEach(k => this.material.uniforms[MaskTextureNamePreffix + d].value.image.data[stride + k] = this.getColor(d, k, terrain));
+      createArray(depth).forEach(d => {
+        createArray(3).forEach(k => this.material.uniforms[MaskTextureNamePreffix + d].value.image.data[stride + k] = this.getColor(d, k, terrain));
         // Прозрачный канал
         this.material.uniforms[MaskTextureNamePreffix + d].value.image.data[stride + 3] = 255;
         // Обновить текстуру

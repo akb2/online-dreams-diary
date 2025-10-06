@@ -1,4 +1,3 @@
-import { CreateArray } from "@_datas/app";
 import { DreamCeilSize, DreamMaxElmsCount, DreamObjectElmsValues, LODMaxDistance } from "@_datas/dream-map-settings";
 import { AngleToRad, IsMultiple } from "@_helpers/math";
 import { ArrayFilter, MapCycle } from "@_helpers/objects";
@@ -8,6 +7,7 @@ import { MapObject, ObjectControllerParams, ObjectSetting } from "@_models/dream
 import { Uniforms } from "@_models/three.js/base";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
 import { random } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { BufferGeometry, CircleGeometry, Color, DoubleSide, Matrix4, MeshPhongMaterial, Object3D, PlaneGeometry, Shader, TangentSpaceNormalMap, Texture, Vector2 } from "three";
 import { DreamMapObjectTemplate } from "../_base";
 import { AnimateNoizeShader, GetHeightByTerrain, GetRandomColorByRange, GetTextures, UpdateHeight } from "../_functions";
@@ -154,7 +154,7 @@ export class DreamMapPlantainGrassObject extends DreamMapObjectTemplate implemen
       const dummy: Object3D = new Object3D();
       // Параметры
       const facesCount: number = Math.pow(geometryDatas.quality - 1, 2) * 2;
-      const facesCountI: number[] = CreateArray(facesCount);
+      const facesCountI: number[] = createArray(facesCount);
       // Настройки геометрии
       geometry.applyMatrix4(new Matrix4().makeTranslation(0, geometryRadius, 0));
       geometry.scale(1, 1.5, 0);

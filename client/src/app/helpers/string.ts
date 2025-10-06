@@ -1,15 +1,14 @@
 import { UrlParamsStringToObject } from "@_datas/api";
-import { CreateArray } from "@_datas/app";
 import { YouTubeVideoBase } from "@_models/comment";
 import { random } from "@akb2/math";
-import { anyToInt, anyToString } from "@akb2/types-tools";
+import { anyToInt, anyToString, createArray } from "@akb2/types-tools";
 
 // Генерация уникального ID
 export const CreateRandomID = (length: number) => {
   const characters: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const charactersLength: number = characters.length;
   // Генерация
-  return CreateArray(length)
+  return createArray(length)
     .map(() => characters.charAt(Math.floor(Math.random() * charactersLength)))
     .map(letter => !!random(0, 1) ? letter.toLowerCase() : letter)
     .join("");

@@ -1,4 +1,3 @@
-import { CreateArray } from "@_datas/app";
 import { MaxColorValue } from "@_datas/dream-map";
 import { DreamMapSkyName } from "@_datas/dream-map-objects";
 import { FragmentShader, VertexShader } from "@_datas/three.js/shaders/clouds.shader";
@@ -10,7 +9,7 @@ import { CoordsXYZToIndex, MinMax } from "@_models/math";
 import { AnimationData } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeTextureUniform, ThreeVector3Uniform } from "@_threejs/base";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { AmbientLight, BackSide, BoxGeometry, ClampToEdgeWrapping, Color, Data3DTexture, DirectionalLight, Fog, GLSL3, IUniform, LinearFilter, LinearMipMapLinearFilter, Mesh, RawShaderMaterial, RedFormat, Vector2, Vector3, WebGLRenderer } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -74,7 +73,7 @@ export class Sky3DService {
    */
   private getCloudsTexture(): Data3DTexture {
     const size = this.noiseSize;
-    const sizes = CreateArray(3, () => size) as [number, number, number];
+    const sizes = createArray(3, () => size) as [number, number, number];
     const noise = this.dreamMap.noise;
     const vector = new Vector3();
     const texture = new Data3DTexture(new Uint8Array(Math.pow(size, 3)), ...sizes);

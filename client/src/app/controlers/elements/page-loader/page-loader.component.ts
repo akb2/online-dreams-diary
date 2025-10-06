@@ -1,4 +1,4 @@
-import { CreateArray } from "@_datas/app";
+import { createArray } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 
@@ -13,5 +13,5 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 
 export class PageLoaderComponent {
-  leafCount: number[] = CreateArray(14);
+  leafCount: number[] = createArray(14);
 }

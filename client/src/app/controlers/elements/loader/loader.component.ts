@@ -1,6 +1,5 @@
-import { CreateArray } from "@_datas/app";
 import { IconColor } from "@_models/app";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 
 
@@ -19,7 +18,7 @@ export class LoaderComponent implements OnChanges {
   @Input() size: string | number = "120px";
   @Input() color: IconColor | "whiteColor" = "primary";
 
-  leafCount: number[] = CreateArray(14);
+  leafCount: number[] = createArray(14);
 
 
 

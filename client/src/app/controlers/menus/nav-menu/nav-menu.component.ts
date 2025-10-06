@@ -1,5 +1,5 @@
 import { PopupLanguageListComponent } from "@_controlers/language-list/language-list.component";
-import { CreateArray, ScrollElement } from "@_datas/app";
+import { ScrollElement } from "@_datas/app";
 import { DrawDatas } from "@_helpers/draw-datas";
 import { WaitObservable } from "@_helpers/rxjs";
 import { User } from "@_models/account";
@@ -12,7 +12,7 @@ import { AccountService } from "@_services/account.service";
 import { MenuService } from "@_services/menu.service";
 import { ScreenService } from "@_services/screen.service";
 import { ScrollService } from "@_services/scroll.service";
-import { anyToFloat } from "@akb2/types-tools";
+import { anyToFloat, createArray } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { appSetUserSelectAction } from "@app/reducers/app";
@@ -93,7 +93,7 @@ export class NavMenuComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   private scrollMouseStartY = 0;
   private swipeScrollDistance = 0;
 
-  readonly notificationRepeat = CreateArray(2);
+  readonly notificationRepeat = createArray(2);
   readonly tooManyNotificationSymbol = "+";
 
   private readonly mobileMenuBottomBodyClass = "mobile-menu-bottom-spacing";

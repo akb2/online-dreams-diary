@@ -1,4 +1,3 @@
-import { CreateArray } from "@_datas/app";
 import { ClosestHeightNames } from "@_datas/dream-map";
 import { ClosestCeilsCoords, DreamMapObjectIntersectorName, DreamMapOceanName, DreamMapTerrainName } from "@_datas/dream-map-objects";
 import { DreamCameraMaxZoom, DreamCameraMinZoom, DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHeight, DreamMinHeight, DreamSkyTime, DreamTerrain, DreamWaterDefHeight } from "@_datas/dream-map-settings";
@@ -16,7 +15,7 @@ import { DreamMapObjectService } from "@_services/three.js/object.service";
 import { DreamMapSkyBoxService, FogFar, SkyBoxOutput } from "@_services/three.js/skybox.service";
 import { DreamMapTerrainService } from "@_services/three.js/terrain.service";
 import { AddMaterialBeforeCompile } from "@_threejs/base";
-import { anyToFloat, anyToInt } from "@akb2/types-tools";
+import { anyToFloat, anyToInt, createArray } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Octree, OctreeRaycaster } from "@brakebein/threeoctree";
 import { BlendMode, CircleOfConfusionMaterial, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
@@ -740,7 +739,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const oWidth: number = this.dreamMap.size.width ?? DreamMapSize;
       const oHeight: number = this.dreamMap.size.height ?? DreamMapSize;
       // Цикл по ячейкам
-      CreateArray(oWidth).map(y => CreateArray(oHeight).map(x => {
+      createArray(oWidth).map(y => createArray(oHeight).map(x => {
         const ceil: DreamMapCeil = this.getCeil(x, y);
         this.addObject(x, y, ceil.object ?? 0, ceil.terrain, true);
       }));
@@ -945,7 +944,7 @@ export class DreamMapViewerComponent implements OnInit, OnDestroy, AfterViewInit
                 const coords: XYCoord = object.coords;
                 const isDefault: boolean = object.isDefault;
                 const startIndex: number = this.objectCounts[keyType] ?? 0;
-                const indexKeys: number[] = CreateArray(count).map(i => startIndex + i);
+                const indexKeys: number[] = createArray(count).map(i => startIndex + i);
                 const translates: CoordDto[] = object.translates ?? [];
                 const moreClosestsUpdate: boolean = !!object?.moreClosestsUpdate;
                 const objectSetting: ObjectSetting = { coords, mesh, type, subType, splitBySubType, indexKeys, count, isDefault, translates, moreClosestsUpdate };

@@ -1,5 +1,5 @@
 import { ScrollChangeEvent } from "@_controlers/scroll/scroll.component";
-import { AnyToDate, CompareElementBySelector, CreateArray } from "@_datas/app";
+import { AnyToDate, CompareElementBySelector } from "@_datas/app";
 import { UniqueArray } from "@_helpers/objects";
 import { User } from "@_models/account";
 import { CustomObjectKey, SimpleObject } from "@_models/app";
@@ -8,7 +8,7 @@ import { AccountService } from "@_services/account.service";
 import { NotificationService } from "@_services/notification.service";
 import { ScrollService } from "@_services/scroll.service";
 import { TokenService } from "@_services/token.service";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, createArray } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from "@angular/core";
 import { Observable, Subject, concatMap, filter, forkJoin, fromEvent, map, of, take, takeUntil, tap, timer } from "rxjs";
 
@@ -163,7 +163,7 @@ export class NotificationsComponent implements OnInit, OnChanges, OnDestroy {
           takeUntil(this.destroyed$)
         )
         .subscribe(allNotifications => {
-          const notifications: Notification[] = CreateArray(this.notificationElms.length)
+          const notifications: Notification[] = createArray(this.notificationElms.length)
             .map(key => ({ elm: this.notificationElms.get(key)?.nativeElement as HTMLElement, key }))
             .filter(({ elm }) => !!elm)
             .map(({ elm, key }) => {

@@ -1,4 +1,4 @@
-import { CreateArray } from "@_datas/app";
+import { createArray } from "@akb2/types-tools";
 
 export class LineParamSetting {
   serifItterator: number[];
@@ -14,8 +14,8 @@ export class LineParamSetting {
   ) {
     const size = this.maxValue - this.minValue;
     // Обновить данные
-    this.serifItterator = CreateArray((size / this.step) + 1);
-    this.largeSerifItterator = CreateArray((size / this.largeStep) + 1);
+    this.serifItterator = createArray((size / this.step) + 1);
+    this.largeSerifItterator = createArray((size / this.largeStep) + 1);
   }
 }
 
@@ -38,7 +38,7 @@ export class CircleParamSetting {
     const angle = this.angles[key];
     const koof = 1 - key;
     // Обновить данные
-    this.serifItterator = CreateArray((angle / this.step) + koof);
-    this.largeSerifItterator = CreateArray((angle / this.largeStep) + koof);
+    this.serifItterator = createArray((angle / this.step) + koof);
+    this.largeSerifItterator = createArray((angle / this.largeStep) + koof);
   }
 }

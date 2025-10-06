@@ -1,4 +1,3 @@
-import { CreateArray } from "@_datas/app";
 import { DreamMapObjects } from "@_datas/dream-map-objects";
 import { DreamCeilSize, DreamMapSize } from "@_datas/dream-map-settings";
 import { AngleToRad, Cos, IsEven, IsMultiple, Sin, SinCosToRad } from "@_helpers/math";
@@ -8,6 +7,7 @@ import { DreamMapObject, ObjectSetting } from "@_models/dream-map-objects";
 import { Uniforms } from "@_models/three.js/base";
 import { GeometryQuality } from "@_services/three.js/terrain.service";
 import { random } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { Clock, Color, Euler, Float32BufferAttribute, LinearFilter, LinearMipmapLinearFilter, Matrix4, MeshPhongMaterial, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, Texture, Triangle, Vector3 } from "three";
 import { ColorRange, CreateTerrainTrianglesObject, DefTranslate, GetHeightByTerrainObject, GetTextureLoader, MaxHeight, TextureKeys } from "./_models";
 
@@ -93,9 +93,9 @@ export const CreateTerrainTriangles = (terrainGeometry: PlaneGeometry, x: number
   const quality: number = (terrainGeometry.parameters.widthSegments / terrainGeometry.parameters.width) + 1;
   const qualityHelper: number = quality - 1;
   const hyp: number = Math.sqrt(Math.pow(DreamCeilSize / qualityHelper, 2) * 2);
-  const vertexItterator: number[] = CreateArray(quality);
+  const vertexItterator: number[] = createArray(quality);
   const facesCount: number = Math.pow(qualityHelper, 2) * 2;
-  const facesCountItterator: number[] = CreateArray(facesCount);
+  const facesCountItterator: number[] = createArray(facesCount);
   const vertexes: Float32BufferAttribute = terrainGeometry.getAttribute("position") as Float32BufferAttribute;
   const wdth: number = terrainGeometry.parameters.widthSegments + 1;
   const oWidth: number = ((terrainGeometry.parameters.width / ((GeometryQuality * 2) + 1)) / DreamCeilSize) ?? DreamMapSize;

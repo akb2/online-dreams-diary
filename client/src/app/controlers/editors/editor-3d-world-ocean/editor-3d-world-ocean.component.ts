@@ -1,9 +1,9 @@
-import { CreateArray } from "@_datas/app";
 import { MathRoundByStep } from "@_helpers/math";
 import { LineParamSetting } from "@_helpers/special-inputs-param-settings";
 import { CssProperties } from "@_models/nav-menu";
 import { Settings3DService } from "@_services/3d/settings-3d.service";
 import { clamp } from "@akb2/math";
+import { createArray } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
 import { editor3DSetWorldOceanHeightAction, editor3DWorldOceanHeightSelector } from "@app/reducers/viewer-3d";
 import { Store } from "@ngrx/store";
@@ -23,7 +23,7 @@ export class Editor3DWorldOceanComponent {
 
   @ViewChild("settingsContainer", { read: ElementRef }) settingsContainer: ElementRef<HTMLDivElement>;
 
-  lines = CreateArray(8);
+  lines = createArray(8);
 
   worldOceanHeightControl = new LineParamSetting(2, 10);
 
