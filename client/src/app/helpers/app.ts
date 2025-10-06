@@ -27,13 +27,6 @@ export const JsonDecode = <T>(value: string, defaultValue: T = null): T => {
 // Проверить значение внутри Enum
 export const IsInEnum = <T>(value: string | number, enumType: T): boolean => Object.values(enumType).includes(value);
 
-// Любой тип в булев
-export const ToBoolean = (value: any): boolean => {
-  const trueValues: (string | number | boolean)[] = ["true", "on", "enabled", "1", 1, true];
-  // Проверка
-  return trueValues.includes(value);
-};
-
 // Получить полную ссылку на базовый домен приложения
 export const GetBaseUrl = (): string => environment.baseUrl[window.location.hostname] ?? environment.baseUrl.default;
 

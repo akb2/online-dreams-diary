@@ -1,11 +1,11 @@
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { environment } from "@_environments/environment";
-import { ToBoolean } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
 import { CustomObject, SimpleObject } from "@_models/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { CanonicalService } from "@_services/canonical.service";
+import { anyToBoolean } from "@akb2/types-tools";
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
@@ -104,7 +104,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
             preSaveForm.birthDate ? new Date(preSaveForm.birthDate) : null,
             AccountValidatorData.birthDate
           ],
-          sex: [!!ToBoolean(preSaveForm.sex) ? UserSex.Female : UserSex.Male]
+          sex: [!!anyToBoolean(preSaveForm.sex) ? UserSex.Female : UserSex.Male]
         }
       ),
       // Контакты

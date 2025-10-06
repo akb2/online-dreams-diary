@@ -1,4 +1,4 @@
-import { ToBoolean } from "@_helpers/app";
+import { anyToBoolean } from "@akb2/types-tools";
 import { createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store";
 
 
@@ -43,4 +43,4 @@ export const appReducer = createReducer(
 export const appFeatureSelector = createFeatureSelector<AppState>(APP_KEY);
 
 // Текущее состояние возможности выделения элементов
-export const userSelectSelector = createSelector(appFeatureSelector, ({ userSelect }) => ToBoolean(userSelect));
+export const userSelectSelector = createSelector(appFeatureSelector, ({ userSelect }) => anyToBoolean(userSelect));
