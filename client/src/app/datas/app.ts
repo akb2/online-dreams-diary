@@ -1,5 +1,6 @@
 import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
 import { random, round } from "@akb2/math";
+import { isDefined } from "@akb2/types-tools";
 import { MatDialogConfig } from "@angular/material/dialog";
 
 
@@ -225,7 +226,7 @@ export const CollapseObject = <T>(object: T | MultiObject<T>) => {
       keys.forEach(key => getItems(iObject[key], keyPreffix + (!!keyPreffix ? "." : "") + key));
     }
     // Простое значение типа T
-    else if (iObject !== undefined) {
+    else if (isDefined(iObject)) {
       targetObject[keyPreffix] = iObject as T;
     }
   };

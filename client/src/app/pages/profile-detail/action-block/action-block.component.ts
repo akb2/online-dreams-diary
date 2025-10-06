@@ -1,6 +1,7 @@
 import { User } from "@_models/account";
 import { FriendStatus } from "@_models/friend";
 import { FriendService } from "@_services/friend.service";
+import { isDefined } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { translateNeedPetrovichSelector } from "@app/reducers/translate";
 import { Store } from "@ngrx/store";
@@ -119,8 +120,8 @@ export class ActionBlockComponent implements OnInit, OnDestroy {
       // Запрос обновления статуса
       timer(0, 50)
         .pipe(
-          takeWhile(() => this.user === undefined, true),
-          skipWhile(() => this.user === undefined),
+          takeWhile(() => !isDefined(this.user), true),
+          skipWhile(() => !isDefined(this.user)),
           concatMap(() => this.friendService.friends$(this.user.id, 0, false)),
           tap(() => {
             this.friendLoader = true;

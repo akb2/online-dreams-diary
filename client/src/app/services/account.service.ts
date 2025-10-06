@@ -12,6 +12,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { NotificationActionType } from "@_models/notification";
 import { ApiService } from "@_services/api.service";
 import { TokenService } from "@_services/token.service";
+import { isDefined } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
@@ -76,7 +77,7 @@ export class AccountService implements OnDestroy {
           !!next ? { ...next, online: this.isOnlineByDate(next.lastActionDate) } : next
         ];
       }),
-      map(([prev, next]) => ([!!prev?.id || prev === undefined ? prev : null, !!next?.id ? next : null])),
+      map(([prev, next]) => ([!!prev?.id || !isDefined(prev) ? prev : null, !!next?.id ? next : null])),
       filter(([prev, next]) => !CompareObjects(prev, next)),
       map(([, next]) => next)
     );
