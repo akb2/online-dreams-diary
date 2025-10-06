@@ -49,8 +49,8 @@
   },
   "devDependencies": {
     "@akb2/math": "^1.0.0",
-    "@akb2/types-tools": "^1.0.0",
     "@akb2/three-triangle-geometry": "^1.0.0",
+    "@akb2/types-tools": "^1.0.0",
     "@angular-devkit/build-angular": "^15.1.2",
     "@angular-devkit/build-optimizer": "^0.1302.1",
     "@angular/cli": "^15.1.2",
