@@ -1,6 +1,5 @@
-import { MultiArray } from "@_models/app";
 import { random, round } from "@akb2/math";
-import { createArray } from "@akb2/types-tools";
+import { createArray, MultiArray } from "@akb2/types-tools";
 import { BufferGeometry, CatmullRomCurve3, Euler, Float32BufferAttribute, Matrix4, Vector2, Vector3 } from "three";
 
 
