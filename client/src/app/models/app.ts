@@ -4,9 +4,6 @@ import { AuthRules } from "@_models/menu";
 
 
 
-// Тип базового одномерного объекта
-export type MultiObject<V> = { [key: string]: V | MultiObject<V> };
-
 // Тип иконки
 export enum IconType {
   default,
