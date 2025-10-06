@@ -1,7 +1,6 @@
-import { CustomObject } from "@_models/app";
 import { MinMax } from "@_models/math";
 import { CssProperty, DrawData, DrawDataArray, DrawDataKeys, DrawDataPeriod, DrawInterface } from "@_models/nav-menu";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObject } from "@akb2/types-tools";
 
 
 

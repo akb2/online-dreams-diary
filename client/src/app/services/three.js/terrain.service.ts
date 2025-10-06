@@ -5,13 +5,12 @@ import { DreamCeilParts, DreamCeilSize, DreamDefHeight, DreamMapSize, DreamMaxHe
 import { MapTextureName, MaskNames, MaskTextureNamePreffix, NormalMapTextureName, TerrainColorDepth, TerrainDefines, TerrainFragmentShader, TerrainRepeat, TerrainUniforms, TerrainVertexShader } from "@_datas/three.js/shaders/terrain.shader";
 import { AngleToRad } from "@_helpers/math";
 import { ArrayFind, ArrayForEach, ArraySome, ForCycle, MapCycle, XYForEach, XYMapEach } from "@_helpers/objects";
-import { CustomObject } from "@_models/app";
 import { ClosestHeightName, ClosestHeights, Coord, DreamMap, DreamMapCeil, MapTerrain, ReliefType, XYCoord } from "@_models/dream-map";
 import { ImageExtension } from "@_models/screen";
 import { Uniforms } from "@_models/three.js/base";
 import { ScreenService } from "@_services/screen.service";
 import { clamp, round } from "@akb2/math";
-import { createArray, CustomObjectKey } from "@akb2/types-tools";
+import { createArray, CustomObject, CustomObjectKey } from "@akb2/types-tools";
 import { Injectable, OnDestroy } from "@angular/core";
 import { forkJoin, map, mergeMap, Observable, of, Subject, takeUntil, tap } from "rxjs";
 import { BackSide, CanvasTexture, DataTexture, Float32BufferAttribute, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, Mesh, MirroredRepeatWrapping, PlaneGeometry, RGBAFormat, ShaderMaterial, Texture, TextureLoader, UniformsUtils } from "three";

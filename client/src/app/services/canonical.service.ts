@@ -1,7 +1,7 @@
 import { ObjectToStringParams } from "@_datas/api";
 import { GetBaseUrl } from "@_helpers/app";
 import { ExcludeUrlObjectValues } from "@_models/api";
-import { CustomObject } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 import { DOCUMENT } from "@angular/common";
 import { Inject, Injectable } from "@angular/core";
 

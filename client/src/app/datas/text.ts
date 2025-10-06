@@ -1,5 +1,5 @@
-import { CustomObject } from "@_models/app";
 import { TagSetting } from "@_models/text";
+import { CustomObject } from "@akb2/types-tools";
 
 // Теги, которые будут сохранены для редактора
 export const FullModeSaveTags: string[] = ["h2", "h3", "h4", "h5", "h6", "i", "em", "b", "strong", "u", "s", "del", "color", "background"];

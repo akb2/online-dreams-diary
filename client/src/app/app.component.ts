@@ -1,7 +1,8 @@
-import { CustomObject, RouteData } from "@_models/app";
+import { RouteData } from "@_models/app";
 import { Language } from "@_models/translate";
 import { AccountService } from "@_services/account.service";
 import { GlobalService } from "@_services/global.service";
+import { CustomObject } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";

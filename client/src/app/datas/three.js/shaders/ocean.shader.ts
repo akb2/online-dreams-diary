@@ -1,6 +1,6 @@
-import { CustomObject } from "@_models/app";
 import { Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeVector2Uniform } from "@_threejs/base";
+import { CustomObject } from "@akb2/types-tools";
 import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 

@@ -1,17 +1,18 @@
 import { User } from "@_models/account";
-import { CustomObject, RouteData } from "@_models/app";
+import { RouteData } from "@_models/app";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { FriendService } from "@_services/friend.service";
 import { SnackbarService } from "@_services/snackbar.service";
 import { TokenService } from "@_services/token.service";
+import { CustomObject } from "@akb2/types-tools";
 import { Injectable } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DefaultExtraDatas, ExtraDatas } from "@app/app.component";
 import { accountCheckAuthSelector } from "@app/reducers/account";
 import { notificationsClearAction } from "@app/reducers/notifications";
 import { Store } from "@ngrx/store";
-import { Observable, map, of, switchMap, take, tap, first } from "rxjs";
+import { Observable, first, map, of, switchMap, tap } from "rxjs";
 
 
 

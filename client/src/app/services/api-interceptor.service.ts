@@ -1,7 +1,7 @@
 import { environment } from "@_environments/environment";
 import { GetCurrentUserId } from "@_helpers/account";
 import { GetBaseApiUrl } from "@_helpers/app";
-import { CustomObject } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 import { HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";

@@ -1,12 +1,12 @@
 import { CompareObjects } from "@_helpers/objects";
 import { WaitObservable } from "@_helpers/rxjs";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { SimpleObject } from "@_models/app";
 import { ScrollAddDimension, ScrollData } from "@_models/screen";
 import { ScreenService } from "@_services/screen.service";
 import { clamp } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObject } from "@akb2/types-tools";
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { Observable, Subject, animationFrameScheduler, concatMap, fromEvent, of, tap, timer } from "rxjs";
+import { animationFrameScheduler, concatMap, fromEvent, Observable, of, Subject, tap, timer } from "rxjs";
 import { filter, map, observeOn, pairwise, startWith, takeUntil } from "rxjs/operators";
 
 

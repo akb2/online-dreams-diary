@@ -1,5 +1,6 @@
 import { ApiResponseMessages } from "@_datas/api";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { SimpleObject } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 
 
 

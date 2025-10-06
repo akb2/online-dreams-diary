@@ -1,6 +1,6 @@
-import { CustomObject, FileTypes, MultiObject, SimpleObject } from "@_models/app";
+import { FileTypes, MultiObject, SimpleObject } from "@_models/app";
 import { random, round } from "@akb2/math";
-import { isDefined } from "@akb2/types-tools";
+import { CustomObject, isDefined } from "@akb2/types-tools";
 import { MatDialogConfig } from "@angular/material/dialog";
 
 

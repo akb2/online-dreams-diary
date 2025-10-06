@@ -1,10 +1,9 @@
 import { ObjectToFormData } from "@_datas/api";
 import { AnyToDate, BrowserNames, OsNames } from "@_datas/app";
 import { ApiResponse, ApiResponseCodes } from "@_models/api";
-import { CustomObject } from "@_models/app";
 import { TokenInfo } from "@_models/token";
 import { ApiService } from "@_services/api.service";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, CustomObject } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";

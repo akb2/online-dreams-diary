@@ -1,5 +1,6 @@
 import { ExcludeUrlObjectParams, ExcludeUrlObjectValues } from "@_models/api";
-import { CustomObject, MultiObject, SimpleObject } from "@_models/app";
+import { MultiObject, SimpleObject } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 import { HttpParams } from "@angular/common/http";
 
 

@@ -1,11 +1,10 @@
 import { MapTerrains } from "@_datas/dream-map";
 import { MapCycle } from "@_helpers/objects";
 import { CapitalizeFirstLetter } from "@_helpers/string";
-import { CustomObject } from "@_models/app";
 import { MapTerrain, MapTerrainColorChannelsKeys, MapTerrainSplatMapColor } from "@_models/dream-map";
 import { Uniforms } from "@_models/three.js/base";
 import { ThreeFloatUniform, ThreeVector2Uniform } from "@_threejs/base";
-import { CustomObjectKey } from "@akb2/types-tools";
+import { CustomObject, CustomObjectKey } from "@akb2/types-tools";
 import { ObjectSpaceNormalMap, ShaderLib, UniformsUtils } from "three";
 
 

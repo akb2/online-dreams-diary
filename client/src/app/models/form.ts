@@ -1,4 +1,5 @@
-import { CustomObject, IconBackground, IconColor } from "@_models/app";
+import { IconBackground, IconColor } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 import { AbstractControlOptions, ValidatorFn } from "@angular/forms";
 
 

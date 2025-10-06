@@ -1,4 +1,4 @@
-import { CustomObject } from "@_models/app";
+import { CustomObject } from "@akb2/types-tools";
 import { Observable } from "rxjs";
 import { IUniform, PerspectiveCamera, Scene, Shader, Texture, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";

@@ -1,11 +1,11 @@
 import { AccountErrorMessages, AccountValidatorData, FormData } from "@_datas/form";
 import { environment } from "@_environments/environment";
 import { LocalStorageGet, LocalStorageRemove, LocalStorageSet } from "@_helpers/local-storage";
-import { CustomObject, SimpleObject } from "@_models/app";
+import { SimpleObject } from "@_models/app";
 import { ErrorMessagesType, FormDataType } from "@_models/form";
 import { NavMenuType } from "@_models/nav-menu";
 import { CanonicalService } from "@_services/canonical.service";
-import { anyToBoolean } from "@akb2/types-tools";
+import { anyToBoolean, CustomObject } from "@akb2/types-tools";
 import { formatDate } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
@@ -13,7 +13,7 @@ import { AppRecaptchaComponent } from "@app/controlers/elements/app-recaptcha/ap
 import { CustomValidators } from "@app/helpers/custom-validators";
 import { UserRegister, UserSex } from "@app/models/account";
 import { AccountService } from "@app/services/account.service";
-import { Subject, merge } from "rxjs";
+import { merge, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 
