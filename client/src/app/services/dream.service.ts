@@ -5,7 +5,6 @@ import { ClosestHeightNames } from "@_datas/dream-map";
 import { DreamObjectElmsValues } from "@_datas/dream-map-settings";
 import { JsonDecode } from "@_helpers/app";
 import { LocalStorageGet, LocalStorageSet } from "@_helpers/local-storage";
-import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { ApiResponse } from "@_models/api";
 import { SimpleObject } from "@_models/app";
@@ -15,7 +14,7 @@ import { NavMenuType } from "@_models/nav-menu";
 import { AccountService } from "@_services/account.service";
 import { ApiService } from "@_services/api.service";
 import { clamp, random } from "@akb2/math";
-import { anyToFloat, anyToInt } from "@akb2/types-tools";
+import { anyToFloat, anyToInt, anyToString } from "@akb2/types-tools";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, OnDestroy } from "@angular/core";
 import { Noise } from "noisejs";
@@ -242,7 +241,7 @@ export class DreamService implements OnDestroy {
       id: anyToInt(dreamDto.id),
       user: null,
       createDate: AnyToDate(dreamDto?.createDate),
-      title: AnyToString(dreamDto?.title),
+      title: anyToString(dreamDto?.title),
       date: AnyToDate(dreamDto?.date),
       description: dreamDto.description,
       mode: (dreamDto?.mode as DreamMode) ?? DreamMode.mixed,
@@ -252,8 +251,8 @@ export class DreamService implements OnDestroy {
       keywords,
       places: null,
       members: null,
-      text: AnyToString(dreamDto?.text),
-      interpretation: AnyToString(dreamDto.interpretation),
+      text: anyToString(dreamDto?.text),
+      interpretation: anyToString(dreamDto.interpretation),
       map: this.dreamMapConverter(dreamMap),
       headerType: (dreamDto?.headerType as NavMenuType) ?? NavMenuType.short,
       headerBackground: BackgroundImageDatas.find(b => b.id === dreamDto.headerBackgroundId)

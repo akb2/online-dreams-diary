@@ -7,7 +7,6 @@ import { DreamModes, DreamMoods, DreamStatuses, DreamTypes } from "@_datas/dream
 import { DreamTitle } from "@_datas/dream-map-settings";
 import { DreamErrorMessages, DreamValidatorData, FormData } from "@_datas/form";
 import { AnyToArray } from "@_helpers/objects";
-import { AnyToString } from "@_helpers/string";
 import { User } from "@_models/account";
 import { SimpleObject } from "@_models/app";
 import { Dream, DreamMode, DreamMood, DreamStatus, DreamType } from "@_models/dream";
@@ -17,7 +16,7 @@ import { AccountService } from "@_services/account.service";
 import { DreamService } from "@_services/dream.service";
 import { GlobalService } from "@_services/global.service";
 import { SnackbarService } from "@_services/snackbar.service";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, anyToString } from "@akb2/types-tools";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
@@ -83,7 +82,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
   // Кнопка назад: URL
   get backLink(): string {
     const fromArray = AnyToArray(this.fromMark.split("|"));
-    const from = AnyToString(fromArray[fromArray.length - 1]);
+    const from = anyToString(fromArray[fromArray.length - 1]);
     // Список всех сновидений
     if (from === "diary-all") {
       return "/diary/all";
@@ -136,15 +135,15 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
 
   // Текущее название заголовка
   get currentTitle(): string {
-    return AnyToString(this.dreamForm?.get("title")?.value) || this.defaultTitle;
+    return anyToString(this.dreamForm?.get("title")?.value) || this.defaultTitle;
   }
 
   // Проверка изменений
   private get formHasChanges(): boolean {
-    const title = AnyToString(this.dreamForm.get("title")?.value);
-    const description = AnyToString(this.dreamForm.get("description")?.value);
+    const title = anyToString(this.dreamForm.get("title")?.value);
+    const description = anyToString(this.dreamForm.get("description")?.value);
     const date = AnyToDate(this.dreamForm.get("date")?.value);
-    const headerType: NavMenuType = AnyToString(this.dreamForm.get("headerType")?.value, NavMenuType.short) as NavMenuType;
+    const headerType: NavMenuType = anyToString(this.dreamForm.get("headerType")?.value, NavMenuType.short) as NavMenuType;
     const headerBackground = anyToInt(this.dreamForm.get("headerBackground")?.value);
     const mode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
     const type = anyToInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
@@ -153,7 +152,7 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       ? DreamStatus.draft
       : anyToInt(this.dreamForm.get("status").value) as DreamStatus;
     const keywords = AnyToArray(this.dreamForm.get("keywords")?.value).sort().join(",");
-    const text = AnyToString(this.dreamForm.get("text")?.value);
+    const text = anyToString(this.dreamForm.get("text")?.value);
     const map: DreamMap = this.mapEditor
       ? this.mapEditor.getMap
       : this.dream.map;
@@ -251,19 +250,19 @@ export class DiaryEditorComponent implements OnInit, OnDestroy {
       else if (this.dream.id === 0 || (this.dream.id > 0 && (this.dreamForm.valid || status === DreamStatus.draft))) {
         const headerBackground = anyToInt(this.dreamForm.get("headerBackground")?.value);
         // Свойства
-        this.dream.title = AnyToString(this.dreamForm.get("title")?.value);
-        this.dream.description = AnyToString(this.dreamForm.get("description")?.value);
+        this.dream.title = anyToString(this.dreamForm.get("title")?.value);
+        this.dream.description = anyToString(this.dreamForm.get("description")?.value);
         this.dream.mode = anyToInt(this.dreamForm.get("mode")?.value) as DreamMode ?? DreamMode.mixed;
         this.dream.type = anyToInt(this.dreamForm.get("type")?.value) as DreamType ?? DreamType.Simple;
         this.dream.mood = anyToInt(this.dreamForm.get("mood")?.value) as DreamMood ?? DreamMood.Nothing;
         this.dream.status = status;
         this.dream.date = AnyToDate(this.dreamForm.get("date")?.value);
         this.dream.keywords = AnyToArray(this.dreamForm.get("keywords")?.value);
-        this.dream.text = AnyToString(this.dreamForm.get("text")?.value);
+        this.dream.text = anyToString(this.dreamForm.get("text")?.value);
         this.dream.map = this.mapEditor
           ? this.mapEditor.getMap
           : this.dream.map;
-        this.dream.headerType = AnyToString(this.dreamForm.get("headerType")?.value) as NavMenuType ?? NavMenuType.collapse;
+        this.dream.headerType = anyToString(this.dreamForm.get("headerType")?.value) as NavMenuType ?? NavMenuType.collapse;
         this.dream.headerBackground = BackgroundImageDatas.find(b => b.id === headerBackground) ?? BackgroundImageDatas[0];
         // Лоадер
         this.loading = true;

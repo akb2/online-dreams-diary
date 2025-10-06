@@ -2,12 +2,11 @@ import { ObjectToFormData, ObjectToParams, UrlParamsStringToObject } from "@_dat
 import { AnyToDate } from "@_datas/app";
 import { GetYouTubeImage, GetYouTubeLink } from "@_helpers/comment";
 import { AnyToArray, ArrayMap } from "@_helpers/objects";
-import { AnyToString } from "@_helpers/string";
 import { TextMessage } from "@_helpers/text-message";
 import { ApiResponse } from "@_models/api";
 import { Comment, CommentAttachment, CommentMaterialType, SearchRequestComment, SearchResponceComment, YouTubeVideo } from "@_models/comment";
 import { SearchRequestDream } from "@_models/dream";
-import { anyToInt } from "@akb2/types-tools";
+import { anyToInt, anyToString } from "@akb2/types-tools";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, Optional, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
@@ -83,7 +82,7 @@ export class CommentService extends TextMessage {
           youTubeVideos: ArrayMap(
             AnyToArray(attachment?.youTubeVideos),
             data => {
-              const id = AnyToString(data?.[0]);
+              const id = anyToString(data?.[0]);
               // Данные видео
               return {
                 id,

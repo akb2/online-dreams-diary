@@ -2,12 +2,7 @@ import { UrlParamsStringToObject } from "@_datas/api";
 import { CreateArray } from "@_datas/app";
 import { YouTubeVideoBase } from "@_models/comment";
 import { random } from "@akb2/math";
-import { anyToInt } from "@akb2/types-tools";
-
-
-
-// Преобразование любого значения в строку
-export const AnyToString = (value: any, defaultTitle = "") => value?.toString() ?? defaultTitle;
+import { anyToInt, anyToString } from "@akb2/types-tools";
 
 // Генерация уникального ID
 export const CreateRandomID = (length: number) => {
@@ -76,7 +71,7 @@ export const GetYouTubeDataByUrl = (url: string): YouTubeVideoBase => {
     if (!!match) {
       const link = match[0];
       const params = UrlParamsStringToObject(link.split("?")[1]);
-      const id = AnyToString(idKey >= 0
+      const id = anyToString(idKey >= 0
         ? match?.[idKey]
         : params?.["v"]
       );
